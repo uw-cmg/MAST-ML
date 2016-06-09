@@ -26,7 +26,7 @@ def create_testfile(request):
 
 # this function is excuted everytime a test that is called and this function is added as the parameter
 @pytest.fixture(scope='function')
-def test_data():
+def data():
     return parser.parse(test_file_name)
 
 
@@ -58,5 +58,17 @@ def test_to_digit_with_non_digit_string():
     assert x == 'abc', "\'abc\' should be converted to \'abc\'"
 
 
-def test_get_data_return_content(test_data):
-    assert test_data.get_data() == test_file_content[1:]
+def test_get_data_return_content(data):
+    assert data.get_data() == test_file_content[1:]
+
+
+def test_add_filter_and_remove_filter(data):
+    data.add_filter(test_file_content[0][1], '=', test_file_content[2][1])
+    assert data.get_data() == [test_file_content[2]]
+    data.remove_filter()
+    assert data.get_data() == test_file_content[1:]
+    data.add_filter('col2', '>=', 2)
+    data.add_filter('col3', '<=', 3.4)
+    assert data.get_data() == [test_file_content[2]]
+    data.remove_filter()
+    assert data.get_data() == test_file_content[1:]

@@ -7,8 +7,15 @@ import datetime
 __author__ = 'haotian'
 
 
-def save(model, data_direction, notes=''):
-    if not os.path.isfile(data_direction):
+def save(model, data_direction='', notes=''):
+    """
+    save a model into binary file and save it in model/directory
+    :param model: the model object to be saved
+    :param data_direction:
+    :param notes:
+    :return:
+    """
+    if data_direction != '' and not os.path.isfile(data_direction):
         print("invalid training file name, save unsuccessful")
         return None
     if not os.path.exists('model'):
