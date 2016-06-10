@@ -82,8 +82,9 @@ class Data:
             print("can't find [{}] in features".format(feature))
             return False
         index = self.__features.index(feature)
-        filtered_data = []
-        for line in self.__filtered_data:
+        if self.__filtered_data == self.__data: filtered_data = []
+        else: filtered_data = self.__filtered_data
+        for line in self.__data:
             if line[index] > threshold and '>' in operator:
                 filtered_data.append(line)
             elif line[index] == threshold and '=' in operator:
