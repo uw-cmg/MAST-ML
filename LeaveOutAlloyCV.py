@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-import self_defined_parser
+import data_parser
 import numpy as np
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.metrics import mean_squared_error
@@ -7,7 +7,7 @@ from sklearn.metrics import mean_squared_error
 def getModel():
     return KernelRidge(alpha= .00139, coef0=1, degree=3, gamma=.518, kernel='rbf', kernel_params=None)
 
-data = self_defined_parser.parse("../DBTT_data.csv")
+data = data_parser.parse("../../DBTT_Data.csv")
 data.set_x_features(["N(Cu)", "N(Ni)", "N(Mn)", "N(P)", "N(Si)","N( C )", "N(log(fluence)", "N(log(flux)", "N(Temp)"])
 data.set_y_feature("delta sigma")
 
@@ -41,5 +41,5 @@ plt.plot((0, 59), (0, 0), ls="--", c=".3")
 plt.xlabel('Alloy Number')
 plt.ylabel('RMSE (Mpa)')
 plt.title('Leave out Alloy RMSE')
-plt.savefig('../%s.png' %(plt.gca().get_title()), dpi = 200, bbox_inches='tight')
+plt.savefig('../../%s.png' %(plt.gca().get_title()), dpi = 200, bbox_inches='tight')
 plt.show()

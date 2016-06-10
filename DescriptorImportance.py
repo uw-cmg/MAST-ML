@@ -8,7 +8,7 @@ from sklearn import cross_validation
 def getModel():
     return KernelRidge(alpha= .00139, coef0=1, degree=3, gamma=.518, kernel='rbf', kernel_params=None)
 
-data = data_parser.parse("../../DBTT_data.csv")
+data = data_parser.parse("../../DBTT_Data.csv")
 data.set_x_features(["N(Cu)", "N(Ni)", "N(Mn)", "N(P)", "N(Si)","N( C )", "N(log(fluence)", "N(log(flux)", "N(Temp)"])
 data.set_y_feature("delta sigma")
 
