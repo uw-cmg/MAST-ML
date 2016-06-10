@@ -1,5 +1,5 @@
 __author__ = 'haotian'
-
+import numpy as np
 
 def parse(filename, separator=','):
     """
@@ -112,7 +112,7 @@ class Data:
         self.__filtered_data = filtered_data
         return True
 
-    def remove_filter(self):
+    def remove_all_filters(self):
         self.__filtered_data = list(self.__data)
         return True
 
@@ -176,13 +176,13 @@ class Data:
         index_list = [i for i in range(len(self.__features)) if self.__features[i] in features]
         for line in self.__filtered_data:
             output.append([line[i] for i in index_list])
-        return output
+        return np.asarray(output)
 
     def get_x_data(self):
-        return self.get_data(features=self.__x_features)
+        return np.asarray(self.get_data(features=self.__x_features))
 
     def get_y_data(self):
-        return self.get_data(features=self.__y_feature)
+        return np.asarray(self.get_data(features=self.__y_feature))
 
     def __calculate_data_range(self):
         maxes = list(self.__data[0])
