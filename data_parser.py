@@ -77,7 +77,8 @@ class Data:
         self.__y_feature = feature
         return True
 
-    def add_filter(self, feature, operator, threshold):
+    #include features satisfying (operator,threshold) in filtered_data
+    def add_inclusive_filter(self, feature, operator, threshold):
         if feature not in self.__features:
             print("can't find [{}] in features".format(feature))
             return False
@@ -91,6 +92,23 @@ class Data:
                 filtered_data.append(line)
             elif line[index] < threshold and '<' in operator:
                 filtered_data.append(line)
+        self.__filtered_data = filtered_data
+        return True
+
+    #do not include features satisfying (operator,threshold) in filtered_data
+    def add_exclusive_filter(self, feature, operator, threshold):
+        if feature not in self.__features:
+            print("can't find [{}] in features".format(feature))
+            return False
+        index = self.__features.index(feature)
+        filtered_data = self.__filtered_data
+        for line in self.__data:
+            if line[index] > threshold and '>' in operator:
+                filtered_data.remove(line)
+            elif line[index] == threshold and '=' in operator:
+                filtered_data.remove(line)
+            elif line[index] < threshold and '<' in operator:
+                filtered_data.remove(line)
         self.__filtered_data = filtered_data
         return True
 
