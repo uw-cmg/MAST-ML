@@ -16,14 +16,14 @@ def LOACV(model = KernelRidge(alpha= .00139, coef0=1, degree=3, gamma=.518, kern
         model = model #creates a new model
 
         #fit model to all alloys except the one to be removed 
-        data.remove_filter()
+        data.remove_all_filters()
         data.add_inclusive_filter("Alloy", '<>', alloy) 
         model.fit(data.get_x_data(), data.get_y_data())
 
         #predict removed alloy
-        data.remove_filter()
+        data.remove_all_filters()
         data.add_inclusive_filter("Alloy", '=', alloy)
-        if not data.get_x_data(): continue #if alloy doesn't exist(x data is empty), then continue
+        if len(data.get_x_data()) == 0: continue #if alloy doesn't exist(x data is empty), then continue
         Ypredict = model.predict(data.get_x_data())
 
         rms = np.sqrt(mean_squared_error(Ypredict, data.get_y_data()))

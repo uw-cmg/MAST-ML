@@ -15,12 +15,12 @@ def FlFxExt(model = KernelRidge(alpha= .00139, coef0=1, degree=3, gamma=.518, ke
 
     for x in fluence_divisions:
         model = model
-        data.remove_filter()
+        data.remove_all_filters()
         data.add_inclusive_filter("fluence n/cm2", '<', x)
         l_train = len(data.get_y_data())
         model.fit(data.get_x_data(), data.get_y_data())
 
-        data.remove_filter()
+        data.remove_all_filters()
         data.add_inclusive_filter("fluence n/cm2", '>=', x)
         l_test = len(data.get_y_data())
         Ypredict = model.predict(data.get_x_data())
@@ -39,13 +39,13 @@ def FlFxExt(model = KernelRidge(alpha= .00139, coef0=1, degree=3, gamma=.518, ke
 
     for x in flux_divisions:
         model = model
-        data.remove_filter()
-        data.add_filter("flux n/cm2/s", '<', x)
+        data.remove_all_filters()
+        data.add_inclusive_filter("flux n/cm2/s", '<', x)
         l_train = len(data.get_y_data())
         model.fit(data.get_x_data(), data.get_y_data())
 
-        data.remove_filter()
-        data.add_filter("flux n/cm2/s", '>=', x)
+        data.remove_all_filters()
+        data.add_inclusive_filter("flux n/cm2/s", '>=', x)
         l_test = len(data.get_y_data())
         Ypredict = model.predict(data.get_x_data())
         RMSE = np.sqrt(mean_squared_error(Ypredict, data.get_y_data()))

@@ -59,13 +59,12 @@ def DesImp(model = KernelRidge(alpha= .00139, coef0=1, degree=3, gamma=.518, ker
         overall_rms_list.append(avgRMS)
         sd_list.append(sd)
 
-    plt.bar(np.arrange(9), overall_rms_list, color = 'r', yerr = sd_list)
+    plt.bar(np.arange(9), overall_rms_list, color = 'r', yerr = sd_list)
     plt.xlabel('Descriptor Removed')
     plt.ylabel('200x 5-fold RMSE')
     plt.title('Descriptor Importance')
     plt.xticklabels(descriptorList)
     plt.savefig(savepath.format(plt.gca().get_title()), dpi = 200, bbox_inches='tight')
     plt.show()
-
 
         
