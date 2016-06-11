@@ -92,6 +92,8 @@ class Data:
                 filtered_data.append(line)
             elif line[index] < threshold and '<' in operator:
                 filtered_data.append(line)
+            elif threshold in line[index] and 'contains' in operator:
+                filtered_data.append(line)
         self.__filtered_data = filtered_data
         return True
 
@@ -109,12 +111,19 @@ class Data:
                 filtered_data.remove(line)
             elif line[index] < threshold and '<' in operator:
                 filtered_data.remove(line)
+            elif threshold in line[index] and 'contains' in operator:
+                filtered_data.remove(line)
         self.__filtered_data = filtered_data
         return True
 
     def remove_all_filters(self):
         self.__filtered_data = list(self.__data)
         return True
+
+    #the equivalent of parsing a CSV of filtered data
+    def set_data_to_filtered_data(self):
+        self.__data = self.__filtered_data
+        self.__filtered_data = self.__filtered_data
 
     def normalization(self, features=None, normalization_type='s'):
         if features is None:
