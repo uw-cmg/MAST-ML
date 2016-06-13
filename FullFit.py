@@ -5,12 +5,14 @@ from sklearn.kernel_ridge import KernelRidge
 from sklearn.metrics import mean_squared_error
 
 
-def fullfit (model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel='rbf', kernel_params=None),
-            datapath="../../DBTT_Data.csv", savepath='../../{}.png'):
+def fullfit(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel='rbf', kernel_params=None),
+            datapath="../../DBTT_Data.csv", savepath='../../{}.png',
+            X=["N(Cu)", "N(Ni)", "N(Mn)", "N(P)", "N(Si)", "N( C )", "N(log(fluence)", "N(log(flux)", "N(Temp)"],
+            Y="delta sigma"):
+
     data = data_parser.parse(datapath)
-    data.set_x_features(
-        ["N(Cu)", "N(Ni)", "N(Mn)", "N(P)", "N(Si)", "N( C )", "N(log(fluence)", "N(log(flux)", "N(Temp)"])
-    data.set_y_feature("delta sigma")
+    data.set_x_features(X)
+    data.set_y_feature(Y)
 
     Ydata = np.asarray(data.get_y_data()).ravel()
     Ydata_norm = (Ydata - np.mean(Ydata)) / np.std(Ydata)

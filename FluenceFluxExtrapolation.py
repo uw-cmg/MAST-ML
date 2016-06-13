@@ -4,11 +4,15 @@ import data_parser
 from sklearn.metrics import mean_squared_error
 from sklearn.kernel_ridge import KernelRidge
 
-def FlFxExt(model = KernelRidge(alpha= .00139, coef0=1, degree=3, gamma=.518, kernel='rbf', kernel_params=None), datapath = "../../DBTT_Data.csv", savepath = '../../{}.png'):
+
+def FlFxExt(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel='rbf', kernel_params=None),
+            datapath="../../DBTT_Data.csv", savepath='../../{}.png',
+            X=["N(Cu)", "N(Ni)", "N(Mn)", "N(P)", "N(Si)", "N( C )", "N(log(fluence)", "N(log(flux)", "N(Temp)"],
+            Y="delta sigma"):
 
     data = data_parser.parse(datapath)
-    data.set_x_features(["N(Cu)", "N(Ni)", "N(Mn)", "N(P)", "N(Si)","N( C )", "N(log(fluence)", "N(log(flux)", "N(Temp)"])
-    data.set_y_feature("delta sigma")
+    data.set_x_features(X)
+    data.set_y_feature(Y)
 
     fluence_divisions = [3.3E18, 3.3E19, 3.3E20]
     flux_divisions = [5.3e11, 4e12, 3e13]
@@ -26,15 +30,15 @@ def FlFxExt(model = KernelRidge(alpha= .00139, coef0=1, degree=3, gamma=.518, ke
         Ypredict = model.predict(data.get_x_data())
         RMSE = np.sqrt(mean_squared_error(Ypredict, data.get_y_data().ravel()))
 
-        plt.scatter(data.get_y_data(), Ypredict, color = 'black', s = 10)
+        plt.scatter(data.get_y_data(), Ypredict, color='black', s=10)
         plt.plot(plt.gca().get_ylim(), plt.gca().get_ylim(), ls="--", c=".3")
         plt.xlabel('Measured ∆sigma (Mpa)')
         plt.ylabel('Predicted ∆sigma (Mpa)')
         plt.title('Testing Fluence > {}'.format(x))
-        plt.figtext(.15,.83,'RMSE: {:.3f}'.format(RMSE), fontsize = 14)
-        plt.figtext(.15,.78,'Train: {}, Test: {}'.format(l_train, l_test), fontsize = 13)
+        plt.figtext(.15, .83, 'RMSE: {:.3f}'.format(RMSE), fontsize=14)
+        plt.figtext(.15, .78, 'Train: {}, Test: {}'.format(l_train, l_test), fontsize=13)
 
-        plt.savefig(savepath.format(plt.gca().get_title()), dpi = 200, bbox_inches='tight')
+        plt.savefig(savepath.format(plt.gca().get_title()), dpi=200, bbox_inches='tight')
         plt.show()
         plt.close()
 
@@ -51,15 +55,14 @@ def FlFxExt(model = KernelRidge(alpha= .00139, coef0=1, degree=3, gamma=.518, ke
         Ypredict = model.predict(data.get_x_data())
         RMSE = np.sqrt(mean_squared_error(Ypredict, data.get_y_data().ravel()))
 
-        plt.scatter(data.get_y_data(), Ypredict, color = 'black', s = 10)
+        plt.scatter(data.get_y_data(), Ypredict, color='black', s=10)
         plt.plot(plt.gca().get_ylim(), plt.gca().get_ylim(), ls="--", c=".3")
         plt.xlabel('Measured ∆sigma (Mpa)')
         plt.ylabel('Predicted ∆sigma (Mpa)')
         plt.title('Testing Flux > {:.1E}'.format(x))
-        plt.figtext(.15,.83,'RMSE: {:.2f}'.format(RMSE), fontsize = 14)
-        plt.figtext(.15,.78,'Train: {}, Test: {}'.format(l_train, l_test), fontsize = 13)
+        plt.figtext(.15, .83, 'RMSE: {:.2f}'.format(RMSE), fontsize=14)
+        plt.figtext(.15, .78, 'Train: {}, Test: {}'.format(l_train, l_test), fontsize=13)
 
-        plt.savefig(savepath.format(plt.gca().get_title()), dpi = 200, bbox_inches='tight')
+        plt.savefig(savepath.format(plt.gca().get_title()), dpi=200, bbox_inches='tight')
         plt.show()
         plt.close()
-
