@@ -10,7 +10,7 @@ def ErrBias(model = KernelRidge(alpha= .00139, coef0=1, degree=3, gamma=.518, ke
     data.set_x_features(["N(Cu)", "N(Ni)", "N(Mn)", "N(P)", "N(Si)","N( C )", "N(log(fluence)", "N(log(flux)", "N(Temp)"])
     data.set_y_feature("delta sigma")
 
-    descriptors = ['Cu (At%)','Ni (At%)','Mn (At%)','P (At%)', 'Si (At%)', 'C (At%)', 'log(fluence)', 'log(flux)', 'Temp (C)']
+    descriptors = ['Cu (At%)','Ni (At%)','Mn (At%)','P (At%)', 'Si (At%)', 'C (At%)', 'Temp (C)', 'log(fluence)', 'log(flux)']
     Xlist = np.asarray(data.get_data(descriptors))
 
     model = model
@@ -32,5 +32,4 @@ def ErrBias(model = KernelRidge(alpha= .00139, coef0=1, degree=3, gamma=.518, ke
         plt.savefig(savepath.format(plt.gca().get_title()), dpi = 200, bbox_inches='tight')               
         plt.show()
         plt.close()
-
 
