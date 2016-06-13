@@ -18,8 +18,8 @@ def cv(model, datapath, savepath, num_folds = 5, num_runs = 200):
     Y_predicted_best = []
     Y_predicted_worst = []
     
-    maxRMS = 10
-    minRMS = 40
+    maxRMS = 1
+    minRMS = 100
     
     RMS_List = []
     for n in range(num_runs):
