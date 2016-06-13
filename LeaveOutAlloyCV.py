@@ -42,3 +42,4 @@ def LOACV(model = KernelRidge(alpha= .00139, coef0=1, degree=3, gamma=.518, kern
     plt.figtext(.15,.83,'Mean RMSE: {:.2f}'.format(np.mean(rms_list)), fontsize = 14)
     plt.savefig(savepath.format(plt.gca().get_title()), dpi = 200, bbox_inches='tight')
     plt.show()
+    plt.close()
