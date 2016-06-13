@@ -15,7 +15,7 @@ def DesImp(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel
 
     overall_rms_list = []
     sd_list = []
-    descriptorlist = ['Cu', 'Ni', 'Mn', 'P', 'Si', 'C', 'Fluence', 'Flux', 'Temperature']
+    descriptorlist = ['Cu', 'Ni', 'Mn', 'P', 'Si', 'C', 'Fl', 'Fx', 'Temp']
 
     numFolds = 5
     numIter = 200
@@ -67,6 +67,7 @@ def DesImp(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel
     ax.set_xlabel('Descriptor Removed')
     ax.set_ylabel('200x 5-fold RMSE')
     ax.set_title('Descriptor Importance')
+    ax.set_xticks(np.arange(9) + .4)
     ax.set_xticklabels(descriptorlist)
 
     for rect in rects:
