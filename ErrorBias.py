@@ -14,11 +14,11 @@ def ErrBias(model = KernelRidge(alpha= .00139, coef0=1, degree=3, gamma=.518, ke
     Xlist = np.asarray(data.get_data(descriptors))
 
     model = model
-    model.fit(data.get_x_data(), data.get_y_data())
-    Error = model.predict(data.get_x_data()) - data.get_y_data()
+    model.fit(data.get_x_data(), data.get_y_data().ravel())
+    Error = model.predict(data.get_x_data()) - data.get_y_data().ravel()
 
     for x in range(len(descriptors)):
-        plt.scatter(Xlist[:,x], Error, color='black')
+        plt.scatter(Xlist[:,x], Error, color='black', s = 10)
         xlim = plt.gca().get_xlim()
         plt.plot(xlim, (20, 20), ls="--", c=".3")
         plt.plot(xlim, (0,0), ls="--", c=".3")

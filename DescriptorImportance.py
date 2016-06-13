@@ -22,7 +22,7 @@ def DesImp(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel
     model = model
 
     Xdata = data.get_x_data()
-    Ydata = data.get_y_data()
+    Ydata = data.get_y_data().ravel()
 
     print("Testing descriptor importance using {}x {} - Fold CV".format(numIter, numFolds))
     print("")
@@ -73,10 +73,9 @@ def DesImp(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel
     for rect in rects:
         height = rect.get_height()
         ax.text(rect.get_x() + rect.get_width() / 2., 1.05 * height,
-                '%d' % int(height),
+                '%.2f' % (height),
                 ha='center', va='bottom')
 
     fig.savefig(savepath.format(plt.gca().get_title()), dpi=200, bbox_inches='tight')
     plt.show()
     plt.close()
-

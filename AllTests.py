@@ -9,7 +9,8 @@ import ErrorBias
 
 # model to use
 from sklearn.kernel_ridge import KernelRidge
-model = KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel='rbf', kernel_params=None)
+from sklearn.ensemble import RandomForestRegressor
+model = KernelRidge(alpha= .00139, coef0=1, degree=3, gamma=.518, kernel='rbf', kernel_params=None)
 
 # file paths
 datapath = "../../DBTT_Data.csv"  # path to your data
@@ -22,7 +23,7 @@ print("\nLeave out alloy CV:")
 LeaveOutAlloyCV.LOACV(model, datapath, savepath)
 
 print("\nFull Fit:")
-FullFit.FullFit(model, datapath, savepath)
+FullFit.fullfit(model, datapath, savepath)
 
 print("\nFluence and Flux Extrapolation:")
 FluenceFluxExtrapolation.FlFxExt(model, datapath, savepath)

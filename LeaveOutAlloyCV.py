@@ -18,7 +18,7 @@ def LOACV(model = KernelRidge(alpha= .00139, coef0=1, degree=3, gamma=.518, kern
         #fit model to all alloys except the one to be removed 
         data.remove_all_filters()
         data.add_inclusive_filter("Alloy", '<>', alloy) 
-        model.fit(data.get_x_data(), data.get_y_data())
+        model.fit(data.get_x_data(), data.get_y_data().ravel())
 
         #predict removed alloy
         data.remove_all_filters()
@@ -26,7 +26,7 @@ def LOACV(model = KernelRidge(alpha= .00139, coef0=1, degree=3, gamma=.518, kern
         if len(data.get_x_data()) == 0: continue #if alloy doesn't exist(x data is empty), then continue
         Ypredict = model.predict(data.get_x_data())
 
-        rms = np.sqrt(mean_squared_error(Ypredict, data.get_y_data()))
+        rms = np.sqrt(mean_squared_error(Ypredict, data.get_y_data().ravel()))
         rms_list.append(rms)
         alloy_list.append(alloy)
 
@@ -34,7 +34,7 @@ def LOACV(model = KernelRidge(alpha= .00139, coef0=1, degree=3, gamma=.518, kern
 
     # graph rmse vs alloy 
     ax = plt.gca()
-    plt.scatter(alloy_list,rms_list, color='black')
+    plt.scatter(alloy_list,rms_list, color='black', s = 10)
     plt.plot((0, 59), (0, 0), ls="--", c=".3")
     plt.xlabel('Alloy Number')
     plt.ylabel('RMSE (Mpa)')
