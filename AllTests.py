@@ -9,9 +9,11 @@ import ErrorBias
 
 # model to use
 from sklearn.kernel_ridge import KernelRidge
-from sklearn.ensemble import RandomForestRegressor
-model = KernelRidge(alpha= .00139, coef0=1, degree=3, gamma=.518, kernel='rbf', kernel_params=None)
+from sklearn.linear_model import LinearRegression
+from sklearn.svm import SVR
+#model = KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel='rbf', kernel_params=None)
 
+model = SVR(verbose=False, C=400, gamma=5)
 # file paths
 datapath = "../../DBTT_Data.csv"  # path to your data
 savepath = "../../graphs/{}.png"  # where you want output graphs to be saved
@@ -33,4 +35,3 @@ ErrorBias.ErrBias(model, datapath, savepath)
 
 print("\nDescriptor Importance:")
 DescriptorImportance.DesImp(model, datapath, savepath)
-
