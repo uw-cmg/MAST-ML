@@ -1,5 +1,4 @@
 import matplotlib
-
 matplotlib.use('Agg')
 import numpy as np
 import data_parser
