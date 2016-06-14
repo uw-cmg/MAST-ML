@@ -22,7 +22,7 @@ def loacv(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel=
 
         # fit model to all alloys except the one to be removed
         data.remove_all_filters()
-        data.add_inclusive_filter("Alloy", '<>', alloy)
+        data.add_exclusive_filter("Alloy", '=', alloy)
         model.fit(data.get_x_data(), data.get_y_data().ravel())
 
         # predict removed alloy
