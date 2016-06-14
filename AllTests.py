@@ -21,7 +21,7 @@ datapath = "../../DBTT_Data.csv"  # path to your data
 savepath = "../../graphs/{}.png"  # where you want output graphs to be saved
 
 #data
-Ydata = "delta sigma"
+Ydata = " CD ∆σ"
 
 print("K-Fold CV:")
 KFold_CV.cv(model, datapath, savepath, Y = Ydata)  # also has parameters num_folds (default is 5) and num_runs (default is 200)

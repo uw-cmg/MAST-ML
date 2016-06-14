@@ -1,3 +1,4 @@
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import data_parser
@@ -28,6 +29,8 @@ def errbias(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kerne
         plt.plot(xlim, (0, 0), ls="--", c=".3")
         plt.plot(xlim, (-20, -20), ls="--", c=".3")
         m, b = np.polyfit(np.reshape(xlist[:, x], len(xlist[:, x])), np.reshape(error, len(error)),1)  # line of best fit
+
+        matplotlib.rcParams.update({'font.size': 15})
         plt.plot(xlist[:, x], m * xlist[:, x] + b, color='red')
         plt.figtext(.15, .83, 'y = ' + "{0:.6f}".format(m) + 'x + ' + "{0:.5f}".format(b), fontsize=14)
         plt.title('Error vs. {}'.format(descriptors[x]))

@@ -1,3 +1,4 @@
+import matplotlib
 import matplotlib.pyplot as plt
 import data_parser
 import numpy as np
@@ -62,6 +63,7 @@ def desimp(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel
         overall_rms_list.append(avgRMS)
         sd_list.append(sd)
 
+    matplotlib.rcParams.update({'font.size': 15})
     fig, ax = plt.subplots()
     rects = ax.bar(np.arange(9), overall_rms_list, color='r', yerr=sd_list)
     ax.set_xlabel('Descriptor Removed')

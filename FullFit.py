@@ -35,6 +35,7 @@ def fullfit(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kerne
     print('RMS: %.5f, IVAR RMS: %.5f, IVAR+ RMS: %.5f' % (rms, IVAR_rms, IVARplus_rms))
 
     # graph outputs
+    plt.figure(1)
     plt.scatter(Ydata[IVARindices], Ypredict[IVARindices], s=10, color='black', label='IVAR')
     plt.legend(loc=4)
     plt.scatter(Ydata[IVARplusindices], Ypredict[IVARplusindices], s=10, color='red', label='IVAR+')
@@ -47,5 +48,14 @@ def fullfit(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kerne
     plt.figtext(.15, .77, 'IVAR RMS: %.4f' % (IVAR_rms), fontsize=14)
     plt.figtext(.15, .71, 'IVAR+ RMS: %.4f' % (IVARplus_rms), fontsize=14)
     plt.savefig(savepath.format(plt.gca().get_title()), dpi=200, bbox_inches='tight')
+
+    '''
+    plt.figure(2)
+    plt.scatter(Ydata, Ypredict-Ydata, s=10, color='black')
+    plt.xlabel('Measured (MPa)')
+    plt.ylabel('Predicted - Measured (MPa)')
+    plt.title('Error vs Actual')
+    plt.savefig(savepath.format("error_vs_actual"), dpi=200, bbox_inches='tight')'''
+
     plt.show()
     plt.close()
