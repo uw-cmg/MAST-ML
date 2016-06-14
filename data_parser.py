@@ -103,7 +103,7 @@ class Data:
             print("can't find [{}] in features".format(feature))
             return False
         index = self.__features.index(feature)
-        filtered_data = self.__filtered_data
+        filtered_data = list(self.__filtered_data)
         for line in self.__data:
             if line[index] > threshold and '>' in operator:
                 filtered_data.remove(line)
