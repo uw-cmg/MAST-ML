@@ -92,7 +92,7 @@ class Data:
                 filtered_data.append(line)
             elif line[index] < threshold and '<' in operator:
                 filtered_data.append(line)
-            elif threshold in line[index] and 'contains' in operator:
+            elif str(threshold) in str(line[index]) and 'contains' in operator:
                 filtered_data.append(line)
         self.__filtered_data = filtered_data
         return True
@@ -111,7 +111,7 @@ class Data:
                 filtered_data.remove(line)
             elif line[index] < threshold and '<' in operator:
                 filtered_data.remove(line)
-            elif threshold in line[index] and 'contains' in operator:
+            elif str(threshold) in str(line[index]) and 'contains' in operator:
                 filtered_data.remove(line)
         self.__filtered_data = filtered_data
         return True
