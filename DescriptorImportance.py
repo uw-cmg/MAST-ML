@@ -6,7 +6,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn import cross_validation
 
 
-def DesImp(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel='rbf', kernel_params=None),
+def desimp(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel='rbf', kernel_params=None),
            datapath="../../DBTT_Data.csv", savepath='../../{}.png',
            X = ["N(Cu)", "N(Ni)", "N(Mn)", "N(P)", "N(Si)","N( C )", "N(log(fluence)", "N(log(flux)", "N(Temp)"], Y = "delta sigma"):
     data = data_parser.parse(datapath)

@@ -11,7 +11,9 @@ import ErrorBias
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.linear_model import LinearRegression
 from sklearn.svm import SVR
-model = LinearRegression()
+from sklearn.ensemble import RandomForestRegressor
+model = KernelRidge(alpha= .00139, gamma = .518, kernel='rbf')
+#model = LinearRegression()
 #model = SVR(verbose=False, C=400, gamma=5)
 
 # file paths
@@ -25,16 +27,17 @@ print("K-Fold CV:")
 KFold_CV.cv(model, datapath, savepath, Y = Ydata)  # also has parameters num_folds (default is 5) and num_runs (default is 200)
 
 print("\nLeave out alloy CV:")
-LeaveOutAlloyCV.LOACV(model, datapath, savepath, Y = Ydata)
+LeaveOutAlloyCV.loacv(model, datapath, savepath, Y = Ydata)
 
 print("\nFull Fit:")
 FullFit.fullfit(model, datapath, savepath, Y = Ydata)
 
 print("\nFluence and Flux Extrapolation:")
-FluenceFluxExtrapolation.FlFxExt(model, datapath, savepath, Y = Ydata)
+FluenceFluxExtrapolation.flfxex(model, datapath, savepath, Y = Ydata)
 
 print("\nError Bias:")
-ErrorBias.ErrBias(model, datapath, savepath, Y = Ydata)
+ErrorBias.errbias(model, datapath, savepath, Y = Ydata)
+
 
 print("\nDescriptor Importance:")
-DescriptorImportance.DesImp(model, datapath, savepath, Y = Ydata)
+DescriptorImportance.desimp(model, datapath, savepath, Y = Ydata)
