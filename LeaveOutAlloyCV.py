@@ -5,7 +5,7 @@ from sklearn.kernel_ridge import KernelRidge
 from sklearn.metrics import mean_squared_error
 
 
-def LOACV(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel='rbf', kernel_params=None),
+def loacv(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel='rbf', kernel_params=None),
           datapath="../../DBTT_Data.csv", savepath='../../{}.png',
           X=["N(Cu)", "N(Ni)", "N(Mn)", "N(P)", "N(Si)", "N( C )", "N(log(fluence)", "N(log(flux)", "N(Temp)"],
           Y="delta sigma"):
@@ -39,6 +39,8 @@ def LOACV(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel=
 
     # graph rmse vs alloy 
     ax = plt.gca()
+    plt.figure(figsize=(10, 4))
+    plt.xticks(np.arange(0, max(alloy_list) + 1, 5))
     plt.scatter(alloy_list, rms_list, color='black', s=10)
     plt.plot((0, 59), (0, 0), ls="--", c=".3")
     plt.xlabel('Alloy Number')
