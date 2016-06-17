@@ -55,8 +55,8 @@ class Data:
         self.__features = features
         self.__data = data
         self.__filtered_data = list(data)
-        self.__x_features = features[:-1]
-        self.__y_feature = features[-1]
+        self.x_features = features[:-1]
+        self.y_feature = features[-1]
         self.__max_min = []
         return
 
@@ -67,14 +67,14 @@ class Data:
             if feature not in self.__features:
                 print("can't find [{}] in features".format(feature))
                 return False
-        self.__x_features = feature_list
+        self.x_features = feature_list
         return True
 
     def set_y_feature(self, feature):
         if feature not in self.__features:
             print("can't find [] in features".format(feature))
             return False
-        self.__y_feature = feature
+        self.y_feature = feature
         return True
 
     #include features satisfying (operator,threshold) in filtered_data
@@ -127,7 +127,7 @@ class Data:
 
     def normalization(self, features=None, normalization_type='s'):
         if features is None:
-            features = self.__x_features
+            features = self.x_features
         elif isinstance(features, str):
             features = [features]
         for feature in features:
@@ -188,10 +188,10 @@ class Data:
         return output
 
     def get_x_data(self):
-        return self.get_data(features=self.__x_features)
+        return self.get_data(features=self.x_features)
 
     def get_y_data(self):
-        return self.get_data(features=self.__y_feature)
+        return self.get_data(features=self.y_feature)
 
     def __calculate_data_range(self):
         maxes = list(self.__data[0])
