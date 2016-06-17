@@ -1,44 +1,25 @@
-import KFold_CV
-import LeaveOutAlloyCV
-import FullFit
-import FluenceFluxExtrapolation
-import DescriptorImportance
-import ErrorBias
 import configuration_parser
 import importlib
-# things to change before running the codes
-
-# model to use
-from sklearn.kernel_ridge import KernelRidge
-from sklearn.linear_model import LinearRegression
-from sklearn.svm import SVR
-from sklearn.ensemble import RandomForestRegressor
 
 config = configuration_parser.parse()
 
-model = importlib.import_module(config.get('all_test', 'model')).get()
-datapath = config.get('all_test', 'data_path')
-savepath = config.get('all_test', 'save_path')
-
-Ydata = config.get('all_test', 'Y')
-
-print("K-Fold CV:")
-KFold_CV.cv(model, datapath, savepath, Y = Ydata)  # also has parameters num_folds (default is 5) and num_runs (default is 200)
-
-print("\nLeave out alloy CV:")
-LeaveOutAlloyCV.loacv(model, datapath, savepath, Y = Ydata)
-
-print("\nFull Fit:")
-FullFit.fullfit(model, datapath, savepath, Y = Ydata)
-
-print("\nFluence and Flux Extrapolation:")
-FluenceFluxExtrapolation.flfxex(model, datapath, savepath, Y = Ydata)
-
-print("\nError Bias:")
-ErrorBias.errbias(model, datapath, savepath, Y = Ydata)
+parameter_names = ['model', 'data_path', 'save_path', 'Y', 'X']
 
 
-print("\nDescriptor Importance:")
-DescriptorImportance.desimp(model, datapath, savepath, Y = Ydata)
+all_tests = config.get('AllTests', 'test_cases').split(',')
 
+for case_name in all_tests:
+    parameter_values = []
+    for parameter in parameter_names:
+        if config.has_option(case_name, parameter):
+            parameter_values.append(config.get(case_name, parameter))
+        else:
+            parameter_values.append(config.get('AllTests', parameter))
+    model, data_path, save_path, y_data, x_data = parameter_values
 
+    model = importlib.import_module(model).get()
+    x_data = x_data.split(',')
+
+    print("running test {}".format(case_name))
+    case = importlib.import_module(case_name)
+    case.execute(model, data_path, save_path, Y=y_data)

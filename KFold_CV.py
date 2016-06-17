@@ -7,7 +7,7 @@ from sklearn import cross_validation
 from sklearn.metrics import mean_squared_error
 
 
-def cv(model, datapath, savepath, num_folds=5, num_runs=200,
+def execute(model, datapath, savepath, num_folds=5, num_runs=200,
        X=["N(Cu)", "N(Ni)", "N(Mn)", "N(P)", "N(Si)", "N( C )", "N(log(fluence)", "N(log(flux)", "N(Temp)"],
        Y="delta sigma"):
 
@@ -15,8 +15,8 @@ def cv(model, datapath, savepath, num_folds=5, num_runs=200,
     data = data_parser.parse(datapath)
     data.set_x_features(X)
     data.set_y_feature(Y)
-    Ydata = data.get_y_data().ravel()
-    Xdata = data.get_x_data()
+    Ydata = np.array(data.get_y_data()).ravel()
+    Xdata = np.array(data.get_x_data())
 
     Y_predicted_best = []
     Y_predicted_worst = []

@@ -7,7 +7,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn import cross_validation
 
 
-def desimp(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel='rbf', kernel_params=None),
+def execute(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel='rbf', kernel_params=None),
            datapath="../../DBTT_Data.csv", savepath='../../{}.png',
            X = ["N(Cu)", "N(Ni)", "N(Mn)", "N(P)", "N(Si)","N( C )", "N(log(fluence)", "N(log(flux)", "N(Temp)"], Y = "delta sigma"):
     data = data_parser.parse(datapath)
@@ -23,7 +23,7 @@ def desimp(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel
     model = model
 
     Xdata = data.get_x_data()
-    Ydata = data.get_y_data().ravel()
+    Ydata = np.array(data.get_y_data()).ravel()
 
     print("Testing descriptor importance using {}x {} - Fold CV".format(numIter, numFolds))
     print("")

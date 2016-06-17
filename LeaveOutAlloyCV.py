@@ -5,7 +5,7 @@ from sklearn.kernel_ridge import KernelRidge
 from sklearn.metrics import mean_squared_error
 
 
-def loacv(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel='rbf', kernel_params=None),
+def execute(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel='rbf', kernel_params=None),
           datapath="../../DBTT_Data.csv", savepath='../../{}.png',
           X=["N(Cu)", "N(Ni)", "N(Mn)", "N(P)", "N(Si)", "N( C )", "N(log(fluence)", "N(log(flux)", "N(Temp)"],
           Y="delta sigma"):
@@ -23,7 +23,7 @@ def loacv(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel=
         # fit model to all alloys except the one to be removed
         data.remove_all_filters()
         data.add_exclusive_filter("Alloy", '=', alloy)
-        model.fit(data.get_x_data(), data.get_y_data().ravel())
+        model.fit(data.get_x_data(), np.array(data.get_y_data()).ravel())
 
         # predict removed alloy
         data.remove_all_filters()
@@ -31,7 +31,7 @@ def loacv(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel=
         if len(data.get_x_data()) == 0: continue  # if alloy doesn't exist(x data is empty), then continue
         Ypredict = model.predict(data.get_x_data())
 
-        rms = np.sqrt(mean_squared_error(Ypredict, data.get_y_data().ravel()))
+        rms = np.sqrt(mean_squared_error(Ypredict, np.array(data.get_y_data()).ravel()))
         rms_list.append(rms)
         alloy_list.append(alloy)
 

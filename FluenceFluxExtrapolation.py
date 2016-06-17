@@ -7,7 +7,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn.kernel_ridge import KernelRidge
 
 
-def flfxex(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel='rbf', kernel_params=None),
+def execute(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel='rbf', kernel_params=None),
             datapath="../../DBTT_Data.csv", savepath='../../{}.png',
             X=["N(Cu)", "N(Ni)", "N(Mn)", "N(P)", "N(Si)", "N( C )", "N(log(fluence)", "N(log(flux)", "N(Temp)"],
             Y="delta sigma"):
@@ -25,13 +25,13 @@ def flfxex(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel
         data.remove_all_filters()
         data.add_inclusive_filter("fluence n/cm2", '<', fluence_divisions[x])
         l_train = len(data.get_y_data())
-        model.fit(data.get_x_data(), data.get_y_data().ravel())
+        model.fit(data.get_x_data(), np.array(data.get_y_data()).ravel())
 
         data.remove_all_filters()
         data.add_inclusive_filter("fluence n/cm2", '>=', fluence_divisions[x])
         l_test = len(data.get_y_data())
         Ypredict = model.predict(data.get_x_data())
-        RMSE = np.sqrt(mean_squared_error(Ypredict, data.get_y_data().ravel()))
+        RMSE = np.sqrt(mean_squared_error(Ypredict, np.array(data.get_y_data()).ravel()))
 
         matplotlib.rcParams.update({'font.size': 26})
         ax[x].scatter(data.get_y_data(), Ypredict, color='black', s=10)
@@ -54,13 +54,13 @@ def flfxex(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel
         data.remove_all_filters()
         data.add_inclusive_filter("flux n/cm2/s", '>', flux_divisions[x])
         l_train = len(data.get_y_data())
-        model.fit(data.get_x_data(), data.get_y_data().ravel())
+        model.fit(data.get_x_data(), np.array(data.get_y_data()).ravel())
 
         data.remove_all_filters()
         data.add_inclusive_filter("flux n/cm2/s", '<=', flux_divisions[x])
         l_test = len(data.get_y_data())
         Ypredict = model.predict(data.get_x_data())
-        RMSE = np.sqrt(mean_squared_error(Ypredict, data.get_y_data().ravel()))
+        RMSE = np.sqrt(mean_squared_error(Ypredict, np.array(data.get_y_data()).ravel()))
 
         matplotlib.rcParams.update({'font.size': 26})
         ax[x].scatter(data.get_y_data(), Ypredict, color='black', s=10)
