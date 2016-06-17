@@ -7,12 +7,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn import cross_validation
 
 
-def execute(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel='rbf', kernel_params=None),
-           datapath="../../DBTT_Data.csv", savepath='../../{}.png',
-           X = ["N(Cu)", "N(Ni)", "N(Mn)", "N(P)", "N(Si)","N( C )", "N(log(fluence)", "N(log(flux)", "N(Temp)"], Y = "delta sigma"):
-    data = data_parser.parse(datapath)
-    data.set_x_features(X)
-    data.set_y_feature(Y)
+def execute(model, data, savepath):
 
     overall_rms_list = []
     sd_list = []
@@ -33,7 +28,7 @@ def execute(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kerne
         newX = np.delete(Xdata, x, 1)
         for n in range(numIter):
             kf = cross_validation.KFold(len(Xdata), n_folds=numFolds, shuffle=True)
-            K_fold_rms_list = [];
+            K_fold_rms_list = []
             # split into testing and training sets
             for train_index, test_index in kf:
                 X_train, X_test = newX[train_index], newX[test_index]
@@ -79,5 +74,5 @@ def execute(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kerne
                 ha='center', va='bottom')
 
     fig.savefig(savepath.format(plt.gca().get_title()), dpi=200, bbox_inches='tight')
-    plt.show()
+    plt.clf()
     plt.close()

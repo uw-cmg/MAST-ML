@@ -6,13 +6,7 @@ from sklearn.kernel_ridge import KernelRidge
 from sklearn.metrics import mean_squared_error
 
 
-def execute(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel='rbf', kernel_params=None),
-            datapath="../../DBTT_Data.csv", savepath='../../{}.png',
-            X=["N(Cu)", "N(Ni)", "N(Mn)", "N(P)", "N(Si)", "N( C )", "N(log(fluence)", "N(log(flux)", "N(Temp)"],
-            Y="delta sigma"):
-    data = data_parser.parse(datapath)
-    data.set_x_features(X)
-    data.set_y_feature(Y)
+def execute(model, data, savepath):
 
     descriptors = ['Cu (At%)', 'Ni (At%)', 'Mn (At%)', 'P (At%)', 'Si (At%)', 'C (At%)', 'Temp (C)', 'log(fluence)',
                    'log(flux)']
@@ -37,5 +31,4 @@ def execute(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kerne
         plt.xlabel(descriptors[x])
         plt.ylabel('Predicted - Actual (Mpa)')
         plt.savefig(savepath.format(plt.gca().get_title()), dpi=200, bbox_inches='tight')
-        plt.show()
         plt.close()

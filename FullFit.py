@@ -5,22 +5,13 @@ from sklearn.kernel_ridge import KernelRidge
 from sklearn.metrics import mean_squared_error
 
 
-def execute(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel='rbf', kernel_params=None),
-            datapath="../../DBTT_Data.csv", savepath='../../{}.png',
-            X=["N(Cu)", "N(Ni)", "N(Mn)", "N(P)", "N(Si)", "N( C )", "N(log(fluence)", "N(log(flux)", "N(Temp)"],
-            Y="delta sigma"):
-
-    data = data_parser.parse(datapath)
-    data.set_x_features(X)
-    data.set_y_feature(Y)
+def execute(model, data, savepath):
 
     Ydata = np.asarray(data.get_y_data()).ravel()
     Ydata_norm = (Ydata - np.mean(Ydata)) / np.std(Ydata)
 
     IVARindices = np.linspace(0, 1463, 1464).astype(int)
     IVARplusindices = np.linspace(1464, 1506, 43).astype(int)
-
-    model = model
 
     # Train the model using the training sets
     model.fit(data.get_x_data(), Ydata_norm)
@@ -57,5 +48,5 @@ def execute(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kerne
     plt.title('Error vs Actual')
     plt.savefig(savepath.format("error_vs_actual"), dpi=200, bbox_inches='tight')'''
 
-    plt.show()
+    plt.clf()
     plt.close()

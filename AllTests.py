@@ -1,5 +1,7 @@
 import configuration_parser
 import importlib
+import data_parser
+import matplotlib
 
 config = configuration_parser.parse()
 
@@ -19,7 +21,11 @@ for case_name in all_tests:
 
     model = importlib.import_module(model).get()
     x_data = x_data.split(',')
+    data = data_parser.parse(data_path)
+    data.set_x_features(x_data)
+    data.set_y_feature(y_data)
 
     print("running test {}".format(case_name))
     case = importlib.import_module(case_name)
-    case.execute(model, data_path, save_path, Y=y_data)
+    case.execute(model, data, save_path)
+    matplotlib.pyplot.close("all")

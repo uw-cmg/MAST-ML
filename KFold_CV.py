@@ -1,5 +1,4 @@
 import matplotlib
-matplotlib.use('Agg')
 import numpy as np
 import data_parser
 import matplotlib.pyplot as plt
@@ -7,14 +6,9 @@ from sklearn import cross_validation
 from sklearn.metrics import mean_squared_error
 
 
-def execute(model, datapath, savepath, num_folds=5, num_runs=200,
-       X=["N(Cu)", "N(Ni)", "N(Mn)", "N(P)", "N(Si)", "N( C )", "N(log(fluence)", "N(log(flux)", "N(Temp)"],
-       Y="delta sigma"):
+def execute(model, data, savepath, num_runs=200, num_folds=5):
 
     # get data
-    data = data_parser.parse(datapath)
-    data.set_x_features(X)
-    data.set_y_feature(Y)
     Ydata = np.array(data.get_y_data()).ravel()
     Xdata = np.array(data.get_x_data())
 
@@ -34,7 +28,6 @@ def execute(model, datapath, savepath, num_folds=5, num_runs=200,
             X_train, X_test = Xdata[train_index], Xdata[test_index]
             Y_train, Y_test = Ydata[train_index], Ydata[test_index]
             # train on training sets
-            model = model
             model.fit(X_train, Y_train)
             Y_test_Pred = model.predict(X_test)
             rms = np.sqrt(mean_squared_error(Y_test, Y_test_Pred))
@@ -79,8 +72,9 @@ def execute(model, datapath, savepath, num_folds=5, num_runs=200,
 
     f.tight_layout()
     f.savefig(savepath.format("cv_best_worst"), dpi=200, bbox_inches='tight')
-    plt.show()
+    plt.clf()
     plt.close()
+
 
 
 ########################################################################

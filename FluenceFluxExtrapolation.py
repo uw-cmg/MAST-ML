@@ -1,5 +1,4 @@
 import matplotlib
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 import data_parser
@@ -7,14 +6,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn.kernel_ridge import KernelRidge
 
 
-def execute(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel='rbf', kernel_params=None),
-            datapath="../../DBTT_Data.csv", savepath='../../{}.png',
-            X=["N(Cu)", "N(Ni)", "N(Mn)", "N(P)", "N(Si)", "N( C )", "N(log(fluence)", "N(log(flux)", "N(Temp)"],
-            Y="delta sigma"):
-
-    data = data_parser.parse(datapath)
-    data.set_x_features(X)
-    data.set_y_feature(Y)
+def execute(model, data, savepath):
 
     fluence_divisions = [3.3E18, 3.3E19, 3.3E20]
     flux_divisions = [5e11,2e11,1e11]
@@ -45,7 +37,6 @@ def execute(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kerne
     fig.tight_layout()
     plt.subplots_adjust(bottom = .2)
     fig.savefig(savepath.format("fluence_extrapolation"), dpi=150, bbox_inches='tight')
-    plt.show()
     plt.close()
 
     fig, ax = plt.subplots(1, 3, figsize=(30, 10))
@@ -74,5 +65,4 @@ def execute(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kerne
     fig.tight_layout()
     plt.subplots_adjust(bottom=.2)
     fig.savefig(savepath.format("flux_extrapolation"), dpi=150, bbox_inches='tight')
-    plt.show()
     plt.close()
