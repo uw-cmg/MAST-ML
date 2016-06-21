@@ -86,6 +86,7 @@ class Data:
         if self.__filtered_data == self.__data: filtered_data = []
         else: filtered_data = self.__filtered_data
         for line in self.__data:
+            if line in filtered_data: continue
             if line[index] > threshold and '>' in operator:
                 filtered_data.append(line)
             elif line[index] == threshold and '=' in operator:
