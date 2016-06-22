@@ -2,8 +2,12 @@ import configuration_parser
 import importlib
 import data_parser
 import matplotlib
+import sys
 
-config = configuration_parser.parse()
+if len(sys.argv) > 1:
+    config = configuration_parser.parse(sys.argv[1])
+else:
+    config = configuration_parser.parse('default.conf')
 
 parameter_names = ['model', 'data_path', 'save_path', 'Y', 'X']
 
