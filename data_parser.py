@@ -183,7 +183,8 @@ class Data:
                 print("can't find [{}] in features".format(feature))
                 return None
         output = []
-        index_list = [i for i in range(len(self.__features)) if self.__features[i] in features]
+        index_list = [self.__features.index(feature) for feature in features]
+
         for line in self.__filtered_data:
             output.append([line[i] for i in index_list])
         return output
