@@ -1,36 +1,35 @@
-import KFold_CV
-import LeaveOutAlloyCV
-import FullFit
-import FluenceFluxExtrapolation
-import DescriptorImportance
-import ErrorBias
+import configuration_parser
+import importlib
+import data_parser
+import matplotlib
+import sys
 
-# things to change before running the codes
+if len(sys.argv) > 1:
+    config = configuration_parser.parse(sys.argv[1])
+else:
+    config = configuration_parser.parse('default.conf')
 
-# model to use
-from sklearn.kernel_ridge import KernelRidge
-from sklearn.ensemble import RandomForestRegressor
-model = KernelRidge(alpha= .00139, coef0=1, degree=3, gamma=.518, kernel='rbf', kernel_params=None)
+parameter_names = ['model', 'data_path', 'save_path', 'Y', 'X']
 
-# file paths
-datapath = "../../DBTT_Data.csv"  # path to your data
-savepath = "../../graphs/{}.png"  # where you want output graphs to be saved
 
-print("K-Fold CV:")
-KFold_CV.cv(model, datapath, savepath)  # also has parameters num_folds (default is 5) and num_runs (default is 200)
+all_tests = config.get('AllTests', 'test_cases').split(',')
 
-print("\nLeave out alloy CV:")
-LeaveOutAlloyCV.LOACV(model, datapath, savepath)
+for case_name in all_tests:
+    parameter_values = []
+    for parameter in parameter_names:
+        if config.has_option(case_name, parameter):
+            parameter_values.append(config.get(case_name, parameter))
+        else:
+            parameter_values.append(config.get('AllTests', parameter))
+    model, data_path, save_path, y_data, x_data = parameter_values
 
-print("\nFull Fit:")
-FullFit.fullfit(model, datapath, savepath)
+    model = importlib.import_module(model).get()
+    x_data = x_data.split(',')
+    data = data_parser.parse(data_path)
+    data.set_x_features(x_data)
+    data.set_y_feature(y_data)
 
-print("\nFluence and Flux Extrapolation:")
-FluenceFluxExtrapolation.FlFxExt(model, datapath, savepath)
-
-print("\nError Bias:")
-ErrorBias.ErrBias(model, datapath, savepath)
-
-print("\nDescriptor Importance:")
-DescriptorImportance.DesImp(model, datapath, savepath)
-
+    print("running test {}".format(case_name))
+    case = importlib.import_module(case_name)
+    case.execute(model, data, save_path)
+    matplotlib.pyplot.close("all")

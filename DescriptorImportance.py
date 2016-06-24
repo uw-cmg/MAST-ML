@@ -1,3 +1,4 @@
+import matplotlib
 import matplotlib.pyplot as plt
 import data_parser
 import numpy as np
@@ -6,12 +7,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn import cross_validation
 
 
-def DesImp(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel='rbf', kernel_params=None),
-           datapath="../../DBTT_Data.csv", savepath='../../{}.png'):
-    data = data_parser.parse(datapath)
-    data.set_x_features(
-        ["N(Cu)", "N(Ni)", "N(Mn)", "N(P)", "N(Si)", "N( C )", "N(log(fluence)", "N(log(flux)", "N(Temp)"])
-    data.set_y_feature("delta sigma")
+def execute(model, data, savepath):
 
     overall_rms_list = []
     sd_list = []
@@ -22,7 +18,7 @@ def DesImp(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel
     model = model
 
     Xdata = data.get_x_data()
-    Ydata = data.get_y_data().ravel()
+    Ydata = np.array(data.get_y_data()).ravel()
 
     print("Testing descriptor importance using {}x {} - Fold CV".format(numIter, numFolds))
     print("")
@@ -32,7 +28,7 @@ def DesImp(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel
         newX = np.delete(Xdata, x, 1)
         for n in range(numIter):
             kf = cross_validation.KFold(len(Xdata), n_folds=numFolds, shuffle=True)
-            K_fold_rms_list = [];
+            K_fold_rms_list = []
             # split into testing and training sets
             for train_index, test_index in kf:
                 X_train, X_test = newX[train_index], newX[test_index]
@@ -62,6 +58,7 @@ def DesImp(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel
         overall_rms_list.append(avgRMS)
         sd_list.append(sd)
 
+    matplotlib.rcParams.update({'font.size': 15})
     fig, ax = plt.subplots()
     rects = ax.bar(np.arange(9), overall_rms_list, color='r', yerr=sd_list)
     ax.set_xlabel('Descriptor Removed')
@@ -77,5 +74,5 @@ def DesImp(model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel
                 ha='center', va='bottom')
 
     fig.savefig(savepath.format(plt.gca().get_title()), dpi=200, bbox_inches='tight')
-    plt.show()
+    plt.clf()
     plt.close()

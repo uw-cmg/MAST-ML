@@ -5,20 +5,13 @@ from sklearn.kernel_ridge import KernelRidge
 from sklearn.metrics import mean_squared_error
 
 
-def fullfit (model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kernel='rbf', kernel_params=None),
-            datapath="../../DBTT_Data.csv", savepath='../../{}.png'):
-    data = data_parser.parse(datapath)
-    data.set_x_features(
-        ["N(Cu)", "N(Ni)", "N(Mn)", "N(P)", "N(Si)", "N( C )", "N(log(fluence)", "N(log(flux)", "N(Temp)"])
-    data.set_y_feature("delta sigma")
+def execute(model, data, savepath):
 
     Ydata = np.asarray(data.get_y_data()).ravel()
     Ydata_norm = (Ydata - np.mean(Ydata)) / np.std(Ydata)
 
     IVARindices = np.linspace(0, 1463, 1464).astype(int)
     IVARplusindices = np.linspace(1464, 1506, 43).astype(int)
-
-    model = model
 
     # Train the model using the training sets
     model.fit(data.get_x_data(), Ydata_norm)
@@ -33,6 +26,7 @@ def fullfit (model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kern
     print('RMS: %.5f, IVAR RMS: %.5f, IVAR+ RMS: %.5f' % (rms, IVAR_rms, IVARplus_rms))
 
     # graph outputs
+    plt.figure(1)
     plt.scatter(Ydata[IVARindices], Ypredict[IVARindices], s=10, color='black', label='IVAR')
     plt.legend(loc=4)
     plt.scatter(Ydata[IVARplusindices], Ypredict[IVARplusindices], s=10, color='red', label='IVAR+')
@@ -45,5 +39,14 @@ def fullfit (model=KernelRidge(alpha=.00139, coef0=1, degree=3, gamma=.518, kern
     plt.figtext(.15, .77, 'IVAR RMS: %.4f' % (IVAR_rms), fontsize=14)
     plt.figtext(.15, .71, 'IVAR+ RMS: %.4f' % (IVARplus_rms), fontsize=14)
     plt.savefig(savepath.format(plt.gca().get_title()), dpi=200, bbox_inches='tight')
-    plt.show()
+
+    '''
+    plt.figure(2)
+    plt.scatter(Ydata, Ypredict-Ydata, s=10, color='black')
+    plt.xlabel('Measured (MPa)')
+    plt.ylabel('Predicted - Measured (MPa)')
+    plt.title('Error vs Actual')
+    plt.savefig(savepath.format("error_vs_actual"), dpi=200, bbox_inches='tight')'''
+
+    plt.clf()
     plt.close()
