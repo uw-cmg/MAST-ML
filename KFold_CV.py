@@ -60,6 +60,7 @@ def execute(model, data, savepath, num_runs=200, num_folds=5):
     ax[0].plot(ax[0].get_ylim(), ax[0].get_ylim(), ls="--", c=".3")
     ax[0].set_title('Best Fit')
     ax[0].text(.1, .88, 'Min RMSE: {:.3f}'.format(minRMS), transform=ax[0].transAxes)
+    ax[0].text(.1, .88, 'Mean RMSE: {:.3f}'.format(avgRMS), transform=ax[0].transAxes)
     ax[0].set_xlabel('Measured (Mpa)')
     ax[0].set_ylabel('Predicted (Mpa)')
 
