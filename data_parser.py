@@ -58,6 +58,7 @@ class Data:
         self.x_features = features[:-1]
         self.y_feature = features[-1]
         self.__max_min = []
+        self.__calculate_data_range()
         return
 
     def set_x_features(self, feature_list):
@@ -145,19 +146,19 @@ class Data:
                 cur_min = self.__max_min[1][index]
                 for line in self.__data:
                     line[index] = (line[index]-cur_min)/(cur_max-cur_min)
-                for line in self.__filtered_data:
-                    line[index] = (line[index]-cur_min)/(cur_max-cur_min)
+                #for line in self.__filtered_data:
+                #    line[index] = (line[index]-cur_min)/(cur_max-cur_min)
         elif normalization_type == 't':
-            all_max = max([self.__max_min[0][x] for x in range(len(self.__features)) if self.__features(x) in features])
-            all_min = min([self.__max_min[1][x] for x in range(len(self.__features)) if self.__features(x) in features])
+            all_max = max([self.__max_min[0][x] for x in range(len(self.__features)) if self.__features[x] in features])
+            all_min = min([self.__max_min[1][x] for x in range(len(self.__features)) if self.__features[x] in features])
             for feature in features:
                 index = self.__features.index(feature)
                 self.__max_min[0][index] = all_max
                 self.__max_min[1][index] = all_min
                 for line in self.__data:
                     line[index] = (line[index]-all_min)/(all_max-all_min)
-                for line in self.__filtered_data:
-                    line[index] = (line[index]-all_min)/(all_max-all_min)
+                #for line in self.__filtered_data:
+                #    line[index] = (line[index]-all_min)/(all_max-all_min)
         else:
             print("unknown normalization_type '{}'; "
                   "expect 's' for separate or 't' for together".format(normalization_type))
@@ -196,6 +197,7 @@ class Data:
         return self.get_data(features=self.y_feature)
 
     def __calculate_data_range(self):
+        self.__max_min = []
         maxes = list(self.__data[0])
         mins = list(self.__data[0])
         for line in self.__data:
