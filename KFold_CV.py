@@ -59,15 +59,16 @@ def execute(model, data, savepath, num_runs=200, num_folds=5):
     ax[0].scatter(Ydata, Y_predicted_best, c='black', s=10)
     ax[0].plot(ax[0].get_ylim(), ax[0].get_ylim(), ls="--", c=".3")
     ax[0].set_title('Best Fit')
-    ax[0].text(.1, .88, 'Min RMSE: {:.3f}'.format(minRMS), transform=ax[0].transAxes)
-    ax[0].text(.1, .88, 'Mean RMSE: {:.3f}'.format(avgRMS), transform=ax[0].transAxes)
+    ax[0].text(.05, .88, 'Min RMSE: {:.3f}'.format(minRMS), transform=ax[0].transAxes)
+    ax[0].text(.05, .83, 'Mean RMSE: {:.3f}'.format(avgRMS), transform=ax[0].transAxes)
+    ax[0].text(.05, .78, 'Std. Dev.: {:.3f}'.format(sd), transform=ax[0].transAxes)
     ax[0].set_xlabel('Measured (Mpa)')
     ax[0].set_ylabel('Predicted (Mpa)')
 
     ax[1].scatter(Ydata, Y_predicted_worst, c='black', s=10)
     ax[1].plot(ax[1].get_ylim(), ax[1].get_ylim(), ls="--", c=".3")
     ax[1].set_title('Worst Fit')
-    ax[1].text(.1, .88, 'Max RMSE: {:.3f}'.format(maxRMS), transform=ax[1].transAxes)
+    ax[1].text(.05, .88, 'Max RMSE: {:.3f}'.format(maxRMS), transform=ax[1].transAxes)
     ax[1].set_xlabel('Measured (Mpa)')
     ax[1].set_ylabel('Predicted (Mpa)')
 
@@ -75,29 +76,3 @@ def execute(model, data, savepath, num_runs=200, num_folds=5):
     f.savefig(savepath.format("cv_best_worst"), dpi=200, bbox_inches='tight')
     plt.clf()
     plt.close()
-
-
-
-########################################################################
-# things need to be changed before you run the codes
-datapath = "../../DBTT_Data.csv"
-savepath = "../../{}.png"
-
-# from sklearn import tree
-# model = tree.DecisionTreeRegressor(max_depth=14, min_samples_split=3, min_samples_leaf=1)
-from sklearn.ensemble import RandomForestRegressor
-
-model = RandomForestRegressor(n_estimators=100,
-                              max_features='auto',
-                              max_depth=13,
-                              min_samples_split=3,
-                              min_samples_leaf=1,
-                              min_weight_fraction_leaf=0,
-                              max_leaf_nodes=None,
-                              n_jobs=1)
-# from sklearn.kernel_ridge import KernelRidge
-# model = KernelRidge(alpha= 0.00139, gamma=0.518, kernel='rbf')
-fold = 5
-run = 200
-#########################################################################
-# cv(model,datapath,savepath,fold,run)
