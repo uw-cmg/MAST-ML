@@ -106,15 +106,22 @@ class Data:
             return False
         index = self.__features.index(feature)
         filtered_data = list(self.__filtered_data)
-        for line in self.__data:
+        remove_list = []
+        for line in filtered_data:
             if line[index] > threshold and '>' in operator:
-                filtered_data.remove(line)
+                remove_list.append(line)
+                #filtered_data.remove(line)
             elif line[index] == threshold and '=' in operator:
-                filtered_data.remove(line)
+                remove_list.append(line)
+                #filtered_data.remove(line)
             elif line[index] < threshold and '<' in operator:
-                filtered_data.remove(line)
+                remove_list.append(line)
+                #filtered_data.remove(line)
             elif str(threshold) in str(line[index]) and 'contains' in operator:
-                filtered_data.remove(line)
+                remove_list.append(line)
+                #filtered_data.remove(line)
+        for line in remove_list:
+            filtered_data.remove(line)
         self.__filtered_data = filtered_data
         return True
 
