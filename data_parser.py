@@ -37,6 +37,7 @@ def to_digit(x):
     """
     if not isinstance(x, str):
         return x
+    if x == '': return None
     try:
         y = int(x)
         return y
@@ -88,7 +89,9 @@ class Data:
         else: filtered_data = self.__filtered_data
         for line in self.__data:
             if line in filtered_data: continue
-            if line[index] > threshold and '>' in operator:
+            if not line[index]:
+                continue
+            elif line[index] > threshold and '>' in operator:
                 filtered_data.append(line)
             elif line[index] == threshold and '=' in operator:
                 filtered_data.append(line)
@@ -108,6 +111,8 @@ class Data:
         filtered_data = list(self.__filtered_data)
         remove_list = []
         for line in filtered_data:
+            if not line[index]:
+                continue
             if line[index] > threshold and '>' in operator:
                 remove_list.append(line)
                 #filtered_data.remove(line)
@@ -152,6 +157,8 @@ class Data:
                 cur_max = self.__max_min[0][index]
                 cur_min = self.__max_min[1][index]
                 for line in self.__data:
+                    if not line[index]:
+                        continue
                     line[index] = (line[index]-cur_min)/(cur_max-cur_min)
                 #for line in self.__filtered_data:
                 #    line[index] = (line[index]-cur_min)/(cur_max-cur_min)
@@ -163,6 +170,8 @@ class Data:
                 self.__max_min[0][index] = all_max
                 self.__max_min[1][index] = all_min
                 for line in self.__data:
+                    if not line[index]:
+                        continue
                     line[index] = (line[index]-all_min)/(all_max-all_min)
                 #for line in self.__filtered_data:
                 #    line[index] = (line[index]-all_min)/(all_max-all_min)
@@ -209,11 +218,15 @@ class Data:
         mins = list(self.__data[0])
         for line in self.__data:
             for i in range(len(line)):
+                if not maxes[i]:
+                    maxes[i] = line[i]
+                if not mins[i]:
+                    mins[i] = line[i]
                 if isinstance(line[i], str):
                     continue
-                if line[i] > maxes[i]:
+                if line[i] and maxes[i] and line[i] > maxes[i]:
                     maxes[i] = line[i]
-                elif line[i] < mins[i]:
+                elif line[i] and maxes[i] and line[i] < mins[i]:
                     mins[i] = line[i]
         for i in range(len(self.__features)):
             if isinstance(maxes[i], str):
