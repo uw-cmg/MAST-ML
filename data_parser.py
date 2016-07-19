@@ -74,7 +74,7 @@ class Data:
 
     def set_y_feature(self, feature):
         if feature not in self.__features:
-            print("can't find [] in features".format(feature))
+            print("can't find [{}] in features".format(feature))
             return False
         self.y_feature = feature
         return True
@@ -89,7 +89,7 @@ class Data:
         else: filtered_data = self.__filtered_data
         for line in self.__data:
             if line in filtered_data: continue
-            if not line[index]:
+            if line[index] is None:
                 continue
             elif line[index] > threshold and '>' in operator:
                 filtered_data.append(line)
@@ -111,7 +111,7 @@ class Data:
         filtered_data = list(self.__filtered_data)
         remove_list = []
         for line in filtered_data:
-            if not line[index]:
+            if line[index] is None:
                 continue
             if line[index] > threshold and '>' in operator:
                 remove_list.append(line)
@@ -139,6 +139,36 @@ class Data:
         self.__data = self.__filtered_data
         self.__filtered_data = self.__filtered_data
 
+    def std_normalization(self, features = None):
+        if features is None:
+            features = [self.y_feature]
+        elif isinstance(features, str):
+            features = [features]
+        for feature in features:
+            if feature not in self.__features:
+                print("can't find [{}] in features".format(feature))
+                return False
+        for feature in features:
+            x = self.get_data(feature)
+            x = [i[0] for i in x]
+            result = []
+            for i in x:
+                if i is not None:
+                    result.append(i)
+            avg = sum(result)/len(result)
+            sqr_err = 0
+            for i in result:
+                sqr_err += (i-avg)**2
+            sqr_err /= len(result)
+            std_err = sqr_err**0.5
+            result = []
+            for i in x:
+                if i is None:
+                    result.append(None)
+                else:
+                    result.append((i-avg)/std_err)
+            self.add_feature('std_N_{}'.format(feature), result)
+
     def normalization(self, features=None, normalization_type='s'):
         if features is None:
             features = self.x_features
@@ -153,26 +183,38 @@ class Data:
                 return False
         if normalization_type == 's':
             for feature in features:
+                result = []
                 index = self.__features.index(feature)
                 cur_max = self.__max_min[0][index]
                 cur_min = self.__max_min[1][index]
+                if cur_max is None:
+                    print ('feature[{}] max is none'.format(feature))
+                elif cur_min is None:
+                    print ('feature[{}] min is none'.format(feature))
                 for line in self.__data:
-                    if not line[index]:
-                        continue
-                    line[index] = (line[index]-cur_min)/(cur_max-cur_min)
+                    if line[index] is None:
+                        result.append(None)
+                    else:
+                        result.append((line[index]-cur_min)/(cur_max-cur_min))
+                self.add_feature('N_{}'.format(feature), result)
+                    #line[index] = (line[index]-cur_min)/(cur_max-cur_min)
                 #for line in self.__filtered_data:
                 #    line[index] = (line[index]-cur_min)/(cur_max-cur_min)
         elif normalization_type == 't':
             all_max = max([self.__max_min[0][x] for x in range(len(self.__features)) if self.__features[x] in features])
             all_min = min([self.__max_min[1][x] for x in range(len(self.__features)) if self.__features[x] in features])
             for feature in features:
+                result = []
                 index = self.__features.index(feature)
                 self.__max_min[0][index] = all_max
                 self.__max_min[1][index] = all_min
                 for line in self.__data:
-                    if not line[index]:
-                        continue
-                    line[index] = (line[index]-all_min)/(all_max-all_min)
+                    if line[index] is None:
+                        result.append(None)
+                    else:
+                        result.append((line[index]-all_min)/(all_max-all_min))
+                self.add_feature('N_{}'.format(feature), result)
+                    #line[index] = (line[index]-all_min)/(all_max-all_min)
                 #for line in self.__filtered_data:
                 #    line[index] = (line[index]-all_min)/(all_max-all_min)
         else:
@@ -218,15 +260,15 @@ class Data:
         mins = list(self.__data[0])
         for line in self.__data:
             for i in range(len(line)):
-                if not maxes[i]:
+                if maxes[i] is None:
                     maxes[i] = line[i]
-                if not mins[i]:
+                if mins[i] is None:
                     mins[i] = line[i]
                 if isinstance(line[i], str):
                     continue
-                if line[i] and maxes[i] and line[i] > maxes[i]:
+                if line[i] is not None and maxes[i] is not None and line[i] > maxes[i]:
                     maxes[i] = line[i]
-                elif line[i] and maxes[i] and line[i] < mins[i]:
+                elif line[i] is not None and maxes[i] is not None and line[i] < mins[i]:
                     mins[i] = line[i]
         for i in range(len(self.__features)):
             if isinstance(maxes[i], str):
@@ -234,3 +276,50 @@ class Data:
                 mins[i] = None
         self.__max_min.append(maxes)
         self.__max_min.append(mins)
+
+    def output(self, filename, features=None, data='a'):
+        if features is None:
+            features = self.__features
+        else:
+            if isinstance(features, str):
+                features = [features]
+            for feature in features:
+                if feature not in self.__features:
+                    print("can't find [{}] in features, no file is created".format(feature))
+                    return False
+        if data == 'a':
+            data = self.__data
+        elif data == 'f':
+            data = self.__filtered_data
+        else:
+            print("can't recognize data [{}], please pass in 'a' for all data, or 'f' for filtered data".format(data))
+            return False
+        f = open(filename, 'w')
+        index_list = [self.__features.index(feature) for feature in features]
+        for i in range(len(index_list)):
+            if i != len(index_list)-1:
+                f.write('{},'.format(features[i]))
+            else:
+                f.write('{}\n'.format(features[i]))
+        for line in data:
+            for i in range(len(index_list)):
+                if i != len(index_list)-1:
+                    f.write('{},'.format(line[index_list[i]]))
+                else:
+                    f.write('{}\n'.format(line[index_list[i]]))
+        f.close()
+        return True
+
+    def add_feature(self, name, value):
+        if len(value) != len(self.__data):
+            print ('unmatch data length')
+            return False
+        self.__features.append(name)
+        for i in range(len(value)):
+            if value[i] is None:
+                self.__data[i].append('')
+                continue
+            self.__data[i].append(value[i])
+        print('feature [{}] added'.format(name))
+        return True
+
