@@ -7,46 +7,30 @@ from sklearn.metrics import mean_squared_error
 
 def execute(model, data, savepath):
 
-    Ydata = np.asarray(data.get_y_data()).ravel()
-    Ydata_norm = (Ydata - np.mean(Ydata)) / np.std(Ydata)
-
-    IVARindices = np.linspace(0, 1463, 1464).astype(int)
-    IVARplusindices = np.linspace(1464, 1505, 43).astype(int)
-
     # Train the model using the training sets
-    model.fit(data.get_x_data(), Ydata_norm)
+    model.fit(data.get_x_data(), np.asarray(data.get_y_data()).ravel())
+    overall_rms = np.sqrt(mean_squared_error(model.predict(data.get_x_data()), np.asarray(data.get_y_data()).ravel()))
+    datasets = ['IVAR', 'ATR-1', 'ATR-2']
+    colors = ['#BCBDBD', '#009AFF', '#FF0A09']
+    fig, ax = plt.subplots()
+    #calculate rms for each dataset
+    for dataset in range(max(np.asarray(data.get_data("Data Set code")).ravel()) + 1):
+        data.remove_all_filters()
+        data.add_inclusive_filter("Data Set code", '=', dataset)
+        Ypredict = model.predict(data.get_x_data())
+        Ydata = np.asarray(data.get_y_data()).ravel()
+        # calculate rms
+        rms = np.sqrt(mean_squared_error(Ypredict, Ydata))
+        # graph outputs
+        ax.scatter(Ydata, Ypredict, s=7, color=colors[dataset], label= datasets[dataset], lw = 0)
+        ax.text(.05, .83 - .05*dataset, '{} RMS: {:.3f}'.format(datasets[dataset],rms), fontsize=14, transform=ax.transAxes)
 
-    Ypredict_norm = model.predict(data.get_x_data())
-    Ypredict = Ypredict_norm * np.std(Ydata) + np.mean(Ydata)
-
-    # calculate rms
-    rms = np.sqrt(mean_squared_error(Ypredict, Ydata))
-    IVAR_rms = np.sqrt(mean_squared_error(Ypredict[IVARindices], Ydata[IVARindices]))
-    IVARplus_rms = np.sqrt(mean_squared_error(Ypredict[IVARplusindices], Ydata[IVARplusindices]))
-    print('RMS: %.5f, IVAR RMS: %.5f, IVAR+ RMS: %.5f' % (rms, IVAR_rms, IVARplus_rms))
-
-    # graph outputs
-    plt.figure(1)
-    plt.scatter(Ydata[IVARindices], Ypredict[IVARindices], s=10, color='black', label='IVAR')
-    plt.legend(loc=4)
-    plt.scatter(Ydata[IVARplusindices], Ypredict[IVARplusindices], s=10, color='red', label='IVAR+')
-    plt.legend(loc=4)
-    plt.plot(plt.gca().get_ylim(), plt.gca().get_ylim(), ls="--", c=".3")
-    plt.xlabel('Measured (MPa)')
-    plt.ylabel('Predicted (MPa)')
-    plt.title('Full Fit')
-    plt.figtext(.15, .83, 'Overall RMS: %.4f' % (rms), fontsize=14)
-    plt.figtext(.15, .77, 'IVAR RMS: %.4f' % (IVAR_rms), fontsize=14)
-    plt.figtext(.15, .71, 'IVAR+ RMS: %.4f' % (IVARplus_rms), fontsize=14)
-    plt.savefig(savepath.format(plt.gca().get_title()), dpi=200, bbox_inches='tight')
-
-    '''
-    plt.figure(2)
-    plt.scatter(Ydata, Ypredict-Ydata, s=10, color='black')
-    plt.xlabel('Measured (MPa)')
-    plt.ylabel('Predicted - Measured (MPa)')
-    plt.title('Error vs Actual')
-    plt.savefig(savepath.format("error_vs_actual"), dpi=200, bbox_inches='tight')'''
-
+    ax.legend()
+    ax.plot(ax.get_ylim(), ax.get_ylim(), ls="--", c=".3")
+    ax.set_xlabel('Measured (MPa)')
+    ax.set_ylabel('Predicted (MPa)')
+    ax.set_title('Full Fit')
+    ax.text(.05, .88, 'Overall RMS: %.4f' % (overall_rms), fontsize=14, transform=ax.transAxes)
+    fig.savefig(savepath.format(ax.get_title()), dpi=300, bbox_inches='tight')
     plt.clf()
     plt.close()
