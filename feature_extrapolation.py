@@ -58,10 +58,11 @@ def feature_extrapolation(data, model, feature, threshold, target, savepath):
     folder = calculate_threshold(data, feature, cut = 10)
     folder_x = []
     folder_y = []
-    folder_x.append(0.5*(min(distances)+folder[0]))
-    for i in range(len(folder)-1):
-        folder_x.append(0.5*(folder[i]+folder[i+1]))
-    folder_x.append(0.5*(max(distances)+folder[-1]))
+    folder_x.append(min(distances))
+    for i in folder:
+        folder_x.append(i)
+        folder_x.append(i)
+    folder_x.append(max(distances))
     folded_data = []
     for i in range(len(folder)+1):
         size = 0
@@ -71,6 +72,7 @@ def feature_extrapolation(data, model, feature, threshold, target, savepath):
                         (i < len(folder) and distances[j] < folder[i] and (i == 0 or distances[j] >= folder[i-1]))):
                 total += error[j]
                 size += 1
+        folder_y.append(total/size)
         folder_y.append(total/size)
 
     '''
@@ -97,7 +99,7 @@ def feature_extrapolation(data, model, feature, threshold, target, savepath):
     plt.plot(distances, error, '.')
     plt.plot(x, avg, label = 'average')
     plt.plot([min(linear_x),max(linear_x)],[p(min(linear_x)),p(max(linear_x))], linewidth=2.0, label = 'linear trend')
-    plt.plot(folder_x, folder_y,linewidth=2.0, label = 'folder avg')
+    plt.plot(folder_x, folder_y,linewidth=2.5, label = 'folder avg')
     plt.title('[{}] extrapolation toward lwr \nw/ thres={}'.format(feature, round(threshold,2)))
     plt.xlabel('distance')
     plt.ylabel('abs(err)')
