@@ -15,10 +15,14 @@ def get_cmap(N):
         return scalar_map.to_rgba(index)
     return map_index_to_rgb_color
     
-def execute(model, data, savepath, lwr_datapath = "CD_LWR_clean.csv"):
+def execute(model, data, savepath, lwr_datapath = "../../CD_LWR_clean.csv"):
 
     X = ["N(Cu)", "N(Ni)", "N(Mn)", "N(P)","N(Si)", "N( C )", "N(log(fluence)", "N(log(flux)", "N(Temp)"]
     Y = "CD delta sigma"
+    if Y == "CD delta sigma":
+        data.add_exclusive_filter("Alloy", '=', 29)
+        data.add_exclusive_filter("Alloy", '=', 14)
+    if Y == "EONY delta sigma": data.add_exclusive_filter("Temp (C)", '=', 310)
     trainX = np.asarray(data.get_x_data())
     trainY = np.asarray(data.get_y_data()).ravel()
 
@@ -38,6 +42,13 @@ def execute(model, data, savepath, lwr_datapath = "CD_LWR_clean.csv"):
 
         lwr_data.remove_all_filters()
         lwr_data.add_inclusive_filter("Alloy", '=', alloy)
+        if Y == "EONY delta sigma": lwr_data.add_exclusive_filter("Temp (C)", '=', 310)
+        lwr_data.add_exclusive_filter("Time(Years)", '<', 60)
+        lwr_data.add_exclusive_filter("Time(Years)", '>',100)
+        if Y == "CD delta sigma":
+                lwr_data.add_exclusive_filter("Alloy", '=', 29)
+                lwr_data.add_exclusive_filter("Alloy", '=', 14)
+        #print(len(lwr_data.get_x_data()))
         if len(lwr_data.get_x_data()) == 0: continue
 
         alloy_list.append(alloy)
@@ -45,12 +56,18 @@ def execute(model, data, savepath, lwr_datapath = "CD_LWR_clean.csv"):
         Ypredict = model.predict(testX)
         rms = np.sqrt(mean_squared_error(Ypredict, lwr_data.get_y_data()))
         rms_list.append(rms)
-        if rms > 40:
+        if rms > 400:
             ax.scatter(lwr_data.get_y_data(), Ypredict, s=5, c = cmap(alloy), label= alloy, lw = 0)
         else: ax.scatter(lwr_data.get_y_data(), Ypredict, s = 5, c = 'black', lw = 0)
 
 
     lwr_data.remove_all_filters()
+    if Y == "EONY delta sigma": lwr_data.add_exclusive_filter("Temp (C)", '=', 310)
+    lwr_data.add_exclusive_filter("Time(Years)", '<', 60)
+    lwr_data.add_exclusive_filter("Time(Years)", '>', 100)
+    if Y == "CD delta sigma":
+        lwr_data.add_exclusive_filter("Alloy", '=', 29)
+        lwr_data.add_exclusive_filter("Alloy", '=', 14)
     rms = np.sqrt(mean_squared_error(model.predict(lwr_data.get_x_data()), lwr_data.get_y_data()))
 
     ax.legend()
