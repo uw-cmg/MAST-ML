@@ -135,9 +135,8 @@ class Data:
         return True
 
     #the equivalent of parsing a CSV of filtered data
-    def set_data_to_filtered_data(self):
+    def overwrite_data_w_filtered_data(self):
         self.__data = self.__filtered_data
-        self.__filtered_data = self.__filtered_data
 
     def std_normalization(self, features = None):
         if features is None:
@@ -322,4 +321,3 @@ class Data:
             self.__data[i].append(value[i])
         print('feature [{}] added'.format(name))
         return True
-

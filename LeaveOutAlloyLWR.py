@@ -47,3 +47,4 @@ def execute(model, data, savepath,  lwr_datapath = "CD_LWR_clean"):
     fig.savefig(savepath.format(ax.get_title()), dpi=200, bbox_inches='tight')
     fig.clf()
     plt.close()
+
