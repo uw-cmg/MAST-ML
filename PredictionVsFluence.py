@@ -6,14 +6,10 @@ from sklearn.metrics import mean_squared_error
 
 
 def execute(model, data, savepath, lwr_data, *args):
-    #data.add_exclusive_filter("Temp (C)", '=', 310)
     Xdata = np.asarray(data.get_x_data())
     Ydata = np.asarray(data.get_y_data()).ravel()
 
     model.fit(Xdata, Ydata)
-
-    X = ["N(Cu)", "N(Ni)", "N(Mn)", "N(P)", "N(Si)", "N( C )", "N(log(fluence)", "N(log(flux)", "N(Temp)"]
-    Y = "CD delta sigma"
 
     Temp = 290 * np.ones((500,1))
     Flux = 3e10 * np.ones((500,1))
@@ -37,13 +33,15 @@ def execute(model, data, savepath, lwr_data, *args):
 
         ypredict = model.predict(Xdata)
 
-        lwr_data.remove_all_filters()
-        lwr_data.add_inclusive_filter("Alloy", '=', alloy)
-        lwr_data.add_exclusive_filter("Temp (C)", '<>', 290)
-
         fig, ax = plt.subplots()
-        ax.plot(np.log10(aFluence), ypredict, label = 'Model Prediction')
-        ax.scatter(np.log10(lwr_data.get_data("Fluence(n/cm^2)")), lwr_data.get_y_data(), lw = 0, label = Y)
+        ax.plot(np.log10(aFluence), ypredict, label='Model Prediction')
+
+        if data.y_feature == "CD delta sigma" or data.y_feature == "EONY delta sigma":
+            lwr_data.remove_all_filters()
+            lwr_data.add_inclusive_filter("Alloy", '=', alloy)
+            lwr_data.add_exclusive_filter("Temp (C)", '<>', 290)
+            ax.scatter(np.log10(lwr_data.get_data("Fluence(n/cm^2)")), lwr_data.get_y_data(), lw = 0, label = lwr_data.y_feature)
+
         ax.legend(loc = 0)
         ax.set_title("{}({})".format(alloy,AlloyName))
         ax.set_xlabel("log(Fluence(n/cm^2))")
