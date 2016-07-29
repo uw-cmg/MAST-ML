@@ -6,7 +6,7 @@ from sklearn import cross_validation
 from sklearn.metrics import mean_squared_error
 
 
-def execute(model, data, savepath, num_runs=200, num_folds=5):
+def execute(model, data, savepath, num_runs=200, num_folds=5, *args):
 
     # get data
     Ydata = np.array(data.get_y_data()).ravel()

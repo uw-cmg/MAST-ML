@@ -5,8 +5,7 @@ from sklearn.kernel_ridge import KernelRidge
 from sklearn.metrics import mean_squared_error
 
 
-def execute(model, data, savepath):
-
+def execute(model, data, savepath, *args):
     # Train the model using the training sets
     model.fit(data.get_x_data(), np.asarray(data.get_y_data()).ravel())
     overall_rms = np.sqrt(mean_squared_error(model.predict(data.get_x_data()), np.asarray(data.get_y_data()).ravel()))

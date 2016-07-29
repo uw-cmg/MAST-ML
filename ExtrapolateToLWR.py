@@ -12,24 +12,17 @@ def get_cmap(N):
     color_norm  = colors.Normalize(vmin=0, vmax=N-1)
     scalar_map = cmx.ScalarMappable(norm=color_norm, cmap='hsv')
     def map_index_to_rgb_color(index):
-        return scalar_map.to_rgba(index)
+        return colors.rgb2hex(scalar_map.to_rgba(index))
     return map_index_to_rgb_color
     
-def execute(model, data, savepath, lwr_datapath = "../../CD_LWR_clean.csv"):
+def execute(model, data, savepath, lwr_data, *args):
 
-    X = ["N(Cu)", "N(Ni)", "N(Mn)", "N(P)","N(Si)", "N( C )", "N(log(fluence)", "N(log(flux)", "N(Temp)"]
-    Y = "CD delta sigma"
-    if Y == "CD delta sigma":
-        data.add_exclusive_filter("Alloy", '=', 29)
-        data.add_exclusive_filter("Alloy", '=', 14)
-    if Y == "EONY delta sigma": data.add_exclusive_filter("Temp (C)", '=', 310)
+    if(data.y_feature == "delta sigma"):
+        print("Must set Y to be CD Delta Sigma or EONY Delta Sigma for Extrapolating to LWR")
+        return
+
     trainX = np.asarray(data.get_x_data())
     trainY = np.asarray(data.get_y_data()).ravel()
-
-    lwr_data = data_parser.parse(lwr_datapath)
-    lwr_data.set_x_features(X)
-    lwr_data.set_y_feature(Y)
-    
 
     # Train the model using the training sets
     model.fit(trainX, trainY)
@@ -42,13 +35,10 @@ def execute(model, data, savepath, lwr_datapath = "../../CD_LWR_clean.csv"):
 
         lwr_data.remove_all_filters()
         lwr_data.add_inclusive_filter("Alloy", '=', alloy)
-        if Y == "EONY delta sigma": lwr_data.add_exclusive_filter("Temp (C)", '=', 310)
         lwr_data.add_exclusive_filter("Time(Years)", '<', 60)
         lwr_data.add_exclusive_filter("Time(Years)", '>',100)
-        if Y == "CD delta sigma":
-                lwr_data.add_exclusive_filter("Alloy", '=', 29)
-                lwr_data.add_exclusive_filter("Alloy", '=', 14)
-        #print(len(lwr_data.get_x_data()))
+
+        print(len(lwr_data.get_x_data()))
         if len(lwr_data.get_x_data()) == 0: continue
 
         alloy_list.append(alloy)
@@ -56,23 +46,19 @@ def execute(model, data, savepath, lwr_datapath = "../../CD_LWR_clean.csv"):
         Ypredict = model.predict(testX)
         rms = np.sqrt(mean_squared_error(Ypredict, lwr_data.get_y_data()))
         rms_list.append(rms)
-        if rms > 400:
-            ax.scatter(lwr_data.get_y_data(), Ypredict, s=5, c = cmap(alloy), label= alloy, lw = 0)
+        if rms > 50:
+            ax.scatter(lwr_data.get_y_data(), Ypredict, s= 5, c = cmap(alloy), label= alloy, lw = 0)
         else: ax.scatter(lwr_data.get_y_data(), Ypredict, s = 5, c = 'black', lw = 0)
 
 
     lwr_data.remove_all_filters()
-    if Y == "EONY delta sigma": lwr_data.add_exclusive_filter("Temp (C)", '=', 310)
     lwr_data.add_exclusive_filter("Time(Years)", '<', 60)
     lwr_data.add_exclusive_filter("Time(Years)", '>', 100)
-    if Y == "CD delta sigma":
-        lwr_data.add_exclusive_filter("Alloy", '=', 29)
-        lwr_data.add_exclusive_filter("Alloy", '=', 14)
     rms = np.sqrt(mean_squared_error(model.predict(lwr_data.get_x_data()), lwr_data.get_y_data()))
 
     ax.legend()
     ax.plot(plt.gca().get_ylim(), plt.gca().get_ylim(), ls="--", c=".3")
-    ax.set_xlabel(Y)
+    ax.set_xlabel('{} (MPa)'.format(data.y_feature))
     ax.set_ylabel('Model Predicted (MPa)')
     ax.set_title('Extrapolate to LWR')
     plt.figtext(.15, .83, 'RMS: %.4f' % (rms), fontsize=14)

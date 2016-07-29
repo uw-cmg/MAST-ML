@@ -52,7 +52,7 @@ def alloy_cv(model, X, Y, AlloyList):
     return {'rms': np.mean(rms_list), 'std': np.std(rms_list)}
 
 
-def execute (model, data, savepath):
+def execute (model, data, savepath, *args):
 
     Ydata = data.get_y_data().ravel()
     Xdata = data.get_x_data()

@@ -5,14 +5,10 @@ from sklearn.kernel_ridge import KernelRidge
 from sklearn.metrics import mean_squared_error
 
 
-def execute(model, data, savepath,  lwr_datapath = "CD_LWR_clean"):
+def execute(model, data, savepath,  lwr_data, *args):
 
     rms_list = []
     alloy_list = []
-
-    lwr_data = data_parser.parse(lwr_datapath)
-    lwr_data.set_x_features(["N(Cu)", "N(Ni)", "N(Mn)", "N(P)","N(Si)", "N( C )", "N(log(fluence)", "N(log(flux)", "N(Temp)"])
-    lwr_data.set_y_feature("CD delta sigma")
 
     for alloy in range(1, 60): 
 

@@ -93,7 +93,7 @@ def feature_extrapolation(data, model, feature, threshold, target, savepath):
 
     plt.clf()
     matplotlib.rcParams.update({'font.size': 18})
-    matplotlib.rcParams.update({'weight': 'bold'})
+    matplotlib.rcParams.update({'font.weight': 'bold'})
     plt.plot([target, target], [0, max(error)], '--r',label='LWR')
     plt.plot([threshold, threshold], [0, max(error)], '--', label='threshold')
     plt.plot(distances, error, '.')
@@ -135,7 +135,7 @@ def calculate_threshold(data,feature, cut=5):
     return thresholds
 
 
-def execute(model, data, savepath, cd=False):
+def execute(model, data, savepath, cd=False, *args):
     year_to_sec = 365*24*3600
     if not cd:
         calculate_radius(data, ['log(flux)','log(fluence)'], [math.log10(3e10),math.log10(3e10*80*year_to_sec)],
@@ -167,7 +167,7 @@ def execute(model, data, savepath, cd=False):
         feature_extrapolation(data, model, 'log(time)', i, math.log10(80*year_to_sec), savepath)
 
     if not cd:
-        data.set_y_feature('CD predicted (Mpa)')
+        data.set_y_feature('CD delta sigma')
         execute(model, data, savepath.format('CD_{}'),cd=True)
 
 

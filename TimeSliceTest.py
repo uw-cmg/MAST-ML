@@ -20,7 +20,7 @@ def get_folder_index(folderName):
     return index
 
 
-def execute (model, data, savepath=""):
+def execute (model, data, savepath, *args):
 
     X = np.asarray(data.get_x_data())
     Y = np.asarray(data.get_y_data())
