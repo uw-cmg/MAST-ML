@@ -7,7 +7,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn import cross_validation
 
 
-def execute(model, data, savepath, *args):
+def execute(model, data, savepath, *args, **kwargs):
 
     overall_rms_list = []
     sd_list = []

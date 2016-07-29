@@ -5,7 +5,7 @@ from sklearn.kernel_ridge import KernelRidge
 from sklearn.metrics import mean_squared_error
 
 
-def execute(model, data, savepath, lwr_data, *args):
+def execute(model, data, savepath, lwr_data, *args, **kwargs):
     Xdata = np.asarray(data.get_x_data())
     Ydata = np.asarray(data.get_y_data()).ravel()
 

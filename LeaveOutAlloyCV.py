@@ -3,7 +3,7 @@ import numpy as np
 from sklearn.metrics import mean_squared_error
 
 
-def execute(model, data, savepath, *args):
+def execute(model, data, savepath, *args, **kwargs):
 
     rms_list = []
     alloy_list = []

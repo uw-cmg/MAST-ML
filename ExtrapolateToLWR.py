@@ -15,7 +15,7 @@ def get_cmap(N):
         return colors.rgb2hex(scalar_map.to_rgba(index))
     return map_index_to_rgb_color
     
-def execute(model, data, savepath, lwr_data, *args):
+def execute(model, data, savepath, lwr_data, *args, **kwargs):
 
     if(data.y_feature == "delta sigma"):
         print("Must set Y to be CD Delta Sigma or EONY Delta Sigma for Extrapolating to LWR")

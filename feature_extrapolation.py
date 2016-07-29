@@ -135,7 +135,7 @@ def calculate_threshold(data,feature, cut=5):
     return thresholds
 
 
-def execute(model, data, savepath, cd=False, *args):
+def execute(model, data, savepath, cd=False, *args, **kwargs):
     year_to_sec = 365*24*3600
     if not cd:
         calculate_radius(data, ['log(flux)','log(fluence)'], [math.log10(3e10),math.log10(3e10*80*year_to_sec)],

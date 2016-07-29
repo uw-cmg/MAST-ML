@@ -6,7 +6,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn.kernel_ridge import KernelRidge
 
 
-def execute(model, data, savepath, *args):
+def execute(model, data, savepath, *args, **kwargs):
 
     fluence_divisions = [3.3E18, 3.3E19, 3.3E20]
     flux_divisions = [5e11,2e11,1e11]

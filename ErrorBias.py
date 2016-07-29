@@ -6,7 +6,7 @@ from sklearn.kernel_ridge import KernelRidge
 from sklearn.metrics import mean_squared_error
 
 
-def execute(model, data, savepath, *args):
+def execute(model, data, savepath, *args, **kwargs):
 
     descriptors = ['Cu (At%)', 'Ni (At%)', 'Mn (At%)', 'P (At%)', 'Si (At%)', 'C (At%)', 'Temp (C)', 'log(fluence)',
                    'log(flux)']

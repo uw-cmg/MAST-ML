@@ -52,6 +52,6 @@ for case_name in all_tests:
 
     print("running test {}".format(case_name))
     case = importlib.import_module(case_name)
-    case.execute(model, data, save_path, lwr_data)
+    case.execute(model, data, save_path, lwr_data = lwr_data)
     matplotlib.pyplot.close("all")
 
