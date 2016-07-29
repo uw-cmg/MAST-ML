@@ -38,7 +38,6 @@ def execute(model, data, savepath, lwr_data, *args):
         lwr_data.add_exclusive_filter("Time(Years)", '<', 60)
         lwr_data.add_exclusive_filter("Time(Years)", '>',100)
 
-        print(len(lwr_data.get_x_data()))
         if len(lwr_data.get_x_data()) == 0: continue
 
         alloy_list.append(alloy)
