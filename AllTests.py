@@ -3,6 +3,7 @@ import importlib
 import data_parser
 import matplotlib
 import sys
+import numpy as np
 
 if len(sys.argv) > 1:
     config = configuration_parser.parse(sys.argv[1])
@@ -22,6 +23,9 @@ for case_name in all_tests:
             parameter_values.append(config.get('AllTests', parameter))
     model, data_path, save_path, y_data, x_data, lwr_data_path = parameter_values
 
+    if "CD" in y_data or "EONY" in y_data:
+        save_path = save_path.format(y_data.split(' ',1)[0] + '_{}')
+
     model = importlib.import_module(model).get()
     x_data = x_data.split(',')
 
@@ -36,6 +40,9 @@ for case_name in all_tests:
 
     if y_data == "CD delta sigma":
         data.add_exclusive_filter("Alloy",'=', 29)
+        data.add_exclusive_filter("Alloy",'=', 8)
+        data.add_exclusive_filter("Alloy", '=', 1)
+        data.add_exclusive_filter("Alloy", '=', 2)
         data.add_exclusive_filter("Alloy", '=', 14)
         data.overwrite_data_w_filtered_data()
 
