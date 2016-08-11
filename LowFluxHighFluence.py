@@ -28,7 +28,6 @@ def highfluence(model,data):
 
     data.remove_all_filters()
     data.add_inclusive_filter("log(fluence)", '>', 19.5)
-    data.add_exclusive_filter("log(flux)", '>', 13.5)
 
     Ypredict = model.predict(np.asarray(data.get_x_data()))
     Yactual = np.asarray(data.get_y_data()).ravel()
