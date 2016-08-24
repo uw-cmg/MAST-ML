@@ -79,7 +79,7 @@ class Data:
         self.y_feature = feature
         return True
 
-    #include features satisfying (operator,threshold) in filtered_data
+    #let filtered data include features satisfying (operator,threshold) in self.data
     def add_inclusive_filter(self, feature, operator, threshold):
         if feature not in self.__features:
             print("can't find [{}] in features".format(feature))
@@ -102,7 +102,7 @@ class Data:
         self.__filtered_data = filtered_data
         return True
 
-    #do not include features satisfying (operator,threshold) in filtered_data
+    #let filtered data not include features satisfying (operator,threshold) in self.filtered_data
     def add_exclusive_filter(self, feature, operator, threshold):
         if feature not in self.__features:
             print("can't find [{}] in features".format(feature))
