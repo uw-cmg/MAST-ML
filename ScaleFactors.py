@@ -2,9 +2,19 @@ import numpy as np
 import data_parser
 import matplotlib
 matplotlib.use('Agg')
+import csv
 import matplotlib.pyplot as plt
 from sklearn import cross_validation
 from sklearn.metrics import mean_squared_error
+
+def lwr_extrap(model, x,y, lwr_data):
+    model.fit(x, y)
+    overall_rmse = np.sqrt(mean_squared_error(model.predict(lwr_data.get_x_data()), np.asarray(lwr_data.get_y_data()).ravel()))
+    lwr_data.remove_all_filters()
+    lwr_data.add_exclusive_filter("Time(Years)", '<', 60)
+    lwr_data.add_exclusive_filter("Time(Years)", '>', 100)
+    rmse_60100 =  np.sqrt(mean_squared_error(model.predict(lwr_data.get_x_data()), np.asarray(lwr_data.get_y_data()).ravel()))
+    return (overall_rmse,rmse_60100)
 
 
 def kfold_cv(model, X, Y, num_folds=5, num_runs=200):
@@ -52,20 +62,41 @@ def alloy_cv(model, X, Y, AlloyList):
     return {'rms': np.mean(rms_list), 'std': np.std(rms_list)}
 
 
-def execute (model, data, savepath, *args, **kwargs):
+def execute (model, data, savepath, lwr_data, *args, **kwargs):
 
-    Ydata = data.get_y_data().ravel()
-    Xdata = data.get_x_data()
+    Ydata = np.asarray(data.get_y_data()).ravel()
+    Xdata = np.asarray(data.get_x_data())
     Alloys = data.get_data("Alloy")
+    scalings = []
+    Cu = np.reshape(Xdata[:,0],(len(Xdata[:,0]),1))
+    Ni = np.reshape(Xdata[:,1],(len(Xdata[:,0]),1))
+    Mn = np.reshape(Xdata[:,2],(len(Xdata[:,0]),1))
+    P = np.reshape(Xdata[:,3],(len(Xdata[:,0]),1))
+    Fl = np.reshape(Xdata[:,4],(len(Xdata[:,0]),1))
+    for i in np.arange(.2, 4.2, .2):
+        newCu = Cu*i
+        for j in np.arange(.2, 4.2, .2):
+            newNi = Ni*j
+            for k in np.arange(.2, 4.2, .2):
+                newMn = Mn*k
+                for l in np.arange(.2, 4.2, .2):
+                    newP = P*l
+                    for m in np.arange(.2, 4.2, .2):
+                        newFl = Fl*m
+                        newX = np.concatenate([newCu, newNi, newMn, newP, newFl], axis=1)
+                        rms = lwr_extrap(model,newX,Ydata,lwr_data)
+                        scalings.append([i,j,k,l,m,rms[0],rms[1]])
+    with open(savepath.replace(".png", "").format("scalings.csv"), 'w') as f:
+        writer = csv.writer(f, lineterminator='\n')
+        x = ["Cu", "Ni", "Mn", "P", "Fl", "Overall RMSE", "60-100 RMSE"]
+        writer.writerow(x)
+        for i in scalings:
+            writer.writerow(i)
 
-    for i in range(len(Xdata[0])):
-        rms_list = []
-        fig, ax = plt.subplots()
-        for j in np.arange(0, 5.5, .5):
-            newX = np.copy(Xdata)
+            '''
             newX[:, i] = newX[:, i] * j
-            kfold = kfold_cv(model, X = newX, Y = Ydata, num_folds = 5, num_runs = 200)
-            alloy = alloy_cv(model, newX, Ydata, Alloys)
+            #kfold = kfold_cv(model, X = newX, Y = Ydata, num_folds = 5, num_runs = 200)
+            #alloy = alloy_cv(model, newX, Ydata, Alloys)
             #ax.errorbar(j,kfold['rms'],yerr = kfold['std'], c = 'red', label = '5-fold CV', fmt='o')
             #ax.errorbar(j, alloy['rms'], yerr = alloy['std'], c = 'blue', label = 'Alloy CV', fmt='o')
             ax.errorbar(j, kfold['rms'] + alloy['rms'], yerr = kfold['std'] + alloy['std'], c = 'm', fmt='o')
@@ -75,16 +106,4 @@ def execute (model, data, savepath, *args, **kwargs):
         ax.set_title(X[i])
         fig.savefig(savepath.format(plt.gca().get_title()), dpi=200, bbox_inches='tight')
         fig.clf()
-        plt.close()
-
-from sklearn.kernel_ridge import KernelRidge
-model = KernelRidge(alpha = .00518, gamma = .518, kernel = 'laplacian')
-X=["N(Cu)", "N(Ni)", "N(Mn)", "N(P)","N(Si)", "N( C )", "N(log(fluence)", "N(log(flux)", "N(Temp)"]
-Y="delta sigma"
-datapath="../../DBTT_Data.csv"
-savepath='../../bardeengraphs/{}.png'
-data = data_parser.parse(datapath)
-data.set_x_features(X)
-data.set_y_feature(Y)
-
-execute(model, data, savepath)
+        plt.close()'''
