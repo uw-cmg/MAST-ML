@@ -33,6 +33,9 @@ for case_name in all_tests:
     data.set_x_features(x_data)
     data.set_y_feature(y_data)
 
+    data.add_exclusive_filter("Temp (C)", '<>', 290)
+    data.overwrite_data_w_filtered_data()
+
     lwr_data = data_parser.parse(lwr_data_path)
     if not y_data == "delta sigma":
         lwr_data.set_x_features(x_data)

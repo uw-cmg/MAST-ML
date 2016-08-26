@@ -57,7 +57,7 @@ class Data:
         self.__data = data
         self.__filtered_data = list(data)
         self.x_features = features[:-1]
-        self.y_feature = features[-1]
+        self.y_feature = None
         self.__max_min = []
         self.__calculate_data_range()
         return
@@ -77,6 +77,8 @@ class Data:
             print("can't find [{}] in features".format(feature))
             return False
         self.y_feature = feature
+        self.add_exclusive_filter(self.y_feature,'=','FLAG')
+        self.overwrite_data_w_filtered_data()
         return True
 
     #let filtered data include features satisfying (operator,threshold) in self.data
@@ -113,16 +115,16 @@ class Data:
         for line in filtered_data:
             if line[index] is None:
                 continue
-            if line[index] > threshold and '>' in operator:
+            if  '>' in operator and line[index] > threshold:
                 remove_list.append(line)
                 #filtered_data.remove(line)
-            elif line[index] == threshold and '=' in operator:
+            elif '=' in operator and line[index] == threshold:
                 remove_list.append(line)
                 #filtered_data.remove(line)
-            elif line[index] < threshold and '<' in operator:
+            elif '<' in operator and line[index] < threshold:
                 remove_list.append(line)
                 #filtered_data.remove(line)
-            elif str(threshold) in str(line[index]) and 'contains' in operator:
+            elif 'contains' in operator and str(threshold) in str(line[index]):
                 remove_list.append(line)
                 #filtered_data.remove(line)
         for line in remove_list:
@@ -232,8 +234,6 @@ class Data:
         return data*(cur_max-cur_min)+cur_min
 
     def get_data(self, features=None):
-        if features is None:
-            features = self.__features
         if isinstance(features, str):
             features = [features]
         for feature in features:
@@ -248,6 +248,7 @@ class Data:
         return output
 
     def get_x_data(self):
+        assert (self.y_feature != None), "Must set y feature first before getting x"
         return self.get_data(features=self.x_features)
 
     def get_y_data(self):
