@@ -17,10 +17,17 @@ all_tests = config.get('AllTests', 'test_cases').split(',')
 for case_name in all_tests:
     parameter_values = []
     for parameter in parameter_names:
-        if config.has_option(case_name, parameter):
-            parameter_values.append(config.get(case_name, parameter))
+        if parameter == 'weights':
+            if config.has_option(case_name, parameter):
+                parameter_values.append(config.getboolean(case_name, parameter))
+            else:
+                parameter_values.append(config.getboolean('AllTests', parameter))
         else:
-            parameter_values.append(config.get('AllTests', parameter))
+            if config.has_option(case_name, parameter):
+                parameter_values.append(config.get(case_name, parameter))
+            else:
+                parameter_values.append(config.get('AllTests', parameter))
+
     model, data_path, save_path, y_data, x_data, lwr_data_path, weights = parameter_values
 
     if "CD" in y_data or "EONY" in y_data:
