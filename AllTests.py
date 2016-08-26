@@ -10,7 +10,7 @@ if len(sys.argv) > 1:
 else:
     config = configuration_parser.parse('default.conf')
 
-parameter_names = ['model', 'data_path', 'save_path', 'Y', 'X', 'lwr_data_path']
+parameter_names = ['model', 'data_path', 'save_path', 'Y', 'X', 'lwr_data_path', 'weights']
 
 all_tests = config.get('AllTests', 'test_cases').split(',')
 
@@ -21,7 +21,7 @@ for case_name in all_tests:
             parameter_values.append(config.get(case_name, parameter))
         else:
             parameter_values.append(config.get('AllTests', parameter))
-    model, data_path, save_path, y_data, x_data, lwr_data_path = parameter_values
+    model, data_path, save_path, y_data, x_data, lwr_data_path, weights = parameter_values
 
     if "CD" in y_data or "EONY" in y_data:
         save_path = save_path.format(y_data.split(' ',1)[0] + '_{}')
@@ -29,7 +29,7 @@ for case_name in all_tests:
     model = importlib.import_module(model).get()
     x_data = x_data.split(',')
 
-    data = data_parser.parse(data_path)
+    data = data_parser.parse(data_path, weights)
     data.set_x_features(x_data)
     data.set_y_feature(y_data)
 

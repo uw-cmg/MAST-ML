@@ -1,7 +1,7 @@
 __author__ = 'haotian'
 import numpy as np
 
-def parse(filename, separator=','):
+def parse(filename, weights = False, separator=','):
     """
     parse a file into parse.Data object
     :param filename: name of the file to be parsed
@@ -12,14 +12,21 @@ def parse(filename, separator=','):
         f = open(filename, 'r')
         features = f.readline()[:-1].split(separator)
         data = f.read().splitlines()
+        weighted_data = []
         f.close()
         itr = 0
         for line in data:
             line = line.split(separator)
             for i in range(len(line)):
                 line[i] = to_digit(line[i])
-            data[itr] = line
-            itr += 1
+            if weights and 'weight' in features:
+                for i in range(line[features.index('weight')]):
+                    weighted_data.append(line)
+            else:
+                data[itr] = line
+                itr += 1
+        if weights:
+            data = weighted_data
         return Data(features, data)
     except Exception as err:
         print("an error occurred during parsing, no data object created.\n"
