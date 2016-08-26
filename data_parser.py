@@ -25,7 +25,7 @@ def parse(filename, weights = False, separator=','):
             else:
                 data[itr] = line
                 itr += 1
-        if weights:
+        if weights and 'weight' in features:
             data = weighted_data
         return Data(features, data)
     except Exception as err:
