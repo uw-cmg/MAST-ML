@@ -7,14 +7,28 @@ import matplotlib.pyplot as plt
 from sklearn import cross_validation
 from sklearn.metrics import mean_squared_error
 
-def lwr_extrap(model, x,y, lwr_data):
-    model.fit(x, y)
-    overall_rmse = np.sqrt(mean_squared_error(model.predict(lwr_data.get_x_data()), np.asarray(lwr_data.get_y_data()).ravel()))
+def lwr_extrap(model, data, lwr_data, scalings):
     lwr_data.remove_all_filters()
+
+    x,y = np.asarray(data.get_x_data()),np.asarray(data.get_y_data()).ravel()
+    lwr_x,lwr_y = np.asarray(lwr_data.get_x_data()), np.asarray(lwr_data.get_y_data()).ravel()
+
+    for i in range(len(scalings)):
+        x[:,i] = x[:,i]*scalings[i]
+        lwr_x[:,i] = lwr_x[:,i]*scalings[i]
+
+    model.fit(x,y)
+    overall_rmse = np.sqrt(mean_squared_error(model.predict(lwr_x), lwr_y))
+
     lwr_data.add_exclusive_filter("Time(Years)", '<', 60)
     lwr_data.add_exclusive_filter("Time(Years)", '>', 100)
-    rmse_60100 =  np.sqrt(mean_squared_error(model.predict(lwr_data.get_x_data()), np.asarray(lwr_data.get_y_data()).ravel()))
+    lwr_x, lwr_y = np.asarray(lwr_data.get_x_data()), np.asarray(lwr_data.get_y_data()).ravel()
+    for i in range(len(scalings)):
+        lwr_x[:, i] = lwr_x[:, i] * scalings[i]
+
+    rmse_60100 =  np.sqrt(mean_squared_error(model.predict(lwr_x), lwr_y))
     return (overall_rmse,rmse_60100)
+
 
 
 def kfold_cv(model, X, Y, num_folds=5, num_runs=200):
@@ -64,33 +78,23 @@ def alloy_cv(model, X, Y, AlloyList):
 
 def execute (model, data, savepath, lwr_data, *args, **kwargs):
 
-    Ydata = np.asarray(data.get_y_data()).ravel()
-    Xdata = np.asarray(data.get_x_data())
+
     Alloys = data.get_data("Alloy")
-    scalings = []
-    Cu = np.reshape(Xdata[:,0],(len(Xdata[:,0]),1))
-    Ni = np.reshape(Xdata[:,1],(len(Xdata[:,0]),1))
-    Mn = np.reshape(Xdata[:,2],(len(Xdata[:,0]),1))
-    P = np.reshape(Xdata[:,3],(len(Xdata[:,0]),1))
-    Fl = np.reshape(Xdata[:,4],(len(Xdata[:,0]),1))
-    for i in np.arange(.2, 4.2, .2):
-        newCu = Cu*i
-        for j in np.arange(.2, 4.2, .2):
-            newNi = Ni*j
-            for k in np.arange(.2, 4.2, .2):
-                newMn = Mn*k
-                for l in np.arange(.2, 4.2, .2):
-                    newP = P*l
-                    for m in np.arange(.2, 4.2, .2):
-                        newFl = Fl*m
-                        newX = np.concatenate([newCu, newNi, newMn, newP, newFl], axis=1)
-                        rms = lwr_extrap(model,newX,Ydata,lwr_data)
-                        scalings.append([i,j,k,l,m,rms[0],rms[1]])
+    results = []
+    for i in np.arange(.5, 4.5, .5):
+        for j in np.arange(.5, 4.5, .5):
+            for k in np.arange(.5, 4.5, .5):
+                for l in np.arange(.5, 4.5, .5):
+                    for m in np.arange(.5, 4.5, .5):
+                        scalings = [i,j,k,l,m]
+                        rms = lwr_extrap(model,data,lwr_data,scalings)
+                        results.append([i,j,k,l,m,rms[0],rms[1]])
+
     with open(savepath.replace(".png", "").format("scalings.csv"), 'w') as f:
         writer = csv.writer(f, lineterminator='\n')
         x = ["Cu", "Ni", "Mn", "P", "Fl", "Overall RMSE", "60-100 RMSE"]
         writer.writerow(x)
-        for i in scalings:
+        for i in results:
             writer.writerow(i)
 
             '''
