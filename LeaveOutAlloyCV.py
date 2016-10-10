@@ -1,12 +1,15 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import mean_squared_error
+from mean_error import mean_error
+import csv
 
 
 def execute(model, data, savepath, *args, **kwargs):
 
     rms_list = []
     alloy_list = []
+    me_list = []
 
     for alloy in range(1, max(data.get_data("Alloy"))[0] + 1):
 
@@ -22,9 +25,10 @@ def execute(model, data, savepath, *args, **kwargs):
         Ypredict = model.predict(data.get_x_data())
 
         rms = np.sqrt(mean_squared_error(Ypredict, np.array(data.get_y_data()).ravel()))
+        me = mean_error(Ypredict, np.array(data.get_y_data()).ravel())
         rms_list.append(rms)
         alloy_list.append(alloy)
-
+        me_list.append(me)
     print('Mean RMSE: ', np.mean(rms_list))
 
     # graph rmse vs alloy 
@@ -35,9 +39,17 @@ def execute(model, data, savepath, *args, **kwargs):
     ax.set_xlabel('Alloy Number')
     ax.set_ylabel('RMSE (Mpa)')
     ax.set_title('Leave out Alloy')
-    ax.text(.05, .88, 'Mean RMSE: {:.2f}'.format(np.mean(rms_list)), fontsize=14, transform=ax.transAxes)
+    ax.text(.05, .88, 'Mean RMSE: {:.2f} MPa'.format(np.mean(rms_list)), fontsize=14, transform=ax.transAxes)
+    ax.text(.05, .82, 'Mean Mean Error: {:.2f} MPa'.format(np.mean(me_list)), fontsize=14, transform=ax.transAxes)
     for x in np.argsort(rms_list)[-5:]:
         ax.annotate(s = alloy_list[x],xy = (alloy_list[x], rms_list[x]))
     fig.savefig(savepath.format(ax.get_title()), dpi=200, bbox_inches='tight')
     fig.clf()
     plt.close()
+
+    with open(savepath.replace(".png", "").format("Leave Out Alloy.csv"), 'w') as f:
+        writer = csv.writer(f, lineterminator='\n')
+        x = ["Alloy Number", "RMSE"]
+        writer.writerow(x)
+        for i in zip(alloy_list,rms_list):
+            writer.writerow(i)
