@@ -88,7 +88,7 @@ class Data:
         self.overwrite_data_w_filtered_data()
         return True
 
-    #let filtered data include features satisfying (operator,threshold) in self.data
+    #append data within self.data to self.filtered_data satisfying (operator,threshold) for a feature
     def add_inclusive_filter(self, feature, operator, threshold):
         if feature not in self.__features:
             print("can't find [{}] in features".format(feature))
@@ -111,7 +111,7 @@ class Data:
         self.__filtered_data = filtered_data
         return True
 
-    #let filtered data not include features satisfying (operator,threshold) in self.filtered_data
+    #remove data from self.filtered_data not satisfying (operator,threshold) for a feature
     def add_exclusive_filter(self, feature, operator, threshold):
         if feature not in self.__features:
             print("can't find [{}] in features".format(feature))
