@@ -1,7 +1,5 @@
 import matplotlib.pyplot as plt
-import data_parser
 import numpy as np
-from sklearn.kernel_ridge import KernelRidge
 from sklearn.metrics import mean_squared_error
 
 
@@ -43,4 +41,3 @@ def execute(model, data, savepath,  lwr_data, *args, **kwargs):
     fig.savefig(savepath.format(ax.get_title()), dpi=200, bbox_inches='tight')
     fig.clf()
     plt.close()
-

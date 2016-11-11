@@ -4,6 +4,11 @@ import numpy as np
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.metrics import mean_squared_error
 
+'''
+Plot CD predictions of ∆sigma for data and lwr_data as well as model's output
+model is trained to data, which is in the domain of IVAR, IVAR+/ATR1 (assorted fluxes and fluences)
+lwr_data is data in the domain of LWR conditions (low flux, high fluence)
+'''
 
 def execute(model, data, savepath, lwr_data, *args, **kwargs):
     Xdata = np.asarray(data.get_x_data())
@@ -66,6 +71,6 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
         ax.legend(loc = 0)
         ax.set_title("{}({})".format(alloy,AlloyName))
         ax.set_xlabel("log(Fluence(n/cm^2))")
-        ax.set_ylabel("predicted ∆sigma (MPa)")
+        ax.set_ylabel("∆sigma (MPa)")
         fig.savefig(savepath.format(ax.get_title()), dpi=200, bbox_inches='tight')
         plt.close()

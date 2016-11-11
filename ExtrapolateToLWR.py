@@ -16,7 +16,16 @@ def get_cmap(N):
     def map_index_to_rgb_color(index):
         return colors.rgb2hex(scalar_map.to_rgba(index))
     return map_index_to_rgb_color
-    
+
+'''
+Compare CD predictions of ∆sigma at LWR conditions  w/ model's prediction when fit to available experimental data.
+Special interest is paid to large X points (often high fluence) and 60-100 year points (extension goal)
+
+Plots model's predictions(CD predictions(lwr_data)).
+model is trained to data, which is in the domain of IVAR, IVAR+/ATR1 (assorted fluxes and fluences)
+lwr_data is data in the domain of LWR conditions (low flux, high fluence)
+'''
+
 def execute(model, data, savepath, lwr_data, *args, **kwargs):
 
     if(data.y_feature == "delta sigma"):
@@ -82,15 +91,15 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
     ax[0].set_xlabel('{} (MPa)'.format(data.y_feature))
     ax[0].set_ylabel('Model Predicted (MPa)')
     ax[0].set_title('Overall Extrapolation to LWR')
-    ax[0].text(.05, .88, 'RMS: %.2f MPa' % (overall_rms), fontsize=14, transform=ax[0].transAxes)
-    ax[0].text(.05, .82, 'RMS for >200MPa: %.2f MPa' % (over200_rms), fontsize=14, transform=ax[0].transAxes)
+    ax[0].text(.05, .88, 'RMSE: %.2f MPa' % (overall_rms), fontsize=14, transform=ax[0].transAxes)
+    ax[0].text(.05, .82, 'CD >200MPa RMSE: %.2f MPa' % (over200_rms), fontsize=14, transform=ax[0].transAxes)
     ax[0].text(.05, .76, 'Mean Error: %.2f MPa' % (overall_me), fontsize=14, transform=ax[0].transAxes)
     ax[1].plot(plt.gca().get_xlim(), plt.gca().get_xlim(), ls="--", c=".3")
     ax[1].set_xlabel('{} (MPa)'.format(data.y_feature))
     ax[1].set_ylabel('Model Predicted (MPa)')
     ax[1].set_title('60-100 year Extrapolation')
-    ax[1].text(.05, .88, 'RMS: %.2f MPa' % (lwr_rms), fontsize=14, transform=ax[1].transAxes)
-    ax[1].text(.05, .82, 'RMS for >200MPa: %.2f MPa' % (lwr_over200_rms), fontsize=14, transform=ax[1].transAxes)
+    ax[1].text(.05, .88, 'RMSE: %.2f MPa' % (lwr_rms), fontsize=14, transform=ax[1].transAxes)
+    ax[1].text(.05, .82, 'CD >200MPa RMSE: %.2f MPa' % (lwr_over200_rms), fontsize=14, transform=ax[1].transAxes)
     ax[1].text(.05, .76, 'Mean Error: %.2f MPa' % (lwr_me), fontsize=14, transform=ax[1].transAxes)
     fig.tight_layout()
     fig.savefig(savepath.format(plt.gca().get_title()), dpi=300, bbox_inches='tight')

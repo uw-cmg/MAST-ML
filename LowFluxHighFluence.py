@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import mean_squared_error
 
+#todo not in common use
+
 def lowflux (model,data):
     data.remove_all_filters()
     data.add_exclusive_filter("log(flux)", '<', 11)

@@ -65,6 +65,3 @@ def execute (model, data, savepath, *args, **kwargs):
 
     print('Train on Folders 1-3, Predict 4, Predict 5; rmse of folder 4 and 5 are %f and %f.' %(rmse_list[0][0], rmse_list[0][1]));
     print('Train on Folders 1-4, Predict 5; rmse of folder 5 is %f' %(rmse_list[1][0]));
-
-
-
