@@ -5,7 +5,7 @@ import data_parser
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.metrics import mean_squared_error
 
-
+#todo in need of commenting and removal of descriptor hardcoding
 def execute(model, data, savepath, *args, **kwargs):
 
     descriptors = ['Cu (At%)', 'Ni (At%)', 'Mn (At%)', 'P (At%)', 'Si (At%)', 'C (At%)', 'Temp (C)', 'log(fluence)',
