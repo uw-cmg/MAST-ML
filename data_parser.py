@@ -147,6 +147,7 @@ class Data:
     def overwrite_data_w_filtered_data(self):
         self.__data = self.__filtered_data
 
+    #todo clarify, different from 's' normalization?
     def std_normalization(self, features = None):
         if features is None:
             features = [self.y_feature]
@@ -259,7 +260,7 @@ class Data:
         return self.get_data(features=self.x_features)
 
     def get_y_data(self):
-        return self.get_data(features=self.y_feature)
+         return self.get_data(features=self.y_feature)
 
     def __calculate_data_range(self):
         self.__max_min = []
@@ -328,4 +329,5 @@ class Data:
                 continue
             self.__data[i].append(value[i])
         print('feature [{}] added'.format(name))
+        self.__calculate_data_range()
         return True

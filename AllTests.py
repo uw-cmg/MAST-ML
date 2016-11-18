@@ -67,6 +67,7 @@ for case_name in all_tests:
         lwr_data.add_exclusive_filter("Temp (C)", '=', 310)
         lwr_data.overwrite_data_w_filtered_data()
 
+    #todo did kwarg parsing go away? ie couldn't pass featureVectorShortened as a boolean in the config w/o making it a default arg
     print("running test {}".format(case_name))
     case = importlib.import_module(case_name)
     case.execute(model, data, save_path, lwr_data = lwr_data)

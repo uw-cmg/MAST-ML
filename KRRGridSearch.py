@@ -114,6 +114,7 @@ def alloy_cv(model, data):
 
     return np.mean(rms_list)
 
+#todo kwarg the choice of CV type to pass in config
 def execute(model, data, savepath,  lwr_data, *args, **kwargs):
 
 
