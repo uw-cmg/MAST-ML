@@ -12,7 +12,7 @@ import subprocess
 import time
 from pymongo import MongoClient
 from bson.objectid import ObjectId
-
+import data_transformations as dtf
 dbname="dbtt"
 
 client = MongoClient('localhost', 27017)
@@ -97,6 +97,20 @@ def export_spreadsheet(newcname="", fieldlist=list()):
     eproc.wait()
     return
 
+def add_time_field(newcname, verbose=0):
+    myfunc = getattr(dtf,"get_time_from_flux_and_fluence")
+    records = db[newcname].find()
+    for record in records:
+        fieldval = myfunc(record["flux_n_cm2_sec"],record["fluence_n_cm2"])
+        db[newcname].update(
+            {'_id':record["_id"]},
+            {"$set":{"time_sec":fieldval}}
+            )
+        if verbose > 0:
+            print("Updated record %s with time %3f sec." % (record["_id"],fieldval))
+    return
+
+
 def main_ivar(newcname=""):
     transfer_nonignore_records("ucsbivarplus",newcname)
     print("Transferred experimental IVAR records.")
@@ -117,9 +131,15 @@ def main_ivar(newcname=""):
     export_spreadsheet(newcname)
     return
 
+def main_addfields(newcname=""):
+    add_time_field(newcname)
+    return
+
 if __name__=="__main__":
     if len(sys.argv) > 1:
         newcname = sys.argv[1]
     else:
         newcname = "test_1"
-    main_ivar(newcname)
+    #main_ivar(newcname)
+    main_addfields(newcname)
+    #export_spreadsheet(newcname)
