@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 ##############
-# get lists of id's to later filter out of collection
-# corresponds for example to DBTT_Data7.csv to DBTT_Data8.csv differences
+# Flag some data IDs to be ignored.
+# Update some experimental temperatures.
+# Changes correspond for example to DBTT_Data7.csv to DBTT_Data8.csv differences
 # TTM 2017-01-24
 ##############
 
