@@ -104,7 +104,7 @@ def get_duplicate_conditions(cname, verbose=0):
         condlist.append(result['_id'])
     return condlist
 
-def get_duplicate_ids_to_remove(cname, verbose=1):
+def get_duplicate_ids_to_remove(cname, dupcheck="delta_sigma_y_MPa", verbose=1):
     """Get duplicate IDs to remove.
         True duplicates, remove the second copy.
         Where delta_sigma_y differs, remove the duplicate where
@@ -125,7 +125,9 @@ def get_duplicate_ids_to_remove(cname, verbose=1):
             print("Duplicate records for condition:")
             print(rlist[0])
             print(rlist[1])
-        if rlist[0]['delta_sigma_y_MPa'] == rlist[1]['delta_sigma_y_MPa']:
+        rval0 = rlist[0][dupcheck]
+        rval1 = rlist[1][dupcheck]
+        if rval0 == rval1:
             if verbose > 1:
                 print("True duplicates.")
             id_list.append(rlist[1]['_id'])
@@ -133,7 +135,7 @@ def get_duplicate_ids_to_remove(cname, verbose=1):
         else:
             if verbose > 1:
                 print ("Not true duplicates.")
-            if rlist[0]['delta_sigma_y_MPa'] < rlist[1]['delta_sigma_y_MPa']:
+            if rval0 < rval1:
                 id_list.append(rlist[0]['_id'])
             else:
                 id_list.append(rlist[1]['_id'])
@@ -144,10 +146,25 @@ def get_duplicate_ids_to_remove(cname, verbose=1):
     return [id_list, reason_list]
 
 def main_exptivar(cname="ucsbivarplus",verbose=1):
-    get_alloy_removal_ids(cname)
-    get_duplicate_ids_to_remove(cname)
+    [id_list, reason_list] = get_alloy_removal_ids(cname)
+    print(len(id_list))
+    [id_list, reason_list] = get_duplicate_ids_to_remove(cname)
+    print(len(id_list))
     update_experimental_temperatures(cname)
     return
 
+def main_cdivar(cname="cdivar2017",verbose=1):
+    [id_list, reason_list] = get_alloy_removal_ids(cname)
+    print(len(id_list))
+    [id_list, reason_list] = get_duplicate_ids_to_remove(cname,"CD_delta_sigma_y_MPa") 
+    print(len(id_list))
+    #   #the same number of duplicate ids should be removed as in the
+    #   #experimental case; where CD was run, both the true duplicates and
+    #   #the duplicates with differing delta_sigma_y would register as
+    #   #true duplicates, and one ID from each pair will be removed.
+    return
+
 if __name__=="__main__":
-    main_exptivar(verbose=1)
+    main_exptivar()
+    main_cdivar("cdivar2017")
+    main_cdivar("cdivar2016")
