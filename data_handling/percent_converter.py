@@ -114,7 +114,7 @@ def main(compraw="", inputtype="", verbose=2):
         for symbol in outdict.keys():
             tot_new_perc = tot_new_perc + outdict[symbol]["perc_out"]
         print("Total: %3.3f" % tot_new_perc)
-    return
+    return outdict
 
 if __name__ == "__main__":
     #python percent_converter.py "Ni 80, Cr 20" weight
