@@ -205,15 +205,112 @@ def add_log10_of_a_field(newcname, origfield, verbose=0):
             print("Updated record %s with %s %3.3f." % (record["_id"],newfield,fieldval))
     return
 
+def add_product_type_columns(newcname, verbose=0):
+    records = db[newcname].find()
+    for record in records:
+        pid = record['product_id'].strip().upper()
+        plate=0
+        weld=0
+        SRM=0
+        forging=0
+        if pid == "P":
+            plate=1
+        elif pid == "W":
+            weld=1
+        elif pid == "SRM":
+            SRM=1
+        elif pid == "F":
+            forging=1
+        else:
+            raise ValueError("Category for product id %s not found." % pid)
+        db[newcname].update(
+            {'_id':record["_id"]},
+            {"$set":
+                {"isPlate":plate,
+                "isWeld":weld,
+                "isForging":forging,
+                "isSRM":SRM}
+            }
+            )
+        if verbose > 0:
+            print("Updated record %s with %s %3.3f." % (record["_id"],newfield,fieldval))
+
+    return
+
+def add_stddev_normalization_of_a_field(newcname, origfield, verbose=0):
+    """Add the normalization of a field based on the mean and standard dev.
+        Normalization is given as X_new = (X-X_mean)/(Xstd dev)
+    """
+    newfield="N(%s)" % origfield
+    stddevagg = db[newcname].aggregate([
+        {"$group":{"_id":None,"fieldstddev":{"$stdDevPop":"$%s" % origfield}}}
+    ])
+    for record in stddevagg:
+        stddev = record['fieldstddev']
+        print(record)
+    avgagg = db[newcname].aggregate([
+        {"$group":{"_id":None,"fieldavg":{"$avg":"$%s" % origfield}}}
+    ])
+    for record in avgagg:
+        mean = record['fieldavg']
+        print(record)
+    print("Mean: %3.3f" % mean)
+    print("StdDev: %3.3f" % stddev)
+    records = db[newcname].find()
+    for record in records:
+        fieldval = ( record[origfield] - mean ) / (stddev)
+        db[newcname].update(
+            {'_id':record["_id"]},
+            {"$set":{newfield:fieldval}}
+            )
+        if verbose > 0:
+            print("Updated record %s with %s %3.3f." % (record["_id"],newfield,fieldval))
+    return
+
+def add_minmax_normalization_of_a_field(newcname, origfield, setmin=0.0, setmax=0.0, verbose=0):
+    """Add the normalization of a field based on the min and max values
+        Normalization is given as X_new = (X - X_min)/(X_max - X_min)
+        For elemental compositions, max atomic percent is taken as 1.717 At%
+            for Mn.
+    """
+    raise ValueError("need to write this function")
+    newfield="N(%s)" % origfield
+    stddevagg = db[newcname].aggregate([
+        {"$group":{"_id":None,"fieldstddev":{"$stdDevPop":"$%s" % origfield}}}
+    ])
+    for record in stddevagg:
+        stddev = record['fieldstddev']
+        print(record)
+    avgagg = db[newcname].aggregate([
+        {"$group":{"_id":None,"fieldavg":{"$avg":"$%s" % origfield}}}
+    ])
+    for record in avgagg:
+        mean = record['fieldavg']
+        print(record)
+    print("Mean: %3.3f" % mean)
+    print("StdDev: %3.3f" % stddev)
+    records = db[newcname].find()
+    for record in records:
+        fieldval = ( record[origfield] - mean ) / (stddev)
+        db[newcname].update(
+            {'_id':record["_id"]},
+            {"$set":{newfield:fieldval}}
+            )
+        if verbose > 0:
+            print("Updated record %s with %s %3.3f." % (record["_id"],newfield,fieldval))
+    return
 
 def main_addfields(newcname=""):
-    add_time_field(newcname)
-    add_atomic_percent_field(newcname)
-    add_effective_fluence_field(newcname)
-    add_log10_of_a_field(newcname,"time_sec")
-    add_log10_of_a_field(newcname,"fluence_n_cm2")
-    add_log10_of_a_field(newcname,"flux_n_cm2_sec")
-    add_log10_of_a_field(newcname,"effective_fluence_n_cm2")
+    #add_time_field(newcname)
+    #add_atomic_percent_field(newcname)
+    #add_effective_fluence_field(newcname)
+    #add_log10_of_a_field(newcname,"time_sec")
+    #add_log10_of_a_field(newcname,"fluence_n_cm2")
+    #add_log10_of_a_field(newcname,"flux_n_cm2_sec")
+    #add_log10_of_a_field(newcname,"effective_fluence_n_cm2")
+    #add_product_type_columns(newcname)
+    add_minmax_normalization_of_a_field(newcname, "log(time_sec)")
+
     return
 
 if __name__=="__main__":
