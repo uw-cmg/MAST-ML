@@ -68,7 +68,7 @@ def list_all_fields(cname, verbose=0):
         List all fields in a collection. Make more sophisticated later.
     """
     fieldlist=list()
-    records = db.cname.find()
+    records = db[cname].find()
     for record in records:
         for key in record.keys():
             if not key in fieldlist:
@@ -78,20 +78,22 @@ def list_all_fields(cname, verbose=0):
             print(field)
     return fieldlist
 
-def export_spreadsheet(newcname=""):
-    allfields=list_all_fields(newcname)
+def export_spreadsheet(newcname="", fieldlist=list()):
+    if len(fieldlist) == 0:
+        fieldlist=list_all_fields(newcname)
     fieldstr=""
-    for field in allfields:
+    for field in fieldlist:
         fieldstr = fieldstr + field + ","
     estr = "mongoexport"
     estr += " --db=%s" % dbname
     estr += " --collection=%s" % newcname
-    estr += " --file=%s_%s.csv" % (newcname, time.strftime("%Y%m%d_%H%M%S"))
+    estr += " --out=%s_%s.csv" % (newcname, time.strftime("%Y%m%d_%H%M%S"))
     estr += " --type=csv"
-    estr += '--fields="%s"' % fieldstr
+    estr += ' --fields="%s"' % fieldstr
     eproc = subprocess.Popen(estr, shell=True,
                             stdout=subprocess.PIPE, 
                             stderr=subprocess.PIPE)
+    print(eproc.communicate())
     eproc.wait()
     return
 
