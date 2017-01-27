@@ -37,3 +37,7 @@ def get_effective_fluence(flux, fluence, ref_flux, pvalue):
     """
     effective_fluence = fluence * np.power((ref_flux/flux),pvalue)
     return effective_fluence
+
+def get_log10(value):
+    log10 = np.log10(value)
+    return log10

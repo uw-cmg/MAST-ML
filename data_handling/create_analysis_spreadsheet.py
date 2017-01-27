@@ -167,7 +167,7 @@ def add_atomic_percent_field(newcname, verbose=0):
             print("Updated record %s with %s." % (record["_id"],outdict))
     return
 
-def add_effective_fluence_field(newcname, verbose=1):
+def add_effective_fluence_field(newcname, verbose=0):
     """
         Calculated by fluence*(ref_flux/flux)^p where ref_flux = 3e10 n/cm^2/s and p=0.26
         Should maybe be ref_flux of 3e11 n/cm^2/sec (Odette 2005)
@@ -189,11 +189,31 @@ def add_effective_fluence_field(newcname, verbose=1):
             print("Updated record %s with effective fluence %3.2e n/cm2." % (record["_id"],fieldval))
     return
 
+def add_log10_of_a_field(newcname, origfield, verbose=0):
+    """Add the base-10 logarithm of a field as a new field
+    """
+    newfield="log(%s)" % origfield
+    myfunc = getattr(dtf,"get_log10")
+    records = db[newcname].find()
+    for record in records:
+        fieldval = myfunc(record[origfield])
+        db[newcname].update(
+            {'_id':record["_id"]},
+            {"$set":{newfield:fieldval}}
+            )
+        if verbose > 0:
+            print("Updated record %s with %s %3.3f." % (record["_id"],newfield,fieldval))
+    return
+
 
 def main_addfields(newcname=""):
     add_time_field(newcname)
     add_atomic_percent_field(newcname)
     add_effective_fluence_field(newcname)
+    add_log10_of_a_field(newcname,"time_sec")
+    add_log10_of_a_field(newcname,"fluence_n_cm2")
+    add_log10_of_a_field(newcname,"flux_n_cm2_sec")
+    add_log10_of_a_field(newcname,"effective_fluence_n_cm2")
     return
 
 if __name__=="__main__":
