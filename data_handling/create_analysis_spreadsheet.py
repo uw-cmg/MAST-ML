@@ -13,6 +13,8 @@ import time
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 import data_transformations as dtf
+import percent_converter
+
 dbname="dbtt"
 
 client = MongoClient('localhost', 27017)
@@ -97,18 +99,6 @@ def export_spreadsheet(newcname="", fieldlist=list()):
     eproc.wait()
     return
 
-def add_time_field(newcname, verbose=0):
-    myfunc = getattr(dtf,"get_time_from_flux_and_fluence")
-    records = db[newcname].find()
-    for record in records:
-        fieldval = myfunc(record["flux_n_cm2_sec"],record["fluence_n_cm2"])
-        db[newcname].update(
-            {'_id':record["_id"]},
-            {"$set":{"time_sec":fieldval}}
-            )
-        if verbose > 0:
-            print("Updated record %s with time %3f sec." % (record["_id"],fieldval))
-    return
 
 
 def main_ivar(newcname=""):
@@ -128,11 +118,82 @@ def main_ivar(newcname=""):
         transferlist= ["temperature_C","CD_delta_sigma_y_MPa"],
         transferas = ["CD_temperature_C","CD_delta_sigma_y_MPa"])
     print("Updated with CD IVAR temperature mismatches.")
-    export_spreadsheet(newcname)
     return
+
+def add_time_field(newcname, verbose=0):
+    myfunc = getattr(dtf,"get_time_from_flux_and_fluence")
+    records = db[newcname].find()
+    for record in records:
+        fieldval = myfunc(record["flux_n_cm2_sec"],record["fluence_n_cm2"])
+        db[newcname].update(
+            {'_id':record["_id"]},
+            {"$set":{"time_sec":fieldval}}
+            )
+        if verbose > 0:
+            print("Updated record %s with time %3f sec." % (record["_id"],fieldval))
+    return
+
+def add_atomic_percent_field(newcname, verbose=0):
+    """Ignores percentages from Mo and Cr.
+        Assumes balance is Fe.
+    """
+    elemlist=["Cu","Ni","Mn","P","Si","C"]
+    records = db[newcname].find()
+    for record in records:
+        compdict=dict()
+        for elem in elemlist:
+            try:
+                wt = float(record['wt_percent_%s' % elem])
+            except (ValueError,TypeError):
+                wt = 0.0
+            compdict[elem] = wt
+        compstr=""
+        for elem in elemlist:
+            compstr += "%s %s," % (elem, compdict[elem])
+        compstr = compstr[:-1] #remove last comma
+        outdict = percent_converter.main(compstr,"weight",0)
+        db[newcname].update(
+            {'_id':record["_id"]},
+            {"$set":
+                {"at_percent_Cu":outdict["Cu"]['perc_out'],
+                "at_percent_Ni":outdict["Ni"]['perc_out'],
+                "at_percent_Mn":outdict["Mn"]['perc_out'],
+                "at_percent_P":outdict["P"]['perc_out'],
+                "at_percent_Si":outdict["Si"]['perc_out'],
+                "at_percent_C":outdict["C"]['perc_out']}
+                }
+            )
+        if verbose > 0:
+            print("Updated record %s with %s." % (record["_id"],outdict))
+    return
+
+def add_effective_fluence_field(newcname, verbose=1):
+    """
+        Calculated by fluence*(ref_flux/flux)^p where ref_flux = 3e10 n/cm^2/s and p=0.26
+        Should maybe be ref_flux of 3e11 n/cm^2/sec (Odette 2005)
+    """
+    ref_flux=3.0e10 #n/cm^2/sec; maybe should be 3.0e11 n/cm2/sec
+    pvalue = 0.26
+    myfunc = getattr(dtf,"get_effective_fluence")
+    records = db[newcname].find()
+    for record in records:
+        fieldval = myfunc(flux=record["flux_n_cm2_sec"],
+                            fluence=record["fluence_n_cm2"],
+                            ref_flux=ref_flux,
+                            pvalue=pvalue)
+        db[newcname].update(
+            {'_id':record["_id"]},
+            {"$set":{"effective_fluence_n_cm2":fieldval}}
+            )
+        if verbose > 0:
+            print("Updated record %s with effective fluence %3.2e n/cm2." % (record["_id"],fieldval))
+    return
+
 
 def main_addfields(newcname=""):
     add_time_field(newcname)
+    add_atomic_percent_field(newcname)
+    add_effective_fluence_field(newcname)
     return
 
 if __name__=="__main__":
