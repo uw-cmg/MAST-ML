@@ -10,23 +10,32 @@ import os
 import sys
 
 from pymongo import MongoClient
+from bson.objectid import ObjectId
 
 dbname="dbtt"
-cname="ucsbivarplus" #later will be the collated collection
 
 client = MongoClient('localhost', 27017)
 db = client[dbname]
 
-def get_LO_ids(verbose=1):
+def get_alloy_removal_ids(cname, verbose=1):
+    """Removal of certain alloys from database
+    """
+    alloylist=list()
+    alloylist.append(41)
     id_list = list()
-    results = db[cname].find({'Alloy':"LO"},{"_id":1,"Alloy":1})
-    for result in results:
-        id_list.append(result['_id'])
-        if verbose > 0:
-            print("%s,%s" % (result['_id'],result["Alloy"]))
-    return id_list
+    reason_list=list()
+    for alloynum in alloylist:
+        aname = look_up_name_or_number(alloynum, "number")
+        results = db[cname].find({'Alloy':aname},{"_id":1,"Alloy":1})
+        for result in results:
+            id_list.append(result['_id'])
+            reason_list.append("Not considering alloy %s" % aname)
+    if verbose > 0:
+        for iidx in range(0, len(id_list)):
+            print("%s: %s" % (id_list[iidx], reason_list[iidx]))
+    return [id_list, reason_list]
 
-def update_experimental_temperatures(verbose=1):
+def update_experimental_temperatures(cname, verbose=1):
     """Update temperatures for a handful of experimental points
         whose reported temperature in the original data sheet 
         for ucsb ivar plus were incorrect.
@@ -34,13 +43,24 @@ def update_experimental_temperatures(verbose=1):
             flux of 2.30e14 n/cm2/sec should all be at 
             Temperature = 320 degrees C instead of 290 degrees C.
             Their CD temperature, however, remains at 290. 
-    """
+    """ 
+    id_list=list()
+    flux=2.30e14 #n/cm2/sec
+    fluence=1.10e21 #n/cm2
+    num_list=[6,34,35,36,37,38]
+    for num in num_list:
+        aname = look_up_name_or_number(num, "number")
+        results = db[cname].find({"Alloy":aname,
+                        "flux_n_cm2_sec":flux,
+                        "fluence_n_cm2":fluence})
+        for result in results:
+            id_list.append(result["_id"])
+    #need to do actual temperature modification
+    for rid in id_list:
+        print("%s: needs temperature update" % rid)
+    return id_list
 
-
-
-    return
-
-def look_up_name_or_number(istr="",itype="name", verbose=1):
+def look_up_name_or_number(istr="",itype="name", verbose=0):
     """Look up alloy name or number.
         Args:
             istr <str or int>: input value
@@ -68,13 +88,12 @@ def look_up_name_or_number(istr="",itype="name", verbose=1):
         return olist[0]
     return olist
 
-def get_duplicate_conditions(verbose=1):
+def get_duplicate_conditions(cname, verbose=0):
     ddict=dict()
     id_list = list()
     pipeline=[
         {"$group": {"_id": {"Alloy":"$Alloy","flux_n_cm2_sec":"$flux_n_cm2_sec","fluence_n_cm2":"$fluence_n_cm2","temperature_C":"$temperature_C"},
                 "count":{"$sum":1}}},
-        #{"$group": {"_id": "Alloy":"$Alloy","$flux_n_cm2_sec","$fluence_n_cm2","count": {"$sum": 1}}},
         { "$match": {"count": {"$gt" : 1}}}
         ]
     results = db[cname].aggregate(pipeline)
@@ -85,43 +104,50 @@ def get_duplicate_conditions(verbose=1):
         condlist.append(result['_id'])
     return condlist
 
-def get_duplicate_ids_to_remove(verbose=1):
+def get_duplicate_ids_to_remove(cname, verbose=1):
     """Get duplicate IDs to remove.
         True duplicates, remove the second copy.
         Where delta_sigma_y differs, remove the duplicate where
             conditions are least like the rest of the set.
+            For eight such pairs, this happens to mean removing the
+            smaller delta_sigma_y.
     """
-    condlist = get_duplicate_conditions(verbose)
+    condlist = get_duplicate_conditions(cname)
     id_list=list()
+    reason_list=list()
     for condition in condlist:
-        if (verbose > 0):
+        if (verbose > 1):
             print(condition)
-        records = db[cname].find(condition) #should be two of each
-        comp_list=list()
-        d_sig_list=list()
-        for record in records:
-            if (verbose > 1):
-                print(record)
-            comp_list.append(record["_id"])
-            d_sig_list.append(record["delta_sigma_y_MPa"])
-        if len(comp_list) > 2:
-            raise ValueError("more than one duplicate for condition %s" % condition)
-        if d_sig_list[0] == d_sig_list[1]:
-            if verbose > 0:
+        rlist = list(db[cname].find(condition)) #should be two of each
+        if not (len(rlist) == 2):
+            raise ValueError("not exactly two duplicates for condition %s" % condition)
+        if verbose > 1:
+            print("Duplicate records for condition:")
+            print(rlist[0])
+            print(rlist[1])
+        if rlist[0]['delta_sigma_y_MPa'] == rlist[1]['delta_sigma_y_MPa']:
+            if verbose > 1:
                 print("True duplicates.")
-            id_list.append(comp_list[1]) #flag only the second duplicate
+            id_list.append(rlist[1]['_id'])
+            reason_list.append("Duplicate alloy, conditions, and delta_sigma_y.")
         else:
-            if verbose > 0:
-                print("Unknown. Check %s" % comp_list)
+            if verbose > 1:
+                print ("Not true duplicates.")
+            if rlist[0]['delta_sigma_y_MPa'] < rlist[1]['delta_sigma_y_MPa']:
+                id_list.append(rlist[0]['_id'])
+            else:
+                id_list.append(rlist[1]['_id'])
+            reason_list.append("Duplicate alloy and conditions; remove lower delta_sigma_y.")
     if verbose > 0:
-        for id_item in id_list:
-            print(id_item)
-    return id_list
+        for iidx in range(0, len(id_list)):
+            print("%s: %s" % (id_list[iidx], reason_list[iidx]))
+    return [id_list, reason_list]
+
+def main_exptivar(cname="ucsbivarplus",verbose=1):
+    get_alloy_removal_ids(cname)
+    get_duplicate_ids_to_remove(cname)
+    update_experimental_temperatures(cname)
+    return
 
 if __name__=="__main__":
-    get_LO_ids(verbose=1)
-    get_duplicate_ids_to_remove()
-    result = look_up_name_or_number(58,"number")
-    print("Result: %s" % result)
-    result = look_up_name_or_number("62W","name")
-    print("Result: %s" % result)
+    main_exptivar(verbose=1)
