@@ -170,9 +170,10 @@ def add_atomic_percent_field(newcname, verbose=0):
 def add_effective_fluence_field(newcname, verbose=0):
     """
         Calculated by fluence*(ref_flux/flux)^p where ref_flux = 3e10 n/cm^2/s and p=0.26
-        Should maybe be ref_flux of 3e11 n/cm^2/sec (Odette 2005)
+        IVAR has ref_flux of 3e11 n/cm^2/sec (Odette 2005)
+        However, LWR conditions have lower flux, so use 3e10 n/cm^2/sec.
     """
-    ref_flux=3.0e10 #n/cm^2/sec; maybe should be 3.0e11 n/cm2/sec
+    ref_flux=3.0e10 #n/cm^2/sec
     pvalue = 0.26
     myfunc = getattr(dtf,"get_effective_fluence")
     records = db[newcname].find()
