@@ -41,3 +41,26 @@ def get_effective_fluence(flux, fluence, ref_flux, pvalue):
 def get_log10(value):
     log10 = np.log10(value)
     return log10
+
+def get_eony_model_tts(flux, time):
+    """From Eason et al., J Nucl. Mater. 433 (2013) 240-254
+        http://dx.doi.org/10.1016/j.jnucmat.2012.09.012
+        Args:
+            flux <float>: flux in n/cm^2/sec
+            time <float>: time in seconds
+    """
+    #TTS = MF term + CRP term
+    
+    #First get effective fluence
+    ref_flux = 4.39e10 #n/cm^2/sec
+    pval = 0.259
+    fluence = flux * time
+    if flux >= ref_flux: 
+        eff_fluence = fluence #n/cm^2
+    else:
+        eff_fluence = get_effective_fluence(flux, fluence, ref_flux, pval)
+
+    #Then get MF term
+
+    #Then get CRF term
+
