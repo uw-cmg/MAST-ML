@@ -94,8 +94,8 @@ def get_eony_model_tts(flux, time, temp, product_id, wt_dict, ce_manuf=0):
     else:
         wt_P = wt_dict["P"]
     
-    MF_pc2 = (1 - (0.001718 * temp_irrad))
-    MF_pc3 = (1 + 6.13 * wt_P * np.power(wt_Mn, 2.47))
+    MF_pc2 = (1.0 - (0.001718 * temp_irrad))
+    MF_pc3 = (1.0 + 6.13 * wt_P * np.power(wt_Mn, 2.47))
     MF_pc4 = np.sqrt(eff_fluence)
     MF_term = coeffA * MF_pc2 * MF_pc3 * MF_pc4
 
@@ -125,8 +125,34 @@ def get_eony_model_tts(flux, time, temp, product_id, wt_dict, ce_manuf=0):
         wt_Ni = 0.0
     else:
         wt_Ni = wt_dict["Ni"]
+    
+    max_Cu_eff = 0.301
+    if product_id == "W": #how to tell if it is a Linde 80 weld?
+        if wt_Ni > 0.50:
+            max_Cu_eff = 0.243
 
     eff_wt_Cu = 0.0
+    if wt_Cu <= 0.072:
+        eff_wt_Cu = 0.0
+    else:
+        eff_wt_Cu = min(wt_Cu, max_Cu_eff)
+
+    f_fn = 0.0
+    if wt_Cu <= 0.0:
+        f_fn = 0.0
+    else:
+        if wt_P <= 0.008:
+            f_fn = np.power( eff_wt_Cu - 0.072 , 0.668)
+        else:
+            f_fn = np.power( eff_wt_Cu-0.072+(1.359*(wt_P-0.008)) , 0.668)
+    
+    tanh_numerator = np.log10(eff_fluence)+ 1.139*eff_wt_Cu -0.448*wt_Ni -18.120
+    g_fn = 0.5 + 0.5 * np.tanh(tanh_numerator / 0.629)
+
+    CRP_term = coeffB*(1.0 + 3.77*np.power(wt_Ni, 1.191) * f_fn * g_fn
+
+    TTS = MF_term + CRP_term
+    return TTS
 
 
 
