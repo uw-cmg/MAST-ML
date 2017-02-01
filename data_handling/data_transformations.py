@@ -46,7 +46,16 @@ def celsius_to_fahrenheit(temp_C):
     temp_F = 1.8 * (temp_C) + 32.0
     return temp_F
 
-def get_eony_model_tts(flux, time, temp, product_id, wt_dict, ce_manuf=0):
+def fahrenheit_to_celsius(temp_F):
+    temp_C = (temp_F - 32.0) / 1.8
+    return temp_C
+
+def delta_fahrenheit_to_celsius(delta_temp_F):
+    delta_temp_C = delta_temp_F / 1.8
+    return delta_temp_C
+
+def get_eony_model_tts(flux, time, temp, product_id, wt_dict, ce_manuf=0, 
+                        verbose=0):
     """From Eason et al., J Nucl. Mater. 433 (2013) 240-254
         http://dx.doi.org/10.1016/j.jnucmat.2012.09.012
         Args:
@@ -59,6 +68,7 @@ def get_eony_model_tts(flux, time, temp, product_id, wt_dict, ce_manuf=0):
                             elements.
             ce_manuf <int>: 1 = CE-manufactured vessel
                             0 = non-CE-manufactured vessel (default)
+            verbose <int>: 1 - verbose, 0 - silent
     """
     #TTS = MF term + CRP term
     
@@ -136,25 +146,65 @@ def get_eony_model_tts(flux, time, temp, product_id, wt_dict, ce_manuf=0):
         eff_wt_Cu = 0.0
     else:
         eff_wt_Cu = min(wt_Cu, max_Cu_eff)
+    if (verbose > 0):
+        print("Eff_wt_Cu: %3.3f" % eff_wt_Cu)
 
     f_fn = 0.0
-    if wt_Cu <= 0.0:
+    f_base=0.0
+    if wt_Cu <= 0.072: 
         f_fn = 0.0
     else:
         if wt_P <= 0.008:
-            f_fn = np.power( eff_wt_Cu - 0.072 , 0.668)
+            f_base = eff_wt_Cu - 0.072
         else:
-            f_fn = np.power( eff_wt_Cu-0.072+(1.359*(wt_P-0.008)) , 0.668)
+            f_base = eff_wt_Cu - 0.072 + (1.359*(wt_P-0.008)) 
+        f_fn = np.power( f_base , 0.668)
     
     tanh_numerator = np.log10(eff_fluence)+ 1.139*eff_wt_Cu -0.448*wt_Ni -18.120
     g_fn = 0.5 + 0.5 * np.tanh(tanh_numerator / 0.629)
 
-    CRP_term = coeffB*(1.0 + 3.77*np.power(wt_Ni, 1.191) * f_fn * g_fn
-
-    TTS = MF_term + CRP_term
+    CRP_term = coeffB*(1.0 + 3.77*np.power(wt_Ni, 1.191)) * f_fn * g_fn
+    TTS = MF_term + CRP_term #a difference of degrees Fahrenheit at 30 ft-lbs.
+    if (verbose > 0):
+        print("MF_term: %3.3f" % MF_term)
+        print("CRP_term: %3.3f" % CRP_term)
+        print("f_base: %3.3f" % f_base)
+        print("f_fn: %3.3f" % f_fn)
+        print("g_fn: %3.3f" % g_fn)
+        print("TTS: %3.3f" % TTS)
     return TTS
 
+def tts_to_delta_sigma_y(tts, degree_type="F", product_id=""):
+    """Transform transition temperature shift to change in yield stress.
+        Primarily from Eqn. 6-3 and Eqn. 6-4 in 
+        Eason et al., A Physically Based Correlation of Irradiation-Induced 
+            Transition Temperature Shifts for RPV Steels,
+            ORNL TM-2006/530
+        Args:
+            tts <float>: transition temperature shift
+            degree_type <str>: F = Fahrenheit
+                               C = Celsius
+            product_id <str>: P = plate, W = weld, F = forging, SRM=SRM
+    """
+    cw_coeffs = [0.55, 1.2E-3,   -1.33E-6,  0.00]
+    cp_coeffs = [0.45, 1.945E-3, -5.496E-6, 8.473E-9]
+    if product_id == "P":
+        coeffs = list(cp_coeffs)
+    else:
+        coeffs = list(cw_coeffs) #not sure about forgings
+    
+    if degree_type.upper() == "F":
+        tts_C = delta_fahrenheit_to_celsius(tts)
+    else:
+        tts_C = tts
+    
+    C_c = 0.0
+    for cidx in range(0, len(coeffs)):
+        C_c = C_c + coeffs[cidx] * np.power(tts_C, float(cidx))
+    
+    delta_sigma_y = tts_C / C_c #in MPa
 
+    return delta_sigma_y
 
 
 

@@ -301,6 +301,31 @@ def add_minmax_normalization_of_a_field(newcname, origfield, setmin=0.0, setmax=
             print("Updated record %s with %s %3.3f." % (record["_id"],newfield,fieldval))
     return
 
+def add_eony_field(newcname, verbose=0):
+    """Add the EONY 2013 model
+    """
+    records = db[newcname].find()
+    for record in records:
+        flux = record["flux_n_cm2_sec"]
+        time = record["time_sec"]
+        temp = record["temperature_C"]
+        product_id = record["product_id"]
+        wt_dict=dict()
+        for element in ["Mn","Ni","Cu","P","Si","C"]:
+            wt_dict[element] = record["wt_percent_%s" % element]
+        ce_manuf= 0 #how to determine?
+        eony_tts = dtf.get_eony_model_tts(flux, time, temp, product_id,
+                                            wt_dict, ce_manuf, verbose=0)
+        eony_delta_sigma_y = dtf.tts_to_delta_sigma_y(eony_tts, "F", product_id)
+        db[newcname].update(
+            {'_id':record["_id"]},
+            {"$set":{"EONY_delta_sigma_y":eony_delta_sigma_y}}
+            )
+        if verbose > 0:
+            print("Alloy %s flux %s fluence %s" % (record["Alloy"],flux,record["fluence_n_cm2"]))
+            print("Updated record %s with %s %3.3f." % (record["_id"],"EONY_delta_sigma_y", eony_delta_sigma_y))
+    return
+
 def main_addfields(newcname=""):
     #add_time_field(newcname)
     #add_atomic_percent_field(newcname)
@@ -310,8 +335,8 @@ def main_addfields(newcname=""):
     #add_log10_of_a_field(newcname,"flux_n_cm2_sec")
     #add_log10_of_a_field(newcname,"effective_fluence_n_cm2")
     #add_product_type_columns(newcname)
-    add_minmax_normalization_of_a_field(newcname, "log(time_sec)")
-
+    #add_minmax_normalization_of_a_field(newcname, "log(time_sec)")
+    add_eony_field(newcname, 1)
     return
 
 if __name__=="__main__":
