@@ -159,6 +159,22 @@ def get_duplicate_ids_to_remove(cname, dupcheck="delta_sigma_y_MPa", verbose=1):
             print("%s: %s" % (id_list[iidx], reason_list[iidx]))
     return [id_list, reason_list]
 
+def get_short_time_removal_ids(cname, verbose=1):
+    """Removal of short time runs (e.g. for CD LWR)
+    """
+    id_list = list()
+    reason_list=list()
+    records = db[cname].find()
+    minimum_sec = 30e6
+    for record in records:
+        if record['time_sec'] < minimum_sec:
+            id_list.append(record['_id'])
+            reason_list.append("Not considering times under %3.3e seconds" % minimum_sec)
+    if verbose > 0:
+        for iidx in range(0, len(id_list)):
+            print("%s: %s" % (id_list[iidx], reason_list[iidx]))
+    return [id_list, reason_list]
+
 def flag_for_ignore(cname, id_list, reason_list, verbose=1):
     for fidx in range(0, len(id_list)):
         flagid = id_list[fidx]
@@ -198,7 +214,17 @@ def main_cdivar(cname="cdivar2017",verbose=1):
     #   #true duplicates, and one ID from each pair will be removed.
     return
 
+def main_cdlwr(cname="cdlwr2017",verbose=1):
+    [id_list, reason_list] = get_short_time_removal_ids(cname)
+    flag_for_ignore(cname, id_list, reason_list)
+    print(len(id_list))
+    [id_list, reason_list] = get_alloy_removal_ids(cname)
+    flag_for_ignore(cname, id_list, reason_list)
+    print(len(id_list))
+    return
+
 if __name__=="__main__":
-    main_exptivar()
-    main_cdivar("cdivar2017")
-    main_cdivar("cdivar2016")
+    #main_exptivar()
+    #main_cdivar("cdivar2017")
+    #main_cdivar("cdivar2016")
+    main_cdlwr("cdlwr2017")
