@@ -80,16 +80,21 @@ def list_all_fields(cname, verbose=0):
             print(field)
     return fieldlist
 
-def export_spreadsheet(newcname="", fieldlist=list()):
+def export_spreadsheet(newcname="", prepath="", fieldlist=list()):
     if len(fieldlist) == 0:
         fieldlist=list_all_fields(newcname)
     fieldstr=""
     for field in fieldlist:
         fieldstr = fieldstr + field + ","
+    
+    outputpath = "%s_%s.csv" % (newcname, time.strftime("%Y%m%d_%H%M%S"))
+    if not (prepath == ""):
+        outputpath = os.path.join(prepath, outputpath)
+
     estr = "mongoexport"
     estr += " --db=%s" % dbname
     estr += " --collection=%s" % newcname
-    estr += " --out=%s_%s.csv" % (newcname, time.strftime("%Y%m%d_%H%M%S"))
+    estr += " --out=%s" % outputpath
     estr += " --type=csv"
     estr += ' --fields="%s"' % fieldstr
     eproc = subprocess.Popen(estr, shell=True,
@@ -377,6 +382,7 @@ def main_addfields(newcname=""):
     add_generic_effective_fluence_field(newcname, 3e10, 0.2)
     add_generic_effective_fluence_field(newcname, 3e10, 0.3)
     add_generic_effective_fluence_field(newcname, 3e10, 0.4)
+    add_stddev_normalization_of_a_field(newcname, "delta_sigma_y_MPa")
     return
 
 if __name__=="__main__":
@@ -386,4 +392,4 @@ if __name__=="__main__":
         newcname = "test_1"
     main_ivar(newcname)
     main_addfields(newcname)
-    export_spreadsheet(newcname)
+    export_spreadsheet(newcname, "../../data/DBTT_mongo")
