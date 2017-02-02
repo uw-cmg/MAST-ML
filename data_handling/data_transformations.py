@@ -73,7 +73,7 @@ def get_eony_model_tts(flux, time, temp, product_id, wt_dict, ce_manuf=0,
     #TTS = MF term + CRP term
     
     #First get effective fluence
-    ref_flux = 4.39e10 #n/cm^2/sec
+    ref_flux = 4.39E10 #n/cm^2/sec
     pval = 0.259
     fluence = flux * time
     if flux >= ref_flux: 
@@ -166,6 +166,8 @@ def get_eony_model_tts(flux, time, temp, product_id, wt_dict, ce_manuf=0,
     CRP_term = coeffB*(1.0 + 3.77*np.power(wt_Ni, 1.191)) * f_fn * g_fn
     TTS = MF_term + CRP_term #a difference of degrees Fahrenheit at 30 ft-lbs.
     if (verbose > 0):
+        print("mf 2, 3, 4: %3.3f, %3.3f, %3.3f" % (MF_pc2, MF_pc3, MF_pc4))
+        print("eff fluence: %3.3e" % eff_fluence)
         print("MF_term: %3.3f" % MF_term)
         print("CRP_term: %3.3f" % CRP_term)
         print("f_base: %3.3f" % f_base)
@@ -174,7 +176,7 @@ def get_eony_model_tts(flux, time, temp, product_id, wt_dict, ce_manuf=0,
         print("TTS: %3.3f" % TTS)
     return TTS
 
-def tts_to_delta_sigma_y(tts, degree_type="F", product_id=""):
+def tts_to_delta_sigma_y(tts, degree_type="F", product_id="", verbose=0):
     """Transform transition temperature shift to change in yield stress.
         Primarily from Eqn. 6-3 and Eqn. 6-4 in 
         Eason et al., A Physically Based Correlation of Irradiation-Induced 
@@ -185,6 +187,7 @@ def tts_to_delta_sigma_y(tts, degree_type="F", product_id=""):
             degree_type <str>: F = Fahrenheit
                                C = Celsius
             product_id <str>: P = plate, W = weld, F = forging, SRM=SRM
+            verbose <int>: 1 - verbose, 0 - silent
     """
     cw_coeffs = [0.55, 1.2E-3,   -1.33E-6,  0.00]
     cp_coeffs = [0.45, 1.945E-3, -5.496E-6, 8.473E-9]
@@ -199,12 +202,16 @@ def tts_to_delta_sigma_y(tts, degree_type="F", product_id=""):
         tts_C = tts
     
     C_c = 0.0
+    cstr = ""
     for cidx in range(0, len(coeffs)):
-        C_c = C_c + coeffs[cidx] * np.power(tts_C, float(cidx))
-    
+        newterm = coeffs[cidx] * np.power(tts_C, float(cidx))
+        C_c = C_c + newterm
+        cstr = cstr + "%3.3e +" % newterm
+    cstr = "%3.3e: " % C_c + cstr[:-1]
     delta_sigma_y = tts_C / C_c #in MPa
-
+    if (verbose > 0):
+        print("TTS_degC: %3.3f" % tts_C)
+        print("C_c: %s" % cstr)
+        print("delta_sigma_Y (MPa): %3.3f" % delta_sigma_y)
     return delta_sigma_y
-
-
 

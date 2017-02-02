@@ -315,8 +315,8 @@ def add_eony_field(newcname, verbose=0):
             wt_dict[element] = record["wt_percent_%s" % element]
         ce_manuf= 0 #how to determine?
         eony_tts = dtf.get_eony_model_tts(flux, time, temp, product_id,
-                                            wt_dict, ce_manuf, verbose=0)
-        eony_delta_sigma_y = dtf.tts_to_delta_sigma_y(eony_tts, "F", product_id)
+                                            wt_dict, ce_manuf, verbose=1)
+        eony_delta_sigma_y = dtf.tts_to_delta_sigma_y(eony_tts, "F", product_id, verbose=1)
         db[newcname].update(
             {'_id':record["_id"]},
             {"$set":{"EONY_delta_sigma_y":eony_delta_sigma_y}}
