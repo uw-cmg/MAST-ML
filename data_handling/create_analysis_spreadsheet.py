@@ -165,6 +165,8 @@ def add_atomic_percent_field(newcname, verbose=0):
             )
         if verbose > 0:
             print("Updated record %s with %s." % (record["_id"],outdict))
+    for elem in elemlist:
+        add_minmax_normalization_of_a_field(newcname, "at_percent_%s" % elem, 0.0, 1.717)
     return
 
 def add_effective_fluence_field(newcname, verbose=0):
@@ -189,6 +191,36 @@ def add_effective_fluence_field(newcname, verbose=0):
         if verbose > 0:
             print("Updated record %s with effective fluence %3.2e n/cm2." % (record["_id"],fieldval))
     return
+
+def add_generic_effective_fluence_field(newcname, ref_flux=3e10, pvalue=0.26, verbose=1):
+    """
+        Calculated by fluence*(ref_flux/flux)^p 
+        IVAR has ref_flux of 3e11 n/cm^2/sec (Odette 2005)
+        However, LWR conditions have lower flux, so use 3e10 n/cm^2/sec.
+        Args:
+            ref_flux <float>: reference flux in n/cm^2/sec
+            pvalue <float>: p value
+        Also adds a log10 field and a log10 min-max normalized field
+    """
+    myfunc = getattr(dtf,"get_effective_fluence")
+    records = db[newcname].find()
+    pvalstr = "%i" % (pvalue*100.0)
+    newfield = "eff fl 100p=%s" % pvalstr
+    for record in records:
+        fieldval = myfunc(flux=record["flux_n_cm2_sec"],
+                            fluence=record["fluence_n_cm2"],
+                            ref_flux=ref_flux,
+                            pvalue=pvalue)
+        db[newcname].update(
+            {'_id':record["_id"]},
+            {"$set":{newfield:fieldval}}
+            )
+        if verbose > 0:
+            print("Updated record %s with %s %3.2e n/cm2." % (record["_id"],newfield,fieldval))
+    add_log10_of_a_field(newcname, newfield)
+    add_minmax_normalization_of_a_field(newcname, "log(%s)" % newfield)
+    return
+
 
 def add_log10_of_a_field(newcname, origfield, verbose=0):
     """Add the base-10 logarithm of a field as a new field
@@ -268,31 +300,34 @@ def add_stddev_normalization_of_a_field(newcname, origfield, verbose=0):
             print("Updated record %s with %s %3.3f." % (record["_id"],newfield,fieldval))
     return
 
-def add_minmax_normalization_of_a_field(newcname, origfield, setmin=0.0, setmax=0.0, verbose=0):
+def add_minmax_normalization_of_a_field(newcname, origfield, setmin=None, setmax=None, verbose=0):
     """Add the normalization of a field based on the min and max values
         Normalization is given as X_new = (X - X_min)/(X_max - X_min)
         For elemental compositions, max atomic percent is taken as 1.717 At%
             for Mn.
     """
-    raise ValueError("need to write this function")
     newfield="N(%s)" % origfield
-    stddevagg = db[newcname].aggregate([
-        {"$group":{"_id":None,"fieldstddev":{"$stdDevPop":"$%s" % origfield}}}
+    minagg = db[newcname].aggregate([
+        {"$group":{"_id":None,"fieldminval":{"$min":"$%s" % origfield}}}
     ])
-    for record in stddevagg:
-        stddev = record['fieldstddev']
+    for record in minagg:
+        minval = record['fieldminval']
         print(record)
-    avgagg = db[newcname].aggregate([
-        {"$group":{"_id":None,"fieldavg":{"$avg":"$%s" % origfield}}}
+    maxagg = db[newcname].aggregate([
+        {"$group":{"_id":None,"fieldmaxval":{"$max":"$%s" % origfield}}}
     ])
-    for record in avgagg:
-        mean = record['fieldavg']
+    for record in maxagg:
+        maxval = record['fieldmaxval']
         print(record)
-    print("Mean: %3.3f" % mean)
-    print("StdDev: %3.3f" % stddev)
+    print("Min: %3.3f" % minval)
+    print("Max: %3.3f" % maxval)
+    if not (setmin == None):
+        minval = setmin
+    if not (setmax == None):
+        maxval = setmax
     records = db[newcname].find()
     for record in records:
-        fieldval = ( record[origfield] - mean ) / (stddev)
+        fieldval = ( record[origfield] - minval ) / (maxval - minval)
         db[newcname].update(
             {'_id':record["_id"]},
             {"$set":{newfield:fieldval}}
@@ -327,16 +362,21 @@ def add_eony_field(newcname, verbose=0):
     return
 
 def main_addfields(newcname=""):
-    #add_time_field(newcname)
-    #add_atomic_percent_field(newcname)
-    #add_effective_fluence_field(newcname)
-    #add_log10_of_a_field(newcname,"time_sec")
-    #add_log10_of_a_field(newcname,"fluence_n_cm2")
-    #add_log10_of_a_field(newcname,"flux_n_cm2_sec")
-    #add_log10_of_a_field(newcname,"effective_fluence_n_cm2")
-    #add_product_type_columns(newcname)
-    #add_minmax_normalization_of_a_field(newcname, "log(time_sec)")
+    add_time_field(newcname)
+    add_atomic_percent_field(newcname)
+    add_effective_fluence_field(newcname)
+    add_log10_of_a_field(newcname,"time_sec")
+    add_log10_of_a_field(newcname,"fluence_n_cm2")
+    add_log10_of_a_field(newcname,"flux_n_cm2_sec")
+    add_log10_of_a_field(newcname,"effective_fluence_n_cm2")
+    add_product_type_columns(newcname)
+    add_minmax_normalization_of_a_field(newcname, "log(time_sec)")
     add_eony_field(newcname, 1)
+    add_generic_effective_fluence_field(newcname, 3e10, 0.26)
+    add_generic_effective_fluence_field(newcname, 3e10, 0.1)
+    add_generic_effective_fluence_field(newcname, 3e10, 0.2)
+    add_generic_effective_fluence_field(newcname, 3e10, 0.3)
+    add_generic_effective_fluence_field(newcname, 3e10, 0.4)
     return
 
 if __name__=="__main__":
@@ -344,6 +384,6 @@ if __name__=="__main__":
         newcname = sys.argv[1]
     else:
         newcname = "test_1"
-    #main_ivar(newcname)
+    main_ivar(newcname)
     main_addfields(newcname)
-    #export_spreadsheet(newcname)
+    export_spreadsheet(newcname)
