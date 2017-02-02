@@ -175,6 +175,21 @@ def get_short_time_removal_ids(cname, verbose=1):
             print("%s: %s" % (id_list[iidx], reason_list[iidx]))
     return [id_list, reason_list]
 
+def get_empty_flux_or_fluence_removal_ids(cname, verbose=1):
+    """Removal of empty flux or fluence
+    """
+    id_list = list()
+    reason_list=list()
+    records = db[cname].find()
+    for record in records:
+        if record['flux_n_m2_sec'] == "" or record['fluence_n_m2'] == "":
+            id_list.append(record['_id'])
+            reason_list.append("Not considering empty flux or fluence.")
+    if verbose > 0:
+        for iidx in range(0, len(id_list)):
+            print("%s: %s" % (id_list[iidx], reason_list[iidx]))
+    return [id_list, reason_list]
+
 def flag_for_ignore(cname, id_list, reason_list, verbose=1):
     for fidx in range(0, len(id_list)):
         flagid = id_list[fidx]
@@ -221,10 +236,13 @@ def main_cdlwr(cname="cdlwr2017",verbose=1):
     [id_list, reason_list] = get_alloy_removal_ids(cname)
     flag_for_ignore(cname, id_list, reason_list)
     print(len(id_list))
+    [id_list, reason_list] = get_empty_flux_or_fluence_removal_ids(cname)
+    flag_for_ignore(cname, id_list, reason_list)
+    print(len(id_list))
     return
 
 if __name__=="__main__":
-    #main_exptivar()
-    #main_cdivar("cdivar2017")
-    #main_cdivar("cdivar2016")
+    main_exptivar()
+    main_cdivar("cdivar2017")
+    main_cdivar("cdivar2016")
     main_cdlwr("cdlwr2017")

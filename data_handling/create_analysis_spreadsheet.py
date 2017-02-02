@@ -34,7 +34,7 @@ def transfer_nonignore_records(fromcname, newcname, verbose=1):
         print("Transferred %i records." % nict)
     return
 
-def match_and_add_records(newcname, records, matchlist=list(), matchas=list(), transferlist=list(), transferas=list(), verbose=1):
+def match_and_add_records(newcname, records, matchlist=list(), matchas=list(), transferlist=list(), transferas=list(), matchmulti=False, verbose=1):
     """Match records to the collection and add certain fields
         Args:
             newcname <str>: Collection name to which to add records
@@ -44,6 +44,7 @@ def match_and_add_records(newcname, records, matchlist=list(), matchas=list(), t
             transferlist <list of str>: field names to transfer
             transferas <list of str>: field names to rename upon transfer,
                     in the same order listed in transferlist
+            matchmulti <bool>: True = yes, False = no (default)
     """
     uct=0
     if len(matchlist) == 0:
@@ -56,7 +57,7 @@ def match_and_add_records(newcname, records, matchlist=list(), matchas=list(), t
         setdict["$set"]=dict()
         for tidx in range(0, len(transferlist)):
             setdict["$set"][transferas[tidx]] = record[transferlist[tidx]]
-        updated = db[newcname].update(matchdict, setdict)
+        updated = db[newcname].update(matchdict, setdict, multi=matchmulti)
         if updated['updatedExisting'] == True:
             uct = uct + 1
         if (verbose > 1):
@@ -126,6 +127,26 @@ def main_ivar(newcname=""):
     print("Updated with CD IVAR temperature mismatches.")
     return
 
+def main_lwr(newcname=""):
+    transfer_nonignore_records("cdlwr2017", newcname)
+    print("Transferred CD LWR records.")
+    lwr_adjust_fields(newcname)
+    print("Adusted some alloy names and units for flux and fluence.")
+    ivar_records = get_nonignore_records("ucsbivarplus")
+    match_and_add_records(newcname, ivar_records,
+        matchlist=["Alloy"],
+        matchas=["Alloy"],
+        transferlist=["wt_percent_Cu","wt_percent_Ni","wt_percent_Mn",
+                        "wt_percent_P","wt_percent_Si","wt_percent_C",
+                        "product_id"],
+        transferas=["wt_percent_Cu","wt_percent_Ni","wt_percent_Mn",
+                        "wt_percent_P","wt_percent_Si","wt_percent_C",
+                        "product_id"],
+        matchmulti=True
+                        )
+    print("Updated with alloy weight percents.")
+    return
+
 def add_time_field(newcname, verbose=0):
     myfunc = getattr(dtf,"get_time_from_flux_and_fluence")
     records = db[newcname].find()
@@ -137,6 +158,39 @@ def add_time_field(newcname, verbose=0):
             )
         if verbose > 0:
             print("Updated record %s with time %3f sec." % (record["_id"],fieldval))
+    return
+
+def add_converted_flux_and_fluence_field(newcname, verbose=0):
+    records = db[newcname].find()
+    for record in records:
+        fluxval = record["flux_n_m2_sec"]
+        fluenceval = record["fluence_n_m2"]
+        newflux = fluxval / 1000.0
+        newfluence = fluenceval / 1000.0
+        db[newcname].update(
+            {'_id':record["_id"]},
+            {"$set":{"flux_n_cm2_sec":newflux, "fluence_n_cm2":newfluence}}
+            )
+        if verbose > 0:
+            print("Updated record %s with flux %3.3f n/cm^2/sec and fluence %3.3f n/cm^2." % (record["_id"],newflux, newfluence))
+    return
+
+def modify_alloy_names(newcname, verbose=0):
+    records = db[newcname].find()
+    moddict=dict()
+    moddict["WG"] = ["RR-WG"]
+    moddict["WP"] = ["RR-WP"]
+    moddict["Wv"] = ["RR-WV"]
+    for record in records:
+        alloy = record["Alloy"]
+        if alloy in moddict.keys():
+            replacename = moddict[alloy]
+            db[newcname].update(
+                {'_id':record["_id"]},
+                {"$set":{"Alloy":replacename}}
+                )
+            if verbose > 0:
+                print("Updated record %s with new alloy name %s" % replacename) 
     return
 
 def add_atomic_percent_field(newcname, verbose=0):
@@ -367,6 +421,17 @@ def add_eony_field(newcname, verbose=0):
             print("Updated record %s with %s %3.3f." % (record["_id"],"EONY_delta_sigma_y", eony_delta_sigma_y))
     return
 
+def add_basic_field(newcname, fieldname,fieldval, verbose=0):
+    records = db[newcname].find()
+    for record in records:
+        db[newcname].update(
+            {'_id':record["_id"]},
+            {"$set":{fieldname:fieldval}}
+            )
+        if verbose > 0:
+            print("Updated record %s with value %s." % (record["_id"],fieldname, fieldval))
+    return
+
 def main_addfields(newcname=""):
     add_time_field(newcname)
     add_atomic_percent_field(newcname)
@@ -386,11 +451,42 @@ def main_addfields(newcname=""):
     add_stddev_normalization_of_a_field(newcname, "delta_sigma_y_MPa")
     return
 
+def lwr_addfields(newcname=""):
+    add_atomic_percent_field(newcname)
+    add_effective_fluence_field(newcname)
+    add_log10_of_a_field(newcname,"time_sec")
+    add_log10_of_a_field(newcname,"fluence_n_cm2")
+    add_log10_of_a_field(newcname,"flux_n_cm2_sec")
+    add_log10_of_a_field(newcname,"effective_fluence_n_cm2")
+    add_product_type_columns(newcname)
+    add_minmax_normalization_of_a_field(newcname, "log(time_sec)")
+    add_eony_field(newcname, 1)
+    add_generic_effective_fluence_field(newcname, 3e10, 0.26)
+    add_generic_effective_fluence_field(newcname, 3e10, 0.1)
+    add_generic_effective_fluence_field(newcname, 3e10, 0.2)
+    add_generic_effective_fluence_field(newcname, 3e10, 0.3)
+    add_generic_effective_fluence_field(newcname, 3e10, 0.4)
+    #add_stddev_normalization_of_a_field(newcname, "delta_sigma_y_MPa")
+    return
+
+def lwr_adjust_fields(newcname=""):
+    add_converted_flux_and_fluence_field(newcname)
+    modify_alloy_names(newcname)
+    add_basic_field(newcname, fieldname="temperature_C",fieldval=290)
+    return
+
 if __name__=="__main__":
-    if len(sys.argv) > 1:
-        newcname = sys.argv[1]
+    if len(sys.argv) > 2:
+        ivar = sys.argv[1]
+        lwr = sys.argv[2]
     else:
-        newcname = "test_1"
-    main_ivar(newcname)
-    main_addfields(newcname)
-    export_spreadsheet(newcname, "../../data_exports/")
+        ivarcname = "test_ivar_1"
+        lwrcname = "test_lwr_1"
+    #IVAR
+    main_ivar(ivarcname)
+    main_addfields(ivarcname)
+    export_spreadsheet(ivarcname, "../../../data/DBTT_mongo/data_exports/")
+    #LWR
+    main_lwr(lwrcname)
+    lwr_addfields(lwrcname)
+    export_spreadsheet(lwrcname, "../../../data/DBTT_mongo/data_exports/")
