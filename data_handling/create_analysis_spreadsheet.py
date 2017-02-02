@@ -75,6 +75,7 @@ def list_all_fields(cname, verbose=0):
         for key in record.keys():
             if not key in fieldlist:
                 fieldlist.append(key)
+    fieldlist.sort() #sort in place
     if verbose > 0:
         for field in fieldlist:
             print(field)
@@ -392,4 +393,4 @@ if __name__=="__main__":
         newcname = "test_1"
     main_ivar(newcname)
     main_addfields(newcname)
-    export_spreadsheet(newcname, "../../data/DBTT_mongo")
+    export_spreadsheet(newcname, "../../data_exports/")
