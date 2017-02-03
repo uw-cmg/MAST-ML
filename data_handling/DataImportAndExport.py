@@ -19,6 +19,7 @@ import sys
 import traceback
 import subprocess
 import data_reductions as dred
+import create_analysis_spreadsheet as cas
 
 from pymongo import MongoClient
 from bson.objectid import ObjectId
@@ -93,11 +94,15 @@ def flag_data_to_be_ignored(db):
     dred.main_cdlwr(db, "cd_lwr_2017")
     return
 
+def create_analysis_spreadsheets(db):
+    return
+
 if __name__ == "__main__":
     client = get_mongo_client()
     dbname = get_unique_name(client, db_base)
     db = client[dbname]
     import_initial_collections(db, cbasic)
     flag_data_to_be_ignored(db)
+    create_analysis_spreadsheets(db)
     sys.exit()
 sys.exit()
