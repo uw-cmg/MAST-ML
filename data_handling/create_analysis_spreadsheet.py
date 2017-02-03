@@ -387,7 +387,10 @@ def add_minmax_normalization_of_a_field(newcname, origfield, setmin=None, setmax
         maxval = setmax
     records = db[newcname].find()
     for record in records:
-        fieldval = ( record[origfield] - minval ) / (maxval - minval)
+        if (minval == maxval): #data is flat
+            fieldval = 0.0
+        else:
+            fieldval = ( record[origfield] - minval ) / (maxval - minval)
         db[newcname].update(
             {'_id':record["_id"]},
             {"$set":{newfield:fieldval}}
