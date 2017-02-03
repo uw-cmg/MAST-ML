@@ -10,22 +10,17 @@ import os
 import sys
 import subprocess 
 import time
-from pymongo import MongoClient
 from bson.objectid import ObjectId
 import data_transformations as dtf
 import percent_converter
 
-dbname="dbtt"
 
-client = MongoClient('localhost', 27017)
-db = client[dbname]
-
-def get_nonignore_records(cname):
+def get_nonignore_records(db, cname):
     results = db[cname].find({"ignore":{"$ne":1}})
     return results
 
-def transfer_nonignore_records(fromcname, newcname, verbose=1):
-    nonignore_records = get_nonignore_records(fromcname)
+def transfer_nonignore_records(db, fromcname, newcname, verbose=1):
+    nonignore_records = get_nonignore_records(db, fromcname)
     nict = 0
     for nirecord in nonignore_records:
         db[newcname].insert(nirecord)
@@ -34,7 +29,7 @@ def transfer_nonignore_records(fromcname, newcname, verbose=1):
         print("Transferred %i records." % nict)
     return
 
-def match_and_add_records(newcname, records, matchlist=list(), matchas=list(), transferlist=list(), transferas=list(), matchmulti=False, verbose=1):
+def match_and_add_records(db, newcname, records, matchlist=list(), matchas=list(), transferlist=list(), transferas=list(), matchmulti=False, verbose=1):
     """Match records to the collection and add certain fields
         Args:
             newcname <str>: Collection name to which to add records
@@ -66,7 +61,7 @@ def match_and_add_records(newcname, records, matchlist=list(), matchas=list(), t
         print("Total %i records updated." % uct)
     return
 
-def list_all_fields(cname, verbose=0):
+def list_all_fields(db, cname, verbose=0):
     """
         List all fields in a collection. Make more sophisticated later.
     """
@@ -82,7 +77,7 @@ def list_all_fields(cname, verbose=0):
             print(field)
     return fieldlist
 
-def export_spreadsheet(newcname="", prepath="", fieldlist=list()):
+def export_spreadsheet(db, newcname="", prepath="", fieldlist=list()):
     if len(fieldlist) == 0:
         fieldlist=list_all_fields(newcname)
     fieldstr=""
@@ -108,18 +103,19 @@ def export_spreadsheet(newcname="", prepath="", fieldlist=list()):
 
 
 
-def main_ivar(newcname=""):
-    transfer_nonignore_records("ucsbivarplus",newcname)
+def main_ivar(db, newcname=""):
+    raise ValueError("hardcoded names must be fixed")
+    transfer_nonignore_records(db, "ucsbivarplus",newcname)
     print("Transferred experimental IVAR records.")
-    cd_records = get_nonignore_records("cdivar2016") #change to 2017 later
-    match_and_add_records(newcname, cd_records, 
+    cd_records = get_nonignore_records(db, "cdivar2016") #change to 2017 later
+    match_and_add_records(db, newcname, cd_records, 
         matchlist=["Alloy","flux_n_cm2_sec","fluence_n_cm2","temperature_C"],
         matchas=["Alloy","flux_n_cm2_sec","fluence_n_cm2","temperature_C"],
         transferlist= ["temperature_C","CD_delta_sigma_y_MPa"],
         transferas = ["CD_temperature_C","CD_delta_sigma_y_MPa"])
     print("Updated with CD IVAR temperature matches.")
     cd_records.rewind()
-    match_and_add_records(newcname, cd_records, 
+    match_and_add_records(db, newcname, cd_records, 
         matchlist=["Alloy","flux_n_cm2_sec","fluence_n_cm2","temperature_C"],
         matchas=["Alloy","flux_n_cm2_sec","fluence_n_cm2","original_reported_temperature_C"],
         transferlist= ["temperature_C","CD_delta_sigma_y_MPa"],
@@ -127,13 +123,14 @@ def main_ivar(newcname=""):
     print("Updated with CD IVAR temperature mismatches.")
     return
 
-def main_lwr(newcname=""):
-    transfer_nonignore_records("cdlwr2017", newcname)
+def main_lwr(db, newcname=""):
+    raise ValueError("hardcoded names must be fixed")
+    transfer_nonignore_records("db, cdlwr2017", newcname)
     print("Transferred CD LWR records.")
     lwr_adjust_fields(newcname)
     print("Adusted some alloy names and units for flux and fluence.")
-    ivar_records = get_nonignore_records("ucsbivarplus")
-    match_and_add_records(newcname, ivar_records,
+    ivar_records = get_nonignore_records(db, "ucsbivarplus")
+    match_and_add_records(db, newcname, ivar_records,
         matchlist=["Alloy"],
         matchas=["Alloy"],
         transferlist=["wt_percent_Cu","wt_percent_Ni","wt_percent_Mn",
@@ -147,7 +144,7 @@ def main_lwr(newcname=""):
     print("Updated with alloy weight percents.")
     return
 
-def add_time_field(newcname, verbose=0):
+def add_time_field(db, newcname, verbose=0):
     myfunc = getattr(dtf,"get_time_from_flux_and_fluence")
     records = db[newcname].find()
     for record in records:
@@ -160,7 +157,7 @@ def add_time_field(newcname, verbose=0):
             print("Updated record %s with time %3f sec." % (record["_id"],fieldval))
     return
 
-def add_converted_flux_and_fluence_field(newcname, verbose=0):
+def add_converted_flux_and_fluence_field(db, newcname, verbose=0):
     records = db[newcname].find()
     for record in records:
         fluxval = record["flux_n_m2_sec"]
@@ -175,7 +172,7 @@ def add_converted_flux_and_fluence_field(newcname, verbose=0):
             print("Updated record %s with flux %3.3f n/cm^2/sec and fluence %3.3f n/cm^2." % (record["_id"],newflux, newfluence))
     return
 
-def modify_alloy_names(newcname, verbose=0):
+def modify_alloy_names(db, newcname, verbose=0):
     records = db[newcname].find()
     moddict=dict()
     moddict["WG"] = ["RR-WG"]
@@ -193,7 +190,7 @@ def modify_alloy_names(newcname, verbose=0):
                 print("Updated record %s with new alloy name %s" % replacename) 
     return
 
-def add_atomic_percent_field(newcname, verbose=0):
+def add_atomic_percent_field(db, newcname, verbose=0):
     """Ignores percentages from Mo and Cr.
         Assumes balance is Fe.
     """
@@ -226,10 +223,10 @@ def add_atomic_percent_field(newcname, verbose=0):
         if verbose > 0:
             print("Updated record %s with %s." % (record["_id"],outdict))
     for elem in elemlist:
-        add_minmax_normalization_of_a_field(newcname, "at_percent_%s" % elem, 0.0, 1.717)
+        add_minmax_normalization_of_a_field(db, newcname, "at_percent_%s" % elem, 0.0, 1.717)
     return
 
-def add_effective_fluence_field(newcname, verbose=0):
+def add_effective_fluence_field(db, newcname, verbose=0):
     """
         Calculated by fluence*(ref_flux/flux)^p where ref_flux = 3e10 n/cm^2/s and p=0.26
         IVAR has ref_flux of 3e11 n/cm^2/sec (Odette 2005)
@@ -252,7 +249,7 @@ def add_effective_fluence_field(newcname, verbose=0):
             print("Updated record %s with effective fluence %3.2e n/cm2." % (record["_id"],fieldval))
     return
 
-def add_generic_effective_fluence_field(newcname, ref_flux=3e10, pvalue=0.26, verbose=1):
+def add_generic_effective_fluence_field(db, newcname, ref_flux=3e10, pvalue=0.26, verbose=1):
     """
         Calculated by fluence*(ref_flux/flux)^p 
         IVAR has ref_flux of 3e11 n/cm^2/sec (Odette 2005)
@@ -277,12 +274,12 @@ def add_generic_effective_fluence_field(newcname, ref_flux=3e10, pvalue=0.26, ve
             )
         if verbose > 0:
             print("Updated record %s with %s %3.2e n/cm2." % (record["_id"],newfield,fieldval))
-    add_log10_of_a_field(newcname, newfield)
-    add_minmax_normalization_of_a_field(newcname, "log(%s)" % newfield)
+    add_log10_of_a_field(db, newcname, newfield)
+    add_minmax_normalization_of_a_field(db, newcname, "log(%s)" % newfield)
     return
 
 
-def add_log10_of_a_field(newcname, origfield, verbose=0):
+def add_log10_of_a_field(db, newcname, origfield, verbose=0):
     """Add the base-10 logarithm of a field as a new field
     """
     newfield="log(%s)" % origfield
@@ -298,7 +295,7 @@ def add_log10_of_a_field(newcname, origfield, verbose=0):
             print("Updated record %s with %s %3.3f." % (record["_id"],newfield,fieldval))
     return
 
-def add_product_type_columns(newcname, verbose=0):
+def add_product_type_columns(db, newcname, verbose=0):
     records = db[newcname].find()
     for record in records:
         pid = record['product_id'].strip().upper()
@@ -330,7 +327,7 @@ def add_product_type_columns(newcname, verbose=0):
 
     return
 
-def add_stddev_normalization_of_a_field(newcname, origfield, verbose=0):
+def add_stddev_normalization_of_a_field(db, newcname, origfield, verbose=0):
     """Add the normalization of a field based on the mean and standard dev.
         Normalization is given as X_new = (X-X_mean)/(Xstd dev)
     """
@@ -360,7 +357,7 @@ def add_stddev_normalization_of_a_field(newcname, origfield, verbose=0):
             print("Updated record %s with %s %3.3f." % (record["_id"],newfield,fieldval))
     return
 
-def add_minmax_normalization_of_a_field(newcname, origfield, setmin=None, setmax=None, verbose=0):
+def add_minmax_normalization_of_a_field(db, newcname, origfield, setmin=None, setmax=None, verbose=0):
     """Add the normalization of a field based on the min and max values
         Normalization is given as X_new = (X - X_min)/(X_max - X_min)
         For elemental compositions, max atomic percent is taken as 1.717 At%
@@ -399,7 +396,7 @@ def add_minmax_normalization_of_a_field(newcname, origfield, setmin=None, setmax
             print("Updated record %s with %s %3.3f." % (record["_id"],newfield,fieldval))
     return
 
-def add_eony_field(newcname, verbose=0):
+def add_eony_field(db, newcname, verbose=0):
     """Add the EONY 2013 model
     """
     records = db[newcname].find()
@@ -424,7 +421,7 @@ def add_eony_field(newcname, verbose=0):
             print("Updated record %s with %s %3.3f." % (record["_id"],"EONY_delta_sigma_y", eony_delta_sigma_y))
     return
 
-def add_basic_field(newcname, fieldname,fieldval, verbose=0):
+def add_basic_field(db, newcname, fieldname,fieldval, verbose=0):
     records = db[newcname].find()
     for record in records:
         db[newcname].update(
@@ -435,56 +432,63 @@ def add_basic_field(newcname, fieldname,fieldval, verbose=0):
             print("Updated record %s with value %s." % (record["_id"],fieldname, fieldval))
     return
 
-def main_addfields(newcname=""):
-    add_time_field(newcname)
-    add_atomic_percent_field(newcname)
-    add_effective_fluence_field(newcname)
-    add_log10_of_a_field(newcname,"time_sec")
-    add_log10_of_a_field(newcname,"fluence_n_cm2")
-    add_log10_of_a_field(newcname,"flux_n_cm2_sec")
-    add_log10_of_a_field(newcname,"effective_fluence_n_cm2")
-    add_product_type_columns(newcname)
-    add_minmax_normalization_of_a_field(newcname, "log(time_sec)")
-    add_minmax_normalization_of_a_field(newcname, "log(fluence_n_cm2)")
-    add_minmax_normalization_of_a_field(newcname, "log(flux_n_cm2_sec)")
-    add_minmax_normalization_of_a_field(newcname, "temperature_C")
-    add_eony_field(newcname, 1)
-    add_generic_effective_fluence_field(newcname, 3e10, 0.26)
-    add_generic_effective_fluence_field(newcname, 3e10, 0.1)
-    add_generic_effective_fluence_field(newcname, 3e10, 0.2)
-    add_generic_effective_fluence_field(newcname, 3e10, 0.3)
-    add_generic_effective_fluence_field(newcname, 3e10, 0.4)
-    add_stddev_normalization_of_a_field(newcname, "delta_sigma_y_MPa")
+def main_addfields(db, newcname=""):
+    add_time_field(db, newcname)
+    add_atomic_percent_field(db, newcname)
+    add_effective_fluence_field(db, newcname)
+    add_log10_of_a_field(db, newcname,"time_sec")
+    add_log10_of_a_field(db, newcname,"fluence_n_cm2")
+    add_log10_of_a_field(db, newcname,"flux_n_cm2_sec")
+    add_log10_of_a_field(db, newcname,"effective_fluence_n_cm2")
+    add_product_type_columns(db, newcname)
+    add_minmax_normalization_of_a_field(db,newcname, "log(time_sec)")
+    add_minmax_normalization_of_a_field(db,newcname, "log(fluence_n_cm2)")
+    add_minmax_normalization_of_a_field(db,newcname, "log(flux_n_cm2_sec)")
+    add_minmax_normalization_of_a_field(db,newcname, "temperature_C")
+    add_eony_field(db,newcname, 1)
+    add_generic_effective_fluence_field(db,newcname, 3e10, 0.26)
+    add_generic_effective_fluence_field(db,newcname, 3e10, 0.1)
+    add_generic_effective_fluence_field(db,newcname, 3e10, 0.2)
+    add_generic_effective_fluence_field(db,newcname, 3e10, 0.3)
+    add_generic_effective_fluence_field(db,newcname, 3e10, 0.4)
+    add_stddev_normalization_of_a_field(db,newcname, "delta_sigma_y_MPa")
     return
 
 def lwr_addfields(newcname=""):
-    add_atomic_percent_field(newcname)
-    add_effective_fluence_field(newcname)
-    add_log10_of_a_field(newcname,"time_sec")
-    add_log10_of_a_field(newcname,"fluence_n_cm2")
-    add_log10_of_a_field(newcname,"flux_n_cm2_sec")
-    add_log10_of_a_field(newcname,"effective_fluence_n_cm2")
-    add_product_type_columns(newcname)
-    add_minmax_normalization_of_a_field(newcname, "log(time_sec)")
-    add_minmax_normalization_of_a_field(newcname, "log(fluence_n_cm2)")
-    add_minmax_normalization_of_a_field(newcname, "log(flux_n_cm2_sec)")
-    add_minmax_normalization_of_a_field(newcname, "temperature_C")
-    add_eony_field(newcname, 1)
-    add_generic_effective_fluence_field(newcname, 3e10, 0.26)
-    add_generic_effective_fluence_field(newcname, 3e10, 0.1)
-    add_generic_effective_fluence_field(newcname, 3e10, 0.2)
-    add_generic_effective_fluence_field(newcname, 3e10, 0.3)
-    add_generic_effective_fluence_field(newcname, 3e10, 0.4)
-    #add_stddev_normalization_of_a_field(newcname, "delta_sigma_y_MPa")
+    add_atomic_percent_field(db,newcname)
+    add_effective_fluence_field(db,newcname)
+    add_log10_of_a_field(db,newcname,"time_sec")
+    add_log10_of_a_field(db,newcname,"fluence_n_cm2")
+    add_log10_of_a_field(db,newcname,"flux_n_cm2_sec")
+    add_log10_of_a_field(db,newcname,"effective_fluence_n_cm2")
+    add_product_type_columns(db,newcname)
+    add_minmax_normalization_of_a_field(db,newcname, "log(time_sec)")
+    add_minmax_normalization_of_a_field(db,newcname, "log(fluence_n_cm2)")
+    add_minmax_normalization_of_a_field(db,newcname, "log(flux_n_cm2_sec)")
+    add_minmax_normalization_of_a_field(db,newcname, "temperature_C")
+    add_eony_field(db,newcname, 1)
+    add_generic_effective_fluence_field(db,newcname, 3e10, 0.26)
+    add_generic_effective_fluence_field(db,newcname, 3e10, 0.1)
+    add_generic_effective_fluence_field(db,newcname, 3e10, 0.2)
+    add_generic_effective_fluence_field(db,newcname, 3e10, 0.3)
+    add_generic_effective_fluence_field(db,newcname, 3e10, 0.4)
+    #add_stddev_normalization_of_a_field(db,newcname, "delta_sigma_y_MPa")
     return
 
-def lwr_adjust_fields(newcname=""):
-    add_converted_flux_and_fluence_field(newcname)
-    modify_alloy_names(newcname)
-    add_basic_field(newcname, fieldname="temperature_C",fieldval=290)
+def lwr_adjust_fields(db,newcname=""):
+    add_converted_flux_and_fluence_field(db,newcname)
+    modify_alloy_names(db,newcname)
+    add_basic_field(db,newcname, fieldname="temperature_C",fieldval=290)
     return
 
 if __name__=="__main__":
+    print("Warning: should call from DataImportAndExport.py, not as script.")
+    from pymongo import MongoClient
+    dbname="dbtt"
+
+    client = MongoClient('localhost', 27017)
+    db = client[dbname]
+
     if len(sys.argv) > 2:
         ivarcname = sys.argv[1]
         lwrcname = sys.argv[2]
