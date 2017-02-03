@@ -10,15 +10,10 @@ import pymongo
 import os
 import sys
 
-from pymongo import MongoClient
 from bson.objectid import ObjectId
 
-dbname="dbtt"
 
-client = MongoClient('localhost', 27017)
-db = client[dbname]
-
-def get_alloy_removal_ids(cname, verbose=1):
+def get_alloy_removal_ids(db, cname, verbose=1):
     """Removal of certain alloys from database
     """
     alloylist=list()
@@ -26,7 +21,7 @@ def get_alloy_removal_ids(cname, verbose=1):
     id_list = list()
     reason_list=list()
     for alloynum in alloylist:
-        aname = look_up_name_or_number(alloynum, "number")
+        aname = look_up_name_or_number(db, alloynum, "number")
         results = db[cname].find({'Alloy':aname},{"_id":1,"Alloy":1})
         for result in results:
             id_list.append(result['_id'])
@@ -36,7 +31,7 @@ def get_alloy_removal_ids(cname, verbose=1):
             print("%s: %s" % (id_list[iidx], reason_list[iidx]))
     return [id_list, reason_list]
 
-def update_experimental_temperatures(cname, verbose=1):
+def update_experimental_temperatures(db, cname, verbose=1):
     """Update temperatures for a handful of experimental points
         whose reported temperature in the original data sheet 
         for ucsb ivar plus were incorrect.
@@ -52,7 +47,7 @@ def update_experimental_temperatures(cname, verbose=1):
     newtemp=320 #degrees C
     num_list=[6,34,35,36,37,38]
     for num in num_list:
-        aname = look_up_name_or_number(num, "number")
+        aname = look_up_name_or_number(db, num, "number")
         results = db[cname].find({"Alloy":aname,
                         "flux_n_cm2_sec":flux,
                         "fluence_n_cm2":fluence})
@@ -74,7 +69,7 @@ def update_experimental_temperatures(cname, verbose=1):
             print("%s: temperature updated" % id_list[modidx])
     return id_list
 
-def look_up_name_or_number(istr="",itype="name", verbose=0):
+def look_up_name_or_number(db, istr="",itype="name", verbose=0):
     """Look up alloy name or number.
         Args:
             istr <str or int>: input value
@@ -83,15 +78,15 @@ def look_up_name_or_number(istr="",itype="name", verbose=0):
             <str or int>: alloy number or name
     """
     if itype == "name":
-        ilookup = "alloy_name"
+        ilookup = "Alloy"
         oreturn = "alloy_number"
     elif itype == "number":
         ilookup = "alloy_number"
-        oreturn = "alloy_name"
+        oreturn = "Alloy"
     else:
         print("Invalid entry: %s should be 'name' or 'number'" % itype)
         return None
-    results = db['alloykey'].find({ilookup:istr})
+    results = db['alloys'].find({ilookup:istr})
     olist = list()
     for result in results:
         if verbose > 0:
@@ -102,7 +97,7 @@ def look_up_name_or_number(istr="",itype="name", verbose=0):
         return olist[0]
     return olist
 
-def get_duplicate_conditions(cname, verbose=0):
+def get_duplicate_conditions(db, cname, verbose=0):
     ddict=dict()
     id_list = list()
     pipeline=[
@@ -118,7 +113,7 @@ def get_duplicate_conditions(cname, verbose=0):
         condlist.append(result['_id'])
     return condlist
 
-def get_duplicate_ids_to_remove(cname, dupcheck="delta_sigma_y_MPa", verbose=1):
+def get_duplicate_ids_to_remove(db, cname, dupcheck="delta_sigma_y_MPa", verbose=1):
     """Get duplicate IDs to remove.
         True duplicates, remove the second copy.
         Where delta_sigma_y differs, remove the duplicate where
@@ -126,7 +121,7 @@ def get_duplicate_ids_to_remove(cname, dupcheck="delta_sigma_y_MPa", verbose=1):
             For eight such pairs, this happens to mean removing the
             smaller delta_sigma_y.
     """
-    condlist = get_duplicate_conditions(cname)
+    condlist = get_duplicate_conditions(db, cname)
     id_list=list()
     reason_list=list()
     for condition in condlist:
@@ -159,7 +154,7 @@ def get_duplicate_ids_to_remove(cname, dupcheck="delta_sigma_y_MPa", verbose=1):
             print("%s: %s" % (id_list[iidx], reason_list[iidx]))
     return [id_list, reason_list]
 
-def get_short_time_removal_ids(cname, verbose=1):
+def get_short_time_removal_ids(db, cname, verbose=1):
     """Removal of short time runs (e.g. for CD LWR)
     """
     id_list = list()
@@ -175,7 +170,7 @@ def get_short_time_removal_ids(cname, verbose=1):
             print("%s: %s" % (id_list[iidx], reason_list[iidx]))
     return [id_list, reason_list]
 
-def get_empty_flux_or_fluence_removal_ids(cname, verbose=1):
+def get_empty_flux_or_fluence_removal_ids(db, cname, verbose=1):
     """Removal of empty flux or fluence
     """
     id_list = list()
@@ -190,7 +185,7 @@ def get_empty_flux_or_fluence_removal_ids(cname, verbose=1):
             print("%s: %s" % (id_list[iidx], reason_list[iidx]))
     return [id_list, reason_list]
 
-def flag_for_ignore(cname, id_list, reason_list, verbose=1):
+def flag_for_ignore(db, cname, id_list, reason_list, verbose=1):
     for fidx in range(0, len(id_list)):
         flagid = id_list[fidx]
         db[cname].update_one(
@@ -206,22 +201,22 @@ def flag_for_ignore(cname, id_list, reason_list, verbose=1):
             print("Updated record %s" % flagid)
     return
 
-def main_exptivar(cname="ucsbivarplus",verbose=1):
-    [id_list, reason_list] = get_alloy_removal_ids(cname)
-    flag_for_ignore(cname, id_list, reason_list)
+def main_exptivar(db, cname, verbose=1):
+    [id_list, reason_list] = get_alloy_removal_ids(db, cname)
+    flag_for_ignore(db, cname, id_list, reason_list)
     print(len(id_list))
-    [id_list, reason_list] = get_duplicate_ids_to_remove(cname)
-    flag_for_ignore(cname, id_list, reason_list)
+    [id_list, reason_list] = get_duplicate_ids_to_remove(db, cname)
+    flag_for_ignore(db, cname, id_list, reason_list)
     print(len(id_list))
-    update_experimental_temperatures(cname)
+    update_experimental_temperatures(db, cname)
     return
 
-def main_cdivar(cname="cdivar2017",verbose=1):
-    [id_list, reason_list] = get_alloy_removal_ids(cname)
-    flag_for_ignore(cname, id_list, reason_list)
+def main_cdivar(db, cname,verbose=1):
+    [id_list, reason_list] = get_alloy_removal_ids(db, cname)
+    flag_for_ignore(db, cname, id_list, reason_list)
     print(len(id_list))
-    [id_list, reason_list] = get_duplicate_ids_to_remove(cname,"CD_delta_sigma_y_MPa") 
-    flag_for_ignore(cname, id_list, reason_list)
+    [id_list, reason_list] = get_duplicate_ids_to_remove(db, cname,"CD_delta_sigma_y_MPa") 
+    flag_for_ignore(db, cname, id_list, reason_list)
     print(len(id_list))
     #   #the same number of duplicate ids should be removed as in the
     #   #experimental case; where CD was run, both the true duplicates and
@@ -229,20 +224,25 @@ def main_cdivar(cname="cdivar2017",verbose=1):
     #   #true duplicates, and one ID from each pair will be removed.
     return
 
-def main_cdlwr(cname="cdlwr2017",verbose=1):
-    [id_list, reason_list] = get_short_time_removal_ids(cname)
-    flag_for_ignore(cname, id_list, reason_list)
+def main_cdlwr(db, cname,verbose=1):
+    [id_list, reason_list] = get_short_time_removal_ids(db,cname)
+    flag_for_ignore(db, cname, id_list, reason_list)
     print(len(id_list))
-    [id_list, reason_list] = get_alloy_removal_ids(cname)
-    flag_for_ignore(cname, id_list, reason_list)
+    [id_list, reason_list] = get_alloy_removal_ids(db,cname)
+    flag_for_ignore(db, cname, id_list, reason_list)
     print(len(id_list))
-    [id_list, reason_list] = get_empty_flux_or_fluence_removal_ids(cname)
-    flag_for_ignore(cname, id_list, reason_list)
+    [id_list, reason_list] = get_empty_flux_or_fluence_removal_ids(db,cname)
+    flag_for_ignore(db, cname, id_list, reason_list)
     print(len(id_list))
     return
 
 if __name__=="__main__":
-    main_exptivar()
-    main_cdivar("cdivar2017")
-    main_cdivar("cdivar2016")
-    main_cdlwr("cdlwr2017")
+    print("Warning: use through DataImportAndExport.py, not on its own")
+    from pymongo import MongoClient
+    dbname="dbtt"
+    client = MongoClient('localhost', 27017)
+    db = client[dbname]
+    main_exptivar(db,"ucsbivarplus")
+    main_cdivar(db,"cdivar2017")
+    main_cdivar(db,"cdivar2016")
+    main_cdlwr(db,"cdlwr2017")
