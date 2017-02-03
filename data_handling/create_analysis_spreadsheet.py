@@ -442,6 +442,9 @@ def main_addfields(newcname=""):
     add_log10_of_a_field(newcname,"effective_fluence_n_cm2")
     add_product_type_columns(newcname)
     add_minmax_normalization_of_a_field(newcname, "log(time_sec)")
+    add_minmax_normalization_of_a_field(newcname, "log(fluence_n_cm2)")
+    add_minmax_normalization_of_a_field(newcname, "log(flux_n_cm2_sec)")
+    add_minmax_normalization_of_a_field(newcname, "time_sec")
     add_eony_field(newcname, 1)
     add_generic_effective_fluence_field(newcname, 3e10, 0.26)
     add_generic_effective_fluence_field(newcname, 3e10, 0.1)
@@ -460,6 +463,9 @@ def lwr_addfields(newcname=""):
     add_log10_of_a_field(newcname,"effective_fluence_n_cm2")
     add_product_type_columns(newcname)
     add_minmax_normalization_of_a_field(newcname, "log(time_sec)")
+    add_minmax_normalization_of_a_field(newcname, "log(fluence_n_cm2)")
+    add_minmax_normalization_of_a_field(newcname, "log(flux_n_cm2_sec)")
+    add_minmax_normalization_of_a_field(newcname, "time_sec")
     add_eony_field(newcname, 1)
     add_generic_effective_fluence_field(newcname, 3e10, 0.26)
     add_generic_effective_fluence_field(newcname, 3e10, 0.1)
@@ -477,8 +483,8 @@ def lwr_adjust_fields(newcname=""):
 
 if __name__=="__main__":
     if len(sys.argv) > 2:
-        ivar = sys.argv[1]
-        lwr = sys.argv[2]
+        ivarcname = sys.argv[1]
+        lwrcname = sys.argv[2]
     else:
         ivarcname = "test_ivar_1"
         lwrcname = "test_lwr_1"
