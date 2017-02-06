@@ -13,26 +13,46 @@
 import pymongo
 import os
 import sys
+import alloy_property_utilities as apu
+import data_transformations as dtr
 
 from bson.objectid import ObjectId
 
-def get_alloy_removal_ids(db, cname, verbose=1):
-    """Removal of certain alloys from database
-    """
-    alloylist=list()
-    alloylist.append(41)
-    id_list = list()
-    reason_list=list()
-    for alloynum in alloylist:
-        aname = look_up_name_or_number(db, alloynum, "number")
-        results = db[cname].find({'Alloy':aname},{"_id":1,"Alloy":1})
-        for result in results:
-            id_list.append(result['_id'])
-            reason_list.append("Not considering alloy %s" % aname)
-    if verbose > 0:
-        for iidx in range(0, len(id_list)):
-            print("%s: %s" % (id_list[iidx], reason_list[iidx]))
-    return [id_list, reason_list]
+def standardize_alloy_names(db, newcname, verbose=0):
+    records = db[newcname].find()
+    for record in records:
+        alloy = record["Alloy"]
+        std_name = apu.get_standardized_alloy_name(db, alloy, verbose)
+        if std_name == alloy:
+            pass
+        elif std_name == None:
+            raise ValueError("Alloy name %s in database %s,
+                    collection %s neither standard nor an alias." % (alloy,
+                    db.name, newcname))
+        else:
+            db[newcname].update(
+                {'_id':record["_id"]},
+                {"$set":{"Alloy": std_name,
+                         "old_Alloy_alias":alloy}}
+                )
+            if verbose > 0:
+                print("Updated record %s old name %s with new alloy name %s" % (record["_id"], alloy, std_name)) 
+    return
+
+def standardize_flux_and_fluence(db, newcname, verbose=0):
+    records = db[newcname].find({"flux_n_m2_sec":{"$ne":None}})
+    for record in records:
+        fluxval = record["flux_n_m2_sec"]
+        fluenceval = record["fluence_n_m2"]
+        newflux = fluxval / 1000.0
+        newfluence = fluenceval / 1000.0
+        db[newcname].update(
+            {'_id':record["_id"]},
+            {"$set":{"flux_n_cm2_sec":newflux, "fluence_n_cm2":newfluence}}
+            )
+        if verbose > 0:
+            print("Updated record %s with flux %3.3f n/cm^2/sec and fluence %3.3f n/cm^2." % (record["_id"],newflux, newfluence))
+    return
 
 def update_experimental_temperatures(db, cname, verbose=1):
     """Update temperatures for a handful of experimental points
@@ -50,7 +70,7 @@ def update_experimental_temperatures(db, cname, verbose=1):
     newtemp=320 #degrees C
     num_list=[6,34,35,36,37,38]
     for num in num_list:
-        aname = look_up_name_or_number(db, num, "number")
+        aname = apu.look_up_name_or_number(db, num, "number")
         results = db[cname].find({"Alloy":aname,
                         "flux_n_cm2_sec":flux,
                         "fluence_n_cm2":fluence})
@@ -72,33 +92,23 @@ def update_experimental_temperatures(db, cname, verbose=1):
             print("%s: temperature updated" % id_list[modidx])
     return id_list
 
-def look_up_name_or_number(db, istr="",itype="name", verbose=0):
-    """Look up alloy name or number.
-        Args:
-            istr <str or int>: input value
-            itype <str>: input type: alloy "name" or "number"
-        Returns:
-            <str or int>: alloy number or name
+def get_alloy_removal_ids(db, cname, verbose=1):
+    """Removal of certain alloys from database
     """
-    if itype == "name":
-        ilookup = "Alloy"
-        oreturn = "alloy_number"
-    elif itype == "number":
-        ilookup = "alloy_number"
-        oreturn = "Alloy"
-    else:
-        print("Invalid entry: %s should be 'name' or 'number'" % itype)
-        return None
-    results = db['alloys'].find({ilookup:istr})
-    olist = list()
-    for result in results:
-        if verbose > 0:
-            print(result)
-            print(result[oreturn])
-        olist.append(result[oreturn])
-    if len(olist) == 1:
-        return olist[0]
-    return olist
+    alloylist=list()
+    alloylist.append(41)
+    id_list = list()
+    reason_list=list()
+    for alloynum in alloylist:
+        aname = apu.look_up_name_or_number(db, alloynum, "number")
+        results = db[cname].find({'Alloy':aname},{"_id":1,"Alloy":1})
+        for result in results:
+            id_list.append(result['_id'])
+            reason_list.append("Not considering alloy %s" % aname)
+    if verbose > 0:
+        for iidx in range(0, len(id_list)):
+            print("%s: %s" % (id_list[iidx], reason_list[iidx]))
+    return [id_list, reason_list]
 
 def get_duplicate_conditions(db, cname, verbose=0):
     ddict=dict()
@@ -173,6 +183,26 @@ def get_short_time_removal_ids(db, cname, verbose=1):
             print("%s: %s" % (id_list[iidx], reason_list[iidx]))
     return [id_list, reason_list]
 
+def get_field_condition_to_remove(db, cname, fieldname, fieldval, verbose=1):
+    """Removal of certain field condition
+        Args:
+            db <mongo DB>: Mongo client object (database)
+            cname <str>: collection name
+            fieldname <str>: field name
+            fieldval <usually float>: field value
+    """
+    id_list = list()
+    reason_list=list()
+    records = db[cname].find({fieldname: fieldval})
+    for record in records:
+        id_list.append(record['_id'])
+        reason_list.append("Not considering %s value %s" % (fieldname,fieldval))
+    if verbose > 0:
+        for iidx in range(0, len(id_list)):
+            print("%s: %s" % (id_list[iidx], reason_list[iidx]))
+    return [id_list, reason_list]
+
+
 def get_empty_flux_or_fluence_removal_ids(db, cname, verbose=1):
     """Removal of empty flux or fluence
     """
@@ -204,6 +234,7 @@ def flag_for_ignore(db, cname, id_list, reason_list, verbose=1):
             print("Updated record %s" % flagid)
     return
 
+
 def main_exptivar(db, cname, verbose=1):
     [id_list, reason_list] = get_alloy_removal_ids(db, cname)
     flag_for_ignore(db, cname, id_list, reason_list)
@@ -228,6 +259,8 @@ def main_cdivar(db, cname,verbose=1):
     return
 
 def main_cdlwr(db, cname,verbose=1):
+    standardize_alloy_names(db, cname)
+    standardize_flux_and_fluence(db, cname)
     [id_list, reason_list] = get_short_time_removal_ids(db,cname)
     flag_for_ignore(db, cname, id_list, reason_list)
     print(len(id_list))

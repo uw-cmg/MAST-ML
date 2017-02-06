@@ -18,8 +18,8 @@ import os
 import sys
 import traceback
 import subprocess
-import data_reductions as dred
-import create_analysis_spreadsheet as cas
+import data_cleaning as dclean
+import create_analysis_spreadsheets as cas
 
 from pymongo import MongoClient
 from bson.objectid import ObjectId
@@ -87,14 +87,35 @@ def import_initial_collections(db, cbasic):
         print(cname)
     return
 
-def flag_data_to_be_ignored(db):
-    dred.main_exptivar(db, "ucsb_ivar_and_ivarplus")
-    dred.main_cdivar(db, "cd_ivar_2016")
-    dred.main_cdivar(db, "cd_ivar_2017")
-    dred.main_cdlwr(db, "cd_lwr_2017")
+def create_ivar_basic(db, cname, verbose=1):
+    [id_list, reason_list] = dclean.get_alloy_removal_ids(db, cname)
+    dclean.flag_for_ignore(db, cname, id_list, reason_list)
+    print(len(id_list))
+    [id_list, reason_list] = dclean.get_duplicate_ids_to_remove(db, cname)
+    dclean.flag_for_ignore(db, cname, id_list, reason_list)
+    print(len(id_list))
+    dclean.update_experimental_temperatures(db, cname)
     return
+def create_ivar_for_gkrr_hyperparam(db, cname, fromcname, verbose=1):
+    cas.transfer_nonignore_records(db, fromcname, cname, verbose)
+    [id_list, reason_list] = dclean.get_field_condition_to_remove("dataset","IVAR+")
+    dclean.flag_for_ignore(db, cname, id_list, reason_list)
+    print(len(id_list))
+    cas.export_spreadsheet(cname, "../../../data/DBTT_mongo/data_exports/")
+    return
+    
 
-def create_analysis_spreadsheets(db):
+def create_spreadsheets(db):
+    #IVAR
+    ivarcname="ucsb_ivar_and_ivarplus"
+    cas.main_ivar(db, ivarcname)
+    cas.main_addfields(db, ivarcname)
+    cas.export_spreadsheet(ivarcname, "../../../data/DBTT_mongo/data_exports/")
+    #LWR
+    lwrcname = "cd_lwr_2017"
+    cas.main_lwr(lwrcname)
+    cas.lwr_addfields(lwrcname)
+    cas.export_spreadsheet(lwrcname, "../../../data/DBTT_mongo/data_exports/")
     return
 
 if __name__ == "__main__":
@@ -102,7 +123,7 @@ if __name__ == "__main__":
     dbname = get_unique_name(client, db_base)
     db = client[dbname]
     import_initial_collections(db, cbasic)
-    flag_data_to_be_ignored(db)
-    create_analysis_spreadsheets(db)
+    clean_ivar_basic(db, "ucsb_ivar_and_ivarplus")
+    create_ivar_for_gkrr_hyperparam(db, "ucsb_ivar_hyperparam","ucsb_ivar_and_ivarplus")
     sys.exit()
 sys.exit()
