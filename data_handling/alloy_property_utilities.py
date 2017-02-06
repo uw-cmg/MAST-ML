@@ -39,10 +39,12 @@ def get_atomic_percents(db, alloy, verbose=0):
     elemlist=["Cu","Ni","Mn","P","Si","C"]
     results = db[cname_alloy].find({"Alloy":alloy})
     for result in results:
+        if verbose > 0:
+            print("Found alloy %s" % alloy)
         compdict=dict()
         for elem in elemlist:
             try:
-                wt = float(record['wt_percent_%s' % elem])
+                wt = float(result['wt_percent_%s' % elem])
             except (ValueError,TypeError):
                 wt = 0.0
             compdict[elem] = wt
@@ -51,6 +53,8 @@ def get_atomic_percents(db, alloy, verbose=0):
             compstr += "%s %s," % (elem, compdict[elem])
         compstr = compstr[:-1] #remove last comma
         outdict = percent_converter.main(compstr,"weight",0)
+        if (verbose > 0):
+            print("output dict: %s" % outdict)
         return outdict
     raise ValueError("Could not get composition for alloy %s" % alloy)
     return

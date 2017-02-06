@@ -12,7 +12,7 @@ import subprocess
 import time
 from bson.objectid import ObjectId
 import data_transformations as dtf
-import percent_converter
+import alloy_property_utilities as apu
 
 
 def get_nonignore_records(db, cname):
@@ -164,18 +164,8 @@ def add_atomic_percent_field(db, newcname, verbose=0):
     elemlist=["Cu","Ni","Mn","P","Si","C"]
     records = db[newcname].find()
     for record in records:
-        compdict=dict()
-        for elem in elemlist:
-            try:
-                wt = float(record['wt_percent_%s' % elem])
-            except (ValueError,TypeError):
-                wt = 0.0
-            compdict[elem] = wt
-        compstr=""
-        for elem in elemlist:
-            compstr += "%s %s," % (elem, compdict[elem])
-        compstr = compstr[:-1] #remove last comma
-        outdict = percent_converter.main(compstr,"weight",0)
+        alloy = record["Alloy"]
+        outdict = apu.get_atomic_percents(db, alloy, verbose)
         db[newcname].update(
             {'_id':record["_id"]},
             {"$set":

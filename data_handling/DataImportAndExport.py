@@ -85,6 +85,7 @@ def import_initial_collections(db, cbasic):
     print("Collections created:")
     for cname in db.collection_names():
         print(cname)
+    print("")
     return
 
 def clean_ivar_basic(db, cname, verbose=1):
@@ -97,6 +98,7 @@ def clean_ivar_basic(db, cname, verbose=1):
     dclean.update_experimental_temperatures(db, cname)
     return
 def create_ivar_for_gkrr_hyperparam(db, cname, fromcname, verbose=1):
+    #remove IVAR+
     tempname = "%s_temp" % cname
     cas.transfer_nonignore_records(db, fromcname, tempname, verbose)
     [id_list, reason_list] = dclean.get_field_condition_to_remove(db, tempname,
@@ -104,6 +106,15 @@ def create_ivar_for_gkrr_hyperparam(db, cname, fromcname, verbose=1):
     dclean.flag_for_ignore(db, tempname, id_list, reason_list)
     print(len(id_list))
     cas.transfer_nonignore_records(db, tempname, cname, verbose)
+    #add fields
+    cas.add_atomic_percent_field(db, cname)
+    cas.add_log10_of_a_field(db, cname,"fluence_n_cm2")
+    cas.add_log10_of_a_field(db, cname,"flux_n_cm2_sec")
+    cas.add_minmax_normalization_of_a_field(db, cname, "log(fluence_n_cm2)")
+    cas.add_minmax_normalization_of_a_field(db, cname, "log(flux_n_cm2_sec)")
+    cas.add_minmax_normalization_of_a_field(db, cname, "temperature_C")
+    cas.add_generic_effective_fluence_field(db, cname, 3e10, 0.26)
+    cas.add_stddev_normalization_of_a_field(db, cname, "delta_sigma_y_MPa")
     cas.export_spreadsheet(db, cname, "../../../data/DBTT_mongo/data_exports/")
     return
     
@@ -127,6 +138,6 @@ if __name__ == "__main__":
     db = client[dbname]
     import_initial_collections(db, cbasic)
     clean_ivar_basic(db, "ucsb_ivar_and_ivarplus")
-    create_ivar_for_gkrr_hyperparam(db, "ucsb_ivar_hyperparam","ucsb_ivar_and_ivarplus")
+    create_ivar_for_gkrr_hyperparam(db, "ucsb_ivar_hyperparam","ucsb_ivar_and_ivarplus", verbose=0)
     sys.exit()
 sys.exit()
