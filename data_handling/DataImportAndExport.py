@@ -87,7 +87,7 @@ def import_initial_collections(db, cbasic):
         print(cname)
     return
 
-def create_ivar_basic(db, cname, verbose=1):
+def clean_ivar_basic(db, cname, verbose=1):
     [id_list, reason_list] = dclean.get_alloy_removal_ids(db, cname)
     dclean.flag_for_ignore(db, cname, id_list, reason_list)
     print(len(id_list))
@@ -97,11 +97,14 @@ def create_ivar_basic(db, cname, verbose=1):
     dclean.update_experimental_temperatures(db, cname)
     return
 def create_ivar_for_gkrr_hyperparam(db, cname, fromcname, verbose=1):
-    cas.transfer_nonignore_records(db, fromcname, cname, verbose)
-    [id_list, reason_list] = dclean.get_field_condition_to_remove("dataset","IVAR+")
-    dclean.flag_for_ignore(db, cname, id_list, reason_list)
+    tempname = "%s_temp" % cname
+    cas.transfer_nonignore_records(db, fromcname, tempname, verbose)
+    [id_list, reason_list] = dclean.get_field_condition_to_remove(db, tempname,
+                            "dataset","IVAR+")
+    dclean.flag_for_ignore(db, tempname, id_list, reason_list)
     print(len(id_list))
-    cas.export_spreadsheet(cname, "../../../data/DBTT_mongo/data_exports/")
+    cas.transfer_nonignore_records(db, tempname, cname, verbose)
+    cas.export_spreadsheet(db, cname, "../../../data/DBTT_mongo/data_exports/")
     return
     
 

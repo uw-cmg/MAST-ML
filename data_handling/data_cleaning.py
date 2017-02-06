@@ -26,8 +26,7 @@ def standardize_alloy_names(db, newcname, verbose=0):
         if std_name == alloy:
             pass
         elif std_name == None:
-            raise ValueError("Alloy name %s in database %s,
-                    collection %s neither standard nor an alias." % (alloy,
+            raise ValueError("Alloy name %s in database %s, collection %s neither standard nor an alias." % (alloy,
                     db.name, newcname))
         else:
             db[newcname].update(

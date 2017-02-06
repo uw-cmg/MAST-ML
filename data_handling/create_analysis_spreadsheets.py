@@ -79,7 +79,7 @@ def list_all_fields(db, cname, verbose=0):
 
 def export_spreadsheet(db, newcname="", prepath="", fieldlist=list()):
     if len(fieldlist) == 0:
-        fieldlist=list_all_fields(newcname)
+        fieldlist=list_all_fields(db, newcname)
     fieldstr=""
     for field in fieldlist:
         fieldstr = fieldstr + field + ","
@@ -89,7 +89,7 @@ def export_spreadsheet(db, newcname="", prepath="", fieldlist=list()):
         outputpath = os.path.join(prepath, outputpath)
 
     estr = "mongoexport"
-    estr += " --db=%s" % dbname
+    estr += " --db=%s" % db.name
     estr += " --collection=%s" % newcname
     estr += " --out=%s" % outputpath
     estr += " --type=csv"
