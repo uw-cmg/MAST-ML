@@ -117,7 +117,25 @@ def create_ivar_for_gkrr_hyperparam(db, cname, fromcname, verbose=1):
     cas.add_stddev_normalization_of_a_field(db, cname, "delta_sigma_y_MPa")
     cas.export_spreadsheet(db, cname, "../../../data/DBTT_mongo/data_exports/")
     return
-    
+
+def create_cd_ivar_for_gkrr_hyperparam(db, cname, fromc1, fromc2, verbose=1):
+    cas.transfer_nonignore_records(db, fromc1, cname, verbose)
+    cd_records = cas.get_nonignore_records(db, fromc2) #change to 2017 later
+    cas.match_and_add_records(db, cname, cd_records, 
+        matchlist=["Alloy","flux_n_cm2_sec","fluence_n_cm2","temperature_C"],
+        matchas=["Alloy","flux_n_cm2_sec","fluence_n_cm2","temperature_C"],
+        transferlist= ["temperature_C","CD_delta_sigma_y_MPa"],
+        transferas = ["CD_temperature_C","CD_delta_sigma_y_MPa"])
+    print("Updated with CD IVAR temperature matches.")
+    cd_records.rewind()
+    cas.match_and_add_records(db, cname, cd_records, 
+        matchlist=["Alloy","flux_n_cm2_sec","fluence_n_cm2","temperature_C"],
+        matchas=["Alloy","flux_n_cm2_sec","fluence_n_cm2","original_reported_temperature_C"],
+        transferlist= ["temperature_C","CD_delta_sigma_y_MPa"],
+        transferas = ["CD_temperature_C","CD_delta_sigma_y_MPa"])
+    print("Updated with CD IVAR temperature mismatches.")
+    cas.export_spreadsheet(db, cname, "../../../data/DBTT_mongo/data_exports/")
+    return
 
 def create_spreadsheets(db):
     #IVAR
@@ -139,5 +157,6 @@ if __name__ == "__main__":
     import_initial_collections(db, cbasic)
     clean_ivar_basic(db, "ucsb_ivar_and_ivarplus")
     create_ivar_for_gkrr_hyperparam(db, "ucsb_ivar_hyperparam","ucsb_ivar_and_ivarplus", verbose=0)
+    create_cd_ivar_for_gkrr_hyperparam(db, "cd_ivar_hyperparam","ucsb_ivar_hyperparam", "cd_ivar_2017", verbose=0)
     sys.exit()
 sys.exit()
