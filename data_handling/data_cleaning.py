@@ -43,8 +43,8 @@ def standardize_flux_and_fluence(db, newcname, verbose=0):
     for record in records:
         fluxval = record["flux_n_m2_sec"]
         fluenceval = record["fluence_n_m2"]
-        newflux = fluxval / 1000.0
-        newfluence = fluenceval / 1000.0
+        newflux = fluxval / 10000.0
+        newfluence = fluenceval / 10000.0
         db[newcname].update(
             {'_id':record["_id"]},
             {"$set":{"flux_n_cm2_sec":newflux, "fluence_n_cm2":newfluence}}
