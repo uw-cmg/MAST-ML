@@ -105,7 +105,7 @@ def create_ivar(db, cname, fromcname, cd1name, cd2name, verbose=1):
     add_cd(db, cname, cd1name)
     add_cd(db, cname, cd2name)
     #add fields
-    cas.add_atomic_percent_field(db, cname)
+    cas.add_atomic_percent_field(db, cname, verbose=0)
     cas.add_log10_of_a_field(db, cname,"fluence_n_cm2")
     cas.add_log10_of_a_field(db, cname,"flux_n_cm2_sec")
     cas.add_minmax_normalization_of_a_field(db, cname, "log(fluence_n_cm2)")
@@ -129,6 +129,45 @@ def create_ivar_for_hyperparam(db, cname, fromcname, verbose=1):
     dclean.flag_for_ignore(db, tempname, id_list, reason_list)
     print(len(id_list))
     cas.transfer_nonignore_records(db, tempname, cname, verbose)
+    cas.export_spreadsheet(db, cname, "../../../data/DBTT_mongo/data_exports/")
+    return
+
+def clean_lwr(db, cname, verbose=1):
+    dclean.standardize_alloy_names(db, cname)
+    [id_list, reason_list] = dclean.get_alloy_removal_ids(db, cname)
+    dclean.flag_for_ignore(db, cname, id_list, reason_list)
+    print(len(id_list))
+    
+    [id_list, reason_list] = dclean.get_empty_flux_or_fluence_removal_ids(db, cname)
+    dclean.flag_for_ignore(db, cname, id_list, reason_list)
+    print(len(id_list))
+    
+    [id_list, reason_list] = dclean.get_short_time_removal_ids(db,cname)
+    dclean.flag_for_ignore(db, cname, id_list, reason_list)
+    print(len(id_list))
+    
+    [id_list, reason_list] = dclean.get_field_condition_to_remove(db,cname,
+                                "CD_delta_sigma_y_MPa","")
+    dclean.flag_for_ignore(db, cname, id_list, reason_list)
+    print(len(id_list))
+    return
+
+def create_lwr(db, cname, fromcname, verbose=1):
+    """Create LWR condition spreadsheet
+    """
+    cas.transfer_nonignore_records(db, fromcname, cname, verbose)
+    #Additional cleaning. Flux and fluence must be present for all records.
+    dclean.standardize_flux_and_fluence(db, cname)
+    #add fields
+    cas.add_basic_field(db, cname, "temperature_C", 290.0) # all at 290
+    cas.add_atomic_percent_field(db, cname, verbose=0)
+    cas.add_log10_of_a_field(db, cname,"fluence_n_cm2")
+    cas.add_log10_of_a_field(db, cname,"flux_n_cm2_sec")
+    cas.add_minmax_normalization_of_a_field(db, cname, "log(fluence_n_cm2)")
+    cas.add_minmax_normalization_of_a_field(db, cname, "log(flux_n_cm2_sec)")
+    cas.add_minmax_normalization_of_a_field(db, cname, "temperature_C")
+    cas.add_generic_effective_fluence_field(db, cname, 3e10, 0.26)
+    cas.add_stddev_normalization_of_a_field(db, cname, "CD_delta_sigma_y_MPa")
     cas.export_spreadsheet(db, cname, "../../../data/DBTT_mongo/data_exports/")
     return
 
@@ -161,5 +200,7 @@ if __name__ == "__main__":
                     "cd_ivar_2017", verbose=0)
     create_ivar_for_hyperparam(db, "ivar_only_for_hyperparam","ivar_ivarplus",
                     verbose=0)
+    clean_lwr(db, "cd_lwr_2017")
+    create_lwr(db, "lwr_2017", "cd_lwr_2017")
     sys.exit()
 sys.exit()
