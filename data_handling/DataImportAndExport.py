@@ -97,15 +97,13 @@ def clean_ivar_basic(db, cname, verbose=1):
     print(len(id_list))
     dclean.update_experimental_temperatures(db, cname)
     return
-def create_ivar_for_gkrr_hyperparam(db, cname, fromcname, verbose=1):
-    #remove IVAR+
-    tempname = "%s_temp" % cname
-    cas.transfer_nonignore_records(db, fromcname, tempname, verbose)
-    [id_list, reason_list] = dclean.get_field_condition_to_remove(db, tempname,
-                            "dataset","IVAR+")
-    dclean.flag_for_ignore(db, tempname, id_list, reason_list)
-    print(len(id_list))
-    cas.transfer_nonignore_records(db, tempname, cname, verbose)
+
+def create_ivar(db, cname, fromcname, cd1name, cd2name, verbose=1):
+    """Create IVAR and IVAR+ spreadsheet
+    """
+    cas.transfer_nonignore_records(db, fromcname, cname, verbose)
+    add_cd(db, cname, cd1name)
+    add_cd(db, cname, cd2name)
     #add fields
     cas.add_atomic_percent_field(db, cname)
     cas.add_log10_of_a_field(db, cname,"fluence_n_cm2")
@@ -118,36 +116,39 @@ def create_ivar_for_gkrr_hyperparam(db, cname, fromcname, verbose=1):
     cas.export_spreadsheet(db, cname, "../../../data/DBTT_mongo/data_exports/")
     return
 
-def create_cd_ivar_for_gkrr_hyperparam(db, cname, fromc1, fromc2, verbose=1):
-    cas.transfer_nonignore_records(db, fromc1, cname, verbose)
-    cd_records = cas.get_nonignore_records(db, fromc2) #change to 2017 later
+
+def create_ivar_for_hyperparam(db, cname, fromcname, verbose=1):
+    """Create IVAR-only spreadsheet for
+        optimizing hyperparameters
+    """
+    #remove IVAR+
+    tempname = "%s_temp" % cname
+    cas.transfer_nonignore_records(db, fromcname, tempname, verbose)
+    [id_list, reason_list] = dclean.get_field_condition_to_remove(db, tempname,
+                            "dataset","IVAR+")
+    dclean.flag_for_ignore(db, tempname, id_list, reason_list)
+    print(len(id_list))
+    cas.transfer_nonignore_records(db, tempname, cname, verbose)
+    cas.export_spreadsheet(db, cname, "../../../data/DBTT_mongo/data_exports/")
+    return
+
+def add_cd(db, cname, cdname, verbose=1):
+    cd_records = cas.get_nonignore_records(db, cdname) 
     cas.match_and_add_records(db, cname, cd_records, 
         matchlist=["Alloy","flux_n_cm2_sec","fluence_n_cm2","temperature_C"],
         matchas=["Alloy","flux_n_cm2_sec","fluence_n_cm2","temperature_C"],
         transferlist= ["temperature_C","CD_delta_sigma_y_MPa"],
-        transferas = ["CD_temperature_C","CD_delta_sigma_y_MPa"])
-    print("Updated with CD IVAR temperature matches.")
+        transferas = ["temperature_C_%s" % cdname,
+            "delta_sigma_y_MPa_%s" % cdname])
+    print("Updated with condition and temperature matches from %s." % cdname)
     cd_records.rewind()
     cas.match_and_add_records(db, cname, cd_records, 
         matchlist=["Alloy","flux_n_cm2_sec","fluence_n_cm2","temperature_C"],
         matchas=["Alloy","flux_n_cm2_sec","fluence_n_cm2","original_reported_temperature_C"],
         transferlist= ["temperature_C","CD_delta_sigma_y_MPa"],
-        transferas = ["CD_temperature_C","CD_delta_sigma_y_MPa"])
-    print("Updated with CD IVAR temperature mismatches.")
-    cas.export_spreadsheet(db, cname, "../../../data/DBTT_mongo/data_exports/")
-    return
-
-def create_spreadsheets(db):
-    #IVAR
-    ivarcname="ucsb_ivar_and_ivarplus"
-    cas.main_ivar(db, ivarcname)
-    cas.main_addfields(db, ivarcname)
-    cas.export_spreadsheet(ivarcname, "../../../data/DBTT_mongo/data_exports/")
-    #LWR
-    lwrcname = "cd_lwr_2017"
-    cas.main_lwr(lwrcname)
-    cas.lwr_addfields(lwrcname)
-    cas.export_spreadsheet(lwrcname, "../../../data/DBTT_mongo/data_exports/")
+        transferas = ["temperature_C_%s" % cdname,
+            "delta_sigma_y_MPa_%s" % cdname])
+    print("Updated with condition and old temperature matches from %s." % cdname)
     return
 
 if __name__ == "__main__":
@@ -156,7 +157,9 @@ if __name__ == "__main__":
     db = client[dbname]
     import_initial_collections(db, cbasic)
     clean_ivar_basic(db, "ucsb_ivar_and_ivarplus")
-    create_ivar_for_gkrr_hyperparam(db, "ucsb_ivar_hyperparam","ucsb_ivar_and_ivarplus", verbose=0)
-    create_cd_ivar_for_gkrr_hyperparam(db, "cd_ivar_hyperparam","ucsb_ivar_hyperparam", "cd_ivar_2017", verbose=0)
+    create_ivar(db, "ivar_ivarplus", "ucsb_ivar_and_ivarplus", "cd_ivar_2016",
+                    "cd_ivar_2017", verbose=0)
+    create_ivar_for_hyperparam(db, "ivar_only_for_hyperparam","ivar_ivarplus",
+                    verbose=0)
     sys.exit()
 sys.exit()
