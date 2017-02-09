@@ -116,11 +116,15 @@ def alloy_cv(model, data):
 
 #todo kwarg the choice of CV type to pass in config
 def execute(model, data, savepath,  lwr_data, *args, **kwargs):
-
-
-    parameters = {'alpha' : np.logspace(-6,0,20), 'gamma': np.logspace(-1.5,1.5,20)}
+    grid_density = 20 #original = 20; testing 8 is sufficient
+    alpha_grid = np.logspace(-6,0,grid_density)
+    gamma_grid = np.logspace(-1.5,1.5,grid_density)
+    
+    parameters = {'alpha' : alpha_grid, 'gamma': gamma_grid}
     grid_scores = []
-
+    
+    grid_total = grid_density * grid_density
+    gct=0
     for a in parameters['alpha']:
         for y in parameters['gamma']:
             model = KernelRidge(alpha= a, gamma= y, kernel='rbf')
@@ -130,6 +134,8 @@ def execute(model, data, savepath,  lwr_data, *args, **kwargs):
             #rms = atr2_extrap(model, data)
             #rms = lwr_extrap(model, data, lwr_data)
             grid_scores.append((a, y, rms))
+            gct = gct + 1
+            print("%i/%i done" % (gct,grid_total))
 
     grid_scores = np.asarray(grid_scores)
 
