@@ -24,63 +24,74 @@ def get_alloy_list(db, clist, verbose=1):
         print(alloys)
     return alloys
 
-def make_per_alloy_plots(db, clist, verbose=0):
+def make_per_alloy_plots(db, clist, pathstem="", verbose=0):
     """Make per-alloy plots
         Args:
             db <Mongo client>: database
             clist <list of str>: list of collection names
+            pathstem <str>: path for figures
     """
     print("Maybe would be cleaner to use per-set spreadsheets/dbs, so that")
     print("each spreadsheet would have singly-named delta_sigma_y_MPa")
     alloys = get_alloy_list(db, clist, verbose)
+    markerlist = ['o','x','^','s','d']
+    markersize = 10
+    fontsize = 16
+    markeredgewidth = 3
     #for alloy in alloys:
-    for alloy in alloys[0:2]:
-        expt_dsy=list()
-        cd_ivar_2016_dsy=list()
-        cd_ivar_2017_dsy=list()
-        cd_lwr_2017_dsy=list()
-        print(alloy)
-        for cname in clist:
-            if "ivar" in cname:
-                results = db[cname].find({"Alloy":alloy},{"fluence_n_cm2":1,
-                        "delta_sigma_y_MPa":1,
-                        "delta_sigma_y_MPa_cd_ivar_2016":1,
-                        "delta_sigma_y_MPa_cd_ivar_2017":1})
-                for result in results:
-                    expt_dsy.append([result["fluence_n_cm2"],result["delta_sigma_y_MPa"]])
-                    cd_ivar_2016_dsy.append([result["fluence_n_cm2"],
-                                result["delta_sigma_y_MPa_cd_ivar_2016"]])
-                    cd_ivar_2017_dsy.append([result["fluence_n_cm2"],
-                                result["delta_sigma_y_MPa_cd_ivar_2017"]])
-            elif "lwr" in cname:
-                results = db[cname].find({"Alloy":alloy},{"fluence_n_cm2":1,
-                        "CD_delta_sigma_y_MPa":1}) 
-                for result in results:
-                    cd_lwr_2017_dsy.append([result["fluence_n_cm2"],
-                                result["CD_delta_sigma_y_MPa"]])
-        expt_dsy = np.array(expt_dsy,'float')
-        cd_ivar_2016_dsy = np.array(cd_ivar_2016_dsy,'float')
-        cd_ivar_2017_dsy = np.array(cd_ivar_2017_dsy,'float')
-        cd_lwr_2017_dsy = np.array(cd_lwr_2017_dsy,'float')
+    for alloy in alloys[0:2]: #uncomment for testing
+        print("Plotting alloy %s" % alloy)
         plt.figure()
         plt.hold(True)
-        plt.scatter(expt_dsy[:,0],expt_dsy[:,1],color="r",label="expt")
-        plt.scatter(cd_ivar_2016_dsy[:,0],cd_ivar_2016_dsy[:,1],color="b",label="cd_ivar_2016")
-        plt.scatter(cd_ivar_2017_dsy[:,0],cd_ivar_2017_dsy[:,1],color="g",label="cd_ivar_2017")
-        plt.scatter(cd_lwr_2017_dsy[:,0],cd_lwr_2017_dsy[:,1],color="black",label="cd_lwr_2017")
+        plt.title(alloy, fontsize=fontsize)
+        plt.xlabel("log Fluence (n/cm$^{2}$)", fontsize=fontsize)
+        plt.ylabel("$\Delta\sigma_{y}$ (MPa)", fontsize=fontsize)
+        plt.tick_params(labelsize=fontsize)
+        for cname in clist:
+            cseries=list()
+            results = db[cname].find({"Alloy":alloy},{"fluence_n_cm2":1,
+                    "delta_sigma_y_MPa":1})
+            for result in results:
+                cseries.append([result["fluence_n_cm2"],result["delta_sigma_y_MPa"]])
+            cseries = np.array(cseries, 'float')
+            marker = markerlist[hash_string(cname) % len(markerlist)]
+            plt.plot(cseries[:,0],cseries[:,1], marker = marker,
+                    markersize = markersize, markeredgewidth = markeredgewidth,
+                    markerfacecolor = "None", linewidth = 0,
+                    markeredgecolor = string_to_color(cname),label=cname)
         plt.xscale('log')
-        plt.title(alloy)
-        plt.xlabel("log fluence (n/cm2)")
-        plt.ylabel("delta sigma y (MPa)")
-        plt.legend(loc="upper left")
-        plt.savefig("%s_verification.png" % alloy)
+        plt.legend(loc="upper left", fontsize = fontsize)
+        plt.tight_layout()
+        plt.savefig(os.path.join(pathstem, "%s_verification.png" % alloy))
+        plt.close()
     return
+
+def hash_string(mystr=""):
+    """Adapted from http://stackoverflow.com/questions/11120840/hash-string-into-rgb-color, Jeff Foster and clayzermk1
+    """
+    hashval = 5381
+    for ict in range(0, len(mystr)):
+        hashval = ((hashval << 5) + hashval) + ord(mystr[ict])
+    return hashval
+
+def string_to_color(mystr=""):
+    """Adapted from http://stackoverflow.com/questions/11120840/hash-string-into-rgb-color, Jeff Foster and clayzermk1
+    """
+    hashval = hash_string(mystr)
+    rval = (hashval & 0xFF0000) >> 16;
+    gval= (hashval & 0x00FF00) >> 8;
+    bval = hashval & 0x0000FF;
+    rstr = format(rval, 'x')[-2:].zfill(2)
+    gstr = format(gval, 'x')[-2:].zfill(2)
+    bstr = format(bval, 'x')[-2:].zfill(2)
+    color_str = "#" + rstr + gstr + bstr
+    return color_str
 
 if __name__=="__main__":
     print("Warning: use through DataImportAndExport.py, not on its own")
     from pymongo import MongoClient
-    dbname="dbtt_16"
+    dbname="dbtt_23"
     client = MongoClient('localhost', 27017)
     db = client[dbname]
-    clist=["ivar_ivarplus","lwr_2017"]
-    make_per_alloy_plots(db, clist)
+    clist=["expt_ivar","cd1_ivar","cd2_ivar","cd2_lwr"]
+    make_per_alloy_plots(db, clist, sys.argv[1])
