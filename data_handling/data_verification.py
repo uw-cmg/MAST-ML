@@ -31,8 +31,6 @@ def make_per_alloy_plots(db, clist, pathstem="", verbose=0):
             clist <list of str>: list of collection names
             pathstem <str>: path for figures
     """
-    print("Maybe would be cleaner to use per-set spreadsheets/dbs, so that")
-    print("each spreadsheet would have singly-named delta_sigma_y_MPa")
     alloys = get_alloy_list(db, clist, verbose)
     markerlist = ['o','x','^','s','d','v','+']
     markersize = 10
