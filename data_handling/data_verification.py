@@ -58,7 +58,8 @@ def make_per_alloy_plots(db, clist, pathstem="", verbose=0):
                     markerfacecolor = "None", linewidth = 0,
                     markeredgecolor = string_to_color(cname),label=cname)
         plt.xscale('log')
-        plt.legend(loc="upper left", fontsize = fontsize)
+        lgd=plt.legend(loc="best", fontsize = fontsize, fancybox = True)
+        lgd.get_frame().set_alpha(0.5) #translucent legend!
         plt.tight_layout()
         plt.savefig(os.path.join(pathstem, "%s_verification.png" % alloy))
         plt.close()
