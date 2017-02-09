@@ -103,44 +103,7 @@ def export_spreadsheet(db, newcname="", prepath="", fieldlist=list()):
 
 
 
-def main_ivar(db, newcname=""):
-    raise ValueError("hardcoded names must be fixed")
-    transfer_nonignore_records(db, "ucsbivarplus",newcname)
-    print("Transferred experimental IVAR records.")
-    cd_records = get_nonignore_records(db, "cdivar2016") #change to 2017 later
-    match_and_add_records(db, newcname, cd_records, 
-        matchlist=["Alloy","flux_n_cm2_sec","fluence_n_cm2","temperature_C"],
-        matchas=["Alloy","flux_n_cm2_sec","fluence_n_cm2","temperature_C"],
-        transferlist= ["temperature_C","CD_delta_sigma_y_MPa"],
-        transferas = ["CD_temperature_C","CD_delta_sigma_y_MPa"])
-    print("Updated with CD IVAR temperature matches.")
-    cd_records.rewind()
-    match_and_add_records(db, newcname, cd_records, 
-        matchlist=["Alloy","flux_n_cm2_sec","fluence_n_cm2","temperature_C"],
-        matchas=["Alloy","flux_n_cm2_sec","fluence_n_cm2","original_reported_temperature_C"],
-        transferlist= ["temperature_C","CD_delta_sigma_y_MPa"],
-        transferas = ["CD_temperature_C","CD_delta_sigma_y_MPa"])
-    print("Updated with CD IVAR temperature mismatches.")
-    return
 
-def main_lwr(db, newcname=""):
-    raise ValueError("hardcoded names must be fixed")
-    transfer_nonignore_records("db, cdlwr2017", newcname)
-    print("Transferred CD LWR records.")
-    ivar_records = get_nonignore_records(db, "ucsbivarplus")
-    match_and_add_records(db, newcname, ivar_records,
-        matchlist=["Alloy"],
-        matchas=["Alloy"],
-        transferlist=["wt_percent_Cu","wt_percent_Ni","wt_percent_Mn",
-                        "wt_percent_P","wt_percent_Si","wt_percent_C",
-                        "product_id"],
-        transferas=["wt_percent_Cu","wt_percent_Ni","wt_percent_Mn",
-                        "wt_percent_P","wt_percent_Si","wt_percent_C",
-                        "product_id"],
-        matchmulti=True
-                        )
-    print("Updated with alloy weight percents.")
-    return
 
 def add_time_field(db, newcname, verbose=0):
     myfunc = getattr(dtf,"get_time_from_flux_and_fluence")
@@ -206,7 +169,7 @@ def add_effective_fluence_field(db, newcname, verbose=0):
             print("Updated record %s with effective fluence %3.2e n/cm2." % (record["_id"],fieldval))
     return
 
-def add_generic_effective_fluence_field(db, newcname, ref_flux=3e10, pvalue=0.26, verbose=1):
+def add_generic_effective_fluence_field(db, newcname, ref_flux=3e10, pvalue=0.26, verbose=0):
     """
         Calculated by fluence*(ref_flux/flux)^p 
         IVAR has ref_flux of 3e11 n/cm^2/sec (Odette 2005)
@@ -389,69 +352,8 @@ def add_basic_field(db, newcname, fieldname,fieldval, verbose=0):
             print("Updated record %s with value %s." % (record["_id"],fieldname, fieldval))
     return
 
-def main_addfields(db, newcname=""):
-    add_time_field(db, newcname)
-    add_atomic_percent_field(db, newcname)
-    add_effective_fluence_field(db, newcname)
-    add_log10_of_a_field(db, newcname,"time_sec")
-    add_log10_of_a_field(db, newcname,"fluence_n_cm2")
-    add_log10_of_a_field(db, newcname,"flux_n_cm2_sec")
-    add_log10_of_a_field(db, newcname,"effective_fluence_n_cm2")
-    add_product_type_columns(db, newcname)
-    add_minmax_normalization_of_a_field(db,newcname, "log(time_sec)")
-    add_minmax_normalization_of_a_field(db,newcname, "log(fluence_n_cm2)")
-    add_minmax_normalization_of_a_field(db,newcname, "log(flux_n_cm2_sec)")
-    add_minmax_normalization_of_a_field(db,newcname, "temperature_C")
-    add_eony_field(db,newcname, 1)
-    add_generic_effective_fluence_field(db,newcname, 3e10, 0.26)
-    add_generic_effective_fluence_field(db,newcname, 3e10, 0.1)
-    add_generic_effective_fluence_field(db,newcname, 3e10, 0.2)
-    add_generic_effective_fluence_field(db,newcname, 3e10, 0.3)
-    add_generic_effective_fluence_field(db,newcname, 3e10, 0.4)
-    add_stddev_normalization_of_a_field(db,newcname, "delta_sigma_y_MPa")
-    return
 
-def lwr_addfields(newcname=""):
-    add_basic_field(db,newcname, fieldname="temperature_C",fieldval=290)
-    add_atomic_percent_field(db,newcname)
-    add_effective_fluence_field(db,newcname)
-    add_log10_of_a_field(db,newcname,"time_sec")
-    add_log10_of_a_field(db,newcname,"fluence_n_cm2")
-    add_log10_of_a_field(db,newcname,"flux_n_cm2_sec")
-    add_log10_of_a_field(db,newcname,"effective_fluence_n_cm2")
-    add_product_type_columns(db,newcname)
-    add_minmax_normalization_of_a_field(db,newcname, "log(time_sec)")
-    add_minmax_normalization_of_a_field(db,newcname, "log(fluence_n_cm2)")
-    add_minmax_normalization_of_a_field(db,newcname, "log(flux_n_cm2_sec)")
-    add_minmax_normalization_of_a_field(db,newcname, "temperature_C")
-    add_eony_field(db,newcname, 1)
-    add_generic_effective_fluence_field(db,newcname, 3e10, 0.26)
-    add_generic_effective_fluence_field(db,newcname, 3e10, 0.1)
-    add_generic_effective_fluence_field(db,newcname, 3e10, 0.2)
-    add_generic_effective_fluence_field(db,newcname, 3e10, 0.3)
-    add_generic_effective_fluence_field(db,newcname, 3e10, 0.4)
-    #add_stddev_normalization_of_a_field(db,newcname, "delta_sigma_y_MPa")
-    return
 
 if __name__=="__main__":
-    print("Warning: should call from DataImportAndExport.py, not as script.")
-    from pymongo import MongoClient
-    dbname="dbtt"
-
-    client = MongoClient('localhost', 27017)
-    db = client[dbname]
-
-    if len(sys.argv) > 2:
-        ivarcname = sys.argv[1]
-        lwrcname = sys.argv[2]
-    else:
-        ivarcname = "test_ivar_1"
-        lwrcname = "test_lwr_1"
-    #IVAR
-    main_ivar(ivarcname)
-    main_addfields(ivarcname)
-    export_spreadsheet(ivarcname, "../../../data/DBTT_mongo/data_exports/")
-    #LWR
-    main_lwr(lwrcname)
-    lwr_addfields(lwrcname)
-    export_spreadsheet(lwrcname, "../../../data/DBTT_mongo/data_exports/")
+    print("Use from DataImportAndExport.py. Exiting.")
+    sys.exit()

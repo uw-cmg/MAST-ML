@@ -10,7 +10,8 @@ import pymatgen as pmg
 inputtypelist = ["atomic","weight"]
 
 def convert(compdict, inputtype="", verbose=2):
-    print("Output:")
+    if verbose > 0:
+        print("Output:")
     outdict=dict()
     denom = 0.0
     if inputtype == "atomic":
@@ -21,7 +22,8 @@ def convert(compdict, inputtype="", verbose=2):
             new_perc = numerator / denom * 100.0
             outdict[symbol]=dict()
             outdict[symbol]["perc_out"]=new_perc
-            print("%s: %3.5f weight percent" % (symbol, new_perc))
+            if verbose > 0:
+                print("%s: %3.5f weight percent" % (symbol, new_perc))
     elif inputtype == "weight":
         for symbol in compdict.keys():
             denom = denom + (compdict[symbol]["percent"] / compdict[symbol]["atomic_mass"])
@@ -30,7 +32,8 @@ def convert(compdict, inputtype="", verbose=2):
             new_perc = numerator / denom * 100.0
             outdict[symbol]=dict()
             outdict[symbol]["perc_out"]=new_perc
-            print("%s: %3.5f atomic percent" % (symbol, new_perc))
+            if verbose > 0:
+                print("%s: %3.5f atomic percent" % (symbol, new_perc))
     else:
         print("Input type %s not yet supported." % inputtype)
         return None
@@ -100,13 +103,13 @@ def main(compraw="", inputtype="", verbose=2):
     if not (inputtype in inputtypelist):
         print("%s is not an option in %s" % (inputtype, inputtypelist))
         return None
-    compdict = parse_composition(compraw)
+    compdict = parse_composition(compraw, fillwith="Fe", verbose=verbose)
     if verbose > 1:
         print("Input:")
         for symbol in compdict.keys():
             print("%s: %3.5f %s percent" % (symbol, compdict[symbol]["percent"], inputtype))
         print("")
-    outdict = convert(compdict, inputtype)
+    outdict = convert(compdict, inputtype, verbose)
     if outdict == None:
         return
     if verbose > 1:

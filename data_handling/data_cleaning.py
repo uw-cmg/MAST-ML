@@ -91,11 +91,9 @@ def update_experimental_temperatures(db, cname, verbose=1):
             print("%s: temperature updated" % id_list[modidx])
     return id_list
 
-def get_alloy_removal_ids(db, cname, verbose=1):
+def get_alloy_removal_ids(db, cname, alloylist=list(), verbose=1):
     """Removal of certain alloys from database
     """
-    alloylist=list()
-    alloylist.append(41)
     id_list = list()
     reason_list=list()
     for alloynum in alloylist:
@@ -166,13 +164,12 @@ def get_duplicate_ids_to_remove(db, cname, dupcheck="delta_sigma_y_MPa", verbose
             print("%s: %s" % (id_list[iidx], reason_list[iidx]))
     return [id_list, reason_list]
 
-def get_short_time_removal_ids(db, cname, verbose=1):
+def get_short_time_removal_ids(db, cname, minimum_sec = 30e6, verbose=1):
     """Removal of short time runs (e.g. for CD LWR)
     """
     id_list = list()
     reason_list=list()
     records = db[cname].find()
-    minimum_sec = 30e6
     for record in records:
         if record['time_sec'] < minimum_sec:
             id_list.append(record['_id'])
@@ -234,50 +231,13 @@ def flag_for_ignore(db, cname, id_list, reason_list, verbose=1):
     return
 
 
-def main_exptivar(db, cname, verbose=1):
-    [id_list, reason_list] = get_alloy_removal_ids(db, cname)
-    flag_for_ignore(db, cname, id_list, reason_list)
-    print(len(id_list))
-    [id_list, reason_list] = get_duplicate_ids_to_remove(db, cname)
-    flag_for_ignore(db, cname, id_list, reason_list)
-    print(len(id_list))
-    update_experimental_temperatures(db, cname)
-    return
 
-def main_cdivar(db, cname,verbose=1):
-    [id_list, reason_list] = get_alloy_removal_ids(db, cname)
-    flag_for_ignore(db, cname, id_list, reason_list)
-    print(len(id_list))
-    [id_list, reason_list] = get_duplicate_ids_to_remove(db, cname,"CD_delta_sigma_y_MPa") 
-    flag_for_ignore(db, cname, id_list, reason_list)
-    print(len(id_list))
-    #   #the same number of duplicate ids should be removed as in the
-    #   #experimental case; where CD was run, both the true duplicates and
-    #   #the duplicates with differing delta_sigma_y would register as
-    #   #true duplicates, and one ID from each pair will be removed.
-    return
 
-def main_cdlwr(db, cname,verbose=1):
-    standardize_alloy_names(db, cname)
-    standardize_flux_and_fluence(db, cname)
-    [id_list, reason_list] = get_short_time_removal_ids(db,cname)
-    flag_for_ignore(db, cname, id_list, reason_list)
-    print(len(id_list))
-    [id_list, reason_list] = get_alloy_removal_ids(db,cname)
-    flag_for_ignore(db, cname, id_list, reason_list)
-    print(len(id_list))
-    [id_list, reason_list] = get_empty_flux_or_fluence_removal_ids(db,cname)
-    flag_for_ignore(db, cname, id_list, reason_list)
-    print(len(id_list))
-    return
 
 if __name__=="__main__":
-    print("Warning: use through DataImportAndExport.py, not on its own")
+    print("Use from DataImportAndExport.py. Exiting.")
+    sys.exit()
     from pymongo import MongoClient
     dbname="dbtt"
     client = MongoClient('localhost', 27017)
     db = client[dbname]
-    main_exptivar(db,"ucsbivarplus")
-    main_cdivar(db,"cdivar2017")
-    main_cdivar(db,"cdivar2016")
-    main_cdlwr(db,"cdlwr2017")

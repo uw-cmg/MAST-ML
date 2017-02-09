@@ -89,7 +89,7 @@ def import_initial_collections(db, cbasic):
     return
 
 def clean_ivar_basic(db, cname, verbose=1):
-    [id_list, reason_list] = dclean.get_alloy_removal_ids(db, cname)
+    [id_list, reason_list] = dclean.get_alloy_removal_ids(db, cname, [41])
     dclean.flag_for_ignore(db, cname, id_list, reason_list)
     print(len(id_list))
     [id_list, reason_list] = dclean.get_duplicate_ids_to_remove(db, cname)
@@ -134,7 +134,7 @@ def create_ivar_for_hyperparam(db, cname, fromcname, verbose=1):
 
 def clean_lwr(db, cname, verbose=1):
     dclean.standardize_alloy_names(db, cname)
-    [id_list, reason_list] = dclean.get_alloy_removal_ids(db, cname)
+    [id_list, reason_list] = dclean.get_alloy_removal_ids(db, cname,[41])
     dclean.flag_for_ignore(db, cname, id_list, reason_list)
     print(len(id_list))
     
@@ -142,7 +142,7 @@ def clean_lwr(db, cname, verbose=1):
     dclean.flag_for_ignore(db, cname, id_list, reason_list)
     print(len(id_list))
     
-    [id_list, reason_list] = dclean.get_short_time_removal_ids(db,cname)
+    [id_list, reason_list] = dclean.get_short_time_removal_ids(db,cname, 30e6)
     dclean.flag_for_ignore(db, cname, id_list, reason_list)
     print(len(id_list))
     

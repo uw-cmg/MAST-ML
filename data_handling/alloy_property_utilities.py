@@ -52,7 +52,7 @@ def get_atomic_percents(db, alloy, verbose=0):
         for elem in elemlist:
             compstr += "%s %s," % (elem, compdict[elem])
         compstr = compstr[:-1] #remove last comma
-        outdict = percent_converter.main(compstr,"weight",0)
+        outdict = percent_converter.main(compstr,"weight",verbose)
         if (verbose > 0):
             print("output dict: %s" % outdict)
         return outdict
@@ -88,8 +88,5 @@ def look_up_name_or_number(db, istr="",itype="name", verbose=0):
     return olist
 
 if __name__=="__main__":
-    print("Warning: use through DataImportAndExport.py, not on its own")
-    from pymongo import MongoClient
-    dbname="dbtt"
-    client = MongoClient('localhost', 27017)
-    db = client[dbname]
+    print("Use from DataImportAndExport.py. Exiting.")
+    sys.exit()
