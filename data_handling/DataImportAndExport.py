@@ -232,5 +232,7 @@ if __name__ == "__main__":
     #verify data
     clist=["expt_ivar","cd1_ivar","cd2_ivar","cd2_lwr"]
     dver.make_per_alloy_plots(db, clist, "%s/verification_plots" % exportpath) 
+    #Additional to-do
+    print("When filter CD1 LWR, remove alloys 14 and 29 as well")
     sys.exit()
 sys.exit()
