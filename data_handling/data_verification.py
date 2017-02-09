@@ -34,17 +34,17 @@ def make_per_alloy_plots(db, clist, pathstem="", verbose=0):
     print("Maybe would be cleaner to use per-set spreadsheets/dbs, so that")
     print("each spreadsheet would have singly-named delta_sigma_y_MPa")
     alloys = get_alloy_list(db, clist, verbose)
-    markerlist = ['o','x','^','s','d']
+    markerlist = ['o','x','^','s','d','v','+']
     markersize = 10
-    fontsize = 16
+    fontsize = 18
     markeredgewidth = 3
-    #for alloy in alloys:
-    for alloy in alloys[0:2]: #uncomment for testing
+    #for alloy in alloys[0:2]: #switch with below and uncomment for testing
+    for alloy in alloys:
         print("Plotting alloy %s" % alloy)
         plt.figure()
         plt.hold(True)
         plt.title(alloy, fontsize=fontsize)
-        plt.xlabel("log Fluence (n/cm$^{2}$)", fontsize=fontsize)
+        plt.xlabel("Fluence (n/cm$^{2}$)", fontsize=fontsize)
         plt.ylabel("$\Delta\sigma_{y}$ (MPa)", fontsize=fontsize)
         plt.tick_params(labelsize=fontsize)
         for cname in clist:
