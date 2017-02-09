@@ -20,12 +20,14 @@ import traceback
 import subprocess
 import data_cleaning as dclean
 import create_analysis_spreadsheets as cas
+import data_verification as dver
 
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 
 #Set up paths and names
 dbpath = "../../../data/DBTT_mongo"
+exportpath = "../../../data/DBTT_mongo/data_exports"
 importpath = "../../../data/DBTT_mongo/imports_201702"
 db_base="dbtt"
 db = "" #will be set by script
@@ -116,7 +118,7 @@ def create_expt_ivar(db, cname, fromcname, verbose=1):
     """
     cas.transfer_nonignore_records(db, fromcname, cname, verbose)
     add_standard_fields(db, cname)
-    cas.export_spreadsheet(db, cname, "../../../data/DBTT_mongo/data_exports/")
+    cas.export_spreadsheet(db, cname, exportpath)
     return
 
 def create_cd_ivar(db, cname, fromcname, fromcdname, verbose=1):
@@ -128,7 +130,7 @@ def create_cd_ivar(db, cname, fromcname, fromcdname, verbose=1):
     cas.remove_field(db, cname, "delta_sigma_y_MPa") #will replace with CD data
     add_cd(db, cname, fromcdname)
     add_standard_fields(db, cname)
-    cas.export_spreadsheet(db, cname, "../../../data/DBTT_mongo/data_exports/")
+    cas.export_spreadsheet(db, cname, exportpath)
     return
 
 
@@ -144,7 +146,7 @@ def create_ivar_for_fullfit(db, cname, fromcname, verbose=1):
     dclean.flag_for_ignore(db, tempname, id_list, reason_list)
     print(len(id_list))
     cas.transfer_nonignore_records(db, tempname, cname, verbose)
-    cas.export_spreadsheet(db, cname, "../../../data/DBTT_mongo/data_exports/")
+    cas.export_spreadsheet(db, cname, exportpath)
     return
 
 def clean_lwr(db, cname, verbose=1):
@@ -176,7 +178,7 @@ def create_lwr(db, cname, fromcname, verbose=1):
     cas.rename_field(db, cname, "CD_delta_sigma_y_MPa", "delta_sigma_y_MPa")
     cas.add_basic_field(db, cname, "temperature_C", 290.0) # all at 290
     add_standard_fields(db, cname)
-    cas.export_spreadsheet(db, cname, "../../../data/DBTT_mongo/data_exports/")
+    cas.export_spreadsheet(db, cname, exportpath)
     return
 
 def add_cd(db, cname, cdname, verbose=1):
@@ -202,7 +204,9 @@ if __name__ == "__main__":
     client = get_mongo_client()
     dbname = get_unique_name(client, db_base)
     db = client[dbname]
+    #import initial collections
     import_initial_collections(db, cbasic)
+    #create ancillary databases and spreadsheets
     clean_ivar_basic(db, "ucsb_ivar_and_ivarplus")
     create_expt_ivar(db, "expt_ivar", "ucsb_ivar_and_ivarplus", verbose=0)
     create_cd_ivar(db, "cd1_ivar", "expt_ivar", "cd_ivar_2016")
@@ -212,5 +216,8 @@ if __name__ == "__main__":
     create_ivar_for_fullfit(db, "cd2_ivaronly", "cd2_ivar")
     clean_lwr(db, "cd_lwr_2017")
     create_lwr(db, "cd2_lwr", "cd_lwr_2017")
+    #verify data
+    clist=["expt_ivar","cd1_ivar","cd2_ivar","cd2_lwr"]
+    dver.make_per_alloy_plots(db, clist, "%s/verification_plots" % exportpath) 
     sys.exit()
 sys.exit()
