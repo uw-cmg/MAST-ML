@@ -53,7 +53,8 @@ def make_per_alloy_plots(db, clist, pathstem="", verbose=0):
                 cseries.append([result["fluence_n_cm2"],result["delta_sigma_y_MPa"]])
             cseries = np.array(cseries, 'float')
             marker = markerlist[hash_string(cname) % len(markerlist)]
-            plt.plot(cseries[:,0],cseries[:,1], marker = marker,
+            if cseries.size > 0:
+                plt.plot(cseries[:,0],cseries[:,1], marker = marker,
                     markersize = markersize, markeredgewidth = markeredgewidth,
                     markerfacecolor = "None", linewidth = 0,
                     markeredgecolor = string_to_color(cname),label=cname)

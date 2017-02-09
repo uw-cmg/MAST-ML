@@ -121,6 +121,17 @@ def create_expt_ivar(db, cname, fromcname, verbose=1):
     cas.export_spreadsheet(db, cname, exportpath)
     return
 
+def prefilter_ivar_for_cd1(db, cname, fromcname, verbose=1):
+    tempname = "%s_temp" % cname
+    cas.transfer_nonignore_records(db, fromcname, tempname, verbose)
+    [id_list, reason_list] = dclean.get_alloy_removal_ids(db, tempname, 
+                                [41,1,2,8,14,29])
+    dclean.flag_for_ignore(db, tempname, id_list, reason_list)
+    print(len(id_list))
+    cas.transfer_nonignore_records(db, tempname, cname, verbose)
+    db.drop_collection(tempname)
+    return
+
 def create_cd_ivar(db, cname, fromcname, fromcdname, verbose=1):
     """Create IVAR and IVAR+ spreadsheet for CD data
         Get conditions from experimental IVAR; will match to CD
@@ -146,6 +157,7 @@ def create_ivar_for_fullfit(db, cname, fromcname, verbose=1):
     dclean.flag_for_ignore(db, tempname, id_list, reason_list)
     print(len(id_list))
     cas.transfer_nonignore_records(db, tempname, cname, verbose)
+    db.drop_collection(tempname)
     cas.export_spreadsheet(db, cname, exportpath)
     return
 
@@ -209,7 +221,8 @@ if __name__ == "__main__":
     #create ancillary databases and spreadsheets
     clean_ivar_basic(db, "ucsb_ivar_and_ivarplus")
     create_expt_ivar(db, "expt_ivar", "ucsb_ivar_and_ivarplus", verbose=0)
-    create_cd_ivar(db, "cd1_ivar", "expt_ivar", "cd_ivar_2016")
+    prefilter_ivar_for_cd1(db, "cd1_ivar_temp", "ucsb_ivar_and_ivarplus")
+    create_cd_ivar(db, "cd1_ivar", "cd1_ivar_temp", "cd_ivar_2016")
     create_cd_ivar(db, "cd2_ivar", "expt_ivar", "cd_ivar_2017")
     create_ivar_for_fullfit(db, "expt_ivaronly", "expt_ivar")
     create_ivar_for_fullfit(db, "cd1_ivaronly", "cd1_ivar")
