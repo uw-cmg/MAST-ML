@@ -98,13 +98,9 @@ def clean_ivar_basic(db, cname, verbose=1):
     dclean.update_experimental_temperatures(db, cname)
     return
 
-def create_ivar(db, cname, fromcname, cd1name, cd2name, verbose=1):
-    """Create IVAR and IVAR+ spreadsheet
+def add_standard_fields(db, cname, verbose=0):
+    """Add fields that are standard to most analysis
     """
-    cas.transfer_nonignore_records(db, fromcname, cname, verbose)
-    add_cd(db, cname, cd1name)
-    add_cd(db, cname, cd2name)
-    #add fields
     cas.add_atomic_percent_field(db, cname, verbose=0)
     cas.add_log10_of_a_field(db, cname,"fluence_n_cm2")
     cas.add_log10_of_a_field(db, cname,"flux_n_cm2_sec")
@@ -113,11 +109,30 @@ def create_ivar(db, cname, fromcname, cd1name, cd2name, verbose=1):
     cas.add_minmax_normalization_of_a_field(db, cname, "temperature_C")
     cas.add_generic_effective_fluence_field(db, cname, 3e10, 0.26)
     cas.add_stddev_normalization_of_a_field(db, cname, "delta_sigma_y_MPa")
+    return
+
+def create_expt_ivar(db, cname, fromcname, verbose=1):
+    """Create IVAR and IVAR+ spreadsheet
+    """
+    cas.transfer_nonignore_records(db, fromcname, cname, verbose)
+    add_standard_fields(db, cname)
+    cas.export_spreadsheet(db, cname, "../../../data/DBTT_mongo/data_exports/")
+    return
+
+def create_cd_ivar(db, cname, fromcname, fromcdname, verbose=1):
+    """Create IVAR and IVAR+ spreadsheet for CD data
+        Get conditions from experimental IVAR; will match to CD
+        data and replace delta_sigma_y_MPa with CD's data
+    """
+    cas.transfer_nonignore_records(db, fromcname, cname, verbose)
+    cas.remove_field(db, cname, "delta_sigma_y_MPa") #will replace with CD data
+    add_cd(db, cname, fromcdname)
+    add_standard_fields(db, cname)
     cas.export_spreadsheet(db, cname, "../../../data/DBTT_mongo/data_exports/")
     return
 
 
-def create_ivar_for_hyperparam(db, cname, fromcname, verbose=1):
+def create_ivar_for_fullfit(db, cname, fromcname, verbose=1):
     """Create IVAR-only spreadsheet for
         optimizing hyperparameters
     """
@@ -158,35 +173,28 @@ def create_lwr(db, cname, fromcname, verbose=1):
     cas.transfer_nonignore_records(db, fromcname, cname, verbose)
     #Additional cleaning. Flux and fluence must be present for all records.
     dclean.standardize_flux_and_fluence(db, cname)
-    #add fields
+    cas.rename_field(db, cname, "CD_delta_sigma_y_MPa", "delta_sigma_y_MPa")
     cas.add_basic_field(db, cname, "temperature_C", 290.0) # all at 290
-    cas.add_atomic_percent_field(db, cname, verbose=0)
-    cas.add_log10_of_a_field(db, cname,"fluence_n_cm2")
-    cas.add_log10_of_a_field(db, cname,"flux_n_cm2_sec")
-    cas.add_minmax_normalization_of_a_field(db, cname, "log(fluence_n_cm2)")
-    cas.add_minmax_normalization_of_a_field(db, cname, "log(flux_n_cm2_sec)")
-    cas.add_minmax_normalization_of_a_field(db, cname, "temperature_C")
-    cas.add_generic_effective_fluence_field(db, cname, 3e10, 0.26)
-    cas.add_stddev_normalization_of_a_field(db, cname, "CD_delta_sigma_y_MPa")
+    add_standard_fields(db, cname)
     cas.export_spreadsheet(db, cname, "../../../data/DBTT_mongo/data_exports/")
     return
 
 def add_cd(db, cname, cdname, verbose=1):
+    """Match CD records to expt IVAR conditions and replace delta_sigma_y_MPa
+    """
     cd_records = cas.get_nonignore_records(db, cdname) 
     cas.match_and_add_records(db, cname, cd_records, 
         matchlist=["Alloy","flux_n_cm2_sec","fluence_n_cm2","temperature_C"],
         matchas=["Alloy","flux_n_cm2_sec","fluence_n_cm2","temperature_C"],
-        transferlist= ["temperature_C","CD_delta_sigma_y_MPa"],
-        transferas = ["temperature_C_%s" % cdname,
-            "delta_sigma_y_MPa_%s" % cdname])
+        transferlist= ["CD_delta_sigma_y_MPa"],
+        transferas = ["delta_sigma_y_MPa"])
     print("Updated with condition and temperature matches from %s." % cdname)
     cd_records.rewind()
     cas.match_and_add_records(db, cname, cd_records, 
         matchlist=["Alloy","flux_n_cm2_sec","fluence_n_cm2","temperature_C"],
         matchas=["Alloy","flux_n_cm2_sec","fluence_n_cm2","original_reported_temperature_C"],
-        transferlist= ["temperature_C","CD_delta_sigma_y_MPa"],
-        transferas = ["temperature_C_%s" % cdname,
-            "delta_sigma_y_MPa_%s" % cdname])
+        transferlist= ["CD_delta_sigma_y_MPa"],
+        transferas = ["delta_sigma_y_MPa"])
     print("Updated with condition and old temperature matches from %s." % cdname)
     return
 
@@ -196,11 +204,13 @@ if __name__ == "__main__":
     db = client[dbname]
     import_initial_collections(db, cbasic)
     clean_ivar_basic(db, "ucsb_ivar_and_ivarplus")
-    create_ivar(db, "ivar_ivarplus", "ucsb_ivar_and_ivarplus", "cd_ivar_2016",
-                    "cd_ivar_2017", verbose=0)
-    create_ivar_for_hyperparam(db, "ivar_only_for_hyperparam","ivar_ivarplus",
-                    verbose=0)
+    create_expt_ivar(db, "expt_ivar", "ucsb_ivar_and_ivarplus", verbose=0)
+    create_cd_ivar(db, "cd1_ivar", "expt_ivar", "cd_ivar_2016")
+    create_cd_ivar(db, "cd2_ivar", "expt_ivar", "cd_ivar_2017")
+    create_ivar_for_fullfit(db, "expt_ivaronly", "expt_ivar")
+    create_ivar_for_fullfit(db, "cd1_ivaronly", "cd1_ivar")
+    create_ivar_for_fullfit(db, "cd2_ivaronly", "cd2_ivar")
     clean_lwr(db, "cd_lwr_2017")
-    create_lwr(db, "lwr_2017", "cd_lwr_2017")
+    create_lwr(db, "cd2_lwr", "cd_lwr_2017")
     sys.exit()
 sys.exit()

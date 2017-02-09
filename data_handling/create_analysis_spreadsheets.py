@@ -341,18 +341,24 @@ def add_eony_field(db, newcname, verbose=0):
             print("Updated record %s with %s %3.3f." % (record["_id"],"EONY_delta_sigma_y", eony_delta_sigma_y))
     return
 
-def add_basic_field(db, newcname, fieldname,fieldval, verbose=0):
-    records = db[newcname].find()
-    for record in records:
-        db[newcname].update(
-            {'_id':record["_id"]},
-            {"$set":{fieldname:fieldval}}
-            )
-        if verbose > 0:
-            print("Updated record %s with value %s." % (record["_id"],fieldname, fieldval))
+def add_basic_field(db, newcname, fieldname,fieldval, verbose=1):
+    db[newcname].update_many({},{"$set": {fieldname: fieldval}})
+    if verbose > 0:
+        print("Updated collection %s field %s with value %s." % (newcname, fieldname, fieldval))
     return
 
+def remove_field(db, newcname, fieldname, verbose=1):
+    db[newcname].update_many({}, {"$unset": {fieldname:1}})
+    if verbose > 0:
+        print("Removed field %s from all records in collection %s" % (fieldname, newcname))
+    return
 
+def rename_field(db, newcname, oldfieldname, newfieldname, verbose=1):
+    db[newcname].update_many({}, {"$rename": {oldfieldname: newfieldname}})
+    if verbose > 0:
+        print("Updated field name %s to %s in collection %s" % (oldfieldname,
+                newfieldname, newcname))
+    return
 
 if __name__=="__main__":
     print("Use from DataImportAndExport.py. Exiting.")
