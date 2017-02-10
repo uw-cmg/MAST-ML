@@ -116,7 +116,11 @@ def alloy_cv(model, data):
 
 #todo kwarg the choice of CV type to pass in config
 def execute(model, data, savepath,  lwr_data, *args, **kwargs):
-    grid_density = 20 #original = 20; testing 8 is sufficient
+    #grid_density = 20 #original = 20; testing 8 is sufficient
+    if not "grid_density" in kwargs.keys():
+        grid_density = 20
+    else:
+        grid_density = float(kwargs["grid_density"])
     alpha_grid = np.logspace(-6,0,grid_density)
     gamma_grid = np.logspace(-1.5,1.5,grid_density)
     
