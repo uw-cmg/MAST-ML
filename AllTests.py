@@ -77,6 +77,7 @@ for case_name in all_tests:
     #todo did kwarg parsing go away? ie couldn't pass featureVectorShortened as a boolean in the config w/o making it a default arg
     print("running test {}".format(case_name))
     case = importlib.import_module(case_name)
-    case.execute(model, data, save_path, lwr_data = lwr_data)
+    kwargs = config[case_name]
+    case.execute(model, data, save_path, lwr_data = lwr_data, **kwargs)
     matplotlib.pyplot.close("all")
 
