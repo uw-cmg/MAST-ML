@@ -47,7 +47,7 @@ def execute(model, data, savepath, *args, **kwargs):
     #plt.xticks(np.arange(0, max(alloy_list) + 1, 5))
     plt.xticks(np.arange(0, len(alloys) + 1, 5))
     ax.scatter(np.arange(0, len(alloy_list)), rms_list, color='black', s=10)
-    ax.set_xticklabels(alloy_list)
+    #ax.set_xticklabels(alloy_list)
     #ax.plot((0, max(data.get_data("Alloy"))[0]), (0, 0), ls="--", c=".3")
     #TTM+1
     ax.plot((0, len(alloys)), (0, 0), ls="--", c=".3")
