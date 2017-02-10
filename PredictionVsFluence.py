@@ -46,8 +46,8 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
     alloys = list(set(alloys))
     alloys.sort()
 
-    #for alloy in alloys:
-    for alloy in alloys[0:2]:
+    for alloy in alloys:
+        print(alloy)
         data.add_inclusive_filter("Alloy", '=', alloy)
         if len(data.get_x_data()) == 0: continue  # if alloy doesn't exist(x data is empty), then continue
 
