@@ -13,16 +13,25 @@ def execute(model, data, savepath, *args, **kwargs):
     colors = ['#BCBDBD', '#009AFF', '#FF0A09']
     fig, ax = plt.subplots()
     #calculate rms for each dataset
-    for dataset in range(max(np.asarray(data.get_data("Data Set code")).ravel()) + 1):
-        data.remove_all_filters()
-        data.add_inclusive_filter("Data Set code", '=', dataset)
-        Ypredict = model.predict(data.get_x_data())
-        Ydata = np.asarray(data.get_y_data()).ravel()
-        # calculate rms
-        rms = np.sqrt(mean_squared_error(Ypredict, Ydata))
-        # graph outputs
-        ax.scatter(Ydata, Ypredict, s=7, color=colors[dataset], label= datasets[dataset], lw = 0)
-        ax.text(.05, .83 - .05*dataset, '{} RMS: {:.3f}'.format(datasets[dataset],rms), fontsize=14, transform=ax.transAxes)
+    #TTM want data to be separated out earlier. Just calculate RMS.
+    #for dataset in range(max(np.asarray(data.get_data("Data Set code")).ravel()) + 1):
+    #    data.remove_all_filters()
+    #    data.add_inclusive_filter("Data Set code", '=', dataset)
+    #    Ypredict = model.predict(data.get_x_data())
+    #    Ydata = np.asarray(data.get_y_data()).ravel()
+    #    # calculate rms
+    #    rms = np.sqrt(mean_squared_error(Ypredict, Ydata))
+    #    # graph outputs
+    #    ax.scatter(Ydata, Ypredict, s=7, color=colors[dataset], label= datasets[dataset], lw = 0)
+    #    #ax.text(.05, .83 - .05*dataset, '{} RMS: {:.3f}'.format(datasets[dataset],rms), fontsize=14, transform=ax.transAxes)
+    Ypredict = model.predict(data.get_x_data())
+    Ydata = np.asarray(data.get_y_data()).ravel()
+    # calculate rms
+    rms = np.sqrt(mean_squared_error(Ypredict, Ydata))
+    # graph outputs
+    dataset=0 #TTM dummy index value
+    ax.scatter(Ydata, Ypredict, s=7, color=colors[dataset], label= datasets[dataset], lw = 0)
+    ax.text(.05, .83 - .05*dataset, '{} RMS: {:.3f}'.format(datasets[dataset],rms), fontsize=14, transform=ax.transAxes)
 
     ax.legend()
     ax.plot(ax.get_ylim(), ax.get_ylim(), ls="--", c=".3")
