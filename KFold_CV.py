@@ -7,7 +7,15 @@ from sklearn import cross_validation
 from sklearn.metrics import mean_squared_error
 
 
-def execute(model, data, savepath, num_runs=200, num_folds=5, *args, **kwargs):
+def execute(model, data, savepath, lwr_data="", *args, **kwargs):
+    if "num_runs" in kwargs.keys():
+        num_runs = int(kwargs["num_runs"])
+    else:
+        num_runs = 200
+    if "num_folds" in kwargs.keys():
+        num_folds = int(kwargs["num_folds"])
+    else:
+        num_runs = 5
 
     # get data
     Ydata = np.array(data.get_y_data()).ravel()
