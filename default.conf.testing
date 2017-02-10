@@ -1,0 +1,125 @@
+[default]
+#data_path = cd1_ivar_20170209_164109.csv
+data_path = cd2_ivar_20170209_164122.csv
+save_path = {}.png
+lwr_data_path = cd2_lwr_20170209_164158.csv
+#need CD1's LWR data too
+#lwr_data_path = ./test_data/test_lwr_1_20170203_140249.csv
+X = N(at_percent_Cu),N(at_percent_Ni),N(at_percent_Mn),N(at_percent_P),N(at_percent_Si),N(at_percent_C),N(log(fluence_n_cm2)),N(log(flux_n_cm2_sec)),N(temperature_C),N(log(eff fl 100p=26))
+#X = N(Cu),N(Ni),N(Mn),N(P),N(Si),N( C ),N(Temp),N(log(fluence)),N_log(eff fl p =.1)
+Y = delta_sigma_y_MPa
+#Y = delta sigma
+weights = False
+#whether or not the weights column in the dataset is applied which duplicates weighted data
+
+#The name of the program that creates the model, there should be a get() function in this file which returns the model
+model = gkrr_model
+#TTM below test is the sequence of tests
+#WORKING:
+#test_cases = KRRGridSearch
+#test_cases = KFold_CV
+#test_cases = LeaveOutAlloyCV
+#test_cases = FullFit
+#test_cases = PredictionVsFluence
+test_cases = ExtrapolateToLWR
+#NOT YET:
+#test_cases = FullFit,KFold_CV
+#test_cases = FullFit,ErrorBias,KFold_CV,LeaveOutAlloyCV,PredictionVsFluence
+#TTM individual testing
+#test_cases = PredictionVsFluence
+#test_cases = KFold_CV
+#test_cases = ExtrapolateToLWR
+#test_cases = ATRExtrapolation
+
+#The configuration for AllTests.py
+[AllTests]
+data_path = ${default:data_path}
+save_path = ${default:save_path}
+lwr_data_path = ${default:lwr_data_path}
+weights = ${default:weights}
+X = ${default:X}
+Y = ${default:Y}
+model = gkrr_model
+
+#list of all the tests you need, name should be exactly same as the file name.
+#The execute() function of each file will be called
+test_cases = ${default:test_cases}
+
+#if some test files have different configuration setting than AllTests, you can make changes by adding a
+#separate section
+[KRRGridSearch]
+grid_density = 8
+##
+
+[KFold_CV]
+num_runs = 20
+#num_runs = 200
+num_folds = 5
+
+[LeaveOutAlloyCV]
+save_path = ./leaveoutgraphs/{}.png
+
+[FullFit]
+##
+#
+
+[PredictionVsFluence]
+save_path = ./predictionvsfluence/{}.png
+
+[ExtrapolateToLWR]
+save_path = ./extrapolateLWR/{}.png
+
+
+[dtr_model]
+max_depth = 5
+min_samples_split = 2
+min_samples_leaf = 1
+split criterion = mse
+
+[gkrr_model]
+alpha = 0.002682696
+gamma = 0.61054023
+#for CD 2 set: 0.002682696  0.61054023 RMSE 38.22
+# automate putting in alpha and gamma
+# 7.84759970351e-05,0.194748303991,38.0207617107 #among lowest RMSEs; 
+# matches previously-reported alpha and gamma from Jerit
+coef0 = 1
+degree = 3
+kernel = rbf
+
+[lkrr_model]
+alpha = 0.00518
+gamma = 0.518
+kernel = laplacian
+
+[randomforest_model]
+estimators = 100
+max_depth = 5
+min_samples_split = 2
+min_samples_leaf = 1
+max_leaf_nodes = None
+jobs = 1
+
+[adaboost_model]
+estimators = 275
+max_depth = 12
+min_samples_split = 2
+min_samples_leaf = 1
+learning rate = 1
+loss function = linear
+
+#minmax, size, transfer_function are the verbatim arguments for neurolab.net.newff()
+#training_algorithm is the verbatim 'support train fcn' for neurolab.train omitting 'train_'
+#see: https://pythonhosted.org/neurolab/lib.html#module-neurolab.net
+#epochs,show,goal are neurolab.net.train() arguments
+#see: https://pythonhosted.org/neurolab/lib.html#train-algorithms-based-gradients-algorithms
+#NOTE: minmax is verbose b/c [[0,1]]*9 will have bad pointers
+[nn_model]
+minmax = [[0, 1],[0, 1],[0, 1],[0, 1],[0, 1],[0, 1],[0, 1],[0, 1],[0, 1]]
+size = [11,1]
+transfer_function = TanSig
+training_algorithm = bfgs
+epochs = 5
+show = False
+goal = 0.01
+
