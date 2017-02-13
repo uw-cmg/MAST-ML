@@ -84,7 +84,8 @@ def export_spreadsheet(db, newcname="", prepath="", fieldlist=list()):
     for field in fieldlist:
         fieldstr = fieldstr + field + ","
     
-    outputpath = "%s_%s.csv" % (newcname, time.strftime("%Y%m%d_%H%M%S"))
+    #outputpath = "%s_%s.csv" % (newcname, time.strftime("%Y%m%d_%H%M%S"))
+    outputpath = "%s.csv" % newcname
     if not (prepath == ""):
         outputpath = os.path.join(prepath, outputpath)
 
@@ -118,6 +119,18 @@ def add_time_field(db, newcname, verbose=0):
             print("Updated record %s with time %3f sec." % (record["_id"],fieldval))
     return
 
+def add_alloy_number_field(db, newcname, verbose=0):
+    myfunc = getattr(apu,"look_up_name_or_number")
+    records = db[newcname].find()
+    for record in records:
+        fieldval = myfunc(db, record["Alloy"], "name", verbose)
+        db[newcname].update(
+            {'_id':record["_id"]},
+            {"$set":{"alloy_number":fieldval}}
+            )
+        if verbose > 0:
+            print("Updated record %s with alloy number %i." % (record["_id"],fieldval))
+    return
 
 
 def add_atomic_percent_field(db, newcname, verbose=0):

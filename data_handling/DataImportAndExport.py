@@ -21,13 +21,13 @@ import subprocess
 import data_cleaning as dclean
 import create_analysis_spreadsheets as cas
 import data_verification as dver
-
+import time
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 
 #Set up paths and names
 dbpath = "../../../data/DBTT_mongo"
-exportpath = "../../../data/DBTT_mongo/data_exports"
+exportpath = "../../../data/DBTT_mongo/data_exports_%s" % time.strftime("%Y%m%d_%H%M%S")
 importpath = "../../../data/DBTT_mongo/imports_201702"
 db_base="dbtt"
 db = "" #will be set by script
@@ -103,6 +103,7 @@ def clean_ivar_basic(db, cname, verbose=1):
 def add_standard_fields(db, cname, verbose=0):
     """Add fields that are standard to most analysis
     """
+    cas.add_alloy_number_field(db, cname, verbose=0)
     cas.add_atomic_percent_field(db, cname, verbose=0)
     cas.add_log10_of_a_field(db, cname,"fluence_n_cm2")
     cas.add_log10_of_a_field(db, cname,"flux_n_cm2_sec")

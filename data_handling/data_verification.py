@@ -31,6 +31,8 @@ def make_per_alloy_plots(db, clist, pathstem="", verbose=0):
             clist <list of str>: list of collection names
             pathstem <str>: path for figures
     """
+    if not os.path.isdir(pathstem):
+        os.mkdir(pathstem)
     alloys = get_alloy_list(db, clist, verbose)
     markerlist = ['o','x','^','s','d','v','+']
     markersize = 10
