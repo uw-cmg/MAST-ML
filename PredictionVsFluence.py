@@ -42,6 +42,7 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
         data.remove_all_filters()
         data.add_inclusive_filter("alloy_number", '=', alloy)
         if len(data.get_x_data()) == 0: continue  # if alloy doesn't exist(x data is empty), then continue
+        AlloyName = data.get_data("Alloy")[0][0]
 
         fig, ax = plt.subplots()
 
@@ -75,8 +76,7 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
 
 
         ax.legend(loc = 0)
-        ax.set_title(alloy)
-        #ax.set_title("{}({})".format(alloy,AlloyName))
+        ax.set_title("{}({})".format(alloy,AlloyName))
         ax.set_xlabel("log(Fluence(n/cm^2))")
         ax.set_ylabel("∆sigma (MPa)")
         fig.savefig(savepath.format(ax.get_title()), dpi=200, bbox_inches='tight')
