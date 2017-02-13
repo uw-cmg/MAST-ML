@@ -172,8 +172,6 @@ def create_lwr(db, cname, fromcname, verbose=1):
     #Additional cleaning. Flux and fluence must be present for all records.
     dclean.standardize_flux_and_fluence(db, cname)
     cas.rename_field(db, cname, "CD_delta_sigma_y_MPa", "delta_sigma_y_MPa")
-    cas.rename_field(db, cname, "time_sec", "simulation_time_sec")
-    cas.add_time_field(db, cname)
     cas.add_basic_field(db, cname, "temperature_C", 290.0) # all at 290
     add_standard_fields(db, cname)
     return
