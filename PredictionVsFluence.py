@@ -37,25 +37,17 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
     #Fluence  = (np.log10(aFluence) - np.min(combinedfluence))/(np.max(np.asarray(combinedfluence)) - np.min(combinedfluence))
     #EffectiveFluence = (np.log10(aEffectiveFluence) - np.min(combinedeffectivefluence))/(np.max(np.asarray(combinedeffectivefluence)) - np.min(combinedeffectivefluence))
 
-    #TTM+block get alloy names
-    #TTM modify alloys since they are no longer integers
-    alloys_nested = data.get_data("Alloy")
-    import itertools
-    chain = itertools.chain.from_iterable(alloys_nested)
-    alloys = list(chain)
-    alloys = list(set(alloys))
-    alloys.sort()
-
-    for alloy in alloys:
+    for alloy in range(1, max(data.get_data("alloy_number"))[0] + 1):
         print(alloy)
-        data.add_inclusive_filter("Alloy", '=', alloy)
+        data.remove_all_filters()
+        data.add_inclusive_filter("alloy_number", '=', alloy)
         if len(data.get_x_data()) == 0: continue  # if alloy doesn't exist(x data is empty), then continue
 
         fig, ax = plt.subplots()
 
 
         lwr_data.remove_all_filters()
-        lwr_data.add_inclusive_filter("Alloy", '=', alloy)
+        lwr_data.add_inclusive_filter("alloy_number", '=', alloy)
         lwr_data.add_exclusive_filter(temp_str, '<>', 290)
 
 

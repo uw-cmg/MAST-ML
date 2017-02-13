@@ -43,18 +43,10 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
     fig, ax = plt.subplots(1, 2, figsize = (11,5))
     cmap = get_cmap(60)
     
-    #TTM+block get alloy names
-    #TTM modify alloys since they are no longer integers
-    alloys_nested = data.get_data("Alloy")
-    import itertools
-    chain = itertools.chain.from_iterable(alloys_nested)
-    alloys = list(chain)
-    alloys = list(set(alloys))
-    alloys.sort()
-    for alloy in alloys:
+    for alloy in range(1, max(data.get_data("alloy_number"))[0] + 1):
         print(alloy)
         lwr_data.remove_all_filters()
-        lwr_data.add_inclusive_filter("Alloy", '=', alloy)
+        lwr_data.add_inclusive_filter("alloy_number", '=', alloy)
 
         if len(lwr_data.get_x_data()) == 0: continue
 
@@ -65,7 +57,7 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
         rms = np.sqrt(mean_squared_error(Ypredict, Yactual))
         rms_list.append(rms)
         if rms > 200:
-            ax[0].scatter(Yactual, Ypredict, s= 5, c = cmap(alloys.index(alloy)), label= alloy, lw = 0)
+            ax[0].scatter(Yactual, Ypredict, s= 5, c = cmap(alloy), label= alloy, lw = 0)
         else: ax[0].scatter(Yactual, Ypredict, s = 5, c = 'black', lw = 0)
     
         lwr_data.add_exclusive_filter("time_sec", '<', 1892160000) #60 years
@@ -117,14 +109,14 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
     plt.close()
 
     fig, ax = plt.subplots(figsize=(10, 4))
-    plt.xticks(np.arange(0, len(alloys) + 1, 5))
-    ax.scatter(np.arange(0, len(alloys)), rms_list, s = 10, color = 'black')
+    plt.xticks(np.arange(0, max(alloy_list) + 1, 5))
+    ax.scatter(alloy_list, rms_list, s = 10, color = 'black')
     ax.plot((0, 59), (0, 0), ls="--", c=".3")
     ax.set_xlabel('Alloy')
     ax.set_ylabel('RMSE')
     ax.set_title('Extrapolate to LWR per Alloy')
     for x in np.argsort(rms_list)[-5:]:
-        ax.annotate(s=alloy_list[x], xy=(x, rms_list[x]))
+        ax.annotate(s=alloy_list[x], xy=(alloy_list[x], rms_list[x]))
     plt.savefig(savepath.format("Extrapolate to LWR"), dpi = 300, bbox_inches='tight')
     plt.close()
 
