@@ -18,9 +18,9 @@ import os
 import sys
 import traceback
 import subprocess
-import data_cleaning as dclean
-import create_analysis_spreadsheets as cas
-import data_verification as dver
+import data_handling.data_cleaning as dclean
+import data_handling.create_analysis_spreadsheets as cas
+import data_handling.data_verification as dver
 import time
 from pymongo import MongoClient
 from bson.objectid import ObjectId
@@ -58,7 +58,7 @@ def get_unique_name(client, db_base, nmax=100):
     sys.exit(-1)
     return None
 
-def import_initial_collections(db, cbasic):
+def import_initial_collections(db, cbasic, importpath):
     """Import initial collections for use in creating specialized collections.
     """
     for cname in cbasic.keys():
@@ -172,6 +172,8 @@ def create_lwr(db, cname, fromcname, verbose=1):
     #Additional cleaning. Flux and fluence must be present for all records.
     dclean.standardize_flux_and_fluence(db, cname)
     cas.rename_field(db, cname, "CD_delta_sigma_y_MPa", "delta_sigma_y_MPa")
+    cas.rename_field(db, cname, "time_sec", "simulation_time_sec")
+    cas.add_time_field(db, cname)
     cas.add_basic_field(db, cname, "temperature_C", 290.0) # all at 290
     add_standard_fields(db, cname)
     return
@@ -210,7 +212,7 @@ def main(importpath):
     exportpath = os.path.join(dirpath, exportfolder)
     db = client[dbname]
     #import initial collections
-    import_initial_collections(db, cbasic)
+    import_initial_collections(db, cbasic, importpath)
     #create ancillary databases and spreadsheets
     clean_ivar_basic(db, "ucsb_ivar_and_ivarplus")
     create_expt_ivar(db, "expt_ivar", "ucsb_ivar_and_ivarplus", verbose=0)

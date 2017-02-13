@@ -11,8 +11,8 @@ import sys
 import subprocess 
 import time
 from bson.objectid import ObjectId
-import data_transformations as dtf
-import alloy_property_utilities as apu
+import data_handling.data_transformations as dtf
+import data_handling.alloy_property_utilities as apu
 
 
 def get_nonignore_records(db, cname):

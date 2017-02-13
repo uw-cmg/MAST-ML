@@ -8,7 +8,7 @@ import pymongo
 import os
 import sys
 import time
-import percent_converter
+import data_handling.percent_converter as pconv
 
 #Info specific to the alloys database
 cname_alloy = "alloys"
@@ -52,7 +52,7 @@ def get_atomic_percents(db, alloy, verbose=0):
         for elem in elemlist:
             compstr += "%s %s," % (elem, compdict[elem])
         compstr = compstr[:-1] #remove last comma
-        outdict = percent_converter.main(compstr,"weight",verbose)
+        outdict = pconv.main(compstr,"weight",verbose)
         if (verbose > 0):
             print("output dict: %s" % outdict)
         return outdict
