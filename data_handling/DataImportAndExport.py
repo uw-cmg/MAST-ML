@@ -25,20 +25,6 @@ import time
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 
-#Set up paths and names
-dbpath = "../../../data/DBTT_mongo"
-exportpath = "../../../data/DBTT_mongo/data_exports_%s" % time.strftime("%Y%m%d_%H%M%S")
-importpath = "../../../data/DBTT_mongo/imports_201702"
-db_base="dbtt"
-db = "" #will be set by script
-ivarpluscname = "ivarplus_data"
-#The following csv files should be in $importpath
-cbasic=dict()
-cbasic["alloys"] = "alloy_properties.csv"
-cbasic["cd_ivar_2017"]="CD_IVAR_Hardening_2017-1_with_ivar_columns_reduced.csv"
-cbasic["cd_ivar_2016"]="CD_IVAR_Hardening_clean_2016.csv"
-cbasic["cd_lwr_2017"]="lwr_cd_2017_reduced_for_import.csv"
-cbasic["ucsb_ivar_and_ivarplus"]="ucsb_ivar_and_ivarplus.csv"
 
 def get_mongo_client():
     """Check connection and get mongo client
@@ -119,7 +105,6 @@ def create_expt_ivar(db, cname, fromcname, verbose=1):
     """
     cas.transfer_nonignore_records(db, fromcname, cname, verbose)
     add_standard_fields(db, cname)
-    cas.export_spreadsheet(db, cname, exportpath)
     return
 
 def prefilter_ivar_for_cd1(db, cname, fromcname, verbose=1):
@@ -142,7 +127,6 @@ def create_cd_ivar(db, cname, fromcname, fromcdname, verbose=1):
     cas.remove_field(db, cname, "delta_sigma_y_MPa") #will replace with CD data
     add_cd(db, cname, fromcdname)
     add_standard_fields(db, cname)
-    cas.export_spreadsheet(db, cname, exportpath)
     return
 
 
@@ -159,7 +143,6 @@ def create_ivar_for_fullfit(db, cname, fromcname, verbose=1):
     print(len(id_list))
     cas.transfer_nonignore_records(db, tempname, cname, verbose)
     db.drop_collection(tempname)
-    cas.export_spreadsheet(db, cname, exportpath)
     return
 
 def clean_lwr(db, cname, verbose=1):
@@ -191,7 +174,6 @@ def create_lwr(db, cname, fromcname, verbose=1):
     cas.rename_field(db, cname, "CD_delta_sigma_y_MPa", "delta_sigma_y_MPa")
     cas.add_basic_field(db, cname, "temperature_C", 290.0) # all at 290
     add_standard_fields(db, cname)
-    cas.export_spreadsheet(db, cname, exportpath)
     return
 
 def add_cd(db, cname, cdname, verbose=1):
@@ -213,27 +195,49 @@ def add_cd(db, cname, cdname, verbose=1):
     print("Updated with condition and old temperature matches from %s." % cdname)
     return
 
-if __name__ == "__main__":
+def main(importpath):
+    dirpath = os.path.dirname(importpath)
+    db_base="dbtt"
+    cbasic=dict()
+    cbasic["alloys"] = "alloy_properties.csv"
+    cbasic["cd_ivar_2017"]="CD_IVAR_Hardening_2017-1_with_ivar_columns_reduced.csv"
+    cbasic["cd_ivar_2016"]="CD_IVAR_Hardening_clean_2016.csv"
+    cbasic["cd_lwr_2017"]="lwr_cd_2017_reduced_for_import.csv"
+    cbasic["ucsb_ivar_and_ivarplus"]="ucsb_ivar_and_ivarplus.csv"
     client = get_mongo_client()
     dbname = get_unique_name(client, db_base)
+    exportfolder = "data_exports_%s_%s" %(dbname,time.strftime("%Y%m%d_%H%M%S"))
+    exportpath = os.path.join(dirpath, exportfolder)
     db = client[dbname]
     #import initial collections
     import_initial_collections(db, cbasic)
     #create ancillary databases and spreadsheets
     clean_ivar_basic(db, "ucsb_ivar_and_ivarplus")
     create_expt_ivar(db, "expt_ivar", "ucsb_ivar_and_ivarplus", verbose=0)
+    cas.export_spreadsheet(db, "expt_ivar", exportpath)
     prefilter_ivar_for_cd1(db, "cd1_ivar_temp", "ucsb_ivar_and_ivarplus")
     create_cd_ivar(db, "cd1_ivar", "cd1_ivar_temp", "cd_ivar_2016")
+    cas.export_spreadsheet(db, "cd1_ivar", exportpath)
     create_cd_ivar(db, "cd2_ivar", "expt_ivar", "cd_ivar_2017")
+    cas.export_spreadsheet(db, "cd2_ivar", exportpath)
     create_ivar_for_fullfit(db, "expt_ivaronly", "expt_ivar")
+    cas.export_spreadsheet(db, "expt_ivaronly", exportpath)
     create_ivar_for_fullfit(db, "cd1_ivaronly", "cd1_ivar")
+    cas.export_spreadsheet(db, "cd1_ivaronly", exportpath)
     create_ivar_for_fullfit(db, "cd2_ivaronly", "cd2_ivar")
+    cas.export_spreadsheet(db, "cd2_ivaronly", exportpath)
     clean_lwr(db, "cd_lwr_2017")
     create_lwr(db, "cd2_lwr", "cd_lwr_2017")
+    cas.export_spreadsheet(db, "cd2_lwr", exportpath)
     #verify data
     clist=["expt_ivar","cd1_ivar","cd2_ivar","cd2_lwr"]
     dver.make_per_alloy_plots(db, clist, "%s/verification_plots" % exportpath) 
     #Additional to-do
     print("When filter CD1 LWR, remove alloys 14 and 29 as well")
+    return exportpath
+
+if __name__ == "__main__":
+    importpath = "../../../data/DBTT_mongo/imports_201702"
+    exportpath = main(importpath)
+    print("Files in %s" % exportpath)
     sys.exit()
-sys.exit()
