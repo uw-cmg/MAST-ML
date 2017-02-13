@@ -98,9 +98,10 @@ def main(datapath, scriptpath):
     dnames = ["expt","cd1","cd2"]
     for dname in dnames:
         testdict[dname] = dict()
-    grid_density = 4
+    grid_density = 8
     #testdict["expt"]["KRRGridSearch"] = {"grid_density":grid_density}
     #testdict["cd1"]["KRRGridSearch"] = {"grid_density":grid_density}
+    #
     testdict["cd2"]["KRRGridSearch"] = {"grid_density":grid_density}
     testdict["cd2"]["KFold_CV"] = {"num_runs":20,"num_folds":5}
     testdict["cd2"]["LeaveOutAlloyCV"] = {}
