@@ -97,6 +97,8 @@ def add_standard_fields(db, cname, verbose=0):
     cas.add_minmax_normalization_of_a_field(db, cname, "log(flux_n_cm2_sec)")
     cas.add_minmax_normalization_of_a_field(db, cname, "temperature_C")
     cas.add_generic_effective_fluence_field(db, cname, 3e10, 0.26)
+    cas.add_generic_effective_fluence_field(db, cname, 3e10, 0.10)
+    cas.add_generic_effective_fluence_field(db, cname, 3e10, 0.20)
     cas.add_stddev_normalization_of_a_field(db, cname, "delta_sigma_y_MPa")
     return
 

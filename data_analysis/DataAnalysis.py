@@ -16,6 +16,7 @@ import sys
 import traceback
 import subprocess
 import time
+import data_parser
 
 def get_feature_list():
     features=list()
@@ -25,11 +26,45 @@ def get_feature_list():
     features.append("N(at_percent_P)")
     features.append("N(at_percent_Si)")
     features.append("N(at_percent_C)")
-    features.append("N(log(fluence_n_cm2))")
-    features.append("N(log(flux_n_cm2_sec))")
+    #features.append("N(log(fluence_n_cm2))")
+    #features.append("N(log(flux_n_cm2_sec))")
     features.append("N(temperature_C)")
-    features.append("N(log(eff fl 100p=26))")
+    #features.append("N(log(eff fl 100p=26))")
+    features.append("N(log(eff fl 100p=20))")
+    features.append("N(log(eff fl 100p=10))")
     return features
+
+def get_gkrr_hyperparams(testpath, csvname="grid_scores.csv", verbose=0):
+    dirname = os.path.dirname(testpath)
+    mname = "KRRGridSearch"
+    mdir = os.path.join(dirname, mname)
+    hdict=dict()
+    hdict["alpha"] = 0.0
+    hdict["gamma"] = 0.0
+    if not os.path.isdir(mdir):
+        print("No hyperparameter results yet.")
+        return hdict
+    hdata_path = os.path.join(mdir, csvname) 
+    hdata = data_parser.parse(hdata_path)
+    hdata.set_y_feature("rms")
+    rms = hdata.get_y_data() 
+    param_feats = list(hdict.keys())
+    param_feats.sort() #SORTED keys
+    if verbose > 0:
+        print("parameter features: %s" % param_feats)
+    hdata.set_x_features(param_feats)
+    params = hdata.get_x_data()
+    small_idx = rms.index(min(rms))
+    if verbose > 0:
+        print("index number: %i" % small_idx)
+    param_vals = params[small_idx]
+    for pidx in range(0, len(param_feats)):
+        param = param_feats[pidx]
+        param_val = param_vals[pidx]
+        hdict[param] = param_val
+    if verbose > 0:
+        print(hdict)
+    return hdict
 
 def write_config_file(testpath, dsetname, testname, testdict):
     fname = os.path.join(testpath, "default.conf") #currently only takes default.conf as test name??
@@ -59,12 +94,9 @@ def write_config_file(testpath, dsetname, testname, testdict):
     #
     lines.append("[gkrr_model]")
     print("Change hardcode")
-    lines.append("alpha = 0.002682696") 
-    lines.append("gamma = 0.61054023")
-    #for CD 2 set: 0.002682696  0.61054023 RMSE 38.22
-    # automate putting in alpha and gamma
-    # 7.84759970351e-05,0.194748303991,38.0207617107 #among lowest RMSEs; 
-    # matches previously-reported alpha and gamma from Jerit
+    hdict = get_gkrr_hyperparams(testpath, "grid_scores.csv")
+    for hkey in hdict.keys():
+        lines.append("%s = %3.8f" % (hkey, hdict[hkey]))
     lines.append("coef0 = 1")
     lines.append("degree = 3")
     lines.append("kernel = rbf")
@@ -98,7 +130,7 @@ def main(datapath, scriptpath):
     dnames = ["expt","cd1","cd2"]
     for dname in dnames:
         testdict[dname] = dict()
-    grid_density = 8
+    grid_density = 20
     #testdict["expt"]["KRRGridSearch"] = {"grid_density":grid_density}
     #testdict["cd1"]["KRRGridSearch"] = {"grid_density":grid_density}
     #
@@ -112,7 +144,13 @@ def main(datapath, scriptpath):
         dpath = os.path.join(datapath, dsetname)
         if not os.path.isdir(dpath):
             os.mkdir(dpath)
-        for testname in testdict[dsetname]:
+        testnames = list(testdict[dsetname].keys())
+        testnames.sort()
+        if "KRRGridSearch" in testnames: #Do grid search first, always
+            testnames.remove("KRRGridSearch")
+            testnames.insert(0,"KRRGridSearch")
+        print(testnames)
+        for testname in testnames:
             tpath = os.path.join(dpath, testname)
             if not os.path.isdir(tpath):
                 os.mkdir(tpath)
@@ -121,10 +159,11 @@ def main(datapath, scriptpath):
     return
 
 if __name__ == "__main__":
-    datapath = "../../../data/DBTT_mongo/data_exports_dbtt_36_20170213_120942"
+    datapath = "../../../data/DBTT_mongo/data_exports_dbtt_05_20170214_124539"
     scriptpath = "../"
     datapath = os.path.abspath(datapath)
     scriptpath = os.path.abspath(scriptpath)
+    #get_gkrr_hyperparams(os.path.join(datapath,"cd2","PredictionVsFluence"))
     main(datapath, scriptpath)
     print("Files in %s" % datapath)
     sys.exit()
