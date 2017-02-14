@@ -172,6 +172,14 @@ def clean_cd1_lwr(db, cname):
     [id_list, reason_list] = dclean.get_alloy_removal_ids(db, cname,[14,29])
     dclean.flag_for_ignore(db, cname, id_list, reason_list)
     print(len(id_list))
+    [id_list, reason_list] = dclean.get_field_condition_to_remove(db,cname,
+                                "temperature_C",270)
+    dclean.flag_for_ignore(db, cname, id_list, reason_list)
+    print(len(id_list))
+    [id_list, reason_list] = dclean.get_field_condition_to_remove(db,cname,
+                                "temperature_C",310)
+    dclean.flag_for_ignore(db, cname, id_list, reason_list)
+    print(len(id_list))
     return
 
 def create_lwr(db, cname, fromcname, verbose=1):
