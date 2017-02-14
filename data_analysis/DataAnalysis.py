@@ -37,14 +37,13 @@ def get_feature_list():
 def get_gkrr_hyperparams(testpath, csvname="grid_scores.csv", verbose=0):
     dirname = os.path.dirname(testpath)
     mname = "KRRGridSearch"
-    mdir = os.path.join(dirname, mname)
+    hdata_path = os.path.join(dirname, mname, csvname) 
     hdict=dict()
     hdict["alpha"] = 0.0
     hdict["gamma"] = 0.0
-    if not os.path.isdir(mdir):
+    if not os.path.isfile(hdata_path):
         print("No hyperparameter results yet.")
         return hdict
-    hdata_path = os.path.join(mdir, csvname) 
     hdata = data_parser.parse(hdata_path)
     hdata.set_y_feature("rms")
     rms = hdata.get_y_data() 
@@ -70,9 +69,11 @@ def write_config_file(testpath, dsetname, testname, testdict):
     fname = os.path.join(testpath, "default.conf") #currently only takes default.conf as test name??
     lines = list()
     lines.append("[default]")
-    lines.append("data_path = ../../%s_ivar.csv" % dsetname)
+    ivarcsv = testdict[dsetname]["csvs"]["ivar"]
+    lwrcsv = testdict[dsetname]["csvs"]["lwr"]
+    lines.append("data_path = ../../%s.csv" % ivarcsv)
+    lines.append("lwr_data_path = ../../%s.csv" % lwrcsv)
     lines.append("save_path = %s/{}.png" % testpath)
-    lines.append("lwr_data_path = ../../%s_lwr.csv" % dsetname)
     features = get_feature_list()
     xstr = "X = "
     for feature in features:
@@ -130,17 +131,35 @@ def main(datapath, scriptpath):
     dnames = ["expt","cd1","cd2"]
     for dname in dnames:
         testdict[dname] = dict()
-    grid_density = 20
+    grid_density = 4 #orig 20
+    num_runs = 20 #orig 200
+    num_folds = 5
     #testdict["expt"]["KRRGridSearch"] = {"grid_density":grid_density}
-    #testdict["cd1"]["KRRGridSearch"] = {"grid_density":grid_density}
+    testdict["expt"]["KRRGridSearch"] = {"grid_density":grid_density}
+    testdict["expt"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
+    testdict["expt"]["LeaveOutAlloyCV"] = {}
+    testdict["expt"]["FullFit"] = {}
+    #testdict["expt"]["PredictionVsFluence"] = {}
+    #testdict["expt"]["ExtrapolateToLWR"] = {}
+    testdict["expt"]["csvs"] ={"ivar":"expt_ivar", "lwr":"cd1_lwr"}
+    #
+    testdict["cd1"]["KRRGridSearch"] = {"grid_density":grid_density}
+    testdict["cd1"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
+    testdict["cd1"]["LeaveOutAlloyCV"] = {}
+    testdict["cd1"]["FullFit"] = {}
+    testdict["cd1"]["PredictionVsFluence"] = {}
+    testdict["cd1"]["ExtrapolateToLWR"] = {}
+    testdict["cd1"]["csvs"] ={"ivar":"cd1_ivar", "lwr":"cd1_lwr"}
     #
     testdict["cd2"]["KRRGridSearch"] = {"grid_density":grid_density}
-    testdict["cd2"]["KFold_CV"] = {"num_runs":20,"num_folds":5}
+    testdict["cd2"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
     testdict["cd2"]["LeaveOutAlloyCV"] = {}
     testdict["cd2"]["FullFit"] = {}
     testdict["cd2"]["PredictionVsFluence"] = {}
     testdict["cd2"]["ExtrapolateToLWR"] = {}
-    for dsetname in testdict.keys():
+    testdict["cd2"]["csvs"] ={"ivar":"cd2_ivar", "lwr":"cd2_lwr"}
+    #for dsetname in testdict.keys():
+    for dsetname in ["cd1"]:
         dpath = os.path.join(datapath, dsetname)
         if not os.path.isdir(dpath):
             os.mkdir(dpath)
@@ -151,15 +170,16 @@ def main(datapath, scriptpath):
             testnames.insert(0,"KRRGridSearch")
         print(testnames)
         for testname in testnames:
-            tpath = os.path.join(dpath, testname)
-            if not os.path.isdir(tpath):
-                os.mkdir(tpath)
-            write_config_file(tpath, dsetname, testname, testdict)
-            do_analysis(tpath, scriptpath)
+            if not testname == "csvs":
+                tpath = os.path.join(dpath, testname)
+                if not os.path.isdir(tpath):
+                    os.mkdir(tpath)
+                write_config_file(tpath, dsetname, testname, testdict)
+                do_analysis(tpath, scriptpath)
     return
 
 if __name__ == "__main__":
-    datapath = "../../../data/DBTT_mongo/data_exports_dbtt_05_20170214_124539"
+    datapath = "../../../data/DBTT_mongo/data_exports_dbtt_22_20170214_153258"
     scriptpath = "../"
     datapath = os.path.abspath(datapath)
     scriptpath = os.path.abspath(scriptpath)
