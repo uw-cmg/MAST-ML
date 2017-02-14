@@ -21,6 +21,7 @@ import subprocess
 import data_handling.data_cleaning as dclean
 import data_handling.create_analysis_spreadsheets as cas
 import data_handling.data_verification as dver
+import data_handling.alloy_property_utilities as apu
 import time
 from pymongo import MongoClient
 from bson.objectid import ObjectId
@@ -167,6 +168,12 @@ def clean_lwr(db, cname, verbose=1):
     print(len(id_list))
     return
 
+def clean_cd1_lwr(db, cname):
+    [id_list, reason_list] = dclean.get_alloy_removal_ids(db, cname,[14,29])
+    dclean.flag_for_ignore(db, cname, id_list, reason_list)
+    print(len(id_list))
+    return
+
 def create_lwr(db, cname, fromcname, verbose=1):
     """Create LWR condition spreadsheet
     """
@@ -174,10 +181,37 @@ def create_lwr(db, cname, fromcname, verbose=1):
     #Additional cleaning. Flux and fluence must be present for all records.
     dclean.standardize_flux_and_fluence(db, cname)
     cas.rename_field(db, cname, "CD_delta_sigma_y_MPa", "delta_sigma_y_MPa")
-    cas.add_basic_field(db, cname, "temperature_C", 290.0) # all at 290
+    if not "temperature_C" in cas.list_all_fields(db, cname):
+        cas.add_basic_field(db, cname, "temperature_C", 290.0) # all at 290
     add_standard_fields(db, cname)
     return
 
+def reformat_lwr(db, cname, fromcname, verbose=1):
+    """Reformat CD LWR 2016 where each record has a number of
+        columns for each alloy number
+    """
+    alloy_numbers = apu.get_alloy_numbers(db)
+    fields = cas.list_all_fields(db, fromcname)
+    transferfields = list(fields)
+    transferfields.remove("_id") # do not copy over ID from previous db
+    for alloy_num in alloy_numbers:
+        if str(alloy_num) in transferfields: #filter out alloy numbers
+            transferfields.remove(str(alloy_num))
+    records = db[fromcname].find()
+    for record in records:
+        for alloy_num in alloy_numbers:
+            idict=dict()
+            for tfield in transferfields:
+                idict[tfield] = record[tfield]
+            try: 
+                dsyval = float(record["%i" % alloy_num])
+            except (ValueError, KeyError): #might be Err!, blank, or not exist
+                continue
+            idict["delta_sigma_y_MPa"] = dsyval
+            alloy_name = apu.look_up_name_or_number(db,alloy_num,"number")
+            idict["Alloy"] = alloy_name
+            db[cname].insert_one(idict)
+    return
 def add_cd(db, cname, cdname, verbose=1):
     """Match CD records to expt IVAR conditions and replace delta_sigma_y_MPa
     """
@@ -206,6 +240,7 @@ def main(importpath):
     cbasic["cd_ivar_2016"]="CD_IVAR_Hardening_clean_2016.csv"
     cbasic["cd_lwr_2017"]="lwr_cd_2017_reduced_for_import.csv"
     cbasic["ucsb_ivar_and_ivarplus"]="ucsb_ivar_and_ivarplus.csv"
+    cbasic["cd_lwr_2016_bynum"]="CDTemp_CD_lwr_2016_raw.csv"
     client = get_mongo_client()
     dbname = get_unique_name(client, db_base)
     exportfolder = "data_exports_%s_%s" %(dbname,time.strftime("%Y%m%d_%H%M%S"))
@@ -231,15 +266,21 @@ def main(importpath):
     clean_lwr(db, "cd_lwr_2017")
     create_lwr(db, "cd2_lwr", "cd_lwr_2017")
     cas.export_spreadsheet(db, "cd2_lwr", exportpath)
+    reformat_lwr(db, "cd_lwr_2016", "cd_lwr_2016_bynum")
+    clean_cd1_lwr(db, "cd_lwr_2016")
+    clean_lwr(db, "cd_lwr_2016")
+    create_lwr(db, "cd1_lwr", "cd_lwr_2016")
+    cas.export_spreadsheet(db, "cd1_lwr", exportpath)
     #verify data
-    clist=["expt_ivar","cd1_ivar","cd2_ivar","cd2_lwr"]
+    clist=["expt_ivar","cd1_ivar","cd2_ivar","cd1_lwr","cd2_lwr"]
     dver.make_per_alloy_plots(db, clist, "%s/verification_plots" % exportpath) 
     #Additional to-do
-    print("When filter CD1 LWR, remove alloys 14 and 29 as well")
+    ##
     return exportpath
 
 if __name__ == "__main__":
     importpath = "../../../data/DBTT_mongo/imports_201702"
+    importpath = os.path.abspath(importpath)
     exportpath = main(importpath)
     print("Files in %s" % exportpath)
     sys.exit()

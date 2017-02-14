@@ -14,13 +14,21 @@ import data_handling.percent_converter as pconv
 cname_alloy = "alloys"
 alias_cols = ["alias_1"] #only one column right now
 
+def get_alloy_numbers(db):
+    alloy_numbers = db[cname_alloy].distinct("alloy_number")
+    return alloy_numbers
+
+def get_alloy_names(db):
+    std_names = db[cname_alloy].distinct("Alloy")
+    return std_names
+
 def get_standardized_alloy_name(db, alloy, verbose=0):
     """Standardize alloy names
         CD LWR data has some names that do not match.
         Args:
             alloy <str>: Name to look up
     """
-    std_names = db[cname_alloy].distinct("Alloy")
+    std_names = get_alloy_names(db)
     if alloy in std_names:
         return alloy
     for alias_col in alias_cols:
@@ -59,10 +67,10 @@ def get_atomic_percents(db, alloy, verbose=0):
     raise ValueError("Could not get composition for alloy %s" % alloy)
     return
 
-def look_up_name_or_number(db, istr="",itype="name", verbose=0):
+def look_up_name_or_number(db, ival="",itype="name", verbose=0):
     """Look up alloy name or number.
         Args:
-            istr <str or int>: input value
+            ival <str or int>: input value
             itype <str>: input type: alloy "name" or "number"
         Returns:
             <str or int>: alloy number or name
@@ -76,7 +84,7 @@ def look_up_name_or_number(db, istr="",itype="name", verbose=0):
     else:
         print("Invalid entry: %s should be 'name' or 'number'" % itype)
         return None
-    results = db[cname_alloy].find({ilookup:istr})
+    results = db[cname_alloy].find({ilookup:ival})
     olist = list()
     for result in results:
         if verbose > 0:
