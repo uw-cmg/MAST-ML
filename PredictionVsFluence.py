@@ -49,7 +49,7 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
 
         lwr_data.remove_all_filters()
         lwr_data.add_inclusive_filter("alloy_number", '=', alloy)
-        lwr_data.add_exclusive_filter(temp_str, '<>', 290)
+        #lwr_data.add_exclusive_filter(temp_str, '<>', 290)
 
 
         ax.plot(lwr_data.get_data(fluence_str), model.predict(lwr_data.get_x_data()), lw=3,
