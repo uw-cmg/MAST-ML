@@ -75,7 +75,7 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
 
 
 
-        ax.legend(loc = 0)
+        ax.legend(loc = "upper left") #data is sigmoid; 'best' can block data
         ax.set_title("{}({})".format(alloy,AlloyName))
         ax.set_xlabel("log(Fluence(n/cm^2))")
         ax.set_ylabel("∆sigma (MPa)")
