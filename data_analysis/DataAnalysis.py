@@ -116,13 +116,19 @@ def write_config_file(testpath, dsetname, testname, testdict):
 def do_analysis(testpath, scriptpath):
     curdir = os.getcwd()
     os.chdir(testpath)
+    ofname = os.path.join(testpath,"output")
+    ofile = open(ofname,'w')
     rproc = subprocess.Popen("nice -n 19 python %s/AllTests.py" % scriptpath, shell=True,
-                    stdout = subprocess.PIPE,
+                    stdout = ofile,
+                    #stdout = subprocess.PIPE,
                     stderr = subprocess.PIPE)
     rproc.wait()
+    ofile.close()
     (status,message)=rproc.communicate()
-    print(status.decode('utf-8'))
-    print(message.decode('utf-8'))
+    if not status == None:
+        print(status.decode('utf-8'))
+    if not message == None:
+        print(message.decode('utf-8'))
     os.chdir(curdir)
     return
 
@@ -132,23 +138,23 @@ def main(datapath, scriptpath):
     for dname in dnames:
         testdict[dname] = dict()
     grid_density = 4 #orig 20
-    num_runs = 20 #orig 200
+    num_runs = 5 #orig 200
     num_folds = 5
     #testdict["expt"]["KRRGridSearch"] = {"grid_density":grid_density}
     testdict["expt"]["KRRGridSearch"] = {"grid_density":grid_density}
     testdict["expt"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
     testdict["expt"]["LeaveOutAlloyCV"] = {}
     testdict["expt"]["FullFit"] = {}
-    #testdict["expt"]["PredictionVsFluence"] = {}
-    #testdict["expt"]["ExtrapolateToLWR"] = {}
+    ##testdict["expt"]["PredictionVsFluence"] = {}
+    ##testdict["expt"]["ExtrapolateToLWR"] = {}
     testdict["expt"]["csvs"] ={"ivar":"expt_ivar", "lwr":"cd1_lwr"}
     #
-    testdict["cd1"]["KRRGridSearch"] = {"grid_density":grid_density}
+    #testdict["cd1"]["KRRGridSearch"] = {"grid_density":grid_density}
     testdict["cd1"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
-    testdict["cd1"]["LeaveOutAlloyCV"] = {}
-    testdict["cd1"]["FullFit"] = {}
-    testdict["cd1"]["PredictionVsFluence"] = {}
-    testdict["cd1"]["ExtrapolateToLWR"] = {}
+    #testdict["cd1"]["LeaveOutAlloyCV"] = {}
+    #testdict["cd1"]["FullFit"] = {}
+    #testdict["cd1"]["PredictionVsFluence"] = {}
+    #testdict["cd1"]["ExtrapolateToLWR"] = {}
     testdict["cd1"]["csvs"] ={"ivar":"cd1_ivar", "lwr":"cd1_lwr"}
     #
     testdict["cd2"]["KRRGridSearch"] = {"grid_density":grid_density}
@@ -179,7 +185,7 @@ def main(datapath, scriptpath):
     return
 
 if __name__ == "__main__":
-    datapath = "../../../data/DBTT_mongo/data_exports_dbtt_22_20170214_153258"
+    datapath = "../../../data/DBTT_mongo/data_exports_dbtt_06_20170214_160144"
     scriptpath = "../"
     datapath = os.path.abspath(datapath)
     scriptpath = os.path.abspath(scriptpath)
