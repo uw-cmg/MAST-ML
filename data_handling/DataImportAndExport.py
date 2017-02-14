@@ -155,7 +155,7 @@ def clean_lwr(db, cname, verbose=1):
     dclean.flag_for_ignore(db, cname, id_list, reason_list)
     print(len(id_list))
     
-    [id_list, reason_list] = dclean.get_short_time_removal_ids(db,cname, 30e6)
+    [id_list, reason_list] = dclean.get_short_time_removal_ids(db,cname, 3e6)
     dclean.flag_for_ignore(db, cname, id_list, reason_list)
     print(len(id_list))
     
