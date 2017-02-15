@@ -19,7 +19,6 @@ def execute(model, data, savepath, lwr_data="", *args, **kwargs):
 
     # get data
     Ydata = np.array(data.get_y_data()).ravel()
-    print(Ydata.shape)
     Xdata = np.array(data.get_x_data())
 
     Y_predicted_best = []
@@ -33,7 +32,6 @@ def execute(model, data, savepath, lwr_data="", *args, **kwargs):
     RMS_List = []
     ME_List = []
     for n in range(num_runs):
-        print("Run %i" % n)
         kf = cross_validation.KFold(len(Xdata), n_folds=num_folds, shuffle=True)
         K_fold_rms_list = []
         K_fold_me_list = []
@@ -43,13 +41,10 @@ def execute(model, data, savepath, lwr_data="", *args, **kwargs):
         nfold=0
         for train_index, test_index in kf:
             nfold = nfold + 1
-            print("Fold %i" % nfold)
             X_train, X_test = Xdata[train_index], Xdata[test_index]
-            print(Xdata[test_index].shape)
             Y_train, Y_test = Ydata[train_index], Ydata[test_index]
             # train on training sets
             model.fit(X_train, Y_train)
-            print(model.get_params())
             Y_test_Pred = model.predict(X_test)
             rms = np.sqrt(mean_squared_error(Y_test, Y_test_Pred))
             me = mean_error(Y_test_Pred,Y_test)
@@ -57,8 +52,6 @@ def execute(model, data, savepath, lwr_data="", *args, **kwargs):
             K_fold_me_list.append(me)
             Overall_Y_Pred[test_index] = Y_test_Pred
             Pred_Fold_Numbers[test_index] = nfold
-        print(Overall_Y_Pred.shape)
-        print(Pred_Fold_Numbers)
 
         RMS_List.append(np.mean(K_fold_rms_list))
         ME_List.append(np.mean(K_fold_me_list))
