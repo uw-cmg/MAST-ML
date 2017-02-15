@@ -76,6 +76,7 @@ def execute(model, data, savepath, lwr_data="", *args, **kwargs):
     print("The max RMSE was {:.3f}".format(maxRMS))
     print("The min RMSE was {:.3f}".format(minRMS))
     print("The std deviation of the RMSE values was {:.3f}".format(sd))
+    print("The average mean error was {:.3f}".format(meanME))
 
     f, ax = plt.subplots(1, 2, figsize = (11,5))
     ax[0].scatter(Ydata, Y_predicted_best, c='black', s=10)
@@ -84,16 +85,15 @@ def execute(model, data, savepath, lwr_data="", *args, **kwargs):
     ax[0].text(.05, .88, 'Min RMSE: {:.2f} MPa'.format(minRMS), transform=ax[0].transAxes)
     ax[0].text(.05, .81, 'Mean RMSE: {:.2f} MPa'.format(avgRMS), transform=ax[0].transAxes)
     ax[0].text(.05, .74, 'Std. Dev.: {:.2f} MPa'.format(sd), transform=ax[0].transAxes)
-    ax[0].text(.05, .67, 'Mean Mean Error.: {:.2f} MPa'.format(meanME), transform=ax[0].transAxes)
-    ax[0].set_xlabel('Measured (Mpa)')
-    ax[0].set_ylabel('Predicted (Mpa)')
+    ax[0].set_xlabel('Measured (MPa)')
+    ax[0].set_ylabel('Predicted (MPa)')
 
     ax[1].scatter(Ydata, Y_predicted_worst, c='black', s=10)
     ax[1].plot(ax[1].get_ylim(), ax[1].get_ylim(), ls="--", c=".3")
     ax[1].set_title('Worst Fit')
     ax[1].text(.05, .88, 'Max RMSE: {:.3f}'.format(maxRMS), transform=ax[1].transAxes)
-    ax[1].set_xlabel('Measured (Mpa)')
-    ax[1].set_ylabel('Predicted (Mpa)')
+    ax[1].set_xlabel('Measured (MPa)')
+    ax[1].set_ylabel('Predicted (MPa)')
 
     f.tight_layout()
     f.savefig(savepath.format("cv_best_worst"), dpi=200, bbox_inches='tight')
