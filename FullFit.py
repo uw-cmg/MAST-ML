@@ -1,9 +1,10 @@
+import matplotlib
 import matplotlib.pyplot as plt
 import data_parser
 import numpy as np
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.metrics import mean_squared_error
-
+import data_analysis.printout_tools as ptools
 
 def execute(model, data, savepath, *args, **kwargs):
     # Train the model using the training sets
@@ -30,15 +31,22 @@ def execute(model, data, savepath, *args, **kwargs):
     rms = np.sqrt(mean_squared_error(Ypredict, Ydata))
     # graph outputs
     dataset=0 #TTM dummy index value
+    matplotlib.rcParams.update({'font.size': 18})
     ax.scatter(Ydata, Ypredict, s=7, color=colors[dataset], label= datasets[dataset], lw = 0)
-    ax.text(.05, .83 - .05*dataset, '{} RMS: {:.3f}'.format(datasets[dataset],rms), fontsize=14, transform=ax.transAxes)
+    ax.text(.05, .83 - .05*dataset, '{} RMS: {:.3f}'.format(datasets[dataset],rms), transform=ax.transAxes)
 
     ax.legend()
     ax.plot(ax.get_ylim(), ax.get_ylim(), ls="--", c=".3")
     ax.set_xlabel('Measured (MPa)')
     ax.set_ylabel('Predicted (MPa)')
     ax.set_title('Full Fit')
-    ax.text(.05, .88, 'Overall RMS: %.4f' % (overall_rms), fontsize=14, transform=ax.transAxes)
+    ax.text(.05, .88, 'Overall RMS: %.4f' % (overall_rms), transform=ax.transAxes)
     fig.savefig(savepath.format(ax.get_title()), dpi=300, bbox_inches='tight')
     plt.clf()
     plt.close()
+
+    csvname = "FullFit_data.csv"
+    headerline = "Measured,Predicted"
+    myarray = np.array([Ydata, Ypredict]).transpose()
+    ptools.array_to_csv(csvname, headerline, myarray)
+    return
