@@ -17,6 +17,7 @@ import traceback
 import subprocess
 import time
 import data_parser
+import data_analysis.additional_plots as ap
 
 def get_feature_list():
     features=list()
@@ -150,9 +151,9 @@ def main(datapath, scriptpath):
     testdict["expt"]["csvs"] ={"ivar":"expt_ivar", "lwr":"cd1_lwr"}
     #
     #testdict["cd1"]["KRRGridSearch"] = {"grid_density":grid_density}
-    testdict["cd1"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
-    #testdict["cd1"]["LeaveOutAlloyCV"] = {}
+    #testdict["cd1"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
     #testdict["cd1"]["FullFit"] = {}
+    #testdict["cd1"]["LeaveOutAlloyCV"] = {}
     #testdict["cd1"]["PredictionVsFluence"] = {}
     #testdict["cd1"]["ExtrapolateToLWR"] = {}
     testdict["cd1"]["csvs"] ={"ivar":"cd1_ivar", "lwr":"cd1_lwr"}
@@ -182,6 +183,8 @@ def main(datapath, scriptpath):
                     os.mkdir(tpath)
                 write_config_file(tpath, dsetname, testname, testdict)
                 do_analysis(tpath, scriptpath)
+        os.chdir(dpath)
+        ap.cross_validation_full_fit_plot()
     return
 
 if __name__ == "__main__":
