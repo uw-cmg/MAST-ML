@@ -98,9 +98,9 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
         matplotlib.rcParams.update({'font.size':18})
         #fluence is often not sorted; sort with predictions
         ivararr = np.array([fluence_data, predict_data]).transpose()
-        ivar_tuples = tuple(ivararr, key=lambda)
-        sorted_ivar_tuples = sorted(ivar_tuples)
-        ivararr_sorted = np.asarray(sorted_ivar_tuples)
+        ivar_tuples = tuple(map(tuple, ivararr))
+        ivar_list = list(ivar_tuples).sort()
+        ivararr_sorted = np.asarray(ivar_list)
         plt.plot(ivararr_sorted[:,0],ivararr_sorted[:,1],linestyle="None", linewidth=3,
                 marker="o",
                 color='#ffc04d', label="IVAR prediction")
