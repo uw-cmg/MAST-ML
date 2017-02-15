@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from mean_error import mean_error
 from sklearn import cross_validation
 from sklearn.metrics import mean_squared_error
-
+import data_analysis.printout_tools as ptools
 
 def execute(model, data, savepath, lwr_data="", *args, **kwargs):
     if "num_runs" in kwargs.keys():
@@ -19,10 +19,13 @@ def execute(model, data, savepath, lwr_data="", *args, **kwargs):
 
     # get data
     Ydata = np.array(data.get_y_data()).ravel()
+    print(Ydata.shape)
     Xdata = np.array(data.get_x_data())
 
     Y_predicted_best = []
     Y_predicted_worst = []
+    Y_predicted_best_fold_numbers = []
+    Y_predicted_worst_fold_numbers = []
 
     maxRMS = 1
     minRMS = 100
@@ -30,32 +33,44 @@ def execute(model, data, savepath, lwr_data="", *args, **kwargs):
     RMS_List = []
     ME_List = []
     for n in range(num_runs):
+        print("Run %i" % n)
         kf = cross_validation.KFold(len(Xdata), n_folds=num_folds, shuffle=True)
         K_fold_rms_list = []
         K_fold_me_list = []
         Overall_Y_Pred = np.zeros(len(Xdata))
+        Pred_Fold_Numbers = np.zeros(len(Xdata))
         # split into testing and training sets
+        nfold=0
         for train_index, test_index in kf:
+            nfold = nfold + 1
+            print("Fold %i" % nfold)
             X_train, X_test = Xdata[train_index], Xdata[test_index]
+            print(Xdata[test_index].shape)
             Y_train, Y_test = Ydata[train_index], Ydata[test_index]
             # train on training sets
             model.fit(X_train, Y_train)
+            print(model.get_params())
             Y_test_Pred = model.predict(X_test)
             rms = np.sqrt(mean_squared_error(Y_test, Y_test_Pred))
             me = mean_error(Y_test_Pred,Y_test)
             K_fold_rms_list.append(rms)
             K_fold_me_list.append(me)
             Overall_Y_Pred[test_index] = Y_test_Pred
+            Pred_Fold_Numbers[test_index] = nfold
+        print(Overall_Y_Pred.shape)
+        print(Pred_Fold_Numbers)
 
         RMS_List.append(np.mean(K_fold_rms_list))
         ME_List.append(np.mean(K_fold_me_list))
         if np.mean(K_fold_rms_list) > maxRMS:
             maxRMS = np.mean(K_fold_rms_list)
             Y_predicted_worst = Overall_Y_Pred
+            Y_predicted_worst_fold_numbers = Pred_Fold_Numbers
 
         if np.mean(K_fold_rms_list) < minRMS:
             minRMS = np.mean(K_fold_rms_list)
             Y_predicted_best = Overall_Y_Pred
+            Y_predicted_best_fold_numbers = Pred_Fold_Numbers
 
     avgRMS = np.mean(RMS_List)
     medRMS = np.median(RMS_List)
@@ -91,3 +106,11 @@ def execute(model, data, savepath, lwr_data="", *args, **kwargs):
     f.savefig(savepath.format("cv_best_worst"), dpi=200, bbox_inches='tight')
     plt.clf()
     plt.close()
+  
+    csvname = "KFoldCV_data.csv"
+    headerline = "Measured,Predicted worst,Fold numbers worst,Predicted best,Fold numbers best"
+    myarray = np.array([Ydata, 
+                Y_predicted_worst, Y_predicted_worst_fold_numbers,
+                Y_predicted_best, Y_predicted_best_fold_numbers]).transpose()
+    ptools.array_to_csv(csvname, headerline, myarray)
+    return
