@@ -1,8 +1,10 @@
 import matplotlib.pyplot as plt
+import matplotlib
 import data_parser
 import numpy as np
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.metrics import mean_squared_error
+import data_analysis.printout_tools as ptools
 
 '''
 Plot CD predictions of ∆sigma for data and lwr_data as well as model's output
@@ -16,8 +18,6 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
 
     model.fit(Xdata, Ydata)
 
-    print("Remove hardcoded tags")
-    print("Consider working directly from DB")
     fluence_str = "log(fluence_n_cm2)"
     flux_str = "log(flux_n_cm2_sec)"
     eff_str = "log(eff fl 100p=26)"
@@ -37,26 +37,37 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
     #Fluence  = (np.log10(aFluence) - np.min(combinedfluence))/(np.max(np.asarray(combinedfluence)) - np.min(combinedfluence))
     #EffectiveFluence = (np.log10(aEffectiveFluence) - np.min(combinedeffectivefluence))/(np.max(np.asarray(combinedeffectivefluence)) - np.min(combinedeffectivefluence))
 
-    for alloy in range(1, max(data.get_data("alloy_number"))[0] + 1):
+    #for alloy in range(1, max(data.get_data("alloy_number"))[0] + 1):
+    for alloy in range(1,5):
         print(alloy)
         data.remove_all_filters()
         data.add_inclusive_filter("alloy_number", '=', alloy)
         if len(data.get_x_data()) == 0: continue  # if alloy doesn't exist(x data is empty), then continue
         AlloyName = data.get_data("Alloy")[0][0]
 
-        fig, ax = plt.subplots()
 
 
         lwr_data.remove_all_filters()
         lwr_data.add_inclusive_filter("alloy_number", '=', alloy)
         #lwr_data.add_exclusive_filter(temp_str, '<>', 290)
 
+        fluence_data = np.asarray(data.get_data(fluence_str)).ravel()
+        predict_data = model.predict(data.get_x_data())
+        points_data = np.asarray(data.get_y_data()).ravel()
 
-        ax.plot(lwr_data.get_data(fluence_str), model.predict(lwr_data.get_x_data()), lw=3,
-                color='#ffc04d', label="LWR prediction")
-        ax.scatter(lwr_data.get_data(fluence_str), lwr_data.get_y_data(), lw=0,
-                   label="CD LWR data", color = '#7ec0ee')
-        ax.scatter(data.get_data(fluence_str), data.get_y_data(), lw=0, label='IVAR data',
+        fluence_lwr = np.asarray(lwr_data.get_data(fluence_str)).ravel()
+        predict_lwr = model.predict(lwr_data.get_x_data())
+        points_lwr = np.asarray(lwr_data.get_y_data()).ravel()
+        
+        plt.figure()
+        plt.hold(True)
+        fig, ax = plt.subplots()
+        matplotlib.rcParams.update({'font.size':18})
+        ax.plot(fluence_lwr, predict_lwr,
+                lw=3, color='#ffc04d', label="LWR prediction")
+        ax.scatter(fluence_lwr, points_lwr,
+                   lw=0, label="CD LWR data", color = '#7ec0ee')
+        ax.scatter(fluence_data, points_data, lw=0, label='IVAR data',
                    color='black')
 
         #TTM remove else block; expt will have its own separate set of plots
@@ -75,9 +86,39 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
 
 
 
-        ax.legend(loc = "upper left") #data is sigmoid; 'best' can block data
-        ax.set_title("{}({})".format(alloy,AlloyName))
-        ax.set_xlabel("log(Fluence(n/cm^2))")
-        ax.set_ylabel("∆sigma (MPa)")
-        fig.savefig(savepath.format(ax.get_title()), dpi=200, bbox_inches='tight')
+        plt.legend(loc = "upper left", fontsize=matplotlib.rcParams['font.size']) #data is sigmoid; 'best' can block data
+        plt.title("{}({})".format(alloy,AlloyName))
+        plt.xlabel("log(Fluence(n/cm$^{2}$))")
+        plt.ylabel("$\Delta\sigma_{y}$ (MPa)")
+        plt.savefig(savepath.format("%s_LWR" % ax.get_title()), dpi=200, bbox_inches='tight')
         plt.close()
+        
+        #print IVAR prediction plot
+        plt.figure()
+        matplotlib.rcParams.update({'font.size':18})
+        #fluence is often not sorted; sort with predictions
+        ivararr = np.array([fluence_data, predict_data]).transpose()
+        ivar_tuples = tuple(ivararr, key=lambda)
+        sorted_ivar_tuples = sorted(ivar_tuples)
+        ivararr_sorted = np.asarray(sorted_ivar_tuples)
+        plt.plot(ivararr_sorted[:,0],ivararr_sorted[:,1],linestyle="None", linewidth=3,
+                marker="o",
+                color='#ffc04d', label="IVAR prediction")
+        plt.plot(fluence_data,predict_data,linestyle="None", linewidth=3,
+                marker="x",
+                color='green', label="IVAR prediction unsorted test")
+        plt.scatter(fluence_data, points_data, lw=0, label='IVAR data',
+                   color='black')
+        plt.legend(loc = "upper left", fontsize=matplotlib.rcParams['font.size']) #data is sigmoid; 'best' can block data
+        plt.title("{}({})".format(alloy,AlloyName))
+        plt.xlabel("log(Fluence(n/cm$^{2}$))")
+        plt.ylabel("$\Delta\sigma_{y}$ (MPa)")
+        plt.savefig(savepath.format("%s_IVAR" % ax.get_title()), dpi=200, bbox_inches='tight')
+        plt.close()
+
+        headerline = "logFluence LWR, Points LWR, Predicted LWR"
+        myarray = np.array([fluence_lwr, points_lwr, predict_lwr]).transpose()
+        ptools.array_to_csv("%s_LWR.csv" % AlloyName, headerline, myarray)
+        headerline = "logFluence IVAR, Points IVAR, Predicted IVAR"
+        myarray =np.array([fluence_data, points_data, predict_data]).transpose()
+        ptools.array_to_csv("%s_IVAR.csv" % AlloyName, headerline, myarray)
