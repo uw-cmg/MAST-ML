@@ -117,13 +117,13 @@ def do_analysis(testpath, scriptpath):
     curdir = os.getcwd()
     os.chdir(testpath)
     ofname = os.path.join(testpath,"output")
-    ofile = open(ofname,'w')
-    rproc = subprocess.Popen("nice -n 19 python %s/AllTests.py" % scriptpath, shell=True,
-                    stdout = ofile,
-                    #stdout = subprocess.PIPE,
-                    stderr = subprocess.PIPE)
+    with open(ofname, 'w') as ofile:
+        rproc=subprocess.Popen("nice -n 19 python %s/AllTests.py" % scriptpath, 
+                        shell=True,
+                        stdout = ofile,
+                        #stdout = subprocess.PIPE,
+                        stderr = subprocess.PIPE)
     rproc.wait()
-    ofile.close()
     (status,message)=rproc.communicate()
     if not status == None:
         print(status.decode('utf-8'))
