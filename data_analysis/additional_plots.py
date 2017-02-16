@@ -23,9 +23,9 @@ def cross_validation_full_fit_plot():
     fullpred = fullfit_data['Predicted']
     cvbestmeas = kfold_data['Measured']
     cvbestpred = kfold_data['Predicted_best']
-    full_rms = mean_squared_error(fullmeas, fullpred)
+    full_rms = np.sqrt(mean_squared_error(fullmeas, fullpred))
     full_me = mean_error(fullmeas, fullpred)
-    cvbest_rms = mean_squared_error(cvbestmeas, cvbestpred)
+    cvbest_rms = np.sqrt(mean_squared_error(cvbestmeas, cvbestpred))
     cvbest_me = mean_error(cvbestmeas, cvbestpred)
 
     plt.figure()
