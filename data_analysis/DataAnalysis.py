@@ -135,37 +135,41 @@ def do_analysis(testpath, scriptpath):
 
 def main(datapath, scriptpath):
     testdict=dict() #could get from a file later
-    dnames = ["expt","cd1","cd2"]
+    dnames = ["exptfull","expt","cd1","cd2"]
     for dname in dnames:
         testdict[dname] = dict()
-    grid_density = 20 #orig 20
-    num_runs = 200 #orig 200
+    grid_density = 4 #orig 20
+    num_runs = 5 #orig 200
     num_folds = 5
-    testdict["expt"]["KRRGridSearch"] = {"grid_density":grid_density}
-    testdict["expt"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
+    #
+    testdict["exptfull"]["KRRGridSearch"] = {"grid_density":grid_density}
+    testdict["exptfull"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
+    testdict["exptfull"]["csvs"] ={"ivar":"expt_fullfit", "lwr":"cd1_lwr"}
+    #
+    #testdict["expt"]["KRRGridSearch"] = {"grid_density":grid_density}
+    #testdict["expt"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
     #testdict["expt"]["LeaveOutAlloyCV"] = {}
-    testdict["expt"]["FullFit"] = {}
+    #testdict["expt"]["FullFit"] = {}
     #testdict["expt"]["PredictionVsFluence"] = {}
     #testdict["expt"]["ExtrapolateToLWR"] = {}
     testdict["expt"]["csvs"] ={"ivar":"expt_ivar", "lwr":"cd1_lwr"}
     #
-    testdict["cd1"]["KRRGridSearch"] = {"grid_density":grid_density}
-    testdict["cd1"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
-    testdict["cd1"]["FullFit"] = {}
-    testdict["cd1"]["LeaveOutAlloyCV"] = {}
-    testdict["cd1"]["PredictionVsFluence"] = {}
-    testdict["cd1"]["ExtrapolateToLWR"] = {}
+    #testdict["cd1"]["KRRGridSearch"] = {"grid_density":grid_density}
+    #testdict["cd1"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
+    #testdict["cd1"]["FullFit"] = {}
+    #testdict["cd1"]["LeaveOutAlloyCV"] = {}
+    #testdict["cd1"]["PredictionVsFluence"] = {}
+    #testdict["cd1"]["ExtrapolateToLWR"] = {}
     testdict["cd1"]["csvs"] ={"ivar":"cd1_ivar", "lwr":"cd1_lwr"}
     #
-    testdict["cd2"]["KRRGridSearch"] = {"grid_density":grid_density}
-    testdict["cd2"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
-    testdict["cd2"]["LeaveOutAlloyCV"] = {}
-    testdict["cd2"]["FullFit"] = {}
-    testdict["cd2"]["PredictionVsFluence"] = {}
-    testdict["cd2"]["ExtrapolateToLWR"] = {}
+    #testdict["cd2"]["KRRGridSearch"] = {"grid_density":grid_density}
+    #testdict["cd2"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
+    #testdict["cd2"]["LeaveOutAlloyCV"] = {}
+    #testdict["cd2"]["FullFit"] = {}
+    #testdict["cd2"]["PredictionVsFluence"] = {}
+    #testdict["cd2"]["ExtrapolateToLWR"] = {}
     testdict["cd2"]["csvs"] ={"ivar":"cd2_ivar", "lwr":"cd2_lwr"}
-    #for dsetname in testdict.keys():
-    for dsetname in ["expt","cd1"]:
+    for dsetname in testdict.keys():
         dpath = os.path.join(datapath, dsetname)
         if not os.path.isdir(dpath):
             os.mkdir(dpath)
@@ -187,7 +191,7 @@ def main(datapath, scriptpath):
     return
 
 if __name__ == "__main__":
-    datapath = "../../../data/DBTT_mongo/data_exports_dbtt_06_20170214_160144"
+    datapath = "../../../data/DBTT_mongo/data_exports_dbtt_10_20170216_134012"
     scriptpath = "../"
     datapath = os.path.abspath(datapath)
     scriptpath = os.path.abspath(scriptpath)
