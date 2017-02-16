@@ -39,12 +39,12 @@ def get_gkrr_hyperparams(testpath, testdict, csvname="grid_scores.csv", verbose=
     setpath = os.path.dirname(testpath)
     dsetname = os.path.basename(setpath)
     if "hyperfrom" in testdict[dsetname].keys():
-        testfrom = testdict[dsetname]["hyperfrom"]
+        dfrom = testdict[dsetname]["hyperfrom"]
     else:
-        testfrom = dsetname
-    priorpath = os.path.dirname(setpath)
+        dfrom = dsetname
+    toppath = os.path.dirname(setpath)
     mname = "KRRGridSearch"
-    hdata_path = os.path.join(priorpath, dsetname, mname, csvname) 
+    hdata_path = os.path.join(toppath, dfrom, mname, csvname) 
     hdict=dict()
     hdict["alpha"] = 0.0
     hdict["gamma"] = 0.0
@@ -166,7 +166,7 @@ def main(datapath, scriptpath):
     testdict["3expt"]["PredictionVsFluence"] = {}
     testdict["3expt"]["ExtrapolateToLWR"] = {}
     testdict["3expt"]["csvs"] ={"ivar":"expt_ivar", "lwr":"cd1_lwr"}
-    testdict["3expt"]["hyperfrom"] = "exptalltemp"
+    testdict["3expt"]["hyperfrom"] = "1exptalltemp"
     #
     testdict["4cd1"]=dict()
     #testdict["4cd1"]["KRRGridSearch"] = {"grid_density":grid_density}
@@ -176,7 +176,7 @@ def main(datapath, scriptpath):
     testdict["4cd1"]["PredictionVsFluence"] = {}
     testdict["4cd1"]["ExtrapolateToLWR"] = {}
     testdict["4cd1"]["csvs"] ={"ivar":"cd1_ivar", "lwr":"cd1_lwr"}
-    testdict["4cd1"]["hyperfrom"] = "cd1alltemp"
+    testdict["4cd1"]["hyperfrom"] = "2cd1alltemp"
     #
     #testdict["5cd2"]=dict()
     #testdict["5cd2"]["KRRGridSearch"] = {"grid_density":grid_density}
@@ -213,7 +213,7 @@ def main(datapath, scriptpath):
     return
 
 if __name__ == "__main__":
-    datapath = "../../../data/DBTT_mongo/data_exports_dbtt_11_20170216_140312"
+    datapath = "../../../data/DBTT_mongo/data_exports_dbtt_17_20170216_160031"
     scriptpath = "../"
     datapath = os.path.abspath(datapath)
     scriptpath = os.path.abspath(scriptpath)
