@@ -37,8 +37,8 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
     #Fluence  = (np.log10(aFluence) - np.min(combinedfluence))/(np.max(np.asarray(combinedfluence)) - np.min(combinedfluence))
     #EffectiveFluence = (np.log10(aEffectiveFluence) - np.min(combinedeffectivefluence))/(np.max(np.asarray(combinedeffectivefluence)) - np.min(combinedeffectivefluence))
 
-    #for alloy in range(1, max(data.get_data("alloy_number"))[0] + 1):
-    for alloy in range(1,5):
+    #for alloy in range(1,5): #restrict range for testing
+    for alloy in range(1, max(data.get_data("alloy_number"))[0] + 1):
         print(alloy)
         data.remove_all_filters()
         data.add_inclusive_filter("alloy_number", '=', alloy)
@@ -99,14 +99,16 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
         #fluence is often not sorted; sort with predictions
         ivararr = np.array([fluence_data, predict_data]).transpose()
         ivar_tuples = tuple(map(tuple, ivararr))
-        ivar_list = list(ivar_tuples).sort()
+        ivar_list = list(ivar_tuples)
+        ivar_list.sort()
         ivararr_sorted = np.asarray(ivar_list)
-        plt.plot(ivararr_sorted[:,0],ivararr_sorted[:,1],linestyle="None", linewidth=3,
-                marker="o",
+        plt.plot(ivararr_sorted[:,0],ivararr_sorted[:,1],linestyle="-", 
+                linewidth=3,
+                marker=None,
                 color='#ffc04d', label="IVAR prediction")
-        plt.plot(fluence_data,predict_data,linestyle="None", linewidth=3,
-                marker="x",
-                color='green', label="IVAR prediction unsorted test")
+        #plt.plot(fluence_data,predict_data,linestyle="None", linewidth=3,
+        #        marker="x", markersize=10,
+        #        color='green', label="IVAR prediction unsorted test")
         plt.scatter(fluence_data, points_data, lw=0, label='IVAR data',
                    color='black')
         plt.legend(loc = "upper left", fontsize=matplotlib.rcParams['font.size']) #data is sigmoid; 'best' can block data
