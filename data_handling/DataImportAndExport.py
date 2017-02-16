@@ -281,6 +281,7 @@ def main(importpath):
     create_lwr(db, "cd1_lwr", "cd_lwr_2016")
     cas.export_spreadsheet(db, "cd1_lwr", exportpath)
     cas.transfer_nonignore_records(db, "atr2_2016","expt_atr2")
+    cas.rename_field(db,"expt_atr2","alloy name", "Alloy")
     add_standard_fields(db, "expt_atr2")
     cas.export_spreadsheet(db, "expt_atr2", exportpath)
     #verify data
