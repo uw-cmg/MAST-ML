@@ -248,6 +248,7 @@ def main(importpath):
     cbasic["cd_lwr_2017"]="lwr_cd_2017_reduced_for_import.csv"
     cbasic["ucsb_ivar_and_ivarplus"]="ucsb_ivar_and_ivarplus.csv"
     cbasic["cd_lwr_2016_bynum"]="CDTemp_CD_lwr_2016_raw.csv"
+    cbasic["atr2_2016"]="atr2_data.csv"
     client = get_mongo_client()
     dbname = get_unique_name(client, db_base)
     exportfolder = "data_exports_%s_%s" %(dbname,time.strftime("%Y%m%d_%H%M%S"))
@@ -279,6 +280,9 @@ def main(importpath):
     clean_lwr(db, "cd_lwr_2016")
     create_lwr(db, "cd1_lwr", "cd_lwr_2016")
     cas.export_spreadsheet(db, "cd1_lwr", exportpath)
+    cas.transfer_nonignore_records(db, "atr2_2016","expt_atr2")
+    add_standard_fields(db, "expt_atr2")
+    cas.export_spreadsheet(db, "expt_atr2", exportpath)
     #verify data
     clist=["expt_ivar","cd1_ivar","cd2_ivar","cd1_lwr","cd2_lwr"]
     dver.make_per_alloy_plots(db, clist, "%s/verification_plots" % exportpath) 
