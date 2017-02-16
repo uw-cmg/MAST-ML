@@ -282,6 +282,7 @@ def main(importpath):
     cas.export_spreadsheet(db, "cd1_lwr", exportpath)
     cas.transfer_nonignore_records(db, "atr2_2016","expt_atr2")
     cas.rename_field(db,"expt_atr2","alloy name", "Alloy")
+    dclean.standardize_alloy_names(db,"expt_atr2")
     add_standard_fields(db, "expt_atr2")
     cas.export_spreadsheet(db, "expt_atr2", exportpath)
     #verify data
