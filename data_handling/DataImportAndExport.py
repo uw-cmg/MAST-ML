@@ -117,14 +117,6 @@ def prefilter_ivar_for_cd1(db, cname, fromcname, verbose=1):
                                 [41,1,2,8,14,29])
     dclean.flag_for_ignore(db, tempname, id_list, reason_list)
     print(len(id_list))
-    [id_list, reason_list] = dclean.get_field_condition_to_remove(db,tempname,
-                                "temperature_C",270)
-    dclean.flag_for_ignore(db, cname, id_list, reason_list)
-    print(len(id_list))
-    [id_list, reason_list] = dclean.get_field_condition_to_remove(db,tempname,
-                                "temperature_C",310)
-    dclean.flag_for_ignore(db, cname, id_list, reason_list)
-    print(len(id_list))
     cas.transfer_nonignore_records(db, tempname, cname, verbose)
     db.drop_collection(tempname)
     return
