@@ -14,11 +14,13 @@ import matplotlib.pyplot as plt
 from mean_error import mean_error
 from sklearn.metrics import mean_squared_error
 
-def cross_validation_full_fit_plot():
+def cross_validation_full_fit_plot(dpath):
 
     matplotlib.rcParams.update({'font.size': 18})
-    fullfit_data = np.genfromtxt("FullFit/FullFit_data.csv", dtype=float, delimiter=',', names=True) 
-    kfold_data = np.genfromtxt("KFold_CV/KFoldCV_data.csv", dtype=float, delimiter=',', names=True) 
+    fullfit_data =np.genfromtxt(os.path.join(dpath,"FullFit/FullFit_data.csv"), 
+                    dtype=float, delimiter=',', names=True) 
+    kfold_data = np.genfromtxt(os.path.join(dpath,"KFold_CV/KFoldCV_data.csv"), 
+                    dtype=float, delimiter=',', names=True) 
     fullmeas = fullfit_data['Measured']
     fullpred = fullfit_data['Predicted']
     cvbestmeas = kfold_data['Measured']
@@ -51,6 +53,7 @@ def cross_validation_full_fit_plot():
     plt.ylabel("GKRR predicted $\Delta\sigma_{y}$ (MPa)")
     plt.tight_layout()
     plt.savefig("cross_validation_full_fit.png")
+    plt.close()
     return
 
 
