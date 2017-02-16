@@ -23,20 +23,6 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
     eff_str = "log(eff fl 100p=26)"
     temp_str = "temperature_C"
 
-    #TTM comment out block until determine why renormalize columns
-    #Flux = 3e10 * np.ones((500,1))
-    #Time = np.reshape(np.linspace(3.154e+7/4, 3.154e+7 * 150, 500),(500,1))
-    #aFluence = (Flux * Time)
-    #aEffectiveFluence = aFluence
-    #combinedfluence = data.get_data(fluence_str) + lwr_data.get_data(fluence_str)
-    #combinedflux = data.get_data(flux_str) + lwr_data.get_data(flux_str)
-    #combinedeffectivefluence = data.get_data(eff_str) + lwr_data.get_data(eff_str)
-    #normalize
-    #TTM thought normalization was in the columns already? Renormalize for combined?
-    #Flux = (np.log10(Flux) - np.min(combinedflux))/(np.max(combinedflux) - np.min(combinedflux))
-    #Fluence  = (np.log10(aFluence) - np.min(combinedfluence))/(np.max(np.asarray(combinedfluence)) - np.min(combinedfluence))
-    #EffectiveFluence = (np.log10(aEffectiveFluence) - np.min(combinedeffectivefluence))/(np.max(np.asarray(combinedeffectivefluence)) - np.min(combinedeffectivefluence))
-
     #for alloy in range(1,5): #restrict range for testing
     for alloy in range(1, max(data.get_data("alloy_number"))[0] + 1):
         print(alloy)
@@ -103,22 +89,6 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
         ax.scatter(eff_fluence_data, points_data, lw=0, label='IVAR data',
                    color='black')
 
-        #TTM remove else block; expt will have its own separate set of plots
-        #and operate under the same block as above
-        #else: 
-        #    ax.scatter(np.log10(data.get_data("fluence n/cm2")), data.get_y_data(), lw=0, label='Expt IVAR data',
-        #               color='green')
-        #    if len(lwr_data.get_x_data()) == 0:
-        #        Alloy = np.reshape(np.asarray(data.get_x_data())[0, 0:6], (1, 6)) * np.ones((500, 6))
-        #        Xdata = np.concatenate([Alloy, EffectiveFluence], 1)
-        #        ypredict = model.predict(Xdata)
-        #        ax.plot(np.log10(aEffectiveFluence), ypredict, lw = 3, label='Model Prediction', color = 'orange')
-        #    else:
-        #        ax.plot(np.log10(lwr_data.get_data("fluence n/cm2")), model.predict(lwr_data.get_x_data()), lw=3,
-        #                color='orange', label="Expt LWR prediction")
-
-
-
         plt.legend(loc = "upper left", fontsize=matplotlib.rcParams['font.size']) #data is sigmoid; 'best' can block data
         plt.title("{}({})".format(alloy,AlloyName))
         plt.xlabel("log(Eff Fluence(n/cm$^{2}$))")
@@ -130,4 +100,4 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
         headerline = "logEffFluence LWR, Points LWR, Predicted LWR"
         myarray = np.array([eff_fluence_lwr, points_lwr, predict_lwr]).transpose()
         ptools.array_to_csv("%s_LWR.csv" % AlloyName, headerline, myarray)
-        return
+    return
