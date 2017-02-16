@@ -45,16 +45,44 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
         if len(data.get_x_data()) == 0: continue  # if alloy doesn't exist(x data is empty), then continue
         AlloyName = data.get_data("Alloy")[0][0]
 
-
-
-        lwr_data.remove_all_filters()
-        lwr_data.add_inclusive_filter("alloy_number", '=', alloy)
-        #lwr_data.add_exclusive_filter(temp_str, '<>', 290)
-
         fluence_data = np.asarray(data.get_data(fluence_str)).ravel()
         predict_data = model.predict(data.get_x_data())
         points_data = np.asarray(data.get_y_data()).ravel()
         eff_fluence_data = np.asarray(data.get_data(eff_str)).ravel()
+        
+        #print IVAR prediction plot
+        plt.figure()
+        matplotlib.rcParams.update({'font.size':18})
+        #fluence is often not sorted; sort with predictions
+        ivararr = np.array([eff_fluence_data, predict_data]).transpose()
+        ivar_tuples = tuple(map(tuple, ivararr))
+        ivar_list = list(ivar_tuples)
+        ivar_list.sort()
+        ivararr_sorted = np.asarray(ivar_list)
+        plt.plot(ivararr_sorted[:,0],ivararr_sorted[:,1],linestyle="-", 
+                linewidth=3,
+                marker=None,
+                color='#ffc04d', label="IVAR prediction")
+        #plt.plot(fluence_data,predict_data,linestyle="None", linewidth=3,
+        #        marker="x", markersize=10,
+        #        color='green', label="IVAR prediction unsorted test")
+        plt.scatter(eff_fluence_data, points_data, lw=0, label='IVAR data',
+                   color='black')
+        plt.legend(loc = "upper left", fontsize=matplotlib.rcParams['font.size']) #data is sigmoid; 'best' can block data
+        plt.title("{}({})".format(alloy,AlloyName))
+        plt.xlabel("log(Eff Fluence(n/cm$^{2}$))")
+        plt.ylabel("$\Delta\sigma_{y}$ (MPa)")
+        plt.savefig(savepath.format("%s_IVAR" % ax.get_title()), dpi=200, bbox_inches='tight')
+        plt.close()
+        
+        headerline = "logEffFluence IVAR, Points IVAR, Predicted IVAR"
+        myarray =np.array([eff_fluence_data, points_data, predict_data]).transpose()
+        ptools.array_to_csv("%s_IVAR.csv" % AlloyName, headerline, myarray)
+
+        #LWR set
+        lwr_data.remove_all_filters()
+        lwr_data.add_inclusive_filter("alloy_number", '=', alloy)
+        #lwr_data.add_exclusive_filter(temp_str, '<>', 290)
 
         if len(lwr_data.get_x_data()) == 0:
             continue
@@ -97,34 +125,8 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
         plt.savefig(savepath.format("%s_LWR" % ax.get_title()), dpi=200, bbox_inches='tight')
         plt.close()
         
-        #print IVAR prediction plot
-        plt.figure()
-        matplotlib.rcParams.update({'font.size':18})
-        #fluence is often not sorted; sort with predictions
-        ivararr = np.array([eff_fluence_data, predict_data]).transpose()
-        ivar_tuples = tuple(map(tuple, ivararr))
-        ivar_list = list(ivar_tuples)
-        ivar_list.sort()
-        ivararr_sorted = np.asarray(ivar_list)
-        plt.plot(ivararr_sorted[:,0],ivararr_sorted[:,1],linestyle="-", 
-                linewidth=3,
-                marker=None,
-                color='#ffc04d', label="IVAR prediction")
-        #plt.plot(fluence_data,predict_data,linestyle="None", linewidth=3,
-        #        marker="x", markersize=10,
-        #        color='green', label="IVAR prediction unsorted test")
-        plt.scatter(eff_fluence_data, points_data, lw=0, label='IVAR data',
-                   color='black')
-        plt.legend(loc = "upper left", fontsize=matplotlib.rcParams['font.size']) #data is sigmoid; 'best' can block data
-        plt.title("{}({})".format(alloy,AlloyName))
-        plt.xlabel("log(Eff Fluence(n/cm$^{2}$))")
-        plt.ylabel("$\Delta\sigma_{y}$ (MPa)")
-        plt.savefig(savepath.format("%s_IVAR" % ax.get_title()), dpi=200, bbox_inches='tight')
-        plt.close()
 
         headerline = "logEffFluence LWR, Points LWR, Predicted LWR"
         myarray = np.array([eff_fluence_lwr, points_lwr, predict_lwr]).transpose()
         ptools.array_to_csv("%s_LWR.csv" % AlloyName, headerline, myarray)
-        headerline = "logEffFluence IVAR, Points IVAR, Predicted IVAR"
-        myarray =np.array([eff_fluence_data, points_data, predict_data]).transpose()
-        ptools.array_to_csv("%s_IVAR.csv" % AlloyName, headerline, myarray)
+        return
