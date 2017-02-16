@@ -35,16 +35,23 @@ def get_feature_list():
     features.append("N(log(eff fl 100p=10))")
     return features
 
-def get_gkrr_hyperparams(testpath, csvname="grid_scores.csv", verbose=0):
-    dirname = os.path.dirname(testpath)
+def get_gkrr_hyperparams(testpath, testdict, csvname="grid_scores.csv", verbose=0):
+    setpath = os.path.dirname(testpath)
+    dsetname = os.path.basename(setpath)
+    if "hyperfrom" in testdict[dsetname].keys():
+        testfrom = testdict[dsetname]["hyperfrom"]
+    else:
+        testfrom = dsetname
+    priorpath = os.path.dirname(setpath)
     mname = "KRRGridSearch"
-    hdata_path = os.path.join(dirname, mname, csvname) 
+    hdata_path = os.path.join(priorpath, dsetname, mname, csvname) 
     hdict=dict()
     hdict["alpha"] = 0.0
     hdict["gamma"] = 0.0
     if not os.path.isfile(hdata_path):
         print("No hyperparameter results yet.")
         return hdict
+    print("Using hyperparams from %s" % hdata_path)
     hdata = data_parser.parse(hdata_path)
     hdata.set_y_feature("rms")
     rms = hdata.get_y_data() 
@@ -96,7 +103,7 @@ def write_config_file(testpath, dsetname, testname, testdict):
     #
     lines.append("[gkrr_model]")
     print("Change hardcode")
-    hdict = get_gkrr_hyperparams(testpath, "grid_scores.csv")
+    hdict = get_gkrr_hyperparams(testpath, testdict, "grid_scores.csv")
     for hkey in hdict.keys():
         lines.append("%s = %3.8f" % (hkey, hdict[hkey]))
     lines.append("coef0 = 1")
@@ -135,43 +142,53 @@ def do_analysis(testpath, scriptpath):
 
 def main(datapath, scriptpath):
     testdict=dict() #could get from a file later
-    grid_density = 20 #orig 20
-    num_runs = 200 #orig 200
+    grid_density = 4 #orig 20
+    num_runs = 5 #orig 200
     num_folds = 5
     #
-    testdict["exptfull"]=dict()
-    testdict["exptfull"]["KRRGridSearch"] = {"grid_density":grid_density}
-    testdict["exptfull"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
-    testdict["exptfull"]["FullFit"] = {}
-    testdict["exptfull"]["csvs"] ={"ivar":"expt_fullfit", "lwr":"cd1_lwr"}
+    testdict["1exptalltemp"]=dict()
+    testdict["1exptalltemp"]["KRRGridSearch"] = {"grid_density":grid_density}
+    testdict["1exptalltemp"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
+    testdict["1exptalltemp"]["FullFit"] = {}
+    testdict["1exptalltemp"]["csvs"] ={"ivar":"expt_ivaralltemp", "lwr":"cd1_lwr"}
     #
-    testdict["expt"]=dict()
-    testdict["expt"]["KRRGridSearch"] = {"grid_density":grid_density}
-    testdict["expt"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
-    testdict["expt"]["LeaveOutAlloyCV"] = {}
-    testdict["expt"]["FullFit"] = {}
-    testdict["expt"]["PredictionVsFluence"] = {}
-    testdict["expt"]["ExtrapolateToLWR"] = {}
-    testdict["expt"]["csvs"] ={"ivar":"expt_ivar", "lwr":"cd1_lwr"}
+    testdict["2cd1alltemp"]=dict()
+    testdict["2cd1alltemp"]["KRRGridSearch"] = {"grid_density":grid_density}
+    testdict["2cd1alltemp"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
+    testdict["2cd1alltemp"]["FullFit"] = {}
+    testdict["2cd1alltemp"]["csvs"] ={"ivar":"cd1_ivaralltemp", "lwr":"cd1_lwr"}
     #
-    testdict["cd1"]=dict()
-    testdict["cd1"]["KRRGridSearch"] = {"grid_density":grid_density}
-    testdict["cd1"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
-    testdict["cd1"]["FullFit"] = {}
-    testdict["cd1"]["LeaveOutAlloyCV"] = {}
-    testdict["cd1"]["PredictionVsFluence"] = {}
-    testdict["cd1"]["ExtrapolateToLWR"] = {}
-    testdict["cd1"]["csvs"] ={"ivar":"cd1_ivar", "lwr":"cd1_lwr"}
+    testdict["3expt"]=dict()
+    #testdict["3expt"]["KRRGridSearch"] = {"grid_density":grid_density}
+    testdict["3expt"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
+    testdict["3expt"]["LeaveOutAlloyCV"] = {}
+    testdict["3expt"]["FullFit"] = {}
+    testdict["3expt"]["PredictionVsFluence"] = {}
+    testdict["3expt"]["ExtrapolateToLWR"] = {}
+    testdict["3expt"]["csvs"] ={"ivar":"expt_ivar", "lwr":"cd1_lwr"}
+    testdict["3expt"]["hyperfrom"] = "exptalltemp"
     #
-    #testdict["cd2"]=dict()
-    #testdict["cd2"]["KRRGridSearch"] = {"grid_density":grid_density}
-    #testdict["cd2"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
-    #testdict["cd2"]["LeaveOutAlloyCV"] = {}
-    #testdict["cd2"]["FullFit"] = {}
-    #testdict["cd2"]["PredictionVsFluence"] = {}
-    #testdict["cd2"]["ExtrapolateToLWR"] = {}
-    #testdict["cd2"]["csvs"] ={"ivar":"cd2_ivar", "lwr":"cd2_lwr"}
-    for dsetname in testdict.keys():
+    testdict["4cd1"]=dict()
+    #testdict["4cd1"]["KRRGridSearch"] = {"grid_density":grid_density}
+    testdict["4cd1"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
+    testdict["4cd1"]["FullFit"] = {}
+    testdict["4cd1"]["LeaveOutAlloyCV"] = {}
+    testdict["4cd1"]["PredictionVsFluence"] = {}
+    testdict["4cd1"]["ExtrapolateToLWR"] = {}
+    testdict["4cd1"]["csvs"] ={"ivar":"cd1_ivar", "lwr":"cd1_lwr"}
+    testdict["4cd1"]["hyperfrom"] = "cd1alltemp"
+    #
+    #testdict["5cd2"]=dict()
+    #testdict["5cd2"]["KRRGridSearch"] = {"grid_density":grid_density}
+    #testdict["5cd2"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
+    #testdict["5cd2"]["LeaveOutAlloyCV"] = {}
+    #testdict["5cd2"]["FullFit"] = {}
+    #testdict["5cd2"]["PredictionVsFluence"] = {}
+    #testdict["5cd2"]["ExtrapolateToLWR"] = {}
+    #testdict["5cd2"]["csvs"] ={"ivar":"cd2_ivar", "lwr":"cd2_lwr"}
+    dsets = list(testdict.keys())
+    dsets.sort()
+    for dsetname in dsets:
         dpath = os.path.join(datapath, dsetname)
         if not os.path.isdir(dpath):
             os.mkdir(dpath)
@@ -182,6 +199,8 @@ def main(datapath, scriptpath):
             testnames.insert(0,"KRRGridSearch")
         if "csvs" in testnames:
             testnames.remove("csvs")
+        if "hyperfrom" in testnames:
+            testnames.remove("hyperfrom")
         print(testnames)
         for testname in testnames:
             tpath = os.path.join(dpath, testname)
@@ -189,7 +208,8 @@ def main(datapath, scriptpath):
                 os.mkdir(tpath)
             write_config_file(tpath, dsetname, testname, testdict)
             do_analysis(tpath, scriptpath)
-        ap.cross_validation_full_fit_plot(dpath)
+        if ("FullFit" in testnames) and ("KFold_CV" in testnames):
+            ap.cross_validation_full_fit_plot(dpath)
     return
 
 if __name__ == "__main__":
@@ -197,7 +217,6 @@ if __name__ == "__main__":
     scriptpath = "../"
     datapath = os.path.abspath(datapath)
     scriptpath = os.path.abspath(scriptpath)
-    #get_gkrr_hyperparams(os.path.join(datapath,"cd2","PredictionVsFluence"))
     main(datapath, scriptpath)
     print("Files in %s" % datapath)
     sys.exit()

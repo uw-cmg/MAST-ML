@@ -258,8 +258,11 @@ def main(importpath):
     #create ancillary databases and spreadsheets
     clean_ivar_basic(db, "ucsb_ivar_and_ivarplus")
     cas.transfer_nonignore_records(db, "ucsb_ivar_and_ivarplus","expt_fullfit")
-    add_standard_fields(db, "expt_fullfit")
-    cas.export_spreadsheet(db, "expt_fullfit", exportpath)
+    add_standard_fields(db, "expt_ivaralltemp")
+    cas.export_spreadsheet(db, "expt_ivaralltemp", exportpath)
+    prefilter_ivar_for_cd1(db, "cd1_ivaralltemp_pre", "ucsb_ivar_and_ivarplus")
+    create_cd_ivar(db, "cd1_ivaralltemp", "cd1_ivaralltemp_pre", "cd_ivar_2016")
+    cas.export_spreadsheet(db, "cd1_ivaralltemp", exportpath)
     filter_temperatures_ivar_basic(db, "ucsb_ivar_and_ivarplus")
     create_expt_ivar(db, "expt_ivar", "ucsb_ivar_and_ivarplus", verbose=0)
     cas.export_spreadsheet(db, "expt_ivar", exportpath)
