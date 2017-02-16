@@ -6,6 +6,7 @@ from sklearn.metrics import mean_squared_error
 from mean_error import mean_error
 import matplotlib.cm as cmx
 import matplotlib.colors as colors
+import matplotlib
 import csv
 
 def get_cmap(N):
@@ -89,21 +90,34 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
     lwr_over200_rms = np.sqrt(
         mean_squared_error(np.asarray(lwr_data.get_y_data()).ravel(), model.predict(lwr_data.get_x_data())))
 
+    print("Overall extrapolation RMSE: %3.3f MPa" % overall_rms)
+    print("CD > 200MPa RMSE: %3.3f MPa" % over200_rms)
+    print("Mean error: %3.3f MPa" % overall_me)
+    
+    print("60-100 year extrapolation RMSE: %3.3f MPa" % lwr_rms)
+    print("CD > 200MPa 60-100 year extrapolation RMSE: %3.3f MPa" % lwr_over200_rms)
+    print("60-100 year extrapolation mean error: %3.3f MPa" % lwr_me)
+
+    matplotlib.rcParams.update({'font.size':18})
     ax[0].legend()
     ax[0].plot(plt.gca().get_xlim(), plt.gca().get_xlim(), ls="--", c=".3")
-    ax[0].set_xlabel('{} (MPa)'.format(data.y_feature))
-    ax[0].set_ylabel('Model Predicted (MPa)')
-    ax[0].set_title('Overall Extrapolation to LWR')
-    ax[0].text(.05, .88, 'RMSE: %.2f MPa' % (overall_rms), fontsize=14, transform=ax[0].transAxes)
-    ax[0].text(.05, .82, 'CD >200MPa RMSE: %.2f MPa' % (over200_rms), fontsize=14, transform=ax[0].transAxes)
-    ax[0].text(.05, .76, 'Mean Error: %.2f MPa' % (overall_me), fontsize=14, transform=ax[0].transAxes)
+    #ax[0].set_xlabel('{} (MPa)'.format(data.y_feature))
+    #ax[0].set_ylabel('Model Predicted (MPa)')
+    ax[0].set_xlabel('CD $\Delta\sigma_{y}$ (MPa)')
+    ax[0].set_ylabel('Predicted $\Delta\sigma_{y}$ (MPa)')
+    ax[0].set_title('Overall Extrapolation to LWR', fontsize=matplotlib.rcParams['font.size'])
+    ax[0].text(.05, .88, 'RMSE: %.2f MPa' % (overall_rms), transform=ax[0].transAxes)
+    #ax[0].text(.05, .82, 'CD >200MPa RMSE: %.2f MPa' % (over200_rms), fontsize=14, transform=ax[0].transAxes)
+    #ax[0].text(.05, .76, 'Mean Error: %.2f MPa' % (overall_me), fontsize=14, transform=ax[0].transAxes)
     ax[1].plot(plt.gca().get_xlim(), plt.gca().get_xlim(), ls="--", c=".3")
-    ax[1].set_xlabel('{} (MPa)'.format(data.y_feature))
-    ax[1].set_ylabel('Model Predicted (MPa)')
-    ax[1].set_title('60-100 year Extrapolation')
-    ax[1].text(.05, .88, 'RMSE: %.2f MPa' % (lwr_rms), fontsize=14, transform=ax[1].transAxes)
-    ax[1].text(.05, .82, 'CD >200MPa RMSE: %.2f MPa' % (lwr_over200_rms), fontsize=14, transform=ax[1].transAxes)
-    ax[1].text(.05, .76, 'Mean Error: %.2f MPa' % (lwr_me), fontsize=14, transform=ax[1].transAxes)
+    #ax[1].set_xlabel('{} (MPa)'.format(data.y_feature))
+    #ax[1].set_ylabel('Model Predicted (MPa)')
+    ax[1].set_xlabel('CD $\Delta\sigma_{y}$ (MPa)')
+    ax[1].set_ylabel('Predicted $\Delta\sigma_{y}$ (MPa)')
+    ax[1].set_title('60-100 year Extrapolation', fontsize=matplotlib.rcParams['font.size'])
+    ax[1].text(.05, .88, 'RMSE: %.2f MPa' % (lwr_rms), transform=ax[1].transAxes)
+    #ax[1].text(.05, .82, 'CD >200MPa RMSE: %.2f MPa' % (lwr_over200_rms), fontsize=14, transform=ax[1].transAxes)
+    #ax[1].text(.05, .76, 'Mean Error: %.2f MPa' % (lwr_me), fontsize=14, transform=ax[1].transAxes)
     fig.tight_layout()
     fig.savefig(savepath.format(plt.gca().get_title()), dpi=300, bbox_inches='tight')
     plt.close()
