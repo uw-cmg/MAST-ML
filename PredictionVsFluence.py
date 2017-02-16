@@ -56,6 +56,8 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
         points_data = np.asarray(data.get_y_data()).ravel()
         eff_fluence_data = np.asarray(data.get_data(eff_str)).ravel()
 
+        if len(lwr_data.get_x_data()) == 0:
+            continue
         fluence_lwr = np.asarray(lwr_data.get_data(fluence_str)).ravel()
         predict_lwr = model.predict(lwr_data.get_x_data())
         points_lwr = np.asarray(lwr_data.get_y_data()).ravel()
