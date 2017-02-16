@@ -69,10 +69,11 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
         plt.scatter(eff_fluence_data, points_data, lw=0, label='IVAR data',
                    color='black')
         plt.legend(loc = "upper left", fontsize=matplotlib.rcParams['font.size']) #data is sigmoid; 'best' can block data
-        plt.title("{}({})".format(alloy,AlloyName))
+        alloystr = "{}({})".format(alloy,AlloyName)
+        plt.title(alloystr)
         plt.xlabel("log(Eff Fluence(n/cm$^{2}$))")
         plt.ylabel("$\Delta\sigma_{y}$ (MPa)")
-        plt.savefig(savepath.format("%s_IVAR" % ax.get_title()), dpi=200, bbox_inches='tight')
+        plt.savefig(savepath.format("%s_IVAR" % alloystr), dpi=200, bbox_inches='tight')
         plt.close()
         
         headerline = "logEffFluence IVAR, Points IVAR, Predicted IVAR"
