@@ -47,7 +47,7 @@ def cross_validation_full_fit_plot():
     plt.annotate('Mean Error: {:.2f} MPa'.format(full_me), xy=(0.05,0.76), color="black", xycoords='axes fraction')
     plt.annotate('Mean Error: {:.2f} MPa'.format(cvbest_me), xy=(0.05,0.69), color="red", xycoords='axes fraction')
     
-    plt.xlabel("Experimental IVAR+ $\Delta\sigma_{y}$ (MPa)")
+    plt.xlabel("Measured IVAR+ $\Delta\sigma_{y}$ (MPa)")
     plt.ylabel("GKRR predicted $\Delta\sigma_{y}$ (MPa)")
     plt.tight_layout()
     plt.savefig("cross_validation_full_fit.png")
