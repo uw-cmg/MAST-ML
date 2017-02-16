@@ -85,6 +85,18 @@ def clean_ivar_basic(db, cname, verbose=1):
     dclean.flag_for_ignore(db, cname, id_list, reason_list)
     print(len(id_list))
     dclean.update_experimental_temperatures(db, cname)
+    [id_list, reason_list] = dclean.get_field_condition_to_remove(db,cname,
+                                "temperature_C",270)
+    dclean.flag_for_ignore(db, cname, id_list, reason_list)
+    print(len(id_list))
+    [id_list, reason_list] = dclean.get_field_condition_to_remove(db,cname,
+                                "temperature_C",310)
+    dclean.flag_for_ignore(db, cname, id_list, reason_list)
+    print(len(id_list))
+    [id_list, reason_list] = dclean.get_field_condition_to_remove(db,cname,
+                                "temperature_C",320)
+    dclean.flag_for_ignore(db, cname, id_list, reason_list)
+    print(len(id_list))
     return
 
 def add_standard_fields(db, cname, verbose=0):
