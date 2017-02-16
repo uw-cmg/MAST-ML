@@ -85,6 +85,9 @@ def clean_ivar_basic(db, cname, verbose=1):
     dclean.flag_for_ignore(db, cname, id_list, reason_list)
     print(len(id_list))
     dclean.update_experimental_temperatures(db, cname)
+    return
+
+def filter_temperatures_ivar_basic(db, cname, verbose=1):
     [id_list, reason_list] = dclean.get_field_condition_to_remove(db,cname,
                                 "temperature_C",270)
     dclean.flag_for_ignore(db, cname, id_list, reason_list)
@@ -142,22 +145,6 @@ def create_cd_ivar(db, cname, fromcname, fromcdname, verbose=1):
     cas.remove_field(db, cname, "delta_sigma_y_MPa") #will replace with CD data
     add_cd(db, cname, fromcdname)
     add_standard_fields(db, cname)
-    return
-
-
-def create_ivar_for_fullfit(db, cname, fromcname, verbose=1):
-    """Create IVAR-only spreadsheet for
-        optimizing hyperparameters
-    """
-    #remove IVAR+
-    tempname = "%s_temp" % cname
-    cas.transfer_nonignore_records(db, fromcname, tempname, verbose)
-    [id_list, reason_list] = dclean.get_field_condition_to_remove(db, tempname,
-                            "dataset","IVAR+")
-    dclean.flag_for_ignore(db, tempname, id_list, reason_list)
-    print(len(id_list))
-    cas.transfer_nonignore_records(db, tempname, cname, verbose)
-    db.drop_collection(tempname)
     return
 
 def clean_lwr(db, cname, verbose=1):
@@ -270,6 +257,10 @@ def main(importpath):
     import_initial_collections(db, cbasic, importpath)
     #create ancillary databases and spreadsheets
     clean_ivar_basic(db, "ucsb_ivar_and_ivarplus")
+    cas.transfer_nonignore_records(db, "ucsb_ivar_and_ivarplus","expt_fullfit")
+    add_standard_fields(db, "expt_fullfit")
+    cas.export_spreadsheet(db, "expt_fullfit", exportpath)
+    filter_temperatures_ivar_basic(db, "ucsb_ivar_and_ivarplus")
     create_expt_ivar(db, "expt_ivar", "ucsb_ivar_and_ivarplus", verbose=0)
     cas.export_spreadsheet(db, "expt_ivar", exportpath)
     prefilter_ivar_for_cd1(db, "cd1_ivar_temp", "ucsb_ivar_and_ivarplus")
@@ -277,12 +268,6 @@ def main(importpath):
     cas.export_spreadsheet(db, "cd1_ivar", exportpath)
     create_cd_ivar(db, "cd2_ivar", "expt_ivar", "cd_ivar_2017")
     cas.export_spreadsheet(db, "cd2_ivar", exportpath)
-    create_ivar_for_fullfit(db, "expt_ivaronly", "expt_ivar")
-    cas.export_spreadsheet(db, "expt_ivaronly", exportpath)
-    create_ivar_for_fullfit(db, "cd1_ivaronly", "cd1_ivar")
-    cas.export_spreadsheet(db, "cd1_ivaronly", exportpath)
-    create_ivar_for_fullfit(db, "cd2_ivaronly", "cd2_ivar")
-    cas.export_spreadsheet(db, "cd2_ivaronly", exportpath)
     clean_lwr(db, "cd_lwr_2017")
     create_lwr(db, "cd2_lwr", "cd_lwr_2017")
     cas.export_spreadsheet(db, "cd2_lwr", exportpath)
