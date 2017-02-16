@@ -135,40 +135,42 @@ def do_analysis(testpath, scriptpath):
 
 def main(datapath, scriptpath):
     testdict=dict() #could get from a file later
-    dnames = ["exptfull","expt","cd1","cd2"]
-    for dname in dnames:
-        testdict[dname] = dict()
     grid_density = 4 #orig 20
     num_runs = 5 #orig 200
     num_folds = 5
     #
+    testdict["exptfull"]=dict()
     testdict["exptfull"]["KRRGridSearch"] = {"grid_density":grid_density}
     testdict["exptfull"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
+    testdict["exptfull"]["FullFit"] = {}
     testdict["exptfull"]["csvs"] ={"ivar":"expt_fullfit", "lwr":"cd1_lwr"}
     #
-    #testdict["expt"]["KRRGridSearch"] = {"grid_density":grid_density}
-    #testdict["expt"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
-    #testdict["expt"]["LeaveOutAlloyCV"] = {}
-    #testdict["expt"]["FullFit"] = {}
-    #testdict["expt"]["PredictionVsFluence"] = {}
-    #testdict["expt"]["ExtrapolateToLWR"] = {}
+    testdict["expt"]=dict()
+    testdict["expt"]["KRRGridSearch"] = {"grid_density":grid_density}
+    testdict["expt"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
+    testdict["expt"]["LeaveOutAlloyCV"] = {}
+    testdict["expt"]["FullFit"] = {}
+    testdict["expt"]["PredictionVsFluence"] = {}
+    testdict["expt"]["ExtrapolateToLWR"] = {}
     testdict["expt"]["csvs"] ={"ivar":"expt_ivar", "lwr":"cd1_lwr"}
     #
-    #testdict["cd1"]["KRRGridSearch"] = {"grid_density":grid_density}
-    #testdict["cd1"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
-    #testdict["cd1"]["FullFit"] = {}
-    #testdict["cd1"]["LeaveOutAlloyCV"] = {}
-    #testdict["cd1"]["PredictionVsFluence"] = {}
-    #testdict["cd1"]["ExtrapolateToLWR"] = {}
+    testdict["cd1"]=dict()
+    testdict["cd1"]["KRRGridSearch"] = {"grid_density":grid_density}
+    testdict["cd1"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
+    testdict["cd1"]["FullFit"] = {}
+    testdict["cd1"]["LeaveOutAlloyCV"] = {}
+    testdict["cd1"]["PredictionVsFluence"] = {}
+    testdict["cd1"]["ExtrapolateToLWR"] = {}
     testdict["cd1"]["csvs"] ={"ivar":"cd1_ivar", "lwr":"cd1_lwr"}
     #
+    #testdict["cd2"]=dict()
     #testdict["cd2"]["KRRGridSearch"] = {"grid_density":grid_density}
     #testdict["cd2"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
     #testdict["cd2"]["LeaveOutAlloyCV"] = {}
     #testdict["cd2"]["FullFit"] = {}
     #testdict["cd2"]["PredictionVsFluence"] = {}
     #testdict["cd2"]["ExtrapolateToLWR"] = {}
-    testdict["cd2"]["csvs"] ={"ivar":"cd2_ivar", "lwr":"cd2_lwr"}
+    #testdict["cd2"]["csvs"] ={"ivar":"cd2_ivar", "lwr":"cd2_lwr"}
     for dsetname in testdict.keys():
         dpath = os.path.join(datapath, dsetname)
         if not os.path.isdir(dpath):
@@ -178,20 +180,20 @@ def main(datapath, scriptpath):
         if "KRRGridSearch" in testnames: #Do grid search first, always
             testnames.remove("KRRGridSearch")
             testnames.insert(0,"KRRGridSearch")
+        if "csvs" in testnames:
+            testnames.remove("csvs")
         print(testnames)
         for testname in testnames:
-            if not testname == "csvs":
-                tpath = os.path.join(dpath, testname)
-                if not os.path.isdir(tpath):
-                    os.mkdir(tpath)
-                write_config_file(tpath, dsetname, testname, testdict)
-                do_analysis(tpath, scriptpath)
-        os.chdir(dpath)
-        ap.cross_validation_full_fit_plot()
+            tpath = os.path.join(dpath, testname)
+            if not os.path.isdir(tpath):
+                os.mkdir(tpath)
+            write_config_file(tpath, dsetname, testname, testdict)
+            do_analysis(tpath, scriptpath)
+        ap.cross_validation_full_fit_plot(dpath)
     return
 
 if __name__ == "__main__":
-    datapath = "../../../data/DBTT_mongo/data_exports_dbtt_10_20170216_134012"
+    datapath = "../../../data/DBTT_mongo/data_exports_dbtt_11_20170216_140312"
     scriptpath = "../"
     datapath = os.path.abspath(datapath)
     scriptpath = os.path.abspath(scriptpath)
