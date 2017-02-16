@@ -147,34 +147,34 @@ def main(datapath, scriptpath):
     num_folds = 5
     #
     testdict["1exptalltemp"]=dict()
-    testdict["1exptalltemp"]["KRRGridSearch"] = {"grid_density":grid_density}
-    testdict["1exptalltemp"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
-    testdict["1exptalltemp"]["FullFit"] = {}
+    #testdict["1exptalltemp"]["KRRGridSearch"] = {"grid_density":grid_density}
+    #testdict["1exptalltemp"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
+    #testdict["1exptalltemp"]["FullFit"] = {}
     testdict["1exptalltemp"]["csvs"] ={"ivar":"expt_ivaralltemp", "lwr":"cd1_lwr"}
     #
     testdict["2cd1alltemp"]=dict()
-    testdict["2cd1alltemp"]["KRRGridSearch"] = {"grid_density":grid_density}
-    testdict["2cd1alltemp"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
-    testdict["2cd1alltemp"]["FullFit"] = {}
+    #testdict["2cd1alltemp"]["KRRGridSearch"] = {"grid_density":grid_density}
+    #testdict["2cd1alltemp"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
+    #testdict["2cd1alltemp"]["FullFit"] = {}
     testdict["2cd1alltemp"]["csvs"] ={"ivar":"cd1_ivaralltemp", "lwr":"cd1_lwr"}
     #
     testdict["3expt"]=dict()
-    #testdict["3expt"]["KRRGridSearch"] = {"grid_density":grid_density}
-    testdict["3expt"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
-    testdict["3expt"]["LeaveOutAlloyCV"] = {}
-    testdict["3expt"]["FullFit"] = {}
-    testdict["3expt"]["PredictionVsFluence"] = {}
-    testdict["3expt"]["ExtrapolateToLWR"] = {}
+    ##testdict["3expt"]["KRRGridSearch"] = {"grid_density":grid_density}
+    #testdict["3expt"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
+    #testdict["3expt"]["LeaveOutAlloyCV"] = {}
+    #testdict["3expt"]["FullFit"] = {}
+    #testdict["3expt"]["PredictionVsFluence"] = {}
+    #testdict["3expt"]["ExtrapolateToLWR"] = {}
     testdict["3expt"]["csvs"] ={"ivar":"expt_ivar", "lwr":"cd1_lwr"}
     testdict["3expt"]["hyperfrom"] = "1exptalltemp"
     #
     testdict["4cd1"]=dict()
-    #testdict["4cd1"]["KRRGridSearch"] = {"grid_density":grid_density}
-    testdict["4cd1"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
-    testdict["4cd1"]["FullFit"] = {}
-    testdict["4cd1"]["LeaveOutAlloyCV"] = {}
-    testdict["4cd1"]["PredictionVsFluence"] = {}
-    testdict["4cd1"]["ExtrapolateToLWR"] = {}
+    ##testdict["4cd1"]["KRRGridSearch"] = {"grid_density":grid_density}
+    #testdict["4cd1"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
+    #testdict["4cd1"]["FullFit"] = {}
+    #testdict["4cd1"]["LeaveOutAlloyCV"] = {}
+    #testdict["4cd1"]["PredictionVsFluence"] = {}
+    #testdict["4cd1"]["ExtrapolateToLWR"] = {}
     testdict["4cd1"]["csvs"] ={"ivar":"cd1_ivar", "lwr":"cd1_lwr"}
     testdict["4cd1"]["hyperfrom"] = "2cd1alltemp"
     #
@@ -208,8 +208,7 @@ def main(datapath, scriptpath):
                 os.mkdir(tpath)
             write_config_file(tpath, dsetname, testname, testdict)
             do_analysis(tpath, scriptpath)
-        if ("FullFit" in testnames) and ("KFold_CV" in testnames):
-            ap.cross_validation_full_fit_plot(dpath)
+        ap.cross_validation_full_fit_plot(dpath)
     return
 
 if __name__ == "__main__":
