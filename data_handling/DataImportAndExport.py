@@ -283,6 +283,7 @@ def main(importpath):
     cas.transfer_nonignore_records(db, "atr2_2016","expt_atr2")
     cas.rename_field(db,"expt_atr2","alloy name", "Alloy")
     dclean.standardize_alloy_names(db,"expt_atr2")
+    cas.add_basic_field(db, "expt_atr2", "dataset", "ATR2")
     cas.add_time_field(db, "expt_atr2")
     add_standard_fields(db, "expt_atr2")
     cas.transfer_nonignore_records(db, "expt_ivaralltemp","expt_atr2")
