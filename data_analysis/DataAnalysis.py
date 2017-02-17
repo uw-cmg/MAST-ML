@@ -204,7 +204,7 @@ def main(datapath, scriptpath):
     return
 
 if __name__ == "__main__":
-    datapath = "../../../data/DBTT_mongo/data_exports_dbtt_20_20170217_133258"
+    datapath = "../../../data/DBTT_mongo/data_exports_dbtt_26_20170217_154058"
     scriptpath = "../"
     datapath = os.path.abspath(datapath)
     scriptpath = os.path.abspath(scriptpath)
