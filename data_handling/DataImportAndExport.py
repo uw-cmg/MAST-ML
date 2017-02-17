@@ -283,7 +283,7 @@ def main(importpath):
     add_standard_fields(db, "expt_atr2")
     cas.export_spreadsheet(db, "expt_atr2", exportpath)
     #verify data
-    clist=["expt_ivar","cd1_ivar","cd2_ivar","cd1_lwr","cd2_lwr"]
+    clist=["expt_ivar","cd1_ivar","cd2_ivar","cd1_lwr","cd2_lwr","expt_atr2"]
     dver.make_per_alloy_plots(db, clist, "%s/verification_plots" % exportpath) 
     #Additional to-do
     ##
