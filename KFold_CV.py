@@ -25,6 +25,8 @@ def execute(model, data, savepath, lwr_data="", *args, **kwargs):
     Y_predicted_worst = []
     Y_predicted_best_fold_numbers = []
     Y_predicted_worst_fold_numbers = []
+    Worst_RMS=[]
+    Best_RMS=[]
 
     maxRMS = 1
     minRMS = 100
@@ -37,6 +39,7 @@ def execute(model, data, savepath, lwr_data="", *args, **kwargs):
         K_fold_me_list = []
         Overall_Y_Pred = np.zeros(len(Xdata))
         Pred_Fold_Numbers = np.zeros(len(Xdata))
+        Overall_Abs_Err = np.zeros(len(Xdata))
         # split into testing and training sets
         nfold=0
         for train_index, test_index in kf:
@@ -52,6 +55,7 @@ def execute(model, data, savepath, lwr_data="", *args, **kwargs):
             K_fold_me_list.append(me)
             Overall_Y_Pred[test_index] = Y_test_Pred
             Pred_Fold_Numbers[test_index] = nfold
+            Overall_Abs_Err[test_index] = np.absolute(Y_test - Y_test_Pred)
 
         RMS_List.append(np.mean(K_fold_rms_list))
         ME_List.append(np.mean(K_fold_me_list))
@@ -59,11 +63,13 @@ def execute(model, data, savepath, lwr_data="", *args, **kwargs):
             maxRMS = np.mean(K_fold_rms_list)
             Y_predicted_worst = Overall_Y_Pred
             Y_predicted_worst_fold_numbers = Pred_Fold_Numbers
+            Worst_Abs_Err = Overall_Abs_Err
 
         if np.mean(K_fold_rms_list) < minRMS:
             minRMS = np.mean(K_fold_rms_list)
             Y_predicted_best = Overall_Y_Pred
             Y_predicted_best_fold_numbers = Pred_Fold_Numbers
+            Best_Abs_Err = Overall_Abs_Err
 
     avgRMS = np.mean(RMS_List)
     medRMS = np.median(RMS_List)
@@ -103,11 +109,14 @@ def execute(model, data, savepath, lwr_data="", *args, **kwargs):
     f.savefig(savepath.format("cv_best_worst"), dpi=200, bbox_inches='tight')
     plt.clf()
     plt.close()
-  
+
+    alloys = np.asarray(data.get_data("alloy_number")).ravel()
     csvname = "KFoldCV_data.csv"
-    headerline = "Measured,Predicted worst,Fold numbers worst,Predicted best,Fold numbers best"
-    myarray = np.array([Ydata, 
-                Y_predicted_worst, Y_predicted_worst_fold_numbers,
-                Y_predicted_best, Y_predicted_best_fold_numbers]).transpose()
+    headerline = "Alloy number,Measured,Predicted best,Absolute error best,Fold numbers best,Predicted worst,Absolute error worst,Fold numbers worst"
+    myarray = np.array([alloys, Ydata,
+                Y_predicted_best, Best_Abs_Err, 
+                Y_predicted_best_fold_numbers,
+                Y_predicted_worst,Worst_Abs_Err,
+                Y_predicted_worst_fold_numbers]).transpose()
     ptools.array_to_csv(csvname, headerline, myarray)
     return
