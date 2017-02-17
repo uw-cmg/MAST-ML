@@ -100,6 +100,13 @@ class Data:
             if line in filtered_data: continue
             if line[index] is None:
                 continue
+            elif type(line[index]) == str:
+                if operator == "<>":
+                    if not (line[index]) == threshold:
+                        filtered_data.append(line)
+                elif operator == "=":
+                    if (line[index]) == threshold:
+                        filtered_data.append(line)
             elif line[index] > threshold and '>' in operator:
                 filtered_data.append(line)
             elif line[index] == threshold and '=' in operator:
@@ -122,7 +129,14 @@ class Data:
         for line in filtered_data:
             if line[index] is None:
                 continue
-            if  '>' in operator and line[index] > threshold:
+            elif type(line[index]) == str:
+                if operator == "<>":
+                    if not (line[index]) == threshold:
+                        remove_list.append(line)
+                elif operator == "=":
+                    if (line[index]) == threshold:
+                        remove_list.append(line)
+            elif  '>' in operator and line[index] > threshold:
                 remove_list.append(line)
                 #filtered_data.remove(line)
             elif '=' in operator and line[index] == threshold:
