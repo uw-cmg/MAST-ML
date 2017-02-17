@@ -285,6 +285,7 @@ def main(importpath):
     dclean.standardize_alloy_names(db,"expt_atr2")
     cas.add_time_field(db, "expt_atr2")
     add_standard_fields(db, "expt_atr2")
+    cas.transfer_nonignore_records(db, "expt_ivaralltemp","expt_atr2")
     cas.export_spreadsheet(db, "expt_atr2", exportpath)
     #verify data
     clist=["expt_ivar","cd1_ivar","cd2_ivar","cd1_lwr","cd2_lwr"]
