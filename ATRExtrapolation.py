@@ -5,9 +5,11 @@ from sklearn.metrics import mean_squared_error
 
 def execute(model, data, savepath, *args, **kwargs):
     atr2data=2 #old
+    alloystr = "Alloy"
     codestr = "Data Set code"
     atr2data="ATR2"
     codestr = "dataset"
+    alloystr= "alloy_number"
     data.remove_all_filters()
     data.add_exclusive_filter(codestr, '=', atr2data)
     model.fit(data.get_x_data(), data.get_y_data())
@@ -23,17 +25,19 @@ def execute(model, data, savepath, *args, **kwargs):
 
     data.remove_all_filters()
     for x in atr1_alloys:
-        data.add_inclusive_filter("Alloy", '=', x)
+        data.add_inclusive_filter(alloystr, '=', x)
+    print(np.asarray(data.get_y_data()).shape)
     data.add_exclusive_filter(codestr, '<>', atr2data)
+    print(np.asarray(data.get_y_data()).shape)
     Ypredict = model.predict(data.get_x_data())
     atr1_rms = np.sqrt(mean_squared_error(data.get_y_data(), Ypredict))
     plt.scatter(data.get_y_data(), Ypredict, lw = 0, color = '#03FF00', label = 'IVAR, ATR1, ATR2')
     #print(len(data.get_y_data()))
 
     data.remove_all_filters()
-    data.add_inclusive_filter("Alloy",'<',60)
+    data.add_inclusive_filter(alloystr,'<',60)
     for x in atr1_alloys:
-        data.add_exclusive_filter("Alloy", '=', x)
+        data.add_exclusive_filter(alloystr, '=', x)
     data.add_exclusive_filter(codestr, '<>', atr2data)
     Ypredict = model.predict(data.get_x_data())
     ivar_rms = np.sqrt(mean_squared_error(data.get_y_data(), Ypredict))
@@ -41,7 +45,7 @@ def execute(model, data, savepath, *args, **kwargs):
     #print(len(data.get_y_data()))
 
     data.remove_all_filters()
-    data.add_inclusive_filter("Alloy", '>', 59)
+    data.add_inclusive_filter(alloystr, '>', 59)
     data.add_exclusive_filter(codestr, '<>', atr2data)
     Ypredict = model.predict(data.get_x_data())
     atr2_rms = np.sqrt(mean_squared_error(data.get_y_data(), Ypredict))
