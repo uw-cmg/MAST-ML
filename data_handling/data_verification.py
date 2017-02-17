@@ -47,14 +47,15 @@ def make_per_alloy_plots(db, clist, pathstem="", verbose=0):
         plt.xlabel("Fluence (n/cm$^{2}$)", fontsize=fontsize)
         plt.ylabel("$\Delta\sigma_{y}$ (MPa)", fontsize=fontsize)
         plt.tick_params(labelsize=fontsize)
-        for cname in clist:
+        for cidx in range(0, len(clist)):
+            cname = clist[cidx]
             cseries=list()
             results = db[cname].find({"Alloy":alloy},{"fluence_n_cm2":1,
                     "delta_sigma_y_MPa":1})
             for result in results:
                 cseries.append([result["fluence_n_cm2"],result["delta_sigma_y_MPa"]])
             cseries = np.array(cseries, 'float')
-            marker = markerlist[hash_string(cname) % len(markerlist)]
+            marker = markerlist[cidx % len(markerlist)]
             if cseries.size > 0:
                 plt.plot(cseries[:,0],cseries[:,1], marker = marker,
                     markersize = markersize, markeredgewidth = markeredgewidth,
