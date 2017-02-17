@@ -1,7 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import mean_squared_error
-
+import data_analysis.printout_tools as ptools
+import matplotlib
+from mean_error import mean_error
 
 def execute(model, data, savepath, *args, **kwargs):
     atr2data=2 #old
@@ -19,7 +21,34 @@ def execute(model, data, savepath, *args, **kwargs):
     data.add_inclusive_filter(codestr, '=', atr2data)
 
     Ypredict = model.predict(data.get_x_data())
+    Ypredict_array = np.asarray(Ypredict).ravel()
     overall_rms = np.sqrt(mean_squared_error(data.get_y_data(), Ypredict))
+    overall_me = mean_error(Ypredict, data.get_y_data())
+    
+    alloys = np.asarray(data.get_data("alloy_number")).ravel()
+    Ymeasured = np.asarray(data.get_y_data()).ravel()
+    ptools.array_to_csv("ATRExtrapolation.csv","Alloy number,Measured Y,Predicted Y",np.array([alloys,Ymeasured,Ypredict_array]).transpose())
+    Xerr = np.asarray(data.get_data("delta_sigma_y_MPa_uncertainty")).ravel()
+
+    matplotlib.rcParams.update({'font.size':22})
+    smallfont = 0.90 * matplotlib.rcParams['font.size']
+    plt.figure()
+    plt.hold(True)
+    plt.errorbar(Ymeasured, Ypredict_array, xerr=Xerr, linewidth=1,
+                linestyle = "None", color="red",
+                markerfacecolor='red' , marker='o',
+                markersize=10, markeredgecolor="None")
+    plt.plot(plt.gca().get_ylim(), plt.gca().get_ylim(), ls="--", c=".3")
+    plt.annotate("RMSE: %3.2f MPa" % overall_rms,xy=(0.05, 0.90), xycoords="axes fraction", fontsize=smallfont)
+    plt.annotate("Mean error: %3.2f MPa" % overall_me ,xy=(0.05, 0.83), xycoords="axes fraction", fontsize=smallfont)
+    plt.xlabel("Measured $\Delta\sigma_{y}$ (MPa)")
+    plt.ylabel("Predicted $\Delta\sigma_{y}$ (MPa)")
+    plt.axis('equal')
+    plt.axis('square')
+    plt.tight_layout()
+    plt.savefig("ATR2simpleextrapolation.png")
+    plt.hold(False)
+    plt.close()
     #plt.scatter(data.get_y_data(), Ypredict, lw=0, color='#009AFF')
     #print(len(data.get_y_data()))
 
