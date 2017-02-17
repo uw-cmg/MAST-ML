@@ -158,7 +158,7 @@ def main(datapath, scriptpath):
     #testdict["2cd1alltemp"]["LeaveOutAlloyCV"] = {}
     #testdict["2cd1alltemp"]["FullFit"] = {}
     #testdict["2cd1alltemp"]["ExtrapolateToLWR"] = {}
-    testdict["2cd1alltemp"]["PredictionVsFluence"] = {"temp_filter":290}
+    #testdict["2cd1alltemp"]["PredictionVsFluence"] = {"temp_filter":290}
     testdict["2cd1alltemp"]["csvs"] ={"ivar":"cd1_ivaralltemp", "lwr":"cd1_lwr"}
     #
     testdict["3expt"]=dict()
@@ -166,7 +166,7 @@ def main(datapath, scriptpath):
     #testdict["3expt"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
     #testdict["3expt"]["LeaveOutAlloyCV"] = {}
     #testdict["3expt"]["FullFit"] = {}
-    testdict["3expt"]["PredictionVsFluence"] = {}
+    #testdict["3expt"]["PredictionVsFluence"] = {}
     #testdict["3expt"]["ExtrapolateToLWR"] = {}
     testdict["3expt"]["csvs"] ={"ivar":"expt_ivar", "lwr":"cd1_lwr"}
     testdict["3expt"]["hyperfrom"] = "1exptalltemp"
@@ -176,7 +176,7 @@ def main(datapath, scriptpath):
     #testdict["4cd1"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
     #testdict["4cd1"]["FullFit"] = {}
     #testdict["4cd1"]["LeaveOutAlloyCV"] = {}
-    testdict["4cd1"]["PredictionVsFluence"] = {}
+    #testdict["4cd1"]["PredictionVsFluence"] = {}
     #testdict["4cd1"]["ExtrapolateToLWR"] = {}
     testdict["4cd1"]["csvs"] ={"ivar":"cd1_ivar", "lwr":"cd1_lwr"}
     testdict["4cd1"]["hyperfrom"] = "2cd1alltemp"
@@ -189,6 +189,12 @@ def main(datapath, scriptpath):
     #testdict["5cd2"]["PredictionVsFluence"] = {}
     #testdict["5cd2"]["ExtrapolateToLWR"] = {}
     #testdict["5cd2"]["csvs"] ={"ivar":"cd2_ivar", "lwr":"cd2_lwr"}
+    #
+    testdict["6toatr2"]=dict()
+    testdict["6toatr2"]["ATRExtrapolation"] = {}
+    testdict["6toatr2"]["csvs"] ={"ivar":"expt_atr2", "lwr":"expt_atr2"}
+    testdict["6toatr2"]["hyperfrom"] = "1exptalltemp"
+    #
     dsets = list(testdict.keys())
     dsets.sort()
     for dsetname in dsets:
@@ -216,7 +222,7 @@ def main(datapath, scriptpath):
     return
 
 if __name__ == "__main__":
-    datapath = "../../../data/DBTT_mongo/data_exports_dbtt_17_20170216_160031"
+    datapath = "../../../data/DBTT_mongo/data_exports_dbtt_20_20170217_133258"
     scriptpath = "../"
     datapath = os.path.abspath(datapath)
     scriptpath = os.path.abspath(scriptpath)
