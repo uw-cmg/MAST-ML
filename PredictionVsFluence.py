@@ -13,10 +13,15 @@ lwr_data is data in the domain of LWR conditions (low flux, high fluence)
 '''
 
 def execute(model, data, savepath, lwr_data, *args, **kwargs):
+    if not "temp_filter" in kwargs.keys():
+        temp_filter = None
+    else:
+        temp_filter = int(kwargs["temp_filter"]) #int matches data
     Xdata = np.asarray(data.get_x_data())
     Ydata = np.asarray(data.get_y_data()).ravel()
 
     model.fit(Xdata, Ydata)
+    #note that temp_filter only affects the plotting, not the model fitting
 
     fluence_str = "log(fluence_n_cm2)"
     flux_str = "log(flux_n_cm2_sec)"
@@ -38,12 +43,20 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
     Flux = (np.log10(Flux) - np.min(combinedflux))/(np.max(combinedflux) - np.min(combinedflux))
     Fluence  = (np.log10(aFluence) - np.min(combinedfluence))/(np.max(np.asarray(combinedfluence)) - np.min(combinedfluence))
     EffectiveFluence = (np.log10(aEffectiveFluence) - np.min(combinedeffectivefluence))/(np.max(np.asarray(combinedeffectivefluence)) - np.min(combinedeffectivefluence))
+    mock_xdata = np.reshape(np.asarray(data.get_x_data())[0, 0:6], (1, 6)) * np.ones((500, 6))
+    mock_condition_set = np.concatenate([mock_xdata, EffectiveFluence], 1)
 
     #for alloy in range(1,5): #restrict range for testing
     for alloy in range(1, max(data.get_data("alloy_number"))[0] + 1):
         print(alloy)
         data.remove_all_filters()
         data.add_inclusive_filter("alloy_number", '=', alloy)
+        print(np.asarray(data.get_x_data()).shape)
+        if temp_filter == None:
+            pass
+        else:
+            data.add_exclusive_filter(temp_str,'<>',temp_filter)    
+        print(np.asarray(data.get_x_data()).shape)
         if len(data.get_x_data()) == 0: continue  # if alloy doesn't exist(x data is empty), then continue
         AlloyName = data.get_data("Alloy")[0][0]
 
@@ -85,16 +98,19 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
         #LWR set
         lwr_data.remove_all_filters()
         lwr_data.add_inclusive_filter("alloy_number", '=', alloy)
-        #lwr_data.add_exclusive_filter(temp_str, '<>', 290)
+        if temp_filter == None:
+            pass
+        else:
+            lwr_data.add_exclusive_filter(temp_str, '<>', temp_filter)
 
         if len(lwr_data.get_x_data()) == 0:
-            condition_set = np.reshape(np.asarray(data.get_x_data())[0, 0:6], (1, 6)) * np.ones((500, 6))
-            Xdata = np.concatenate([condition_set, EffectiveFluence], 1)
-            predict_lwr = model.predict(Xdata)
+            plot_lwr_points = False
+            predict_lwr = model.predict(mock_condition_set)
             eff_fluence_lwr = EffectiveFluence
-            points_lwr = []
+            points_lwr = np.zeros(len(eff_fluence_lwr)) #empty for printout
         
         else:
+            plot_lwr_points = True
             fluence_lwr = np.asarray(lwr_data.get_data(fluence_str)).ravel()
             predict_lwr = model.predict(lwr_data.get_x_data())
             points_lwr = np.asarray(lwr_data.get_y_data()).ravel()
@@ -108,11 +124,9 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
                 lw=3, color='#ffc04d', label="LWR prediction")
         ax.scatter(eff_fluence_data, points_data, lw=0, label='IVAR data',
                    color='black')   
-        if len(points_lwr) > 0:
+        if plot_lwr_points:
             ax.scatter(eff_fluence_lwr, points_lwr,
                    lw=0, label="CD LWR data", color = '#7ec0ee')
-        else:
-            points_lwr = np.zeros(len(eff_fluence_lwr)) #zero array for printing
 
         plt.legend(loc = "upper left", fontsize=matplotlib.rcParams['font.size']) #data is sigmoid; 'best' can block data
         plt.title("{}({})".format(alloy,AlloyName))
