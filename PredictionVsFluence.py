@@ -28,24 +28,6 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
     eff_str = "log(eff fl 100p=26)"
     temp_str = "temperature_C"
 
-    #Creating a renormalized effective fluence column, renormalized
-    #based on the min/max from both the IVAR and the LWR data
-    #This column will only be used for the LWR predictions if there
-    #is no LWR data.
-    Flux = 3e10 * np.ones((500,1))
-    Time = np.reshape(np.linspace(3.154e+7/4, 3.154e+7 * 150, 500),(500,1))
-    aFluence = (Flux * Time)
-    aEffectiveFluence = aFluence
-    combinedfluence = data.get_data(fluence_str) + lwr_data.get_data(fluence_str)
-    combinedflux = data.get_data(flux_str) + lwr_data.get_data(flux_str)
-    combinedeffectivefluence = data.get_data(eff_str) + lwr_data.get_data(eff_str)
-    #normalize
-    Flux = (np.log10(Flux) - np.min(combinedflux))/(np.max(combinedflux) - np.min(combinedflux))
-    Fluence  = (np.log10(aFluence) - np.min(combinedfluence))/(np.max(np.asarray(combinedfluence)) - np.min(combinedfluence))
-    EffectiveFluence = (np.log10(aEffectiveFluence) - np.min(combinedeffectivefluence))/(np.max(np.asarray(combinedeffectivefluence)) - np.min(combinedeffectivefluence))
-    mock_xdata = np.reshape(np.asarray(data.get_x_data())[0, 0:6], (1, 6)) * np.ones((500, 6))
-    mock_condition_set = np.concatenate([mock_xdata, EffectiveFluence], 1)
-
     #for alloy in range(1,5): #restrict range for testing
     for alloy in range(1, max(data.get_data("alloy_number"))[0] + 1):
         print(alloy)
@@ -104,17 +86,12 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
             lwr_data.add_exclusive_filter(temp_str, '<>', temp_filter)
 
         if len(lwr_data.get_x_data()) == 0:
-            plot_lwr_points = False
-            predict_lwr = model.predict(mock_condition_set)
-            eff_fluence_lwr = EffectiveFluence
-            points_lwr = np.zeros(len(eff_fluence_lwr)) #empty for printout
+            continue
         
-        else:
-            plot_lwr_points = True
-            fluence_lwr = np.asarray(lwr_data.get_data(fluence_str)).ravel()
-            predict_lwr = model.predict(lwr_data.get_x_data())
-            points_lwr = np.asarray(lwr_data.get_y_data()).ravel()
-            eff_fluence_lwr = np.asarray(lwr_data.get_data(eff_str)).ravel()
+        fluence_lwr = np.asarray(lwr_data.get_data(fluence_str)).ravel()
+        predict_lwr = model.predict(lwr_data.get_x_data())
+        points_lwr = np.asarray(lwr_data.get_y_data()).ravel()
+        eff_fluence_lwr = np.asarray(lwr_data.get_data(eff_str)).ravel()
         
         plt.figure()
         plt.hold(True)
@@ -124,9 +101,8 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
                 lw=3, color='#ffc04d', label="LWR prediction")
         ax.scatter(eff_fluence_data, points_data, lw=0, label='IVAR data',
                    color='black')   
-        if plot_lwr_points:
-            ax.scatter(eff_fluence_lwr, points_lwr,
-                   lw=0, label="CD LWR data", color = '#7ec0ee')
+        ax.scatter(eff_fluence_lwr, points_lwr,
+               lw=0, label="CD LWR data", color = '#7ec0ee')
 
         plt.legend(loc = "upper left", fontsize=matplotlib.rcParams['font.size']) #data is sigmoid; 'best' can block data
         plt.title("{}({})".format(alloy,AlloyName))
