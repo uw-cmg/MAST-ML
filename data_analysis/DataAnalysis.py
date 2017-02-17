@@ -142,8 +142,8 @@ def do_analysis(testpath, scriptpath):
 
 def main(datapath, scriptpath):
     testdict=dict() #could get from a file later
-    grid_density = 4 #orig 20
-    num_runs = 5 #orig 200
+    grid_density = 20 #orig 20
+    num_runs = 200 #orig 200
     num_folds = 5
     #
     testdict["1expt"]=dict()
