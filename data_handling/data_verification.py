@@ -95,5 +95,5 @@ if __name__=="__main__":
     dbname="dbtt_23"
     client = MongoClient('localhost', 27017)
     db = client[dbname]
-    clist=["expt_ivar","cd1_ivar","cd2_ivar","cd2_lwr"]
+    clist=["expt_ivar","cd1_ivar","cd2_ivar","cd2_lwr","expt_atr2"]
     make_per_alloy_plots(db, clist, sys.argv[1])

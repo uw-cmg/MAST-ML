@@ -142,58 +142,40 @@ def do_analysis(testpath, scriptpath):
 
 def main(datapath, scriptpath):
     testdict=dict() #could get from a file later
-    grid_density = 20 #orig 20
-    num_runs = 200 #orig 200
+    grid_density = 4 #orig 20
+    num_runs = 5 #orig 200
     num_folds = 5
     #
-    testdict["1exptalltemp"]=dict()
-    #testdict["1exptalltemp"]["KRRGridSearch"] = {"grid_density":grid_density}
-    #testdict["1exptalltemp"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
-    #testdict["1exptalltemp"]["FullFit"] = {}
-    testdict["1exptalltemp"]["csvs"] ={"ivar":"expt_ivaralltemp", "lwr":"cd1_lwr"}
+    testdict["1expt"]=dict()
+    testdict["1expt"]["KRRGridSearch"] = {"grid_density":grid_density}
+    testdict["1expt"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
+    testdict["1expt"]["FullFit"] = {}
+    testdict["1expt"]["ExtrapolateToLWR"] = {}
+    testdict["1expt"]["PredictionVsFluence"] = {"temp_filter":290}
+    testdict["1expt"]["csvs"] ={"ivar":"expt_ivar", "lwr":"cd1_lwr"}
     #
-    testdict["2cd1alltemp"]=dict()
-    #testdict["2cd1alltemp"]["KRRGridSearch"] = {"grid_density":grid_density}
-    #testdict["2cd1alltemp"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
-    #testdict["2cd1alltemp"]["LeaveOutAlloyCV"] = {}
-    #testdict["2cd1alltemp"]["FullFit"] = {}
-    #testdict["2cd1alltemp"]["ExtrapolateToLWR"] = {}
-    #testdict["2cd1alltemp"]["PredictionVsFluence"] = {"temp_filter":290}
-    testdict["2cd1alltemp"]["csvs"] ={"ivar":"cd1_ivaralltemp", "lwr":"cd1_lwr"}
+    testdict["2cd1"]=dict()
+    testdict["2cd1"]["KRRGridSearch"] = {"grid_density":grid_density}
+    testdict["2cd1"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
+    testdict["2cd1"]["LeaveOutAlloyCV"] = {}
+    testdict["2cd1"]["FullFit"] = {}
+    testdict["2cd1"]["ExtrapolateToLWR"] = {}
+    testdict["2cd1"]["PredictionVsFluence"] = {"temp_filter":290}
+    testdict["2cd1"]["csvs"] ={"ivar":"cd1_ivar", "lwr":"cd1_lwr"}
     #
-    testdict["3expt"]=dict()
-    #testdict["3expt"]["KRRGridSearch"] = {"grid_density":grid_density}
-    #testdict["3expt"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
-    #testdict["3expt"]["LeaveOutAlloyCV"] = {}
-    #testdict["3expt"]["FullFit"] = {}
-    #testdict["3expt"]["PredictionVsFluence"] = {}
-    #testdict["3expt"]["ExtrapolateToLWR"] = {}
-    testdict["3expt"]["csvs"] ={"ivar":"expt_ivar", "lwr":"cd1_lwr"}
-    testdict["3expt"]["hyperfrom"] = "1exptalltemp"
+    testdict["3cd2"]=dict()
+    testdict["3cd2"]["KRRGridSearch"] = {"grid_density":grid_density}
+    testdict["3cd2"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
+    testdict["3cd2"]["LeaveOutAlloyCV"] = {}
+    testdict["3cd2"]["FullFit"] = {}
+    testdict["3cd2"]["PredictionVsFluence"] = {}
+    testdict["3cd2"]["ExtrapolateToLWR"] = {}
+    testdict["3cd2"]["csvs"] ={"ivar":"cd2_ivar", "lwr":"cd2_lwr"}
     #
-    testdict["4cd1"]=dict()
-    #testdict["4cd1"]["KRRGridSearch"] = {"grid_density":grid_density}
-    #testdict["4cd1"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
-    #testdict["4cd1"]["FullFit"] = {}
-    #testdict["4cd1"]["LeaveOutAlloyCV"] = {}
-    #testdict["4cd1"]["PredictionVsFluence"] = {}
-    #testdict["4cd1"]["ExtrapolateToLWR"] = {}
-    testdict["4cd1"]["csvs"] ={"ivar":"cd1_ivar", "lwr":"cd1_lwr"}
-    testdict["4cd1"]["hyperfrom"] = "2cd1alltemp"
-    #
-    #testdict["5cd2"]=dict()
-    #testdict["5cd2"]["KRRGridSearch"] = {"grid_density":grid_density}
-    #testdict["5cd2"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
-    #testdict["5cd2"]["LeaveOutAlloyCV"] = {}
-    #testdict["5cd2"]["FullFit"] = {}
-    #testdict["5cd2"]["PredictionVsFluence"] = {}
-    #testdict["5cd2"]["ExtrapolateToLWR"] = {}
-    #testdict["5cd2"]["csvs"] ={"ivar":"cd2_ivar", "lwr":"cd2_lwr"}
-    #
-    testdict["6toatr2"]=dict()
-    testdict["6toatr2"]["ATRExtrapolation"] = {}
-    testdict["6toatr2"]["csvs"] ={"ivar":"expt_atr2", "lwr":"expt_atr2"}
-    testdict["6toatr2"]["hyperfrom"] = "1exptalltemp"
+    testdict["4toatr2"]=dict()
+    testdict["4toatr2"]["ATRExtrapolation"] = {}
+    testdict["4toatr2"]["csvs"] ={"ivar":"expt_atr2", "lwr":"expt_atr2"}
+    testdict["4toatr2"]["hyperfrom"] = "1expt"
     #
     dsets = list(testdict.keys())
     dsets.sort()
