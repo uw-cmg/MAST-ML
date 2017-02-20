@@ -109,13 +109,27 @@ def add_standard_fields(db, cname, verbose=0):
     cas.add_atomic_percent_field(db, cname, verbose=0)
     cas.add_log10_of_a_field(db, cname,"fluence_n_cm2")
     cas.add_log10_of_a_field(db, cname,"flux_n_cm2_sec")
-    cas.add_minmax_normalization_of_a_field(db, cname, "log(fluence_n_cm2)")
-    cas.add_minmax_normalization_of_a_field(db, cname, "log(flux_n_cm2_sec)")
-    cas.add_minmax_normalization_of_a_field(db, cname, "temperature_C")
     cas.add_generic_effective_fluence_field(db, cname, 3e10, 0.26)
     cas.add_generic_effective_fluence_field(db, cname, 3e10, 0.10)
     cas.add_generic_effective_fluence_field(db, cname, 3e10, 0.20)
-    cas.add_stddev_normalization_of_a_field(db, cname, "delta_sigma_y_MPa")
+    return
+
+def add_normalized_fields(db, cname, clist=list(), verbose=0):
+    cas.add_minmax_normalization_of_a_field(db, cname, "log(fluence_n_cm2)",
+            verbose=verbose, collectionlist = clist)
+    cas.add_minmax_normalization_of_a_field(db, cname, "log(flux_n_cm2_sec)",
+            verbose=verbose, collectionlist = clist)
+    cas.add_minmax_normalization_of_a_field(db, cname, "temperature_C",
+            verbose=verbose, collectionlist = clist)
+    cas.add_minmax_normalization_of_a_field(db, cname, "log(eff fl 100p=26)",
+            verbose=verbose, collectionlist = clist)
+    cas.add_minmax_normalization_of_a_field(db, cname, "log(eff fl 100p=20)",
+            verbose=verbose, collectionlist = clist)
+    cas.add_minmax_normalization_of_a_field(db, cname, "log(eff fl 100p=10)",
+            verbose=verbose, collectionlist = clist)
+    cas.add_stddev_normalization_of_a_field(db, cname, "delta_sigma_y_MPa",
+            verbose = verbose, collectionlist = clist)
+    stddev normalization cannot accommodate multiple collections yet.
     return
 
 def create_expt_ivar(db, cname, fromcname, verbose=1):
@@ -260,20 +274,20 @@ def main(importpath):
     clean_ivar_basic(db, "ucsb_ivar_and_ivarplus")
     cas.transfer_nonignore_records(db, "ucsb_ivar_and_ivarplus","expt_ivar")
     add_standard_fields(db, "expt_ivar")
-    cas.export_spreadsheet(db, "expt_ivar", exportpath)
+    #
     prefilter_ivar_for_cd1(db, "cd1_ivar_pre", "ucsb_ivar_and_ivarplus")
     create_cd_ivar(db, "cd1_ivar", "cd1_ivar_pre", "cd_ivar_2016")
-    cas.export_spreadsheet(db, "cd1_ivar", exportpath)
+    #
     create_cd_ivar(db, "cd2_ivar", "expt_ivar", "cd_ivar_2017")
-    cas.export_spreadsheet(db, "cd2_ivar", exportpath)
+    #
     clean_lwr(db, "cd_lwr_2017")
     create_lwr(db, "cd2_lwr", "cd_lwr_2017")
-    cas.export_spreadsheet(db, "cd2_lwr", exportpath)
+    #
     reformat_lwr(db, "cd_lwr_2016", "cd_lwr_2016_bynum")
     clean_cd1_lwr(db, "cd_lwr_2016")
     clean_lwr(db, "cd_lwr_2016")
     create_lwr(db, "cd1_lwr", "cd_lwr_2016")
-    cas.export_spreadsheet(db, "cd1_lwr", exportpath)
+    #
     cas.transfer_nonignore_records(db, "atr2_2016","expt_atr2")
     cas.rename_field(db,"expt_atr2","alloy name", "Alloy")
     dclean.standardize_alloy_names(db,"expt_atr2")
@@ -281,6 +295,19 @@ def main(importpath):
     cas.add_time_field(db, "expt_atr2")
     cas.transfer_nonignore_records(db, "expt_ivar","expt_atr2")
     add_standard_fields(db, "expt_atr2")
+    #
+    add_normalized_fields(db, "expt_ivar", list()) #change later
+    add_normalized_fields(db, "cd1_ivar", ["cd1_ivar","cd1_lwr"])
+    add_normalized_fields(db, "cd1_lwr", ["cd1_ivar","cd1_lwr"])
+    add_normalized_fields(db, "cd2_ivar", ["cd2_ivar","cd2_lwr"])
+    add_normalized_fields(db, "cd2_lwr", ["cd2_ivar","cd2_lwr"])
+    add_normalized_fields(db, "expt_atr2", list()) #change when sep out atr2
+    #
+    cas.export_spreadsheet(db, "expt_ivar", exportpath)
+    cas.export_spreadsheet(db, "cd1_ivar", exportpath)
+    cas.export_spreadsheet(db, "cd2_ivar", exportpath)
+    cas.export_spreadsheet(db, "cd2_lwr", exportpath)
+    cas.export_spreadsheet(db, "cd1_lwr", exportpath)
     cas.export_spreadsheet(db, "expt_atr2", exportpath)
     #verify data
     clist=["expt_ivar","cd1_ivar","cd2_ivar","cd1_lwr","cd2_lwr","expt_atr2"]
