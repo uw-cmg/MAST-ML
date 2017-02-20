@@ -208,7 +208,7 @@ def add_generic_effective_fluence_field(db, newcname, ref_flux=3e10, pvalue=0.26
         if verbose > 0:
             print("Updated record %s with %s %3.2e n/cm2." % (record["_id"],newfield,fieldval))
     add_log10_of_a_field(db, newcname, newfield)
-    add_minmax_normalization_of_a_field(db, newcname, "log(%s)" % newfield)
+    #add_minmax_normalization_of_a_field(db, newcname, "log(%s)" % newfield)
     return
 
 
@@ -260,18 +260,30 @@ def add_product_type_columns(db, newcname, verbose=0):
 
     return
 
-def add_stddev_normalization_of_a_field(db, newcname, origfield, verbose=0):
+def add_stddev_normalization_of_a_field(db, newcname, origfield, verbose=0, collectionlist = list()):
     """Add the normalization of a field based on the mean and standard dev.
         Normalization is given as X_new = (X-X_mean)/(Xstd dev)
     """
     newfield="N(%s)" % origfield
-    stddevagg = db[newcname].aggregate([
+    tempcname = "temp_%s" % time.time()
+
+    if len(collectionlist) == 0:
+        collectionlist.append(newcname)
+
+    for collection in collectionlist:
+        if (verbose > 0):
+            print("Using collection %s" % collection)
+        results = db[collection].find({},{"_id":0, origfield:1})
+        for result in results:
+            db[tempcname].insert({origfield:result[origfield]})
+
+    stddevagg = db[tempcname].aggregate([
         {"$group":{"_id":None,"fieldstddev":{"$stdDevPop":"$%s" % origfield}}}
     ])
     for record in stddevagg:
         stddev = record['fieldstddev']
         print(record)
-    avgagg = db[newcname].aggregate([
+    avgagg = db[tempcname].aggregate([
         {"$group":{"_id":None,"fieldavg":{"$avg":"$%s" % origfield}}}
     ])
     for record in avgagg:
@@ -288,33 +300,63 @@ def add_stddev_normalization_of_a_field(db, newcname, origfield, verbose=0):
             )
         if verbose > 0:
             print("Updated record %s with %s %3.3f." % (record["_id"],newfield,fieldval))
+    db[tempcname].drop()
     return
 
-def add_minmax_normalization_of_a_field(db, newcname, origfield, setmin=None, setmax=None, verbose=0):
+def add_minmax_normalization_of_a_field(db, newcname, origfield, setmin=None, setmax=None, verbose=0, collectionlist=list()):
     """Add the normalization of a field based on the min and max values
         Normalization is given as X_new = (X - X_min)/(X_max - X_min)
         For elemental compositions, max atomic percent is taken as 1.717 At%
             for Mn.
+        Args:
+            db
+            newcname
+            origfield <str>: Original field name
+            setmin <float or None>: Set minimum directly
+            setmax <float or None>: Set maximum directly
+            verbose <int>: 0 - silent (default)
+                           1 - verbose
+            collectionlist <list of str>: list of multiple
+                            collection names for normalization
+                            over multiple collections
+                            empty list only works on collection newcname
     """
     newfield="N(%s)" % origfield
-    minagg = db[newcname].aggregate([
-        {"$group":{"_id":None,"fieldminval":{"$min":"$%s" % origfield}}}
-    ])
-    for record in minagg:
-        minval = record['fieldminval']
-        print(record)
-    maxagg = db[newcname].aggregate([
-        {"$group":{"_id":None,"fieldmaxval":{"$max":"$%s" % origfield}}}
-    ])
-    for record in maxagg:
-        maxval = record['fieldmaxval']
-        print(record)
+    tempcname = "temp_%s" % time.time()
+
+    if len(collectionlist) == 0:
+        collectionlist.append(newcname)
+
+    for collection in collectionlist:
+        if (verbose > 0):
+            print("Using collection %s" % collection)
+        results = db[collection].find({},{"_id":0, origfield:1})
+        for result in results:
+            db[tempcname].insert({origfield:result[origfield]})
+
+    if setmin == None:
+        minagg = db[tempcname].aggregate([
+            {"$group":{"_id":None,"fieldminval":{"$min":"$%s" % origfield}}}
+        ])
+        for record in minagg: #there should only be one record from aggregation
+            minval = record['fieldminval']
+            if verbose > 0:
+                print(record)
+    else:
+        minval = setmin
+
+    if setmax == None:
+        maxagg = db[tempcname].aggregate([
+            {"$group":{"_id":None,"fieldmaxval":{"$max":"$%s" % origfield}}}
+        ])
+        for record in maxagg: #should only be one record from aggregation
+            maxval = record['fieldmaxval']
+            if verbose > 0:
+                print(record)
+    else:
+        maxval = setmax
     print("Min: %3.3f" % minval)
     print("Max: %3.3f" % maxval)
-    if not (setmin == None):
-        minval = setmin
-    if not (setmax == None):
-        maxval = setmax
     records = db[newcname].find()
     for record in records:
         if (minval == maxval): #data is flat
@@ -327,6 +369,7 @@ def add_minmax_normalization_of_a_field(db, newcname, origfield, setmin=None, se
             )
         if verbose > 0:
             print("Updated record %s with %s %3.3f." % (record["_id"],newfield,fieldval))
+    db[tempcname].drop()
     return
 
 def add_eony_field(db, newcname, verbose=0):
