@@ -129,7 +129,6 @@ def add_normalized_fields(db, cname, clist=list(), verbose=0):
             verbose=verbose, collectionlist = clist)
     cas.add_stddev_normalization_of_a_field(db, cname, "delta_sigma_y_MPa",
             verbose = verbose, collectionlist = clist)
-    stddev normalization cannot accommodate multiple collections yet.
     return
 
 def create_expt_ivar(db, cname, fromcname, verbose=1):
@@ -293,15 +292,15 @@ def main(importpath):
     dclean.standardize_alloy_names(db,"expt_atr2")
     cas.add_basic_field(db, "expt_atr2", "dataset", "ATR2")
     cas.add_time_field(db, "expt_atr2")
-    cas.transfer_nonignore_records(db, "expt_ivar","expt_atr2")
+    #cas.transfer_nonignore_records(db, "expt_ivar","expt_atr2")
     add_standard_fields(db, "expt_atr2")
     #
-    add_normalized_fields(db, "expt_ivar", list()) #change later
+    add_normalized_fields(db, "expt_ivar", ["expt_ivar","expt_atr2"])
     add_normalized_fields(db, "cd1_ivar", ["cd1_ivar","cd1_lwr"])
     add_normalized_fields(db, "cd1_lwr", ["cd1_ivar","cd1_lwr"])
     add_normalized_fields(db, "cd2_ivar", ["cd2_ivar","cd2_lwr"])
     add_normalized_fields(db, "cd2_lwr", ["cd2_ivar","cd2_lwr"])
-    add_normalized_fields(db, "expt_atr2", list()) #change when sep out atr2
+    add_normalized_fields(db, "expt_atr2", ["expt_ivar","expt_atr2"])
     #
     cas.export_spreadsheet(db, "expt_ivar", exportpath)
     cas.export_spreadsheet(db, "cd1_ivar", exportpath)
