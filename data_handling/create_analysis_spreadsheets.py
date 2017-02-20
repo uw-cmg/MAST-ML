@@ -273,7 +273,7 @@ def add_stddev_normalization_of_a_field(db, newcname, origfield, verbose=0, coll
     for collection in collectionlist:
         if (verbose > 0):
             print("Using collection %s" % collection)
-        results = db[collection].find({},{"_id":0, origfield:1})
+        results = db[collection].find({"ignore":{"$ne":1}},{"_id":0, origfield:1})
         for result in results:
             db[tempcname].insert({origfield:result[origfield]})
 
@@ -330,7 +330,7 @@ def add_minmax_normalization_of_a_field(db, newcname, origfield, setmin=None, se
     for collection in collectionlist:
         if (verbose > 0):
             print("Using collection %s" % collection)
-        results = db[collection].find({},{"_id":0, origfield:1})
+        results = db[collection].find({"ignore":{"$ne":1}},{"_id":0, origfield:1})
         for result in results:
             db[tempcname].insert({origfield:result[origfield]})
 
