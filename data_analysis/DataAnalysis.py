@@ -142,13 +142,13 @@ def do_analysis(testpath, scriptpath):
 
 def main(datapath, scriptpath):
     testdict=dict() #could get from a file later
-    grid_density = 20 #orig 20
-    num_runs = 200 #orig 200
+    grid_density = 4 #orig 20
+    num_runs = 5 #orig 200
     num_folds = 5
     #
     testdict["1expt"]=dict()
     #testdict["1expt"]["KRRGridSearch"] = {"grid_density":grid_density}
-    #testdict["1expt"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
+    testdict["1expt"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
     #testdict["1expt"]["FullFit"] = {}
     #testdict["1expt"]["ExtrapolateToLWR"] = {}
     #testdict["1expt"]["PredictionVsFluence"] = {"temp_filter":290}
@@ -175,7 +175,7 @@ def main(datapath, scriptpath):
     testdict["4toatr2"]=dict()
     #testdict["4toatr2"]["ATRExtrapolation"] = {}
     #testdict["4toatr2"]["PredictionVsFluence"] = {}
-    testdict["4toatr2"]["ExtrapolateToLWR"] = {}
+    #testdict["4toatr2"]["ExtrapolateToLWR"] = {}
     testdict["4toatr2"]["csvs"] ={"ivar":"expt_ivar", "lwr":"expt_atr2"}
     testdict["4toatr2"]["hyperfrom"] = "1expt"
     #
