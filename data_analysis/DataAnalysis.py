@@ -148,7 +148,7 @@ def main(datapath, scriptpath):
     #
     testdict["1expt"]=dict()
     #testdict["1expt"]["KRRGridSearch"] = {"grid_density":grid_density}
-    testdict["1expt"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
+    #testdict["1expt"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
     #testdict["1expt"]["FullFit"] = {}
     #testdict["1expt"]["ExtrapolateToLWR"] = {}
     #testdict["1expt"]["PredictionVsFluence"] = {"temp_filter":290}
@@ -157,7 +157,7 @@ def main(datapath, scriptpath):
     testdict["2cd1"]=dict()
     #testdict["2cd1"]["KRRGridSearch"] = {"grid_density":grid_density}
     #testdict["2cd1"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
-    #testdict["2cd1"]["LeaveOutAlloyCV"] = {}
+    testdict["2cd1"]["LeaveOutAlloyCV"] = {}
     #testdict["2cd1"]["FullFit"] = {}
     #testdict["2cd1"]["ExtrapolateToLWR"] = {}
     #testdict["2cd1"]["PredictionVsFluence"] = {"temp_filter":290}

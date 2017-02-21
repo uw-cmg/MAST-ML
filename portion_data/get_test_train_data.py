@@ -68,7 +68,7 @@ def get_field_grouping_array(data, grouping_field="", field_type=0):
         raise ValueError("Field type %i not supported" % field_type)
     return grouparr
 
-def get_field_grouping_indices(data, grouping_field="", field_type=0):
+def get_field_logo_indices(data, grouping_field="", field_type=0):
     """
         Args:
             data <data_parser type dataset>
@@ -85,9 +85,9 @@ if __name__=="__main__":
     get_logo_indices([1,1,1,2,1,2,3,10,10])
     import data_parser
     data=data_parser.parse("testdata.csv")
-    get_field_grouping_indices(data, "name")
-    get_field_grouping_indices(data, "number")
-    get_field_grouping_indices(data, "dataset")
+    get_field_logo_indices(data, "name")
+    get_field_logo_indices(data, "number")
+    get_field_logo_indices(data, "dataset")
 
 
 
