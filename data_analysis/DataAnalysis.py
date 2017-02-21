@@ -157,7 +157,11 @@ def main(datapath, scriptpath):
     testdict["2cd1"]=dict()
     #testdict["2cd1"]["KRRGridSearch"] = {"grid_density":grid_density}
     #testdict["2cd1"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
-    testdict["2cd1"]["LeaveOutAlloyCV"] = {}
+    testdict["2cd1"]["LeaveOutAlloyCV"] = {"field_name":"alloy_number",
+                                    "label_field_name": "Alloy",
+                                    "xlabel":"Alloy",
+                                    "ylabel":"RMSE (MPa)",
+                                    }
     #testdict["2cd1"]["FullFit"] = {}
     #testdict["2cd1"]["ExtrapolateToLWR"] = {}
     #testdict["2cd1"]["PredictionVsFluence"] = {"temp_filter":290}
