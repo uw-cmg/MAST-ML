@@ -254,17 +254,25 @@ def add_cd(db, cname, cdname, verbose=1):
 def create_lwr_standard_conditions(db, cname, clist=list()):
     ref_flux = 3e10 #n/cm2/sec
     log_second_range = np.logspace(3e6, 5e9, 500)
-    for log_seconds in log_second_range:
-        time_sec = np.power(10.0, log_seconds)
-        fluence = ref_flux * time_sec
-        db[cname].insert_one({"time_sec": time_sec,
-                            "fluence_n_cm2": fluence})
-    cas.add_basic_field(db, cname, "flux_n_cm2_sec", ref_flux)
+    alloys = apu.get_alloy_names(db)
+    for alloy in alloys:
+        for log_seconds in log_second_range:
+            time_sec = np.power(10.0, log_seconds)
+            fluence = ref_flux * time_sec
+            db[cname].insert_one({"Alloy": alloy,
+                                "time_sec": time_sec,
+                                "fluence_n_cm2": fluence,
+                                "flux_n_cm2_sec": ref_flux})
+    cas.add_basic_field(db, cname, "temperature_C", 290.0)
+    cas.add_alloy_number_field(db, cname, verbose=0)
+    cas.add_atomic_percent_field(db, cname, verbose=0)
     cas.add_log10_of_a_field(db, cname,"fluence_n_cm2")
     cas.add_log10_of_a_field(db, cname,"flux_n_cm2_sec")
     cas.add_generic_effective_fluence_field(db, cname, 3e10, 0.26)
     cas.add_generic_effective_fluence_field(db, cname, 3e10, 0.10)
     cas.add_generic_effective_fluence_field(db, cname, 3e10, 0.20)
+    cas.add_minmax_normalization_of_a_field(db, cname, "temperature_C",
+            verbose=verbose, collectionlist = clist)
     cas.add_minmax_normalization_of_a_field(db, cname, "log(fluence_n_cm2)",
             verbose=verbose, collectionlist = clist)
     cas.add_minmax_normalization_of_a_field(db, cname, "log(flux_n_cm2_sec)",
