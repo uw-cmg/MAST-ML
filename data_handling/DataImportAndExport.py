@@ -251,13 +251,14 @@ def add_cd(db, cname, cdname, verbose=1):
     print("Updated with condition and old temperature matches from %s." % cdname)
     return
 
-def create_lwr_standard_conditions(db, cname, clist=list()):
+def create_lwr_standard_conditions(db, cname, clist=list(), verbose=0):
     ref_flux = 3e10 #n/cm2/sec
-    log_second_range = np.logspace(3e6, 5e9, 500)
+    min_sec = 3e6
+    max_sec = 5e9
+    second_range = np.logspace(np.log10(min_sec), np.log10(max_sec), 500)
     alloys = apu.get_alloy_names(db)
     for alloy in alloys:
-        for log_seconds in log_second_range:
-            time_sec = np.power(10.0, log_seconds)
+        for time_sec in second_range:
             fluence = ref_flux * time_sec
             db[cname].insert_one({"Alloy": alloy,
                                 "time_sec": time_sec,
