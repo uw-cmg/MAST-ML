@@ -251,6 +251,32 @@ def add_cd(db, cname, cdname, verbose=1):
     print("Updated with condition and old temperature matches from %s." % cdname)
     return
 
+def create_lwr_standard_conditions(db, cname, clist=list()):
+    ref_flux = 3e10 #n/cm2/sec
+    log_second_range = np.logspace(3e6, 5e9, 500)
+    for log_seconds in log_second_range:
+        time_sec = np.power(10.0, log_seconds)
+        fluence = ref_flux * time_sec
+        db[cname].insert_one({"time_sec": time_sec,
+                            "fluence_n_cm2": fluence})
+    cas.add_basic_field(db, cname, "flux_n_cm2_sec", ref_flux)
+    cas.add_log10_of_a_field(db, cname,"fluence_n_cm2")
+    cas.add_log10_of_a_field(db, cname,"flux_n_cm2_sec")
+    cas.add_generic_effective_fluence_field(db, cname, 3e10, 0.26)
+    cas.add_generic_effective_fluence_field(db, cname, 3e10, 0.10)
+    cas.add_generic_effective_fluence_field(db, cname, 3e10, 0.20)
+    cas.add_minmax_normalization_of_a_field(db, cname, "log(fluence_n_cm2)",
+            verbose=verbose, collectionlist = clist)
+    cas.add_minmax_normalization_of_a_field(db, cname, "log(flux_n_cm2_sec)",
+            verbose=verbose, collectionlist = clist)
+    cas.add_minmax_normalization_of_a_field(db, cname, "log(eff fl 100p=26)",
+            verbose=verbose, collectionlist = clist)
+    cas.add_minmax_normalization_of_a_field(db, cname, "log(eff fl 100p=20)",
+            verbose=verbose, collectionlist = clist)
+    cas.add_minmax_normalization_of_a_field(db, cname, "log(eff fl 100p=10)",
+            verbose=verbose, collectionlist = clist)
+    return
+
 def main(importpath):
     dirpath = os.path.dirname(importpath)
     db_base="dbtt"
@@ -295,12 +321,15 @@ def main(importpath):
     #cas.transfer_nonignore_records(db, "expt_ivar","expt_atr2")
     add_standard_fields(db, "expt_atr2")
     #
-    add_normalized_fields(db, "expt_ivar", ["expt_ivar","expt_atr2"])
+    add_normalized_fields(db, "expt_ivar", ["expt_ivar","expt_atr2","cd1_lwr"])
     add_normalized_fields(db, "cd1_ivar", ["cd1_ivar","cd1_lwr"])
     add_normalized_fields(db, "cd1_lwr", ["cd1_ivar","cd1_lwr"])
     add_normalized_fields(db, "cd2_ivar", ["cd2_ivar","cd2_lwr"])
     add_normalized_fields(db, "cd2_lwr", ["cd2_ivar","cd2_lwr"])
-    add_normalized_fields(db, "expt_atr2", ["expt_ivar","expt_atr2"])
+    add_normalized_fields(db, "expt_atr2", ["expt_ivar","expt_atr2","cd1_lwr"])
+    #
+    create_lwr_standard_conditions(db, "lwr_std_expt",["expt_ivar","expt_atr2","cd1_lwr"])
+    create_lwr_standard_conditions(db, "lwr_std_cd1",["cd1_ivar","cd1_lwr"])
     #
     cas.export_spreadsheet(db, "expt_ivar", exportpath)
     cas.export_spreadsheet(db, "cd1_ivar", exportpath)
@@ -308,6 +337,8 @@ def main(importpath):
     cas.export_spreadsheet(db, "cd2_lwr", exportpath)
     cas.export_spreadsheet(db, "cd1_lwr", exportpath)
     cas.export_spreadsheet(db, "expt_atr2", exportpath)
+    cas.export_spreadsheet(db, "lwr_std_expt", exportpath)
+    cas.export_spreadsheet(db, "lwr_std_cd1", exportpath)
     #verify data
     clist=["expt_ivar","cd1_ivar","cd2_ivar","cd1_lwr","cd2_lwr","expt_atr2"]
     dver.make_per_alloy_plots(db, clist, "%s/verification_plots" % exportpath) 
