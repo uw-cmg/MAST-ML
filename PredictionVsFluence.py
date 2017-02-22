@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 import data_parser
 import numpy as np
+import os
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.metrics import mean_squared_error
 import data_analysis.printout_tools as ptools
@@ -48,7 +49,7 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
     fielddata = np.asarray(lwr_data.get_data(field_name)).ravel()
     eff_fluence_data = np.asarray(lwr_data.get_data(eff_str)).ravel()
     if not label_field_name == None:
-        labeldata = np.asarray(data.get_data(label_field_name)).ravel()
+        labeldata = np.asarray(lwr_data.get_data(label_field_name)).ravel()
     
     Xdata = np.asarray(lwr_data.get_x_data())
     ydata = np.asarray(lwr_data.get_y_data()).ravel()
@@ -56,13 +57,17 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
     if not (standard_conditions == None):
         std_path = os.path.abspath(standard_conditions)
         std_data = data_parser.parse(std_path)
+        std_data.set_y_feature(eff_str) #dummy y feature
+        std_data.set_x_features(data.x_features)
         std_Xdata = np.asarray(std_data.get_x_data())
         eff_fluence_std = np.asarray(std_data.get_data(eff_str)).ravel()
+        std_fielddata = np.asarray(std_data.get_data(field_name)).ravel()
         std_indices = gttd.get_field_logo_indices(std_data, field_name)
 
     groups = list(indices.keys())
     groups.sort()
     for group in groups:
+        print(group)
         train_index = indices[group]["train_index"]
         test_index = indices[group]["test_index"]
         test_group_val = fielddata[test_index[0]] #left-out group value
@@ -72,12 +77,18 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
             test_group_label = labeldata[test_index[0]]
         model.fit(Xdata[train_index], ydata[train_index])
         Ypredict = model.predict(Xdata[test_index])
-        
+
         if standard_conditions == None:
             line_data = np.copy(eff_fluence_data[test_index])
             Ypredictline = np.copy(Ypredict)
         else:
-            std_test_index = std_indices[group]["test_index"]
+            #need to find a better way of matching groups
+            for sgroup in std_indices.keys():
+                s_test_index = std_indices[sgroup]["test_index"] 
+                if std_fielddata[s_test_index[0]] == test_group_val:
+                    matchgroup = sgroup
+                    continue
+            std_test_index = std_indices[matchgroup]["test_index"]
             line_data = eff_fluence_std[std_test_index]
             Ypredictline = model.predict(std_Xdata[std_test_index])
 
@@ -102,8 +113,11 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
         plt.savefig(savepath.format("%s_LWR" % ax.get_title()), dpi=200, bbox_inches='tight')
         plt.close()
         
-
         headerline = "logEffFluence LWR, Points LWR, Predicted LWR"
         myarray = np.array([eff_fluence_data[test_index], fielddata[test_index], Ypredict]).transpose()
         ptools.array_to_csv("%s_%s_LWR.csv" % (test_group_val,test_group_label), headerline, myarray)
+        if not (standard_conditions == None):
+            headerline = "logEffFluence LWR, Predicted LWR"
+            myarray = np.array([line_data, Ypredictline]).transpose()
+            ptools.array_to_csv("%s_%s_LWRpred.csv" % (test_group_val,test_group_label), headerline, myarray)
     return
