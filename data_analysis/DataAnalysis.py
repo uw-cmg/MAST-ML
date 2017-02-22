@@ -18,7 +18,6 @@ import subprocess
 import time
 import data_parser
 import data_analysis.additional_plots as ap
-
 def get_feature_list():
     features=list()
     features.append("N(at_percent_Cu)")
@@ -147,7 +146,7 @@ def main(datapath, scriptpath):
     num_folds = 5
     #
     testdict["1expt"]=dict()
-    #testdict["1expt"]["KRRGridSearch"] = {"grid_density":grid_density}
+    testdict["1expt"]["KRRGridSearch"] = {"grid_density":grid_density}
     #testdict["1expt"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
     #testdict["1expt"]["FullFit"] = {}
     #testdict["1expt"]["ExtrapolateToLWR"] = {}
@@ -157,11 +156,11 @@ def main(datapath, scriptpath):
     testdict["2cd1"]=dict()
     #testdict["2cd1"]["KRRGridSearch"] = {"grid_density":grid_density}
     #testdict["2cd1"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
-    testdict["2cd1"]["LeaveOutAlloyCV"] = {"field_name":"alloy_number",
-                                    "label_field_name": "Alloy",
-                                    "xlabel":"Alloy",
-                                    "ylabel":"RMSE (MPa)",
-                                    }
+    #testdict["2cd1"]["LeaveOutAlloyCV"] = {"field_name":"alloy_number",
+    #                                "label_field_name": "Alloy",
+    #                                "xlabel":"Alloy",
+    #                                "ylabel":"RMSE (MPa)",
+    #                                }
     #testdict["2cd1"]["FullFit"] = {}
     #testdict["2cd1"]["ExtrapolateToLWR"] = {}
     #testdict["2cd1"]["PredictionVsFluence"] = {"temp_filter":290}
@@ -178,7 +177,8 @@ def main(datapath, scriptpath):
     #
     testdict["4toatr2"]=dict()
     #testdict["4toatr2"]["ATRExtrapolation"] = {}
-    #testdict["4toatr2"]["PredictionVsFluence"] = {}
+    testdict["4toatr2"]["PredictionVsFluence"] = {"field_name":"alloy_number",
+                            "label_field_name":"Alloy"}
     #testdict["4toatr2"]["ExtrapolateToLWR"] = {}
     testdict["4toatr2"]["csvs"] ={"ivar":"expt_ivar", "lwr":"expt_atr2"}
     testdict["4toatr2"]["hyperfrom"] = "1expt"

@@ -5,6 +5,7 @@ import numpy as np
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.metrics import mean_squared_error
 import data_analysis.printout_tools as ptools
+import portion_data.get_test_train_data as gttd
 
 '''
 Plot CD predictions of ∆sigma for data and lwr_data as well as model's output
@@ -13,14 +14,29 @@ lwr_data is data in the domain of LWR conditions (low flux, high fluence)
 '''
 
 def execute(model, data, savepath, lwr_data, *args, **kwargs):
-    if not "temp_filter" in kwargs.keys():
-        temp_filter = None
-    else:
+    if "temp_filter" in kwargs.keys():
         temp_filter = int(kwargs["temp_filter"]) #int matches data
-    Xdata = np.asarray(data.get_x_data())
-    Ydata = np.asarray(data.get_y_data()).ravel()
+        raise ValueError("currently not working")
+    else:
+        temp_filter = None
+    if "field_name" in kwargs.keys():
+        field_name = kwargs["field_name"]
+    else:
+        field_name = "No field set"
+        raise ValueError("field_name not in kwargs. %s" % field_name)
+    if "label_field_name" in kwargs.keys():
+        label_field_name = kwargs["label_field_name"]
+    else:
+        label_field_name = None
+    if "standard_conditions" in kwargs.keys():
+        standard_conditions = kwargs["standard_conditions"]
+    else:
+        standard_conditions = None
 
-    model.fit(Xdata, Ydata)
+    Xdata_fit = np.asarray(data.get_x_data())
+    ydata_fit = np.asarray(data.get_y_data()).ravel()
+
+    model.fit(Xdata_fit, ydata_fit)
     #note that temp_filter only affects the plotting, not the model fitting
 
     fluence_str = "log(fluence_n_cm2)"
@@ -28,84 +44,59 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
     eff_str = "log(eff fl 100p=26)"
     temp_str = "temperature_C"
 
-    #for alloy in range(1,5): #restrict range for testing
-    for alloy in range(1, max(data.get_data("alloy_number"))[0] + 1):
-        print(alloy)
-        data.remove_all_filters()
-        data.add_inclusive_filter("alloy_number", '=', alloy)
-        print(np.asarray(data.get_x_data()).shape)
-        if temp_filter == None:
-            pass
+    indices = gttd.get_field_logo_indices(lwr_data, field_name)
+    fielddata = np.asarray(lwr_data.get_data(field_name)).ravel()
+    eff_fluence_data = np.asarray(lwr_data.get_data(eff_str)).ravel()
+    if not label_field_name == None:
+        labeldata = np.asarray(data.get_data(label_field_name)).ravel()
+    
+    Xdata = np.asarray(lwr_data.get_x_data())
+    ydata = np.asarray(lwr_data.get_y_data()).ravel()
+
+    if not (standard_conditions == None):
+        std_path = os.path.abspath(standard_conditions)
+        std_data = data_parser.parse(std_path)
+        std_Xdata = np.asarray(std_data.get_x_data())
+        eff_fluence_std = np.asarray(std_data.get_data(eff_str)).ravel()
+        std_indices = gttd.get_field_logo_indices(std_data, field_name)
+
+    groups = list(indices.keys())
+    groups.sort()
+    for group in groups:
+        train_index = indices[group]["train_index"]
+        test_index = indices[group]["test_index"]
+        test_group_val = fielddata[test_index[0]] #left-out group value
+        if label_field_name == None:
+            test_group_label = "None"
         else:
-            data.add_exclusive_filter(temp_str,'<>',temp_filter)    
-        print(np.asarray(data.get_x_data()).shape)
-        if len(data.get_x_data()) == 0: continue  # if alloy doesn't exist(x data is empty), then continue
-        AlloyName = data.get_data("Alloy")[0][0]
-
-        fluence_data = np.asarray(data.get_data(fluence_str)).ravel()
-        predict_data = model.predict(data.get_x_data())
-        points_data = np.asarray(data.get_y_data()).ravel()
-        eff_fluence_data = np.asarray(data.get_data(eff_str)).ravel()
+            test_group_label = labeldata[test_index[0]]
+        model.fit(Xdata[train_index], ydata[train_index])
+        Ypredict = model.predict(Xdata[test_index])
         
-        #print IVAR prediction plot
-        plt.figure()
-        matplotlib.rcParams.update({'font.size':18})
-        #fluence is often not sorted; sort with predictions
-        ivararr = np.array([eff_fluence_data, predict_data]).transpose()
-        ivar_tuples = tuple(map(tuple, ivararr))
-        ivar_list = list(ivar_tuples)
-        ivar_list.sort()
-        ivararr_sorted = np.asarray(ivar_list)
-        plt.plot(ivararr_sorted[:,0],ivararr_sorted[:,1],linestyle="-", 
-                linewidth=3,
-                marker=None,
-                color='#ffc04d', label="IVAR prediction")
-        #plt.plot(fluence_data,predict_data,linestyle="None", linewidth=3,
-        #        marker="x", markersize=10,
-        #        color='green', label="IVAR prediction unsorted test")
-        plt.scatter(eff_fluence_data, points_data, lw=0, label='IVAR data',
-                   color='black')
-        plt.legend(loc = "upper left", fontsize=matplotlib.rcParams['font.size']) #data is sigmoid; 'best' can block data
-        alloystr = "{}({})".format(alloy,AlloyName)
-        plt.title(alloystr)
-        plt.xlabel("log(Eff Fluence(n/cm$^{2}$))")
-        plt.ylabel("$\Delta\sigma_{y}$ (MPa)")
-        plt.savefig(savepath.format("%s_IVAR" % alloystr), dpi=200, bbox_inches='tight')
-        plt.close()
-        
-        headerline = "logEffFluence IVAR, Points IVAR, Predicted IVAR"
-        myarray =np.array([eff_fluence_data, points_data, predict_data]).transpose()
-        ptools.array_to_csv("%s_IVAR.csv" % AlloyName, headerline, myarray)
-
-        #LWR set
-        lwr_data.remove_all_filters()
-        lwr_data.add_inclusive_filter("alloy_number", '=', alloy)
-        if temp_filter == None:
-            pass
+        if standard_conditions == None:
+            line_data = np.copy(eff_fluence_data[test_index])
+            Ypredictline = np.copy(Ypredict)
         else:
-            lwr_data.add_exclusive_filter(temp_str, '<>', temp_filter)
+            std_test_index = std_indices[group]["test_index"]
+            line_data = eff_fluence_std[std_test_index]
+            Ypredictline = model.predict(std_Xdata[std_test_index])
 
-        if len(lwr_data.get_x_data()) == 0:
-            continue
-        
-        fluence_lwr = np.asarray(lwr_data.get_data(fluence_str)).ravel()
-        predict_lwr = model.predict(lwr_data.get_x_data())
-        points_lwr = np.asarray(lwr_data.get_y_data()).ravel()
-        eff_fluence_lwr = np.asarray(lwr_data.get_data(eff_str)).ravel()
-        
         plt.figure()
         plt.hold(True)
         fig, ax = plt.subplots()
         matplotlib.rcParams.update({'font.size':18})
-        ax.plot(eff_fluence_lwr, predict_lwr,
+        ax.plot(line_data, Ypredictline,
                 lw=3, color='#ffc04d', label="LWR prediction")
-        ax.scatter(eff_fluence_data, points_data, lw=0, label='IVAR data',
-                   color='black')   
-        ax.scatter(eff_fluence_lwr, points_lwr,
+        #also want to plot TRAIN data; get groupings separately?
+        #            lw=0, label='IVAR data',
+        #           color='black')   
+        ax.scatter(eff_fluence_data[test_index], fielddata[test_index],
                lw=0, label="CD LWR data", color = '#7ec0ee')
+        ax.scatter(eff_fluence_data[test_index], Ypredict,
+               lw=0, label="LWR prediction points", color = 'blue')
 
         plt.legend(loc = "upper left", fontsize=matplotlib.rcParams['font.size']) #data is sigmoid; 'best' can block data
-        plt.title("{}({})".format(alloy,AlloyName))
+        plt.title("%s(%s)" % (test_group_val, test_group_label))
         plt.xlabel("log(Eff Fluence(n/cm$^{2}$))")
         plt.ylabel("$\Delta\sigma_{y}$ (MPa)")
         plt.savefig(savepath.format("%s_LWR" % ax.get_title()), dpi=200, bbox_inches='tight')
@@ -113,6 +104,6 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
         
 
         headerline = "logEffFluence LWR, Points LWR, Predicted LWR"
-        myarray = np.array([eff_fluence_lwr, points_lwr, predict_lwr]).transpose()
-        ptools.array_to_csv("%s_LWR.csv" % AlloyName, headerline, myarray)
+        myarray = np.array([eff_fluence_data[test_index], fielddata[test_index], Ypredict]).transpose()
+        ptools.array_to_csv("%s_%s_LWR.csv" % (test_group_val,test_group_label), headerline, myarray)
     return
