@@ -14,44 +14,39 @@ model is trained to data, which is in the domain of IVAR, IVAR+/ATR1 (assorted f
 topredict_data is data in the domain of LWR conditions (low flux, high fluence)
 '''
 
-def execute(model, data, savepath, lwr_data, *args, **kwargs):
+def execute(model, data, savepath, lwr_data, 
+            topredict_data_csv = None, 
+            standard_conditions_csv = None,
+            group_field_name = None,
+            label_field_name = None,
+            xfield = None,
+            xlabel = "X",
+            ylabel = "Prediction",
+            overall_xlabel = "Measured",
+            overall_ylabel = "Predicted",
+            measerrfield = None,
+            plot_filter = None,
+            *args, **kwargs):
     """
-        topredict_data_csv: csv with dataset for predictions
-                        (to replace "lwr_data")
-        standard_conditions_csv: csv with dataset of standard conditions,
-                            especially to be used if there are not enough points
-                            in topredict_data
+        Fits on data and predicts on topredict_data and standard_conditions.
+        Args:
+            model: model to use
+            data <data_parser data object>: data for fitting
+            topredict_data_csv <str>: csv name for dataset for predictions
+                            (to replace "lwr_data")
+            standard_conditions_csv <str>: csv name for dataset of 
+                                standard conditions, especially to be used 
+                                if there are not enough points
+                                in topredict_data_csv
+            group_field_name <str>: field name for grouping total fit results
+            label_field_name <str>: field name for labels of grouping
+            xfield <str>: field name for x value to plot fit results against
+            xlabel <str>: x-axis label for individual plots
+            ylabel <str>: y-axis label for individual plots
+            overall_xlabel <str>: x-axis label for overall plot
+            overall_ylabel <str>: y-axis label for overall plot
+            measerrfield <str>: field name for measured error in topredict_data,
     """
-    dargs = dict()
-    dargs["plot_filter"] = None #not implemented
-    dargs["topredict_data_csv"] = "Raise error" 
-    dargs["group_field_name"] = "Raise error"
-    dargs["label_field_name"] = None
-    dargs["standard_conditions_csv"] = None #dataset of standard conditions
-    dargs["xfield"] = "Raise error"
-    dargs["xlabel"] = "X"
-    dargs["ylabel"] = "Prediction"
-    dargs["overall_xlabel"] = "Measured"
-    dargs["overall_ylabel"] = "Predicted"
-    dargs["measerrfield"] = None
-    for keyword in dargs.keys():
-        if keyword in kwargs.keys():
-            dargs[keyword] = kwargs[keyword]
-        if dargs[keyword] == "Raise error":
-            raise ValueError("Keyword %s has no value set. Raise error." % keyword)
-    plot_filter = dargs["plot_filter"]
-    topredict_data_csv = dargs["topredict_data_csv"]
-    group_field_name = dargs["group_field_name"]
-    label_field_name = dargs["label_field_name"]
-    standard_conditions_csv = dargs["standard_conditions_csv"]
-    xfield = dargs["xfield"]    
-    xlabel = dargs["xlabel"]
-    ylabel = dargs["ylabel"]
-    overall_xlabel = dargs["overall_xlabel"]
-    overall_ylabel = dargs["overall_ylabel"]
-    measerrfield = dargs["measerrfield"]
-
-
     fit_Xdata = np.asarray(data.get_x_data())
     fit_ydata = np.asarray(data.get_y_data()).ravel()
 
