@@ -251,7 +251,7 @@ def add_cd(db, cname, cdname, verbose=1):
     print("Updated with condition and old temperature matches from %s." % cdname)
     return
 
-def create_standard_conditions(db, cname, ref_flux=3e10, clist=list(), verbose=0):
+def create_standard_conditions(db, cname, ref_flux=3e10, temp=290, clist=list(), verbose=0):
     #ref_flux in n/cm2/sec
     min_sec = 3e6
     max_sec = 5e9
@@ -264,7 +264,7 @@ def create_standard_conditions(db, cname, ref_flux=3e10, clist=list(), verbose=0
                                 "time_sec": time_sec,
                                 "fluence_n_cm2": fluence,
                                 "flux_n_cm2_sec": ref_flux})
-    cas.add_basic_field(db, cname, "temperature_C", 290.0)
+    cas.add_basic_field(db, cname, "temperature_C", temp)
     cas.add_alloy_number_field(db, cname, verbose=0)
     cas.add_atomic_percent_field(db, cname, verbose=0)
     cas.add_log10_of_a_field(db, cname,"fluence_n_cm2")
@@ -337,9 +337,9 @@ def main(importpath):
     add_normalized_fields(db, "cd2_lwr", ["cd2_ivar","cd2_lwr"])
     add_normalized_fields(db, "expt_atr2", ["expt_ivar","expt_atr2","cd1_lwr"])
     #
-    create_standard_conditions(db, "lwr_std_expt",3e10,["expt_ivar","expt_atr2","cd1_lwr"])
-    create_standard_conditions(db, "atr2_std_expt",3.64e12,["expt_ivar","expt_atr2","cd1_lwr"])
-    create_standard_conditions(db, "lwr_std_cd1",3e10,["cd1_ivar","cd1_lwr"])
+    create_standard_conditions(db, "lwr_std_expt",3e10,290,["expt_ivar","expt_atr2","cd1_lwr"])
+    create_standard_conditions(db, "atr2_std_expt",3.64e12,291,["expt_ivar","expt_atr2","cd1_lwr"])
+    create_standard_conditions(db, "lwr_std_cd1",3e10,290,["cd1_ivar","cd1_lwr"])
     #
     cas.export_spreadsheet(db, "expt_ivar", exportpath)
     cas.export_spreadsheet(db, "cd1_ivar", exportpath)
