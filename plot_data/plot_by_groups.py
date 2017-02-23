@@ -114,11 +114,10 @@ def plot_separate_groups_vs_xfield(fit_data=None,
             if fit_groupdata[f_test_index[0]] == test_group_val:
                 fmatchgroup = fgroup
                 continue
-        if fmatchgroup == -1:
-            continue
-        fit_test_index = fit_indices[fmatchgroup]["test_index"]
-        g_fit_xfield = fit_xfield[fit_test_index]
-        g_fit_ydata = fit_ydata[fit_test_index]
+        if fmatchgroup > -1:
+            fit_test_index = fit_indices[fmatchgroup]["test_index"]
+            g_fit_xfield = fit_xfield[fit_test_index]
+            g_fit_ydata = fit_ydata[fit_test_index]
 
         plt.figure()
         plt.hold(True)
@@ -126,8 +125,9 @@ def plot_separate_groups_vs_xfield(fit_data=None,
         matplotlib.rcParams.update({'font.size':18})
         ax.plot(g_std_xfield, g_std_predicted,
                 lw=3, color='#ffc04d', label="Prediction")
-        ax.scatter(g_fit_xfield, g_fit_ydata,
-               lw=0, label="Subset of fitting data", color = 'black')
+        if fmatchgroup > -1:
+            ax.scatter(g_fit_xfield, g_fit_ydata,
+                   lw=0, label="Subset of fitting data", color = 'black')
         ax.scatter(g_topred_xfield, g_topred_ydata,
                lw=0, label="Measured data", color = '#7ec0ee')
         ax.scatter(g_topred_xfield, g_topred_predicted,
