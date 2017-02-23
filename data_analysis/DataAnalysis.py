@@ -180,10 +180,6 @@ def main(datapath, scriptpath):
     testdict["4toatr2"]["PredictionVsFluence"] = {
                             "group_field_name":"alloy_number",
                             "label_field_name":"Alloy",
-                            "xlabel":"log(Eff Fluence(n/cm^{2}))",
-                            "ylabel":"\Delta\sigma_{y} (MPa)", 
-                            "overall_xlabel": "Measured (MPa)",
-                            "overall_ylabel": "Predicted (MPa)",
                             "topredict_data_csv":"../../expt_atr2.csv",
                             "standard_conditions_csv":"../../lwr_std_expt.csv",
                             "xfield":"log(eff fl 100p=26)"}

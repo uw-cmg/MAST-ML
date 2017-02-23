@@ -107,8 +107,8 @@ def plot_separate_groups_vs_xfield(fit_data=None,
 
         plt.legend(loc = "upper left", fontsize=matplotlib.rcParams['font.size']) #data is sigmoid; 'best' can block data
         plt.title("%s(%s)" % (test_group_val, test_group_label))
-        plt.xlabel("$%s$" % xlabel)
-        plt.ylabel("$%s$" % ylabel)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
         plt.savefig("%s_prediction" % ax.get_title(), dpi=200, bbox_inches='tight')
         plt.close()
         

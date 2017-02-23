@@ -28,11 +28,7 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
     dargs["group_field_name"] = "Raise error"
     dargs["label_field_name"] = None
     dargs["standard_conditions_csv"] = None #dataset of standard conditions
-    dargs["xlabel"] = "x"
     dargs["xfield"] = "Raise error"
-    dargs["ylabel"] = "y"
-    dargs["overall_xlabel"] = "Measured"
-    dargs["overall_ylabel"] = "Predicted"
     for keyword in dargs.keys():
         if keyword in kwargs.keys():
             dargs[keyword] = kwargs[keyword]
@@ -43,11 +39,12 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
     group_field_name = dargs["group_field_name"]
     label_field_name = dargs["label_field_name"]
     standard_conditions_csv = dargs["standard_conditions_csv"]
-    xlabel = dargs["xlabel"]
     xfield = dargs["xfield"]
-    ylabel = dargs["ylabel"]
-    overall_xlabel = dargs["overall_xlabel"]
-    overall_ylabel = dargs["overall_ylabel"]
+    
+    xlabel = "log(Eff Fluence(n/cm$^{2}$))"
+    ylabel = "\Delta\sigma$_{y}$ (MPa)"
+    overall_xlabel = "Measured (MPa)"
+    overall_ylabel = "Predicted (MPa)"
 
     fit_Xdata = np.asarray(data.get_x_data())
     fit_ydata = np.asarray(data.get_y_data()).ravel()
