@@ -116,6 +116,7 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
         ax.scatter(eff_fluence_data[test_index], ydata[test_index],
                lw=0, label="CD LWR data", color = '#7ec0ee')
         ax.scatter(eff_fluence_data[test_index], Ypredict,
+                marker='x',
                lw=0, label="LWR prediction points", color = 'blue')
 
         plt.legend(loc = "upper left", fontsize=matplotlib.rcParams['font.size']) #data is sigmoid; 'best' can block data
