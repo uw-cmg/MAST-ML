@@ -45,6 +45,10 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
     eff_str = "log(eff fl 100p=26)"
     temp_str = "temperature_C"
 
+    fit_indices = gttd.get_field_logo_indices(data, field_name)
+    fit_eff_fluence = np.asarray(data.get_data(eff_str)).ravel()
+    fit_fielddata = np.asarray(data.get_data(field_name)).ravel()
+
     indices = gttd.get_field_logo_indices(lwr_data, field_name)
     fielddata = np.asarray(lwr_data.get_data(field_name)).ravel()
     eff_fluence_data = np.asarray(lwr_data.get_data(eff_str)).ravel()
@@ -94,16 +98,22 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
             line_data = eff_fluence_std[std_test_index]
             Ypredictline = model.predict(std_Xdata[std_test_index])
 
+        for fgroup in fit_indices.keys():
+            f_test_index = fit_indices[fgroup]["test_index"] 
+            if fit_fielddata[f_test_index[0]] == test_group_val:
+                fmatchgroup = fgroup
+                continue
+        fit_test_index = fit_indices[fmatchgroup]["test_index"]
+
         plt.figure()
         plt.hold(True)
         fig, ax = plt.subplots()
         matplotlib.rcParams.update({'font.size':18})
         ax.plot(line_data, Ypredictline,
                 lw=3, color='#ffc04d', label="LWR prediction")
-        #also want to plot TRAIN data; get groupings separately?
-        #            lw=0, label='IVAR data',
-        #           color='black')   
-        ax.scatter(eff_fluence_data[test_index], fielddata[test_index],
+        ax.scatter(fit_eff_fluence[fit_test_index], ydata_fit[fit_test_index],
+               lw=0, label="fitting data", color = 'black')
+        ax.scatter(eff_fluence_data[test_index], ydata[test_index],
                lw=0, label="CD LWR data", color = '#7ec0ee')
         ax.scatter(eff_fluence_data[test_index], Ypredict,
                lw=0, label="LWR prediction points", color = 'blue')
