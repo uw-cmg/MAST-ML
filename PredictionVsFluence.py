@@ -42,7 +42,7 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
     xfield = dargs["xfield"]
     
     xlabel = "log(Eff Fluence(n/cm$^{2}$))"
-    ylabel = "\Delta\sigma$_{y}$ (MPa)"
+    ylabel = "$\Delta\sigma_{y}$ (MPa)"
     overall_xlabel = "Measured (MPa)"
     overall_ylabel = "Predicted (MPa)"
 
