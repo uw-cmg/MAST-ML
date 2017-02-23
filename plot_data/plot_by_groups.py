@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+######
+# Plot predictions by groups
+# Tam Mayeshiba 2017-02-23
+######
 import matplotlib.pyplot as plt
 import matplotlib
 import data_parser
@@ -7,6 +12,7 @@ from sklearn.kernel_ridge import KernelRidge
 from sklearn.metrics import mean_squared_error
 import data_analysis.printout_tools as ptools
 import portion_data.get_test_train_data as gttd
+
 
 '''
 Plot CD predictions of ∆sigma for data and topredict_data as well as model's output
@@ -25,8 +31,8 @@ def plot_by_groups(fit_data=None,
                     xlabel="x",
                     ylabel="y",
                     xfield=None,
-                    overall_x_label="Measured",
-                    overall_y_label="Predicted")
+                    overall_xlabel="Measured",
+                    overall_ylabel="Predicted"):
     """
         fit_data <data_parser data object>: fitting data
         topred_data <data_parser data object>: data to be predicted
@@ -56,7 +62,7 @@ def plot_by_groups(fit_data=None,
     groups.sort()
     for group in groups:
         print(group)
-        test_index = indices[group]["test_index"]
+        test_index = topred_indices[group]["test_index"]
         test_group_val = topred_groupdata[test_index[0]] #left-out group value
         if label_field_name == None:
             test_group_label = "None"
@@ -78,7 +84,7 @@ def plot_by_groups(fit_data=None,
                     continue
             std_test_index = std_indices[matchgroup]["test_index"]
             g_std_xfield = std_xfield[std_test_index]
-            g_std_Ypredict = std_Ypredict[std_test_index])
+            g_std_Ypredict = std_Ypredict[std_test_index]
 
         for fgroup in fit_indices.keys():
             f_test_index = fit_indices[fgroup]["test_index"] 
@@ -97,7 +103,7 @@ def plot_by_groups(fit_data=None,
                 lw=3, color='#ffc04d', label="Prediction")
         ax.scatter(g_fit_xfield, g_fit_ydata,
                lw=0, label="Subset of fitting data", color = 'black')
-        ax.scatter(g_topred_xfield, g_topred_ydata[test_index],
+        ax.scatter(g_topred_xfield, g_topred_ydata,
                lw=0, label="Measured data", color = '#7ec0ee')
         ax.scatter(g_topred_xfield, g_topred_Ypredict,
                lw=0, label="Predicted data", color = 'blue')
@@ -106,24 +112,25 @@ def plot_by_groups(fit_data=None,
         plt.title("%s(%s)" % (test_group_val, test_group_label))
         plt.xlabel("$%s$" % xlabel)
         plt.ylabel("$%s$" % ylabel)
-        plt.savefig(savepath.format("%s_prediction" % ax.get_title()), dpi=200, bbox_inches='tight')
+        plt.savefig("%s_prediction" % ax.get_title(), dpi=200, bbox_inches='tight')
         plt.close()
         
         headerline = "%s, Measured %s, Predicted %s" % (xlabel, ylabel, ylabel)
-        myarray = np.array([g_topred_xfield, g_topred_ydata, g_topred_YPredict]).transpose()
+        myarray = np.array([g_topred_xfield, g_topred_ydata, g_topred_Ypredict]).transpose()
         ptools.array_to_csv("%s_%s_pred.csv" % (test_group_val,test_group_label), headerline, myarray)
-        if not (standard_conditions_csv== None):
+        if not (std_data == None):
             headerline = "%s, Predicted %s" % (xlabel, ylabel)
             myarray = np.array([g_std_xfield, g_std_Ypredict]).transpose()
             ptools.array_to_csv("%s_%s_std_pred.csv" % (test_group_val,test_group_label), headerline, myarray)
 
     plt.figure()
-    plt.scatter(topredict_ydata, Ypredict_overall,
+    plt.scatter(topred_ydata, topred_Ypredict,
                lw=0, label="prediction points", color = 'blue')
     plt.xlabel(overall_xlabel)
     plt.ylabel(overall_ylabel)
     plt.savefig(savepath.format("overall_prediction"), dpi=200, bbox_inches='tight')
     plt.close()
+
     headerline = "Group val, Group label, %s, Measured %s, Predicted %s" % (xlabel, ylabel, ylabel)
     myarray = np.array([topred_groupdata, labeldata, topred_xfield, topred_ydata, topred_YPredict]).transpose()
     ptools.array_to_csv("overall_prediction.csv", headerline, myarray)
