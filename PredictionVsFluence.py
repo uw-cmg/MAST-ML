@@ -63,7 +63,8 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
         eff_fluence_std = np.asarray(std_data.get_data(eff_str)).ravel()
         std_fielddata = np.asarray(std_data.get_data(field_name)).ravel()
         std_indices = gttd.get_field_logo_indices(std_data, field_name)
-
+    
+    Overall_Ypredict=np.zeros(len(ydata))
     groups = list(indices.keys())
     groups.sort()
     for group in groups:
@@ -77,6 +78,7 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
             test_group_label = labeldata[test_index[0]]
         model.fit(Xdata[train_index], ydata[train_index])
         Ypredict = model.predict(Xdata[test_index])
+        Overall_Ypredict[test_index] = Ypredict
 
         if standard_conditions == None:
             line_data = np.copy(eff_fluence_data[test_index])
@@ -120,4 +122,12 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
             headerline = "logEffFluence LWR, Predicted LWR"
             myarray = np.array([line_data, Ypredictline]).transpose()
             ptools.array_to_csv("%s_%s_LWRpred.csv" % (test_group_val,test_group_label), headerline, myarray)
+
+    plt.figure()
+    plt.scatter(ydata, Overall_Ypredict,
+               lw=0, label="prediction points", color = 'blue')
+    plt.xlabel("Measured")
+    plt.ylabel("Predicted")
+    plt.savefig(savepath.format("overall_predict"), dpi=200, bbox_inches='tight')
+    plt.close()
     return
