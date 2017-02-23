@@ -13,14 +13,7 @@ from sklearn.metrics import mean_squared_error
 import data_analysis.printout_tools as ptools
 import portion_data.get_test_train_data as gttd
 
-
-'''
-Plot CD predictions of ∆sigma for data and topredict_data as well as model's output
-model is trained to data, which is in the domain of IVAR, IVAR+/ATR1 (assorted fluxes and fluences)
-topredict_data is data in the domain of LWR conditions (low flux, high fluence)
-'''
-
-def plot_by_groups(fit_data=None, 
+def plot_separate_groups_vs_xfield(fit_data=None, 
                     topred_data=None,
                     std_data=None,
                     topred_Ypredict=None,
@@ -30,14 +23,18 @@ def plot_by_groups(fit_data=None,
                     filter_dict=None,
                     xlabel="x",
                     ylabel="y",
-                    xfield=None,
-                    overall_xlabel="Measured",
-                    overall_ylabel="Predicted"):
+                    xfield=None):
     """
         fit_data <data_parser data object>: fitting data
         topred_data <data_parser data object>: data to be predicted
         std_data <data_parser data object>: standard data to be predicted
+                        (e.g. if there are not many points in topred_data)
         All data_parser objects should already have x and y features set.
+        topred_Ypredict <numpy array>: predictions already made
+        std_Ypredict <numpy array>: predictions already made on standard data
+        group_field_name <str>: field name for field over which to group
+        label_field_name <str>: field name for field containing group labels
+        xfield <str>: field name for x field for plotting
     """
     fit_indices = gttd.get_field_logo_indices(fit_data, group_field_name)
     fit_xfield = np.asarray(fit_data.get_data(xfield)).ravel()
@@ -117,25 +114,79 @@ def plot_by_groups(fit_data=None,
         
         headerline = "%s, Measured %s, Predicted %s" % (xlabel, ylabel, ylabel)
         myarray = np.array([g_topred_xfield, g_topred_ydata, g_topred_Ypredict]).transpose()
-        ptools.array_to_csv("%s_%s_pred.csv" % (test_group_val,test_group_label), headerline, myarray)
+        ptools.array_to_csv("%s_%s_prediction.csv" % (test_group_val,test_group_label), headerline, myarray)
         if not (std_data == None):
             headerline = "%s, Predicted %s" % (xlabel, ylabel)
             myarray = np.array([g_std_xfield, g_std_Ypredict]).transpose()
-            ptools.array_to_csv("%s_%s_std_pred.csv" % (test_group_val,test_group_label), headerline, myarray)
+            ptools.array_to_csv("%s_%s_std_prediction.csv" % (test_group_val,test_group_label), headerline, myarray)
+    return
 
+def plot_overall(fit_data=None, 
+                    topred_data=None,
+                    std_data=None,
+                    topred_Ypredict=None,
+                    std_Ypredict=None,
+                    group_field_name=None,
+                    label_field_name=None,
+                    filter_dict=None,
+                    xlabel="Measured",
+                    xfield=None,
+                    ylabel="Predicted",
+                    measerrfield=None):
+    """
+        fit_data <data_parser data object>: fitting data
+        topred_data <data_parser data object>: data to be predicted
+        std_data <data_parser data object>: standard data to be predicted
+        All data_parser objects should already have x and y features set.
+        topred_Ypredict <numpy array>: predictions already made
+        std_Ypredict <numpy array>: predictions already made on standard data
+        xfield <str>: field name for x field for plotting
+        measerrfield <str>: field name for measured error field (optional)
+        group_field_name <str>: field name for field over which to group
+        label_field_name <str>: field name for field containing group labels
+    """
+    topred_groupdata = np.asarray(topred_data.get_data(group_field_name)).ravel()
+    topred_ydata = np.asarray(topred_data.get_y_data()).ravel()
+    topred_xfield = np.asarray(topred_data.get_data(xfield)).ravel()
+    if not measerrfield == None:
+        topred_measerr = np.asarray(topred_data.get_data(measerrfield)).ravel()
+
+    if not label_field_name == None:
+        labeldata = np.asarray(topred_data.get_data(label_field_name)).ravel()
+    else:
+        labeldata = np.zeros(len(topred_groupdata))
+
+    if not (std_data == None):
+        std_groupdata = np.asarray(std_data.get_data(group_field_name)).ravel()
+        std_xfield = np.asarray(std_data.get_data(xfield)).ravel()
+        if not label_field_name == None:
+            std_labeldata = np.asarray(std_data.get_data(label_field_name)).ravel()
+        else:
+            std_labeldata = np.zeros(len(std_groupdata))
+    
+    matplotlib.rcParams.update({'font.size':18})
     plt.figure()
-    plt.scatter(topred_ydata, topred_Ypredict,
-               lw=0, label="prediction points", color = 'blue')
-    plt.xlabel(overall_xlabel)
-    plt.ylabel(overall_ylabel)
-    plt.savefig(savepath.format("overall_prediction"), dpi=200, bbox_inches='tight')
+    plt.hold(True)
+    if measerrfield == None:
+        plt.scatter(topred_ydata, topred_Ypredict,
+                   lw=0, label="prediction points", color = 'blue')
+    else:
+       plt.errorbar(topred_ydata, topred_Ypredict, xerr=topred_measerr, 
+            linewidth=1,
+            linestyle = "None", color="red",
+            markerfacecolor='red' , marker='o',
+            markersize=10, markeredgecolor="None") 
+    plt.plot(plt.gca().get_ylim(), plt.gca().get_ylim(), ls="--", c=".3")
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.savefig("overall_prediction", dpi=200, bbox_inches='tight')
     plt.close()
 
-    headerline = "Group val, Group label, %s, Measured %s, Predicted %s" % (xlabel, ylabel, ylabel)
-    myarray = np.array([topred_groupdata, labeldata, topred_xfield, topred_ydata, topred_YPredict]).transpose()
-    ptools.array_to_csv("overall_prediction.csv", headerline, myarray)
+    headerline = "Group value, Group label, %s, %s, %s" % (xfield, xlabel, ylabel)
+    myarray = np.array([topred_groupdata, labeldata, topred_xfield, topred_ydata, topred_Ypredict]).transpose()
+    ptools.mixed_array_to_csv("overall_prediction.csv", headerline, myarray)
     if not (std_data == None):
-        headerline = "%s, Predicted %s" % (xlabel, ylabel)
-        myarray = np.array([std_xfield, std_Ypredict]).transpose()
-        ptools.array_to_csv("overall_std_prediction.csv", headerline, myarray)
+        headerline = "Group value, Group label,%s,%s" % (xfield, ylabel)
+        myarray = np.array([std_groupdata, std_labeldata, std_xfield, std_Ypredict]).transpose()
+        ptools.mixed_array_to_csv("overall_std_prediction.csv", headerline, myarray)
     return

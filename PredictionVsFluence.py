@@ -73,7 +73,19 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
     std_Ypredict = model.predict(std_Xdata)
 
     from plot_data import plot_by_groups as pbg
-    pbg.plot_by_groups(fit_data=data, 
+    pbg.plot_overall(fit_data=data, 
+                    topred_data=topredict_data,
+                    std_data=std_data,
+                    topred_Ypredict=Ypredict,
+                    std_Ypredict=std_Ypredict,
+                    group_field_name=group_field_name,
+                    label_field_name=label_field_name,
+                    filter_dict=None,
+                    xlabel=overall_xlabel,
+                    ylabel=overall_ylabel,
+                    xfield=xfield,
+                    measerrfield="delta_sigma_y_MPa_uncertainty")
+    pbg.plot_separate_groups_vs_xfield(fit_data=data, 
                     topred_data=topredict_data,
                     std_data=std_data,
                     topred_Ypredict=Ypredict,
@@ -83,7 +95,5 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
                     filter_dict=None,
                     xlabel=xlabel,
                     ylabel=ylabel,
-                    xfield=xfield,
-                    overall_xlabel=overall_xlabel,
-                    overall_ylabel=overall_ylabel)
+                    xfield=xfield)
     return
