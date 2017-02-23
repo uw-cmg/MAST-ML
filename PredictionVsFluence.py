@@ -125,11 +125,11 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
         ax.plot(std_x, std_Ypredict,
                 lw=3, color='#ffc04d', label="Prediction")
         ax.scatter(fit_xfield[fit_test_index], fit_ydata[fit_test_index],
-               lw=0, label="Fitting data", color = 'black')
+               lw=0, label="Subset of fitting data", color = 'black')
         ax.scatter(topredict_xfield[test_index], topredict_ydata[test_index],
                lw=0, label="Measured data", color = '#7ec0ee')
         ax.scatter(topredict_xfield[test_index], Ypredict,
-               lw=0, label="Prediction points", color = 'blue')
+               lw=0, label="Predicted data", color = 'blue')
 
         plt.legend(loc = "upper left", fontsize=matplotlib.rcParams['font.size']) #data is sigmoid; 'best' can block data
         plt.title("%s(%s)" % (test_group_val, test_group_label))
