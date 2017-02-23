@@ -251,8 +251,8 @@ def add_cd(db, cname, cdname, verbose=1):
     print("Updated with condition and old temperature matches from %s." % cdname)
     return
 
-def create_lwr_standard_conditions(db, cname, clist=list(), verbose=0):
-    ref_flux = 3e10 #n/cm2/sec
+def create_standard_conditions(db, cname, ref_flux=3e10, clist=list(), verbose=0):
+    #ref_flux in n/cm2/sec
     min_sec = 3e6
     max_sec = 5e9
     second_range = np.logspace(np.log10(min_sec), np.log10(max_sec), 500)
@@ -337,8 +337,9 @@ def main(importpath):
     add_normalized_fields(db, "cd2_lwr", ["cd2_ivar","cd2_lwr"])
     add_normalized_fields(db, "expt_atr2", ["expt_ivar","expt_atr2","cd1_lwr"])
     #
-    create_lwr_standard_conditions(db, "lwr_std_expt",["expt_ivar","expt_atr2","cd1_lwr"])
-    create_lwr_standard_conditions(db, "lwr_std_cd1",["cd1_ivar","cd1_lwr"])
+    create_standard_conditions(db, "lwr_std_expt",3e10,["expt_ivar","expt_atr2","cd1_lwr"])
+    create_standard_conditions(db, "atr2_std_expt",3.64e12,["expt_ivar","expt_atr2","cd1_lwr"])
+    create_standard_conditions(db, "lwr_std_cd1",3e10,["cd1_ivar","cd1_lwr"])
     #
     cas.export_spreadsheet(db, "expt_ivar", exportpath)
     cas.export_spreadsheet(db, "cd1_ivar", exportpath)
