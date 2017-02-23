@@ -108,11 +108,14 @@ def plot_separate_groups_vs_xfield(fit_data=None,
             g_std_xfield = std_xfield[std_test_index]
             g_std_predicted = std_predicted[std_test_index]
 
+        fmatchgroup = -1
         for fgroup in fit_indices.keys():
             f_test_index = fit_indices[fgroup]["test_index"] 
             if fit_groupdata[f_test_index[0]] == test_group_val:
                 fmatchgroup = fgroup
                 continue
+        if fmatchgroup == -1:
+            continue
         fit_test_index = fit_indices[fmatchgroup]["test_index"]
         g_fit_xfield = fit_xfield[fit_test_index]
         g_fit_ydata = fit_ydata[fit_test_index]
