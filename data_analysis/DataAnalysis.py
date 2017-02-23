@@ -177,7 +177,8 @@ def main(datapath, scriptpath):
     #
     testdict["4toatr2"]=dict()
     #testdict["4toatr2"]["ATRExtrapolation"] = {}
-    testdict["4toatr2"]["PredictionVsFluence"] = {
+    testdict["4toatr2"]["PredictionByGroup"] = {
+                            "testname_append":"_prediction_vs_eff_fluence",
                             "group_field_name":"alloy_number",
                             "label_field_name":"Alloy",
                             "topredict_data_csv":"../../expt_atr2.csv",
@@ -210,7 +211,10 @@ def main(datapath, scriptpath):
             testnames.remove("hyperfrom")
         print(testnames)
         for testname in testnames:
-            tpath = os.path.join(dpath, testname)
+            tappend=""
+            if "testname_append" in testdict[dsetname][testname].keys():
+                tappend = testdict[dsetname][testname]["testname_append"]
+            tpath = os.path.join(dpath, "%s%s" % (testname, tappend))
             if not os.path.isdir(tpath):
                 os.mkdir(tpath)
             write_config_file(tpath, dsetname, testname, testdict)
