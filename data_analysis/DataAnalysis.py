@@ -182,7 +182,13 @@ def main(datapath, scriptpath):
                             "label_field_name":"Alloy",
                             "topredict_data_csv":"../../expt_atr2.csv",
                             "standard_conditions_csv":"../../lwr_std_expt.csv",
-                            "xfield":"log(eff fl 100p=26)"}
+                            "xfield":"log(eff fl 100p=26)",
+                            "overall_xlabel":"Measured (MPa)",
+                            "overall_ylabel":"Predicted (MPa)",
+                            "xlabel":"log(Eff Fluence(n/cm$$^{2}$$))",
+                            "ylabel":"$$\Delta\sigma_{y}$$ (MPa)",
+                            "measerrfield":"delta_sigma_y_MPa_uncertainty",
+                            }
     #testdict["4toatr2"]["ExtrapolateToLWR"] = {}
     testdict["4toatr2"]["csvs"] ={"ivar":"expt_ivar", "lwr":"expt_atr2"}
     testdict["4toatr2"]["hyperfrom"] = "1expt"

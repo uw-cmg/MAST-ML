@@ -29,6 +29,11 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
     dargs["label_field_name"] = None
     dargs["standard_conditions_csv"] = None #dataset of standard conditions
     dargs["xfield"] = "Raise error"
+    dargs["xlabel"] = "X"
+    dargs["ylabel"] = "Prediction"
+    dargs["overall_xlabel"] = "Measured"
+    dargs["overall_ylabel"] = "Predicted"
+    dargs["measerrfield"] = None
     for keyword in dargs.keys():
         if keyword in kwargs.keys():
             dargs[keyword] = kwargs[keyword]
@@ -39,12 +44,13 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
     group_field_name = dargs["group_field_name"]
     label_field_name = dargs["label_field_name"]
     standard_conditions_csv = dargs["standard_conditions_csv"]
-    xfield = dargs["xfield"]
-    
-    xlabel = "log(Eff Fluence(n/cm$^{2}$))"
-    ylabel = "$\Delta\sigma_{y}$ (MPa)"
-    overall_xlabel = "Measured (MPa)"
-    overall_ylabel = "Predicted (MPa)"
+    xfield = dargs["xfield"]    
+    xlabel = dargs["xlabel"]
+    ylabel = dargs["ylabel"]
+    overall_xlabel = dargs["overall_xlabel"]
+    overall_ylabel = dargs["overall_ylabel"]
+    measerrfield = dargs["measerrfield"]
+
 
     fit_Xdata = np.asarray(data.get_x_data())
     fit_ydata = np.asarray(data.get_y_data()).ravel()
@@ -81,7 +87,7 @@ def execute(model, data, savepath, lwr_data, *args, **kwargs):
                     xlabel=overall_xlabel,
                     ylabel=overall_ylabel,
                     xfield=xfield,
-                    measerrfield="delta_sigma_y_MPa_uncertainty")
+                    measerrfield=measerrfield)
     pbg.plot_separate_groups_vs_xfield(fit_data=data, 
                     topred_data=topredict_data,
                     std_data=std_data,
