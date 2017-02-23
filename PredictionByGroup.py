@@ -25,7 +25,7 @@ def execute(model, data, savepath, lwr_data,
             overall_xlabel = "Measured",
             overall_ylabel = "Predicted",
             measerrfield = None,
-            plot_filter = None,
+            plot_filter_out = list(),
             *args, **kwargs):
     """
         Fits on data and predicts on topredict_data and standard_conditions.
@@ -51,7 +51,7 @@ def execute(model, data, savepath, lwr_data,
     fit_ydata = np.asarray(data.get_y_data()).ravel()
 
     model.fit(fit_Xdata, fit_ydata)
-    #note that plot_filter only affects the plotting, not the model fitting
+    #note that plot_filter_out only affects the plotting, not the model fitting
 
     pd_path = os.path.abspath(topredict_data_csv) 
     topredict_data = data_parser.parse(pd_path)
@@ -78,11 +78,11 @@ def execute(model, data, savepath, lwr_data,
                     std_Ypredict=std_Ypredict,
                     group_field_name=group_field_name,
                     label_field_name=label_field_name,
-                    filter_dict=None,
                     xlabel=overall_xlabel,
                     ylabel=overall_ylabel,
                     xfield=xfield,
-                    measerrfield=measerrfield)
+                    measerrfield=measerrfield,
+                    plot_filter_out=plot_filter_out)
     pbg.plot_separate_groups_vs_xfield(fit_data=data, 
                     topred_data=topredict_data,
                     std_data=std_data,
@@ -90,8 +90,8 @@ def execute(model, data, savepath, lwr_data,
                     std_Ypredict=std_Ypredict,
                     group_field_name=group_field_name,
                     label_field_name=label_field_name,
-                    filter_dict=None,
                     xlabel=xlabel,
                     ylabel=ylabel,
-                    xfield=xfield)
+                    xfield=xfield,
+                    plot_filter_out=plot_filter_out)
     return

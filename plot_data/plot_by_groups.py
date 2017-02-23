@@ -20,10 +20,10 @@ def plot_separate_groups_vs_xfield(fit_data=None,
                     std_Ypredict=None,
                     group_field_name=None,
                     label_field_name=None,
-                    filter_dict=None,
                     xlabel="x",
                     ylabel="y",
-                    xfield=None):
+                    xfield=None,
+                    plot_filter_out=""):
     """
         fit_data <data_parser data object>: fitting data
         topred_data <data_parser data object>: data to be predicted
@@ -35,7 +35,29 @@ def plot_separate_groups_vs_xfield(fit_data=None,
         group_field_name <str>: field name for field over which to group
         label_field_name <str>: field name for field containing group labels
         xfield <str>: field name for x field for plotting
+        plot_filter_out <str>: semicolon-delimited list of
+                        field name, operator, value triplets for filtering
+                        out data
     """
+    predfield = "__predicted"
+    topred_data.add_feature(predfield,topred_Ypredict)
+    std_data.add_feature(predfield,std_Ypredict)
+    if len(plot_filter_out) > 0:
+        ftriplets = plot_filter_out.split(";")
+        for ftriplet in ftriplets:
+            fpcs = ftriplet.split(",")
+            ffield = fpcs[0].strip()
+            foperator = fpcs[1].strip()
+            fval = fpcs[2].strip()
+            try:
+                fval = float(fval)
+            except (ValueError, TypeError):
+                pass
+            fit_data.add_exclusive_filter(ffield, foperator, fval)
+            topred_data.add_exclusive_filter(ffield, foperator, fval)
+            if not (std_data == None):
+                std_data.add_exclusive_filter(ffield, foperator, fval)
+
     fit_indices = gttd.get_field_logo_indices(fit_data, group_field_name)
     fit_xfield = np.asarray(fit_data.get_data(xfield)).ravel()
     fit_groupdata = np.asarray(fit_data.get_data(group_field_name)).ravel()
@@ -44,6 +66,8 @@ def plot_separate_groups_vs_xfield(fit_data=None,
     topred_indices = gttd.get_field_logo_indices(topred_data, group_field_name)
     topred_groupdata = np.asarray(topred_data.get_data(group_field_name)).ravel()
     topred_ydata = np.asarray(topred_data.get_y_data()).ravel()
+    topred_predicted = np.asarray(topred_data.get_data(predfield)).ravel()
+
     topred_xfield = np.asarray(topred_data.get_data(xfield)).ravel()
     if not label_field_name == None:
         labeldata = np.asarray(topred_data.get_data(label_field_name)).ravel()
@@ -54,6 +78,7 @@ def plot_separate_groups_vs_xfield(fit_data=None,
         std_indices = gttd.get_field_logo_indices(std_data, group_field_name)
         std_xfield = np.asarray(std_data.get_data(xfield)).ravel()
         std_groupdata = np.asarray(std_data.get_data(group_field_name)).ravel()
+        std_predicted = np.asarray(std_data.get_data(predfield)).ravel()
     
     groups = list(topred_indices.keys())
     groups.sort()
@@ -66,12 +91,12 @@ def plot_separate_groups_vs_xfield(fit_data=None,
         else:
             test_group_label = labeldata[test_index[0]]
         g_topred_xfield = topred_xfield[test_index]
-        g_topred_Ypredict = topred_Ypredict[test_index]
+        g_topred_predicted = topred_predicted[test_index]
         g_topred_ydata = topred_ydata[test_index]
             
         if std_data == None:
             g_std_xfield = np.copy(g_topred_xfield)
-            g_std_Ypredict = np.copy(g_topred_Ypredict)
+            g_std_predicted = np.copy(g_topred_predicted)
         else:
             #need to find a better way of matching groups
             for sgroup in std_indices.keys():
@@ -81,7 +106,7 @@ def plot_separate_groups_vs_xfield(fit_data=None,
                     continue
             std_test_index = std_indices[matchgroup]["test_index"]
             g_std_xfield = std_xfield[std_test_index]
-            g_std_Ypredict = std_Ypredict[std_test_index]
+            g_std_predicted = std_predicted[std_test_index]
 
         for fgroup in fit_indices.keys():
             f_test_index = fit_indices[fgroup]["test_index"] 
@@ -96,13 +121,13 @@ def plot_separate_groups_vs_xfield(fit_data=None,
         plt.hold(True)
         fig, ax = plt.subplots()
         matplotlib.rcParams.update({'font.size':18})
-        ax.plot(g_std_xfield, g_std_Ypredict,
+        ax.plot(g_std_xfield, g_std_predicted,
                 lw=3, color='#ffc04d', label="Prediction")
         ax.scatter(g_fit_xfield, g_fit_ydata,
                lw=0, label="Subset of fitting data", color = 'black')
         ax.scatter(g_topred_xfield, g_topred_ydata,
                lw=0, label="Measured data", color = '#7ec0ee')
-        ax.scatter(g_topred_xfield, g_topred_Ypredict,
+        ax.scatter(g_topred_xfield, g_topred_predicted,
                lw=0, label="Predicted data", color = 'blue')
 
         plt.legend(loc = "upper left", fontsize=matplotlib.rcParams['font.size']) #data is sigmoid; 'best' can block data
@@ -113,12 +138,16 @@ def plot_separate_groups_vs_xfield(fit_data=None,
         plt.close()
         
         headerline = "%s, Measured %s, Predicted %s" % (xlabel, ylabel, ylabel)
-        myarray = np.array([g_topred_xfield, g_topred_ydata, g_topred_Ypredict]).transpose()
+        myarray = np.array([g_topred_xfield, g_topred_ydata, g_topred_predicted]).transpose()
         ptools.array_to_csv("%s_%s_prediction.csv" % (test_group_val,test_group_label), headerline, myarray)
         if not (std_data == None):
             headerline = "%s, Predicted %s" % (xlabel, ylabel)
-            myarray = np.array([g_std_xfield, g_std_Ypredict]).transpose()
+            myarray = np.array([g_std_xfield, g_std_predicted]).transpose()
             ptools.array_to_csv("%s_%s_std_prediction.csv" % (test_group_val,test_group_label), headerline, myarray)
+
+    fit_data.remove_all_filters()
+    std_data.remove_all_filters()
+    topred_data.remove_all_filters()
     return
 
 def plot_overall(fit_data=None, 
@@ -128,11 +157,12 @@ def plot_overall(fit_data=None,
                     std_Ypredict=None,
                     group_field_name=None,
                     label_field_name=None,
-                    filter_dict=None,
                     xlabel="Measured",
                     xfield=None,
                     ylabel="Predicted",
-                    measerrfield=None):
+                    measerrfield=None,
+                    plot_filter_out=""
+                    ):
     """
         fit_data <data_parser data object>: fitting data
         topred_data <data_parser data object>: data to be predicted
@@ -144,10 +174,33 @@ def plot_overall(fit_data=None,
         measerrfield <str>: field name for measured error field (optional)
         group_field_name <str>: field name for field over which to group
         label_field_name <str>: field name for field containing group labels
+        plot_filter_out <str>: semicolon-delimited list of
+                        field name, operator, value triplets for filtering
+                        out data
     """
+    predfield = "__predicted"
+    topred_data.add_feature(predfield,topred_Ypredict)
+    std_data.add_feature(predfield,std_Ypredict)
+    if len(plot_filter_out) > 0:
+        ftriplets = plot_filter_out.split(";")
+        for ftriplet in ftriplets:
+            fpcs = ftriplet.split(",")
+            ffield = fpcs[0].strip()
+            foperator = fpcs[1].strip()
+            fval = fpcs[2].strip()
+            try:
+                fval = float(fval)
+            except (ValueError, TypeError):
+                pass
+            fit_data.add_exclusive_filter(ffield, foperator, fval)
+            topred_data.add_exclusive_filter(ffield, foperator, fval)
+            if not (std_data == None):
+                std_data.add_exclusive_filter(ffield, foperator, fval)
+
     topred_groupdata = np.asarray(topred_data.get_data(group_field_name)).ravel()
     topred_ydata = np.asarray(topred_data.get_y_data()).ravel()
     topred_xfield = np.asarray(topred_data.get_data(xfield)).ravel()
+    topred_predicted = np.asarray(topred_data.get_data(predfield)).ravel()
     if not measerrfield == None:
         topred_measerr = np.asarray(topred_data.get_data(measerrfield)).ravel()
 
@@ -159,6 +212,7 @@ def plot_overall(fit_data=None,
     if not (std_data == None):
         std_groupdata = np.asarray(std_data.get_data(group_field_name)).ravel()
         std_xfield = np.asarray(std_data.get_data(xfield)).ravel()
+        std_predicted = np.asarray(std_data.get_data(predfield)).ravel()
         if not label_field_name == None:
             std_labeldata = np.asarray(std_data.get_data(label_field_name)).ravel()
         else:
@@ -168,10 +222,10 @@ def plot_overall(fit_data=None,
     plt.figure()
     plt.hold(True)
     if measerrfield == None:
-        plt.scatter(topred_ydata, topred_Ypredict,
+        plt.scatter(topred_ydata, topred_predicted,
                    lw=0, label="prediction points", color = 'blue')
     else:
-       plt.errorbar(topred_ydata, topred_Ypredict, xerr=topred_measerr, 
+       plt.errorbar(topred_ydata, topred_predicted, xerr=topred_measerr, 
             linewidth=1,
             linestyle = "None", color="red",
             markerfacecolor='red' , marker='o',
@@ -183,10 +237,13 @@ def plot_overall(fit_data=None,
     plt.close()
 
     headerline = "Group value, Group label, %s, %s, %s" % (xfield, xlabel, ylabel)
-    myarray = np.array([topred_groupdata, labeldata, topred_xfield, topred_ydata, topred_Ypredict]).transpose()
+    myarray = np.array([topred_groupdata, labeldata, topred_xfield, topred_ydata, topred_predicted]).transpose()
     ptools.mixed_array_to_csv("overall_prediction.csv", headerline, myarray)
     if not (std_data == None):
         headerline = "Group value, Group label,%s,%s" % (xfield, ylabel)
-        myarray = np.array([std_groupdata, std_labeldata, std_xfield, std_Ypredict]).transpose()
+        myarray = np.array([std_groupdata, std_labeldata, std_xfield, std_predicted]).transpose()
         ptools.mixed_array_to_csv("overall_std_prediction.csv", headerline, myarray)
+    fit_data.remove_all_filters()
+    std_data.remove_all_filters()
+    topred_data.remove_all_filters()
     return

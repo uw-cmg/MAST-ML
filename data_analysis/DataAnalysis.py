@@ -189,6 +189,7 @@ def main(datapath, scriptpath):
                             "xlabel":"log(Eff Fluence(n/cm$$^{2}$$))",
                             "ylabel":"$$\Delta\sigma_{y}$$ (MPa)",
                             "measerrfield":"delta_sigma_y_MPa_uncertainty",
+                            "plot_filter_out":"temperature_C,<,290;temperature_C,>,295" #ATR2 data is at 291
                             }
     #testdict["4toatr2"]["ExtrapolateToLWR"] = {}
     testdict["4toatr2"]["csvs"] ={"ivar":"expt_ivar", "lwr":"expt_atr2"}
