@@ -42,7 +42,8 @@ def plot_separate_groups_vs_xfield(fit_data=None,
     """
     predfield = "__predicted"
     topred_data.add_feature(predfield,topred_Ypredict)
-    std_data.add_feature(predfield,std_Ypredict)
+    if not (std_data == None):
+        std_data.add_feature(predfield,std_Ypredict)
     if len(plot_filter_out) > 0:
         ftriplets = plot_filter_out.split(";")
         for ftriplet in ftriplets:
@@ -106,10 +107,10 @@ def plot_separate_groups_vs_xfield(fit_data=None,
                 if std_groupdata[s_test_index[0]] == test_group_val:
                     smatchgroup = sgroup
                     continue
-        if smatchgroup > -1:
-            std_test_index = std_indices[smatchgroup]["test_index"]
-            g_std_xfield = std_xfield[std_test_index]
-            g_std_predicted = std_predicted[std_test_index]
+            if smatchgroup > -1:
+                std_test_index = std_indices[smatchgroup]["test_index"]
+                g_std_xfield = std_xfield[std_test_index]
+                g_std_predicted = std_predicted[std_test_index]
 
         fmatchgroup = -1
         for fgroup in fit_indices.keys():
@@ -126,22 +127,33 @@ def plot_separate_groups_vs_xfield(fit_data=None,
         plt.hold(True)
         matplotlib.rcParams.update({'font.size':18})
         if fmatchgroup > -1:
-            plt.plot(g_fit_xfield, g_fit_ydata,
+            if np.array_equal(g_fit_ydata, g_topred_ydata):
+                pass
+            else:
+                plt.plot(g_fit_xfield, g_fit_ydata,
                     markersize=10, marker='o', markeredgecolor='black',
                     markerfacecolor = 'black', markeredgewidth=3,
                     linestyle='None',
                     label="Subset of fitting data")
         if smatchgroup > -1:
-            plt.plot(g_std_xfield, g_std_predicted,
-                    #marker='o', markersize=10,
+            if std_data == None:
+                plt.plot(g_std_xfield, g_std_predicted,
+                    marker='o', markersize=10, markeredgecolor='blue',
+                    markerfacecolor='blue',
+                    linestyle = 'None', color='blue', label="Prediction")
+            else:
+                plt.plot(g_std_xfield, g_std_predicted,
                     lw=3, color='blue', label="Prediction")
-        plt.plot(g_topred_xfield, g_topred_predicted,
-                    markersize=20, marker=(8,2,0), markeredgecolor='blue',
+        msize=12
+        if len(g_topred_predicted) < 5:
+            msize=16
+            plt.plot(g_topred_xfield, g_topred_predicted,
+                    markersize=msize, marker=(8,2,0), markeredgecolor='blue',
                     markerfacecolor='None', markeredgewidth=3,
                     linestyle='None',
                     label="Predicted data")
         plt.plot(g_topred_xfield, g_topred_ydata,
-                    markersize=20, marker='o', markeredgecolor='red',
+                    markersize=msize, marker='o', markeredgecolor='red',
                     markerfacecolor='None', markeredgewidth=3,
                     linestyle='None',
                     label='Measured data')
@@ -167,7 +179,8 @@ def plot_separate_groups_vs_xfield(fit_data=None,
             ptools.array_to_csv("%s_%s_std_prediction.csv" % (test_group_val,test_group_label), headerline, myarray)
 
     fit_data.remove_all_filters()
-    std_data.remove_all_filters()
+    if not (std_data == None):
+        std_data.remove_all_filters()
     topred_data.remove_all_filters()
     return
 
@@ -206,7 +219,8 @@ def plot_overall(fit_data=None,
     """
     predfield = "__predicted"
     topred_data.add_feature(predfield,topred_Ypredict)
-    std_data.add_feature(predfield,std_Ypredict)
+    if not (std_data == None):
+        std_data.add_feature(predfield,std_Ypredict)
     if len(plot_filter_out) > 0:
         ftriplets = plot_filter_out.split(";")
         for ftriplet in ftriplets:
@@ -226,16 +240,18 @@ def plot_overall(fit_data=None,
     if int(only_fit_matches) == 1:
         initial_fit_groupdata = np.asarray(fit_data.get_data(group_field_name)).ravel()
         initial_topred_groupdata = np.asarray(topred_data.get_data(group_field_name)).ravel()
-        initial_std_groupdata = np.asarray(std_data.get_data(group_field_name)).ravel()
         unique_fit_groups = np.unique(initial_fit_groupdata)
         unique_topred_groups = np.unique(initial_topred_groupdata)
-        unique_std_groups = np.unique(initial_std_groupdata)
         topred_nonmatch_groups = np.setdiff1d(unique_topred_groups, unique_fit_groups)
-        std_nonmatch_groups = np.setdiff1d(unique_std_groups, unique_fit_groups)
         for nonmatch in topred_nonmatch_groups:
             topred_data.add_exclusive_filter(group_field_name,'=',nonmatch)
-        for nonmatch in std_nonmatch_groups:
-            std_data.add_exclusive_filter(group_field_name,'=',nonmatch)
+        
+        if not (std_data ==None):
+            initial_std_groupdata = np.asarray(std_data.get_data(group_field_name)).ravel()
+            unique_std_groups = np.unique(initial_std_groupdata)
+            std_nonmatch_groups = np.setdiff1d(unique_std_groups, unique_fit_groups)
+            for nonmatch in std_nonmatch_groups:
+                std_data.add_exclusive_filter(group_field_name,'=',nonmatch)
     elif int(only_fit_matches) == 0:
         pass
     else:
@@ -317,6 +333,7 @@ def plot_overall(fit_data=None,
         myarray = np.array([std_groupdata, std_labeldata, std_xfield, std_predicted]).transpose()
         ptools.mixed_array_to_csv("%s_std.csv" % savestr, headerline, myarray)
     fit_data.remove_all_filters()
-    std_data.remove_all_filters()
+    if not (std_data == None):
+        std_data.remove_all_filters()
     topred_data.remove_all_filters()
     return
