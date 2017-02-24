@@ -147,10 +147,10 @@ def main(datapath, scriptpath):
     num_folds = 5
     #
     testdict["1expt"]=dict()
-    ##testdict["1expt"]["KRRGridSearch"] = {"grid_density":grid_density}
-    #testdict["1expt"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
-    #testdict["1expt"]["FullFit"] = {}
-    #testdict["1expt"]["ExtrapolateToLWR"] = {}
+    testdict["1expt"]["KRRGridSearch"] = {"grid_density":grid_density}
+    testdict["1expt"]["KFoldCV"] = {"num_runs":num_runs,"num_folds":num_folds}
+    testdict["1expt"]["FullFit"] = {}
+    testdict["1expt"]["ExtrapolateToLWR"] = {}
     testdict["1expt"]["PredictionByGroup_eff_fl_ivar"] = {
                             "group_field_name":"alloy_number",
                             "label_field_name":"Alloy",
@@ -175,18 +175,18 @@ def main(datapath, scriptpath):
                             "plot_filter_out":"temperature_C,<,290;temperature_C,>,295"
                             }
     testdict["1expt"]["csvs"] ={"ivar":"expt_ivar", "lwr":"cd1_lwr"}
-    testdict["1expt"]["hyperfrom"] = "prev_20170216"
+    #testdict["1expt"]["hyperfrom"] = "prev_20170216"
     #
     testdict["2cd1"]=dict()
-    ##testdict["2cd1"]["KRRGridSearch"] = {"grid_density":grid_density}
-    #testdict["2cd1"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
-    #testdict["2cd1"]["LeaveOutAlloyCV"] = {"field_name":"alloy_number",
-    #                                "label_field_name": "Alloy",
-    #                                "xlabel":"Alloy",
-    #                                "ylabel":"RMSE (MPa)",
-    #                                }
-    #testdict["2cd1"]["FullFit"] = {}
-    #testdict["2cd1"]["ExtrapolateToLWR"] = {}
+    testdict["2cd1"]["KRRGridSearch"] = {"grid_density":grid_density}
+    testdict["2cd1"]["KFoldCV"] = {"num_runs":num_runs,"num_folds":num_folds}
+    testdict["2cd1"]["LeaveOutAlloyCV"] = {"field_name":"alloy_number",
+                                    "label_field_name": "Alloy",
+                                    "xlabel":"Alloy",
+                                    "ylabel":"RMSE (MPa)",
+                                    }
+    testdict["2cd1"]["FullFit"] = {}
+    testdict["2cd1"]["ExtrapolateToLWR"] = {}
     testdict["2cd1"]["PredictionByGroup_eff_fl_ivar"] = {
                             "group_field_name":"alloy_number",
                             "label_field_name":"Alloy",
@@ -209,11 +209,11 @@ def main(datapath, scriptpath):
                             "ylabel":"$$\Delta\sigma_{y}$$ (MPa)",
                             "plot_filter_out":"temperature_C,<,290;temperature_C,>,290"}
     testdict["2cd1"]["csvs"] ={"ivar":"cd1_ivar", "lwr":"cd1_lwr"}
-    testdict["2cd1"]["hyperfrom"] = "prev_20170216"
+    #testdict["2cd1"]["hyperfrom"] = "prev_20170216"
     #
     testdict["3cd2"]=dict()
     #testdict["3cd2"]["KRRGridSearch"] = {"grid_density":grid_density}
-    #testdict["3cd2"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
+    #testdict["3cd2"]["KFoldCV"] = {"num_runs":num_runs,"num_folds":num_folds}
     #testdict["3cd2"]["LeaveOutAlloyCV"] = {}
     #testdict["3cd2"]["FullFit"] = {}
     #testdict["3cd2"]["PredictionVsFluence"] = {}
@@ -235,7 +235,7 @@ def main(datapath, scriptpath):
                             "plot_filter_out":"temperature_C,<,290;temperature_C,>,295", #ATR2 data is at 291,
                             }
     testdict["4toatr2"]["csvs"] ={"ivar":"expt_ivar", "lwr":"expt_atr2"}
-    testdict["4toatr2"]["hyperfrom"] = "prev_20170216"
+    testdict["4toatr2"]["hyperfrom"] = "1expt" #"prev_20170216"
     #
     testdict["5alltoatr2"]=dict()
     #testdict["5alltoatr2"]["PredictionByGroup"] = {
@@ -253,7 +253,7 @@ def main(datapath, scriptpath):
     #                        "plot_filter_out":"temperature_C,<,290;temperature_C,>,295", #ATR2 data is at 291,
     #                        }
     testdict["5alltoatr2"]["csvs"] ={"ivar":"all_expt", "lwr":"expt_atr2"}
-    testdict["5alltoatr2"]["hyperfrom"] = "prev_20170216"
+    testdict["5alltoatr2"]["hyperfrom"] = "1expt" #"prev_20170216"
     #
     #
     testdict["6sametoatr2"]=dict()
@@ -271,7 +271,7 @@ def main(datapath, scriptpath):
                             "plot_filter_out":"temperature_C,<,290;temperature_C,>,295", #ATR2 data is at 291,
                             }
     testdict["6sametoatr2"]["csvs"] ={"ivar":"expt_ivar_onlyatr2alloys", "lwr":"expt_atr2"}
-    testdict["6sametoatr2"]["hyperfrom"] = "prev_20170216"
+    testdict["6sametoatr2"]["hyperfrom"] = "1expt" #"prev_20170216"
     #
     dsets = list(testdict.keys())
     dsets.sort()
@@ -295,7 +295,7 @@ def main(datapath, scriptpath):
                 os.mkdir(tpath)
             write_config_file(tpath, dsetname, testname, testdict)
             do_analysis(tpath, scriptpath)
-        if ("FullFit" in testnames) and ("KFold_CV" in testnames):
+        if ("FullFit" in testnames) and ("KFoldCV" in testnames):
             ap.cross_validation_full_fit_plot(dpath)
     return
 
