@@ -302,16 +302,19 @@ def plot_overall(fit_data=None,
     plt.annotate(meanstr, xy=(0.05, 0.83), xycoords="axes fraction", fontsize=smallfont)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
-    plt.savefig("overall_prediction", dpi=200, bbox_inches='tight')
+    savestr = "overall_prediction"
+    if int(only_fit_matches) > 0:
+        savestr = savestr + "_only_fit_matches"
+    plt.savefig(savestr, dpi=200, bbox_inches='tight')
     plt.close()
 
     headerline = "Group value, Group label, %s, %s, %s" % (xfield, xlabel, ylabel)
     myarray = np.array([topred_groupdata, labeldata, topred_xfield, topred_ydata, topred_predicted]).transpose()
-    ptools.mixed_array_to_csv("overall_prediction.csv", headerline, myarray)
+    ptools.mixed_array_to_csv("%s.csv" % savestr, headerline, myarray)
     if not (std_data == None):
         headerline = "Group value, Group label,%s,%s" % (xfield, ylabel)
         myarray = np.array([std_groupdata, std_labeldata, std_xfield, std_predicted]).transpose()
-        ptools.mixed_array_to_csv("overall_std_prediction.csv", headerline, myarray)
+        ptools.mixed_array_to_csv("%s_std.csv" % savestr, headerline, myarray)
     fit_data.remove_all_filters()
     std_data.remove_all_filters()
     topred_data.remove_all_filters()

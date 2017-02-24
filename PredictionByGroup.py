@@ -26,7 +26,6 @@ def execute(model, data, savepath, lwr_data,
             overall_ylabel = "Predicted",
             measerrfield = None,
             plot_filter_out = "",
-            only_fit_matches = 0,
             *args, **kwargs):
     """
         Fits on data and predicts on topredict_data and standard_conditions.
@@ -84,7 +83,22 @@ def execute(model, data, savepath, lwr_data,
                     xfield=xfield,
                     measerrfield=measerrfield,
                     plot_filter_out=plot_filter_out,
-                    only_fit_matches=only_fit_matches)
+                    only_fit_matches=0)
+    
+    pbg.plot_overall(fit_data=data, 
+                    topred_data=topredict_data,
+                    std_data=std_data,
+                    topred_Ypredict=Ypredict,
+                    std_Ypredict=std_Ypredict,
+                    group_field_name=group_field_name,
+                    label_field_name=label_field_name,
+                    xlabel=overall_xlabel,
+                    ylabel=overall_ylabel,
+                    xfield=xfield,
+                    measerrfield=measerrfield,
+                    plot_filter_out=plot_filter_out,
+                    only_fit_matches=1)
+
     pbg.plot_separate_groups_vs_xfield(fit_data=data, 
                     topred_data=topredict_data,
                     std_data=std_data,

@@ -202,10 +202,7 @@ def main(datapath, scriptpath):
     testdict["4toatr2"]=dict()
     #testdict["4toatr2"]["ATRExtrapolation"] = {}
     testdict["4toatr2"]["PredictionByGroup"] = {
-                            "testname_append":"_prediction_vs_eff_fluence_atr2only",
-                            "only_fit_matches":1,
-                            #"testname_append":"_prediction_vs_eff_fluence_allcomps",
-                            #"only_fit_matches":0,
+                            "testname_append":"_vs_eff_fluence",
                             "group_field_name":"alloy_number",
                             "label_field_name":"Alloy",
                             "topredict_data_csv":"../../expt_atr2.csv",
