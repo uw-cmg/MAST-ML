@@ -349,6 +349,7 @@ def main(importpath):
     cas.export_spreadsheet(db, "expt_atr2", exportpath)
     cas.export_spreadsheet(db, "lwr_std_expt", exportpath)
     cas.export_spreadsheet(db, "lwr_std_cd1", exportpath)
+    cas.export_spreadsheet(db, "atr2_std_expt", exportpath)
     #verify data
     clist=["expt_ivar","cd1_ivar","cd2_ivar","cd1_lwr","cd2_lwr","expt_atr2"]
     dver.make_per_alloy_plots(db, clist, "%s/verification_plots" % exportpath) 
