@@ -133,6 +133,7 @@ def plot_separate_groups_vs_xfield(fit_data=None,
                     label="Subset of fitting data")
         if smatchgroup > -1:
             plt.plot(g_std_xfield, g_std_predicted,
+                    #marker='o', markersize=10,
                     lw=3, color='blue', label="Prediction")
         plt.plot(g_topred_xfield, g_topred_predicted,
                     markersize=20, marker=(8,2,0), markeredgecolor='blue',
