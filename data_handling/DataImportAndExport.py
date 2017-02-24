@@ -335,7 +335,7 @@ def main(importpath):
     add_normalized_fields(db, "cd2_lwr", ["cd2_ivar","cd2_lwr"])
     add_normalized_fields(db, "expt_atr2", ["expt_ivar","expt_atr2","cd1_lwr"])
     #
-    create_standard_conditions(db, "lwr_std_expt",3e10,290,3e6,5e9["expt_ivar","expt_atr2","cd1_lwr"])
+    create_standard_conditions(db, "lwr_std_expt",3e10,290,3e6,5e9,["expt_ivar","expt_atr2","cd1_lwr"])
     create_standard_conditions(db, "atr2_std_expt",3.64e12,291,3e5,9e7,["expt_ivar","expt_atr2","cd1_lwr"])
     create_standard_conditions(db, "lwr_std_cd1",3e10,290,3e6,5e9,["cd1_ivar","cd1_lwr"])
     #

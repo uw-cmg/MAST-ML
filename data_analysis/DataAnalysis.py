@@ -146,7 +146,7 @@ def main(datapath, scriptpath):
     num_folds = 5
     #
     testdict["1expt"]=dict()
-    #testdict["1expt"]["KRRGridSearch"] = {"grid_density":grid_density}
+    testdict["1expt"]["KRRGridSearch"] = {"grid_density":grid_density}
     #testdict["1expt"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
     #testdict["1expt"]["FullFit"] = {}
     #testdict["1expt"]["ExtrapolateToLWR"] = {}
