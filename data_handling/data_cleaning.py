@@ -91,6 +91,15 @@ def update_experimental_temperatures(db, cname, verbose=1):
             print("%s: temperature updated" % id_list[modidx])
     return id_list
 
+def flag_bad_cd1_points(db, cname, verbose=1):
+    #Questionable CD Δσ values
+    #30 (CM30) @ 290C -CORRECTLY ENTERED
+    #37 (LH) @ 290C -CORRECTLY ENTERED
+    #47 (65W) @ 290C -CORRECTLY ENTERED
+    #51 (HSTT-02) @ 290C -CORRECTLY ENTERED
+    #53 (JRQ) @ 290C -CORRECTLY ENTERED
+    return [id_list, reason_list]
+
 def get_alloy_removal_ids(db, cname, alloylist=list(), verbose=1):
     """Removal of certain alloys from database
     """
