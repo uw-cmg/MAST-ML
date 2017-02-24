@@ -293,7 +293,7 @@ def plot_overall(fit_data=None,
     meanstr = "Mean error: %3.2f" % meanerr
     print(meanstr)
     #
-    matplotlib.rcParams.update({'font.size':24})
+    matplotlib.rcParams.update({'font.size':22})
     smallfont = 0.90*matplotlib.rcParams['font.size']
     plt.figure()
     plt.hold(True)
