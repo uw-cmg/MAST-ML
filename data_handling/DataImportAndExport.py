@@ -251,11 +251,9 @@ def add_cd(db, cname, cdname, verbose=1):
     print("Updated with condition and old temperature matches from %s." % cdname)
     return
 
-def create_standard_conditions(db, cname, ref_flux=3e10, temp=290, clist=list(), verbose=0):
+def create_standard_conditions(db, cname, ref_flux=3e10, temp=290, min_sec=3e6, max_sec=5e9, clist=list(), verbose=0):
     #ref_flux in n/cm2/sec
-    min_sec = 3e6
-    max_sec = 5e9
-    second_range = np.logspace(np.log10(min_sec), np.log10(max_sec), 500)
+    second_range = np.logspace(np.log10(min_sec), np.log10(max_sec), 50)
     alloys = apu.get_alloy_names(db)
     for alloy in alloys:
         for time_sec in second_range:
@@ -337,9 +335,9 @@ def main(importpath):
     add_normalized_fields(db, "cd2_lwr", ["cd2_ivar","cd2_lwr"])
     add_normalized_fields(db, "expt_atr2", ["expt_ivar","expt_atr2","cd1_lwr"])
     #
-    create_standard_conditions(db, "lwr_std_expt",3e10,290,["expt_ivar","expt_atr2","cd1_lwr"])
-    create_standard_conditions(db, "atr2_std_expt",3.64e12,291,["expt_ivar","expt_atr2","cd1_lwr"])
-    create_standard_conditions(db, "lwr_std_cd1",3e10,290,["cd1_ivar","cd1_lwr"])
+    create_standard_conditions(db, "lwr_std_expt",3e10,290,3e6,5e9["expt_ivar","expt_atr2","cd1_lwr"])
+    create_standard_conditions(db, "atr2_std_expt",3.64e12,291,3e5,9e7,["expt_ivar","expt_atr2","cd1_lwr"])
+    create_standard_conditions(db, "lwr_std_cd1",3e10,290,3e6,5e9,["cd1_ivar","cd1_lwr"])
     #
     cas.export_spreadsheet(db, "expt_ivar", exportpath)
     cas.export_spreadsheet(db, "cd1_ivar", exportpath)
