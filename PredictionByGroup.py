@@ -66,9 +66,12 @@ def execute(model, data, savepath, lwr_data,
         std_data.set_y_feature(xfield) #dummy y feature
         std_data.set_x_features(data.x_features)
         std_Xdata = np.asarray(std_data.get_x_data())
-    
+        std_Ypredict = model.predict(std_Xdata)
+    else:
+        std_Ypredict = None
+        std_data = None
+
     Ypredict = model.predict(topredict_Xdata)
-    std_Ypredict = model.predict(std_Xdata)
 
     from plot_data import plot_by_groups as pbg
     pbg.plot_overall(fit_data=data, 
