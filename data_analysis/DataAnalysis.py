@@ -202,7 +202,10 @@ def main(datapath, scriptpath):
     testdict["4toatr2"]=dict()
     #testdict["4toatr2"]["ATRExtrapolation"] = {}
     testdict["4toatr2"]["PredictionByGroup"] = {
-                            "testname_append":"_prediction_vs_eff_fluence_allcomps",
+                            "testname_append":"_prediction_vs_eff_fluence_atr2only",
+                            "only_fit_matches":1,
+                            #"testname_append":"_prediction_vs_eff_fluence_allcomps",
+                            #"only_fit_matches":0,
                             "group_field_name":"alloy_number",
                             "label_field_name":"Alloy",
                             "topredict_data_csv":"../../expt_atr2.csv",
@@ -213,7 +216,7 @@ def main(datapath, scriptpath):
                             "xlabel":"log(Eff Fluence(n/cm$$^{2}$$), p=0.26)",
                             "ylabel":"$$\Delta\sigma_{y}$$ (MPa)",
                             "measerrfield":"delta_sigma_y_MPa_uncertainty",
-                            "plot_filter_out":"temperature_C,<,290;temperature_C,>,295" #ATR2 data is at 291
+                            "plot_filter_out":"temperature_C,<,290;temperature_C,>,295", #ATR2 data is at 291,
                             }
     #testdict["4toatr2"]["PredictionByGroup"] = {
     #                        "testname_append":"_prediction_vs_eff_fluence_with_lwr",
@@ -259,7 +262,7 @@ def main(datapath, scriptpath):
     #                        }
     #testdict["4toatr2"]["ExtrapolateToLWR"] = {}
     testdict["4toatr2"]["csvs"] ={"ivar":"expt_ivar", "lwr":"expt_atr2"}
-    testdict["4toatr2"]["hyperfrom"] = "1expt"
+    testdict["4toatr2"]["hyperfrom"] = "prev_1expt_20170217"
     #
     dsets = list(testdict.keys())
     dsets.sort()

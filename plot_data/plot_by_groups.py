@@ -182,7 +182,7 @@ def plot_overall(fit_data=None,
                     ylabel="Predicted",
                     measerrfield=None,
                     plot_filter_out="",
-                    only_fit_matches=0
+                    only_fit_matches=0,
                     ):
     """
         fit_data <data_parser data object>: fitting data
@@ -198,7 +198,7 @@ def plot_overall(fit_data=None,
         plot_filter_out <str>: semicolon-delimited list of
                         field name, operator, value triplets for filtering
                         out data
-        only_fit_matches <int>: 0 - plot all predicted data, even if the
+        only_fit_matches <int or str>: 0 - plot all predicted data, even if the
                                 group was not present in the fitting data
                                 1 - only plot predicted data whose group was
                                 present in the fitting data
@@ -222,19 +222,23 @@ def plot_overall(fit_data=None,
             if not (std_data == None):
                 std_data.add_exclusive_filter(ffield, foperator, fval)
     
-    if only_fit_matches == 1:
+    if int(only_fit_matches) == 1:
         initial_fit_groupdata = np.asarray(fit_data.get_data(group_field_name)).ravel()
         initial_topred_groupdata = np.asarray(topred_data.get_data(group_field_name)).ravel()
         initial_std_groupdata = np.asarray(std_data.get_data(group_field_name)).ravel()
         unique_fit_groups = np.unique(initial_fit_groupdata)
         unique_topred_groups = np.unique(initial_topred_groupdata)
         unique_std_groups = np.unique(initial_std_groupdata)
-        topred_nonmatch_groups = np.setdiff1d(unique_fit_groups, unique_topred_groups)
-        std_nonmatch_groups = np.setdiff1d(unique_fit_groups, unique_std_groups)
+        topred_nonmatch_groups = np.setdiff1d(unique_topred_groups, unique_fit_groups)
+        std_nonmatch_groups = np.setdiff1d(unique_std_groups, unique_fit_groups)
         for nonmatch in topred_nonmatch_groups:
             topred_data.add_exclusive_filter(group_field_name,'=',nonmatch)
         for nonmatch in std_nonmatch_groups:
             std_data.add_exclusive_filter(group_field_name,'=',nonmatch)
+    elif int(only_fit_matches) == 0:
+        pass
+    else:
+        raise ValueError("%s is not a valid value for only_fit_matches")
 
     topred_groupdata = np.asarray(topred_data.get_data(group_field_name)).ravel()
     topred_ydata = np.asarray(topred_data.get_y_data()).ravel()
