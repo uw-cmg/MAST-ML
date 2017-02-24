@@ -10,6 +10,7 @@ import numpy as np
 import os
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.metrics import mean_squared_error
+from mean_error import mean_error
 import data_analysis.printout_tools as ptools
 import portion_data.get_test_train_data as gttd
 
@@ -236,20 +237,45 @@ def plot_overall(fit_data=None,
             std_labeldata = np.asarray(std_data.get_data(label_field_name)).ravel()
         else:
             std_labeldata = np.zeros(len(std_groupdata))
-    
+   
+    #annotations
+    rmse = np.sqrt(mean_squared_error(topred_ydata, topred_predicted))
+    rmsestr = "RMS error: %3.2f" % rmse
+    print(rmsestr)
+    meanerr = mean_error(topred_ydata, topred_predicted)
+    meanstr = "Mean error: %3.2f" % meanerr
+    print(meanstr)
+    #
     matplotlib.rcParams.update({'font.size':18})
+    smallfont = 0.90*matplotlib.rcParams['font.size']
     plt.figure()
     plt.hold(True)
     if measerrfield == None:
-        plt.scatter(topred_ydata, topred_predicted,
-                   lw=0, label="prediction points", color = 'blue')
+        plt.plot(topred_ydata, topred_predicted,
+                    linestyle='None',
+                    marker='o', markeredgewidth=2,
+                    markeredgecolor='blue', markerfacecolor='None',
+                    markersize=15)
     else:
-       plt.errorbar(topred_ydata, topred_predicted, xerr=topred_measerr, 
-            linewidth=1,
+        darkred="#8B0000"
+        (_, caps, _) = plt.errorbar(topred_ydata, topred_predicted, 
+            xerr=topred_measerr, 
+            linewidth=2,
             linestyle = "None", color="red",
+            markeredgewidth=2, markeredgecolor=darkred,
             markerfacecolor='red' , marker='o',
-            markersize=10, markeredgecolor="None") 
-    plt.plot(plt.gca().get_ylim(), plt.gca().get_ylim(), ls="--", c=".3")
+            markersize=15)
+        for cap in caps:
+            cap.set_color(darkred)
+            cap.set_markeredgewidth(2)
+    #print dashed dividing line, but do not overextend axes
+    (ymin, ymax) = plt.gca().get_ylim()
+    (xmin, xmax) = plt.gca().get_xlim()
+    minmin = min(xmin, ymin)
+    maxmax = max(xmax, ymax)
+    plt.plot((minmin+1, maxmax-1), (minmin+1, maxmax-1), ls="--", c=".3")
+    plt.annotate(rmsestr, xy=(0.05, 0.90), xycoords="axes fraction", fontsize=smallfont)
+    plt.annotate(meanstr, xy=(0.05, 0.83), xycoords="axes fraction", fontsize=smallfont)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.savefig("overall_prediction", dpi=200, bbox_inches='tight')
