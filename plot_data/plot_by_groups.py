@@ -181,7 +181,8 @@ def plot_overall(fit_data=None,
                     xfield=None,
                     ylabel="Predicted",
                     measerrfield=None,
-                    plot_filter_out=""
+                    plot_filter_out="",
+                    only_fit_matches=0
                     ):
     """
         fit_data <data_parser data object>: fitting data
@@ -197,6 +198,10 @@ def plot_overall(fit_data=None,
         plot_filter_out <str>: semicolon-delimited list of
                         field name, operator, value triplets for filtering
                         out data
+        only_fit_matches <int>: 0 - plot all predicted data, even if the
+                                group was not present in the fitting data
+                                1 - only plot predicted data whose group was
+                                present in the fitting data
     """
     predfield = "__predicted"
     topred_data.add_feature(predfield,topred_Ypredict)
@@ -216,6 +221,20 @@ def plot_overall(fit_data=None,
             topred_data.add_exclusive_filter(ffield, foperator, fval)
             if not (std_data == None):
                 std_data.add_exclusive_filter(ffield, foperator, fval)
+    
+    if only_fit_matches == 1:
+        initial_fit_groupdata = np.asarray(fit_data.get_data(group_field_name)).ravel()
+        initial_topred_groupdata = np.asarray(topred_data.get_data(group_field_name)).ravel()
+        initial_std_groupdata = np.asarray(std_data.get_data(group_field_name)).ravel()
+        unique_fit_groups = np.unique(initial_fit_groupdata)
+        unique_topred_groups = np.unique(initial_topred_groupdata)
+        unique_std_groups = np.unique(initial_std_groupdata)
+        topred_nonmatch_groups = np.setdiff1d(unique_fit_groups, unique_topred_groups)
+        std_nonmatch_groups = np.setdiff1d(unique_fit_groups, unique_std_groups)
+        for nonmatch in topred_nonmatch_groups:
+            topred_data.add_exclusive_filter(group_field_name,'=',nonmatch)
+        for nonmatch in std_nonmatch_groups:
+            std_data.add_exclusive_filter(group_field_name,'=',nonmatch)
 
     topred_groupdata = np.asarray(topred_data.get_data(group_field_name)).ravel()
     topred_ydata = np.asarray(topred_data.get_y_data()).ravel()
@@ -268,6 +287,7 @@ def plot_overall(fit_data=None,
         for cap in caps:
             cap.set_color(darkred)
             cap.set_markeredgewidth(2)
+        #http://stackoverflow.com/questions/7601334/how-to-set-the-line-width-of-error-bar-caps-in-matplotlib
     #print dashed dividing line, but do not overextend axes
     (ymin, ymax) = plt.gca().get_ylim()
     (xmin, xmax) = plt.gca().get_xlim()
