@@ -265,7 +265,7 @@ def plot_overall(fit_data=None,
     rmse = np.sqrt(mean_squared_error(topred_ydata, topred_predicted))
     rmsestr = "RMS error: %3.2f" % rmse
     print(rmsestr)
-    meanerr = mean_error(topred_ydata, topred_predicted)
+    meanerr = mean_error(topred_predicted, topred_ydata) #ordering matters!
     meanstr = "Mean error: %3.2f" % meanerr
     print(meanstr)
     #
