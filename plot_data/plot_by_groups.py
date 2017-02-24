@@ -261,7 +261,7 @@ def plot_overall(fit_data=None,
         (_, caps, _) = plt.errorbar(topred_ydata, topred_predicted, 
             xerr=topred_measerr, 
             linewidth=2,
-            linestyle = "None", color="red",
+            linestyle = "None", color=darkred,
             markeredgewidth=2, markeredgecolor=darkred,
             markerfacecolor='red' , marker='o',
             markersize=15)
