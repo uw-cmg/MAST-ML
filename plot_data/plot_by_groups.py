@@ -136,11 +136,18 @@ def plot_separate_groups_vs_xfield(fit_data=None,
                     linestyle='None',
                     label="Subset of fitting data")
         if smatchgroup > -1:
-            if std_data == None:
-                plt.plot(g_std_xfield, g_std_predicted,
-                    marker='o', markersize=10, markeredgecolor='blue',
-                    markerfacecolor='blue',
-                    linestyle = 'None', color='blue', label="Prediction")
+            if std_data == None: #inefficient; revisit np.sort on np upgrade
+                g_std_comb_list = list()
+                for cidx in range(0, len(g_std_xfield)):
+                    g_std_comb_list.append((g_std_xfield[cidx],g_std_predicted[cidx]))
+                g_std_comb_list.sort() #sorts tuples in place
+                g_std_comb_array = np.array(g_std_comb_list)
+                g_std_xfield_sorted = g_std_comb_array[:,0]
+                g_std_predicted_sorted = g_std_comb_array[:,1]
+                plt.plot(g_std_xfield_sorted, g_std_predicted_sorted,
+                    #marker='o', markersize=10, markeredgecolor='blue',
+                    #markerfacecolor='blue', linestyle='None',
+                    lw = 3, color='blue', label="Prediction")
             else:
                 plt.plot(g_std_xfield, g_std_predicted,
                     lw=3, color='blue', label="Prediction")

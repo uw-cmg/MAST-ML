@@ -147,10 +147,11 @@ def main(datapath, scriptpath):
     num_folds = 5
     #
     testdict["1expt"]=dict()
-    testdict["1expt"]["KRRGridSearch"] = {"grid_density":grid_density}
+    testdict["1expt"]["csvs"] ={"ivar":"expt_ivar", "lwr":"cd1_lwr"}
+    #testdict["1expt"]["KRRGridSearch"] = {"grid_density":grid_density}
     testdict["1expt"]["KFoldCV"] = {"num_runs":num_runs,"num_folds":num_folds}
-    testdict["1expt"]["FullFit"] = {}
-    testdict["1expt"]["ExtrapolateToLWR"] = {}
+    #testdict["1expt"]["FullFit"] = {}
+    #testdict["1expt"]["ExtrapolateToLWR"] = {}
     testdict["1expt"]["PredictionByGroup_eff_fl_ivar"] = {
                             "group_field_name":"alloy_number",
                             "label_field_name":"Alloy",
@@ -162,31 +163,30 @@ def main(datapath, scriptpath):
                             "ylabel":"$$\Delta\sigma_{y}$$ (MPa)",
                             "plot_filter_out":"temperature_C,<,290;temperature_C,>,295"
                             }
-    testdict["1expt"]["PredictionByGroup_eff_fl_lwr"] = {
-                            "group_field_name":"alloy_number",
-                            "label_field_name":"Alloy",
-                            "topredict_data_csv":"../../expt_ivar.csv",
-                            "standard_conditions_csv":"../../lwr_std_expt.csv",
-                            "xfield":"log(eff fl 100p=26)",
-                            "overall_xlabel":"Measured (MPa)",
-                            "overall_ylabel":"Predicted (MPa)",
-                            "xlabel":"log(Eff Fluence(n/cm$$^{2}$$))",
-                            "ylabel":"$$\Delta\sigma_{y}$$ (MPa)",
-                            "plot_filter_out":"temperature_C,<,290;temperature_C,>,295"
-                            }
-    testdict["1expt"]["csvs"] ={"ivar":"expt_ivar", "lwr":"cd1_lwr"}
-    #testdict["1expt"]["hyperfrom"] = "prev_20170216"
+    #testdict["1expt"]["PredictionByGroup_eff_fl_lwr"] = {
+    #                        "group_field_name":"alloy_number",
+    #                        "label_field_name":"Alloy",
+    #                        "topredict_data_csv":"../../expt_ivar.csv",
+    #                        "standard_conditions_csv":"../../lwr_std_expt.csv",
+    #                        "xfield":"log(eff fl 100p=26)",
+    #                        "overall_xlabel":"Measured (MPa)",
+    #                        "overall_ylabel":"Predicted (MPa)",
+    #                        "xlabel":"log(Eff Fluence(n/cm$$^{2}$$))",
+    #                        "ylabel":"$$\Delta\sigma_{y}$$ (MPa)",
+    #                        "plot_filter_out":"temperature_C,<,290;temperature_C,>,295"
+    #                        }
     #
     testdict["2cd1"]=dict()
-    testdict["2cd1"]["KRRGridSearch"] = {"grid_density":grid_density}
+    testdict["2cd1"]["csvs"] ={"ivar":"cd1_ivar", "lwr":"cd1_lwr"}
+    #testdict["2cd1"]["KRRGridSearch"] = {"grid_density":grid_density}
     testdict["2cd1"]["KFoldCV"] = {"num_runs":num_runs,"num_folds":num_folds}
-    testdict["2cd1"]["LeaveOutAlloyCV"] = {"field_name":"alloy_number",
-                                    "label_field_name": "Alloy",
-                                    "xlabel":"Alloy",
-                                    "ylabel":"RMSE (MPa)",
-                                    }
-    testdict["2cd1"]["FullFit"] = {}
-    testdict["2cd1"]["ExtrapolateToLWR"] = {}
+    #testdict["2cd1"]["LeaveOutAlloyCV"] = {"field_name":"alloy_number",
+    #                                "label_field_name": "Alloy",
+    #                                "xlabel":"Alloy",
+    #                                "ylabel":"RMSE (MPa)",
+    #                                }
+    #testdict["2cd1"]["FullFit"] = {}
+    #testdict["2cd1"]["ExtrapolateToLWR"] = {}
     testdict["2cd1"]["PredictionByGroup_eff_fl_ivar"] = {
                             "group_field_name":"alloy_number",
                             "label_field_name":"Alloy",
@@ -197,49 +197,31 @@ def main(datapath, scriptpath):
                             "xlabel":"log(Eff Fluence(n/cm$$^{2}$$))",
                             "ylabel":"$$\Delta\sigma_{y}$$ (MPa)",
                             "plot_filter_out":"temperature_C,<,290;temperature_C,>,290"}
-    testdict["2cd1"]["PredictionByGroup_eff_fl_lwr"] = {
-                            "group_field_name":"alloy_number",
-                            "label_field_name":"Alloy",
-                            "topredict_data_csv":"../../cd1_ivar.csv",
-                            "standard_conditions_csv":"../../lwr_std_cd1.csv",
-                            "xfield":"log(eff fl 100p=26)",
-                            "overall_xlabel":"Measured (MPa)",
-                            "overall_ylabel":"Predicted (MPa)",
-                            "xlabel":"log(Eff Fluence(n/cm$$^{2}$$))",
-                            "ylabel":"$$\Delta\sigma_{y}$$ (MPa)",
-                            "plot_filter_out":"temperature_C,<,290;temperature_C,>,290"}
-    testdict["2cd1"]["csvs"] ={"ivar":"cd1_ivar", "lwr":"cd1_lwr"}
-    #testdict["2cd1"]["hyperfrom"] = "prev_20170216"
+    #testdict["2cd1"]["PredictionByGroup_eff_fl_lwr"] = {
+    #                        "group_field_name":"alloy_number",
+    #                        "label_field_name":"Alloy",
+    #                        "topredict_data_csv":"../../cd1_ivar.csv",
+    #                        "standard_conditions_csv":"../../lwr_std_cd1.csv",
+    #                        "xfield":"log(eff fl 100p=26)",
+    #                        "overall_xlabel":"Measured (MPa)",
+    #                        "overall_ylabel":"Predicted (MPa)",
+    #                        "xlabel":"log(Eff Fluence(n/cm$$^{2}$$))",
+    #                        "ylabel":"$$\Delta\sigma_{y}$$ (MPa)",
+    #                        "plot_filter_out":"temperature_C,<,290;temperature_C,>,290"}
     #
     testdict["3cd2"]=dict()
+    testdict["3cd2"]["csvs"] ={"ivar":"cd2_ivar", "lwr":"cd2_lwr"}
     #testdict["3cd2"]["KRRGridSearch"] = {"grid_density":grid_density}
     #testdict["3cd2"]["KFoldCV"] = {"num_runs":num_runs,"num_folds":num_folds}
     #testdict["3cd2"]["LeaveOutAlloyCV"] = {}
     #testdict["3cd2"]["FullFit"] = {}
     #testdict["3cd2"]["PredictionVsFluence"] = {}
     #testdict["3cd2"]["ExtrapolateToLWR"] = {}
-    testdict["3cd2"]["csvs"] ={"ivar":"cd2_ivar", "lwr":"cd2_lwr"}
     #
     testdict["4toatr2"]=dict()
-    testdict["4toatr2"]["PredictionByGroup_eff_fl_atr2"] = {
-                            "group_field_name":"alloy_number",
-                            "label_field_name":"Alloy",
-                            "topredict_data_csv":"../../expt_atr2.csv",
-                            "standard_conditions_csv":"../../atr2_std_expt.csv",
-                            "xfield":"log(eff fl 100p=26)",
-                            "overall_xlabel":"Measured (MPa)",
-                            "overall_ylabel":"Predicted (MPa)",
-                            "xlabel":"log(Eff Fluence(n/cm$$^{2}$$), p=0.26)",
-                            "ylabel":"$$\Delta\sigma_{y}$$ (MPa)",
-                            "measerrfield":"delta_sigma_y_MPa_uncertainty",
-                            "plot_filter_out":"temperature_C,<,290;temperature_C,>,295", #ATR2 data is at 291,
-                            }
     testdict["4toatr2"]["csvs"] ={"ivar":"expt_ivar", "lwr":"expt_atr2"}
     testdict["4toatr2"]["hyperfrom"] = "1expt" #"prev_20170216"
-    #
-    testdict["5alltoatr2"]=dict()
-    #testdict["5alltoatr2"]["PredictionByGroup"] = {
-    #                        "testname_append":"_vs_eff_fluence",
+    #testdict["4toatr2"]["PredictionByGroup_eff_fl_atr2"] = {
     #                        "group_field_name":"alloy_number",
     #                        "label_field_name":"Alloy",
     #                        "topredict_data_csv":"../../expt_atr2.csv",
@@ -252,26 +234,23 @@ def main(datapath, scriptpath):
     #                        "measerrfield":"delta_sigma_y_MPa_uncertainty",
     #                        "plot_filter_out":"temperature_C,<,290;temperature_C,>,295", #ATR2 data is at 291,
     #                        }
-    testdict["5alltoatr2"]["csvs"] ={"ivar":"all_expt", "lwr":"expt_atr2"}
-    testdict["5alltoatr2"]["hyperfrom"] = "1expt" #"prev_20170216"
-    #
     #
     testdict["6sametoatr2"]=dict()
-    testdict["6sametoatr2"]["PredictionByGroup_eff_fl_onlyfitcommonalloys"] = {
-                            "group_field_name":"alloy_number",
-                            "label_field_name":"Alloy",
-                            "topredict_data_csv":"../../expt_atr2.csv",
-                            "standard_conditions_csv":"../../atr2_std_expt.csv",
-                            "xfield":"log(eff fl 100p=26)",
-                            "overall_xlabel":"Measured (MPa)",
-                            "overall_ylabel":"Predicted (MPa)",
-                            "xlabel":"log(Eff Fluence(n/cm$$^{2}$$), p=0.26)",
-                            "ylabel":"$$\Delta\sigma_{y}$$ (MPa)",
-                            "measerrfield":"delta_sigma_y_MPa_uncertainty",
-                            "plot_filter_out":"temperature_C,<,290;temperature_C,>,295", #ATR2 data is at 291,
-                            }
     testdict["6sametoatr2"]["csvs"] ={"ivar":"expt_ivar_onlyatr2alloys", "lwr":"expt_atr2"}
     testdict["6sametoatr2"]["hyperfrom"] = "1expt" #"prev_20170216"
+    #testdict["6sametoatr2"]["PredictionByGroup_eff_fl_onlyfitcommonalloys"] = {
+    #                        "group_field_name":"alloy_number",
+    #                        "label_field_name":"Alloy",
+    #                        "topredict_data_csv":"../../expt_atr2.csv",
+    #                        "standard_conditions_csv":"../../atr2_std_expt.csv",
+    #                        "xfield":"log(eff fl 100p=26)",
+    #                        "overall_xlabel":"Measured (MPa)",
+    #                        "overall_ylabel":"Predicted (MPa)",
+    #                        "xlabel":"log(Eff Fluence(n/cm$$^{2}$$), p=0.26)",
+    #                        "ylabel":"$$\Delta\sigma_{y}$$ (MPa)",
+    #                        "measerrfield":"delta_sigma_y_MPa_uncertainty",
+    #                        "plot_filter_out":"temperature_C,<,290;temperature_C,>,295", #ATR2 data is at 291,
+    #                        }
     #
     dsets = list(testdict.keys())
     dsets.sort()
