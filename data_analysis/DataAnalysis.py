@@ -146,7 +146,7 @@ def main(datapath, scriptpath):
     num_folds = 5
     #
     testdict["1expt"]=dict()
-    testdict["1expt"]["KRRGridSearch"] = {"grid_density":grid_density}
+    #testdict["1expt"]["KRRGridSearch"] = {"grid_density":grid_density}
     #testdict["1expt"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
     #testdict["1expt"]["FullFit"] = {}
     #testdict["1expt"]["ExtrapolateToLWR"] = {}
@@ -202,7 +202,7 @@ def main(datapath, scriptpath):
     testdict["4toatr2"]=dict()
     #testdict["4toatr2"]["ATRExtrapolation"] = {}
     testdict["4toatr2"]["PredictionByGroup"] = {
-                            "testname_append":"_prediction_vs_eff_fluence",
+                            "testname_append":"_prediction_vs_eff_fluence_allcomps",
                             "group_field_name":"alloy_number",
                             "label_field_name":"Alloy",
                             "topredict_data_csv":"../../expt_atr2.csv",
@@ -291,7 +291,7 @@ def main(datapath, scriptpath):
     return
 
 if __name__ == "__main__":
-    datapath = "../../../data/DBTT_mongo/data_exports_dbtt_38_20170223_184708"
+    datapath = "../../../data/DBTT_mongo/data_exports_dbtt_40_20170223_222506"
     scriptpath = "../"
     datapath = os.path.abspath(datapath)
     scriptpath = os.path.abspath(scriptpath)

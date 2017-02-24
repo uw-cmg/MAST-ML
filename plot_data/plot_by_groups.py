@@ -121,29 +121,40 @@ def plot_separate_groups_vs_xfield(fit_data=None,
             g_fit_xfield = fit_xfield[fit_test_index]
             g_fit_ydata = fit_ydata[fit_test_index]
 
-        plt.figure()
+        fig = plt.figure()
         plt.hold(True)
-        fig, ax = plt.subplots()
         matplotlib.rcParams.update({'font.size':18})
-        if smatchgroup > -1:
-            ax.plot(g_std_xfield, g_std_predicted,
-                    lw=3, color='#ffc04d', label="Prediction")
         if fmatchgroup > -1:
-            ax.scatter(g_fit_xfield, g_fit_ydata,
-                   lw=0, label="Subset of fitting data", color = 'black')
-        ax.scatter(g_topred_xfield, g_topred_ydata,
-               lw=0, label="Measured data", color = '#7ec0ee')
-        ax.scatter(g_topred_xfield, g_topred_predicted,
-               lw=0, label="Predicted data", color = 'blue')
-
-        lgd=plt.legend(loc = "upper left", fontsize=matplotlib.rcParams['font.size'], fancybox=True) #data is sigmoid; 'best' can block data
+            plt.plot(g_fit_xfield, g_fit_ydata,
+                    markersize=10, marker='o', markeredgecolor='black',
+                    markerfacecolor = 'black', markeredgewidth=3,
+                    linestyle='None',
+                    label="Subset of fitting data")
+        if smatchgroup > -1:
+            plt.plot(g_std_xfield, g_std_predicted,
+                    lw=3, color='blue', label="Prediction")
+        plt.plot(g_topred_xfield, g_topred_predicted,
+                    markersize=20, marker=(8,2,0), markeredgecolor='blue',
+                    markerfacecolor='None', markeredgewidth=3,
+                    linestyle='None',
+                    label="Predicted data")
+        plt.plot(g_topred_xfield, g_topred_ydata,
+                    markersize=20, marker='o', markeredgecolor='red',
+                    markerfacecolor='None', markeredgewidth=3,
+                    linestyle='None',
+                    label='Measured data')
+        lgd=plt.legend(loc = "upper left", 
+                        fontsize=matplotlib.rcParams['font.size'], 
+                        numpoints=1,
+                        fancybox=True) 
         lgd.get_frame().set_alpha(0.5) #translucent legend!
-
-        plt.title("%s(%s)" % (test_group_val, test_group_label))
+        titlestr = "%s(%s)" % (test_group_val, test_group_label)
+        plt.title(titlestr)
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
-        plt.savefig("%s_prediction" % ax.get_title(), dpi=200, bbox_inches='tight')
-        plt.close()
+        plt.savefig("%s_prediction" % titlestr, dpi=200, bbox_inches='tight')
+        plt.hold(False)
+        plt.close(fig)
         
         headerline = "%s, Measured %s, Predicted %s" % (xlabel, ylabel, ylabel)
         myarray = np.array([g_topred_xfield, g_topred_ydata, g_topred_predicted]).transpose()
