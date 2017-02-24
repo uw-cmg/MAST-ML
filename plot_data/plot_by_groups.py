@@ -133,7 +133,9 @@ def plot_separate_groups_vs_xfield(fit_data=None,
         ax.scatter(g_topred_xfield, g_topred_predicted,
                lw=0, label="Predicted data", color = 'blue')
 
-        plt.legend(loc = "upper left", fontsize=matplotlib.rcParams['font.size']) #data is sigmoid; 'best' can block data
+        lgd=plt.legend(loc = "upper left", fontsize=matplotlib.rcParams['font.size'], fancybox=True) #data is sigmoid; 'best' can block data
+        lgd.get_frame().set_alpha(0.5) #translucent legend!
+
         plt.title("%s(%s)" % (test_group_val, test_group_label))
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
