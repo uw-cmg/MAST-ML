@@ -93,8 +93,9 @@ def plot_separate_groups_vs_xfield(fit_data=None,
         g_topred_xfield = topred_xfield[test_index]
         g_topred_predicted = topred_predicted[test_index]
         g_topred_ydata = topred_ydata[test_index]
-            
+        smatchgroup=-1
         if std_data == None:
+            smatchgroup=0
             g_std_xfield = np.copy(g_topred_xfield)
             g_std_predicted = np.copy(g_topred_predicted)
         else:
@@ -102,9 +103,10 @@ def plot_separate_groups_vs_xfield(fit_data=None,
             for sgroup in std_indices.keys():
                 s_test_index = std_indices[sgroup]["test_index"] 
                 if std_groupdata[s_test_index[0]] == test_group_val:
-                    matchgroup = sgroup
+                    smatchgroup = sgroup
                     continue
-            std_test_index = std_indices[matchgroup]["test_index"]
+        if smatchgroup > -1:
+            std_test_index = std_indices[smatchgroup]["test_index"]
             g_std_xfield = std_xfield[std_test_index]
             g_std_predicted = std_predicted[std_test_index]
 
@@ -123,8 +125,9 @@ def plot_separate_groups_vs_xfield(fit_data=None,
         plt.hold(True)
         fig, ax = plt.subplots()
         matplotlib.rcParams.update({'font.size':18})
-        ax.plot(g_std_xfield, g_std_predicted,
-                lw=3, color='#ffc04d', label="Prediction")
+        if smatchgroup > -1:
+            ax.plot(g_std_xfield, g_std_predicted,
+                    lw=3, color='#ffc04d', label="Prediction")
         if fmatchgroup > -1:
             ax.scatter(g_fit_xfield, g_fit_ydata,
                    lw=0, label="Subset of fitting data", color = 'black')

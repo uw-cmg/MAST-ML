@@ -146,7 +146,7 @@ def main(datapath, scriptpath):
     num_folds = 5
     #
     testdict["1expt"]=dict()
-    testdict["1expt"]["KRRGridSearch"] = {"grid_density":grid_density}
+    #testdict["1expt"]["KRRGridSearch"] = {"grid_density":grid_density}
     #testdict["1expt"]["KFold_CV"] = {"num_runs":num_runs,"num_folds":num_folds}
     #testdict["1expt"]["FullFit"] = {}
     #testdict["1expt"]["ExtrapolateToLWR"] = {}
@@ -215,20 +215,20 @@ def main(datapath, scriptpath):
                             "measerrfield":"delta_sigma_y_MPa_uncertainty",
                             "plot_filter_out":"temperature_C,<,290;temperature_C,>,295" #ATR2 data is at 291
                             }
-    testdict["4toatr2"]["PredictionByGroup"] = {
-                            "testname_append":"_prediction_vs_eff_fluence_with_lwr",
-                            "group_field_name":"alloy_number",
-                            "label_field_name":"Alloy",
-                            "topredict_data_csv":"../../expt_atr2.csv",
-                            "standard_conditions_csv":"../../lwr_std_expt.csv",
-                            "xfield":"log(eff fl 100p=26)",
-                            "overall_xlabel":"Measured (MPa)",
-                            "overall_ylabel":"Predicted (MPa)",
-                            "xlabel":"log(Eff Fluence(n/cm$$^{2}$$), p=0.26)",
-                            "ylabel":"$$\Delta\sigma_{y}$$ (MPa)",
-                            "measerrfield":"delta_sigma_y_MPa_uncertainty",
-                            "plot_filter_out":"temperature_C,<,290;temperature_C,>,295" #ATR2 data is at 291
-                            }
+    #testdict["4toatr2"]["PredictionByGroup"] = {
+    #                        "testname_append":"_prediction_vs_eff_fluence_with_lwr",
+    #                        "group_field_name":"alloy_number",
+    #                        "label_field_name":"Alloy",
+    #                        "topredict_data_csv":"../../expt_atr2.csv",
+    #                        "standard_conditions_csv":"../../lwr_std_expt.csv",
+    #                        "xfield":"log(eff fl 100p=26)",
+    #                        "overall_xlabel":"Measured (MPa)",
+    #                        "overall_ylabel":"Predicted (MPa)",
+    #                        "xlabel":"log(Eff Fluence(n/cm$$^{2}$$), p=0.26)",
+    #                        "ylabel":"$$\Delta\sigma_{y}$$ (MPa)",
+    #                        "measerrfield":"delta_sigma_y_MPa_uncertainty",
+    #                        "plot_filter_out":"temperature_C,<,290;temperature_C,>,295" #ATR2 data is at 291
+    #                        }
     #testdict["4toatr2"]["PredictionByGroup"] = {
     #                        "testname_append":"_prediction_vs_eff_fluence_lwr_at_291",
     #                        "group_field_name":"alloy_number",
@@ -291,7 +291,7 @@ def main(datapath, scriptpath):
     return
 
 if __name__ == "__main__":
-    datapath = "../../../data/DBTT_mongo/data_exports_dbtt_34_20170222_165838"
+    datapath = "../../../data/DBTT_mongo/data_exports_dbtt_38_20170223_184708"
     scriptpath = "../"
     datapath = os.path.abspath(datapath)
     scriptpath = os.path.abspath(scriptpath)
