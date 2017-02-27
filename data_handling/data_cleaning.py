@@ -92,12 +92,33 @@ def update_experimental_temperatures(db, cname, verbose=1):
     return id_list
 
 def flag_bad_cd1_points(db, cname, verbose=1):
-    #Questionable CD Δσ values
-    #30 (CM30) @ 290C -CORRECTLY ENTERED
-    #37 (LH) @ 290C -CORRECTLY ENTERED
-    #47 (65W) @ 290C -CORRECTLY ENTERED
-    #51 (HSTT-02) @ 290C -CORRECTLY ENTERED
-    #53 (JRQ) @ 290C -CORRECTLY ENTERED
+    """Flag questionable CD delta sigma y values; when plotted against
+        fluence, these values are clearly outliers from the 
+        main curves that the rest of the points make.
+        # Eventually substitute this method with an automatic
+            way to reject outliers based on similarity to adjacent
+            values, when filtered (e.g. by alloy and temp) and
+            then plotted versus some x (like fluence or effective fluence)
+    """
+    odict=dict()
+    odict[1]={'alloy_number':30,'flux_n_cm2_sec':8.0e10,'fluence_n_cm2':4.0e18,'temperature_C':290}
+    odict[2]={'alloy_number':37,'flux_n_cm2_sec':1.0e12,'fluence_n_cm2':7.8e18,'temperature_C':290}
+    odict[3]={'alloy_number':37,'flux_n_cm2_sec':2.6e11,'fluence_n_cm2':8.5e18,'temperature_C':290}
+    odict[4]={'alloy_number':47,'flux_n_cm2_sec':8.4e11,'fluence_n_cm2':1.9e18,'temperature_C':290}
+    odict[5]={'alloy_number':51,'flux_n_cm2_sec':8.0e10,'fluence_n_cm2':2.4e18,'temperature_C':290}
+    odict[6]={'alloy_number':51,'flux_n_cm2_sec':3.2e11,'fluence_n_cm2':1.0e18,'temperature_C':290}
+    odict[7]={'alloy_number':53,'flux_n_cm2_sec':8.0e10,'fluence_n_cm2':2.4e18,'temperature_C':290}
+    id_list = list()
+    reason_list=list()
+    for okey in odict.keys():
+        sdict = dict(odict[okey])
+        results = db[cname].find(sdict,{"_id":1})
+        for result in results:
+            id_list.append(result['_id'])
+            reason_list.append("Outlier from response vs. fluence curve")
+    if verbose > 0:
+        for iidx in range(0, len(id_list)):
+            print("%s: %s" % (id_list[iidx], reason_list[iidx]))
     return [id_list, reason_list]
 
 def get_alloy_removal_ids(db, cname, alloylist=list(), verbose=1):
