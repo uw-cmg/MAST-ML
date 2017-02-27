@@ -3,6 +3,7 @@ import importlib
 import data_parser
 import matplotlib
 import sys
+import os
 import numpy as np
 
 if len(sys.argv) > 1:
@@ -29,11 +30,6 @@ for case_name in all_tests:
                 parameter_values.append(config.get('AllTests', parameter))
 
     model, data_path, save_path, y_data, x_data, lwr_data_path, weights = parameter_values
-    
-    #TTM+2 y_data will all be uniformly delta_sigma_y_MPa; set save_path
-    #in test sections instead
-    #if "CD" in y_data or "EONY" in y_data:
-    #    save_path = save_path.format(y_data.split(' ',1)[0] + '_{}')
 
     model = importlib.import_module(model).get()
     x_data = x_data.split(',')
@@ -46,10 +42,12 @@ for case_name in all_tests:
     #data.add_exclusive_filter("Temp (C)", '<>', 290)
     #data.overwrite_data_w_filtered_data()
 
+    #TTM eventually want to get rid of lwr_data
     lwr_data = data_parser.parse(lwr_data_path)
-    if not y_data == "delta sigma":
-        lwr_data.set_x_features(x_data)
-        lwr_data.set_y_feature(y_data)
+    #TTM y_data never delta sigma; always set features
+    #if not y_data == "delta sigma":
+    lwr_data.set_x_features(x_data)
+    lwr_data.set_y_feature(y_data)
 
     #TTM filter when create ancillary databases in DataImportAndExport
     #Do not filter here.
@@ -74,10 +72,18 @@ for case_name in all_tests:
         lwr_data.add_exclusive_filter("Temp (C)", '=', 310)
         lwr_data.overwrite_data_w_filtered_data()
 
-    #todo did kwarg parsing go away? ie couldn't pass featureVectorShortened as a boolean in the config w/o making it a default arg
+    #TTM allow multiple runs of the same case with different parameters:
     print("running test {}".format(case_name))
-    case = importlib.import_module(case_name)
+    case_base = case_name.split("_")[0]
+    case = importlib.import_module(case_base) #TTM
     kwargs = config[case_name]
+    #TTM save for later: change and make new paths
+    #curdir = os.getcwd()
+    #save_path = os.path.abspath(save_path)
+    #if not os.path.isdir(save_path):
+    #    os.mkdir(save_path)
+    #os.chdir(save_path)
     case.execute(model, data, save_path, lwr_data = lwr_data, **kwargs)
+    #os.chdir(curdir)
     matplotlib.pyplot.close("all")
-
+    return
