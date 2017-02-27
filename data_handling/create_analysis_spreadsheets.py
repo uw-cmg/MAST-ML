@@ -263,6 +263,7 @@ def add_product_type_columns(db, newcname, verbose=0):
 def add_stddev_normalization_of_a_field(db, newcname, origfield, verbose=0, collectionlist = list()):
     """Add the normalization of a field based on the mean and standard dev.
         Normalization is given as X_new = (X-X_mean)/(Xstd dev)
+            inefficient; needs modification
     """
     newfield="N(%s)" % origfield
     tempcname = "temp_%s" % time.time()
@@ -322,37 +323,42 @@ def add_minmax_normalization_of_a_field(db, newcname, origfield, setmin=None, se
                             empty list only works on collection newcname
     """
     newfield="N(%s)" % origfield
-    tempcname = "temp_%s" % time.time()
 
     if len(collectionlist) == 0:
         collectionlist.append(newcname)
 
-    for collection in collectionlist:
-        if (verbose > 0):
-            print("Using collection %s" % collection)
-        results = db[collection].find({"ignore":{"$ne":1}},{"_id":0, origfield:1})
-        for result in results:
-            db[tempcname].insert({origfield:result[origfield]})
-
-    if setmin == None:
-        minagg = db[tempcname].aggregate([
-            {"$group":{"_id":None,"fieldminval":{"$min":"$%s" % origfield}}}
-        ])
-        for record in minagg: #there should only be one record from aggregation
-            minval = record['fieldminval']
-            if verbose > 0:
-                print(record)
+    cmins = list()
+    cmaxes = list()
+    if (setmin == None) or (setmax == None):
+        for collection in collectionlist:
+            cminval = None
+            cmaxval = None
+            if (verbose > 0):
+                print("Using collection %s" % collection)
+            agname = "nonignore_%s" % collection
+            db[collection].aggregate([
+                        {"$match":{"ignore":{"$ne":1}}},
+                        {"$group":{"_id":None,
+                            "fieldminval":{"$min":"$%s" % origfield},
+                            "fieldmaxval":{"$max":"$%s" % origfield}}},
+                        {"$out":agname}
+                        ]) #get nonignore records
+            for record in db[agname].find(): #one record from aggregation
+                cminval = record['fieldminval']
+                cmaxval = record['fieldmaxval']
+                if verbose > 0:
+                    print(record)
+            if not (cminval == None):
+                cmins.append(cminval)
+            if not (cmaxval == None):
+                cmaxes.append(cmaxval)
+            db[agname].drop()
+    if setmin == None:    
+        minval = min(cmins)
     else:
         minval = setmin
-
     if setmax == None:
-        maxagg = db[tempcname].aggregate([
-            {"$group":{"_id":None,"fieldmaxval":{"$max":"$%s" % origfield}}}
-        ])
-        for record in maxagg: #should only be one record from aggregation
-            maxval = record['fieldmaxval']
-            if verbose > 0:
-                print(record)
+        maxval = max(cmaxes)
     else:
         maxval = setmax
     print("Min: %3.3f" % minval)
@@ -369,7 +375,6 @@ def add_minmax_normalization_of_a_field(db, newcname, origfield, setmin=None, se
             )
         if verbose > 0:
             print("Updated record %s with %s %3.3f." % (record["_id"],newfield,fieldval))
-    db[tempcname].drop()
     return
 
 def add_eony_field(db, newcname, verbose=0):
