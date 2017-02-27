@@ -112,6 +112,9 @@ def flag_bad_cd1_points(db, cname, verbose=1):
     reason_list=list()
     for okey in odict.keys():
         sdict = dict(odict[okey])
+        anum = sdict.pop("alloy_number",None)
+        aname = apu.look_up_name_or_number(db, anum, "number")
+        sdict['Alloy'] = aname
         results = db[cname].find(sdict,{"_id":1})
         for result in results:
             id_list.append(result['_id'])
