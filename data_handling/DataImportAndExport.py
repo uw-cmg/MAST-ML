@@ -87,21 +87,6 @@ def clean_ivar_basic(db, cname, verbose=1):
     dclean.update_experimental_temperatures(db, cname)
     return
 
-def filter_temperatures_ivar_basic(db, cname, verbose=1):
-    [id_list, reason_list] = dclean.get_field_condition_to_remove(db,cname,
-                                "temperature_C",270)
-    dclean.flag_for_ignore(db, cname, id_list, reason_list)
-    print(len(id_list))
-    [id_list, reason_list] = dclean.get_field_condition_to_remove(db,cname,
-                                "temperature_C",310)
-    dclean.flag_for_ignore(db, cname, id_list, reason_list)
-    print(len(id_list))
-    [id_list, reason_list] = dclean.get_field_condition_to_remove(db,cname,
-                                "temperature_C",320)
-    dclean.flag_for_ignore(db, cname, id_list, reason_list)
-    print(len(id_list))
-    return
-
 def add_standard_fields(db, cname, verbose=0):
     """Add fields that are standard to most analysis
     """
@@ -127,8 +112,8 @@ def add_normalized_fields(db, cname, clist=list(), verbose=0):
             verbose=verbose, collectionlist = clist)
     cas.add_minmax_normalization_of_a_field(db, cname, "log(eff fl 100p=10)",
             verbose=verbose, collectionlist = clist)
-    cas.add_stddev_normalization_of_a_field(db, cname, "delta_sigma_y_MPa",
-            verbose = verbose, collectionlist = clist)
+    #cas.add_stddev_normalization_of_a_field(db, cname, "delta_sigma_y_MPa",
+    #        verbose = verbose, collectionlist = clist)
     return
 
 def create_expt_ivar(db, cname, fromcname, verbose=1):
@@ -143,6 +128,9 @@ def prefilter_ivar_for_cd1(db, cname, fromcname, verbose=1):
     cas.transfer_nonignore_records(db, fromcname, tempname, verbose)
     [id_list, reason_list] = dclean.get_alloy_removal_ids(db, tempname, 
                                 [41,1,2,8,14,29])
+    dclean.flag_for_ignore(db, tempname, id_list, reason_list)
+    print(len(id_list))
+    [id_list, reason_list] = dclean.flag_bad_cd1_points(db, tempname)
     dclean.flag_for_ignore(db, tempname, id_list, reason_list)
     print(len(id_list))
     cas.transfer_nonignore_records(db, tempname, cname, verbose)
