@@ -306,11 +306,12 @@ def plot_overall(fit_data=None,
     meanstr = "Mean error: %3.2f" % meanerr
     print(meanstr)
     if int(only_fit_matches in [1,2]):
+        print("Errors for supported data only:")
         rmse_only_fit_matches = np.sqrt(mean_squared_error(topred_ydata[topred_index_in], topred_predicted[topred_index_in]))
-        rmsestr_only_fit_matches = "RMS error, supported data only: %3.2f" % rmse_only_fit_matches
+        rmsestr_only_fit_matches = "Supported RMSE: %3.2f" % rmse_only_fit_matches
         print(rmsestr_only_fit_matches)
         meanerr_only_fit_matches = mean_error(topred_predicted[topred_index_in], topred_ydata[topred_index_in])
-        meanstr_only_fit_matches = "Mean error, supported data only: %3.2f" % meanerr_only_fit_matches
+        meanstr_only_fit_matches = "Supported ME: %3.2f" % meanerr_only_fit_matches
         print(meanstr_only_fit_matches)
     #
     matplotlib.rcParams.update({'font.size':22})
@@ -318,7 +319,7 @@ def plot_overall(fit_data=None,
     plt.figure()
     plt.hold(True)
     darkred="#8B0000"
-    darkblue="#008B00"
+    darkblue="#00008B"
     if int(only_fit_matches) == 0:
         (_, caps, _) = plt.errorbar(topred_ydata, topred_predicted, 
             xerr=topred_measerr, 
@@ -340,7 +341,7 @@ def plot_overall(fit_data=None,
             markeredgewidth=2, markeredgecolor=darkred,
             markerfacecolor='red' , marker='o',
             markersize=15,
-            label="Supported data")
+            label="Supported")
         for cap in caps:
             cap.set_color(darkred)
             cap.set_markeredgewidth(2)
@@ -353,10 +354,15 @@ def plot_overall(fit_data=None,
                 markeredgewidth=2, markeredgecolor=darkblue,
                 markerfacecolor='blue' , marker='o',
                 markersize=15,
-                label="Unsupported data")
+                label="Unsupported")
             for cap in caps:
                 cap.set_color(darkblue)
                 cap.set_markeredgewidth(2)
+        lgd=plt.legend(loc = "lower right", 
+                        fontsize=smallfont, 
+                        numpoints=1,
+                        fancybox=True) 
+        lgd.get_frame().set_alpha(0.5) #translucent legend!
     #print dashed dividing line, but do not overextend axes
     (ymin, ymax) = plt.gca().get_ylim()
     (xmin, xmax) = plt.gca().get_xlim()
@@ -365,6 +371,9 @@ def plot_overall(fit_data=None,
     plt.plot((minmin+1, maxmax-1), (minmin+1, maxmax-1), ls="--", c=".3")
     plt.annotate(rmsestr, xy=(0.05, 0.90), xycoords="axes fraction", fontsize=smallfont)
     plt.annotate(meanstr, xy=(0.05, 0.83), xycoords="axes fraction", fontsize=smallfont)
+    if int(only_fit_matches) in [1,2]:
+        plt.annotate(rmsestr_only_fit_matches, xy=(0.05, 0.76), xycoords="axes fraction", fontsize=smallfont)
+        plt.annotate(meanstr_only_fit_matches, xy=(0.05, 0.69), xycoords="axes fraction", fontsize=smallfont)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     savestr = "overall_prediction"
