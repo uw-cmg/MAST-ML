@@ -244,21 +244,30 @@ def plot_overall(fit_data=None,
             if not (std_data == None):
                 std_data.add_exclusive_filter(ffield, foperator, fval)
     
-    if int(only_fit_matches) == 1:
+    if int(only_fit_matches) in [1,2]:
         initial_fit_groupdata = np.asarray(fit_data.get_data(group_field_name)).ravel()
-        initial_topred_groupdata = np.asarray(topred_data.get_data(group_field_name)).ravel()
         unique_fit_groups = np.unique(initial_fit_groupdata)
-        unique_topred_groups = np.unique(initial_topred_groupdata)
-        topred_nonmatch_groups = np.setdiff1d(unique_topred_groups, unique_fit_groups)
-        for nonmatch in topred_nonmatch_groups:
-            topred_data.add_exclusive_filter(group_field_name,'=',nonmatch)
-        
+        topred_index_in=list()
+        topred_index_out=list()
+        initial_topred_groupdata = np.asarray(topred_data.get_data(group_field_name)).ravel()
+        topred_indices = gttd.get_field_logo_indices(topred_data, group_field_name)
+        for group in topred_indices.keys():
+            topred_test_index = topred_indices[group]["test_index"]
+            groupval = initial_topred_groupdata[topred_test_index[0]]
+            if groupval in unique_fit_groups:
+                topred_index_in.extend(topred_test_index)
+            else:
+                topred_index_out.extend(topred_test_index)
         if not (std_data ==None):
             initial_std_groupdata = np.asarray(std_data.get_data(group_field_name)).ravel()
-            unique_std_groups = np.unique(initial_std_groupdata)
-            std_nonmatch_groups = np.setdiff1d(unique_std_groups, unique_fit_groups)
-            for nonmatch in std_nonmatch_groups:
-                std_data.add_exclusive_filter(group_field_name,'=',nonmatch)
+            std_indices = gttd.get_field_logo_indices(std_data,group_field_name)
+            for group in std_indices.keys():
+                std_test_index = std_indices[group]["test_index"]
+                groupval = initial_std_groupdata[std_test_index[0]]
+                if groupval in unique_fit_groups:
+                    std_index_in.extend(topred_test_index)
+                else:
+                    std_index_out.extend(topred_test_index)
     elif int(only_fit_matches) == 0:
         pass
     else:
@@ -292,19 +301,21 @@ def plot_overall(fit_data=None,
     meanerr = mean_error(topred_predicted, topred_ydata) #ordering matters!
     meanstr = "Mean error: %3.2f" % meanerr
     print(meanstr)
+    if int(only_fit_matches in [1,2]):
+        rmse_only_fit_matches = np.sqrt(mean_squared_error(topred_ydata[topred_index_in], topred_predicted[topred_index_in]))
+        rmsestr_only_fit_matches = "RMS error, supported data only: %3.2f" % rmse_only_fit_matches
+        print(rmsestr_only_fit_matches)
+        meanerr_only_fit_matches = mean_error(topred_predicted[topred_index_in], topred_ydata[topred_index_in])
+        meanstr_only_fit_matches = "Mean error, supported data only: %3.2f" % meanerr_only_fit_matches
+        print(meanstr_only_fit_matches)
     #
     matplotlib.rcParams.update({'font.size':22})
     smallfont = 0.90*matplotlib.rcParams['font.size']
     plt.figure()
     plt.hold(True)
-    if measerrfield == None:
-        plt.plot(topred_ydata, topred_predicted,
-                    linestyle='None',
-                    marker='o', markeredgewidth=2,
-                    markeredgecolor='blue', markerfacecolor='None',
-                    markersize=15)
-    else:
-        darkred="#8B0000"
+    darkred="#8B0000"
+    darkblue="#008B00"
+    if int(only_fit_matches) == 0:
         (_, caps, _) = plt.errorbar(topred_ydata, topred_predicted, 
             xerr=topred_measerr, 
             linewidth=2,
@@ -312,10 +323,36 @@ def plot_overall(fit_data=None,
             markeredgewidth=2, markeredgecolor=darkred,
             markerfacecolor='red' , marker='o',
             markersize=15)
+        #http://stackoverflow.com/questions/7601334/how-to-set-the-line-width-of-error-bar-caps-in-matplotlib
         for cap in caps:
             cap.set_color(darkred)
             cap.set_markeredgewidth(2)
-        #http://stackoverflow.com/questions/7601334/how-to-set-the-line-width-of-error-bar-caps-in-matplotlib
+    elif int(only_fit_matches) in [1,2]:
+        (_, caps, _) = plt.errorbar(topred_ydata[topred_index_in],
+            topred_predicted[topred_index_in], 
+            xerr=topred_measerr, 
+            linewidth=2,
+            linestyle = "None", color=darkred,
+            markeredgewidth=2, markeredgecolor=darkred,
+            markerfacecolor='red' , marker='o',
+            markersize=15,
+            label="Supported data")
+        for cap in caps:
+            cap.set_color(darkred)
+            cap.set_markeredgewidth(2)
+        if int(only_fit_matches) == 2:
+            (_, caps, _) = plt.errorbar(topred_ydata[topred_index_out],
+                topred_predicted[topred_index_out], 
+                xerr=topred_measerr, 
+                linewidth=2,
+                linestyle = "None", color=darkblue,
+                markeredgewidth=2, markeredgecolor=darkblue,
+                markerfacecolor='blue' , marker='o',
+                markersize=15,
+                label="Unsupported data")
+            for cap in caps:
+                cap.set_color(darkblue)
+                cap.set_markeredgewidth(2)
     #print dashed dividing line, but do not overextend axes
     (ymin, ymax) = plt.gca().get_ylim()
     (xmin, xmax) = plt.gca().get_xlim()
