@@ -364,14 +364,29 @@ def plot_overall(fit_data=None,
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     savestr = "overall_prediction"
-    if int(only_fit_matches) > 0:
-        savestr = savestr + "_only_fit_matches"
+    if int(only_fit_matches) == 1:
+        savestr = savestr + "_plot_only_fit_matches"
+    elif int(only_fit_matches) == 2:
+        savestr = savestr + "_label_fit_matches"
     plt.savefig(savestr, dpi=200, bbox_inches='tight')
     plt.close()
 
-    headerline = "Group value, Group label, %s, %s, %s" % (xfield, xlabel, ylabel)
-    myarray = np.array([topred_groupdata, labeldata, topred_xfield, topred_ydata, topred_predicted]).transpose()
-    ptools.mixed_array_to_csv("%s.csv" % savestr, headerline, myarray)
+    if int(only_fit_matches) in [1,2]:
+        headerline = "Group value, Group label, is_fit_match, %s, %s, %s" % (xfield, xlabel, ylabel)
+        myarray = np.array([topred_groupdata[topred_index_in], labeldata[topred_index_in], topred_xfield[topred_index_in], topred_ydata[topred_index_in], topred_predicted[topred_index_in]]).transpose()
+        ptools.mixed_array_to_csv("%s_supported_data.csv" % savestr, headerline, myarray)
+        headerline = "Group value, Group label, is_fit_match, %s, %s, %s" % (xfield, xlabel, ylabel)
+        myarray = np.array([topred_groupdata[topred_index_out], 
+                labeldata[topred_index_out], 
+                topred_xfield[topred_index_out], 
+                topred_ydata[topred_index_out], 
+                topred_predicted[topred_index_out]]).transpose()
+        ptools.mixed_array_to_csv("%s_unsupported_data.csv" % savestr, headerline, myarray)
+    else:
+        headerline = "Group value, Group label, %s, %s, %s" % (xfield, xlabel, ylabel)
+
+        myarray = np.array([topred_groupdata, labeldata, topred_xfield, topred_ydata, topred_predicted]).transpose()
+        ptools.mixed_array_to_csv("%s.csv" % savestr, headerline, myarray)
     if not (std_data == None):
         headerline = "Group value, Group label,%s,%s" % (xfield, ylabel)
         myarray = np.array([std_groupdata, std_labeldata, std_xfield, std_predicted]).transpose()
