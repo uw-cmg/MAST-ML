@@ -281,6 +281,8 @@ def plot_overall(fit_data=None,
     topred_predicted = np.asarray(topred_data.get_data(predfield)).ravel()
     if not measerrfield == None:
         topred_measerr = np.asarray(topred_data.get_data(measerrfield)).ravel()
+    else:
+        topred_measerr = np.zeros(len(topred_predicted))
 
     if not label_field_name == None:
         labeldata = np.asarray(topred_data.get_data(label_field_name)).ravel()
@@ -332,7 +334,7 @@ def plot_overall(fit_data=None,
     elif int(only_fit_matches) in [1,2]:
         (_, caps, _) = plt.errorbar(topred_ydata[topred_index_in],
             topred_predicted[topred_index_in], 
-            xerr=topred_measerr, 
+            xerr=topred_measerr[topred_index_in], 
             linewidth=2,
             linestyle = "None", color=darkred,
             markeredgewidth=2, markeredgecolor=darkred,
@@ -345,7 +347,7 @@ def plot_overall(fit_data=None,
         if int(only_fit_matches) == 2:
             (_, caps, _) = plt.errorbar(topred_ydata[topred_index_out],
                 topred_predicted[topred_index_out], 
-                xerr=topred_measerr, 
+                xerr=topred_measerr[topred_index_out], 
                 linewidth=2,
                 linestyle = "None", color=darkblue,
                 markeredgewidth=2, markeredgecolor=darkblue,
@@ -373,15 +375,14 @@ def plot_overall(fit_data=None,
     plt.savefig(savestr, dpi=200, bbox_inches='tight')
     plt.close()
 
+    headerline = "Group value, Group label, %s, %s, %s" % (xfield, xlabel, ylabel)
     if int(only_fit_matches) in [1,2]:
-        headerline = "Group value, Group label, is_fit_match, %s, %s, %s" % (xfield, xlabel, ylabel)
         myarray = np.array([topred_groupdata[topred_index_in], 
                     labeldata[topred_index_in], 
                     topred_xfield[topred_index_in], 
                     topred_ydata[topred_index_in], 
                     topred_predicted[topred_index_in]]).transpose()
         ptools.mixed_array_to_csv("%s_supported_data.csv" % savestr, headerline, myarray)
-        headerline = "Group value, Group label, is_fit_match, %s, %s, %s" % (xfield, xlabel, ylabel)
         myarray = np.array([topred_groupdata[topred_index_out], 
                 labeldata[topred_index_out], 
                 topred_xfield[topred_index_out], 
@@ -389,28 +390,22 @@ def plot_overall(fit_data=None,
                 topred_predicted[topred_index_out]]).transpose()
         ptools.mixed_array_to_csv("%s_unsupported_data.csv" % savestr, headerline, myarray)
     else:
-        headerline = "Group value, Group label, %s, %s, %s" % (xfield, xlabel, ylabel)
-
         myarray = np.array([topred_groupdata, labeldata, topred_xfield, topred_ydata, topred_predicted]).transpose()
         ptools.mixed_array_to_csv("%s.csv" % savestr, headerline, myarray)
     if not (std_data == None):
+        headerline = "Group value, Group label,%s,%s" % (xfield, ylabel)
         if int(only_fit_matches) in [1,2]:
-            headerline = "Group value, Group label, is_fit_match, %s, %s, %s" % (xfield, xlabel, ylabel)
             myarray = np.array([std_groupdata[std_index_in], 
                     std_labeldata[std_index_in], 
                     std_xfield[std_index_in], 
-                    std_ydata[std_index_in], 
                     std_predicted[std_index_in]]).transpose()
             ptools.mixed_array_to_csv("%s_supported_data.csv" % savestr, headerline, myarray)
-            headerline = "Group value, Group label, is_fit_match, %s, %s, %s" % (xfield, xlabel, ylabel)
             myarray = np.array([std_groupdata[std_index_out], 
                     std_labeldata[std_index_out], 
                     std_xfield[std_index_out], 
-                    std_ydata[std_index_out], 
                     std_predicted[std_index_out]]).transpose()
             ptools.mixed_array_to_csv("%s_unsupported_data.csv" % savestr, headerline, myarray)
         else:
-            headerline = "Group value, Group label,%s,%s" % (xfield, ylabel)
             myarray = np.array([std_groupdata, std_labeldata, std_xfield, std_predicted]).transpose()
             ptools.mixed_array_to_csv("%s_std.csv" % savestr, headerline, myarray)
     fit_data.remove_all_filters()

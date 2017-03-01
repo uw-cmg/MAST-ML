@@ -26,6 +26,7 @@ def execute(model, data, savepath, lwr_data,
             overall_ylabel = "Predicted",
             measerrfield = None,
             plot_filter_out = "",
+            fit_only_on_matched_groups = 0,
             *args, **kwargs):
     """
         Fits on data and predicts on topredict_data and standard_conditions.
@@ -50,9 +51,6 @@ def execute(model, data, savepath, lwr_data,
     fit_Xdata = np.asarray(data.get_x_data())
     fit_ydata = np.asarray(data.get_y_data()).ravel()
 
-    model.fit(fit_Xdata, fit_ydata)
-    #note that plot_filter_out only affects the plotting, not the model fitting
-
     pd_path = os.path.abspath(topredict_data_csv) 
     topredict_data = data_parser.parse(pd_path)
     topredict_data.set_y_feature(data.y_feature) #same feature as fitting data 
@@ -66,12 +64,31 @@ def execute(model, data, savepath, lwr_data,
         std_data.set_y_feature(xfield) #dummy y feature
         std_data.set_x_features(data.x_features)
         std_Xdata = np.asarray(std_data.get_x_data())
-        std_Ypredict = model.predict(std_Xdata)
     else:
         std_Ypredict = None
         std_data = None
+    
+    if int(fit_only_on_matched_groups) == 1:
+        fit_index=list()
+        fit_indices = gttd.get_field_logo_indices(data, group_field_name)
+        fit_groupdata = np.asarray(data.get_data(group_field_name)).ravel()
+        topredict_groupdata = np.asarray(topredict_data.get_data(group_field_name)).ravel()
+        topredict_groups = np.unique(topredict_groupdata)
+        for fgroup in fit_indices.keys():
+            f_test_index = fit_indices[fgroup]["test_index"] 
+            if fit_groupdata[f_test_index[0]] in topredict_groups:
+                fit_index.extend(f_test_index)
+        fit_Xdata = fit_Xdata[fit_index]
+        fit_ydata = fit_ydata[fit_index]
+
+
+    model.fit(fit_Xdata, fit_ydata)
+    #note that plot_filter_out only affects the plotting, not the model fitting
 
     Ypredict = model.predict(topredict_Xdata)
+    
+    if not (std_data == None):
+        std_Ypredict = model.predict(std_Xdata)
 
     from plot_data import plot_by_groups as pbg
     pbg.plot_overall(fit_data=data, 
@@ -101,6 +118,21 @@ def execute(model, data, savepath, lwr_data,
                     measerrfield=measerrfield,
                     plot_filter_out=plot_filter_out,
                     only_fit_matches=1)
+    
+    pbg.plot_overall(fit_data=data, 
+                    topred_data=topredict_data,
+                    std_data=std_data,
+                    topred_Ypredict=Ypredict,
+                    std_Ypredict=std_Ypredict,
+                    group_field_name=group_field_name,
+                    label_field_name=label_field_name,
+                    xlabel=overall_xlabel,
+                    ylabel=overall_ylabel,
+                    xfield=xfield,
+                    measerrfield=measerrfield,
+                    plot_filter_out=plot_filter_out,
+                    only_fit_matches=2)
+
 
     pbg.plot_separate_groups_vs_xfield(fit_data=data, 
                     topred_data=topredict_data,

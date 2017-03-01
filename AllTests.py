@@ -86,4 +86,3 @@ for case_name in all_tests:
     case.execute(model, data, save_path, lwr_data = lwr_data, **kwargs)
     #os.chdir(curdir)
     matplotlib.pyplot.close("all")
-    return
