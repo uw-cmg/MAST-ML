@@ -29,9 +29,10 @@ def execute(model, data, savepath, lwr_data="",
             num_folds <int>: number of folds. Only for cvtype of "kfold".
             leave_out_percent <float>: percent, for a leave-out percentage
                             for shufflesplit.
-                            The test size will be (100 - leave_out_percent)/100.
-                            Only for cvtype of "shufflesplit"
-                            e.g. 20 for 20 percent.
+                    The training size will be (100 - leave_out_percent)/100.
+                    The test size will be leave_out_percent/100.
+                    Only for cvtype of "shufflesplit"
+                    e.g. 20 for 20 percent.
     """
     num_runs = int(num_runs)
 
@@ -56,7 +57,7 @@ def execute(model, data, savepath, lwr_data="",
     elif cvtype == 'shufflesplit':
         leave_out_percent = float(leave_out_percent)
         print("Using shufflesplit, or leave out %i percent" % leave_out_percent)
-        test_fraction = (100.0 - leave_out_percent) / 100.0
+        test_fraction = leave_out_percent / 100.0
         cvmodel = ShuffleSplit(n_splits = 1, 
                                 test_size = test_fraction, 
                                 random_state = None)
@@ -77,9 +78,12 @@ def execute(model, data, savepath, lwr_data="",
         print("Run %i/%i" % (numrun+1, num_runs))
         run_rms_list = list()
         run_me_list = list()
-        Run_Y_Pred = np.zeros(dlen)
-        Run_Fold_Numbers = np.zeros(dlen)
-        Run_Abs_Err = np.zeros(dlen)
+        Run_Y_Pred = np.empty(dlen)
+        Run_Fold_Numbers = np.empty(dlen)
+        Run_Abs_Err = np.empty(dlen)
+        Run_Y_Pred.fill(np.nan)
+        Run_Fold_Numbers.fill(np.nan)
+        Run_Abs_Err.fill(np.nan)
         # split into testing and training sets
         ntest=0
         for train, test in cvmodel.split(indices):
