@@ -161,7 +161,7 @@ def execute(model, data, savepath, lwr_data="",
     plt.close()
 
     alloys = np.asarray(data.get_data("alloy_number")).ravel()
-    csvname = "CV_data.csv"
+    csvname = os.path.join(savepath,"CV_data.csv")
     headerline = "Alloy number,Measured,Predicted best,Absolute error best,Fold numbers best (only if kfold),Predicted worst,Absolute error worst,Fold numbers worst (only if kfold)"
     myarray = np.array([alloys, Ydata,
                 Y_predicted_best, Best_Abs_Err, 
