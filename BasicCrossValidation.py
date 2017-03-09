@@ -159,7 +159,7 @@ def execute(model, data, savepath, lwr_data="",
     ax[1].set_ylabel('Predicted (MPa)')
 
     f.tight_layout()
-    f.savefig(savepath.format("cv_best_worst"), dpi=200, bbox_inches='tight')
+    f.savefig(os.path.join(savepath, "cv_best_worst"), dpi=200, bbox_inches='tight')
     plt.clf()
     plt.close()
 
