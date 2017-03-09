@@ -68,8 +68,8 @@ def execute(model, data, savepath, lwr_data="",
     Y_predicted_best_fold_numbers = list()
     Y_predicted_worst_fold_numbers = list()
 
-    maxRMS =  1
-    minRMS =  100
+    maxRMS =  0
+    minRMS =  1000000
 
     Mean_RMS_List = list()
     Mean_ME_List = list()
