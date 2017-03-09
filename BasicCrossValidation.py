@@ -6,6 +6,7 @@ from mean_error import mean_error
 from sklearn.model_selection import LeaveOneOut
 from sklearn.model_selection import LeavePOut
 from sklearn.model_selection import KFold
+from sklearn.model_selection import ShuffleSplit
 from sklearn.metrics import mean_squared_error
 import data_analysis.printout_tools as ptools
 
@@ -13,33 +14,33 @@ def execute(model, data, savepath, lwr_data="",
             cvtype="kfold",
             num_runs=200,
             num_folds=None,
-            p_percent=None,
+            leave_out_percent=None,
             p_out=None,
             *args, **kwargs):
     """Basic cross validation
         Args:
             model, data, savepath, lwr_data: see AllTests.py
             cvtype <str>: cross-validation type:
-                kfold, leaveoneout, leavepout
+                kfold, leaveoneout, leavepout, shufflesplit
             num_runs <int>: number of runs to repeat each cross-validation
                             split (e.g. num_runs iterations of 5fold CV, where
                             each 5-fold CV has 5 test-train sets)
                             Default 200.
             num_folds <int>: number of folds. Only for cvtype of "kfold".
-            p_percent <int>: percent, to be translated to a leave-p-out number.
-                            Only for cvtype of "leavepout"
+            leave_out_percent <float>: percent, for a leave-out percentage
+                            for shufflesplit.
+                            The test size will be (100 - leave_out_percent)/100.
+                            Only for cvtype of "shufflesplit"
                             e.g. 20 for 20 percent.
             p_out <int>: Number to leave out for leave-p-out number.
                             Only for cvtype of "leavepout"
-                            If both p_out and p_percent are specified,
-                            whichever determines the larger leave-out number
-                            will be used.
     """
     num_runs = int(num_runs)
 
     cvtype = cvtype.lower()
-    if not cvtype in ['kfold','leaveoneout','leavepout']:
-        raise ValueError("cvtype must be 'kfold' or 'leaveoneout' or 'leavepout'")
+    cvallowed = ['kfold','leaveoneout','leavepout','shufflesplit']
+    if not cvtype in cvallowed:
+        raise ValueError("cvtype must be one of %s" % cvallowed)
     # get data
     Ydata = np.array(data.get_y_data()).ravel()
     Xdata = np.array(data.get_x_data())
@@ -55,22 +56,19 @@ def execute(model, data, savepath, lwr_data="",
         print("Using leave one out.")
         cvmodel = LeaveOneOut()
     elif cvtype == 'leavepout':
-        print("Using leave p out.")
-        if p_percent == None:
-            p_out_from_percent = 0
-        else:
-            p_percent = float(p_percent)
-            p_out_from_percent = int(np.round( float(dlen) * p_percent /100.0 ))
-            print("Leave out %i percent evaluates to leave %i out" % (p_percent, p_out_from_percent))
-        if p_out == None:
-            p_out_int = 0
-        else:
-            p_out_int = int(p_out)
-        max_p_out = max(p_out_int, p_out_from_percent)
-        if max_p_out == 0:
-            raise ValueError("Leave p out from percent (%i) or specified (%i) max value is %i, which is invalid." % (p_out_from_percent, p_out_int, max_p_out))
-        print("Using leave %i out." % max_p_out)
-        cvmodel = LeavePOut(p=max_p_out)
+        p_out = int(p_out)
+        print("Using leave %i out." % p_out)
+        cvmodel = LeavePOut(p=p_out)
+    elif cvtype == 'shufflesplit':
+        leave_out_percent = float(leave_out_percent)
+        print("Using shufflesplit, or leave out %i percent" % leave_out_percent)
+        test_fraction = (100.0 - leave_out_percent) / 100.0
+        cvmodel = ShuffleSplit(n_splits = 1, 
+                                test_size = test_fraction, 
+                                random_state = 0)
+    else:
+        raise ValueError("cvtype must be one of %s" % cvallowed)
+
 
     Y_predicted_best = list()
     Y_predicted_worst = list()
@@ -90,9 +88,10 @@ def execute(model, data, savepath, lwr_data="",
         Run_Fold_Numbers = np.zeros(dlen)
         Run_Abs_Err = np.zeros(dlen)
         # split into testing and training sets
-        nfold=0
+        ntest=0
         for train, test in cvmodel.split(indices):
-            nfold = nfold + 1
+            ntest = ntest + 1
+            print("Test %i.%i" % (n,ntest))
             X_train, X_test = Xdata[train], Xdata[test]
             Y_train, Y_test = Ydata[train], Ydata[test]
             # train on training sets
@@ -104,7 +103,7 @@ def execute(model, data, savepath, lwr_data="",
             run_me_list.append(me)
             Run_Y_Pred[test] = Y_test_Pred
             if cvtype == 'kfold':
-                Run_Fold_Numbers[test] = nfold
+                Run_Fold_Numbers[test] = ntest
             Run_Abs_Err[test] = np.absolute(Y_test - Y_test_Pred)
 
         mean_run_rms = np.mean(run_rms_list)
