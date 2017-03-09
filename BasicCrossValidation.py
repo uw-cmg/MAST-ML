@@ -59,7 +59,7 @@ def execute(model, data, savepath, lwr_data="",
         test_fraction = (100.0 - leave_out_percent) / 100.0
         cvmodel = ShuffleSplit(n_splits = 1, 
                                 test_size = test_fraction, 
-                                random_state = 0)
+                                random_state = None)
     else:
         raise ValueError("cvtype must be one of %s" % cvallowed)
 
