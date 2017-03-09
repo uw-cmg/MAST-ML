@@ -16,13 +16,12 @@ def execute(model, data, savepath, lwr_data="",
             num_runs=200,
             num_folds=None,
             leave_out_percent=None,
-            p_out=None,
             *args, **kwargs):
     """Basic cross validation
         Args:
             model, data, savepath, lwr_data: see AllTests.py
             cvtype <str>: cross-validation type:
-                kfold, leaveoneout, leavepout, shufflesplit
+                kfold, leaveoneout, shufflesplit
             num_runs <int>: number of runs to repeat each cross-validation
                             split (e.g. num_runs iterations of 5fold CV, where
                             each 5-fold CV has 5 test-train sets)
@@ -33,13 +32,11 @@ def execute(model, data, savepath, lwr_data="",
                             The test size will be (100 - leave_out_percent)/100.
                             Only for cvtype of "shufflesplit"
                             e.g. 20 for 20 percent.
-            p_out <int>: Number to leave out for leave-p-out number.
-                            Only for cvtype of "leavepout"
     """
     num_runs = int(num_runs)
 
     cvtype = cvtype.lower()
-    cvallowed = ['kfold','leaveoneout','leavepout','shufflesplit']
+    cvallowed = ['kfold','leaveoneout','shufflesplit']
     if not cvtype in cvallowed:
         raise ValueError("cvtype must be one of %s" % cvallowed)
     # get data
@@ -56,10 +53,6 @@ def execute(model, data, savepath, lwr_data="",
     elif cvtype == 'leaveoneout':
         print("Using leave one out.")
         cvmodel = LeaveOneOut()
-    elif cvtype == 'leavepout':
-        p_out = int(p_out)
-        print("Using leave %i out." % p_out)
-        cvmodel = LeavePOut(p=p_out)
     elif cvtype == 'shufflesplit':
         leave_out_percent = float(leave_out_percent)
         print("Using shufflesplit, or leave out %i percent" % leave_out_percent)
@@ -81,8 +74,8 @@ def execute(model, data, savepath, lwr_data="",
 
     Mean_RMS_List = list()
     Mean_ME_List = list()
-    for n in range(num_runs):
-        print("Run %i/%i" % (n+1, num_runs))
+    for numrun in range(num_runs):
+        print("Run %i/%i" % (numrun+1, num_runs))
         run_rms_list = list()
         run_me_list = list()
         Run_Y_Pred = np.zeros(dlen)
@@ -92,7 +85,7 @@ def execute(model, data, savepath, lwr_data="",
         ntest=0
         for train, test in cvmodel.split(indices):
             ntest = ntest + 1
-            print("Test %i.%i" % (n,ntest))
+            print("Test %i.%i" % (numrun+1,ntest))
             X_train, X_test = Xdata[train], Xdata[test]
             Y_train, Y_test = Ydata[train], Ydata[test]
             # train on training sets
