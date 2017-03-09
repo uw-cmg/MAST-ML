@@ -127,6 +127,8 @@ def execute(model, data, savepath, lwr_data="",
     sd = np.std(Mean_RMS_List)
     meanME = np.mean(Mean_ME_List)
 
+    if not (os.path.isdir(savepath)):
+        os.mkdir(savepath)
     print("The average RMSE was {:.3f}".format(avgRMS))
     print("The median RMSE was {:.3f}".format(medRMS))
     print("The max RMSE was {:.3f}".format(maxRMS))
