@@ -49,7 +49,7 @@ def execute(model, data, savepath, lwr_data="",
     if cvtype == 'kfold':
         num_folds = int(num_folds)
         print("Using %i folds." % num_folds)
-        cvmodel = KFold(n_splits=num_folds)
+        cvmodel = KFold(n_splits=num_folds, shuffle=True)
     elif cvtype == 'leaveoneout':
         print("Using leave one out.")
         cvmodel = LeaveOneOut()
@@ -63,14 +63,13 @@ def execute(model, data, savepath, lwr_data="",
     else:
         raise ValueError("cvtype must be one of %s" % cvallowed)
 
-
     Y_predicted_best = list()
     Y_predicted_worst = list()
     Y_predicted_best_fold_numbers = list()
     Y_predicted_worst_fold_numbers = list()
 
-    maxRMS = -1000000
-    minRMS =  1000000
+    maxRMS =  1
+    minRMS =  100
 
     Mean_RMS_List = list()
     Mean_ME_List = list()
