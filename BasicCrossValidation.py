@@ -83,7 +83,7 @@ def execute(model, data, savepath, lwr_data="",
     Mean_RMS_List = list()
     Mean_ME_List = list()
     for n in range(num_runs):
-        print("Run %i/%i" % (n, num_runs))
+        print("Run %i/%i" % (n+1, num_runs))
         run_rms_list = list()
         run_me_list = list()
         Run_Y_Pred = np.zeros(dlen)
@@ -91,10 +91,10 @@ def execute(model, data, savepath, lwr_data="",
         Run_Abs_Err = np.zeros(dlen)
         # split into testing and training sets
         nfold=0
-        for train_index, test_index in cvmodel.split(indices):
+        for train, test in cvmodel.split(indices):
             nfold = nfold + 1
-            X_train, X_test = Xdata[train_index], Xdata[test_index]
-            Y_train, Y_test = Ydata[train_index], Ydata[test_index]
+            X_train, X_test = Xdata[train], Xdata[test]
+            Y_train, Y_test = Ydata[train], Ydata[test]
             # train on training sets
             model.fit(X_train, Y_train)
             Y_test_Pred = model.predict(X_test)
@@ -102,10 +102,10 @@ def execute(model, data, savepath, lwr_data="",
             me = mean_error(Y_test_Pred,Y_test)
             run_rms_list.append(rms)
             run_me_list.append(me)
-            Run_Y_Pred[test_index] = Y_test_Pred
+            Run_Y_Pred[test] = Y_test_Pred
             if cvtype == 'kfold':
-                Run_Fold_Numbers[test_index] = nfold
-            Run_Abs_Err[test_index] = np.absolute(Y_test - Y_test_Pred)
+                Run_Fold_Numbers[test] = nfold
+            Run_Abs_Err[test] = np.absolute(Y_test - Y_test_Pred)
 
         mean_run_rms = np.mean(run_rms_list)
         mean_run_me = np.mean(run_me_list)
