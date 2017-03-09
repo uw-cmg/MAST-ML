@@ -11,7 +11,7 @@ import data_analysis.printout_tools as ptools
 
 def execute(model, data, savepath, lwr_data="", 
             cvtype="kfold",
-            num_runs=None,
+            num_runs=200,
             num_folds=None,
             p_percent=None,
             p_out=None,
@@ -24,6 +24,7 @@ def execute(model, data, savepath, lwr_data="",
             num_runs <int>: number of runs to repeat each cross-validation
                             split (e.g. num_runs iterations of 5fold CV, where
                             each 5-fold CV has 5 test-train sets)
+                            Default 200.
             num_folds <int>: number of folds. Only for cvtype of "kfold".
             p_percent <int>: percent, to be translated to a leave-p-out number.
                             Only for cvtype of "leavepout"
@@ -34,6 +35,8 @@ def execute(model, data, savepath, lwr_data="",
                             whichever determines the larger leave-out number
                             will be used.
     """
+    num_runs = int(num_runs)
+
     cvtype = cvtype.lower()
     if not cvtype in ['kfold','leaveoneout','leavepout']:
         raise ValueError("cvtype must be 'kfold' or 'leaveoneout' or 'leavepout'")
