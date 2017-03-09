@@ -83,6 +83,7 @@ def execute(model, data, savepath, lwr_data="",
     Mean_RMS_List = list()
     Mean_ME_List = list()
     for n in range(num_runs):
+        print("Run %i/%i" % (n, num_runs))
         run_rms_list = list()
         run_me_list = list()
         Run_Y_Pred = np.zeros(dlen)
