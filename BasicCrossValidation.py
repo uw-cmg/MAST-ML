@@ -134,22 +134,34 @@ def execute(model, data, savepath, lwr_data="",
     print("The std deviation of the RMSE values was {:.3f}".format(sd))
     print("The average mean error was {:.3f}".format(meanME))
 
-    notelist_best = list()
-    notelist_best.append("Min RMSE: {:.2f}".format(minRMS))
-    notelist_best.append("Mean RMSE: {:.2f}".format(avgRMS))
-    notelist_best.append("Std. Dev.: {:.2f}".format(sd))
-    
-    notelist_worst = list()
-    notelist_worst.append("Max RMSE.: {:.2f}".format(maxRMS))
-    
-    kwargs=dict()
-    kwargs['xlabel'] = "Measured (MPa)"
-    kwargs['ylabel'] = "Predicted (MPa)"
-    kwargs['notelist_best'] = notelist_best
-    kwargs['notelist_worst'] = notelist_worst
-    kwargs['savepath'] = savepath
 
-    plotpm.best_worst(Ydata, Y_predicted_best, Y_predicted_worst, **kwargs)
+    if cvtype in ['kfold','shufflesplit']:
+        notelist_best = list()
+        notelist_best.append("Min RMSE: {:.2f}".format(minRMS))
+        notelist_best.append("Mean RMSE: {:.2f}".format(avgRMS))
+        notelist_best.append("Std. Dev.: {:.2f}".format(sd))
+        
+        notelist_worst = list()
+        notelist_worst.append("Max RMSE.: {:.2f}".format(maxRMS))
+        kwargs=dict()
+        kwargs['xlabel'] = "Measured (MPa)"
+        kwargs['ylabel'] = "Predicted (MPa)"
+        kwargs['notelist_best'] = notelist_best
+        kwargs['notelist_worst'] = notelist_worst
+        kwargs['savepath'] = savepath
+
+        plotpm.best_worst(Ydata, Y_predicted_best, Y_predicted_worst, **kwargs)
+    elif cvtype == 'leaveoneout':
+        notelist=list()
+        notelist.append("Placeholder text")
+        kwargs=dict()
+        kwargs['xlabel'] = "Measured (MPa)"
+        kwargs['ylabel'] = "Predicted (MPa)"
+        kwargs['notelist'] = notelist
+        kwargs['savepath'] = savepath
+
+        plotpm.single(Ydata, Y_predicted_best, **kwargs)
+
 
     alloys = np.asarray(data.get_data("alloy_number")).ravel()
     csvname = os.path.join(savepath,"CV_data.csv")

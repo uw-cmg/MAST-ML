@@ -55,3 +55,34 @@ def best_worst(Ydata, Y_predicted_best, Y_predicted_worst,
     plt.clf()
     plt.close()
     return
+
+def single(Ydata, Y_predicted, 
+        xlabel="Measured",
+        ylabel="Predicted",
+        savepath="",
+        notelist=list(), 
+        *args, **kwargs):
+    """Plot Predicted vs. Measured values.
+    """
+    matplotlib.rcParams.update({'font.size': 18})
+    notestep = 0.07
+    plt.figure()
+    plt.scatter(Ydata, Y_predicted_best, c='black', s=10)
+    [minx,maxx] = plt.get_xlim()
+    [miny,maxy] = plt.get_ylim()
+    gmax = max(maxx, maxy)
+    gmin = min(minx, miny)
+    plt.set_xticks(np.arange(gmin, gmax, 200))
+    plt.set_yticks(np.arange(gmin, gmax, 200))
+    plt.plot((gmin+1, gmax-1), (gmin+1, gmax-1), ls="--", c=".3")
+    notey = 0.88
+    for note in notelist:
+        plt.annotate(note, xy=(0.05, notey), xycoords="axes fraction",
+                    fontsize=smallfont)
+        notey = notey - notestep
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.tight_layout()
+    plt.savefig(os.path.join(savepath, "cv_singleplot"), dpi=200, bbox_inches='tight')
+    plt.close()
+    return
