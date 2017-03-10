@@ -10,6 +10,7 @@ from sklearn.model_selection import KFold
 from sklearn.model_selection import ShuffleSplit
 from sklearn.metrics import mean_squared_error
 import data_analysis.printout_tools as ptools
+import plot_data.plot_best_worst_predictions as plotbw
 
 def execute(model, data, savepath, lwr_data="", 
             cvtype="kfold",
@@ -133,43 +134,22 @@ def execute(model, data, savepath, lwr_data="",
     print("The std deviation of the RMSE values was {:.3f}".format(sd))
     print("The average mean error was {:.3f}".format(meanME))
 
-    matplotlib.rcParams.update({'font.size': 18})
-    f, ax = plt.subplots(1, 2, figsize = (11,5))
-    ax[0].scatter(Ydata, Y_predicted_best, c='black', s=10)
-    [minx,maxx] = ax[0].get_xlim()
-    [miny,maxy] = ax[0].get_ylim()
-    gmax = max(maxx, maxy)
-    gmin = min(minx, miny)
-    ax[0].set_xticks(np.arange(gmin, gmax, 200))
-    ax[0].set_yticks(np.arange(gmin, gmax, 200))
-    ax[0].plot((gmin+1, gmax-1), (gmin+1, gmax-1), ls="--", c=".3")
-    ax[0].set_title('Best Fit')
-    ax[0].text(.05, .88, 'Min RMSE: {:.2f}'.format(minRMS), transform=ax[0].transAxes)
-    ax[0].text(.05, .81, 'Mean RMSE: {:.2f}'.format(avgRMS), transform=ax[0].transAxes)
-    ax[0].text(.05, .74, 'Std. Dev.: {:.2f}'.format(sd), transform=ax[0].transAxes)
-    #ax[0].text(.05, .88, 'Min RMSE: {:.2f} MPa'.format(minRMS), transform=ax[0].transAxes)
-    #ax[0].text(.05, .81, 'Mean RMSE: {:.2f} MPa'.format(avgRMS), transform=ax[0].transAxes)
-    #ax[0].text(.05, .74, 'Std. Dev.: {:.2f} MPa'.format(sd), transform=ax[0].transAxes)
-    ax[0].set_xlabel('Measured (MPa)')
-    ax[0].set_ylabel('Predicted (MPa)')
+    notelist_best = list()
+    notelist_best.append("Min RMSE: {:.2f}".format(minRMS))
+    notelist_best.append("Mean RMSE: {:.2f}".format(avgRMS))
+    notelist_best.append("Std. Dev.: {:.2f}".format(sd))
+    
+    notelist_worst = list()
+    notelist_worst.append("Max RMSE.: {:.2f}".format(maxRMS))
+    
+    kwargs=dict()
+    kwargs['xlabel'] = "Measured (MPa)"
+    kwargs['ylabel'] = "Predicted (MPa)"
+    kwargs['notelist_best'] = notelist_best
+    kwargs['notelist_worst'] = notelist_worst
+    kwargs['savepath'] = savepath
 
-    ax[1].scatter(Ydata, Y_predicted_worst, c='black', s=10)
-    [minx,maxx] = ax[1].get_xlim()
-    [miny,maxy] = ax[1].get_ylim()
-    gmax = max(maxx, maxy)
-    gmin = min(minx, miny)
-    ax[1].set_xticks(np.arange(gmin, gmax, 200))
-    ax[1].set_yticks(np.arange(gmin, gmax, 200))
-    ax[1].plot((gmin+1, gmax-1), (gmin+1, gmax-1), ls="--", c=".3")
-    ax[1].set_title('Worst Fit')
-    ax[1].text(.05, .88, 'Max RMSE: {:.2f}'.format(maxRMS), transform=ax[1].transAxes)
-    ax[1].set_xlabel('Measured (MPa)')
-    ax[1].set_ylabel('Predicted (MPa)')
-
-    f.tight_layout()
-    f.savefig(os.path.join(savepath, "cv_best_worst"), dpi=200, bbox_inches='tight')
-    plt.clf()
-    plt.close()
+    plotbw.main(Ydata, Y_predicted_best, Y_predicted_worst, **kwargs)
 
     alloys = np.asarray(data.get_data("alloy_number")).ravel()
     csvname = os.path.join(savepath,"CV_data.csv")
