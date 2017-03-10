@@ -6,14 +6,14 @@ import matplotlib.pyplot as plt
 from mean_error import mean_error
 import data_analysis.printout_tools as ptools
 
-def main(Ydata, Y_predicted_best, Y_predicted_worst, 
+def best_worst(Ydata, Y_predicted_best, Y_predicted_worst, 
         xlabel="Measured",
         ylabel="Predicted",
         savepath="",
         notelist_best=list(), 
         notelist_worst=list(), 
         *args, **kwargs):
-    """Plot best (left) and worst (right) Predicted vs. Actual values.
+    """Plot best (left) and worst (right) Predicted vs. Measured values.
     """
     matplotlib.rcParams.update({'font.size': 18})
     notestep = 0.07

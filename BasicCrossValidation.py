@@ -10,7 +10,7 @@ from sklearn.model_selection import KFold
 from sklearn.model_selection import ShuffleSplit
 from sklearn.metrics import mean_squared_error
 import data_analysis.printout_tools as ptools
-import plot_data.plot_best_worst_predictions as plotbw
+import plot_data.plot_predicted_vs_measured as plotpm
 
 def execute(model, data, savepath, lwr_data="", 
             cvtype="kfold",
@@ -149,7 +149,7 @@ def execute(model, data, savepath, lwr_data="",
     kwargs['notelist_worst'] = notelist_worst
     kwargs['savepath'] = savepath
 
-    plotbw.main(Ydata, Y_predicted_best, Y_predicted_worst, **kwargs)
+    plotpm.best_worst(Ydata, Y_predicted_best, Y_predicted_worst, **kwargs)
 
     alloys = np.asarray(data.get_data("alloy_number")).ravel()
     csvname = os.path.join(savepath,"CV_data.csv")
