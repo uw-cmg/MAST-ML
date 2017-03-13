@@ -6,6 +6,12 @@ import matplotlib.pyplot as plt
 from mean_error import mean_error
 import data_analysis.printout_tools as ptools
 
+def get_steps(gmin, gmax, resolution=6):
+    grange = (gmax - gmin)
+    gstep = grange / resolution #
+    steplist = np.arange(gmin, gmax, gstep)
+    return steplist
+
 def best_worst(Ydata, Y_predicted_best, Y_predicted_worst, 
         xlabel="Measured",
         ylabel="Predicted",
@@ -65,15 +71,17 @@ def single(Ydata, Y_predicted,
     """Plot Predicted vs. Measured values.
     """
     matplotlib.rcParams.update({'font.size': 18})
+    smallfont = 0.85*matplotlib.rcParams['font.size']
     notestep = 0.07
     plt.figure()
-    plt.scatter(Ydata, Y_predicted_best, c='black', s=10)
-    [minx,maxx] = plt.get_xlim()
-    [miny,maxy] = plt.get_ylim()
+    plt.scatter(Ydata, Y_predicted, c='black', s=10)
+    [minx,maxx] = plt.xlim()
+    [miny,maxy] = plt.ylim()
     gmax = max(maxx, maxy)
     gmin = min(minx, miny)
-    plt.set_xticks(np.arange(gmin, gmax, 200))
-    plt.set_yticks(np.arange(gmin, gmax, 200))
+    steplist = get_steps(gmin, gmax, resolution=6)
+    plt.xticks(steplist)
+    plt.yticks(steplist)
     plt.plot((gmin+1, gmax-1), (gmin+1, gmax-1), ls="--", c=".3")
     notey = 0.88
     for note in notelist:
