@@ -14,6 +14,7 @@ def execute(model, data, savepath, lwr_data="",
             num_folds=5,
             xlabel="Measured",
             ylabel="Predicted",
+            stepsize=1,
             numericlabelfield=None,
             *args, **kwargs):
     """Basic cross validation
@@ -28,6 +29,7 @@ def execute(model, data, savepath, lwr_data="",
     """
     num_runs = int(num_runs)
     num_folds = int(num_folds)
+    stepsize = float(stepsize)
     
     # get data
     Ydata = np.array(data.get_y_data()).ravel()
@@ -119,6 +121,7 @@ def execute(model, data, savepath, lwr_data="",
     kwargs['notelist_best'] = notelist_best
     kwargs['notelist_worst'] = notelist_worst
     kwargs['savepath'] = savepath
+    kwargs['stepsize'] = stepsize
 
     plotpm.best_worst(Ydata, Y_predicted_best, Y_predicted_worst, **kwargs)
 

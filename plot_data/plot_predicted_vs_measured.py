@@ -6,16 +6,32 @@ import matplotlib.pyplot as plt
 from mean_error import mean_error
 import data_analysis.printout_tools as ptools
 
-def get_steps(gmin, gmax, resolution=6):
+def get_steps(gmin, gmax, resolution=4):
     grange = (gmax - gmin)
-    gstep = grange / resolution #
-    steplist = np.arange(gmin, gmax, gstep)
+    gstep = grange / float(resolution) #
+    if gstep > 1000:
+        roundnum = -3
+    elif gstep > 100:
+        roundnum = -2
+    elif gstep > 10:
+        roundnum = -1
+    elif gstep > 1:
+        roundnum = 0
+    elif gstep > 0.1:
+        roundnum = 1
+    elif gstep > 0.01:
+        roundnum = 2
+    gstep = np.round(gstep, roundnum)
+    gstart = np.round(gmin - gstep, roundnum)
+    gend = np.round(gmax + gstep, roundnum)
+    steplist = np.arange(gstart, gend, gstep)
     return steplist
 
 def best_worst(Ydata, Y_predicted_best, Y_predicted_worst, 
         xlabel="Measured",
         ylabel="Predicted",
         savepath="",
+        stepsize = 1,
         notelist_best=list(), 
         notelist_worst=list(), 
         *args, **kwargs):
@@ -29,10 +45,10 @@ def best_worst(Ydata, Y_predicted_best, Y_predicted_worst,
     [miny,maxy] = ax[0].get_ylim()
     gmax = max(maxx, maxy)
     gmin = min(minx, miny)
-    steplist = get_steps(gmin, gmax, resolution=6)
-    ax[0].set_xticks(steplist)
-    ax[0].set_yticks(steplist)
-    ax[0].plot((gmin+1, gmax-1), (gmin+1, gmax-1), ls="--", c=".3")
+    steplist0 = np.arange(gmin, gmax, stepsize)
+    ax[0].set_xticks(steplist0)
+    ax[0].set_yticks(steplist0)
+    ax[0].plot(steplist0, steplist0, ls="--", c=".3")
     ax[0].set_title('Best Fit')
     notey = 0.88
     for note in notelist_best:
@@ -46,10 +62,10 @@ def best_worst(Ydata, Y_predicted_best, Y_predicted_worst,
     [miny,maxy] = ax[1].get_ylim()
     gmax = max(maxx, maxy)
     gmin = min(minx, miny)
-    steplist = get_steps(gmin, gmax, resolution=6)
-    ax[1].set_xticks(steplist)
-    ax[1].set_yticks(steplist)
-    ax[1].plot((gmin+1, gmax-1), (gmin+1, gmax-1), ls="--", c=".3")
+    steplist1 = np.arange(gmin, gmax, stepsize)
+    ax[1].set_xticks(steplist1)
+    ax[1].set_yticks(steplist1)
+    ax[1].plot(steplist1, steplist1, ls="--", c=".3")
     ax[1].set_title('Worst Fit')
     notey = 0.88
     for note in notelist_worst:
@@ -67,6 +83,7 @@ def best_worst(Ydata, Y_predicted_best, Y_predicted_worst,
 def single(Ydata, Y_predicted, 
         xlabel="Measured",
         ylabel="Predicted",
+        stepsize=1,
         savepath="",
         notelist=list(), 
         *args, **kwargs):
@@ -81,10 +98,10 @@ def single(Ydata, Y_predicted,
     [miny,maxy] = plt.ylim()
     gmax = max(maxx, maxy)
     gmin = min(minx, miny)
-    steplist = get_steps(gmin, gmax, resolution=6)
+    steplist = np.arange(gmin, gmax, stepsize)
     plt.xticks(steplist)
     plt.yticks(steplist)
-    plt.plot((gmin+1, gmax-1), (gmin+1, gmax-1), ls="--", c=".3")
+    plt.plot(steplist, steplist, ls="--", c=".3")
     notey = 0.88
     for note in notelist:
         plt.annotate(note, xy=(0.05, notey), xycoords="axes fraction",

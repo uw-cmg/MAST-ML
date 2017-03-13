@@ -13,6 +13,7 @@ def execute(model, data, savepath, lwr_data="",
             xlabel="Measured",
             ylabel="Predicted",
             numericlabelfield=None,
+            stepsize=1,
             *args, **kwargs):
     """Basic cross validation
         Args:
@@ -21,6 +22,8 @@ def execute(model, data, savepath, lwr_data="",
             ylabel <str>: y-axis label for plot
             numericlabelfield <str>: Field for label data (numeric only)
     """
+    stepsize = float(stepsize)
+
     # get data
     Ydata = np.array(data.get_y_data()).ravel()
     Xdata = np.array(data.get_x_data())
@@ -63,6 +66,7 @@ def execute(model, data, savepath, lwr_data="",
     kwargs['ylabel'] = ylabel
     kwargs['notelist'] = notelist
     kwargs['savepath'] = savepath
+    kwargs['stepsize'] = stepsize
 
     plotpm.single(Ydata, Run_Y_Pred, **kwargs)
     
