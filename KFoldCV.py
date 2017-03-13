@@ -4,10 +4,7 @@ import numpy as np
 import data_parser
 import matplotlib.pyplot as plt
 from mean_error import mean_error
-from sklearn.model_selection import LeaveOneOut
-from sklearn.model_selection import LeavePOut
 from sklearn.model_selection import KFold
-from sklearn.model_selection import ShuffleSplit
 from sklearn.metrics import mean_squared_error
 import data_analysis.printout_tools as ptools
 import plot_data.plot_predicted_vs_measured as plotpm
