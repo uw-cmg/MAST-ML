@@ -29,8 +29,9 @@ def best_worst(Ydata, Y_predicted_best, Y_predicted_worst,
     [miny,maxy] = ax[0].get_ylim()
     gmax = max(maxx, maxy)
     gmin = min(minx, miny)
-    ax[0].set_xticks(np.arange(gmin, gmax, 200))
-    ax[0].set_yticks(np.arange(gmin, gmax, 200))
+    steplist = get_steps(gmin, gmax, resolution=6)
+    ax[0].set_xticks(steplist)
+    ax[0].set_yticks(steplist)
     ax[0].plot((gmin+1, gmax-1), (gmin+1, gmax-1), ls="--", c=".3")
     ax[0].set_title('Best Fit')
     notey = 0.88
@@ -45,8 +46,9 @@ def best_worst(Ydata, Y_predicted_best, Y_predicted_worst,
     [miny,maxy] = ax[1].get_ylim()
     gmax = max(maxx, maxy)
     gmin = min(minx, miny)
-    ax[1].set_xticks(np.arange(gmin, gmax, 200))
-    ax[1].set_yticks(np.arange(gmin, gmax, 200))
+    steplist = get_steps(gmin, gmax, resolution=6)
+    ax[1].set_xticks(steplist)
+    ax[1].set_yticks(steplist)
     ax[1].plot((gmin+1, gmax-1), (gmin+1, gmax-1), ls="--", c=".3")
     ax[1].set_title('Worst Fit')
     notey = 0.88
