@@ -11,8 +11,8 @@ import random
 
 
 # The two Alloy descriptors are placeholders for the 2 effective fluences that will be added in.
-# Add one or remove them to change the number of p-values optimized
-X=["N(Cu)", "N(Ni)", "N(Mn)", "N(P)","N(Si)", "N( C )","N(Temp)", "Alloy", "Alloy"] 
+# Add or remove them to change the number of p-values optimized
+X=["N(Cu)", "N(Ni)", "N(Mn)", "N(P)","N(Si)", "N( C )","N(Temp)", "Alloy"] 
 nEFl = len(X)-7
 
 Y1="CD delta sigma"
@@ -22,7 +22,7 @@ datapath="DBTT_Data21.csv"
 lwrdatapath='CD_LWR_clean8.csv'
 savepath='{}.png'
 
-data = data_parser.pars e(datapath)
+data = data_parser.parse(datapath)
 data.set_x_features(X)
 data.set_y_feature(Y1)
 data.remove_all_filters()
@@ -71,13 +71,14 @@ Ndata = lwrdata.get_x_data()
 def LO90_cv(model, X, Y, num_folds, num_runs):
     Xdata = np.asarray(X)
     Ydata = np.asarray(Y)
-
+    #print(num_runs)
+    #print(len(divisionsList))
     Krms_list = []
     for n in range(num_runs):
-        kf = cross_validation.KFold(len(Xdata), n_folds=num_folds, shuffle=True)
         K_fold_rms_list = []
+        divisions = divisionsList[n]
         # split into testing and training sets
-        for train_index, test_index in kf:
+        for train_index, test_index in divisions:
             #print(np.shape(train_index), np.shape(test_index))
             X_train, X_test = Xdata[test_index], Xdata[train_index]
             Y_train, Y_test = Ydata[test_index], Ydata[train_index]
@@ -185,7 +186,7 @@ def generation(pop, num_parameters, num_parents, crossover_prob, mutation_prob, 
 
         model = KernelRidge(alpha = 10**(float(params[-2])*(-6)), gamma = 10**((float(params[-1])*(3))-1.5), kernel = 'rbf')
         # un-comment one of these lines to select which test to use (currently CD extrapolate to LWR 60-100 years)
-        #rms = LO90_cv(model, newX_Train, Ydata)
+        #rms = LO90_cv(model, newX_Train, Ydata, num_folds = number_of_folds, num_runs = number_of_runs)
         #rms = CD_extrapolation(model, newX_Train, Ydata, newX_Test, Ydata_LWR)
         rms = kfold_cv(model, newX_Train, Ydata, num_folds = number_of_folds, num_runs = number_of_runs)
         
@@ -263,7 +264,7 @@ while GAruns < 10: # do 10 runs
     while runsSinceBest < 30 and gens < 200: # run until convergence condition is met
         # run a generation imputting population, number of parameters, number of parents, crossover probablility, mutation probability, random shift probability
         Gen = generation(population, (nEFl+2), 10, .5, .1, .5 )
-        print(Gen['best_rms'])
+        #print(Gen['best_rms'])
         #print(Gen['best_parameters'])
         population = Gen['new_population']
 
@@ -291,6 +292,11 @@ while GAruns < 10: # do 10 runs
         runsSinceBest = runsSinceBest+1
     bestParamSets.append(bestParams)
 
+divisionsList=[]
+for kn in range(number_of_runs*10):
+    kf = cross_validation.KFold(len(Xdata), n_folds=number_of_folds, shuffle=True)
+    divisionsList.append(kf)
+
 # prints best parameter set for each run, and the results of some tests using it.
 EXTRrmsList=[]
 CVrmsList=[]
@@ -307,13 +313,11 @@ for n in range(len(bestParamSets)):
         newX_Train[:, 7+gene] = EFls[0]
         newX_Test[:, 7+gene] = EFls[1]
 
-    for kn in range(number_of_runs*50):
-        kf = cross_validation.KFold(len(Xdata), n_folds=number_of_folds, shuffle=True)
-        divisionsList.append(kf)
 
     model = KernelRidge(alpha = float(params[-2]), gamma = float(params[-1]), kernel = 'rbf')
     EXTRrms = CD_extrapolation(model, newX_Train, Ydata, newX_Test, Ydata_LWR)
-    CVrms = kfold_cv(model, newX_Train, Ydata, num_folds = number_of_folds, num_runs = number_of_runs*50)
+    CVrms = kfold_cv(model, newX_Train, Ydata, num_folds = number_of_folds, num_runs = number_of_runs*10)
+    #CVrms = LO90_cv(model, newX_Train, Ydata, num_folds = number_of_folds, num_runs = number_of_runs*10)
     STRrms = "{0:.4f}".format(EXTRrms)+'  '+"{0:.4f}".format(CVrms)
     EXTRrmsList.append(EXTRrms)
     CVrmsList.append(CVrms)
