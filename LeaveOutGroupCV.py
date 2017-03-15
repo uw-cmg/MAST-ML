@@ -6,32 +6,15 @@ import csv
 import matplotlib
 import portion_data.get_test_train_data as gttd
 import data_analysis.printout_tools as ptools
-def execute(model, data, savepath, *args, **kwargs):
-    if "test_name" in kwargs.keys():
-        test_name = kwargs["test_name"]
-    else:
-        test_name = "Leave One Group Out"
-    if "field_name" in kwargs.keys():
-        field_name = kwargs["field_name"]
-    else:
-        field_name = "No field set"
-        raise ValueError("field_name not in kwargs. %s" % field_name)
-    if "label_field_name" in kwargs.keys():
-        label_field_name = kwargs["label_field_name"]
-    else:
-        label_field_name = None
-    if "xlabel" in kwargs.keys():
-        xlabel = kwargs["xlabel"]
-    else:
-        xlabel = "Group number"
-    if "ylabel" in kwargs.keys():
-        ylabel = kwargs["ylabel"]
-    else:
-        ylabel = "RMSE"
-    if "title" in kwargs.keys():
-        title = kwargs["title"]
-    else:
-        title = ""
+def execute(model, data, savepath, 
+            field_name=None,
+            label_field_name=None,
+            xlabel="Group number",
+            ylabel="RMSE",
+            title="",
+            *args, **kwargs):
+    if field_name == None:
+        raise ValueError("No field name set.")
 
     rms_list = list()
     group_value_list = list()
@@ -92,11 +75,11 @@ def execute(model, data, savepath, *args, **kwargs):
         ax.annotate(s = alabel,
                     xy = (group_value_list[x], rms_list[x]),
                     fontsize=smallfont)
-    fig.savefig(test_name.replace(" ","_"), dpi=200, bbox_inches='tight')
+    fig.savefig("leavegroupout_cv", dpi=200, bbox_inches='tight')
     fig.clf()
     plt.close()
 
-    csvname = "%s.csv" % test_name.replace(" ","_")
+    csvname = "leavegroupout.csv"
     headerline = "Group,Group value,Group label,RMSE,Mean error"
     save_array = np.asarray([group_list, group_value_list, group_label_list, rms_list, me_list]).transpose()
     ptools.mixed_array_to_csv(csvname, headerline, save_array) 
