@@ -33,13 +33,15 @@ def get_kfold_indices(datalen, num_folds=5, verbose=1):
 def get_logo_indices(grouparr, verbose=1):
     logo = LeaveOneGroupOut()
     dummy_arr = np.arange(0, len(grouparr))
+    groupvals = np.unique(grouparr)
     indices = dict()
     nfold = 0
     for train_index, test_index in logo.split(dummy_arr, groups=grouparr):
+        groupval = groupvals[nfold]
+        indices[groupval] = dict()
+        indices[groupval]["train_index"] = train_index
+        indices[groupval]["test_index"] = test_index
         nfold = nfold + 1
-        indices[nfold] = dict()
-        indices[nfold]["train_index"] = train_index
-        indices[nfold]["test_index"] = test_index
     if verbose > 0:
         ikeys = list(indices.keys())
         ikeys.sort()
