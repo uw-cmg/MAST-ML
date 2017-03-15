@@ -83,6 +83,8 @@ def best_worst(Ydata, Y_predicted_best, Y_predicted_worst,
 def single(Ydata, Y_predicted, 
         xlabel="Measured",
         ylabel="Predicted",
+        xerr=None,
+        yerr=None,
         stepsize=1,
         savepath="",
         notelist=list(), 
@@ -93,7 +95,24 @@ def single(Ydata, Y_predicted,
     smallfont = 0.85*matplotlib.rcParams['font.size']
     notestep = 0.07
     plt.figure()
-    plt.scatter(Ydata, Y_predicted, c='black', s=10)
+    darkred="#8B0000"
+    darkblue="#00008B"
+    if xerr == None:
+        xerr = np.zeros(len(Ydata))
+    if yerr == None:
+        yerr = np.zeros(len(Y_predicted))
+    (_, caps, _) = plt.errorbar(Ydata, Y_predicted, 
+        xerr=xerr,
+        yerr=yerr,
+        linewidth=2,
+        linestyle = "None", color=darkred,
+        markeredgewidth=2, markeredgecolor=darkred,
+        markerfacecolor='red' , marker='o',
+        markersize=15)
+    #http://stackoverflow.com/questions/7601334/how-to-set-the-line-width-of-error-bar-caps-in-matplotlib
+    for cap in caps:
+        cap.set_color(darkred)
+        cap.set_markeredgewidth(2)
     [minx,maxx] = plt.xlim()
     [miny,maxy] = plt.ylim()
     gmax = max(maxx, maxy)
