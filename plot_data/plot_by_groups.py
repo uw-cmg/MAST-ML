@@ -223,6 +223,10 @@ def plot_overall(fit_data=None,
                                 group was not present in the fitting data
                                 1 - only plot predicted data whose group was
                                 present in the fitting data
+                                2 - plot all predicted data, labeling data
+                                as supported if the group was present in
+                                the fitting data, or unsupported if the
+                                group was not present in the fitting data
     """
     predfield = "__predicted"
     topred_data.add_feature(predfield,topred_Ypredict)
@@ -345,7 +349,7 @@ def plot_overall(fit_data=None,
         for cap in caps:
             cap.set_color(darkred)
             cap.set_markeredgewidth(2)
-        if int(only_fit_matches) == 2:
+        if (int(only_fit_matches) == 2) and (len(topred_index_out) > 0):
             (_, caps, _) = plt.errorbar(topred_ydata[topred_index_out],
                 topred_predicted[topred_index_out], 
                 xerr=topred_measerr[topred_index_out], 
