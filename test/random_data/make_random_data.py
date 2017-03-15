@@ -8,19 +8,24 @@ y = rng.randn(n_samples)
 X = rng.randn(n_samples, n_features)
 
 numpoints = len(y)
-catlist=["A","B","C","D"]
-catarr = list()
-numarr = list()
+catlist=["A","B","C","D","E","F","G","H"]
+num_id_arr = list()
+num_cat_arr = list()
+str_cat_arr = list()
 for idx in range(0, numpoints):
-    catnum = rng.randint(4)
+    catnum = rng.randint(8)
     category = catlist[catnum]
-    catarr.append(category)
-    numarr.append(idx + 3)
-catarr = np.array(catarr)
-numarr = np.array(numarr)
-
-array = np.array([numarr, catarr, X[:,0],X[:,1],X[:,2],X[:,3],X[:,4],y]).transpose()
-headerstring = "numeric_label,category1,x1,x2,x3,x4,x5,y"
+    str_cat_arr.append(category)
+    num_cat_arr.append(catnum)
+    num_id_arr.append(idx)
+num_id_arr = np.array(num_id_arr)
+num_cat_arr = np.array(num_cat_arr)
+str_cat_arr = np.array(str_cat_arr)
+array = np.array([num_id_arr, 
+            num_cat_arr, 
+            str_cat_arr, 
+            X[:,0],X[:,1],X[:,2],X[:,3],X[:,4],y]).transpose()
+headerstring = "num_id,num_cat,str_cat,x1,x2,x3,x4,x5,y"
 
 csvname="test.csv"
 
