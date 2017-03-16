@@ -18,7 +18,7 @@ def execute(model, data, savepath,
     """
     flipaxes = int(flipaxes)
     
-    Xdata = data.get_x_data()
+    Xdata = np.asarray(data.get_x_data())
     ydata = np.asarray(data.get_y_data()).ravel()
     xfeatures = data.x_features
     yfeature = data.y_feature
