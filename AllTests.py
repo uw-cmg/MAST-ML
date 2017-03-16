@@ -79,9 +79,9 @@ for case_name in all_tests:
     kwargs = config[case_name]
     #TTM save for later: change and make new paths
     #curdir = os.getcwd()
-    #save_path = os.path.abspath(save_path)
-    #if not os.path.isdir(save_path):
-    #    os.mkdir(save_path)
+    save_path = os.path.abspath(save_path)
+    if not os.path.isdir(save_path):
+        os.mkdir(save_path)
     #os.chdir(save_path)
     case.execute(model, data, save_path, lwr_data = lwr_data, **kwargs)
     #os.chdir(curdir)
