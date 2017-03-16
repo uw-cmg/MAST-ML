@@ -9,7 +9,7 @@ import data_analysis.printout_tools as ptools
 def get_xy_sorted(xvals, yvals, verbose=0):
     """Sort x and y according to x. 
     """
-    combarr = np.array([xvals, yvals])
+    combarr = np.array([xvals, yvals],'float')
     if verbose > 0:
         print("Original:")
         print(combarr)
