@@ -6,6 +6,21 @@ import matplotlib.pyplot as plt
 from mean_error import mean_error
 import data_analysis.printout_tools as ptools
 
+def get_xy_sorted(xvals, yvals, verbose=0):
+    """Sort x and y according to x. 
+    """
+    combarr = np.array([xvals, yvals])
+    if verbose > 0:
+        print("Original:")
+        print(combarr)
+    sortedarr = combarr[:,np.argsort(combarr[0])]
+    if verbose > 0:
+        print("Sorted:")
+        print(sortedarr)
+    xsorted = sortedarr[0,:]
+    ysorted = sortedarr[1,:]
+    return [xsorted, ysorted]
+
 def single(xvals, yvals, 
             plottype="scatter",
             xlabel="X",
@@ -17,6 +32,7 @@ def single(xvals, yvals,
     matplotlib.rcParams.update({'font.size': 18})
     smallfont = 0.85*matplotlib.rcParams['font.size']
     fig, ax = plt.subplots(figsize=(10, 4))
+    [xvals, yvals] = get_xy_sorted(xvals, yvals)
     if plottype == "scatter":
         plt.plot(xvals, yvals, linestyle = "None",
                     marker='o', markersize=8, markeredgewidth=2,
