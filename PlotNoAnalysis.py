@@ -6,6 +6,7 @@ import data_analysis.printout_tools as ptools
 import plot_data.plot_xy as plotxy
 
 def execute(model, data, savepath, 
+        plottype="scatter",
         flipaxes=0,
         *args, **kwargs):
     """Simple plot
@@ -33,6 +34,7 @@ def execute(model, data, savepath,
         ydata = ydata
         kwargs=dict()
         kwargs['savepath'] = savepath
+        kwargs['plottype'] = plottype
         if flipaxes == 0:
             kwargs['xlabel'] = xfeatures[numplot]
             kwargs['ylabel'] = yfeature
