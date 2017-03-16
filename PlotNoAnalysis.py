@@ -32,6 +32,7 @@ def execute(model, data, savepath,
         xdata = Xdata[:,numplot]
         ydata = ydata
         kwargs=dict()
+        kwargs['savepath'] = savepath
         if flipaxes == 0:
             kwargs['xlabel'] = xfeatures[numplot]
             kwargs['ylabel'] = yfeature
