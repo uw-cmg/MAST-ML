@@ -19,7 +19,7 @@ def single(xvals, yvals,
     fig, ax = plt.subplots(figsize=(10, 4))
     if plottype == "scatter":
         plt.plot(xvals, yvals, linestyle = "None",
-                    marker='o', markersize=15, markeredgewidth=2,
+                    marker='o', markersize=8, markeredgewidth=2,
                     markeredgecolor='blue', markerfacecolor="None")
     elif plottype == "line":
         plt.plot(xvals, yvals, linestyle = "-",
