@@ -421,7 +421,7 @@ def rename_field(db, newcname, oldfieldname, newfieldname, verbose=1):
                 newfieldname, newcname))
     return
 
-def duplicate_string_field_as_numeric(db, newcname, oldfieldname, newfieldname, subdict=dict()):
+def duplicate_string_field_as_numeric(db, newcname, oldfieldname, newfieldname, subdict=dict(), verbose=0):
     """Duplicate a string field as a numeric field
         Args:
             oldfieldname <str>: old field name
