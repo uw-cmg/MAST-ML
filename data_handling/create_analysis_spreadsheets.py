@@ -421,6 +421,30 @@ def rename_field(db, newcname, oldfieldname, newfieldname, verbose=1):
                 newfieldname, newcname))
     return
 
+def duplicate_string_field_as_numeric(db, newcname, oldfieldname, newfieldname, subdict=dict()):
+    """Duplicate a string field as a numeric field
+        Args:
+            oldfieldname <str>: old field name
+            newfieldname <str>: new field name
+            subdict <dict>: substitution dictionary, with
+                            key as the old field value (string) and
+                            value as the new field value (numeric)
+                        e.g. {"high":3,"medium":2,"low":1}
+    """
+    records = db[newcname].find()
+    for record in records:
+        newval = ""
+        oldval = record[oldfieldname]
+        if oldval in subdict.keys():
+            newval = subdict[oldval]
+        db[newcname].update(
+            {'_id':record["_id"]},
+            {"$set":{newfieldname:newval}}
+            )
+        if verbose > 0:
+            print("Updated record %s with %s %3.3f." % (record["_id"],newfieldname, newval))
+    return
+
 if __name__=="__main__":
     print("Use from DataImportAndExport.py. Exiting.")
     sys.exit()
