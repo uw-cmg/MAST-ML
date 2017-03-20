@@ -25,56 +25,13 @@ import data_handling.alloy_property_utilities as apu
 import time
 from pymongo import MongoClient
 from bson.objectid import ObjectId
-
-
-def get_mongo_client():
-    """Check connection and get mongo client
-        Based on http://stackoverflow.com/questions/30539183/how-do-you-check-if-the-client-for-a-mongodb-instance-is-valid
-    """
-    timeout = 500 # milliseconds
-    try:
-        client = MongoClient('localhost', 27017, serverSelectionTimeoutMS = timeout)
-        client.server_info() # Force connection check
-    except pymongo.errors.ServerSelectionTimeoutError as err:
-        traceback.print_exc()
-        print(err)
-        print("")
-        print("Check to see if mongodb is actually running. Exiting.")
-        print("")
-        sys.exit(-1)
-    return client
-
-def get_unique_name(client, db_base, nmax=100):
-    """Get a unique database name.
-    """
-    dbs = client.database_names()
-    for idx in range(0, nmax):
-        name_try = db_base + "_" + str(idx).zfill(2)
-        if not (name_try in dbs):
-            print("Using database name: %s" % name_try)
-            return name_try
-    print("Must drop or rename some databases.")
-    print("Maximum of %i databases named with %s are present." % (nmax,db_base))
-    print("Exiting.")
-    sys.exit(-1)
-    return None
+import data_handling.mongo_utilities as mongoutil
 
 def import_initial_collections(db, cbasic, importpath):
     """Import initial collections for use in creating specialized collections.
     """
     for cname in cbasic.keys():
-        print("Attempting import for %s" % cname)
-        fullpath = os.path.join(importpath, cbasic[cname])
-        istr = "mongoimport --file=%s --headerline --db=%s --collection=%s --type=csv" % (fullpath, db.name, cname)
-        iproc = subprocess.Popen(istr,shell=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE)
-        iproc.wait()
-        print(iproc.communicate())
-    print("Collections created:")
-    for cname in db.collection_names():
-        print(cname)
-    print("")
+        mongoutil.import_collection(db, cname, importpath, cbasic[cname])
     return
 
 def clean_ivar_basic(db, cname, verbose=1):
@@ -283,8 +240,8 @@ def main(importpath):
     cbasic["ucsb_ivar_and_ivarplus"]="ucsb_ivar_and_ivarplus.csv"
     cbasic["cd_lwr_2016_bynum"]="CDTemp_CD_lwr_2016_raw.csv"
     cbasic["atr2_2016"]="atr2_data.csv"
-    client = get_mongo_client()
-    dbname = get_unique_name(client, db_base)
+    client = mongoutil.get_mongo_client()
+    dbname = mongoutil.get_unique_name(client, db_base)
     exportfolder = "data_exports_%s_%s" %(dbname,time.strftime("%Y%m%d_%H%M%S"))
     exportpath = os.path.join(dirpath, exportfolder)
     db = client[dbname]
