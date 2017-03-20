@@ -431,6 +431,10 @@ def duplicate_string_field_as_numeric(db, newcname, oldfieldname, newfieldname, 
                             value as the new field value (numeric)
                         e.g. {"high":3,"medium":2,"low":1}
     """
+    if not subdict: #empty dictionary
+        allvals = db[newcname].distinct(oldfieldname)
+        for aidx in range(0, len(allvals)):
+            subdict[allvals[aidx]] = aidx  
     records = db[newcname].find()
     for record in records:
         newval = ""
