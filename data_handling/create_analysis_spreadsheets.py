@@ -449,6 +449,28 @@ def duplicate_string_field_as_numeric(db, newcname, oldfieldname, newfieldname, 
             print("Updated record %s with %s %3.3f." % (record["_id"],newfieldname, newval))
     return
 
+def duplicate_time_field_as_numeric(db, newcname, oldfieldname, newfieldname, formatstr="%m/%d/%y %H:%M", verbose=0):
+    """Duplicate a time field as a numeric field
+        Args:
+            oldfieldname <str>: old field name
+            newfieldname <str>: new field name
+            formatstr <str>: Format string to interpret the given time field.
+                                See python documentation.
+    """
+    records = db[newcname].find()
+    for record in records:
+        newval = ""
+        oldval = record[oldfieldname]
+        oldstruct = time.strptime(oldval, formatstr)
+        newtime = time.mktime(oldstruct)
+        db[newcname].update(
+            {'_id':record["_id"]},
+            {"$set":{newfieldname:newtime}}
+            )
+        if verbose > 0:
+            print("Updated record %s with %s %3.3f." % (record["_id"],newfieldname, newval))
+    return
+
 if __name__=="__main__":
     print("Use from DataImportAndExport.py. Exiting.")
     sys.exit()
