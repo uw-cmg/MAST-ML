@@ -464,6 +464,7 @@ def duplicate_time_field_as_numeric(db, newcname, oldfieldname, newfieldname, fo
             oldstruct = time.strptime(oldval, formatstr)
             newtime = time.mktime(oldstruct)
         except ValueError:
+            print("Error updating record %s, old value %3.3f. Setting to blank." % (record["_id"],oldval))
             newtime = ""
         db[newcname].update(
             {'_id':record["_id"]},
