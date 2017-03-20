@@ -67,7 +67,12 @@ class Data:
         self.x_features = features[:-1]
         self.y_feature = None
         self.__max_min = []
-        self.__calculate_data_range()
+        try:
+            self.__calculate_data_range()
+        except TypeError:
+            print("Warning: error calculating data range, probably due to string types.")
+            traceback.print_exc()
+            print("Script will continue. data_parser normalization may not work correctly.")
         return
 
     def set_x_features(self, feature_list):
