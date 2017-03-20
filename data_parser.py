@@ -1,6 +1,6 @@
 __author__ = 'haotian'
 import numpy as np
-
+import traceback
 def parse(filename, weights = False, separator=','):
     """
     parse a file into parse.Data object
@@ -29,6 +29,7 @@ def parse(filename, weights = False, separator=','):
             data = weighted_data
         return Data(features, data)
     except Exception as err:
+        traceback.print_exc()
         print("an error occurred during parsing, no data object created.\n"
               "Error Message: {}".format(err))
     return None
