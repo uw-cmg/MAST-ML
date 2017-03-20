@@ -51,3 +51,26 @@ def get_unique_name(client, db_base, nmax=100):
     sys.exit(-1)
     return None
 
+def import_collection(db, cname, importdir="", importname=""):
+    """Import a collection from a csv file
+        Args:
+            db <MongoDB database object>
+            cname <str>: collection name for the new collection
+            importdir <str>: directory in which the input is stored
+            importname <str>: csv file for import
+    """
+    if importname == "":
+        importname = cname
+    if importdir == "":
+        importdir = os.getcwd()
+    print("Attempting import for %s" % cname)
+    fullpath = os.path.join(importdir, importname)
+    istr = "mongoimport --file=%s --headerline --db=%s --collection=%s --type=csv" % (fullpath, db.name, cname)
+    iproc = subprocess.Popen(istr,shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE)
+    iproc.wait()
+    print(iproc.communicate())
+    print("Collection created: %s" % cname)
+    print("")
+    return
