@@ -459,10 +459,12 @@ def duplicate_time_field_as_numeric(db, newcname, oldfieldname, newfieldname, fo
     """
     records = db[newcname].find()
     for record in records:
-        newval = ""
         oldval = record[oldfieldname]
-        oldstruct = time.strptime(oldval, formatstr)
-        newtime = time.mktime(oldstruct)
+        try:
+            oldstruct = time.strptime(oldval, formatstr)
+            newtime = time.mktime(oldstruct)
+        except ValueError:
+            newtime = ""
         db[newcname].update(
             {'_id':record["_id"]},
             {"$set":{newfieldname:newtime}}
