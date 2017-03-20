@@ -19,7 +19,7 @@ def execute(model, data, savepath,
     flipaxes = int(flipaxes)
     
     Xdata = np.asarray(data.get_x_data())
-    ydata = np.asarray(data.get_y_data()).ravel()
+    Ydata = np.asarray(data.get_y_data()).ravel()
     xfeatures = data.x_features
     yfeature = data.y_feature
 
@@ -31,7 +31,7 @@ def execute(model, data, savepath,
 
     for numplot in range(0, numplots):
         xdata = Xdata[:,numplot]
-        ydata = ydata
+        ydata = Ydata
         kwargs=dict()
         kwargs['savepath'] = savepath
         kwargs['plottype'] = plottype
