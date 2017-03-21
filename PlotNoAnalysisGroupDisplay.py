@@ -6,11 +6,14 @@ import data_analysis.printout_tools as ptools
 import plot_data.plot_xy as plotxy
 import portion_data.get_test_train_data as gttd
 import os
+from scipy.fftpack import fft
+
 def execute(model, data, savepath, 
         plottype="scatter",
         group_field_name=None,
         label_field_name=None,
         flipaxes=0,
+        do_fft=0,
         *args, **kwargs):
     """Simple plot
         Args:
@@ -18,8 +21,11 @@ def execute(model, data, savepath,
                                 (default)
                            1, plot each given "X" feature as the y against
                                 a single "y" feature as the x
+            do_fft <int>: 0, no fast Fourier transform (default)
+                        1, fast Fourier transform as well
     """
     flipaxes = int(flipaxes)
+    do_fft = int(do_fft)
     
     Xdata = np.asarray(data.get_x_data())
     Ydata = np.asarray(data.get_y_data()).ravel()
@@ -55,8 +61,14 @@ def execute(model, data, savepath,
                 kwargs['xlabel'] = xfeatures[numplot]
                 kwargs['ylabel'] = yfeature
                 plotxy.single(xdata, ydata, **kwargs)
+                if do_fft == 1:
+                    kwargs['ylabel'] = yfeature + "_fft"
+                    plotxy.single(xdata, fft(ydata), **kwargs)
             else:
                 kwargs['xlabel'] = yfeature
                 kwargs['ylabel'] = xfeatures[numplot]
                 plotxy.single(ydata, xdata, **kwargs)
+                if do_fft == 1:
+                    kwargs['ylabel'] = xfeatures[numplot] + "_fft"
+                    plotxy.single(ydata, fft(xdata), **kwargs)
     return
