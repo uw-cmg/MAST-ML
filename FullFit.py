@@ -6,6 +6,8 @@ from sklearn.kernel_ridge import KernelRidge
 from sklearn.metrics import mean_squared_error
 import data_analysis.printout_tools as ptools
 import plot_data.plot_predicted_vs_measured as plotpm
+import plot_data.plot_xy as plotxy
+import os
 
 def execute(model, data, savepath, 
         xlabel="Measured",
@@ -26,15 +28,16 @@ def execute(model, data, savepath,
     y_abs_err = np.absolute(ypredict - ydata)
 
     notelist=list()
-    notelist.append("RMSE: %3.2f" % rmse)
+    notelist.append("RMSE: %3.0f" % rmse)
 
     kwargs=dict()
     kwargs['xlabel'] = xlabel
     kwargs['ylabel'] = ylabel
-    kwargs['stepsize'] = stepsize
+    #kwargs['stepsize'] = stepsize
     kwargs['notelist'] = notelist
-
-    plotpm.single(ydata, ypredict, **kwargs)
+    kwargs['guideline'] = 1
+    kwargs['savepath'] = savepath
+    plotxy.single(ydata, ypredict, **kwargs)
 
     #datasets = ['IVAR', 'ATR-1', 'ATR-2']
     #colors = ['#BCBDBD', '#009AFF', '#FF0A09']
@@ -75,7 +78,7 @@ def execute(model, data, savepath,
 
     labels = np.asarray(data.get_data(numericlabelfield)).ravel()
 
-    csvname = "FullFit_data.csv"
+    csvname = os.path.join(savepath, "FullFit_data.csv")
     headerline = "%s,Measured,Predicted,Absolute error" % numericlabelfield
     myarray = np.array([labels, ydata, ypredict, y_abs_err]).transpose()
     ptools.array_to_csv(csvname, headerline, myarray)
