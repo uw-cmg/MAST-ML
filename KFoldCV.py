@@ -8,6 +8,7 @@ from sklearn.model_selection import KFold
 from sklearn.metrics import mean_squared_error
 import data_analysis.printout_tools as ptools
 import plot_data.plot_predicted_vs_measured as plotpm
+import plot_data.plot_xy as plotxy
 
 def execute(model, data, savepath, lwr_data="", 
             num_runs=200,
@@ -126,6 +127,25 @@ def execute(model, data, savepath, lwr_data="",
     kwargs['stepsize'] = stepsize
 
     plotpm.best_worst(Ydata, Y_predicted_best, Y_predicted_worst, **kwargs)
+
+    kwargs2 = dict()
+    kwargs2['xlabel'] = xlabel
+    kwargs2['ylabel'] = ylabel
+    kwargs2['label1'] = "Best fit"
+    kwargs2['label2'] = "Worst fit"
+    notelist=list()
+    notelist.append("Min RMSE: {:.2f}".format(minRMS))
+    notelist.append("Max RMSE.: {:.2f}".format(maxRMS))
+    notelist.append("Mean RMSE: {:.2f}".format(avgRMS))
+    notelist.append("Std. Dev.: {:.2f}".format(sd))
+    kwargs2['notelist'] = notelist
+    kwargs2['guideline'] = 1
+    kwargs2['fill'] = 1
+    kwargs2['equalsize'] = 1
+    kwargs2['plotlabel'] = "best_worst_overlay"
+    kwargs2['savepath'] = savepath
+    kwargs2['stepsize'] = stepsize
+    plotxy.dual_overlay(Ydata, Y_predicted_best, Ydata, Y_predicted_worst, **kwargs2)
 
     if numericlabelfield == None:
         numericlabelfield = data.x_features[0]
