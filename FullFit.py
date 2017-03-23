@@ -26,9 +26,13 @@ def execute(model, data, savepath,
     ypredict = model.predict(Xdata)
     rmse = np.sqrt(mean_squared_error(ypredict, ydata))
     y_abs_err = np.absolute(ypredict - ydata)
+    mean_error = np.mean(ypredict - ydata) #mean error sees if fit is shifted in one direction or another; so, do not want absolute here
 
     notelist=list()
-    notelist.append("RMSE: %3.0f" % rmse)
+    notelist.append("RMSE: %3.2f" % rmse)
+    notelist.append("Mean error: %3.2f" % mean_error)
+    print("RMSE: %3.2f" % rmse)
+    print("Mean error: %3.2f" % mean_error)
 
     kwargs=dict()
     kwargs['xlabel'] = xlabel
