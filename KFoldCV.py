@@ -98,6 +98,7 @@ def execute(model, data, savepath, lwr_data="",
     medRMS = np.median(Mean_RMS_List)
     sd = np.std(Mean_RMS_List)
     meanME = np.mean(Mean_ME_List)
+    sdME = np.std(Mean_ME_List)
 
     if not (os.path.isdir(savepath)):
         os.mkdir(savepath)
@@ -105,8 +106,9 @@ def execute(model, data, savepath, lwr_data="",
     print("The median RMSE was {:.3f}".format(medRMS))
     print("The max RMSE was {:.3f}".format(maxRMS))
     print("The min RMSE was {:.3f}".format(minRMS))
-    print("The std deviation of the RMSE values was {:.3f}".format(sd))
+    print("The std deviation of the mean RMSE values was {:.3f}".format(sd))
     print("The average mean error was {:.3f}".format(meanME))
+    print("The std deviation of the mean mean error was {:.3f}".format(sdME))
 
     notelist_best = list()
     notelist_best.append("Min RMSE: {:.2f}".format(minRMS))
