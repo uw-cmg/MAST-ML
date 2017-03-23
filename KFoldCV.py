@@ -117,7 +117,7 @@ def execute(model, data, savepath, lwr_data="",
     notelist_best.append("Std. Dev.: {:.2f}".format(sd))
     
     notelist_worst = list()
-    notelist_worst.append("Max RMSE.: {:.2f}".format(maxRMS))
+    notelist_worst.append("Max RMSE: {:.2f}".format(maxRMS))
     kwargs=dict()
     kwargs['xlabel'] = xlabel
     kwargs['ylabel'] = ylabel
@@ -135,7 +135,7 @@ def execute(model, data, savepath, lwr_data="",
     kwargs2['label2'] = "Worst fit"
     notelist=list()
     notelist.append("Min RMSE: {:.2f}".format(minRMS))
-    notelist.append("Max RMSE.: {:.2f}".format(maxRMS))
+    notelist.append("Max RMSE: {:.2f}".format(maxRMS))
     notelist.append("Mean RMSE: {:.2f}".format(avgRMS))
     notelist.append("Std. Dev.: {:.2f}".format(sd))
     kwargs2['notelist'] = notelist
