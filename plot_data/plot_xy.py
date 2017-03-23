@@ -27,16 +27,18 @@ def single(xvals, yvals,
             ylabel="Y",
             title="",
             savepath="",
+            guideline=0,
             notelist=list(),
             ):
     matplotlib.rcParams.update({'font.size': 18})
     smallfont = 0.85*matplotlib.rcParams['font.size']
-    fig, ax = plt.subplots(figsize=(10, 4))
+    #fig, ax = plt.subplots(figsize=(10, 4))
     [xvals, yvals] = get_xy_sorted(xvals, yvals)
+    darkblue="#00008B"
     if plottype == "scatter":
         plt.plot(xvals, yvals, linestyle = "None",
                     marker='o', markersize=8, markeredgewidth=2,
-                    markeredgecolor='blue', markerfacecolor="None")
+                    markeredgecolor='darkblue', markerfacecolor="blue")
     elif plottype == "line":
         plt.plot(xvals, yvals, linestyle = "-",
                     linewidth=2,
@@ -45,6 +47,15 @@ def single(xvals, yvals,
         plt.plot(xvals, yvals, linestyle = "-",
                     linewidth=2,
                     color='blue')
+    plt.margins(0.05)
+    if guideline == 1: #also square the axes
+        [minx,maxx] = plt.xlim()
+        [miny,maxy] = plt.ylim()
+        gmax = max(maxx, maxy)
+        gmin = min(minx, miny)
+        plt.xlim(gmin, gmax)
+        plt.ylim(gmin, gmax)
+        plt.plot((gmin, gmax), (gmin, gmax), ls="--", c=".3")
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     if len(title) > 0:
@@ -55,8 +66,7 @@ def single(xvals, yvals,
         plt.annotate(note, xy=(0.05, notey), xycoords="axes fraction",
                     fontsize=smallfont)
         notey = notey - notestep
-    fig.savefig(os.path.join(savepath, "%s_vs_%s" % (ylabel, xlabel)), dpi=200, bbox_inches='tight')
-    fig.clf()
+    plt.savefig(os.path.join(savepath, "%s_vs_%s" % (ylabel, xlabel)), bbox_inches='tight')
     plt.close()
     return
 
