@@ -5,6 +5,7 @@ import data_parser
 import matplotlib.pyplot as plt
 from mean_error import mean_error
 import data_analysis.printout_tools as ptools
+import plot_data.plot_xy as plotxy
 
 def get_steps(gmin, gmax, resolution=4):
     grange = (gmax - gmin)
@@ -147,65 +148,20 @@ def single_supported_unsupported(Ydata_supported, Y_predicted_supported,
         *args, **kwargs):
     """Plot Predicted vs. Measured values.
     """
-    matplotlib.rcParams.update({'font.size': 18})
-    smallfont = 0.85*matplotlib.rcParams['font.size']
-    notestep = 0.07
-    plt.figure()
-    darkred="#8B0000"
-    darkblue="#00008B"
-    if xerr_supported == None:
-        xerr_supported = np.zeros(len(Ydata_supported))
-    if yerr_supported == None:
-        yerr_supported = np.zeros(len(Y_predicted_supported))
-    if xerr_unsupported == None:
-        xerr_unsupported = np.zeros(len(Ydata_unsupported))
-    if yerr_unsupported == None:
-        yerr_unsupported = np.zeros(len(Y_predicted_unsupported))
-    (_, caps, _) = plt.errorbar(Ydata_supported, Y_predicted_supported, 
-        xerr=xerr_supported,
-        yerr=yerr_supported,
-        label="Supported",
-        linewidth=2,
-        linestyle = "None", color=darkred,
-        markeredgewidth=2, markeredgecolor=darkred,
-        markerfacecolor='red' , marker='o',
-        markersize=15)
-    for cap in caps:
-        cap.set_color(darkred)
-        cap.set_markeredgewidth(2)
-    (_, caps, _) = plt.errorbar(Ydata_unsupported, Y_predicted_unsupported, 
-        xerr=xerr_unsupported,
-        yerr=yerr_unsupported,
-        label="Unsupported",
-        linewidth=2,
-        linestyle = "None", color=darkblue,
-        markeredgewidth=2, markeredgecolor=darkblue,
-        markerfacecolor='blue' , marker='o',
-        markersize=15)
-    for cap in caps:
-        cap.set_color(darkblue)
-        cap.set_markeredgewidth(2)
-    lgd=plt.legend(loc = "lower right", 
-                    fontsize=smallfont, 
-                    numpoints=1,
-                    fancybox=True) 
-    lgd.get_frame().set_alpha(0.5) #translucent legend!
-    [minx,maxx] = plt.xlim()
-    [miny,maxy] = plt.ylim()
-    gmax = max(maxx, maxy)
-    gmin = min(minx, miny)
-    steplist = np.arange(gmin, gmax, stepsize)
-    plt.xticks(steplist)
-    plt.yticks(steplist)
-    plt.plot(steplist, steplist, ls="--", c=".3")
-    notey = 0.88
-    for note in notelist:
-        plt.annotate(note, xy=(0.05, notey), xycoords="axes fraction",
-                    fontsize=smallfont)
-        notey = notey - notestep
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    plt.tight_layout()
-    plt.savefig(os.path.join(savepath, "cv_singleplot"), dpi=200, bbox_inches='tight')
-    plt.close()
+    plotxy.dual_overlay(Ydata_supported, Y_predicted_supported,
+                Ydata_unsupported, Y_predicted_unsupported,
+                guideline=1,
+                xlabel = xlabel,
+                ylabel = ylabel,
+                label1 = "Supported",
+                label2 = "Unsupported",
+                xerr1 = xerr_supported,
+                yerr1 = yerr_supported,
+                xerr2 = xerr_unsupported,
+                yerr2 = yerr_unsupported,
+                stepsize = stepsize,
+                savepath = savepath,
+                notelist = notelist,
+                plotlabel = "cv_supported_unsupported")
     return
+
