@@ -103,13 +103,13 @@ def execute(model, data, savepath, lwr_data="",
 
     if not (os.path.isdir(savepath)):
         os.mkdir(savepath)
-    print("The average RMSE was {:.3f}".format(avgRMS))
-    print("The median RMSE was {:.3f}".format(medRMS))
-    print("The max RMSE was {:.3f}".format(maxRMS))
-    print("The min RMSE was {:.3f}".format(minRMS))
-    print("The std deviation of the mean RMSE values was {:.3f}".format(sd))
+    print("The average mean-over-{:1i}-folds RMSE was {:.3f} over {:1i} tests".format(avgRMS, num_folds, num_runs))
+    print("The median mean RMSE was {:.3f}".format(medRMS))
+    print("The max mean RMSE was {:.3f}".format(maxRMS))
+    print("The min mean RMSE was {:.3f}".format(minRMS))
+    print("The std deviation of the average mean RMSE values was {:.3f}".format(sd))
     print("The average mean error was {:.3f}".format(meanME))
-    print("The std deviation of the mean mean error was {:.3f}".format(sdME))
+    print("The std deviation of the average mean error was {:.3f}".format(sdME))
 
     notelist_best = list()
     notelist_best.append("Min RMSE: {:.2f}".format(minRMS))
@@ -136,8 +136,8 @@ def execute(model, data, savepath, lwr_data="",
     notelist=list()
     notelist.append("Min RMSE: {:.2f}".format(minRMS))
     notelist.append("Max RMSE: {:.2f}".format(maxRMS))
-    notelist.append("Mean RMSE: {:.2f}".format(avgRMS))
-    notelist.append("Std. Dev.: {:.2f}".format(sd))
+    notelist.append("Mean RMSE: {:.2f} $\pm$ {:.2f}".format(avgRMS, sd))
+    notelist.append("Mean mean error: {:.2f} $\pm$ {:.2f}".format(meanME, sdME))
     kwargs2['notelist'] = notelist
     kwargs2['guideline'] = 1
     kwargs2['fill'] = 1
