@@ -6,7 +6,10 @@ import data_analysis.printout_tools as ptools
 import plot_data.plot_xy as plotxy
 import os
 import portion_data.get_test_train_data as gttd
-
+###########
+# Just plotting, no analysis
+# Tam Mayeshiba 2017-03-24
+###########
 def execute(model, data, savepath, 
         plottype="scatter",
         group_field_name=None,
