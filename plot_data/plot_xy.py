@@ -23,6 +23,8 @@ def get_xy_sorted(xvals, yvals, verbose=0):
 
 def single(xvals, yvals, 
             plottype="scatter",
+            xerr=None,
+            yerr=None,
             xlabel="X",
             ylabel="Y",
             title="",
@@ -35,18 +37,23 @@ def single(xvals, yvals,
     #fig, ax = plt.subplots(figsize=(10, 4))
     [xvals, yvals] = get_xy_sorted(xvals, yvals)
     darkblue="#00008B"
+    mylinestyle = "-"
+    mymarker = "o"
     if plottype == "scatter":
-        plt.plot(xvals, yvals, linestyle = "None",
-                    marker='o', markersize=8, markeredgewidth=2,
-                    markeredgecolor='darkblue', markerfacecolor="blue")
+        mylinestyle = "None"
     elif plottype == "line":
-        plt.plot(xvals, yvals, linestyle = "-",
-                    linewidth=2,
-                    color='blue')
-    else:
-        plt.plot(xvals, yvals, linestyle = "-",
-                    linewidth=2,
-                    color='blue')
+        mymarker = "None"
+    (_, caps, _) = plt.errorbar(xvals, yvals,
+        xerr=xerr,
+        yerr=yerr,
+        linewidth=2,
+        linestyle = mylinestyle, color=darkblue,
+        markeredgewidth=2, markeredgecolor=darkblue,
+        markerfacecolor="blue" , marker=mymarker,
+        markersize=10)
+    for cap in caps:
+        cap.set_color(darkblue)
+        cap.set_markeredgewidth(2)
     plt.margins(0.05)
     if guideline == 1: #also square the axes
         [minx,maxx] = plt.xlim()

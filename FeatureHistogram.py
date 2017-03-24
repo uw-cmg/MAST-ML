@@ -4,6 +4,7 @@ import data_parser
 import numpy as np
 import data_analysis.printout_tools as ptools
 import plot_data.plot_histogram as plothist
+import plot_data.plot_xy as plotxy
 import os
 import portion_data.get_test_train_data as gttd
 
@@ -89,6 +90,8 @@ def execute(model, data, savepath,
     plothist.simple_histogram(means, **kwargs)
     kwargs['xlabel'] = "Std Devs %s" % xlabel
     plothist.simple_histogram(stds, **kwargs)
+
+    
     headerline = "Group,Label,Mean,StdDev"
     myarray = np.array([okaygroups,labels,means,stds]).transpose()
     csvname = os.path.join(savepath,"Means_%s.csv" % xlabel.replace(" ","_"))
