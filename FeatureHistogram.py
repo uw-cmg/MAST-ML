@@ -91,7 +91,14 @@ def execute(model, data, savepath,
     kwargs['xlabel'] = "Std Devs %s" % xlabel
     plothist.simple_histogram(stds, **kwargs)
 
-    
+    kwargs2=dict()
+    kwargs2['xlabel'] = "%s" % group_field_name
+    kwargs2['ylabel'] = "Mean_%s" % (xlabel.replace(" ","_"))
+    kwargs2['savepath'] = savepath
+    kwargs2['yerr'] = stds
+    kwargs2['plottype'] = "scatter"
+    plotxy.single(okaygroups, means, **kwargs2)
+
     headerline = "Group,Label,Mean,StdDev"
     myarray = np.array([okaygroups,labels,means,stds]).transpose()
     csvname = os.path.join(savepath,"Means_%s.csv" % xlabel.replace(" ","_"))

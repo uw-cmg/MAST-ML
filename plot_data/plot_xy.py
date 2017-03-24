@@ -31,7 +31,7 @@ def single(xvals, yvals,
             savepath="",
             guideline=0,
             notelist=list(),
-            ):
+            *args, **kwargs):
     matplotlib.rcParams.update({'font.size': 18})
     smallfont = 0.85*matplotlib.rcParams['font.size']
     #fig, ax = plt.subplots(figsize=(10, 4))
