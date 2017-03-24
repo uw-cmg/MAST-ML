@@ -19,6 +19,7 @@ from peakutils.plot import plot as pplot
 def get_indexes(ydata, threshold, distance, peaks, valleys):
     """See execute for arguments
     """
+    ydata = np.array(ydata, 'float') #turn None into numpy NaN
     if peaks == 1:
         peak_indexes = peakutils.indexes(ydata,thres=threshold,min_dist=distance)
     if valleys == 1:
@@ -88,8 +89,11 @@ def execute(model, data, savepath,
  
     master_array = None
     for group in groups:
+        print("Group: %i" % group)
         gx_data = x_data[group_indices[group]["test_index"]]
         gfeature_data = feature_data[group_indices[group]["test_index"]]
+        #print(gfeature_data.shape)
+        #print(gfeature_data)
         kwargs=dict()
         label = labeldata[group_indices[group]["test_index"][0]]
         labels.append(label)
@@ -102,7 +106,12 @@ def execute(model, data, savepath,
         if not os.path.isdir(grouppath):
             os.mkdir(grouppath)
         kwargs['savepath'] = grouppath
-        gindexes = get_indexes(gfeature_data, threshold, distance, 
+        gfeature_data = np.array(gfeature_data,'float') #None to NaN
+        if np.nanstd(gfeature_data) < (0.01 * threshold):
+            print("Std much smaller than threshold. Skip.")
+            gindexes = list()
+        else:
+            gindexes = get_indexes(gfeature_data, threshold, distance, 
                                 peaks, valleys)
         plt.figure()
         pplot(gx_data, gfeature_data, gindexes)
