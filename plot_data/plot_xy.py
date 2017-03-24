@@ -116,13 +116,13 @@ def dual_overlay(xdata1, ydata1,
     else:
         size1 = 15
         size2 = 10
-    if xerr1 == None:
+    if xerr1 is None:
         xerr1 = np.zeros(len(xdata1))
-    if yerr1 == None:
+    if yerr1 is None:
         yerr1 = np.zeros(len(ydata1))
-    if xerr2 == None:
+    if xerr2 is None:
         xerr2 = np.zeros(len(xdata2))
-    if yerr2 == None:
+    if yerr2 is None:
         yerr2 = np.zeros(len(ydata2))
     (_, caps, _) = plt.errorbar(xdata1, ydata1,
         xerr=xerr1,
