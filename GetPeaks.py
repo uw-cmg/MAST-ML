@@ -32,6 +32,16 @@ def get_indexes(ydata, threshold, distance, peaks, valleys):
             indexes = np.append(indexes, valley_indexes)
     return indexes
 
+def get_x_intervals(xdata):
+    if len(xdata) == 0:
+        return np.empty((0,),'float')
+    xdata = np.array(xdata,'float')
+    x_intervals = np.zeros(len(xdata) - 1)
+    for xidx in range(0, len(xdata)-1):
+        interval = xdata[xidx+1] - xdata[xidx]
+        x_intervals[xidx] = interval
+    return x_intervals
+
 def execute(model, data, savepath, 
         feature_field_name=None,
         x_field_name = None,
@@ -88,6 +98,7 @@ def execute(model, data, savepath,
     labels=list()
  
     master_array = None
+    master_intervalarr =None
     for group in groups:
         print("Group: %i" % group)
         gx_data = x_data[group_indices[group]["test_index"]]
@@ -129,6 +140,13 @@ def execute(model, data, savepath,
             master_array = np.copy(myarray)
         else:
             master_array = np.append(master_array, myarray, axis=0)
+        x_intervals = get_x_intervals(gx_data[gindexes])
+        grouparr_intervals = group * np.ones(len(x_intervals))
+        intervalarr = np.array([grouparr_intervals, x_intervals]).transpose()
+        if master_intervalarr is None:
+            master_intervalarr = np.copy(intervalarr)
+        else:
+            master_intervalarr = np.append(master_intervalarr, intervalarr, axis=0)
     csvname = os.path.join(savepath,"all_peak_data.csv")
     ptools.array_to_csv(csvname, headerline, master_array)
     kwargs = dict()
@@ -136,4 +154,8 @@ def execute(model, data, savepath,
     kwargs['savepath'] = savepath
     x_with_peaks = master_array[:,1]
     plothist.simple_histogram(x_with_peaks, **kwargs)
+    #
+    iheader = "group,peak_interval_in_x"
+    intervalcsvname = os.path.join(savepath,"interval_data.csv")
+    ptools.array_to_csv(intervalcsvname, iheader, master_intervalarr)
     return
