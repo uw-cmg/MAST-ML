@@ -4,6 +4,7 @@ import data_parser
 import numpy as np
 import data_analysis.printout_tools as ptools
 import plot_data.plot_xy as plotxy
+import plot_data.plot_histogram as plothist
 import os
 import portion_data.get_test_train_data as gttd
 import peakutils
@@ -121,4 +122,9 @@ def execute(model, data, savepath,
             master_array = np.append(master_array, myarray, axis=0)
     csvname = os.path.join(savepath,"all_peak_data.csv")
     ptools.array_to_csv(csvname, headerline, master_array)
+    kwargs = dict()
+    kwargs['xlabel'] = x_field_name
+    kwargs['savepath'] = savepath
+    x_with_peaks = master_array[:,1]
+    plothist.simple_histogram(x_with_peaks, **kwargs)
     return
