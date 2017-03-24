@@ -16,7 +16,12 @@ def execute(model, data, savepath,
         yfieldlist="",
         xerrfieldlist="",
         yerrfieldlist="",
+        xlabel="",
+        ylabel="",
+        label1="",
+        label2="",
         plotlabel="overlay",
+        stepsize="1.0",
         *args, **kwargs):
     """Overlay plots
         Args:
@@ -31,6 +36,7 @@ def execute(model, data, savepath,
             yerrfieldlist <str>: comma-delimited list of y error field names, to
                                 match with csvlist
     """
+    stepsize = float(stepsize)
     csvs = csvlist.split(",")
     print(csvs)
     xfields = xfieldlist.split(",")
@@ -83,12 +89,21 @@ def execute(model, data, savepath,
         datadict[pidx]['yerrdata'] = yerrdata
     kwargs=dict()
     kwargs['savepath'] = savepath
+    kwargs['stepsize'] = stepsize
+    if xlabel == "":
+        xlabel="%s, %s" % (xfields[0],xfields[1])
+    if ylabel == "":
+        ylabel="%s, %s" % (yfields[0],yfields[1])
+    kwargs['xlabel'] = xlabel
+    kwargs['ylabel'] = ylabel
+    if label1 == "":
+        label1=os.path.basename(csvs[0]).split(".")[0]
+    if label2 == "":
+        label2=os.path.basename(csvs[1]).split(".")[0]
+    kwargs['label1'] = label1
+    kwargs['label2'] = label2
     plotxy.dual_overlay(datadict[0]['xdata'], datadict[0]['ydata'],
         datadict[1]['xdata'], datadict[1]['ydata'],
-        label1=os.path.basename(csvs[0]).split(".")[0],
-        label2=os.path.basename(csvs[1]).split(".")[0],
-        xlabel="%s, %s" % (xfields[0],xfields[1]),
-        ylabel="%s, %s" % (yfields[0],yfields[1]),
         xerr1=datadict[0]['xerrdata'],
         yerr1=datadict[0]['yerrdata'],
         xerr2=datadict[1]['xerrdata'],
