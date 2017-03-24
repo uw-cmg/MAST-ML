@@ -14,6 +14,22 @@ from peakutils.plot import plot as pplot
 # Get peaks
 # Tam Mayeshiba 2017-03-24
 #######
+
+def get_indexes(ydata, threshold, distance, peaks, valleys):
+    """See execute for arguments
+    """
+    if peaks == 1:
+        peak_indexes = peakutils.indexes(ydata,thres=threshold,min_dist=distance)
+    if valleys == 1:
+        valley_indexes = peakutils.indexes(-1.0*ydata,thres=threshold, min_dist=distance)
+    if peaks == 0:
+        indexes = valley_indexes
+    else:
+        indexes = peak_indexes
+        if valleys == 1:
+            indexes = np.append(indexes, valley_indexes)
+    return indexes
+
 def execute(model, data, savepath, 
         feature_field_name=None,
         x_field_name = None,
@@ -54,25 +70,45 @@ def execute(model, data, savepath,
         print("Exiting.")
         return
 
-    if peaks == 1:
-        peak_indexes = peakutils.indexes(feature_data,thres=threshold,min_dist=distance)
-    
-    if valleys == 1:
-        valley_indexes = peakutils.indexes(-1.0*feature_data,thres=threshold, min_dist=distance)
-
-    if peaks == 0:
-        indexes = valley_indexes
+    if not (group_field_name == None):    
+        group_indices = gttd.get_field_logo_indices(data, group_field_name)
+        groups = list(group_indices.keys())
     else:
-        indexes = peak_indexes
-        if valleys == 1:
-            indexes = np.append(indexes, valley_indexes)
-    plt.figure()
-    pplot(x_data, feature_data, indexes)
-    plt.tight_layout()
-    plt.savefig(os.path.join(savepath,"peaks"))
-    plt.close()
-    headerline = "xcoord,peakval" 
-    myarray = np.array([x_data[indexes],feature_data[indexes]]).transpose()
-    csvname = os.path.join(savepath,"peak_data.csv")
-    ptools.array_to_csv(csvname, headerline, myarray)
+        groups = list([0])
+        group_indices=dict()
+        group_indices[0]=dict()
+        group_indices[0]["test_index"] = range(0, len(feature_data))
+    if not (label_field_name == None):
+        labeldata = np.asarray(data.get_data(label_field_name)).ravel()
+    else:
+        labeldata = np.zeros(len(feature_data))
+
+    labels=list()
+
+    for group in groups:
+        gx_data = x_data[group_indices[group]["test_index"]]
+        gfeature_data = feature_data[group_indices[group]["test_index"]]
+        kwargs=dict()
+        label = labeldata[group_indices[group]["test_index"][0]]
+        labels.append(label)
+        groupstr = "%i".zfill(3) % group
+        if group_field_name == None:
+            grouppath = savepath
+        else:
+            groupstr = groupstr + "_%s" % label
+            grouppath = os.path.join(savepath, groupstr)
+        if not os.path.isdir(grouppath):
+            os.mkdir(grouppath)
+        kwargs['savepath'] = grouppath
+        gindexes = get_indexes(gfeature_data, threshold, distance, 
+                                peaks, valleys)
+        plt.figure()
+        pplot(gx_data, gfeature_data, gindexes)
+        plt.tight_layout()
+        plt.savefig(os.path.join(grouppath,"peaks"))
+        plt.close()
+        headerline = "xcoord,peakval" 
+        myarray = np.array([gx_data[gindexes],gfeature_data[gindexes]]).transpose()
+        csvname = os.path.join(grouppath,"peak_data.csv")
+        ptools.array_to_csv(csvname, headerline, myarray)
     return
