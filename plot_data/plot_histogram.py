@@ -11,7 +11,7 @@ def simple_histogram(xvals,
             num_bins = 50,
             savepath="",
             xlabel="X",
-            ylabel="Probability",
+            ylabel="Count",
             title="",
             plotlabel="histogram",
             notelist=list(),
@@ -20,8 +20,8 @@ def simple_histogram(xvals,
     smallfont = 0.85*matplotlib.rcParams['font.size']
     darkblue="#00008B"
     #http://matplotlib.org/1.2.1/examples/pylab_examples/histogram_demo.html
-    n, bins, patches = plt.hist(xvals, num_bins, 
-                normed=1, facecolor='blue', alpha=0.75)
+    n, bins, patches = plt.hist(xvals, num_bins, normed=0,
+                facecolor='blue', alpha=0.75)
     ## add a 'best fit' line
     #bestfit = mlab.normpdf( bins, mu, sigma)
     #plt.plot(bins, bestfit, linestyle='--', linewidth=1,

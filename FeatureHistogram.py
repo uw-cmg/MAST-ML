@@ -45,29 +45,28 @@ def execute(model, data, savepath,
     
     kwargs=dict()
     kwargs['num_bins'] = num_bins
+    kwargs['savepath'] = savepath
 
     if group_field_name == None:
         kwargs['xlabel'] = xlabel
         plothist.simple_histogram(feature_data, **kwargs)
-    
-    else:
-        group_indices = gttd.get_field_logo_indices(data, group_field_name)
-        if not (label_field_name == None):
-            labeldata = np.asarray(data.get_data(label_field_name)).ravel()
-        groups = list(group_indices.keys())
-
-        means = list()
-        stds = list()
-        for group in groups:
-            fdata = feature_data[group_indices[group]["test_index"]]
-            meanf = np.mean(fdata)
-            stdf = np.std(fdata)
-            means.append(meanf)
-            stds.append(stds)
-        means = np.array(means)
-        stds = np.array(stds)
-        kwargs['xlabel'] = "Mean %s" % xlabel
-        plothist.simple_histogram(means, **kwargs)
-        kwargs['xlabel'] = "Std Devs %s" % xlabel
-        plothist.simple_histogram(stds, **kwargs)
+        return
+    group_indices = gttd.get_field_logo_indices(data, group_field_name)
+    if not (label_field_name == None):
+        labeldata = np.asarray(data.get_data(label_field_name)).ravel()
+    groups = list(group_indices.keys())
+    means = list()
+    stds = list()
+    for group in groups:
+        fdata = feature_data[group_indices[group]["test_index"]]
+        gmean = np.mean(fdata)
+        gstd = np.std(fdata)
+        means.append(gmean)
+        stds.append(gstd)
+    means = np.array(means)
+    stds = np.array(stds)
+    kwargs['xlabel'] = "Mean %s" % xlabel
+    plothist.simple_histogram(means, **kwargs)
+    kwargs['xlabel'] = "Std Devs %s" % xlabel
+    plothist.simple_histogram(stds, **kwargs)
     return
