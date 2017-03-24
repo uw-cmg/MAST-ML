@@ -74,17 +74,18 @@ def execute(model, data, savepath,
         group_indices = gttd.get_field_logo_indices(data, group_field_name)
         groups = list(group_indices.keys())
     else:
-        groups = list([0])
+        groups = list([-1])
         group_indices=dict()
-        group_indices[0]=dict()
-        group_indices[0]["test_index"] = range(0, len(feature_data))
+        group_indices[-1]=dict()
+        group_indices[-1]["test_index"] = range(0, len(feature_data))
     if not (label_field_name == None):
         labeldata = np.asarray(data.get_data(label_field_name)).ravel()
     else:
         labeldata = np.zeros(len(feature_data))
 
     labels=list()
-
+ 
+    master_array = None
     for group in groups:
         gx_data = x_data[group_indices[group]["test_index"]]
         gfeature_data = feature_data[group_indices[group]["test_index"]]
@@ -104,11 +105,20 @@ def execute(model, data, savepath,
                                 peaks, valleys)
         plt.figure()
         pplot(gx_data, gfeature_data, gindexes)
+        plt.xlabel(x_field_name)
+        plt.ylabel(feature_field_name)
         plt.tight_layout()
         plt.savefig(os.path.join(grouppath,"peaks"))
         plt.close()
-        headerline = "xcoord,peakval" 
-        myarray = np.array([gx_data[gindexes],gfeature_data[gindexes]]).transpose()
+        headerline = "group,xcoord,peakval" 
+        grouparr = group * np.ones(len(gindexes))
+        myarray = np.array([grouparr, gx_data[gindexes],gfeature_data[gindexes]]).transpose()
         csvname = os.path.join(grouppath,"peak_data.csv")
         ptools.array_to_csv(csvname, headerline, myarray)
+        if master_array is None:
+            master_array = np.copy(myarray)
+        else:
+            master_array = np.append(master_array, myarray, axis=0)
+    csvname = os.path.join(savepath,"all_peak_data.csv")
+    ptools.array_to_csv(csvname, headerline, master_array)
     return
