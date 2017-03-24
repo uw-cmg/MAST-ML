@@ -20,7 +20,7 @@ def simple_histogram(xvals,
     smallfont = 0.85*matplotlib.rcParams['font.size']
     darkblue="#00008B"
     #http://matplotlib.org/1.2.1/examples/pylab_examples/histogram_demo.html
-    n, bins, patches = plt.hist(xvals, num_bins, normed=0,
+    n_per_bin, bins, patches = plt.hist(xvals, num_bins, normed=0,
                 facecolor='blue', alpha=0.75)
     ## add a 'best fit' line
     #bestfit = mlab.normpdf( bins, mu, sigma)
@@ -36,7 +36,15 @@ def simple_histogram(xvals,
         plt.annotate(note, xy=(0.05, notey), xycoords="axes fraction",
                     fontsize=smallfont)
         notey = notey - notestep
-    plt.savefig(os.path.join(savepath, "%s_%s" % (plotlabel, xlabel.replace(" ","_"))), bbox_inches='tight')
+    savestr = "%s_%s" % (plotlabel, xlabel.replace(" ","_"))
+    plt.savefig(os.path.join(savepath, savestr), bbox_inches='tight')
     plt.close()
+    headerline = "bin,n_per_bin"
+    bins = np.array(bins,'float')
+    n_per_bin = np.append(n_per_bin,None) #last bin value is just the end of the bins
+    n_per_bin = np.array(n_per_bin, 'float')
+    myarray = np.array([bins, n_per_bin]).transpose()
+    csvname = os.path.join(savepath, "%s.csv" % savestr)
+    ptools.array_to_csv(csvname, headerline, myarray)
     return
 

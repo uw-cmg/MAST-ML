@@ -51,6 +51,11 @@ def execute(model, data, savepath,
     if group_field_name == None:
         kwargs['xlabel'] = xlabel
         plothist.simple_histogram(feature_data, **kwargs)
+        headerline = "%s" % feature_field_name
+        myarray = np.array([feature_data]).transpose()
+        
+        csvname = os.path.join(savepath,"%s.csv" % xlabel.replace(" ","_"))
+        ptools.array_to_csv(csvname, headerline, myarray)
         return
     group_indices = gttd.get_field_logo_indices(data, group_field_name)
     if not (label_field_name == None):
