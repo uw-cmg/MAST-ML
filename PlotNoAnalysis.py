@@ -4,6 +4,8 @@ import data_parser
 import numpy as np
 import data_analysis.printout_tools as ptools
 import plot_data.plot_xy as plotxy
+import os
+import portion_data.get_test_train_data as gttd
 
 def execute(model, data, savepath, 
         plottype="scatter",
@@ -59,10 +61,13 @@ def execute(model, data, savepath,
             ydata = Ydata[group_indices[group]["test_index"]]
             kwargs=dict()
             groupstr = "%i".zfill(3) % group
-            grouppath = savepath + "_" + groupstr
-            if not (label_field_name == None):
-                label = labeldata[group_indices[group]["test_index"][0]]
-                grouppath = grouppath + "_%s" % label
+            if group_field_name == None:
+                grouppath = savepath
+            else:
+                if not (label_field_name == None):
+                    label = labeldata[group_indices[group]["test_index"][0]]
+                    groupstr = groupstr + "_%s" % label
+                grouppath = os.path.join(savepath, groupstr)
             if not os.path.isdir(grouppath):
                 os.mkdir(grouppath)
             kwargs['savepath'] = grouppath
