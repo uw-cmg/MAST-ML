@@ -18,6 +18,7 @@ def execute(model, data, savepath,
         label_field_name=None,
         xlabel=None,
         num_bins = 50,
+        verbose = 0,
         *args, **kwargs):
     """Simple plot
         Args:
@@ -59,8 +60,15 @@ def execute(model, data, savepath,
     stds = list()
     for group in groups:
         fdata = feature_data[group_indices[group]["test_index"]]
-        gmean = np.mean(fdata)
-        gstd = np.std(fdata)
+        fdata = np.array(fdata,'float') #convert None's to numpy NaN
+        if (verbose > 0):
+            print("Group: %i" % group)
+            print(fdata)
+        if np.count_nonzero(np.isnan(fdata)) == len(fdata): #all NaN
+            print("Group %i has no data. Skipping." % group)
+            continue
+        gmean = np.nanmean(fdata) #ignore NaN in mean calculation
+        gstd = np.nanstd(fdata)   #ignore NaN in std calculation
         means.append(gmean)
         stds.append(gstd)
     means = np.array(means)
