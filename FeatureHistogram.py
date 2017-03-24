@@ -63,7 +63,12 @@ def execute(model, data, savepath,
     groups = list(group_indices.keys())
     means = list()
     stds = list()
+    labels=list()
     for group in groups:
+        if not (label_field_name == None):
+            labels.append(labeldata[group_indices[group]["test_index"][0]])
+        else:
+            labels.append("No label")
         fdata = feature_data[group_indices[group]["test_index"]]
         fdata = np.array(fdata,'float') #convert None's to numpy NaN
         if (verbose > 0):
@@ -82,4 +87,8 @@ def execute(model, data, savepath,
     plothist.simple_histogram(means, **kwargs)
     kwargs['xlabel'] = "Std Devs %s" % xlabel
     plothist.simple_histogram(stds, **kwargs)
+    headerline = "Group,Label,Mean,StdDev"
+    myarray = np.array([groups,labels,means,stds]).transpose()
+    csvname = os.path.join(savepath,"Means_%s.csv" % xlabel.replace(" ","_"))
+    ptools.mixed_array_to_csv(csvname, headerline, myarray)
     return
