@@ -73,7 +73,8 @@ def single(xvals, yvals,
         plt.annotate(note, xy=(0.05, notey), xycoords="axes fraction",
                     fontsize=smallfont)
         notey = notey - notestep
-    plt.savefig(os.path.join(savepath, "%s_vs_%s" % (ylabel, xlabel)), bbox_inches='tight')
+    savestr = "%s_vs_%s" % (ylabel.replace(" ","_"), xlabel.replace(" ","_"))
+    plt.savefig(os.path.join(savepath, savestr), bbox_inches='tight')
     plt.close()
     return
 
