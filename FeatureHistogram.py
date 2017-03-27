@@ -20,6 +20,8 @@ def execute(model, data, savepath,
         xlabel=None,
         num_bins = 50,
         verbose = 0,
+        mean_xlabel="",
+        mean_ylabel="",
         *args, **kwargs):
     """Simple plot
         Args:
@@ -92,8 +94,12 @@ def execute(model, data, savepath,
     plothist.simple_histogram(stds, **kwargs)
 
     kwargs2=dict()
-    kwargs2['xlabel'] = "%s" % group_field_name
-    kwargs2['ylabel'] = "Mean_%s" % (xlabel.replace(" ","_"))
+    if mean_xlabel == "":
+        mean_xlabel = "%s" % group_field_name
+    if mean_ylabel == "":
+        mean_ylabel = "Mean %s" % xlabel
+    kwargs2['xlabel'] = mean_xlabel
+    kwargs2['ylabel'] = mean_ylabel
     kwargs2['savepath'] = savepath
     kwargs2['yerr'] = stds
     kwargs2['plottype'] = "scatter"

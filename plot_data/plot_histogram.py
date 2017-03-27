@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.mlab as mlab
 from mean_error import mean_error
 import data_analysis.printout_tools as ptools
+import time
 
 def simple_histogram(xvals,
             num_bins = 50,
@@ -13,6 +14,7 @@ def simple_histogram(xvals,
             xlabel="X",
             ylabel="Count",
             title="",
+            timex="",
             plotlabel="histogram",
             notelist=list(),
             ):
@@ -36,6 +38,14 @@ def simple_histogram(xvals,
         plt.annotate(note, xy=(0.05, notey), xycoords="axes fraction",
                     fontsize=smallfont)
         notey = notey - notestep
+    if len(timex) > 0:
+        myax = plt.gca()
+        my_xticks = myax.get_xticks()
+        adjusted_xticks = list()
+        for tidx in range(0, len(my_xticks)):
+            mytick = time.strftime(timex, time.localtime(my_xticks[tidx]))
+            adjusted_xticks.append(mytick)
+        myax.set_xticklabels(adjusted_xticks, rotation=90.0)
     savestr = "%s_%s" % (plotlabel, xlabel.replace(" ","_"))
     plt.savefig(os.path.join(savepath, savestr), bbox_inches='tight')
     plt.close()

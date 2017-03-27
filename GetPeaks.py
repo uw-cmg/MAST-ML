@@ -51,6 +51,9 @@ def execute(model, data, savepath,
         distance = 1.0,
         peaks = 1,
         valleys = 0,
+        timex = "",
+        xlabel="",
+        ylabel="",
         *args, **kwargs):
     """Get peaks in data
         Args:
@@ -150,8 +153,14 @@ def execute(model, data, savepath,
     csvname = os.path.join(savepath,"all_peak_data.csv")
     ptools.array_to_csv(csvname, headerline, master_array)
     kwargs = dict()
-    kwargs['xlabel'] = x_field_name
+    if xlabel == "":
+        xlabel = x_field_name
+    kwargs['xlabel'] = xlabel
+    if ylabel == "":
+        ylabel = "Count"
+    kwargs['ylabel'] = ylabel
     kwargs['savepath'] = savepath
+    kwargs['timex'] = timex
     x_with_peaks = master_array[:,1]
     plothist.simple_histogram(x_with_peaks, **kwargs)
     #
