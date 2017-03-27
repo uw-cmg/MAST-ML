@@ -5,6 +5,8 @@ import data_parser
 import matplotlib.pyplot as plt
 from mean_error import mean_error
 import data_analysis.printout_tools as ptools
+import matplotlib.dates as mdates
+import time
 
 def get_xy_sorted(xvals, yvals, verbose=0):
     """Sort x and y according to x. 
@@ -21,6 +23,21 @@ def get_xy_sorted(xvals, yvals, verbose=0):
     ysorted = sortedarr[1,:]
     return [xsorted, ysorted]
 
+def get_converted_epoch_xticks(xticks):
+    """Matplotlib needs epoch days
+    """
+    tzseconds = time.timezone
+    isdaylight = time.localtime().tm_isdst
+    secadj_xticks = xticks - tzseconds
+    if isdaylight:
+        secadj_xticks = secadj_xticks + 3600.0
+    numticks = len(secadj_xticks)
+    adjusted_xticks = np.zeros(numticks)
+    for xidx in range(0, numticks):
+        epochday = matplotlib.dates.epoch2num(secadj_xticks[xidx])
+        adjusted_xticks[xidx] = epochday        
+    return adjusted_xticks
+
 def single(xvals, yvals, 
             plottype="scatter",
             xerr=None,
@@ -30,6 +47,7 @@ def single(xvals, yvals,
             title="",
             savepath="",
             guideline=0,
+            timex="",
             notelist=list(),
             *args, **kwargs):
     matplotlib.rcParams.update({'font.size': 18})
@@ -73,6 +91,14 @@ def single(xvals, yvals,
         plt.annotate(note, xy=(0.05, notey), xycoords="axes fraction",
                     fontsize=smallfont)
         notey = notey - notestep
+    if len(timex) > 0:
+        myax = plt.gca()
+        my_xticks = myax.get_xticks()
+        adjusted_xticks = list()
+        for tidx in range(0, len(my_xticks)):
+            mytick = time.strftime(timex, time.localtime(my_xticks[tidx]))
+            adjusted_xticks.append(mytick)
+        myax.set_xticklabels(adjusted_xticks, rotation=90.0)
     savestr = "%s_vs_%s" % (ylabel.replace(" ","_"), xlabel.replace(" ","_"))
     plt.savefig(os.path.join(savepath, savestr), bbox_inches='tight')
     plt.close()

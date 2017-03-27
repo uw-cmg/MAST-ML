@@ -16,6 +16,7 @@ def execute(model, data, savepath,
         label_field_name=None,
         flipaxes=0,
         do_fft=0,
+        timex="",
         *args, **kwargs):
     """Simple plot
         Args:
@@ -32,6 +33,8 @@ def execute(model, data, savepath,
                                 a single "y" feature as the x
             do_fft <int>: 0, no fast Fourier transform (default)
                         1, fast Fourier transform as well
+            timex <str>: formatter conversion if x-axis is a time axis; leave
+                            blank for no conversion. Ex: "%m/%d/%y %H:%M"
     """
     flipaxes = int(flipaxes)
     do_fft = int(do_fft)
@@ -75,6 +78,7 @@ def execute(model, data, savepath,
                 os.mkdir(grouppath)
             kwargs['savepath'] = grouppath
             kwargs['plottype'] = plottype
+            kwargs['timex'] = timex
             if flipaxes == 0:
                 kwargs['xlabel'] = xfeatures[numplot]
                 kwargs['ylabel'] = yfeature
