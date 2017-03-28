@@ -7,12 +7,14 @@ from sklearn.metrics import mean_squared_error
 import data_analysis.printout_tools as ptools
 import plot_data.plot_predicted_vs_measured as plotpm
 import plot_data.plot_xy as plotxy
+import portion_data.get_test_train_data as gttd
 import os
 
 def do_single_fit(model, xdata, ydata, xlabel="", ylabel="", 
             stepsize=1,
             guideline=1,
             savepath="",
+            plotlabel="single_fit",
             **kwargs):
     model.fit(xdata, ydata)
     ypredict = model.predict(xdata)
@@ -33,6 +35,7 @@ def do_single_fit(model, xdata, ydata, xlabel="", ylabel="",
     kwargs['notelist'] = notelist
     kwargs['guideline'] = guideline
     kwargs['savepath'] = savepath
+    kwargs['plotlabel'] = plotlabel
     plotxy.single(ydata, ypredict, **kwargs)
     return [ypredict, y_abs_err, rmse, mean_error]
 
@@ -49,7 +52,7 @@ def execute(model, data, savepath,
     stepsize = float(stepsize)
 
     # Train the model using the training sets
-    Xdata = data.get_x_data()
+    Xdata = np.asarray(data.get_x_data())
     ydata = np.asarray(data.get_y_data()).ravel()
     
     kwargs=dict()
@@ -102,18 +105,18 @@ def execute(model, data, savepath,
         headerline = "%s,Measured,Predicted,Absolute error" % numeric_field_name
         myarray = np.array([labels, ydata, ypredict, y_abs_err]).transpose()
     else:
+        groupdata = np.asarray(data.get_data(group_field_name)).ravel()
         headerline = "%s,%s,Measured,Predicted,Absolute error" % (numeric_field_name, group_field_name)
         myarray = np.array([labels, groupdata, ydata, ypredict, y_abs_err]).transpose()
     
     csvname = os.path.join(savepath, "FullFit_data.csv")
-    ptools.array_to_csv(csvname, headerline, myarray)
+    ptools.mixed_array_to_csv(csvname, headerline, myarray)
     
     if group_field_name == None:
         return
-    groupdata = np.asarray(data.get_data(group_field_name)).ravel()
 
     if label_field_name == None:
-        labeldata = np.zeros(len(groupdata))
+        labeldata = np.copy(groupdata)
     else:
         labeldata = np.asarray(data.get_data(label_field_name)).ravel()
     
@@ -122,13 +125,33 @@ def execute(model, data, savepath,
     groups = list(indices.keys())
     groups.sort()
 
-    
+   
+    xdatalist=list()
+    ydatalist=list()
+    labellist=list()
+    xerrlist=list()
+    yerrlist=list()
+    group_notelist=list()
+    group_notelist.append("RMSE for per-group fitting:")
     for group in groups:
         g_index = indices[group]["test_index"]
         g_label = labeldata[g_index[0]]
+        kwargs['plotlabel'] = "per_group_fit_%s_%s" % (group, g_label)
         [g_ypredict, g_y_abs_err, g_rmse, g_mean_error] = do_single_fit(model, Xdata[g_index], ydata[g_index], **kwargs)
         g_myarray = np.array([labeldata[g_index], groupdata[g_index], ydata[g_index], g_ypredict, g_y_abs_err]).transpose()
         csvname = os.path.join(savepath, "GroupFit_data_%s_%s.csv" % (group, g_label))
-        ptools.array_to_csv(csvname, headerline, g_myarray)
-
+        ptools.mixed_array_to_csv(csvname, headerline, g_myarray)
+        xdatalist.append(ydata[g_index]) #actual
+        ydatalist.append(g_ypredict) #predicted
+        labellist.append(g_label)
+        xerrlist.append(None)
+        yerrlist.append(None)
+        group_notelist.append("%15s: %3.2f" % (g_label, g_rmse))
+    kwargs['xdatalist'] = xdatalist
+    kwargs['ydatalist'] = ydatalist
+    kwargs['xerrlist'] = xerrlist
+    kwargs['yerrlist'] = yerrlist
+    kwargs['labellist'] = labellist
+    kwargs['notelist'] = group_notelist
+    plotxy.multiple_overlay(**kwargs) 
     return
