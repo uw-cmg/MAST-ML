@@ -124,56 +124,102 @@ def dual_overlay(xdata1, ydata1,
         *args, **kwargs):
     """Plot dual xy overlay
     """
+    xdatalist=list([xdata1, xdata2])
+    ydatalist=list([ydata1, ydata2])
+    xerrlist=list([xerr1, xerr2])
+    yerrlist=list([yerr1, yerr2])
+    labellist=list([label1,label2])
+
+    kwargs=dict()
+    kwargs['stepsize'] = stepsize
+    kwargs['savepath'] = savepath
+    kwargs['plotlabel'] = plotlabel
+    kwargs['guideline'] = guideline
+    kwargs['fill'] = fill
+    kwargs['equalsize'] = equalsize
+    kwargs['notelist'] = notelist
+    kwargs['xlabel'] = xlabel
+    kwargs['ylabel'] = ylabel
+    kwargs['xdatalist'] = xdatalist
+    kwargs['ydatalist'] = ydatalist
+    kwargs['xerrlist'] = xerrlist
+    kwargs['yerrlist'] = yerrlist
+    kwargs['labellist'] = labellist
+    
+    multiple_overlay(**kwargs)
+    return
+
+def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
+        xlabel="X",
+        ylabel="Y",
+        xerrlist=list(),
+        yerrlist=list(),
+        stepsize=1,
+        savepath="",
+        plotlabel="multiple_overlay",
+        guideline=0,
+        fill=1,
+        equalsize=1,
+        notelist=list(), 
+        *args, **kwargs):
+    """Plot multiple xy overlay
+    """
+    numlines=len(xdatalist)
+    if numlines > 6:
+        print("Only 6 lines supported.")
+        print("Exiting.")
+        return
+    if not(len(ydatalist) == numlines):
+        print("Not enough y data. Exiting.")
+        return
+    if not(len(labellist) == numlines):
+        print("Not enough labels. Exiting.")
+        return
+    if not(len(xerrlist) == numlines):
+        print("Not enough x error data. Use empty lists for no error.")
+        return
+    if not(len(yerrlist) == numlines):
+        print("Not enough y error data. Use empty lists for no error.")
+        return
     matplotlib.rcParams.update({'font.size': 18})
     smallfont = 0.85*matplotlib.rcParams['font.size']
     notestep = 0.07
     plt.figure()
-    darkred="#8B0000"
-    darkblue="#00008B"
+    #colors are red, blue, green, purple, brown, gray
+    outlines=["#8B0000","#00008B","#008B00","#542788","#b35806","#252525"]
     if fill == 1:
-        face1 = "red"
-        face2 = "blue"
+        faces=["red","blue","green","#6a51a3","orange","#bdbdbd"]
     else:
-        face1 = "None"
-        face2 = "None"
+        faces=["None","None","None","None","None","None"]
+    bigsize=15
+    smallsize=10
     if equalsize == 1:
-        size1 = 15
-        size2 = 15
+        sizes=[bigsize,bigsize,bigsize,bigsize,bigsize,bigsize]
     else:
-        size1 = 15
-        size2 = 10
-    if xerr1 is None:
-        xerr1 = np.zeros(len(xdata1))
-    if yerr1 is None:
-        yerr1 = np.zeros(len(ydata1))
-    if xerr2 is None:
-        xerr2 = np.zeros(len(xdata2))
-    if yerr2 is None:
-        yerr2 = np.zeros(len(ydata2))
-    (_, caps, _) = plt.errorbar(xdata1, ydata1,
-        xerr=xerr1,
-        yerr=yerr1,
-        label=label1,
-        linewidth=2,
-        linestyle = "None", color=darkred,
-        markeredgewidth=2, markeredgecolor=darkred,
-        markerfacecolor=face1 , marker='o',
-        markersize=size1)
-    for cap in caps:
-        cap.set_color(darkred)
-        cap.set_markeredgewidth(2)
-    (_, caps, _) = plt.errorbar(xdata2, ydata2, 
-        xerr=xerr2,
-        yerr=yerr2,
-        label=label2,
-        linewidth=2,
-        linestyle = "None", color=darkblue,
-        markeredgewidth=2, markeredgecolor=darkblue,
-        markerfacecolor=face2 , marker='o',
-        markersize=size2)
-    for cap in caps:
-        cap.set_color(darkblue)
-        cap.set_markeredgewidth(2)
+        sizes=[bigsize,smallsize,smallsize,smallsize,smallsize,smallsize]
+    markers=['o','o','s','d','^','v']
+    for nidx in range(0, numlines):
+        label = labellist[nidx]
+        xdata = xdatalist[nidx]
+        ydata = ydatalist[nidx]
+        xerr = xerrlist[nidx]
+        if (xerr is None) or len(xerr) == 0:
+            xerr = np.zeros(len(xdata))
+        yerr = yerrlist[nidx]
+        if (yerr is None) or len(yerr) == 0:
+            yerr = np.zeros(len(ydata))
+        (_, caps, _) = plt.errorbar(xdata, ydata,
+            xerr=xerr,
+            yerr=yerr,
+            label=label,
+            linewidth=2,
+            linestyle = "None", color=outlines[nidx],
+            markeredgewidth=2, markeredgecolor=outlines[nidx],
+            markerfacecolor=faces[nidx] , marker=markers[nidx],
+            markersize=sizes[nidx])
+        for cap in caps:
+            cap.set_color(outlines[nidx])
+            cap.set_markeredgewidth(2)
     lgd=plt.legend(loc = "lower right", 
                     fontsize=smallfont, 
                     numpoints=1,
