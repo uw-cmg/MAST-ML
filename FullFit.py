@@ -9,21 +9,13 @@ import plot_data.plot_predicted_vs_measured as plotpm
 import plot_data.plot_xy as plotxy
 import os
 
-def execute(model, data, savepath, 
-        xlabel="Measured",
-        ylabel="Predicted",
-        stepsize=1,
-        numericlabelfield=None,
-        *args, **kwargs):
-    """Full fit
-    """
-    stepsize = float(stepsize)
-
-    # Train the model using the training sets
-    Xdata = data.get_x_data()
-    ydata = np.asarray(data.get_y_data()).ravel()
-    model.fit(Xdata, ydata)
-    ypredict = model.predict(Xdata)
+def do_single_fit(model, xdata, ydata, xlabel="", ylabel="", 
+            stepsize=1,
+            guideline=1,
+            savepath="",
+            **kwargs):
+    model.fit(xdata, ydata)
+    ypredict = model.predict(xdata)
     rmse = np.sqrt(mean_squared_error(ypredict, ydata))
     y_abs_err = np.absolute(ypredict - ydata)
     mean_error = np.mean(ypredict - ydata) #mean error sees if fit is shifted in one direction or another; so, do not want absolute here
@@ -37,12 +29,35 @@ def execute(model, data, savepath,
     kwargs=dict()
     kwargs['xlabel'] = xlabel
     kwargs['ylabel'] = ylabel
-    #kwargs['stepsize'] = stepsize
+    kwargs['stepsize'] = stepsize
     kwargs['notelist'] = notelist
-    kwargs['guideline'] = 1
+    kwargs['guideline'] = guideline
     kwargs['savepath'] = savepath
     plotxy.single(ydata, ypredict, **kwargs)
+    return [ypredict, y_abs_err, rmse, mean_error]
 
+def execute(model, data, savepath, 
+        xlabel="Measured",
+        ylabel="Predicted",
+        stepsize=1,
+        group_field_name=None,
+        numeric_field_name=None,
+        *args, **kwargs):
+    """Full fit
+    """
+    stepsize = float(stepsize)
+
+    # Train the model using the training sets
+    Xdata = data.get_x_data()
+    ydata = np.asarray(data.get_y_data()).ravel()
+    
+    kwargs=dict()
+    kwargs['xlabel'] = xlabel
+    kwargs['ylabel'] = ylabel
+    kwargs['stepsize'] = stepsize
+    kwargs['savepath'] = savepath
+    kwargs['guideline'] = 1
+    [ypredict, y_abs_err, rmse, mean_error] = do_single_fit(model, Xdata, ydata, **kwargs)
     #datasets = ['IVAR', 'ATR-1', 'ATR-2']
     #colors = ['#BCBDBD', '#009AFF', '#FF0A09']
     #fig, ax = plt.subplots()
@@ -77,13 +92,23 @@ def execute(model, data, savepath,
     #plt.clf()
     #plt.close()
 
-    if numericlabelfield == None:
-        numericlabelfield = data.x_features[0]
+    if numeric_field_name == None: #help identify each point
+        numeric_field_name = data.x_features[0]
 
-    labels = np.asarray(data.get_data(numericlabelfield)).ravel()
+    labels = np.asarray(data.get_data(numeric_field_name)).ravel()
 
+    if group_field_name == None:
+        headerline = "%s,Measured,Predicted,Absolute error" % numeric_field_name
+        myarray = np.array([labels, ydata, ypredict, y_abs_err]).transpose()
+    else:
+        headerline = "%s,%s,Measured,Predicted,Absolute error" % (numeric_field_name, group_field_name)
+        myarray = np.array([labels, groupdata, ydata, ypredict, y_abs_err]).transpose()
+    
     csvname = os.path.join(savepath, "FullFit_data.csv")
-    headerline = "%s,Measured,Predicted,Absolute error" % numericlabelfield
-    myarray = np.array([labels, ydata, ypredict, y_abs_err]).transpose()
     ptools.array_to_csv(csvname, headerline, myarray)
+    
+    if group_field_name == None:
+        return
+    
+    groupdata = np.asarray(data.get_data(group_field_name)).ravel()
     return
