@@ -211,18 +211,19 @@ def do_full_fit(model,
                 if byerr == None:
                     byerr = np.zeros(len(ydatalist[nidx]))
                 bigyerr = np.append(bigyerr, byerr)
-            else:
+        temp_xdatalist.append(bigxdata)
+        temp_ydatalist.append(bigydata)
+        temp_labellist.append(biglabel)
+        temp_xerrlist.append(bigxerr)
+        temp_yerrlist.append(bigyerr)
+        for nidx in range(0, numlines): #loop repeats because want big array first
+            if (nidx in maxidxlist):
                 temp_xdatalist.append(xdatalist[nidx])
                 temp_ydatalist.append(ydatalist[nidx])
                 temp_labellist.append(labellist[nidx])
                 temp_xerrlist.append(xerrlist[nidx])
                 temp_yerrlist.append(yerrlist[nidx])
                 temp_group_notelist.append(group_notelist[nidx+1])
-        temp_xdatalist.append(bigxdata)
-        temp_ydatalist.append(bigydata)
-        temp_labellist.append(biglabel)
-        temp_xerrlist.append(bigxerr)
-        temp_yerrlist.append(bigyerr)
         xdatalist = temp_xdatalist
         ydatalist = temp_ydatalist
         labellist = temp_labellist
