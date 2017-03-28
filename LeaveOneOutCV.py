@@ -13,7 +13,7 @@ import plot_data.plot_xy as plotxy
 def execute(model, data, savepath, lwr_data="",
             xlabel="Measured",
             ylabel="Predicted",
-            numericlabelfield=None,
+            numeric_field_name=None,
             stepsize=1,
             *args, **kwargs):
     """Basic cross validation
@@ -21,7 +21,7 @@ def execute(model, data, savepath, lwr_data="",
             model, data, savepath, lwr_data: see AllTests.py
             xlabel <str>: x-axis label for plot
             ylabel <str>: y-axis label for plot
-            numericlabelfield <str>: Field for label data (numeric only)
+            numeric_field_name <str>: Field for label data (numeric only)
     """
     stepsize = float(stepsize)
 
@@ -61,7 +61,7 @@ def execute(model, data, savepath, lwr_data="",
     print("The maximum error was {:.3f}".format(maxErr))
     
     notelist=list()
-    notelist.append("RMSE: %3.2f" % RMSE)
+    notelist.append("LOO RMSE: %3.2f" % RMSE)
     kwargs=dict()
     kwargs['xlabel'] = xlabel
     kwargs['ylabel'] = ylabel
@@ -72,11 +72,11 @@ def execute(model, data, savepath, lwr_data="",
 
     plotxy.single(Ydata, Run_Y_Pred, **kwargs)
     
-    if numericlabelfield == None:
-        numericlabelfield = data.x_features[0]
+    if numeric_field_name == None:
+        numeric_field_name = data.x_features[0]
 
-    labels = np.asarray(data.get_data(numericlabelfield)).ravel()
-    headerline = "%s,Measured,Predicted,Absolute error" % numericlabelfield 
+    labels = np.asarray(data.get_data(numeric_field_name)).ravel()
+    headerline = "%s,Measured,Predicted,Absolute error" % numeric_field_name 
     myarray = np.array([labels, Ydata, Run_Y_Pred, Run_Abs_Err]).transpose()
     
     csvname = os.path.join(savepath,"LOO_CV_data.csv")
