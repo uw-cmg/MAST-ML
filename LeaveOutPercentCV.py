@@ -15,7 +15,7 @@ def execute(model, data, savepath, lwr_data="",
             leave_out_percent=20,
             xlabel="Measured",
             ylabel="Predicted",
-            numericlabelfield=None,
+            numeric_field_name=None,
             stepsize=1,
             *args, **kwargs):
     """Basic cross validation
@@ -142,12 +142,12 @@ def execute(model, data, savepath, lwr_data="",
     plotxy.dual_overlay(Ydata, Y_predicted_best, Ydata, Y_predicted_worst, **kwargs2)
 
 
-    if numericlabelfield == None:
-        numericlabelfield = data.x_features[0]
+    if numeric_field_name == None: #help label data
+        numeric_field_name = data.x_features[0]
 
-    labels = np.asarray(data.get_data(numericlabelfield)).ravel()
+    labels = np.asarray(data.get_data(numeric_field_name)).ravel()
     csvname = os.path.join(savepath,"Leave%iPercentOut_CV_data.csv" % int(leave_out_percent))
-    headerline = "%s,Measured,Predicted best,Absolute error best,Predicted worst,Absolute error worst" % numericlabelfield
+    headerline = "%s,Measured,Predicted best,Absolute error best,Predicted worst,Absolute error worst" % numeric_field_name
     myarray = np.array([labels, Ydata,
                 Y_predicted_best, Best_Abs_Err, 
                 Y_predicted_worst,Worst_Abs_Err]).transpose()
