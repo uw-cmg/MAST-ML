@@ -8,6 +8,7 @@ from sklearn.model_selection import LeaveOneOut
 from sklearn.metrics import mean_squared_error
 import data_analysis.printout_tools as ptools
 import plot_data.plot_predicted_vs_measured as plotpm
+import plot_data.plot_xy as plotxy
 
 def execute(model, data, savepath, lwr_data="",
             xlabel="Measured",
@@ -67,8 +68,9 @@ def execute(model, data, savepath, lwr_data="",
     kwargs['notelist'] = notelist
     kwargs['savepath'] = savepath
     kwargs['stepsize'] = stepsize
+    kwargs['guideline'] = 1
 
-    plotpm.single(Ydata, Run_Y_Pred, **kwargs)
+    plotxy.single(Ydata, Run_Y_Pred, **kwargs)
     
     if numericlabelfield == None:
         numericlabelfield = data.x_features[0]
