@@ -189,7 +189,7 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
     notestep = 0.07
     plt.figure()
     #colors are red, blue, green, purple, brown, gray
-    outlines=["#8B0000","#00008B","#008B00","#542788","#b35806","#252525"]
+    outlines=["#8B0000","#00008B","#004400","#542788","#b35806","#252525"]
     if fill == 1:
         faces=["red","blue","green","#6a51a3","orange","#bdbdbd"]
     else:
