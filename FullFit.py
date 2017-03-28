@@ -11,8 +11,8 @@ import portion_data.get_test_train_data as gttd
 import os
 
 def do_single_fit(model, 
-            trainx, 
-            trainy, 
+            trainx=None,
+            trainy=None, 
             testx=None, 
             testy=None,
             xlabel="", ylabel="", 
@@ -76,62 +76,85 @@ def execute(model, data, savepath,
     kwargs_f['group_field_name'] = group_field_name
     kwargs_f['label_field_name'] = label_field_name
     kwargs_f['savepath'] = savepath
-    kwargs_f['numericdata'] = np.asarray(data.get_data(numeric_field_name)).ravel()
+    kwargs_f['test_numericdata'] = np.asarray(data.get_data(numeric_field_name)).ravel()
     if not(group_field_name == None):
-        kwargs_f['groupdata'] = np.asarray(data.get_data(group_field_name)).ravel()
-        group_indices = gttd.get_field_logo_indices(data, group_field_name)
-        kwargs_f['group_indices'] = group_indices
+        kwargs_f['test_groupdata'] = np.asarray(data.get_data(group_field_name)).ravel()
         if label_field_name == None:
             label_field_name = group_field_name
-        kwargs_f['labeldata'] = np.asarray(data.get_data(label_field_name)).ravel()
-    do_full_fit(model, Xdata, ydata, **kwargs_f)
+        kwargs_f['test_labeldata'] = np.asarray(data.get_data(label_field_name)).ravel()
+    kwargs_f['full_xtrain'] = Xdata
+    kwargs_f['full_ytrain'] = ydata
+    do_full_fit(model, **kwargs_f)
     return
 
-def do_full_fit(model, Xdata, ydata, savepath="",
+def do_full_fit(model,
+        full_xtrain = None,
+        full_ytrain = None,
+        full_xtest = None,
+        full_ytest = None,
+        savepath="",
         xlabel="",
         ylabel="",
         stepsize=1,
-        groupdata=None,
-        group_indices=None,
-        numericdata=None,
-        labeldata=None,
+        test_groupdata=None,
+        train_groupdata=None,
+        test_numericdata=None,
+        test_labeldata=None,
         group_field_name=None,
         numeric_field_name = None,
         label_field_name=None,
         *args,**kwargs):
-    """Full fit
+    """Full fit.
+        test_groupdata, test_numericdata, and test_labeldata must correspond to full_ytest.
+        If full_ytest is not given, full_ytest is the same as full_ytrain.
     """
     stepsize = float(stepsize)
-    
+    if full_xtest is None:
+        full_xtest = np.copy(full_xtrain)
+    if full_ytest is None:
+        full_ytest = np.copy(full_ytrain)
+    if train_groupdata is None:
+        if test_groupdata is None:
+            pass
+        else:
+            train_groupdata = np.copy(test_groupdata)
     kwargs=dict()
     kwargs['xlabel'] = xlabel
     kwargs['ylabel'] = ylabel
     kwargs['stepsize'] = stepsize
     kwargs['savepath'] = savepath
     kwargs['guideline'] = 1
-    [ypredict, y_abs_err, rmse, mean_error] = do_single_fit(model, Xdata, ydata, **kwargs)
+    kwargs['trainx'] = full_xtrain
+    kwargs['trainy'] = full_ytrain
+    kwargs['testx'] = full_xtest
+    kwargs['testy'] = full_ytest
+    [ypredict, y_abs_err, rmse, mean_error] = do_single_fit(model, **kwargs)
 
     if numeric_field_name == None: #help identify each point
         raise ValueError("Numeric field name not set.")
 
     if group_field_name == None:
         headerline = "%s,Measured,Predicted,Absolute error" % numeric_field_name
-        myarray = np.array([numericdata, ydata, ypredict, y_abs_err]).transpose()
+        myarray = np.array([test_numericdata, full_ytest, ypredict, y_abs_err]).transpose()
     else:
         headerline = "%s,%s,Measured,Predicted,Absolute error" % (numeric_field_name, group_field_name)
-        myarray = np.array([numericdata, groupdata, ydata, ypredict, y_abs_err]).transpose()
+        myarray = np.array([test_numericdata, test_groupdata, full_ytest, ypredict, y_abs_err]).transpose()
     
     csvname = os.path.join(savepath, "FullFit_data.csv")
     ptools.mixed_array_to_csv(csvname, headerline, myarray)
     
     if group_field_name == None:
         return
+    
     #GET PER-GROUP FITS, and overlay them
+    train_group_indices = gttd.get_logo_indices(train_groupdata)
+    test_group_indices = gttd.get_logo_indices(test_groupdata)
     
-    
-    groups = list(group_indices.keys())
-    groups.sort()
+    test_groups = list(test_group_indices.keys())
+    test_groups.sort()
 
+    train_groups = list(train_group_indices.keys())
+    train_groups.sort()
    
     xdatalist=list()
     ydatalist=list()
@@ -140,15 +163,25 @@ def do_full_fit(model, Xdata, ydata, savepath="",
     yerrlist=list()
     group_notelist=list()
     group_notelist.append("RMSE for per-group fitting:")
-    for group in groups:
-        g_index = group_indices[group]["test_index"]
-        g_label = labeldata[g_index[0]]
-        kwargs['plotlabel'] = "GroupFit_%s_%s" % (group, g_label)
-        [g_ypredict, g_y_abs_err, g_rmse, g_mean_error] = do_single_fit(model, Xdata[g_index], ydata[g_index], **kwargs)
-        g_myarray = np.array([labeldata[g_index], groupdata[g_index], ydata[g_index], g_ypredict, g_y_abs_err]).transpose()
-        csvname = os.path.join(savepath, "GroupFit_data_%s_%s.csv" % (group, g_label))
+    for test_group in test_groups:
+        if not test_group in train_groups: #cannot be trained
+            continue
+        g_train_index = train_group_indices[test_group]["test_index"]
+        g_test_index = test_group_indices[test_group]["test_index"]
+        g_label = test_labeldata[g_test_index[0]]
+        kwargs['plotlabel'] = "GroupFit_%s_%s" % (test_group, g_label)
+        kwargs['trainx'] = full_xtrain[g_train_index]
+        kwargs['trainy'] = full_ytrain[g_train_index]
+        kwargs['testx'] = full_xtest[g_test_index]
+        g_ytest = full_ytest[g_test_index]
+        kwargs['testy'] = g_ytest
+        [g_ypredict, g_y_abs_err, g_rmse, g_mean_error] = do_single_fit(model, **kwargs)
+        g_myarray = np.array([test_labeldata[g_test_index], 
+                            test_groupdata[g_test_index], 
+                            g_ytest, g_ypredict, g_y_abs_err]).transpose()
+        csvname = os.path.join(savepath, "GroupFit_data_%s_%s.csv" % (test_group, g_label))
         ptools.mixed_array_to_csv(csvname, headerline, g_myarray)
-        xdatalist.append(ydata[g_index]) #actual
+        xdatalist.append(g_ytest) #actual
         ydatalist.append(g_ypredict) #predicted
         labellist.append(g_label)
         xerrlist.append(None)
@@ -173,11 +206,11 @@ def do_full_fit(model, Xdata, ydata, savepath="",
     yerrlist=list()
     group_notelist=list()
     group_notelist.append("RMSE from overall fitting:")
-    for group in groups:
-        g_index = group_indices[group]["test_index"]
-        g_label = labeldata[g_index[0]]
+    for group in test_groups:
+        g_index = test_group_indices[group]["test_index"]
+        g_label = test_labeldata[g_index[0]]
         g_ypredict = ypredict[g_index]
-        g_ydata = ydata[g_index]
+        g_ydata = full_ytest[g_index]
         g_mean_error = np.mean(g_ypredict - g_ydata)
         g_rmse = np.sqrt(mean_squared_error(g_ypredict, g_ydata))
         xdatalist.append(g_ydata) #actual
