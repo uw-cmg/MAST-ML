@@ -164,6 +164,7 @@ def do_full_fit(model,
     yerrlist=list()
     group_notelist=list()
     group_notelist.append("RMSE from overall fitting:")
+    rmselist=list()
     for group in test_groups:
         g_index = test_group_indices[group]["test_index"]
         g_label = test_labeldata[g_index[0]]
@@ -176,7 +177,57 @@ def do_full_fit(model,
         labellist.append(g_label)
         xerrlist.append(None)
         yerrlist.append(None)
+        rmselist.append(g_rmse)
         group_notelist.append('{:<1}: {:.2f}'.format(g_label, g_rmse))
+    #allow largest RMSE to be plotted if too many lines
+    numlines = len(xdatalist)
+    if numlines > 6: #too many lines for multiple_overlay
+        import heapq
+        maxrmslist = heapq.nlargest(5, rmselist)
+        maxidxlist = heapq.nlargest(5, range(len(rmselist)), 
+                        key=lambda x: rmselist[x])
+        temp_xdatalist=list()
+        temp_ydatalist=list()
+        temp_xerrlist=list()
+        temp_yerrlist=list()
+        temp_group_notelist=list()
+        temp_group_notelist.append("RMSE from overall fitting:")
+        temp_labellist=list()
+        bigxdata = np.empty((0,1))
+        bigydata = np.empty((0,1))
+        biglabel = "_" # no label
+        bigxerr = np.empty((0,1))
+        bigyerr = np.empty((0,1))
+        for nidx in range(0, numlines):
+            if not (nidx in maxidxlist):
+                bigxdata = np.append(bigxdata, xdatalist[nidx])
+                bigydata = np.append(bigydata, ydatalist[nidx])
+                bxerr = xerrlist[nidx]
+                if bxerr == None:
+                    bxerr = np.zeros(len(xdatalist[nidx]))
+                bigxerr = np.append(bigxerr, bxerr)
+                byerr = yerrlist[nidx]
+                if byerr == None:
+                    byerr = np.zeros(len(ydatalist[nidx]))
+                bigyerr = np.append(bigyerr, byerr)
+            else:
+                temp_xdatalist.append(xdatalist[nidx])
+                temp_ydatalist.append(ydatalist[nidx])
+                temp_labellist.append(labellist[nidx])
+                temp_xerrlist.append(xerrlist[nidx])
+                temp_yerrlist.append(yerrlist[nidx])
+                temp_group_notelist.append(group_notelist[nidx+1])
+        temp_xdatalist.append(bigxdata)
+        temp_ydatalist.append(bigydata)
+        temp_labellist.append(biglabel)
+        temp_xerrlist.append(bigxerr)
+        temp_yerrlist.append(bigyerr)
+        xdatalist = temp_xdatalist
+        ydatalist = temp_ydatalist
+        labellist = temp_labellist
+        xerrlist = temp_xerrlist
+        yerrlist = temp_yerrlist
+        group_notelist = temp_group_notelist
     kwargs['xdatalist'] = xdatalist
     kwargs['ydatalist'] = ydatalist
     kwargs['stepsize'] = stepsize
