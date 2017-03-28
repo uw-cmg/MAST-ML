@@ -103,7 +103,7 @@ def execute(model, data, savepath, lwr_data="",
 
     if not (os.path.isdir(savepath)):
         os.mkdir(savepath)
-    print("The average mean-over-{:1i}-folds RMSE was {:.3f} over {:1i} tests".format(num_folds, avgRMS, num_runs))
+    print("The average mean-over-{:d}-folds RMSE was {:.3f} over {:1i} tests".format(num_folds, avgRMS, num_runs))
     print("The median mean RMSE was {:.3f}".format(medRMS))
     print("The max mean RMSE was {:.3f}".format(maxRMS))
     print("The min mean RMSE was {:.3f}".format(minRMS))
