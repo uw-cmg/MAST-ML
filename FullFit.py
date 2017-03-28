@@ -10,17 +10,28 @@ import plot_data.plot_xy as plotxy
 import portion_data.get_test_train_data as gttd
 import os
 
-def do_single_fit(model, xdata, ydata, xlabel="", ylabel="", 
+def do_single_fit(model, 
+            trainx, 
+            trainy, 
+            testx=None, 
+            testy=None,
+            xlabel="", ylabel="", 
             stepsize=1,
             guideline=1,
             savepath="",
             plotlabel="single_fit",
             **kwargs):
-    model.fit(xdata, ydata)
-    ypredict = model.predict(xdata)
-    rmse = np.sqrt(mean_squared_error(ypredict, ydata))
-    y_abs_err = np.absolute(ypredict - ydata)
-    mean_error = np.mean(ypredict - ydata) #mean error sees if fit is shifted in one direction or another; so, do not want absolute here
+    """Single fit with test/train data and plotting.
+    """
+    if testx is None:
+        testx = np.copy(trainx)
+    if testy is None:
+        testy = np.copy(trainy)
+    model.fit(trainx, trainy)
+    ypredict = model.predict(testx)
+    rmse = np.sqrt(mean_squared_error(ypredict, testy))
+    y_abs_err = np.absolute(ypredict - testy)
+    mean_error = np.mean(ypredict - testy) #mean error sees if fit is shifted in one direction or another; so, do not want absolute here
 
     notelist=list()
     notelist.append("RMSE: %3.2f" % rmse)
@@ -36,7 +47,7 @@ def do_single_fit(model, xdata, ydata, xlabel="", ylabel="",
     kwargs['guideline'] = guideline
     kwargs['savepath'] = savepath
     kwargs['plotlabel'] = plotlabel
-    plotxy.single(ydata, ypredict, **kwargs)
+    plotxy.single(testy, ypredict, **kwargs)
     return [ypredict, y_abs_err, rmse, mean_error]
 
 
