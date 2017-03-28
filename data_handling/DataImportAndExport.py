@@ -62,6 +62,7 @@ def add_standard_fields(db, cname, verbose=0):
     cas.add_generic_effective_fluence_field(db, cname, 3e10, 0.26)
     cas.add_generic_effective_fluence_field(db, cname, 3e10, 0.10)
     cas.add_generic_effective_fluence_field(db, cname, 3e10, 0.20)
+    cas.add_generic_effective_fluence_field(db, cname, 3e10, 0.15)
     return
 
 def add_normalized_fields(db, cname, clist=list(), verbose=0):
