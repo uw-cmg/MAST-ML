@@ -7,16 +7,17 @@ import matplotlib
 import portion_data.get_test_train_data as gttd
 import data_analysis.printout_tools as ptools
 import plot_data.plot_rmse as plotrmse
+import os
 
 def execute(model, data, savepath, 
-            field_name=None,
+            group_field_name=None,
             label_field_name=None,
             xlabel="Group number",
             ylabel="RMSE",
             title="",
             *args, **kwargs):
-    if field_name == None:
-        raise ValueError("No field name set.")
+    if group_field_name == None:
+        raise ValueError("No group field name set.")
 
     rms_list = list()
     group_value_list = list()
@@ -26,22 +27,21 @@ def execute(model, data, savepath,
 
     Xdata = np.asarray(data.get_x_data())
     ydata = np.asarray(data.get_y_data()).ravel()
-    fielddata = np.asarray(data.get_data(field_name)).ravel()
-    if not label_field_name == None:
-        labeldata = np.asarray(data.get_data(label_field_name)).ravel()
+    groupdata = np.asarray(data.get_data(group_field_name)).ravel()
+    if label_field_name == None:
+        label_field_name = group_field_name
+    
+    labeldata = np.asarray(data.get_data(label_field_name)).ravel()
 
-    indices = gttd.get_field_logo_indices(data, field_name)
+    indices = gttd.get_field_logo_indices(data, group_field_name)
     
     groups = list(indices.keys())
     groups.sort()
     for group in groups:
         train_index = indices[group]["train_index"]
         test_index = indices[group]["test_index"]
-        test_group_val = fielddata[test_index[0]] #left-out group value
-        if label_field_name == None:
-            test_group_label = "None"
-        else:
-            test_group_label = labeldata[test_index[0]]
+        test_group_val = groupdata[test_index[0]] #left-out group value
+        test_group_label = labeldata[test_index[0]]
         model.fit(Xdata[train_index], ydata[train_index])
         Ypredict = model.predict(Xdata[test_index])
 
@@ -72,8 +72,8 @@ def execute(model, data, savepath,
 
     plotrmse.vs_leftoutgroup(group_value_list, rms_list, **kwargs)
 
-    csvname = "leavegroupout.csv"
-    headerline = "Group,Group value,Group label,RMSE,Mean error"
+    csvname = os.path.join(savepath, "leavegroupout.csv")
+    headerline = "Group,%s,%s,RMSE,Mean error" % (group_field_name, label_field_name)
     save_array = np.asarray([group_list, group_value_list, group_label_list, rms_list, me_list]).transpose()
     ptools.mixed_array_to_csv(csvname, headerline, save_array) 
     return
