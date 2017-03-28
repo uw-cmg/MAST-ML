@@ -76,6 +76,7 @@ def execute(model, data, savepath,
     kwargs_f['group_field_name'] = group_field_name
     kwargs_f['label_field_name'] = label_field_name
     kwargs_f['savepath'] = savepath
+    kwargs_f['do_pergroup_fits'] = 1
     kwargs_f['test_numericdata'] = np.asarray(data.get_data(numeric_field_name)).ravel()
     if not(group_field_name == None):
         kwargs_f['test_groupdata'] = np.asarray(data.get_data(group_field_name)).ravel()
@@ -96,6 +97,7 @@ def do_full_fit(model,
         xlabel="",
         ylabel="",
         stepsize=1,
+        do_pergroup_fits = 1,
         test_groupdata=None,
         train_groupdata=None,
         test_numericdata=None,
@@ -145,8 +147,6 @@ def do_full_fit(model,
     
     if group_field_name == None:
         return
-    
-    #GET PER-GROUP FITS, and overlay them
     train_group_indices = gttd.get_logo_indices(train_groupdata)
     test_group_indices = gttd.get_logo_indices(test_groupdata)
     
@@ -155,6 +155,41 @@ def do_full_fit(model,
 
     train_groups = list(train_group_indices.keys())
     train_groups.sort()
+    
+    #EXTRACT EACH GROUP FITS FROM OVERALL FIT, and OVERLAY
+    xdatalist=list()
+    ydatalist=list()
+    labellist=list()
+    xerrlist=list()
+    yerrlist=list()
+    group_notelist=list()
+    group_notelist.append("RMSE from overall fitting:")
+    for group in test_groups:
+        g_index = test_group_indices[group]["test_index"]
+        g_label = test_labeldata[g_index[0]]
+        g_ypredict = ypredict[g_index]
+        g_ydata = full_ytest[g_index]
+        g_mean_error = np.mean(g_ypredict - g_ydata)
+        g_rmse = np.sqrt(mean_squared_error(g_ypredict, g_ydata))
+        xdatalist.append(g_ydata) #actual
+        ydatalist.append(g_ypredict) #predicted
+        labellist.append(g_label)
+        xerrlist.append(None)
+        yerrlist.append(None)
+        group_notelist.append('{:<1}: {:.2f}'.format(g_label, g_rmse))
+    kwargs['xdatalist'] = xdatalist
+    kwargs['ydatalist'] = ydatalist
+    kwargs['stepsize'] = stepsize
+    kwargs['xerrlist'] = xerrlist
+    kwargs['yerrlist'] = yerrlist
+    kwargs['labellist'] = labellist
+    kwargs['notelist'] = group_notelist
+    kwargs['plotlabel'] = "OverallFit_overlay"
+    plotxy.multiple_overlay(**kwargs) 
+    
+    #GET PER-GROUP FITS, and overlay them
+    if not(do_pergroup_fits == 1):
+        return
    
     xdatalist=list()
     ydatalist=list()
@@ -195,37 +230,5 @@ def do_full_fit(model,
     kwargs['labellist'] = labellist
     kwargs['notelist'] = group_notelist
     kwargs['plotlabel'] = "GroupFit_overlay"
-    plotxy.multiple_overlay(**kwargs) 
-    
-    #EXTRACT EACH GROUP FITS FROM OVERALL FIT, and OVERLAY
-   
-    xdatalist=list()
-    ydatalist=list()
-    labellist=list()
-    xerrlist=list()
-    yerrlist=list()
-    group_notelist=list()
-    group_notelist.append("RMSE from overall fitting:")
-    for group in test_groups:
-        g_index = test_group_indices[group]["test_index"]
-        g_label = test_labeldata[g_index[0]]
-        g_ypredict = ypredict[g_index]
-        g_ydata = full_ytest[g_index]
-        g_mean_error = np.mean(g_ypredict - g_ydata)
-        g_rmse = np.sqrt(mean_squared_error(g_ypredict, g_ydata))
-        xdatalist.append(g_ydata) #actual
-        ydatalist.append(g_ypredict) #predicted
-        labellist.append(g_label)
-        xerrlist.append(None)
-        yerrlist.append(None)
-        group_notelist.append('{:<1}: {:.2f}'.format(g_label, g_rmse))
-    kwargs['xdatalist'] = xdatalist
-    kwargs['ydatalist'] = ydatalist
-    kwargs['stepsize'] = stepsize
-    kwargs['xerrlist'] = xerrlist
-    kwargs['yerrlist'] = yerrlist
-    kwargs['labellist'] = labellist
-    kwargs['notelist'] = group_notelist
-    kwargs['plotlabel'] = "OverallFit_overlay"
     plotxy.multiple_overlay(**kwargs) 
     return
