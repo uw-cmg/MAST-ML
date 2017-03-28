@@ -78,6 +78,8 @@ def add_normalized_fields(db, cname, clist=list(), verbose=0):
             verbose=verbose, collectionlist = clist)
     cas.add_minmax_normalization_of_a_field(db, cname, "log(eff fl 100p=10)",
             verbose=verbose, collectionlist = clist)
+    cas.add_minmax_normalization_of_a_field(db, cname, "log(eff fl 100p=15)",
+            verbose=verbose, collectionlist = clist)
     #cas.add_stddev_normalization_of_a_field(db, cname, "delta_sigma_y_MPa",
     #        verbose = verbose, collectionlist = clist)
     return
