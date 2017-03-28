@@ -31,6 +31,11 @@ def get_kfold_indices(datalen, num_folds=5, verbose=1):
     return indices
 
 def get_logo_indices(grouparr, verbose=1):
+    """
+        np.unique sorts the group value array.
+        logo also sorts.
+        The resulting dictionary will have indices with the group value.
+    """
     logo = LeaveOneGroupOut()
     dummy_arr = np.arange(0, len(grouparr))
     groupvals = np.unique(grouparr)
