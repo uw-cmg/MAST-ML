@@ -45,6 +45,7 @@ def single(xvals, yvals,
             xlabel="X",
             ylabel="Y",
             title="",
+            plotlabel="",
             savepath="",
             guideline=0,
             timex="",
@@ -100,6 +101,8 @@ def single(xvals, yvals,
             adjusted_xticks.append(mytick)
         myax.set_xticklabels(adjusted_xticks, rotation=90.0)
     savestr = "%s_vs_%s" % (ylabel.replace(" ","_"), xlabel.replace(" ","_"))
+    if len(plotlabel) > 0:
+        savestr = "%s_" % plotlabel + savestr
     plt.savefig(os.path.join(savepath, savestr), bbox_inches='tight')
     plt.close()
     return
