@@ -131,13 +131,14 @@ def execute(model, data, savepath, lwr_data="",
     kwargs2 = dict()
     kwargs2['xlabel'] = xlabel
     kwargs2['ylabel'] = ylabel
-    kwargs2['label1'] = "Best fit"
-    kwargs2['label2'] = "Worst fit"
+    kwargs2['label1'] = "Test with lowest fold-average RMSE"
+    kwargs2['label2'] = "Test with highest fold-average RMSE"
     notelist=list()
-    notelist.append("Min RMSE: {:.2f}".format(minRMS))
-    notelist.append("Max RMSE: {:.2f}".format(maxRMS))
-    notelist.append("Mean RMSE: {:.2f} $\pm$ {:.2f}".format(avgRMS, sd))
-    notelist.append("Mean mean error: {:.2f} $\pm$ {:.2f}".format(meanME, sdME))
+    notelist.append("Mean over %i tests of:" % num_runs)
+    notelist.append("  {:d}-fold-average RMSE:".format(num_folds))
+    notelist.append("    {:.2f} $\pm$ {:.2f}".format(avgRMS, sd))
+    notelist.append("  {:d}-fold-average mean error:".format(num_folds))
+    notelist.append("    {:.2f} $\pm$ {:.2f}".format(meanME, sdME))
     kwargs2['notelist'] = notelist
     kwargs2['guideline'] = 1
     kwargs2['fill'] = 1
