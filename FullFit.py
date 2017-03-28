@@ -216,6 +216,7 @@ def do_full_fit(model,
         temp_labellist.append(biglabel)
         temp_xerrlist.append(bigxerr)
         temp_yerrlist.append(bigyerr)
+        temp_group_notelist.append("Overall: %3.2f" % rmse) #overall rmse
         for nidx in range(0, numlines): #loop repeats because want big array first
             if (nidx in maxidxlist):
                 temp_xdatalist.append(xdatalist[nidx])
