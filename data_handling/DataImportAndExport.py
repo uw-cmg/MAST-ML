@@ -27,14 +27,22 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 import data_handling.mongo_utilities as mongoutil
 
-def import_initial_collections(db, cbasic, importpath):
+def import_initial_collections(db, importpath):
     """Import initial collections for use in creating specialized collections.
     """
+    cbasic=dict()
+    cbasic["alloys"] = "alloy_properties.csv"
+    cbasic["cd_ivar_2017"]="CD_IVAR_Hardening_2017-1_with_ivar_columns_reduced.csv"
+    cbasic["cd_ivar_2016"]="CD_IVAR_Hardening_clean_2016.csv"
+    cbasic["cd_lwr_2017"]="lwr_cd_2017_reduced_for_import.csv"
+    cbasic["ucsb_ivar_and_ivarplus"]="ucsb_ivar_and_ivarplus.csv"
+    cbasic["cd_lwr_2016_bynum"]="CDTemp_CD_lwr_2016_raw.csv"
+    cbasic["atr2_2016"]="atr2_data.csv"
     for cname in cbasic.keys():
         mongoutil.import_collection(db, cname, importpath, cbasic[cname])
     return
 
-def clean_ivar_basic(db, cname, verbose=1):
+def clean_expt_ivar(db, cname, verbose=1):
     [id_list, reason_list] = dclean.get_alloy_removal_ids(db, cname, [41])
     dclean.flag_for_ignore(db, cname, id_list, reason_list)
     print(len(id_list))
@@ -73,37 +81,20 @@ def add_normalized_fields(db, cname, clist=list(), verbose=0):
     #        verbose = verbose, collectionlist = clist)
     return
 
-def create_expt_ivar(db, cname, fromcname, verbose=1):
-    """Create IVAR and IVAR+ spreadsheet
-    """
-    cas.transfer_nonignore_records(db, fromcname, cname, verbose)
-    add_standard_fields(db, cname)
-    return
 
-def prefilter_ivar_for_cd1(db, cname, fromcname, verbose=1):
-    tempname = "%s_temp" % cname
-    cas.transfer_nonignore_records(db, fromcname, tempname, verbose)
-    [id_list, reason_list] = dclean.get_alloy_removal_ids(db, tempname, 
+def clean_cd1_ivar(db, cname, verbose=1):
+    [id_list, reason_list] = dclean.get_alloy_removal_ids(db, cname, 
                                 [41,1,2,8,14,29])
-    dclean.flag_for_ignore(db, tempname, id_list, reason_list)
+    dclean.flag_for_ignore(db, cname, id_list, reason_list)
     print(len(id_list))
-    [id_list, reason_list] = dclean.flag_bad_cd1_points(db, tempname)
-    dclean.flag_for_ignore(db, tempname, id_list, reason_list)
+    [id_list, reason_list] = dclean.get_duplicate_ids_to_remove(db, cname)
+    dclean.flag_for_ignore(db, cname, id_list, reason_list)
     print(len(id_list))
-    cas.transfer_nonignore_records(db, tempname, cname, verbose)
-    db.drop_collection(tempname)
+    [id_list, reason_list] = dclean.flag_bad_cd1_points(db, cname)
+    dclean.flag_for_ignore(db, cname, id_list, reason_list)
+    print(len(id_list))
     return
 
-def create_cd_ivar(db, cname, fromcname, fromcdname, verbose=1):
-    """Create IVAR and IVAR+ spreadsheet for CD data
-        Get conditions from experimental IVAR; will match to CD
-        data and replace delta_sigma_y_MPa with CD's data
-    """
-    cas.transfer_nonignore_records(db, fromcname, cname, verbose)
-    cas.remove_field(db, cname, "delta_sigma_y_MPa") #will replace with CD data
-    add_cd(db, cname, fromcdname)
-    add_standard_fields(db, cname)
-    return
 
 def clean_lwr(db, cname, verbose=1):
     dclean.standardize_alloy_names(db, cname)
@@ -139,9 +130,11 @@ def clean_cd1_lwr(db, cname):
     #print(len(id_list))
     return
 
-def create_lwr(db, cname, fromcname, verbose=1):
+def create_lwr(db, cname, fromcname, exportpath, verbose=1):
     """Create LWR condition spreadsheet
     """
+    cas.transfer_ignore_records(db, fromcname, "%s_ignore" % cname, verbose)
+    cas.export_spreadsheet(db, "%s_ignore" % cname, exportpath)
     cas.transfer_nonignore_records(db, fromcname, cname, verbose)
     #Additional cleaning. Flux and fluence must be present for all records.
     dclean.standardize_flux_and_fluence(db, cname)
@@ -176,24 +169,6 @@ def reformat_lwr(db, cname, fromcname, verbose=1):
             alloy_name = apu.look_up_name_or_number(db,alloy_num,"number")
             idict["Alloy"] = alloy_name
             db[cname].insert_one(idict)
-    return
-def add_cd(db, cname, cdname, verbose=1):
-    """Match CD records to expt IVAR conditions and replace delta_sigma_y_MPa
-    """
-    cd_records = cas.get_nonignore_records(db, cdname) 
-    cas.match_and_add_records(db, cname, cd_records, 
-        matchlist=["Alloy","flux_n_cm2_sec","fluence_n_cm2","temperature_C"],
-        matchas=["Alloy","flux_n_cm2_sec","fluence_n_cm2","temperature_C"],
-        transferlist= ["CD_delta_sigma_y_MPa"],
-        transferas = ["delta_sigma_y_MPa"])
-    print("Updated with condition and temperature matches from %s." % cdname)
-    cd_records.rewind()
-    cas.match_and_add_records(db, cname, cd_records, 
-        matchlist=["Alloy","flux_n_cm2_sec","fluence_n_cm2","temperature_C"],
-        matchas=["Alloy","flux_n_cm2_sec","fluence_n_cm2","original_reported_temperature_C"],
-        transferlist= ["CD_delta_sigma_y_MPa"],
-        transferas = ["delta_sigma_y_MPa"])
-    print("Updated with condition and old temperature matches from %s." % cdname)
     return
 
 def create_standard_conditions(db, cname, ref_flux=3e10, temp=290, min_sec=3e6, max_sec=5e9, clist=list(), verbose=0):
@@ -230,41 +205,48 @@ def create_standard_conditions(db, cname, ref_flux=3e10, temp=290, min_sec=3e6, 
     return
 
 def main(importpath):
+    #set up database
     dirpath = os.path.dirname(importpath)
     db_base="dbtt"
-    cbasic=dict()
-    cbasic["alloys"] = "alloy_properties.csv"
-    cbasic["cd_ivar_2017"]="CD_IVAR_Hardening_2017-1_with_ivar_columns_reduced.csv"
-    cbasic["cd_ivar_2016"]="CD_IVAR_Hardening_clean_2016.csv"
-    cbasic["cd_lwr_2017"]="lwr_cd_2017_reduced_for_import.csv"
-    cbasic["ucsb_ivar_and_ivarplus"]="ucsb_ivar_and_ivarplus.csv"
-    cbasic["cd_lwr_2016_bynum"]="CDTemp_CD_lwr_2016_raw.csv"
-    cbasic["atr2_2016"]="atr2_data.csv"
     client = mongoutil.get_mongo_client()
     dbname = mongoutil.get_unique_name(client, db_base)
     exportfolder = "data_exports_%s_%s" %(dbname,time.strftime("%Y%m%d_%H%M%S"))
     exportpath = os.path.join(dirpath, exportfolder)
     db = client[dbname]
     #import initial collections
-    import_initial_collections(db, cbasic, importpath)
+    import_initial_collections(db, importpath)
     #create ancillary databases and spreadsheets
-    clean_ivar_basic(db, "ucsb_ivar_and_ivarplus")
+    ##Expt IVAR
+    clean_expt_ivar(db, "ucsb_ivar_and_ivarplus")
+    cas.transfer_ignore_records(db, "ucsb_ivar_and_ivarplus","expt_ivar_ignore")
+    cas.export_spreadsheet(db, "expt_ivar_ignore", exportpath)
     cas.transfer_nonignore_records(db, "ucsb_ivar_and_ivarplus","expt_ivar")
     add_standard_fields(db, "expt_ivar")
-    #
-    prefilter_ivar_for_cd1(db, "cd1_ivar_pre", "ucsb_ivar_and_ivarplus")
-    create_cd_ivar(db, "cd1_ivar", "cd1_ivar_pre", "cd_ivar_2016")
-    #
-    create_cd_ivar(db, "cd2_ivar", "expt_ivar", "cd_ivar_2017")
-    #
-    clean_lwr(db, "cd_lwr_2017")
-    create_lwr(db, "cd2_lwr", "cd_lwr_2017")
-    #
+    ##CD1 IVAR
+    cas.rename_field(db,"cd_ivar_2016","CD_delta_sigma_y_MPa", "delta_sigma_y_MPa")
+    clean_cd1_ivar(db, "cd_ivar_2016")
+    cas.transfer_ignore_records(db, "cd_ivar_2016","cd1_ivar_ignore")
+    cas.export_spreadsheet(db, "cd1_ivar_ignore", exportpath)
+    cas.transfer_nonignore_records(db, "cd_ivar_2016","cd1_ivar")
+    add_standard_fields(db, "cd1_ivar")
+    ##CD2 IVAR
+    cas.rename_field(db,"cd_ivar_2017","CD_delta_sigma_y_MPa","delta_sigma_y_MPa")
+    clean_cd1_ivar(db, "cd_ivar_2017") 
+    cas.transfer_ignore_records(db, "cd_ivar_2017","cd2_ivar_ignore")
+    cas.export_spreadsheet(db, "cd2_ivar_ignore", exportpath)
+    cas.transfer_nonignore_records(db, "cd_ivar_2017","cd2_ivar")
+    add_standard_fields(db, "cd2_ivar")
+    ##CD1 LWR
     reformat_lwr(db, "cd_lwr_2016", "cd_lwr_2016_bynum")
     clean_cd1_lwr(db, "cd_lwr_2016")
     clean_lwr(db, "cd_lwr_2016")
-    create_lwr(db, "cd1_lwr", "cd_lwr_2016")
-    #
+    create_lwr(db, "cd1_lwr", "cd_lwr_2016", exportpath)
+    ##CD2 LWR
+    clean_lwr(db, "cd_lwr_2017")
+    create_lwr(db, "cd2_lwr", "cd_lwr_2017", exportpath)
+    ##ATR2
+    cas.transfer_ignore_records(db, "atr2_2016","expt_atr2_ignore")
+    cas.export_spreadsheet(db, "atr2_2016_ignore", exportpath)
     cas.transfer_nonignore_records(db, "atr2_2016","expt_atr2")
     cas.rename_field(db,"expt_atr2","alloy name", "Alloy")
     dclean.standardize_alloy_names(db,"expt_atr2")
@@ -272,7 +254,7 @@ def main(importpath):
     cas.add_time_field(db, "expt_atr2")
     #cas.transfer_nonignore_records(db, "expt_ivar","expt_atr2")
     add_standard_fields(db, "expt_atr2")
-    #
+    #Normalization
     add_normalized_fields(db, "expt_ivar", ["expt_ivar","expt_atr2","cd1_lwr"])
     add_normalized_fields(db, "cd1_ivar", ["cd1_ivar","cd1_lwr"])
     add_normalized_fields(db, "cd1_lwr", ["cd1_ivar","cd1_lwr"])
@@ -287,8 +269,8 @@ def main(importpath):
     cas.export_spreadsheet(db, "expt_ivar", exportpath)
     cas.export_spreadsheet(db, "cd1_ivar", exportpath)
     cas.export_spreadsheet(db, "cd2_ivar", exportpath)
-    cas.export_spreadsheet(db, "cd2_lwr", exportpath)
     cas.export_spreadsheet(db, "cd1_lwr", exportpath)
+    cas.export_spreadsheet(db, "cd2_lwr", exportpath)
     cas.export_spreadsheet(db, "expt_atr2", exportpath)
     cas.export_spreadsheet(db, "lwr_std_expt", exportpath)
     cas.export_spreadsheet(db, "lwr_std_cd1", exportpath)
