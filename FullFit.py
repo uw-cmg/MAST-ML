@@ -136,7 +136,7 @@ def execute(model, data, savepath,
     for group in groups:
         g_index = indices[group]["test_index"]
         g_label = labeldata[g_index[0]]
-        kwargs['plotlabel'] = "per_group_fit_%s_%s" % (group, g_label)
+        kwargs['plotlabel'] = "GroupFit_%s_%s" % (group, g_label)
         [g_ypredict, g_y_abs_err, g_rmse, g_mean_error] = do_single_fit(model, Xdata[g_index], ydata[g_index], **kwargs)
         g_myarray = np.array([labeldata[g_index], groupdata[g_index], ydata[g_index], g_ypredict, g_y_abs_err]).transpose()
         csvname = os.path.join(savepath, "GroupFit_data_%s_%s.csv" % (group, g_label))
@@ -149,9 +149,11 @@ def execute(model, data, savepath,
         group_notelist.append("%15s: %3.2f" % (g_label, g_rmse))
     kwargs['xdatalist'] = xdatalist
     kwargs['ydatalist'] = ydatalist
+    kwargs['stepsize'] = stepsize
     kwargs['xerrlist'] = xerrlist
     kwargs['yerrlist'] = yerrlist
     kwargs['labellist'] = labellist
     kwargs['notelist'] = group_notelist
+    kwargs['plotlabel'] = "GroupFit_overlay"
     plotxy.multiple_overlay(**kwargs) 
     return
