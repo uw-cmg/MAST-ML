@@ -114,7 +114,7 @@ def execute(model, data, savepath,
     
     if group_field_name == None:
         return
-
+    #GET PER-GROUP FITS, and overlay them
     if label_field_name == None:
         labeldata = np.copy(groupdata)
     else:
@@ -146,7 +146,7 @@ def execute(model, data, savepath,
         labellist.append(g_label)
         xerrlist.append(None)
         yerrlist.append(None)
-        group_notelist.append("%15s: %3.2f" % (g_label, g_rmse))
+        group_notelist.append('{:<1}: {:.2f}'.format(g_label, g_rmse))
     kwargs['xdatalist'] = xdatalist
     kwargs['ydatalist'] = ydatalist
     kwargs['stepsize'] = stepsize
@@ -155,5 +155,37 @@ def execute(model, data, savepath,
     kwargs['labellist'] = labellist
     kwargs['notelist'] = group_notelist
     kwargs['plotlabel'] = "GroupFit_overlay"
+    plotxy.multiple_overlay(**kwargs) 
+    
+    #EXTRACT EACH GROUP FITS FROM OVERALL FIT, and OVERLAY
+   
+    xdatalist=list()
+    ydatalist=list()
+    labellist=list()
+    xerrlist=list()
+    yerrlist=list()
+    group_notelist=list()
+    group_notelist.append("RMSE from overall fitting:")
+    for group in groups:
+        g_index = indices[group]["test_index"]
+        g_label = labeldata[g_index[0]]
+        g_ypredict = ypredict[g_index]
+        g_ydata = ydata[g_index]
+        g_mean_error = np.mean(g_ypredict - g_ydata)
+        g_rmse = np.sqrt(mean_squared_error(g_ypredict, g_ydata))
+        xdatalist.append(g_ydata) #actual
+        ydatalist.append(g_ypredict) #predicted
+        labellist.append(g_label)
+        xerrlist.append(None)
+        yerrlist.append(None)
+        group_notelist.append('{:<1}: {:.2f}'.format(g_label, g_rmse))
+    kwargs['xdatalist'] = xdatalist
+    kwargs['ydatalist'] = ydatalist
+    kwargs['stepsize'] = stepsize
+    kwargs['xerrlist'] = xerrlist
+    kwargs['yerrlist'] = yerrlist
+    kwargs['labellist'] = labellist
+    kwargs['notelist'] = group_notelist
+    kwargs['plotlabel'] = "OverallFit_overlay"
     plotxy.multiple_overlay(**kwargs) 
     return
