@@ -21,8 +21,9 @@ model = gkrr_model
 #####
 #test_cases = KFoldCV_5
 #test_cases = LeaveOutPercentCV_20,LeaveOutPercentCV_50,LeaveOutPercentCV_80
-test_cases = LeaveOneOutCV
+#test_cases = LeaveOneOutCV
 #test_cases = FullFit
+test_cases = LeaveOutGroupCV_alloy
 
 [gkrr_model]
 gamma = 1.622
@@ -81,3 +82,12 @@ save_path = ./FullFit
 xlabel = Measured IVAR+ $$\Delta\sigma_{y}$$ (MPa)
 ylabel = GKRR predicted $$\Delta\sigma_{y}$$ (MPa)
 numeric_field_name = alloy_number
+group_field_name = dataset
+stepsize = 200
+
+[LeaveOutGroupCV_alloy]
+save_path = ./LeaveOutGroupCV_alloy
+group_field_name = alloy_number
+label_field_name = Alloy
+xlabel = Left-out alloy
+ylabel = RMSE
