@@ -39,6 +39,7 @@ def do_single_fit(model, xdata, ydata, xlabel="", ylabel="",
     plotxy.single(ydata, ypredict, **kwargs)
     return [ypredict, y_abs_err, rmse, mean_error]
 
+
 def execute(model, data, savepath, 
         xlabel="Measured",
         ylabel="Predicted",
@@ -47,13 +48,49 @@ def execute(model, data, savepath,
         label_field_name=None,
         numeric_field_name=None,
         *args, **kwargs):
+    """Do full fit.
+        Main function is split off from execute in order to allow external use.
+    """
+    stepsize=float(stepsize)
+    if numeric_field_name == None: #help identify each point
+        numeric_field_name = data.x_features[0]
+    Xdata = np.asarray(data.get_x_data())
+    ydata = np.asarray(data.get_y_data()).ravel()
+    #
+    kwargs_f = dict()
+    kwargs_f['xlabel'] = xlabel
+    kwargs_f['ylabel'] = ylabel
+    kwargs_f['stepsize'] = stepsize
+    kwargs_f['numeric_field_name'] = numeric_field_name
+    kwargs_f['group_field_name'] = group_field_name
+    kwargs_f['label_field_name'] = label_field_name
+    kwargs_f['savepath'] = savepath
+    kwargs_f['numericdata'] = np.asarray(data.get_data(numeric_field_name)).ravel()
+    if not(group_field_name == None):
+        kwargs_f['groupdata'] = np.asarray(data.get_data(group_field_name)).ravel()
+        group_indices = gttd.get_field_logo_indices(data, group_field_name)
+        kwargs_f['group_indices'] = group_indices
+        if label_field_name == None:
+            label_field_name = group_field_name
+        kwargs_f['labeldata'] = np.asarray(data.get_data(label_field_name)).ravel()
+    do_full_fit(model, Xdata, ydata, **kwargs_f)
+    return
+
+def do_full_fit(model, Xdata, ydata, savepath="",
+        xlabel="",
+        ylabel="",
+        stepsize=1,
+        groupdata=None,
+        group_indices=None,
+        numericdata=None,
+        labeldata=None,
+        group_field_name=None,
+        numeric_field_name = None,
+        label_field_name=None,
+        *args,**kwargs):
     """Full fit
     """
     stepsize = float(stepsize)
-
-    # Train the model using the training sets
-    Xdata = np.asarray(data.get_x_data())
-    ydata = np.asarray(data.get_y_data()).ravel()
     
     kwargs=dict()
     kwargs['xlabel'] = xlabel
@@ -64,17 +101,14 @@ def execute(model, data, savepath,
     [ypredict, y_abs_err, rmse, mean_error] = do_single_fit(model, Xdata, ydata, **kwargs)
 
     if numeric_field_name == None: #help identify each point
-        numeric_field_name = data.x_features[0]
-
-    labels = np.asarray(data.get_data(numeric_field_name)).ravel()
+        raise ValueError("Numeric field name not set.")
 
     if group_field_name == None:
         headerline = "%s,Measured,Predicted,Absolute error" % numeric_field_name
-        myarray = np.array([labels, ydata, ypredict, y_abs_err]).transpose()
+        myarray = np.array([numericdata, ydata, ypredict, y_abs_err]).transpose()
     else:
-        groupdata = np.asarray(data.get_data(group_field_name)).ravel()
         headerline = "%s,%s,Measured,Predicted,Absolute error" % (numeric_field_name, group_field_name)
-        myarray = np.array([labels, groupdata, ydata, ypredict, y_abs_err]).transpose()
+        myarray = np.array([numericdata, groupdata, ydata, ypredict, y_abs_err]).transpose()
     
     csvname = os.path.join(savepath, "FullFit_data.csv")
     ptools.mixed_array_to_csv(csvname, headerline, myarray)
@@ -82,14 +116,9 @@ def execute(model, data, savepath,
     if group_field_name == None:
         return
     #GET PER-GROUP FITS, and overlay them
-    if label_field_name == None:
-        labeldata = np.copy(groupdata)
-    else:
-        labeldata = np.asarray(data.get_data(label_field_name)).ravel()
     
-    indices = gttd.get_field_logo_indices(data, group_field_name)
     
-    groups = list(indices.keys())
+    groups = list(group_indices.keys())
     groups.sort()
 
    
@@ -101,7 +130,7 @@ def execute(model, data, savepath,
     group_notelist=list()
     group_notelist.append("RMSE for per-group fitting:")
     for group in groups:
-        g_index = indices[group]["test_index"]
+        g_index = group_indices[group]["test_index"]
         g_label = labeldata[g_index[0]]
         kwargs['plotlabel'] = "GroupFit_%s_%s" % (group, g_label)
         [g_ypredict, g_y_abs_err, g_rmse, g_mean_error] = do_single_fit(model, Xdata[g_index], ydata[g_index], **kwargs)
@@ -134,7 +163,7 @@ def execute(model, data, savepath,
     group_notelist=list()
     group_notelist.append("RMSE from overall fitting:")
     for group in groups:
-        g_index = indices[group]["test_index"]
+        g_index = group_indices[group]["test_index"]
         g_label = labeldata[g_index[0]]
         g_ypredict = ypredict[g_index]
         g_ydata = ydata[g_index]
