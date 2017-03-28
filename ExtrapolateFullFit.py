@@ -36,6 +36,18 @@ def execute(model, data, savepath,
     if test_csv == None:
         raise ValueError("test_csv is None")
     test_data = data_parser.parse(test_csv)
+    if len(plot_filter_out) > 0:
+        ftriplets = plot_filter_out.split(";")
+        for ftriplet in ftriplets:
+            fpcs = ftriplet.split(",")
+            ffield = fpcs[0].strip()
+            foperator = fpcs[1].strip()
+            fval = fpcs[2].strip()
+            try:
+                fval = float(fval)
+            except (ValueError, TypeError):
+                pass
+            test_data.add_exclusive_filter(ffield, foperator, fval)
     test_data.set_y_feature(data.y_feature) # same feature as fitting data
     test_data.set_x_features(data.x_features) # same features as fitting data
     test_xdata = np.asarray(test_data.get_x_data())
