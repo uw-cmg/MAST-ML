@@ -14,16 +14,32 @@ from bson.objectid import ObjectId
 import data_handling.data_transformations as dtf
 import data_handling.alloy_property_utilities as apu
 
+def get_simplesearch_records(db, cname, fieldstring, comparestring, value):
+    results = db[cname].find({fieldstring:{comparestring:value}})
+    return results
 
 def get_nonignore_records(db, cname):
-    results = db[cname].find({"ignore":{"$ne":1}})
+    results = get_simplesearch_records(db, cname, "ignore","$ne", 1)
     return results
 
 def transfer_nonignore_records(db, fromcname, newcname, verbose=1):
-    nonignore_records = get_nonignore_records(db, fromcname)
+    transfer_simplesearch_records(db, fromcname, newcname, "ignore",
+                        "$ne", 1, verbose)
+    return
+
+def transfer_ignore_records(db, fromcname, newcname, verbose=1):
+    transfer_simplesearch_records(db, fromcname, newcname, "ignore",
+                        "$eq", 1, verbose)
+    return
+
+
+def transfer_simplesearch_records(db, fromcname, newcname, fieldstring,
+                    comparestring, value, verbose=1):
+    records = get_simplesearch_records(db, fromcname, fieldstring,
+                    comparestring, value)
     nict = 0
-    for nirecord in nonignore_records:
-        db[newcname].insert(nirecord)
+    for record in records:
+        db[newcname].insert(record)
         nict = nict + 1
     if (verbose > 0):
         print("Transferred %i records." % nict)
