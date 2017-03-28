@@ -41,6 +41,7 @@ def execute(model, data, savepath,
         ylabel="Predicted",
         stepsize=1,
         group_field_name=None,
+        label_field_name=None,
         numeric_field_name=None,
         *args, **kwargs):
     """Full fit
@@ -109,6 +110,25 @@ def execute(model, data, savepath,
     
     if group_field_name == None:
         return
-    
     groupdata = np.asarray(data.get_data(group_field_name)).ravel()
+
+    if label_field_name == None:
+        labeldata = np.zeros(len(groupdata))
+    else:
+        labeldata = np.asarray(data.get_data(label_field_name)).ravel()
+    
+    indices = gttd.get_field_logo_indices(data, group_field_name)
+    
+    groups = list(indices.keys())
+    groups.sort()
+
+    
+    for group in groups:
+        g_index = indices[group]["test_index"]
+        g_label = labeldata[g_index[0]]
+        [g_ypredict, g_y_abs_err, g_rmse, g_mean_error] = do_single_fit(model, Xdata[g_index], ydata[g_index], **kwargs)
+        g_myarray = np.array([labeldata[g_index], groupdata[g_index], ydata[g_index], g_ypredict, g_y_abs_err]).transpose()
+        csvname = os.path.join(savepath, "GroupFit_data_%s_%s.csv" % (group, g_label))
+        ptools.array_to_csv(csvname, headerline, g_myarray)
+
     return
