@@ -183,8 +183,9 @@ def do_full_fit(model,
     numlines = len(xdatalist)
     if numlines > 6: #too many lines for multiple_overlay
         import heapq
-        maxrmslist = heapq.nlargest(5, rmselist)
-        maxidxlist = heapq.nlargest(5, range(len(rmselist)), 
+        showmax = 3
+        maxrmslist = heapq.nlargest(showmax, rmselist)
+        maxidxlist = heapq.nlargest(showmax, range(len(rmselist)), 
                         key=lambda x: rmselist[x])
         temp_xdatalist=list()
         temp_ydatalist=list()
@@ -195,7 +196,7 @@ def do_full_fit(model,
         temp_labellist=list()
         bigxdata = np.empty((0,1))
         bigydata = np.empty((0,1))
-        biglabel = "_" # no label
+        biglabel = "All others" # Use "_" for no label
         bigxerr = np.empty((0,1))
         bigyerr = np.empty((0,1))
         for nidx in range(0, numlines):
