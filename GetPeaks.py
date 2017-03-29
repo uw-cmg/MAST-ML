@@ -54,6 +54,11 @@ def execute(model, data, savepath,
         timex = "",
         xlabel="",
         ylabel="",
+        end_val = None,
+        start_val = None,
+        bin_width = None,
+        bin_list = None,
+        num_bins = 50,
         *args, **kwargs):
     """Get peaks in data
         Args:
@@ -161,6 +166,11 @@ def execute(model, data, savepath,
     kwargs['ylabel'] = ylabel
     kwargs['savepath'] = savepath
     kwargs['timex'] = timex
+    kwargs['end_val'] = end_val
+    kwargs['start_val'] = start_val
+    kwargs['num_bins'] = num_bins
+    kwargs['bin_width'] = bin_width
+    kwargs['bin_list'] = bin_list
     x_with_peaks = master_array[:,1]
     plothist.simple_histogram(x_with_peaks, **kwargs)
     #

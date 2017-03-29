@@ -41,12 +41,6 @@ def execute(model, data, savepath,
             num_bins <int>: Number of bins for histogram
     """
     num_bins = int(num_bins)
-    if not (start_val == None):
-        start_val = float(start_val)
-    if not (end_val == None):
-        end_val = float(end_val)
-    if not (bin_width == None):
-        bin_width = float(bin_width)
     if xlabel == None:
         xlabel = feature_field_name
 

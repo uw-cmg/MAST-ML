@@ -32,17 +32,25 @@ def simple_histogram(xvals,
     smallfont = 0.85*matplotlib.rcParams['font.size']
     darkblue="#00008B"
     #http://matplotlib.org/1.2.1/examples/pylab_examples/histogram_demo.html
-    if bin_list == None:
-        if start_val == None:
+    if bin_list is None:
+        if start_val is None:
             minval = min(xvals)
         else:
-            minval = start_val
-        if end_val == None:
+            if type(start_val) == str:
+                if len(timex) > 0:
+                    start_val = time.mktime(time.strptime(start_val, timex))
+            minval = float(start_val)
+        if end_val is None:
             maxval = max(xvals)
         else:
-            maxval = end_val
-        if bin_width == None:
-            bin_width = (maxval - minval) / num_bins
+            if type(end_val) == str:
+                if len(timex) > 0:
+                    end_val = time.mktime(time.strptime(end_val, timex))
+            maxval = float(end_val)
+        if bin_width is None:
+            bin_width = (maxval - minval) / int(num_bins)
+        else:
+            bin_width = float(bin_width)
         blist = np.arange(minval, maxval + bin_width, bin_width)
     else: 
         blist = np.array(bin_list.split(","),'float')
@@ -62,6 +70,23 @@ def simple_histogram(xvals,
         plt.annotate(note, xy=(0.05, notey), xycoords="axes fraction",
                     fontsize=smallfont)
         notey = notey - notestep
+    myax = plt.gca()
+    myax.set_xlim(bins[0],bins[-1])
+    lenbins = len(bins)
+    if lenbins > 6: #plot only a few xticks
+        binskip = lenbins / 6
+        ticklist = list()
+        ticklist.append(bins[0])
+        binct = 0
+        for binval in bins:
+            if binct > binskip:
+                ticklist.append(binval)
+                binct = 0
+            binct = binct + 1
+        ticklist.append(bins[-1])
+        myax.set_xticks(ticklist)
+    else:
+        myax.set_xticks(bins)
     if len(timex) > 0:
         myax = plt.gca()
         my_xticks = myax.get_xticks()
