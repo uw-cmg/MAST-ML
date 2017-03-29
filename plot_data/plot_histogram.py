@@ -20,6 +20,7 @@ def simple_histogram(xvals,
             ylabel="Count",
             title="",
             timex="",
+            tick_divide=None,
             plotlabel="histogram",
             notelist=list(),
             ):
@@ -96,6 +97,11 @@ def simple_histogram(xvals,
             mytick = time.strftime(timex, time.localtime(my_xticks[tidx]))
             adjusted_xticks.append(mytick)
         myax.set_xticklabels(adjusted_xticks, rotation=90.0)
+    else:
+        if not(tick_divide is None):
+            my_xticks = myax.get_xticks()
+            adjusted_xticks = my_xticks / float(tick_divide)
+            myax.set_xticklabels(adjusted_xticks)
     savestr = "%s_%s" % (plotlabel, xlabel.replace(" ","_"))
     plt.savefig(os.path.join(savepath, savestr), bbox_inches='tight')
     plt.close()

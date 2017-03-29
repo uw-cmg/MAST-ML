@@ -28,6 +28,7 @@ def execute(model, data, savepath,
         verbose = 0,
         mean_xlabel="",
         mean_ylabel="",
+        tick_divide = None,
         *args, **kwargs):
     """Simple plot
         Args:
@@ -62,6 +63,7 @@ def execute(model, data, savepath,
     kwargs['bin_list'] = bin_list
     kwargs['bin_space'] = bin_space
     kwargs['timex'] = timex
+    kwargs['tick_divide'] = tick_divide
 
     if group_field_name == None:
         kwargs['xlabel'] = xlabel
