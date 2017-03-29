@@ -19,6 +19,10 @@ def execute(model, data, savepath,
         label_field_name=None,
         xlabel=None,
         num_bins = 50,
+        start_val = None,
+        end_val = None,
+        bin_width = None,
+        bin_list = None,
         verbose = 0,
         mean_xlabel="",
         mean_ylabel="",
@@ -37,6 +41,12 @@ def execute(model, data, savepath,
             num_bins <int>: Number of bins for histogram
     """
     num_bins = int(num_bins)
+    if not (start_val == None):
+        start_val = float(start_val)
+    if not (end_val == None):
+        end_val = float(end_val)
+    if not (bin_width == None):
+        bin_width = float(bin_width)
     if xlabel == None:
         xlabel = feature_field_name
 
@@ -50,6 +60,10 @@ def execute(model, data, savepath,
     kwargs=dict()
     kwargs['num_bins'] = num_bins
     kwargs['savepath'] = savepath
+    kwargs['start_val'] = start_val
+    kwargs['end_val'] = end_val
+    kwargs['bin_width'] = bin_width
+    kwargs['bin_list'] = bin_list
 
     if group_field_name == None:
         kwargs['xlabel'] = xlabel

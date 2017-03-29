@@ -10,6 +10,10 @@ import time
 
 def simple_histogram(xvals,
             num_bins = 50,
+            bin_width = None,
+            start_val = None,
+            end_val = None,
+            bin_list = None,
             savepath="",
             xlabel="X",
             ylabel="Count",
@@ -18,11 +22,31 @@ def simple_histogram(xvals,
             plotlabel="histogram",
             notelist=list(),
             ):
+    """
+        Args:
+            bin_list <str>: Comma-separated string of values, 
+                            starting with leftmost bin-left and
+                            ending with rightmost bin-right, e.g. '0,1,2,3'
+    """
     matplotlib.rcParams.update({'font.size': 18})
     smallfont = 0.85*matplotlib.rcParams['font.size']
     darkblue="#00008B"
     #http://matplotlib.org/1.2.1/examples/pylab_examples/histogram_demo.html
-    n_per_bin, bins, patches = plt.hist(xvals, num_bins, normed=0,
+    if bin_list == None:
+        if start_val == None:
+            minval = min(xvals)
+        else:
+            minval = start_val
+        if end_val == None:
+            maxval = max(xvals)
+        else:
+            maxval = end_val
+        if bin_width == None:
+            bin_width = (maxval - minval) / num_bins
+        blist = np.arange(minval, maxval + bin_width, bin_width)
+    else: 
+        blist = np.array(bin_list.split(","),'float')
+    n_per_bin, bins, patches = plt.hist(xvals, bins=blist, normed=0,
                 facecolor='blue', alpha=0.75)
     ## add a 'best fit' line
     #bestfit = mlab.normpdf( bins, mu, sigma)
