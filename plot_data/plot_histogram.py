@@ -22,6 +22,7 @@ def simple_histogram(xvals,
             timex="",
             tick_divide=None,
             plotlabel="histogram",
+            guideline = 1,
             notelist=list(),
             ):
     """
@@ -58,10 +59,14 @@ def simple_histogram(xvals,
         blist = np.array(bin_list.split(","),'float')
     n_per_bin, bins, patches = plt.hist(xvals, bins=blist, normed=0,
                 facecolor='blue', alpha=0.75)
-    ## add a 'best fit' line
-    #bestfit = mlab.normpdf( bins, mu, sigma)
-    #plt.plot(bins, bestfit, linestyle='--', linewidth=1,
-    #                color = darkblue)
+    if int(guideline) == 1:
+        from scipy.stats import norm
+        import matplotlib.mlab as mlab
+        (mu,sigma) = norm.fit(xvals)
+        guidey = mlab.normpdf( bins, mu, sigma)
+        guidey = guidey * sum(n_per_bin) * bin_width # scale up the fit
+        plt.plot(bins, guidey, linestyle='--', color = darkblue, linewidth = 1)
+        #https://www.mathworks.com/matlabcentral/newsreader/view_thread/32136.html?
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     if len(title) > 0:
