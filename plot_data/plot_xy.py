@@ -54,6 +54,7 @@ def single(xvals, yvals,
             divide_x = None,
             divide_y = None,
             notelist=list(),
+            marklargest=0,
             *args, **kwargs):
     matplotlib.rcParams.update({'font.size': 18})
     smallfont = 0.85*matplotlib.rcParams['font.size']
@@ -106,6 +107,18 @@ def single(xvals, yvals,
         plt.annotate(note, xy=(0.05, notey), xycoords="axes fraction",
                     fontsize=smallfont)
         notey = notey - notestep
+    if int(marklargest) > 0:
+        import heapq
+        maxidxlist = heapq.nlargest(int(marklargest), range(len(yvals)), 
+                        key=lambda x: yvals[x])
+        for midx in maxidxlist:
+            mxval = xvals[midx]
+            mxval = "%3.0f" % mxval
+            plt.annotate("%s" % mxval, 
+                    xy=(xvals[midx],yvals[midx]),
+                    horizontalalignment = "left",
+                    verticalalignment = "bottom",
+                    fontsize=smallfont)
     if len(timex) > 0:
         myax = plt.gca()
         my_xticks = myax.get_xticks()

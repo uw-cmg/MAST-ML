@@ -29,6 +29,7 @@ def execute(model, data, savepath,
         mean_xlabel="",
         mean_ylabel="",
         tick_divide = None,
+        marklargest = 3,
         *args, **kwargs):
     """Simple plot
         Args:
@@ -118,6 +119,7 @@ def execute(model, data, savepath,
     kwargs2['savepath'] = savepath
     kwargs2['yerr'] = stds
     kwargs2['plottype'] = "scatter"
+    kwargs2['marklargest'] = marklargest
     plotxy.single(okaygroups, means, **kwargs2)
 
     headerline = "Group,Label,Mean,StdDev"
