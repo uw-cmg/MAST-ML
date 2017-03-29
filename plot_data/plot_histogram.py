@@ -14,6 +14,7 @@ def simple_histogram(xvals,
             start_val = None,
             end_val = None,
             bin_list = None,
+            bin_space = 3,
             savepath="",
             xlabel="X",
             ylabel="Count",
@@ -74,16 +75,16 @@ def simple_histogram(xvals,
     myax.set_xlim(bins[0],bins[-1])
     lenbins = len(bins)
     if lenbins > 6: #plot only a few xticks
-        binskip = lenbins / 6
+        binskip = int(bin_space)
         ticklist = list()
-        ticklist.append(bins[0])
-        binct = 0
+        binct = 1000000
         for binval in bins:
             if binct > binskip:
                 ticklist.append(binval)
-                binct = 0
+                binct = 1
             binct = binct + 1
-        ticklist.append(bins[-1])
+        if not (bins[-1] in ticklist):
+            ticklist.append(bins[-1])
         myax.set_xticks(ticklist)
     else:
         myax.set_xticks(bins)
