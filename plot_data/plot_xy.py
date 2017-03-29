@@ -8,10 +8,10 @@ import data_analysis.printout_tools as ptools
 import matplotlib.dates as mdates
 import time
 
-def get_xy_sorted(xvals, yvals, verbose=0):
+def get_xy_sorted(xvals, yvals, xerr, yerr, verbose=0):
     """Sort x and y according to x. 
     """
-    combarr = np.array([xvals, yvals],'float')
+    combarr = np.array([xvals, yvals, xerr, yerr],'float')
     if verbose > 0:
         print("Original:")
         print(combarr)
@@ -21,7 +21,9 @@ def get_xy_sorted(xvals, yvals, verbose=0):
         print(sortedarr)
     xsorted = sortedarr[0,:]
     ysorted = sortedarr[1,:]
-    return [xsorted, ysorted]
+    xerrsorted = sortedarr[2,:]
+    yerrsorted = sortedarr[3,:]
+    return [xsorted, ysorted, xerrsorted, yerrsorted]
 
 def get_converted_epoch_xticks(xticks):
     """Matplotlib needs epoch days
@@ -49,12 +51,24 @@ def single(xvals, yvals,
             savepath="",
             guideline=0,
             timex="",
+            divide_x = None,
+            divide_y = None,
             notelist=list(),
             *args, **kwargs):
     matplotlib.rcParams.update({'font.size': 18})
     smallfont = 0.85*matplotlib.rcParams['font.size']
     #fig, ax = plt.subplots(figsize=(10, 4))
-    [xvals, yvals] = get_xy_sorted(xvals, yvals)
+    if xerr is None or (len(xerr) == 0):
+        xerr = np.zeros(len(xvals))
+    if yerr is None or (len(yerr) == 0):
+        yerr = np.zeros(len(yvals))
+    [xvals, yvals, xerr, yerr] = get_xy_sorted(xvals, yvals, xerr, yerr)
+    if not (divide_x is None):
+        xvals = xvals / float(divide_x)
+        xerr = xerr / float(divide_x)
+    if not (divide_y is None):
+        yvals = yvals / float(divide_y)
+        yerr = yerr / float(divide_y)
     darkblue="#00008B"
     mylinestyle = "-"
     mymarker = "o"

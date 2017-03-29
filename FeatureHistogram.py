@@ -114,6 +114,7 @@ def execute(model, data, savepath,
         mean_ylabel = "Mean %s" % xlabel
     kwargs2['xlabel'] = mean_xlabel
     kwargs2['ylabel'] = mean_ylabel
+    kwargs2['divide_y'] = tick_divide #only the y-axis
     kwargs2['savepath'] = savepath
     kwargs2['yerr'] = stds
     kwargs2['plottype'] = "scatter"
