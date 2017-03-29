@@ -58,7 +58,8 @@ def simple_histogram(xvals,
         blist = np.arange(minval, maxval + bin_width, bin_width)
     else: 
         blist = np.array(bin_list.split(","),'float')
-    n_per_bin, bins, patches = plt.hist(xvals, bins=blist, normed=0,
+    fig, axh = plt.subplots()
+    n_per_bin, bins, patches = axh.hist(xvals, bins=blist, normed=0,
                 facecolor='blue', alpha=0.75)
     if int(guideline) == 1:
         from scipy.stats import norm
@@ -66,20 +67,31 @@ def simple_histogram(xvals,
         (mu,sigma) = norm.fit(xvals)
         guidey = mlab.normpdf( bins, mu, sigma)
         guidey = guidey * sum(n_per_bin) * bin_width # scale up the fit
-        plt.plot(bins, guidey, linestyle='--', color = darkblue, linewidth = 1)
+        axh.plot(bins, guidey, linestyle='--', color = darkblue, linewidth = 1)
         #https://www.mathworks.com/matlabcentral/newsreader/view_thread/32136.html?
+    axh.set_xlabel(xlabel)
+    axh.set_ylabel(ylabel)
     if int(climbing_percent) == 1:
         cplist = list()
         ntotal = sum(n_per_bin)
         cplen = len(n_per_bin)
-        cumulative = 0
-        cplist.append(0) #left point of first bin
-        for bidx in range(0, cplen):
-            cumulative = cumulative + n_per_bin[bidx]
-            cplist.append(100*cumulative/ntotal)
-        plt.plot(bins, cplist, linestyle='--', color = "#8B0000", linewidth = 1)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
+        cumulative = 0.0
+        if ntotal == 0:
+            cplist = np.zeros(cplen+1)
+        else:
+            cplist.append(0) #left point of first bin
+            for bidx in range(0, cplen): #goes to right point of last bin
+                binn = n_per_bin[bidx]
+                if binn:
+                    cumulative = cumulative + binn
+                percval = cumulative/ntotal
+                cplist.append(percval)
+        cplist = np.array(cplist,'float') * 100.0 #percent
+        axp = axh.twinx()
+        darkred="#8B0000"
+        axp.plot(bins, cplist, linestyle='-', color = darkred, linewidth = 1)
+        axp.set_ylabel('Cumulative percentage', color=darkred)
+        axp.tick_params('y',colors=darkred)
     if len(title) > 0:
         plt.title(title)
     notey = 0.88
@@ -88,8 +100,7 @@ def simple_histogram(xvals,
         plt.annotate(note, xy=(0.05, notey), xycoords="axes fraction",
                     fontsize=smallfont)
         notey = notey - notestep
-    myax = plt.gca()
-    myax.set_xlim(bins[0],bins[-1])
+    axh.set_xlim(bins[0],bins[-1])
     lenbins = len(bins)
     if lenbins > 6: #plot only a few xticks
         binskip = int(bin_space)
@@ -102,22 +113,21 @@ def simple_histogram(xvals,
             binct = binct + 1
         if not (bins[-1] in ticklist):
             ticklist.append(bins[-1])
-        myax.set_xticks(ticklist)
+        axh.set_xticks(ticklist)
     else:
-        myax.set_xticks(bins)
+        axh.set_xticks(bins)
     if len(timex) > 0:
-        myax = plt.gca()
-        my_xticks = myax.get_xticks()
+        my_xticks = axh.get_xticks()
         adjusted_xticks = list()
         for tidx in range(0, len(my_xticks)):
             mytick = time.strftime(timex, time.localtime(my_xticks[tidx]))
             adjusted_xticks.append(mytick)
-        myax.set_xticklabels(adjusted_xticks, rotation=90.0)
+        axh.set_xticklabels(adjusted_xticks, rotation=90.0)
     else:
         if not(tick_divide is None):
-            my_xticks = myax.get_xticks()
+            my_xticks = axh.get_xticks()
             adjusted_xticks = my_xticks / float(tick_divide)
-            myax.set_xticklabels(adjusted_xticks)
+            axh.set_xticklabels(adjusted_xticks)
     savestr = "%s_%s" % (plotlabel, xlabel.replace(" ","_"))
     plt.savefig(os.path.join(savepath, savestr), bbox_inches='tight')
     plt.close()
