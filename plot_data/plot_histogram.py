@@ -23,6 +23,7 @@ def simple_histogram(xvals,
             tick_divide=None,
             plotlabel="histogram",
             guideline = 1,
+            climbing_percent = 1,
             notelist=list(),
             ):
     """
@@ -67,6 +68,16 @@ def simple_histogram(xvals,
         guidey = guidey * sum(n_per_bin) * bin_width # scale up the fit
         plt.plot(bins, guidey, linestyle='--', color = darkblue, linewidth = 1)
         #https://www.mathworks.com/matlabcentral/newsreader/view_thread/32136.html?
+    if int(climbing_percent) == 1:
+        cplist = list()
+        ntotal = sum(n_per_bin)
+        cplen = len(n_per_bin)
+        cumulative = 0
+        cplist.append(0) #left point of first bin
+        for bidx in range(0, cplen):
+            cumulative = cumulative + n_per_bin[bidx]
+            cplist.append(100*cumulative/ntotal)
+        plt.plot(bins, cplist, linestyle='--', color = "#8B0000", linewidth = 1)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     if len(title) > 0:
