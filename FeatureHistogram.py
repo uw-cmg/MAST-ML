@@ -24,6 +24,7 @@ def execute(model, data, savepath,
         bin_width = None,
         bin_list = None,
         bin_space = 3,
+        timex = "",
         verbose = 0,
         mean_xlabel="",
         mean_ylabel="",
@@ -59,6 +60,8 @@ def execute(model, data, savepath,
     kwargs['end_val'] = end_val
     kwargs['bin_width'] = bin_width
     kwargs['bin_list'] = bin_list
+    kwargs['bin_space'] = bin_space
+    kwargs['timex'] = timex
 
     if group_field_name == None:
         kwargs['xlabel'] = xlabel
@@ -97,9 +100,9 @@ def execute(model, data, savepath,
         stds.append(gstd)
     means = np.array(means)
     stds = np.array(stds)
-    kwargs['xlabel'] = "Mean %s" % xlabel
+    kwargs['xlabel'] = "Mean of %s" % xlabel
     plothist.simple_histogram(means, **kwargs)
-    kwargs['xlabel'] = "Std Devs %s" % xlabel
+    kwargs['xlabel'] = "Std dev of %s" % xlabel
     plothist.simple_histogram(stds, **kwargs)
 
     kwargs2=dict()
