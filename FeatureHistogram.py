@@ -29,6 +29,8 @@ def execute(model, data, savepath,
         mean_xlabel="",
         mean_ylabel="",
         tick_divide = None,
+        guideline = 1,
+        climbing_percent = 1,
         marklargest = 3,
         *args, **kwargs):
     """Simple plot
@@ -65,6 +67,8 @@ def execute(model, data, savepath,
     kwargs['bin_space'] = bin_space
     kwargs['timex'] = timex
     kwargs['tick_divide'] = tick_divide
+    kwargs['guideline'] = guideline
+    kwargs['climbing_percent'] = climbing_percent
 
     if group_field_name == None:
         kwargs['xlabel'] = xlabel
