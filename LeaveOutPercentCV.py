@@ -159,5 +159,5 @@ def execute(model, data, savepath, lwr_data="",
     myarray = np.array([labels, Ydata,
                 Y_predicted_best, Best_Abs_Err, 
                 Y_predicted_worst,Worst_Abs_Err]).transpose()
-    ptools.array_to_csv(csvname, headerline, myarray)
+    ptools.mixed_array_to_csv(csvname, headerline, myarray)
     return

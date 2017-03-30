@@ -406,7 +406,10 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
             print(xdatalist[nidx][midx])
             print(ydatalist[nidx][midx])
             mxval = mlabellist[nidx][midx]
-            mxval = "%3.0f" % mxval
+            try:
+                mxval = "%3.0f" % mxval
+            except TypeError:
+                pass
             plt.annotate("%s" % mxval, 
                     xy=(xdatalist[nidx][midx],ydatalist[nidx][midx]),
                     horizontalalignment = "left",
