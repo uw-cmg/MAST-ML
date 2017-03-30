@@ -11,7 +11,20 @@ import time
 def get_xy_sorted(xvals, yvals, xerr, yerr, verbose=0):
     """Sort x and y according to x. 
     """
-    combarr = np.array([xvals, yvals, xerr, yerr],'float')
+    arraylist = list()
+    arraylist.append(xvals)
+    arraylist.append(yvals)
+    if xerr is None:
+        dummy_xerr = np.zeros(len(xvals))
+        arraylist.append(dummy_xerr)
+    else:
+        arraylist.append(xerr)
+    if yerr is None:
+        dummy_yerr = np.zeros(len(yvals)) #len(yvals) should also be len(xvals)
+        arraylist.append(dummy_yerr)
+    else:
+        arraylist.append(yerr)
+    combarr = np.array(arraylist,'float')
     if verbose > 0:
         print("Original:")
         print(combarr)
@@ -21,8 +34,14 @@ def get_xy_sorted(xvals, yvals, xerr, yerr, verbose=0):
         print(sortedarr)
     xsorted = sortedarr[0,:]
     ysorted = sortedarr[1,:]
-    xerrsorted = sortedarr[2,:]
-    yerrsorted = sortedarr[3,:]
+    if xerr is None:
+        xerrsorted = None
+    else:
+        xerrsorted = sortedarr[2,:]
+    if yerr is None:
+        yerrsorted = None
+    else:
+        yerrsorted = sortedarr[3,:]
     return [xsorted, ysorted, xerrsorted, yerrsorted]
 
 def get_converted_epoch_xticks(xticks):
@@ -235,21 +254,11 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
         print("Not enough labels. Exiting.")
         return
     if not(len(xerrlist) == numlines):
-        print("Not enough x error data. Use empty lists for no error.")
+        print("Not enough x error data. Use python None for no error.")
         return
-    for nidx in range(0, numlines):
-        xerr = xerrlist[nidx]
-        if (xerr is None) or len(xerr) == 0:
-            xerr = np.zeros(len(xdatalist[nidx]))
-            xerrlist[nidx] = xerr
     if not(len(yerrlist) == numlines):
-        print("Not enough y error data. Use empty lists for no error.")
+        print("Not enough y error data. Use python None for no error.")
         return
-    for nidx in range(0, numlines):
-        yerr = yerrlist[nidx]
-        if (yerr is None) or len(yerr) == 0:
-            yerr = np.zeros(len(ydatalist[nidx]))
-            yerrlist[nidx] = yerr
     if len(whichyaxis) == 0:
         whichyaxis = np.ones(numlines)
     else:
@@ -286,6 +295,7 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
         ydata = ydatalist[nidx]
         xerr = xerrlist[nidx]
         yerr = yerrlist[nidx]
+        [xdata,ydata,xerr,yerr] = get_xy_sorted(xdata,ydata,xerr,yerr)
         whichy = whichyaxis[nidx]
         if whichy == 1:
             (_, caps, _) = ax1.errorbar(xdata, ydata,
