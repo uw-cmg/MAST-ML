@@ -18,10 +18,15 @@ def execute(model, data, savepath,
         yerrfieldlist="",
         xlabel="",
         ylabel="",
-        label1="",
-        label2="",
+        labellist="",
         plotlabel="overlay",
+        guideline=0,
+        equalsize=1,
+        fill=1,
+        timex="",
         stepsize="1.0",
+        startx=None,
+        endx=None,
         *args, **kwargs):
     """Overlay plots
         Args:
@@ -67,8 +72,12 @@ def execute(model, data, savepath,
     else:
         yerrfields=list()
     
-    datadict=dict()
+    xdatas=list()
+    ydatas=list()
+    xerrs=list()
+    yerrs=list()
     for pidx in range(0, len(csvs)):
+        print("Getting data from %s" % csvs[pidx])
         data = data_parser.parse(csvs[pidx].strip())
         xdata = np.asarray(data.get_data(xfields[pidx].strip())).ravel()
         ydata = np.asarray(data.get_data(yfields[pidx].strip())).ravel()
@@ -82,31 +91,41 @@ def execute(model, data, savepath,
             yerrfield = yerrfields[pidx].strip()
             if not(yerrfield == ""):
                 yerrdata=np.asarray(data.get_data(yerrfield)).ravel()
-        datadict[pidx]=dict()
-        datadict[pidx]['xdata'] = xdata
-        datadict[pidx]['ydata'] = ydata
-        datadict[pidx]['xerrdata'] = xerrdata
-        datadict[pidx]['yerrdata'] = yerrdata
-    kwargs=dict()
-    kwargs['savepath'] = savepath
-    kwargs['stepsize'] = stepsize
+        xdatas.append(xdata)
+        ydatas.append(ydata)
+        xerrs.append(xerrdata)
+        yerrs.append(yerrdata)
     if xlabel == "":
-        xlabel="%s, %s" % (xfields[0],xfields[1])
+        xlabel="%s" % xfields
     if ylabel == "":
-        ylabel="%s, %s" % (yfields[0],yfields[1])
+        ylabel="%s" % yfields
+    if labellist == "":
+        labellist=list()
+        for csvname in csvs:
+            labellist.append(os.path.basename(csvs[0]).split(".")[0])
+    else:
+        labellist = labellist.split(",")
+    kwargs=dict()
+    kwargs['xdatalist'] = xdatas
+    kwargs['ydatalist'] = ydatas
+    kwargs['labellist'] = labellist
     kwargs['xlabel'] = xlabel
     kwargs['ylabel'] = ylabel
-    if label1 == "":
-        label1=os.path.basename(csvs[0]).split(".")[0]
-    if label2 == "":
-        label2=os.path.basename(csvs[1]).split(".")[0]
-    kwargs['label1'] = label1
-    kwargs['label2'] = label2
-    plotxy.dual_overlay(datadict[0]['xdata'], datadict[0]['ydata'],
-        datadict[1]['xdata'], datadict[1]['ydata'],
-        xerr1=datadict[0]['xerrdata'],
-        yerr1=datadict[0]['yerrdata'],
-        xerr2=datadict[1]['xerrdata'],
-        yerr2=datadict[1]['yerrdata'],
-        **kwargs)
+    kwargs['xerrlist'] = xerrs
+    kwargs['yerrlist'] = yerrs
+    kwargs['stepsize'] = stepsize
+    kwargs['savepath'] = savepath
+    kwargs['plotlabel'] = plotlabel
+    kwargs['guideline'] = guideline
+    kwargs['fill'] = fill
+    kwargs['equalsize'] = equalsize
+    kwargs['timex'] = timex
+    kwargs['startx'] = startx
+    kwargs['endx'] = endx
+    notelist=list()
+    kwargs['notelist'] = notelist
+    #for key,value in kwargs.items():
+    #    print(key,":",value)
+    print("Plotting.")
+    plotxy.multiple_overlay(**kwargs)
     return
