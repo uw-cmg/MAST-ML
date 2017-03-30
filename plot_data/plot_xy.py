@@ -51,6 +51,8 @@ def single(xvals, yvals,
             savepath="",
             guideline=0,
             timex="",
+            startx="",
+            endx="",
             divide_x = None,
             divide_y = None,
             notelist=list(),
@@ -88,6 +90,20 @@ def single(xvals, yvals,
     for cap in caps:
         cap.set_color(darkblue)
         cap.set_markeredgewidth(2)
+    if not(startx == None):
+        if type(startx) == str:
+            if len(timex) > 0:
+                startx = time.mktime(time.strptime(startx, timex))
+            else:
+                startx = float(startx)
+        if endx == None:
+            raise ValueError("startx must be paired with endx")
+        if type(endx) == str:
+            if len(timex) > 0:
+                endx = time.mktime(time.strptime(endx, timex))
+            else:
+                endx = float(endx)
+        plt.xlim([startx,endx])
     plt.margins(0.05)
     if guideline == 1: #also square the axes
         [minx,maxx] = plt.xlim()
@@ -190,10 +206,18 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
         guideline=0,
         fill=1,
         equalsize=1,
+        timex="",
+        startx=None,
+        endx=None,
         notelist=list(), 
         *args, **kwargs):
-    """Plot multiple xy overlay
+    """Plot multiple xy overlay with same x axis
     """
+    stepsize = float(stepsize)
+    guideline = int(guideline)
+    fill=int(fill)
+    equalsize=int(equalsize)
+
     numlines=len(xdatalist)
     if numlines > 6:
         print("Only 6 lines supported.")
@@ -255,21 +279,43 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
                     numpoints=1,
                     fancybox=True) 
     lgd.get_frame().set_alpha(0.5) #translucent legend!
-    [minx,maxx] = plt.xlim()
-    [miny,maxy] = plt.ylim()
-    gmax = max(maxx, maxy)
-    gmin = min(minx, miny)
-    steplist = np.arange(gmin, gmax + (0.5*stepsize), stepsize)
-    plt.xticks(steplist)
-    plt.yticks(steplist)
-    plt.margins(0.05)
-    if guideline == 1:
+    if not(startx == None):
+        if type(startx) == str:
+            if len(timex) > 0:
+                startx = time.mktime(time.strptime(startx, timex))
+            else:
+                startx = float(startx)
+        if endx == None:
+            raise ValueError("startx must be paired with endx")
+        if type(endx) == str:
+            if len(timex) > 0:
+                endx = time.mktime(time.strptime(endx, timex))
+            else:
+                endx = float(endx)
+        plt.xlim([startx,endx])
+    if guideline == 1: #only use stepsize if guideline is active
+        [minx,maxx] = plt.xlim()
+        [miny,maxy] = plt.ylim()
+        gmax = max(maxx, maxy)
+        gmin = min(minx, miny)
+        steplist = np.arange(gmin, gmax + (0.5*stepsize), stepsize)
+        plt.xticks(steplist)
+        plt.yticks(steplist)
         plt.plot((gmin, gmax), (gmin, gmax), ls="--", c=".3")
+    plt.margins(0.05)
     notey = 0.88
     for note in notelist:
         plt.annotate(note, xy=(0.05, notey), xycoords="axes fraction",
                     fontsize=smallfont)
         notey = notey - notestep
+    if len(timex) > 0:
+        myax = plt.gca()
+        my_xticks = myax.get_xticks()
+        adjusted_xticks = list()
+        for tidx in range(0, len(my_xticks)):
+            mytick = time.strftime(timex, time.localtime(my_xticks[tidx]))
+            adjusted_xticks.append(mytick)
+        myax.set_xticklabels(adjusted_xticks, rotation=90.0)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.tight_layout()
