@@ -211,6 +211,11 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
         endx=None,
         whichyaxis=list(),
         notelist=list(), 
+        markers="o,o,s,d,^,v",
+        linestyles="None,None,None,None,None,None",
+        outlines="#8B0000,#00008B,#004400,#542788,#b35806,#252525",
+        faces="red,blue,green,#6a51a3,orange,#bdbdbd",
+        sizes="15,10,8,8,8,8",
         *args, **kwargs):
     """Plot multiple xy overlay with same x axis
     """
@@ -267,20 +272,11 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
     smallfont = 0.85*matplotlib.rcParams['font.size']
     notestep = 0.07
     plt.figure()
-    #colors are red, blue, green, purple, brown, gray
-    outlines=["#8B0000","#00008B","#004400","#542788","#b35806","#252525"]
-    if fill == 1:
-        faces=["red","blue","green","#6a51a3","orange","#bdbdbd"]
-    else:
-        faces=["None","None","None","None","None","None"]
-    bigsize=15
-    medsize=10
-    smallsize=8
-    if equalsize == 1:
-        sizes=[bigsize,bigsize,bigsize,bigsize,bigsize,bigsize]
-    else:
-        sizes=[bigsize,medsize,smallsize,smallsize,smallsize,smallsize]
-    markers=['o','o','s','d','^','v']
+    faces = faces.split(",")
+    outlines = outlines.split(",")
+    linestyles = linestyles.split(",")
+    markers = markers.split(",")
+    sizes=np.array(sizes.split(","),'float')
     fig, ax1 = plt.subplots()
     if doubley:
         ax2 = ax1.twinx()
@@ -297,7 +293,7 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
                 yerr=yerr,
                 label=label,
                 linewidth=2,
-                linestyle = "None", color=outlines[nidx],
+                linestyle = linestyles[nidx], color=outlines[nidx],
                 markeredgewidth=2, markeredgecolor=outlines[nidx],
                 markerfacecolor=faces[nidx] , marker=markers[nidx],
                 markersize=sizes[nidx])
@@ -307,7 +303,7 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
                 yerr=yerr,
                 label=label,
                 linewidth=2,
-                linestyle = "None", color=outlines[nidx],
+                linestyle = linestyles[nidx], color=outlines[nidx],
                 markeredgewidth=2, markeredgecolor=outlines[nidx],
                 markerfacecolor=faces[nidx] , marker=markers[nidx],
                 markersize=sizes[nidx])
