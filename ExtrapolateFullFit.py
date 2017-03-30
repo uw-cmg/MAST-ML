@@ -61,7 +61,9 @@ def execute(model, data, savepath,
     kwargs_f['stepsize'] = stepsize
     kwargs_f['numeric_field_name'] = numeric_field_name
     kwargs_f['group_field_name'] = group_field_name
-    kwargs_f['savepath'] = savepath
+    kwargs_f['savepath'] = os.path.join(savepath,'test')
+    if not (os.path.isdir(kwargs_f['savepath'])):
+        os.mkdir(kwargs_f['savepath'])
     kwargs_f['do_pergroup_fits'] = 0 # NO per-group fitting
     kwargs_f['test_numericdata'] = np.asarray(test_data.get_data(numeric_field_name)).ravel()
     if not(group_field_name == None):
@@ -75,15 +77,47 @@ def execute(model, data, savepath,
     kwargs_f['full_ytrain'] = train_ydata
     kwargs_f['full_xtest'] = test_xdata
     kwargs_f['full_ytest'] = test_ydata
-    FullFit.do_full_fit(model, **kwargs_f)
+    test_data_array = FullFit.do_full_fit(model, **kwargs_f)
     
-    ##standard
+    ##standard has no y
     if not(standard_csv == None):
         std_data = data_parser.parse(standard_csv)
-        std_data.set_y_feature(data.y_feature) # same feature as fitting data
+        if len(plot_filter_out) > 0:
+            ftriplets = plot_filter_out.split(";")
+            for ftriplet in ftriplets:
+                fpcs = ftriplet.split(",")
+                ffield = fpcs[0].strip()
+                foperator = fpcs[1].strip()
+                fval = fpcs[2].strip()
+                try:
+                    fval = float(fval)
+                except (ValueError, TypeError):
+                    pass
+                std_data.add_exclusive_filter(ffield, foperator, fval)
+        std_data.set_y_feature(data.x_features[0]) # dummy y feature
         std_data.set_x_features(data.x_features) # same features as fitting data
         std_xdata = np.asarray(std_data.get_x_data())
         std_ydata = np.asarray(std_data.get_y_data()).ravel()
+        kwargs_s = dict()
+        kwargs_s['savepath'] = savepath
+        kwargs_s['savepath'] = os.path.join(savepath,'standard')
+        if not (os.path.isdir(kwargs_s['savepath'])):
+            os.mkdir(kwargs_s['savepath'])
+        kwargs_s['fitlabel'] = "standard"
+        kwargs_s['do_pergroup_fits'] = 0 # NO per-group fitting
+        kwargs_s['test_numericdata'] = np.asarray(std_data.get_data(numeric_field_name)).ravel()
+        if not(group_field_name == None):
+            kwargs_s['test_groupdata'] = np.asarray(std_data.get_data(group_field_name)).ravel()
+            kwargs_s['train_groupdata'] = np.asarray(std.get_data(group_field_name)).ravel()
+            if label_field_name == None:
+                label_field_name = group_field_name
+            kwargs_s['label_field_name'] = label_field_name
+            kwargs_s['test_labeldata'] = np.asarray(std_data.get_data(label_field_name)).ravel()
+        kwargs_s['full_xtrain'] = train_xdata
+        kwargs_s['full_ytrain'] = train_ydata
+        kwargs_s['full_xtest'] = std_xdata
+        kwargs_s['full_ytest'] = std_ydata
+        std_data_array = FullFit.do_full_fit(model, **kwargs_s)
     return
 
 def execute_old(model, data, savepath, lwr_data, 

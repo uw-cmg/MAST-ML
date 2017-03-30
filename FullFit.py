@@ -146,7 +146,7 @@ def do_full_fit(model,
     ptools.mixed_array_to_csv(csvname, headerline, myarray)
     
     if group_field_name == None:
-        return
+        return myarray #numeric label data,  measured, predicted, abs error
     train_group_indices = gttd.get_logo_indices(train_groupdata)
     test_group_indices = gttd.get_logo_indices(test_groupdata)
     
@@ -285,4 +285,4 @@ def do_full_fit(model,
     kwargs['notelist'] = group_notelist
     kwargs['plotlabel'] = "GroupFit_overlay"
     plotxy.multiple_overlay(**kwargs) 
-    return
+    return myarray #for total fit: numeric data, group data, measured, predicted, error
