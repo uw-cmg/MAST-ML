@@ -391,14 +391,20 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
         if marknum == 0: #no marking
             continue
         if int(guideline) == 0: #just rank on y
-            torank = ydatalist[nidx].tolist()
+            torank = ydatalist[nidx]
         else: #rank on distance from x-y guideline
-            torank = np.abs(ydatalist[nidx] - xdatalist[nidx]).tolist()
+            torank = np.abs(ydatalist[nidx] - xdatalist[nidx])
+        meantorank = np.nanmean(torank) #get rid of NaN's, esp. on CV test
+        mynans = np.isnan(torank)
+        torank[mynans] = meantorank #NaN's become means, so not high or low
         maxidxlist = heapq.nlargest(marknum, range(len(torank)), 
                         key=lambda x: torank[x])
+        print(maxidxlist)
         if mlabellist is None:
             mlabellist = np.copy(xdatalist)
         for midx in maxidxlist:
+            print(xdatalist[nidx][midx])
+            print(ydatalist[nidx][midx])
             mxval = mlabellist[nidx][midx]
             mxval = "%3.0f" % mxval
             plt.annotate("%s" % mxval, 

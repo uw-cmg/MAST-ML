@@ -17,6 +17,7 @@ def execute(model, data, savepath, lwr_data="",
             ylabel="Predicted",
             numeric_field_name=None,
             stepsize=1,
+            marklargest=None,
             *args, **kwargs):
     """Basic cross validation
         Args:
@@ -127,25 +128,32 @@ def execute(model, data, savepath, lwr_data="",
     kwargs2 = dict()
     kwargs2['xlabel'] = xlabel
     kwargs2['ylabel'] = ylabel
-    kwargs2['label1'] = "Best test"
-    kwargs2['label2'] = "Worst test"
+    kwargs2['labellist'] = ["Best test","Worst test"]
     notelist=list()
     notelist.append("Mean RMSE over %i LO-%i%% tests:" % (num_runs,leave_out_percent))
     notelist.append("{:.2f} $\pm$ {:.2f}".format(avgRMS, sd))
+    kwargs2['xdatalist'] = list([Ydata,Ydata])
+    kwargs2['ydatalist'] = list([Y_predicted_best,Y_predicted_worst])
+    kwargs2['xerrlist'] = list([None,None])
+    kwargs2['yerrlist'] = list([None,None])
     kwargs2['notelist'] = notelist
     kwargs2['guideline'] = 1
-    kwargs2['fill'] = 1
-    kwargs2['equalsize'] = 1
     kwargs2['plotlabel'] = "best_worst_overlay"
     kwargs2['savepath'] = savepath
     kwargs2['stepsize'] = stepsize
-    plotxy.dual_overlay(Ydata, Y_predicted_best, Ydata, Y_predicted_worst, **kwargs2)
 
 
     if numeric_field_name == None: #help label data
         numeric_field_name = data.x_features[0]
 
     labels = np.asarray(data.get_data(numeric_field_name)).ravel()
+    
+    if not (marklargest is None):
+        kwargs2['marklargest'] = marklargest
+        kwargs2['mlabellist'] = list([labels,labels])
+    plotxy.multiple_overlay(**kwargs2)
+    
+    
     csvname = os.path.join(savepath,"Leave%iPercentOut_CV_data.csv" % int(leave_out_percent))
     headerline = "%s,Measured,Predicted best,Absolute error best,Predicted worst,Absolute error worst" % numeric_field_name
     myarray = np.array([labels, Ydata,
