@@ -209,6 +209,7 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
         timex="",
         startx=None,
         endx=None,
+        whichyaxis=list(),
         notelist=list(), 
         *args, **kwargs):
     """Plot multiple xy overlay with same x axis
@@ -234,6 +235,19 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
     if not(len(yerrlist) == numlines):
         print("Not enough y error data. Use empty lists for no error.")
         return
+    if len(whichyaxis) == 0:
+        whichyaxis = np.ones(numlines)
+    else:
+        whichyaxis = whichyaxis.split(",")
+    if not (len(whichyaxis) == numlines):
+        print("Not enough axis choice data. whichyaxis should be a list of 1's and 2's.")
+        return
+    whichyaxis = np.array(whichyaxis, 'float')
+    ylabels = ylabel.split(",")
+    if not (len(ylabels) == numlines):
+        print("Not enough y label data.")
+        return
+
     matplotlib.rcParams.update({'font.size': 18})
     smallfont = 0.85*matplotlib.rcParams['font.size']
     notestep = 0.07
@@ -251,33 +265,64 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
     else:
         sizes=[bigsize,smallsize,smallsize,smallsize,smallsize,smallsize]
     markers=['o','o','s','d','^','v']
+    fig, ax1 = plt.subplots()
+    ax2 = ax1.twinx()
     for nidx in range(0, numlines):
         label = labellist[nidx]
         xdata = xdatalist[nidx]
         ydata = ydatalist[nidx]
         xerr = xerrlist[nidx]
+        whichy = whichyaxis[nidx]
         if (xerr is None) or len(xerr) == 0:
             xerr = np.zeros(len(xdata))
         yerr = yerrlist[nidx]
         if (yerr is None) or len(yerr) == 0:
             yerr = np.zeros(len(ydata))
-        (_, caps, _) = plt.errorbar(xdata, ydata,
-            xerr=xerr,
-            yerr=yerr,
-            label=label,
-            linewidth=2,
-            linestyle = "None", color=outlines[nidx],
-            markeredgewidth=2, markeredgecolor=outlines[nidx],
-            markerfacecolor=faces[nidx] , marker=markers[nidx],
-            markersize=sizes[nidx])
+        if whichy == 1:
+            (_, caps, _) = ax1.errorbar(xdata, ydata,
+                xerr=xerr,
+                yerr=yerr,
+                label=label,
+                linewidth=2,
+                linestyle = "None", color=outlines[nidx],
+                markeredgewidth=2, markeredgecolor=outlines[nidx],
+                markerfacecolor=faces[nidx] , marker=markers[nidx],
+                markersize=sizes[nidx])
+        else:
+            (_, caps, _) = ax2.errorbar(xdata, ydata,
+                xerr=xerr,
+                yerr=yerr,
+                label=label,
+                linewidth=2,
+                linestyle = "None", color=outlines[nidx],
+                markeredgewidth=2, markeredgecolor=outlines[nidx],
+                markerfacecolor=faces[nidx] , marker=markers[nidx],
+                markersize=sizes[nidx])
         for cap in caps:
             cap.set_color(outlines[nidx])
             cap.set_markeredgewidth(2)
-    lgd=plt.legend(loc = "lower right", 
+    lgd1=ax1.legend(loc = "best", 
                     fontsize=smallfont, 
                     numpoints=1,
                     fancybox=True) 
-    lgd.get_frame().set_alpha(0.5) #translucent legend!
+    lgd1.get_frame().set_alpha(0.5) #translucent legend!
+    ylabel1 = ""
+    ylabel2 = ""
+    for nidx in range(0, numlines):
+        if whichyaxis[nidx] == 1:
+            ylabel1 = ylabel1 + ylabels[nidx] + "; "
+        else:
+            ylabel2 = ylabel2 + ylabels[nidx] + "; "
+    ylabel1 = ylabel1[:-2] #remove trailing semicolon
+    ylabel2 = ylabel2[:-2] #remove trailing semicolon
+    ax1.set_ylabel(ylabel1)
+    if sum(whichyaxis) > numlines: #has some 2's in it
+        lgd2=ax2.legend(loc = "best", 
+                        fontsize=smallfont, 
+                        numpoints=1,
+                        fancybox=True) 
+        lgd2.get_frame().set_alpha(0.5) #translucent legend!
+        ax2.set_ylabel(ylabel2)
     if not(startx == None):
         if type(startx) == str:
             if len(timex) > 0:
@@ -293,8 +338,10 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
                 endx = float(endx)
         plt.xlim([startx,endx])
     [minx,maxx] = plt.xlim()
-    [miny,maxy] = plt.ylim()
     if guideline == 1: #square the axes according to stepsize and draw line
+        if sum(whichyaxis) > numlines:
+            raise ValueError("Cannot plot multiple y and also square axes.")
+        [miny,maxy] = plt.ylim()
         gmax = max(maxx, maxy)
         gmin = min(minx, miny)
         if not (stepsize == None): #square the axes according to stepsize
@@ -317,15 +364,13 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
                     fontsize=smallfont)
         notey = notey - notestep
     if len(timex) > 0:
-        myax = plt.gca()
-        my_xticks = myax.get_xticks()
+        my_xticks = ax1.get_xticks()
         adjusted_xticks = list()
         for tidx in range(0, len(my_xticks)):
             mytick = time.strftime(timex, time.localtime(my_xticks[tidx]))
             adjusted_xticks.append(mytick)
-        myax.set_xticklabels(adjusted_xticks, rotation=90.0)
+        ax1.set_xticklabels(adjusted_xticks, rotation=90.0)
     plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
     plt.tight_layout()
     plt.savefig(os.path.join(savepath, "%s" % plotlabel), dpi=200, bbox_inches='tight')
     plt.close()

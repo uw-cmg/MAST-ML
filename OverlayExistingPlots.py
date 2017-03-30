@@ -27,6 +27,7 @@ def execute(model, data, savepath,
         stepsize="1.0",
         startx=None,
         endx=None,
+        whichyaxis="",
         *args, **kwargs):
     """Overlay plots
         Args:
@@ -124,6 +125,7 @@ def execute(model, data, savepath,
     kwargs['endx'] = endx
     notelist=list()
     kwargs['notelist'] = notelist
+    kwargs['whichyaxis'] = whichyaxis
     #for key,value in kwargs.items():
     #    print(key,":",value)
     print("Plotting.")
