@@ -104,7 +104,6 @@ def single(xvals, yvals,
             else:
                 endx = float(endx)
         plt.xlim([startx,endx])
-    plt.margins(0.05)
     if guideline == 1: #also square the axes
         [minx,maxx] = plt.xlim()
         [miny,maxy] = plt.ylim()
@@ -113,6 +112,7 @@ def single(xvals, yvals,
         plt.xlim(gmin, gmax)
         plt.ylim(gmin, gmax)
         plt.plot((gmin, gmax), (gmin, gmax), ls="--", c=".3")
+    plt.margins(0.05)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     if len(title) > 0:
@@ -160,7 +160,7 @@ def dual_overlay(xdata1, ydata1,
         yerr1=None,
         xerr2=None,
         yerr2=None,
-        stepsize=1,
+        stepsize=None,
         savepath="",
         plotlabel="dual_overlay",
         guideline=0,
@@ -200,7 +200,7 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
         ylabel="Y",
         xerrlist=list(),
         yerrlist=list(),
-        stepsize=1,
+        stepsize=None,
         savepath="",
         plotlabel="multiple_overlay",
         guideline=0,
@@ -213,7 +213,6 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
         *args, **kwargs):
     """Plot multiple xy overlay with same x axis
     """
-    stepsize = float(stepsize)
     guideline = int(guideline)
     fill=int(fill)
     equalsize=int(equalsize)
@@ -293,15 +292,24 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
             else:
                 endx = float(endx)
         plt.xlim([startx,endx])
-    if guideline == 1: #only use stepsize if guideline is active
-        [minx,maxx] = plt.xlim()
-        [miny,maxy] = plt.ylim()
+    [minx,maxx] = plt.xlim()
+    [miny,maxy] = plt.ylim()
+    if guideline == 1: #square the axes according to stepsize and draw line
         gmax = max(maxx, maxy)
         gmin = min(minx, miny)
-        steplist = np.arange(gmin, gmax + (0.5*stepsize), stepsize)
-        plt.xticks(steplist)
-        plt.yticks(steplist)
+        if not (stepsize == None): #square the axes according to stepsize
+            stepsize = float(stepsize)
+            steplist = np.arange(gmin, gmax + (0.5*stepsize), stepsize)
+            if len(steplist < 1000): #don't allow too many ticks
+                plt.xticks(steplist)
+                plt.yticks(steplist) 
         plt.plot((gmin, gmax), (gmin, gmax), ls="--", c=".3")
+    else: #only step x axis
+        if not(stepsize == None):
+            stepsize = float(stepsize)
+            steplist = np.arange(minx, maxx + (0.5*stepsize), stepsize)
+            if len(steplist < 1000): #don't allow too many ticks
+                plt.xticks(steplist)
     plt.margins(0.05)
     notey = 0.88
     for note in notelist:
