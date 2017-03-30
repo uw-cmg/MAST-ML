@@ -139,8 +139,8 @@ def do_full_fit(model,
         headerline = "%s,Measured,Predicted,Absolute error" % numeric_field_name
         myarray = np.array([test_numericdata, full_ytest, ypredict, y_abs_err]).transpose()
     else:
-        headerline = "%s,%s,Measured,Predicted,Absolute error" % (numeric_field_name, group_field_name)
-        myarray = np.array([test_numericdata, test_groupdata, full_ytest, ypredict, y_abs_err]).transpose()
+        headerline = "%s,%s,%s,Measured,Predicted,Absolute error" % (numeric_field_name, group_field_name, label_field_name)
+        myarray = np.array([test_numericdata, test_groupdata, test_labeldata,full_ytest, ypredict, y_abs_err]).transpose()
     
     csvname = os.path.join(savepath, "FullFit_data.csv")
     ptools.mixed_array_to_csv(csvname, headerline, myarray)
