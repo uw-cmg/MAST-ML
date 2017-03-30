@@ -217,7 +217,7 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
     guideline = int(guideline)
     fill=int(fill)
     equalsize=int(equalsize)
-
+    #VERIFICATION
     numlines=len(xdatalist)
     if numlines > 6:
         print("Only 6 lines supported.")
@@ -253,11 +253,16 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
         print("Not enough axis choice data. whichyaxis should be a list of 1's and 2's.")
         return
     whichyaxis = np.array(whichyaxis, 'float')
-    ylabels = ylabel.split(",")
-    if not (len(ylabels) == numlines):
-        print("Not enough y label data.")
-        return
-
+    if sum(whichyaxis) > numlines: #has some 2's
+        doubley = True
+    else:
+        doubley = False
+    if doubley:
+        ylabels = ylabel.split(",")
+        if not (len(ylabels) == numlines):
+            print("Not enough y label data.")
+            return
+    #PLOTTING
     matplotlib.rcParams.update({'font.size': 18})
     smallfont = 0.85*matplotlib.rcParams['font.size']
     notestep = 0.07
@@ -277,7 +282,8 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
         sizes=[bigsize,medsize,smallsize,smallsize,smallsize,smallsize]
     markers=['o','o','s','d','^','v']
     fig, ax1 = plt.subplots()
-    ax2 = ax1.twinx()
+    if doubley:
+        ax2 = ax1.twinx()
     for nidx in range(0, numlines):
         label = labellist[nidx]
         xdata = xdatalist[nidx]
@@ -308,35 +314,23 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
         for cap in caps:
             cap.set_color(outlines[nidx])
             cap.set_markeredgewidth(2)
-    ylabel1 = ""
-    ylabel2 = ""
-    for nidx in range(0, numlines):
-        if whichyaxis[nidx] == 1:
-            ylabel1 = ylabel1 + ylabels[nidx] + "; "
-        else:
-            ylabel2 = ylabel2 + ylabels[nidx] + "; "
-    ylabel1 = ylabel1[:-2] #remove trailing semicolon
-    ylabel2 = ylabel2[:-2] #remove trailing semicolon
-    if sum(whichyaxis) > numlines: #has some 2's in it
-        lgd2=ax2.legend(loc = "lower right",
-                        bbox_to_anchor=(1.0,1.0),
-                        fontsize=smallfont, 
-                        numpoints=1,
-                        fancybox=True) 
-        lgd2.get_frame().set_alpha(0.5) #translucent legend!
+    #AXIS LABELS
+    if doubley:
+        ylabel1 = ""
+        ylabel2 = ""
+        for nidx in range(0, numlines):
+            if whichyaxis[nidx] == 1:
+                ylabel1 = ylabel1 + ylabels[nidx] + "; "
+            else:
+                ylabel2 = ylabel2 + ylabels[nidx] + "; "
+        ylabel1 = ylabel1[:-2] #remove trailing semicolon
+        ylabel2 = ylabel2[:-2] #remove trailing semicolon
+        ax1.set_ylabel(ylabel1)
         ax2.set_ylabel(ylabel2)
-        lgd1=ax1.legend(loc = "lower left",
-                    bbox_to_anchor=(0.0,1.0),
-                    fontsize=smallfont, 
-                    numpoints=1,
-                    fancybox=True) 
     else:
-        lgd1=ax1.legend(loc = "best", 
-                    fontsize=smallfont, 
-                    numpoints=1,
-                    fancybox=True) 
-    ax1.set_ylabel(ylabel1)
-    lgd1.get_frame().set_alpha(0.5) #translucent legend!
+        ax1.set_ylabel(ylabel)
+    plt.xlabel(xlabel)
+    #X-AXIS RANGE
     if not(startx == None):
         if type(startx) == str:
             if len(timex) > 0:
@@ -351,34 +345,40 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
             else:
                 endx = float(endx)
         ax1.set_xlim([startx,endx])
-        ax2.set_xlim([startx,endx])
-    [minx,maxx] = ax1.get_xlim()
+        if doubley:
+            ax2.set_xlim([startx,endx])
+    #X and Y-AXIS RANGES FOR SQUARE PLOT
+    [minx,maxx] = ax1.get_xlim() #should always be the same for x2
     if guideline == 1: #square the axes according to stepsize and draw line
-        if sum(whichyaxis) > numlines:
+        if doubley:
             raise ValueError("Cannot plot multiple y and also square axes.")
-        [miny,maxy] = plt.ylim()
+        [miny,maxy] = ax1.get_ylim()
         gmax = max(maxx, maxy)
         gmin = min(minx, miny)
-        if not (stepsize == None): #square the axes according to stepsize
-            stepsize = float(stepsize)
-            steplist = np.arange(gmin, gmax + (0.5*stepsize), stepsize)
-            if len(steplist < 1000): #don't allow too many ticks
-                plt.xticks(steplist)
-                plt.yticks(steplist) 
+        ax1.set_xlim([gmin,gmax]) #set both X and Y limits
+        ax1.set_ylim([gmin,gmax])
         plt.plot((gmin, gmax), (gmin, gmax), ls="--", c=".3")
-    else: #only step x axis
-        if not(stepsize == None):
-            stepsize = float(stepsize)
-            steplist = np.arange(minx, maxx + (0.5*stepsize), stepsize)
-            if len(steplist < 1000): #don't allow too many ticks
-                ax1.set_xticks(steplist)
+    else:
+        gmax = maxx
+        gmin = minx
+    #XTICKS AND POSSIBLY YTICKS
+    if not (stepsize == None):
+        stepsize = float(stepsize)
+        steplist = np.arange(gmin, gmax + (0.5*stepsize), stepsize)
+        if len(steplist < 1000): #don't allow too many ticks
+            ax1.set_xticks(steplist)
+            if doubley:
                 ax2.set_xticks(steplist)
+            if guideline == 1:
+                ax1.set_yticks(steplist) 
     plt.margins(0.05)
+    #ANNOTATIONS
     notey = 0.88
     for note in notelist:
         plt.annotate(note, xy=(0.05, notey), xycoords="axes fraction",
                     fontsize=smallfont)
         notey = notey - notestep
+    #X-AXIS RELABELING
     if len(timex) > 0:
         my_xticks = ax1.get_xticks()
         adjusted_xticks = list()
@@ -386,17 +386,41 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
             mytick = time.strftime(timex, time.localtime(my_xticks[tidx]))
             adjusted_xticks.append(mytick)
         ax1.set_xticklabels(adjusted_xticks, rotation=90.0)
-        ax2.set_xticklabels(adjusted_xticks, rotation=90.0)
-    plt.xlabel(xlabel)
+        if doubley:
+            ax2.set_xticklabels(adjusted_xticks, rotation=90.0)
+    #LEGEND
+    if doubley:
+        lgd2=ax2.legend(loc = "lower right",
+                        bbox_to_anchor=(1.0,1.0),
+                        fontsize=smallfont, 
+                        numpoints=1,
+                        fancybox=True) 
+        lgd2.get_frame().set_alpha(0.5) #translucent legend!
+        ax2.set_ylabel(ylabel2)
+        lgd1=ax1.legend(loc = "lower left",
+                    bbox_to_anchor=(0.0,1.0),
+                    fontsize=smallfont, 
+                    numpoints=1,
+                    fancybox=True) 
+    else:
+        if guideline:
+            loc1 = "lower right"
+        else:
+            loc1 = "best"
+        lgd1=ax1.legend(loc = loc1, 
+                    fontsize=smallfont, 
+                    numpoints=1,
+                    fancybox=True) 
+    lgd1.get_frame().set_alpha(0.5) #translucent legend!
     plt.tight_layout()
     plt.savefig(os.path.join(savepath, "%s" % plotlabel), dpi=200, bbox_inches='tight')
     plt.close()
-
+    #PRINT DATA
     for nidx in range(0, numlines):
-        ylabel = ylabels[nidx]
-        savecsv = os.path.join(savepath,"data_%s.csv" % ylabel)
+        label = labellist[nidx]
+        savecsv = os.path.join(savepath,"data_%s.csv" % label)
         savecsv = savecsv.replace(" ","_")
-        headerline="%s,xerr,%s,yerr" % (xlabel, ylabel)
+        headerline="%s,xerr,%s,yerr" % (xlabel, label)
         myarray = np.asarray([xdatalist[nidx],xerrlist[nidx],ydatalist[nidx],yerrlist[nidx]]).transpose()
         ptools.mixed_array_to_csv(savecsv, headerline, myarray)
     return
