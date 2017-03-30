@@ -100,6 +100,11 @@ def execute(model, data, savepath,
         std_xdata = np.asarray(std_data.get_x_data())
         std_ydata = np.asarray(std_data.get_y_data()).ravel()
         kwargs_s = dict()
+        kwargs_s['xlabel'] = xlabel
+        kwargs_s['ylabel'] = ylabel
+        kwargs_s['stepsize'] = stepsize
+        kwargs_s['numeric_field_name'] = numeric_field_name
+        kwargs_s['group_field_name'] = group_field_name
         kwargs_s['savepath'] = savepath
         kwargs_s['savepath'] = os.path.join(savepath,'standard')
         if not (os.path.isdir(kwargs_s['savepath'])):
