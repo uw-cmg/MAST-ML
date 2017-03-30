@@ -426,7 +426,17 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
         label = labellist[nidx]
         savecsv = os.path.join(savepath,"data_%s.csv" % label)
         savecsv = savecsv.replace(" ","_")
-        headerline="%s,xerr,%s,yerr" % (xlabel, label)
-        myarray = np.asarray([xdatalist[nidx],xerrlist[nidx],ydatalist[nidx],yerrlist[nidx]]).transpose()
-        ptools.mixed_array_to_csv(savecsv, headerline, myarray)
+        headerstr="%s" % xlabel
+        myarrlist = list()
+        myarrlist.append(xdatalist[nidx])
+        if not(xerr is None):
+            headerstr = headerstr + ",xerr,"
+            myarrlist.append(xerrlist[nidx])
+        headerstr = headerstr + "%s" % label
+        myarrlist.append(ydatalist[nidx])
+        if not (yerr is None):
+            headerstr = headerstr + ",yerr"
+            myarrlist.append(yerrlist[nidx])
+        myarray = np.asarray(myarrlist).transpose()
+        ptools.mixed_array_to_csv(savecsv, headerstr, myarray)
     return
