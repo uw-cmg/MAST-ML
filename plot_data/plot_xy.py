@@ -7,6 +7,7 @@ from mean_error import mean_error
 import data_analysis.printout_tools as ptools
 import matplotlib.dates as mdates
 import time
+import heapq
 
 def get_xy_sorted(xvals, yvals, xerr, yerr, verbose=0):
     """Sort x and y according to x. 
@@ -147,6 +148,7 @@ def single(xvals, yvals,
         maxidxlist = heapq.nlargest(int(marklargest), range(len(yvals)), 
                         key=lambda x: yvals[x])
         for midx in maxidxlist:
+
             mxval = xvals[midx]
             mxval = "%3.0f" % mxval
             plt.annotate("%s" % mxval, 
@@ -223,13 +225,13 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
         savepath="",
         plotlabel="multiple_overlay",
         guideline=0,
-        fill=1,
-        equalsize=1,
         timex="",
         startx=None,
         endx=None,
         whichyaxis=list(),
         notelist=list(), 
+        marklargest="0,0,0,0,0,0",
+        mlabellist=None,
         markers="o,o,s,d,^,v",
         linestyles="None,None,None,None,None,None",
         outlines="#8B0000,#00008B,#004400,#542788,#b35806,#252525",
@@ -239,8 +241,6 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
     """Plot multiple xy overlay with same x axis
     """
     guideline = int(guideline)
-    fill=int(fill)
-    equalsize=int(equalsize)
     #VERIFICATION
     numlines=len(xdatalist)
     if numlines > 6:
@@ -384,6 +384,28 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
         plt.annotate(note, xy=(0.05, notey), xycoords="axes fraction",
                     fontsize=smallfont)
         notey = notey - notestep
+    #ANNOTATIONS FOR LARGEST
+    marklargest = np.array(marklargest.split(","),'int')
+    for nidx in range(0, numlines):
+        marknum = marklargest[nidx]
+        if marknum == 0: #no marking
+            continue
+        if int(guideline) == 0: #just rank on y
+            torank = ydatalist[nidx].tolist()
+        else: #rank on distance from x-y guideline
+            torank = np.abs(ydatalist[nidx] - xdatalist[nidx]).tolist()
+        maxidxlist = heapq.nlargest(marknum, range(len(torank)), 
+                        key=lambda x: torank[x])
+        if mlabellist is None:
+            mlabellist = np.copy(xdatalist)
+        for midx in maxidxlist:
+            mxval = mlabellist[nidx][midx]
+            mxval = "%3.0f" % mxval
+            plt.annotate("%s" % mxval, 
+                    xy=(xdatalist[nidx][midx],ydatalist[nidx][midx]),
+                    horizontalalignment = "left",
+                    verticalalignment = "bottom",
+                    fontsize=smallfont)
     #X-AXIS RELABELING
     if len(timex) > 0:
         my_xticks = ax1.get_xticks()
