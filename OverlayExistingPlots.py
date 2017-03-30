@@ -21,8 +21,11 @@ def execute(model, data, savepath,
         labellist="",
         plotlabel="overlay",
         guideline=0,
-        equalsize=1,
-        fill=1,
+        sizes=None,
+        faces=None,
+        markers=None,
+        linestyles=None,
+        outlines=None,
         timex="",
         stepsize="1.0",
         startx=None,
@@ -118,8 +121,16 @@ def execute(model, data, savepath,
     kwargs['savepath'] = savepath
     kwargs['plotlabel'] = plotlabel
     kwargs['guideline'] = guideline
-    kwargs['fill'] = fill
-    kwargs['equalsize'] = equalsize
+    if not(faces is None):
+        kwargs['faces'] = faces
+    if not(outlines is None):
+        kwargs['outlines'] = outlines
+    if not(sizes is None):
+        kwargs['sizes'] = sizes
+    if not(markers is None):
+        kwargs['markers'] = markers
+    if not(linestyles is None):
+        kwargs['linestyles'] = linestyles
     kwargs['timex'] = timex
     kwargs['startx'] = startx
     kwargs['endx'] = endx
