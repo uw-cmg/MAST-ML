@@ -232,9 +232,19 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
     if not(len(xerrlist) == numlines):
         print("Not enough x error data. Use empty lists for no error.")
         return
+    for nidx in range(0, numlines):
+        xerr = xerrlist[nidx]
+        if (xerr is None) or len(xerr) == 0:
+            xerr = np.zeros(len(xdatalist[nidx]))
+            xerrlist[nidx] = xerr
     if not(len(yerrlist) == numlines):
         print("Not enough y error data. Use empty lists for no error.")
         return
+    for nidx in range(0, numlines):
+        yerr = yerrlist[nidx]
+        if (yerr is None) or len(yerr) == 0:
+            yerr = np.zeros(len(ydatalist[nidx]))
+            yerrlist[nidx] = yerr
     if len(whichyaxis) == 0:
         whichyaxis = np.ones(numlines)
     else:
@@ -272,12 +282,8 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
         xdata = xdatalist[nidx]
         ydata = ydatalist[nidx]
         xerr = xerrlist[nidx]
-        whichy = whichyaxis[nidx]
-        if (xerr is None) or len(xerr) == 0:
-            xerr = np.zeros(len(xdata))
         yerr = yerrlist[nidx]
-        if (yerr is None) or len(yerr) == 0:
-            yerr = np.zeros(len(ydata))
+        whichy = whichyaxis[nidx]
         if whichy == 1:
             (_, caps, _) = ax1.errorbar(xdata, ydata,
                 xerr=xerr,
@@ -301,11 +307,6 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
         for cap in caps:
             cap.set_color(outlines[nidx])
             cap.set_markeredgewidth(2)
-    lgd1=ax1.legend(loc = "best", 
-                    fontsize=smallfont, 
-                    numpoints=1,
-                    fancybox=True) 
-    lgd1.get_frame().set_alpha(0.5) #translucent legend!
     ylabel1 = ""
     ylabel2 = ""
     for nidx in range(0, numlines):
@@ -315,14 +316,26 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
             ylabel2 = ylabel2 + ylabels[nidx] + "; "
     ylabel1 = ylabel1[:-2] #remove trailing semicolon
     ylabel2 = ylabel2[:-2] #remove trailing semicolon
-    ax1.set_ylabel(ylabel1)
     if sum(whichyaxis) > numlines: #has some 2's in it
-        lgd2=ax2.legend(loc = "best", 
+        lgd2=ax2.legend(loc = "lower right",
+                        bbox_to_anchor=(1.0,1.0),
                         fontsize=smallfont, 
                         numpoints=1,
                         fancybox=True) 
         lgd2.get_frame().set_alpha(0.5) #translucent legend!
         ax2.set_ylabel(ylabel2)
+        lgd1=ax1.legend(loc = "lower left",
+                    bbox_to_anchor=(0.0,1.0),
+                    fontsize=smallfont, 
+                    numpoints=1,
+                    fancybox=True) 
+    else:
+        lgd1=ax1.legend(loc = "best", 
+                    fontsize=smallfont, 
+                    numpoints=1,
+                    fancybox=True) 
+    ax1.set_ylabel(ylabel1)
+    lgd1.get_frame().set_alpha(0.5) #translucent legend!
     if not(startx == None):
         if type(startx) == str:
             if len(timex) > 0:
@@ -374,4 +387,12 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
     plt.tight_layout()
     plt.savefig(os.path.join(savepath, "%s" % plotlabel), dpi=200, bbox_inches='tight')
     plt.close()
+
+    for nidx in range(0, numlines):
+        ylabel = ylabels[nidx]
+        savecsv = os.path.join(savepath,"data_%s.csv" % ylabel)
+        savecsv = savecsv.replace(" ","_")
+        headerline="%s,xerr,%s,yerr" % (xlabel, ylabel)
+        myarray = np.asarray([xdatalist[nidx],xerrlist[nidx],ydatalist[nidx],yerrlist[nidx]]).transpose()
+        ptools.mixed_array_to_csv(savecsv, headerline, myarray)
     return
