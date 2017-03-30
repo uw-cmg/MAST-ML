@@ -186,15 +186,16 @@ def do_numeric_plots(test_array, std_array,
             savepath,group_field_name=None):
     if group_field_name == None:
         numidx=0
+        gidx = -1
+        lidx = -1
+        midx = 1
+        pidx = 2
+    else:
+        numidx=0
         gidx = 1
         lidx = 2
         midx = 3
         pidx = 4
-    else:
-        numidx=0
-        midx = 1
-        pidx = 2
-        gidx = -1
     test_numericdata = test_array[:,numidx] #from FullFit
     test_measured = test_array[:,midx]
     test_predicted = test_array[:,pidx]
