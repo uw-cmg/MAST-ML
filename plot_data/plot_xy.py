@@ -349,8 +349,9 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
                 endx = time.mktime(time.strptime(endx, timex))
             else:
                 endx = float(endx)
-        plt.xlim([startx,endx])
-    [minx,maxx] = plt.xlim()
+        ax1.set_xlim([startx,endx])
+        ax2.set_xlim([startx,endx])
+    [minx,maxx] = ax1.get_xlim()
     if guideline == 1: #square the axes according to stepsize and draw line
         if sum(whichyaxis) > numlines:
             raise ValueError("Cannot plot multiple y and also square axes.")
@@ -369,7 +370,8 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
             stepsize = float(stepsize)
             steplist = np.arange(minx, maxx + (0.5*stepsize), stepsize)
             if len(steplist < 1000): #don't allow too many ticks
-                plt.xticks(steplist)
+                ax1.set_xticks(steplist)
+                ax2.set_xticks(steplist)
     plt.margins(0.05)
     notey = 0.88
     for note in notelist:
@@ -383,6 +385,7 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
             mytick = time.strftime(timex, time.localtime(my_xticks[tidx]))
             adjusted_xticks.append(mytick)
         ax1.set_xticklabels(adjusted_xticks, rotation=90.0)
+        ax2.set_xticklabels(adjusted_xticks, rotation=90.0)
     plt.xlabel(xlabel)
     plt.tight_layout()
     plt.savefig(os.path.join(savepath, "%s" % plotlabel), dpi=200, bbox_inches='tight')
