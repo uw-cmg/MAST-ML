@@ -403,8 +403,6 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
         if mlabellist is None:
             mlabellist = np.copy(xdatalist)
         for midx in maxidxlist:
-            print(xdatalist[nidx][midx])
-            print(ydatalist[nidx][midx])
             mxval = mlabellist[nidx][midx]
             try:
                 mxval = "%3.0f" % mxval
