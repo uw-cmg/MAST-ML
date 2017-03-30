@@ -85,8 +85,8 @@ def execute(model, data, savepath,
         kwargs_f['test_labeldata'] = np.asarray(data.get_data(label_field_name)).ravel()
     kwargs_f['full_xtrain'] = Xdata
     kwargs_f['full_ytrain'] = ydata
-    do_full_fit(model, **kwargs_f)
-    return
+    myarray = do_full_fit(model, **kwargs_f)
+    return myarray
 
 def do_full_fit(model,
         full_xtrain = None,
@@ -243,7 +243,7 @@ def do_full_fit(model,
     
     #GET PER-GROUP FITS, and overlay them
     if not(do_pergroup_fits == 1):
-        return
+        return myarray
    
     xdatalist=list()
     ydatalist=list()
