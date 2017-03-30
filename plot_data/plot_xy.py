@@ -51,8 +51,8 @@ def single(xvals, yvals,
             savepath="",
             guideline=0,
             timex="",
-            startx="",
-            endx="",
+            startx=None,
+            endx=None,
             divide_x = None,
             divide_y = None,
             notelist=list(),
@@ -269,11 +269,12 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
     else:
         faces=["None","None","None","None","None","None"]
     bigsize=15
-    smallsize=10
+    medsize=10
+    smallsize=8
     if equalsize == 1:
         sizes=[bigsize,bigsize,bigsize,bigsize,bigsize,bigsize]
     else:
-        sizes=[bigsize,smallsize,smallsize,smallsize,smallsize,smallsize]
+        sizes=[bigsize,medsize,smallsize,smallsize,smallsize,smallsize]
     markers=['o','o','s','d','^','v']
     fig, ax1 = plt.subplots()
     ax2 = ax1.twinx()
