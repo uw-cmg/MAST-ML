@@ -193,6 +193,7 @@ def create_standard_conditions(db, cname, ref_flux=3e10, temp=290, min_sec=3e6, 
     cas.add_generic_effective_fluence_field(db, cname, 3e10, 0.26)
     cas.add_generic_effective_fluence_field(db, cname, 3e10, 0.10)
     cas.add_generic_effective_fluence_field(db, cname, 3e10, 0.20)
+    cas.add_generic_effective_fluence_field(db, cname, 3e10, 0.15)
     cas.add_minmax_normalization_of_a_field(db, cname, "temperature_C",
             verbose=verbose, collectionlist = clist)
     cas.add_minmax_normalization_of_a_field(db, cname, "log(fluence_n_cm2)",
