@@ -8,6 +8,7 @@ from sklearn.metrics import mean_squared_error
 import data_analysis.printout_tools as ptools
 import portion_data.get_test_train_data as gttd
 import FullFit
+import plot_data.plot_xy as plotxy
 
 def execute(model, data, savepath, 
         test_csv = None,
@@ -118,7 +119,85 @@ def execute(model, data, savepath,
         kwargs_s['full_xtest'] = std_xdata
         kwargs_s['full_ytest'] = std_ydata
         std_data_array = FullFit.do_full_fit(model, **kwargs_s)
+    else:
+        std_data_array = None
+    if numeric_field_name is None:
+        return
+    else:
+        do_numeric_plots(test_data_array, std_data_array, split_xlabel, split_ylabel, savepath)
     return
+
+def do_single_train_test_std_plot(train_x="", train_y="", test_x="", test_y="", 
+                std_x=None, std_y=None, 
+                xlabel="", ylabel="", savepath="", plotlabel=""):
+    xdatalist=list()
+    ydatalist=list()
+    xerrlist=list()
+    yerrlist=list()
+    labellist=list()
+    labellist.append("Measured")
+    xdatalist.append(train_x)
+    ydatalist.append(train_y)
+    xerrlist.append(None)
+    yerrlist.append(None)
+    labellist.append("Predicted")
+    xdatalist.append(test_x)
+    ydatalist.append(test_y)
+    xerrlist.append(None)
+    yerrlist.append(None)
+    if not std_x is None:
+        labellist.append("Predicted")
+        xdatalist.append(std_x)
+        ydatalist.append(std_y)
+        xerrlist.append(None)
+        yerrlist.append(None)
+    kwargs_p = dict()
+    kwargs_p['savepath'] = os.path.join(savepath,"%s" % plotlabel)
+    if not os.path.isdir(kwargs_p['savepath']):
+        os.mkdir(kwargs_p['savepath'])
+    kwargs_p['xlabel'] = xlabel
+    kwargs_p['ylabel'] = ylabel
+    kwargs_p['guideline'] = 0
+    kwargs_p['linestyles'] = "None,None,-" #standard gets sold line
+    kwargs_p['markers'] = "o,*,None"
+    kwargs_p['sizes'] = "10,10,10"
+    kwargs_p['faces'] = "None,None,None"
+    kwargs_p['xdatalist'] = xdatalist
+    kwargs_p['ydatalist'] = ydatalist
+    kwargs_p['xerrlist'] = xerrlist
+    kwargs_p['yerrlist'] = yerrlist
+    kwargs_p['labellist'] = labellist
+    kwargs_p['plotlabel'] = plotlabel
+    plotxy.multiple_overlay(**kwargs_p)
+    return
+def do_numeric_plots(test_array, std_array, 
+            xlabel,
+            ylabel,
+            savepath):
+    test_numericdata = test_array[:,0] #from FullFit
+    test_groupdata = test_array[:,1] #group
+    test_measured = test_array[:,2]
+    test_predicted = test_array[:,3]
+    if std_array is None:
+        std_numericdata = None
+        std_groupdata = None
+        std_predicted = None
+    else:
+        std_numericdata = std_array[:,0]
+        std_groupdata = std_array[:,1]
+        std_predicted = std_array[:,3] #measured does not matter for standard
+    do_single_train_test_std_plot(train_x = test_numericdata,
+            train_y = test_measured,
+            test_x = test_numericdata,
+            test_y = test_predicted,
+            std_x = std_numericdata,
+            std_y = std_predicted,
+            xlabel=xlabel,
+            ylabel=ylabel,
+            savepath=savepath,
+            plotlabel="alldata")
+    return
+
 
 def execute_old(model, data, savepath, lwr_data, 
             topredict_data_csv = None, 
