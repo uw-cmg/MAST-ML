@@ -109,7 +109,7 @@ def execute(model, data, savepath,
         kwargs_s['test_numericdata'] = np.asarray(std_data.get_data(numeric_field_name)).ravel()
         if not(group_field_name == None):
             kwargs_s['test_groupdata'] = np.asarray(std_data.get_data(group_field_name)).ravel()
-            kwargs_s['train_groupdata'] = np.asarray(std.get_data(group_field_name)).ravel()
+            kwargs_s['train_groupdata'] = np.asarray(std_data.get_data(group_field_name)).ravel()
             if label_field_name == None:
                 label_field_name = group_field_name
             kwargs_s['label_field_name'] = label_field_name
