@@ -1,4 +1,4 @@
-__author__ = 'haotian'
+__author__ = 'haotian;Tam'
 import numpy as np
 import traceback
 def parse(filename, weights = False, separator=','):
@@ -362,12 +362,32 @@ class Data:
             return False
         if newname == "":
             newname = "N_{}".format(featurename)
-        index = self.__features.index(feature)
+        index = self.__features.index(feature) 
+        #Consider using numpy, which can handle python None in subtraction
+        # and division, as NaN; but may not work with add_feature
+        #origarr = np.array(self.__data[:,index],'float')
+        #result = (origarr - gmin)/(gmax - gmin)
         result = list()
         for line in self.__data:
             if line[index] is None:
                 result.append(None)
             else:
                 result.append((line[index]-gmin)/(gmax-gmin))
+        self.add_feature(newname, result)
+        return True
+
+    def add_log10_feature(self, featurename="", newname=""):
+        if featurename not in self.__features:
+            print("can't find [{}] in features".format(featurename))
+            return False
+        if newname == "":
+            newname = "log10_{}".format(featurename)
+        index = self.__features.index(feature)
+        result = list()
+        for line in self.__data:
+            if line[index] is None:
+                result.append(None)
+            else:
+                result.append(np.log10(line[index]))
         self.add_feature(newname, result)
         return True
