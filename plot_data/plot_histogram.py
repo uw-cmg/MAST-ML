@@ -61,11 +61,19 @@ def simple_histogram(xvals,
     fig, axh = plt.subplots()
     n_per_bin, bins, patches = axh.hist(xvals, bins=blist, normed=0,
                 facecolor='blue', alpha=0.75)
-    if int(guideline) == 1:
+    if int(guideline) > 0:
         from scipy.stats import norm
         import matplotlib.mlab as mlab
-        (mu,sigma) = norm.fit(xvals)
-        guidey = mlab.normpdf( bins, mu, sigma)
+        if int(guideline) == 1:
+            (mu,sigma) = norm.fit(xvals)
+            guidey = mlab.normpdf( bins, mu, sigma)
+        elif int(guideline) == 2:
+            from scipy.stats import lognorm
+            (mu,sigma) = norm.fit(np.log(xvals))
+            sparam = sigma
+            loc = 0.0 
+            scale = np.exp(mu)
+            guidey = lognorm.pdf( bins, sparam, loc, scale)
         guidey = guidey * sum(n_per_bin) * bin_width # scale up the fit
         axh.plot(bins, guidey, linestyle='--', color = darkblue, linewidth = 1)
         #https://www.mathworks.com/matlabcentral/newsreader/view_thread/32136.html?
