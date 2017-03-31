@@ -69,10 +69,7 @@ def simple_histogram(xvals,
             guidey = mlab.normpdf( bins, mu, sigma)
         elif int(guideline) == 2:
             from scipy.stats import lognorm
-            (mu,sigma) = norm.fit(np.log(xvals))
-            sparam = sigma
-            loc = 0.0 
-            scale = np.exp(mu)
+            (sparam, loc, scale) = lognorm.fit(xvals)
             guidey = lognorm.pdf( bins, sparam, loc, scale)
         guidey = guidey * sum(n_per_bin) * bin_width # scale up the fit
         axh.plot(bins, guidey, linestyle='--', color = darkblue, linewidth = 1)
