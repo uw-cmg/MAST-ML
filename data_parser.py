@@ -351,3 +351,23 @@ class Data:
         print('feature [{}] added'.format(name))
         self.__calculate_data_range()
         return True
+    
+    def normalize_feature_global_minmax(self, featurename="", 
+                gmin=None, gmax=None, newname=""):
+        """Normalize a feature using predetermined minimum and maximum values.
+            Use for normalizing across multiple data_parser Data objects.
+        """
+        if featurename not in self.__features:
+            print("can't find [{}] in features".format(featurename))
+            return False
+        if newname == "":
+            newname = "N_{}".format(featurename)
+        index = self.__features.index(feature)
+        result = list()
+        for line in self.__data:
+            if line[index] is None:
+                result.append(None)
+            else:
+                result.append((line[index]-gmin)/(gmax-gmin))
+        self.add_feature(newname, result)
+        return True
