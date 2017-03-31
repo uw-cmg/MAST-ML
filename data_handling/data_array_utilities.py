@@ -66,7 +66,7 @@ def add_generic_effective_fluence_field(db, newcname, ref_flux=3e10, pvalue=0.26
     return
 
 
-def add_log10_of_a_field(db, newcname, origfield, verbose=0):
+def add_log10_of_a_field(pdatalist=list(), fieldname=""):
     """Add the base-10 logarithm of a field as a new field
     """
     newfield="log(%s)" % origfield
@@ -81,6 +81,10 @@ def add_log10_of_a_field(db, newcname, origfield, verbose=0):
         if verbose > 0:
             print("Updated record %s with %s %3.3f." % (record["_id"],newfield,fieldval))
     return
+
+def find_field_number(pdatalist=list(), fieldname=""):
+    fieldnumbers = list()
+    return fieldnumbers
 
 def add_minmax_normalization_of_a_field(db, newcname, origfield, setmin=None, setmax=None, verbose=0, collectionlist=list()):
     """Add the normalization of a field based on the min and max values
@@ -155,8 +159,8 @@ def add_minmax_normalization_of_a_field(db, newcname, origfield, setmin=None, se
             print("Updated record %s with %s %3.3f." % (record["_id"],newfield,fieldval))
     return
 def printtest(pdatalist=list(), header=""):
-    for data in pdatalist:
-        print("%s" % header, data)
+    for dataset in pdatalist:
+        print("%s" % header, dataset)
     return
 
 def handler(pdatalist=list(), methodname="", **kwargs):
@@ -166,9 +170,10 @@ def handler(pdatalist=list(), methodname="", **kwargs):
         result = method_to_call(pdatalist, **kwargs)
     return
 if __name__=="__main__":
-    testdata = np.array([[1,2,3],[4,5,6],[7,8,9]])
-    print(testdata)
+    testdata1 = np.array([[1,2,3],[4,5,6],[7,8,9]])
+    print(testdata1)
+    testdata2 = np.array([[1,3,5],[2,4,6],[3,5,7],[4,6,8]])
     kwargs=dict()
-    kwargs['header'] = "Item: "
-    handler([[0],[1]],"printtest", **kwargs)
+    kwargs['header'] = "Dataset: "
+    handler(list([testdata1,testdata2]),"printtest", **kwargs)
     sys.exit()

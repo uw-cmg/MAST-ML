@@ -17,8 +17,8 @@ nEFl = len(X)-7
 Y1="CD delta sigma"
 Y2="CD delta sigma"
 #Y="delta sigma"
-datapath="DBTT_Data21.csv"
-lwrdatapath='CD_LWR_clean8.csv'
+datapath="../../data/Odette_DBTT/DBTT_Data21.csv"
+lwrdatapath='../../data/Odette_DBTT/CD_LWR_clean8.csv'
 savepath='{}.png'
 
 data = data_parser.parse(datapath)
