@@ -372,7 +372,10 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
                         fontsize=smallfont, 
                         numpoints=1,
                         fancybox=True) 
-        lgd2.get_frame().set_alpha(0.5) #translucent legend!
+        try:
+            lgd2.get_frame().set_alpha(0.5) #translucent legend!
+        except AttributeError: # no labeled lines
+            pass
         ax2.set_ylabel(ylabel2)
         lgd1=ax1.legend(loc = "lower left",
                     bbox_to_anchor=(0.0,1.0),
@@ -388,7 +391,10 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
                     fontsize=smallfont, 
                     numpoints=1,
                     fancybox=True) 
-    lgd1.get_frame().set_alpha(0.5) #translucent legend!
+    try:
+        lgd1.get_frame().set_alpha(0.5) #translucent legend!
+    except AttributeError: # no labeled lines
+        pass
     plt.tight_layout()
     plt.savefig(os.path.join(savepath, "%s" % plotlabel), dpi=200, bbox_inches='tight')
     plt.close()
