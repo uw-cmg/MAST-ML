@@ -102,6 +102,7 @@ def single(xvals, yvals,
     kwargs['yerrlist'] = list([yerr])
     kwargs['stepsize'] = None ###no stepsize?
     kwargs['plotlabel'] = plotlabel
+    kwargs['savepath'] = savepath
     kwargs['guideline'] = guideline
     kwargs['timex'] = timex
     kwargs['startx'] = startx
