@@ -92,83 +92,25 @@ def single(xvals, yvals,
     if not (divide_y is None):
         yvals = yvals / float(divide_y)
         yerr = yerr / float(divide_y)
-    darkblue="#00008B"
-    mylinestyle = "-"
-    mymarker = "o"
-    if plottype == "scatter":
-        mylinestyle = "None"
-    elif plottype == "line":
-        mymarker = "None"
-    (_, caps, _) = plt.errorbar(xvals, yvals,
-        xerr=xerr,
-        yerr=yerr,
-        linewidth=2,
-        linestyle = mylinestyle, color=darkblue,
-        markeredgewidth=2, markeredgecolor=darkblue,
-        markerfacecolor="blue" , marker=mymarker,
-        markersize=10)
-    for cap in caps:
-        cap.set_color(darkblue)
-        cap.set_markeredgewidth(2)
-    if not(startx == None):
-        if type(startx) == str:
-            if len(timex) > 0:
-                startx = time.mktime(time.strptime(startx, timex))
-            else:
-                startx = float(startx)
-        if endx == None:
-            raise ValueError("startx must be paired with endx")
-        if type(endx) == str:
-            if len(timex) > 0:
-                endx = time.mktime(time.strptime(endx, timex))
-            else:
-                endx = float(endx)
-        plt.xlim([startx,endx])
-    if guideline == 1: #also square the axes
-        [minx,maxx] = plt.xlim()
-        [miny,maxy] = plt.ylim()
-        gmax = max(maxx, maxy)
-        gmin = min(minx, miny)
-        plt.xlim(gmin, gmax)
-        plt.ylim(gmin, gmax)
-        plt.plot((gmin, gmax), (gmin, gmax), ls="--", c=".3")
-    plt.margins(0.05)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    if len(title) > 0:
-        plt.title(title)
-    notey = 0.88
-    notestep = 0.07
-    for note in notelist:
-        plt.annotate(note, xy=(0.05, notey), xycoords="axes fraction",
-                    fontsize=smallfont)
-        notey = notey - notestep
-    if int(marklargest) > 0:
-        import heapq
-        maxidxlist = heapq.nlargest(int(marklargest), range(len(yvals)), 
-                        key=lambda x: yvals[x])
-        for midx in maxidxlist:
-
-            mxval = xvals[midx]
-            mxval = "%3.0f" % mxval
-            plt.annotate("%s" % mxval, 
-                    xy=(xvals[midx],yvals[midx]),
-                    horizontalalignment = "left",
-                    verticalalignment = "bottom",
-                    fontsize=smallfont)
-    if len(timex) > 0:
-        myax = plt.gca()
-        my_xticks = myax.get_xticks()
-        adjusted_xticks = list()
-        for tidx in range(0, len(my_xticks)):
-            mytick = time.strftime(timex, time.localtime(my_xticks[tidx]))
-            adjusted_xticks.append(mytick)
-        myax.set_xticklabels(adjusted_xticks, rotation=90.0)
-    savestr = "%s_vs_%s" % (ylabel.replace(" ","_"), xlabel.replace(" ","_"))
-    if len(plotlabel) > 0:
-        savestr = "%s_" % plotlabel + savestr
-    plt.savefig(os.path.join(savepath, savestr), bbox_inches='tight')
-    plt.close()
+    kwargs=dict()
+    kwargs['xdatalist'] = list([xvals])
+    kwargs['ydatalist'] = list([yvals])
+    kwargs['labellist'] = list([plotlabel])
+    kwargs['xlabel'] = xlabel
+    kwargs['ylabel'] = ylabel
+    kwargs['xerrlist'] = list([xerr])
+    kwargs['yerrlist'] = list([yerr])
+    kwargs['stepsize'] = None ###no stepsize?
+    kwargs['plotlabel'] = plotlabel
+    kwargs['guideline'] = guideline
+    kwargs['timex'] = timex
+    kwargs['startx'] = startx
+    kwargs['endx'] = endx
+    kwargs['notelist'] = list([notelist])
+    kwargs['whichyaxis'] = "1"
+    kwargs['marklargest'] = "%i" % marklargest
+    kwargs['mlabellist'] = None
+    multiple_overlay(**kwargs)
     return
 
 def dual_overlay(xdata1, ydata1,
@@ -228,7 +170,7 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
         timex="",
         startx=None,
         endx=None,
-        whichyaxis=list(),
+        whichyaxis="",
         notelist=list(), 
         marklargest="0,0,0,0,0,0",
         mlabellist=None,
