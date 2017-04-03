@@ -95,19 +95,21 @@ def single(xvals, yvals,
     kwargs=dict()
     kwargs['xdatalist'] = list([xvals])
     kwargs['ydatalist'] = list([yvals])
-    kwargs['labellist'] = list([plotlabel])
     kwargs['xlabel'] = xlabel
     kwargs['ylabel'] = ylabel
     kwargs['xerrlist'] = list([xerr])
     kwargs['yerrlist'] = list([yerr])
     kwargs['stepsize'] = None ###no stepsize?
+    if plotlabel == "":
+        plotlabel = "%s_vs_%s" % (ylabel, xlabel)
     kwargs['plotlabel'] = plotlabel
+    kwargs['labellist'] = list(["_%s" % plotlabel]) #keep out of legend
     kwargs['savepath'] = savepath
     kwargs['guideline'] = guideline
     kwargs['timex'] = timex
     kwargs['startx'] = startx
     kwargs['endx'] = endx
-    kwargs['notelist'] = list([notelist])
+    kwargs['notelist'] = notelist
     kwargs['whichyaxis'] = "1"
     kwargs['marklargest'] = "%i" % marklargest
     kwargs['mlabellist'] = None
