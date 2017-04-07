@@ -2,6 +2,7 @@ import numpy as np
 import csv
 import data_parser
 import matplotlib
+import os
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from sklearn import cross_validation
@@ -143,7 +144,7 @@ def execute(model, data, savepath,  lwr_data, *args, **kwargs):
 
     grid_scores = np.asarray(grid_scores)
 
-    with open(savepath.replace(".png","").format("grid_scores.csv"),'w') as f:
+    with open(os.path.join(savepath,"grid_scores.csv"),'w') as f:
         writer = csv.writer(f, lineterminator = '\n')
         x = ["alpha", "gamma", "rms"]
         writer.writerow(x)
