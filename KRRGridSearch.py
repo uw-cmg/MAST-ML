@@ -158,6 +158,6 @@ def execute(model, data, savepath,  lwr_data, *args, **kwargs):
     plt.ylabel('log gamma')
     cb = plt.colorbar()
     cb.set_label('rms')
-    plt.savefig(os.path.join(savepath,"alphagammahex")), dpi=200, bbox_inches='tight')
+    plt.savefig(os.path.join(savepath,"alphagammahex"), dpi=200, bbox_inches='tight')
     plt.close()
 
