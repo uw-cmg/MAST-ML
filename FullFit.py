@@ -15,6 +15,7 @@ def do_single_fit(model,
             trainy=None, 
             testx=None, 
             testy=None,
+            testyerr=None,
             xlabel="", ylabel="", 
             stepsize=1,
             guideline=1,
@@ -40,6 +41,7 @@ def do_single_fit(model,
     print("Mean error: %3.2f" % mean_error)
 
     kwargs=dict()
+    kwargs['xerr'] = testyerr #measured error
     kwargs['xlabel'] = xlabel
     kwargs['ylabel'] = ylabel
     kwargs['stepsize'] = stepsize
@@ -58,6 +60,7 @@ def execute(model, data, savepath,
         group_field_name=None,
         label_field_name=None,
         numeric_field_name=None,
+        measured_error_field_name=None,
         *args, **kwargs):
     """Do full fit.
         Main function is split off from execute in order to allow external use.
@@ -73,6 +76,7 @@ def execute(model, data, savepath,
         numeric_field_name <str>: (optional) field name for numeric data 
                                     field that may help identify individual
                                     points or outliers
+        measured_error_field_name <str>: field name for measured y-data error (optional)
     """
     stepsize=float(stepsize)
     if numeric_field_name == None: #help identify each point
@@ -95,6 +99,8 @@ def execute(model, data, savepath,
         if label_field_name == None:
             label_field_name = group_field_name
         kwargs_f['test_labeldata'] = np.asarray(data.get_data(label_field_name)).ravel()
+    if not(measured_error_field_name == None):
+        kwargs_f['test_yerrdata'] = np.asarray(data.get_data(measured_error_field_name)).ravel()
     kwargs_f['full_xtrain'] = Xdata
     kwargs_f['full_ytrain'] = ydata
     myarray = do_full_fit(model, **kwargs_f)
@@ -117,6 +123,7 @@ def do_full_fit(model,
         group_field_name=None,
         numeric_field_name = None,
         label_field_name=None,
+        test_yerrdata=None,
         *args,**kwargs):
     """Full fit.
         full_xtrain <numpy array>: X training data
@@ -135,9 +142,11 @@ def do_full_fit(model,
         train_groupdata <numpy array>: group_field_name data corresponding to full_ytrain
         test_numericdata <numpy array>: numeric_field_name data corresponding to full_ytest
         test_labeldata <numpy array>: label_field_name data corresponding to full_ytest
+        test_yerrdata <numpy array>: measured_error_field_name data corresponding to full_ytest
         group_field_name <str>: field name of grouping field (see execute)
         numeric_field_name <str>: field name of numeric field (see execute)
         label_field_name <str>: field name of labeling field (see execute)
+        measured_error_field_name <str>: field name for measured y-data error (optional)
     """
     stepsize = float(stepsize)
     if full_xtest is None:
@@ -159,6 +168,8 @@ def do_full_fit(model,
     kwargs['trainy'] = full_ytrain
     kwargs['testx'] = full_xtest
     kwargs['testy'] = full_ytest
+    if not (test_yerrdata is None):
+        kwargs['testyerr'] = test_yerrdata
     [ypredict, y_abs_err, rmse, mean_error] = do_single_fit(model, **kwargs)
 
     if numeric_field_name == None: #help identify each point
@@ -184,7 +195,7 @@ def do_full_fit(model,
 
     train_groups = list(train_group_indices.keys())
     train_groups.sort()
-    
+   
     #EXTRACT EACH GROUP FITS FROM OVERALL FIT, and OVERLAY
     xdatalist=list()
     ydatalist=list()
@@ -204,7 +215,10 @@ def do_full_fit(model,
         xdatalist.append(g_ydata) #actual
         ydatalist.append(g_ypredict) #predicted
         labellist.append(g_label)
-        xerrlist.append(None)
+        if test_yerrdata is None:
+            xerrlist.append(None)
+        else: 
+            xerrlist.append(test_yerrdata[g_index])
         yerrlist.append(None)
         rmselist.append(g_rmse)
         group_notelist.append('{:<1}: {:.2f}'.format(g_label, g_rmse))
@@ -291,6 +305,8 @@ def do_full_fit(model,
         kwargs['trainx'] = full_xtrain[g_train_index]
         kwargs['trainy'] = full_ytrain[g_train_index]
         kwargs['testx'] = full_xtest[g_test_index]
+        if not (test_yerrdata is None):
+            kwargs['testyerr'] = test_yerrdata[g_test_index]
         g_ytest = full_ytest[g_test_index]
         kwargs['testy'] = g_ytest
         [g_ypredict, g_y_abs_err, g_rmse, g_mean_error] = do_single_fit(model, **kwargs)
@@ -302,7 +318,10 @@ def do_full_fit(model,
         xdatalist.append(g_ytest) #actual
         ydatalist.append(g_ypredict) #predicted
         labellist.append(g_label)
-        xerrlist.append(None)
+        if test_yerrdata is None:
+            xerrlist.append(None)
+        else:
+            xerrlist.append(test_yerrdata[g_test_index])
         yerrlist.append(None)
         group_notelist.append('{:<1}: {:.2f}'.format(g_label, g_rmse))
     kwargs['xdatalist'] = xdatalist
