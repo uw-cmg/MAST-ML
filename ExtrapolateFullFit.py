@@ -49,6 +49,7 @@ def execute(model, data, savepath,
                                             the test_csv data
                                           0 - fit on all data in the training
                                                 dataset (default)
+                                        Only works if group_field_name is set.
     """
     stepsize=float(stepsize)
     #get datasets
