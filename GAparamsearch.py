@@ -94,7 +94,7 @@ class GAParamSearcher():
         runsSinceBest = 0
 
 
-        print('running')
+        print('running', flush=True)
         while GAruns < 10: # do 10 GA runs 
             runsSinceBest = 0
             GAruns = GAruns+1
@@ -134,9 +134,9 @@ class GAParamSearcher():
                 for i in range(len(bestParams)-2):
                     bestParamsSTR = bestParamsSTR+"{0:.2f}".format(bestParams[i])+" , "
                 bestParamsSTR = bestParamsSTR+str(bestParams[-2])+' , '+str(bestParams[-1])
-                print(bestParamsSTR)
-                print(bestRMS)
-                print(GAruns, gens, runsSinceBest)
+                print(bestParamsSTR, flush=True)
+                print(bestRMS, flush=True)
+                print(GAruns, gens, runsSinceBest, flush=True)
                 
                 gens = gens+1
                 runsSinceBest = runsSinceBest+1
@@ -177,7 +177,7 @@ class GAParamSearcher():
             for i in range(len(bestParams)-2):
                     bestParamsSTR = bestParamsSTR+"{0:.2f}".format(bestParamSets[n][i])+' , '
             bestParamsSTR = bestParamsSTR+str(bestParamSets[n][-2])+' , '+str(bestParamSets[n][-1])+' ]    '+STRrms
-            print(bestParamsSTR)
+            print(bestParamsSTR, flush=True)
         return
 
     def kfold_cv(self, model, X, Y, num_folds, num_runs):
