@@ -16,7 +16,7 @@ def execute(model, data, savepath, lwr_data="",
             xlabel="Measured",
             ylabel="Predicted",
             stepsize=1,
-            numericlabelfield=None,
+            numeric_field_name=None,
             *args, **kwargs):
     """Basic cross validation
         Args:
@@ -26,7 +26,7 @@ def execute(model, data, savepath, lwr_data="",
                             each 5-fold CV has 5 test-train sets)
                             Default 200.
             num_folds <int>: number of folds.
-            numericlabelfield <str>: Field name for numeric label
+            numeric_field_name <str>: Field name for numeric label
     """
     num_runs = int(num_runs)
     num_folds = int(num_folds)
@@ -148,12 +148,12 @@ def execute(model, data, savepath, lwr_data="",
     kwargs2['stepsize'] = stepsize
     plotxy.dual_overlay(Ydata, Y_predicted_best, Ydata, Y_predicted_worst, **kwargs2)
 
-    if numericlabelfield == None:
-        numericlabelfield = data.x_features[0]
+    if numeric_field_name == None:
+        numeric_field_name = data.x_features[0]
 
-    labels = np.asarray(data.get_data(numericlabelfield)).ravel()
+    labels = np.asarray(data.get_data(numeric_field_name)).ravel()
     csvname = os.path.join(savepath,"KFold_CV_data.csv")
-    headerline = "%s,Measured,Predicted best,Absolute error best,Fold numbers best,Predicted worst,Absolute error worst,Fold numbers worst" % numericlabelfield
+    headerline = "%s,Measured,Predicted best,Absolute error best,Fold numbers best,Predicted worst,Absolute error worst,Fold numbers worst" % numeric_field_name
     myarray = np.array([labels, Ydata,
                 Y_predicted_best, Best_Abs_Err, 
                 Y_predicted_best_fold_numbers,
