@@ -16,6 +16,16 @@ def execute(model, data, savepath,
             ylabel="RMSE",
             title="",
             *args, **kwargs):
+    """
+        model, data, savepath = see AllTests.py
+        group_field_name <str>: field name of field over which to group
+                                    for the successive left-out groups
+        label_field_name <str>: field name of a label field which corresponds
+                                    to the grouping field
+        xlabel <str>: x-axis label for the rmse-vs- left-out group plot
+        ylabel <str>: y-axis label
+        title <str>: plot title (optional)
+    """
     if group_field_name == None:
         raise ValueError("No group field name set.")
 
