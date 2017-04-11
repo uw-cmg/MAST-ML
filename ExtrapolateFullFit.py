@@ -77,6 +77,19 @@ def execute(model, data, savepath,
     test_ydata = np.asarray(test_data.get_y_data()).ravel()
     if numeric_field_name == None: #help identify each point
         numeric_field_name = data.x_features[0]
+    # filter out for only matched groups
+    if int(fit_only_on_matched_groups) == 1:
+        if group_field_name == None:
+            pass
+        else:
+            train_groupdata = np.asarray(data.get_data(group_field_name)).ravel()
+            test_groupdata = np.asarray(test_data.get_data(group_field_name)).ravel()
+            train_indices = gttd.get_logo_indices(train_groupdata)
+            groups_not_in_test = np.setdiff1d(train_groupdata, test_groupdata)
+            for outgroup in groups_not_in_test:
+                data.add_exclusive_filter(group_field_name,"=",outgroup)
+            train_xdata = np.asarray(data.get_x_data())
+            train_ydata = np.asarray(data.get_y_data()).ravel()
     #
     kwargs_f = dict()
     kwargs_f['xlabel'] = xlabel
