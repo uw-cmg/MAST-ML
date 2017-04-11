@@ -26,7 +26,11 @@ def execute(model, data, savepath, lwr_data="",
                             each 5-fold CV has 5 test-train sets)
                             Default 200.
             num_folds <int>: number of folds.
-            numeric_field_name <str>: Field name for numeric label
+            xlabel <str>: x-axis label for predicted-vs-measured plot
+            ylabel <str>: y-axis label
+            stepsize <float>: step size for plot grid
+            numeric_field_name <str>: Field name of a numeric field which
+                            may help identify data
     """
     num_runs = int(num_runs)
     num_folds = int(num_folds)
