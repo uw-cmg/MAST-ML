@@ -15,7 +15,7 @@ def execute(model, data, savepath, lwr_data="",
             leave_out_percent=20,
             xlabel="Measured",
             ylabel="Predicted",
-            numeric_field_name=None,
+            label_field_name=None,
             stepsize=1,
             marklargest=None,
             *args, **kwargs):
@@ -30,6 +30,17 @@ def execute(model, data, savepath, lwr_data="",
                     The training size will be (100 - leave_out_percent)/100.
                     The test size will be leave_out_percent/100.
                     e.g. 20 for 20 percent.
+            xlabel <str>: x-axis label for predicted-vs-measured plot
+            ylabel <str>: y-axis label
+            label_field_name <str>: field name for labeling points
+            stepsize <float>: step size for plot grid
+            marklargest <str>: (optional) number of outliers to mark using the 
+                                data in label_field_name; 
+                                format is int,int 
+                                where the first integer is
+                                the number to mark in the "best test" case, and
+                                second integer is the number to mark in the
+                                "worst test" case; e.g. "0,6" (optional)
     """
     num_runs = int(num_runs)
     leave_out_percent = float(leave_out_percent)
@@ -143,10 +154,10 @@ def execute(model, data, savepath, lwr_data="",
     kwargs2['stepsize'] = stepsize
 
 
-    if numeric_field_name == None: #help label data
-        numeric_field_name = data.x_features[0]
+    if label_field_name == None: #help label data
+        label_field_name = data.x_features[0]
 
-    labels = np.asarray(data.get_data(numeric_field_name)).ravel()
+    labels = np.asarray(data.get_data(label_field_name)).ravel()
     
     if not (marklargest is None):
         kwargs2['marklargest'] = marklargest
@@ -155,7 +166,7 @@ def execute(model, data, savepath, lwr_data="",
     
     
     csvname = os.path.join(savepath,"Leave%iPercentOut_CV_data.csv" % int(leave_out_percent))
-    headerline = "%s,Measured,Predicted best,Absolute error best,Predicted worst,Absolute error worst" % numeric_field_name
+    headerline = "%s,Measured,Predicted best,Absolute error best,Predicted worst,Absolute error worst" % label_field_name
     myarray = np.array([labels, Ydata,
                 Y_predicted_best, Best_Abs_Err, 
                 Y_predicted_worst,Worst_Abs_Err]).transpose()
