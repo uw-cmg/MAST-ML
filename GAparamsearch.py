@@ -165,13 +165,13 @@ def generation(pop, num_parameters, num_parents, crossover_prob, mutation_prob, 
                 pop[ind][param] = p2[param]
             if (s <= shift_prob):
                 if (pop[ind][param] >= 0) and (pop[ind][param] <= 1):
-                    pop[ind][param] = np.abs( pop[ind][param] + random.randrange(-4,4)/100 )   # random shift
+                    pop[ind][param] = np.abs( pop[ind][param] + random.randrange(-4,5)/100 )   # random shift
                 if (pop[ind][param] < 0):    
                     pop[ind][param] = 0
                 if (pop[ind][param] > 1):    
                     pop[ind][param] = 1                 
             if m <= mutation_prob:
-                pop[ind][param] = random.randrange(1,100)/100   # mutation
+                pop[ind][param] = random.randrange(0,101)/100   # mutation
 
     return { 'new_population':pop, 'best_parameters':parents, 'best_rms':parentRMS }
 
@@ -203,7 +203,7 @@ while GAruns < 10: # do 10 GA runs
     #initailize random population
     for individual in range(len(population)):
         for gene in range(len(population[individual])):
-            population[individual][gene]  = random.randrange(1, 100)/100
+            population[individual][gene]  = random.randrange(0, 101)/100
 
     while runsSinceBest < 30 and gens < 200: # run until convergence condition is met
         # run a generation imputting population, number of parameters, number of parents, crossover probablility, mutation probability, random shift probability
