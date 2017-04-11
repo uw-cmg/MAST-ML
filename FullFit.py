@@ -61,6 +61,18 @@ def execute(model, data, savepath,
         *args, **kwargs):
     """Do full fit.
         Main function is split off from execute in order to allow external use.
+        Results in a predicted-vs-measured square plot
+        model, data, savepath = see AllTests.py
+        xlabel <str>: Label for full-fit x-axis.
+        ylabel <str>: Label for full-fit y-axis
+        stepsize <float>: Step size for plot grid
+        group_field_name <str>: (optional) field name for grouping data
+                                        field may be numeric
+        label_field_name <str>: (optional) field name for labeling the groups
+                                    from group_field_name
+        numeric_field_name <str>: (optional) field name for numeric data 
+                                    field that may help identify individual
+                                    points or outliers
     """
     stepsize=float(stepsize)
     if numeric_field_name == None: #help identify each point
@@ -107,8 +119,25 @@ def do_full_fit(model,
         label_field_name=None,
         *args,**kwargs):
     """Full fit.
-        test_groupdata, test_numericdata, and test_labeldata must correspond to full_ytest.
-        If full_ytest is not given, full_ytest is the same as full_ytrain.
+        full_xtrain <numpy array>: X training data
+        full_ytrain <numpy array>: Y training data
+        full_xtest <numpy array>: X testing data
+        full_ytest <numpy array>: Y testing data
+            If full_ytest is not given, full_ytest is the same as full_ytrain.
+        savepath <str>: save path
+        xlabel <str>: x label for predicted-vs-measured plot
+        ylabel <str>: y label for predicted-vs-measured plot
+        stepsize <float>: step size for plot grid
+        do_pergroup_fits <int>: 1 - also fit separately on each group, grouped
+                                    by group_field_name
+                                0 - do not do pergroup fits
+        test_groupdata <numpy array>: group_field_name data corresponding to full_ytest
+        train_groupdata <numpy array>: group_field_name data corresponding to full_ytrain
+        test_numericdata <numpy array>: numeric_field_name data corresponding to full_ytest
+        test_labeldata <numpy array>: label_field_name data corresponding to full_ytest
+        group_field_name <str>: field name of grouping field (see execute)
+        numeric_field_name <str>: field name of numeric field (see execute)
+        label_field_name <str>: field name of labeling field (see execute)
     """
     stepsize = float(stepsize)
     if full_xtest is None:
