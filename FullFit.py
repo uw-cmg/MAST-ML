@@ -247,11 +247,11 @@ def do_full_fit(model,
                 bigxdata = np.append(bigxdata, xdatalist[nidx])
                 bigydata = np.append(bigydata, ydatalist[nidx])
                 bxerr = xerrlist[nidx]
-                if bxerr == None:
+                if bxerr is None:
                     bxerr = np.zeros(len(xdatalist[nidx]))
                 bigxerr = np.append(bigxerr, bxerr)
                 byerr = yerrlist[nidx]
-                if byerr == None:
+                if byerr is None:
                     byerr = np.zeros(len(ydatalist[nidx]))
                 bigyerr = np.append(bigyerr, byerr)
         temp_xdatalist.append(bigxdata)
