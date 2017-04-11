@@ -17,6 +17,10 @@ for hitem in hlist:
     print("-------------------------")
     print("%s" % hitem)
     print(".........................")
-    hmodule = __import__(hitem)
-    hexec = getattr(hmodule, "execute")
-    print(hexec.__doc__)
+    #hmodule = __import__(hitem)
+    strhelp = pydoc.render_doc(hitem)
+    print(strhelp)
+    #for mname in mnames:
+    #    hexec = getattr(hmodule, mname)
+    #    if callable(hexec):
+    #        print(hexec.__doc__)
