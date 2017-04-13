@@ -2,6 +2,8 @@
 #TTM make random data for testing
 import numpy as np
 import data_analysis.printout_tools as ptools
+from sklearn.preprocessing import normalize
+
 n_samples, n_features = 100, 5
 rng = np.random.RandomState()
 y = rng.randn(n_samples)
@@ -21,7 +23,7 @@ linear_feature_error_arr = list()
 y_feature_arr = list()
 nidx = 0
 for idx in range(0, numpoints):
-    time = idx * np.pi/6.0
+    time = idx * np.pi/8.0
     for cidx in range(0, 4):
         catnum = rng.randint(4)
         category = catlist[catnum]
@@ -33,16 +35,18 @@ for idx in range(0, numpoints):
         sine_feature_error_arr.append(X[nidx,3]/X[nidx,4]/100.0)
         linear_feature_arr.append(100*time + 30.0 + X[nidx,1]) #add noise
         linear_feature_error_arr.append(X[nidx,2]/X[nidx,3]/100.0)
-        y_feature_arr.append(np.sin(time) + y[nidx])
+        y_feature_arr.append(np.sin(time) + y[nidx]/10.0)
         nidx = nidx + 1
 
 num_id_arr = np.array(num_id_arr)
 num_cat_arr = np.array(num_cat_arr)
 str_cat_arr = np.array(str_cat_arr)
 time_arr = np.array(time_arr)
-sine_feature_arr = np.array(sine_feature_arr)
+sine_feature_arr = np.array(sine_feature_arr).reshape(1,-1)
+sine_feature_arr = normalize(sine_feature_arr).ravel()
 sine_feature_error_arr = np.array(sine_feature_error_arr)
-linear_feature_arr = np.array(linear_feature_arr)
+linear_feature_arr = np.array(linear_feature_arr).reshape(1,-1)
+linear_feature_arr = normalize(linear_feature_arr).ravel()
 linear_feature_error_arr = np.array(linear_feature_error_arr)
 y_feature_arr = np.array(y_feature_arr)
 
@@ -50,10 +54,10 @@ array = np.array([num_id_arr,
             num_cat_arr, 
             str_cat_arr, 
             time_arr,
-            sine_feature_arr,sine_feature_error_arr,
-            linear_feature_arr,linear_feature_error_arr,
+            sine_feature_arr,
+            linear_feature_arr,
             y_feature_arr]).transpose()
-headerstring = "num_id,num_cat,str_cat,time,sine_feature,sine_error,linear_feature,linear_error,y_feature"
+headerstring = "num_id,num_cat,str_cat,time,N_sine_feature,N_linear_feature,y_feature"
 
 csvname="test.csv"
 
