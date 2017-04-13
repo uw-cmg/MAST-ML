@@ -2,16 +2,19 @@
 MAST machine learning incubator - for direct scientific use - not intended for public yet
 
 4/12/17 code pulled from:
+
 DBTT Skunkworks project: codification for manuscript.
 
-Install and set up mongodb.
-Obtain the csv files for import at the DBTT meeting.
+For usage on existing csv files, see for example
+tests/FullFit/default.conf
 
-In ``data_handling``::
-    
-    python DataImportAndExport.py
+Run as::
+python <path to AllTests.py> 
 
-Make sure the paths at the beginning of the script are correct.
+in the same folder as default.conf,
+for example,
+python ../../AllTests.py
+
 
 DBTT Skunkworks group and machine learning (alphabetical order):
 Ben Anderson
