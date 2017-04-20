@@ -1,6 +1,8 @@
 # MAST-ml-private
 MAST machine learning incubator - for direct scientific use - not intended for public yet
 
+* NOTE: Use Python 3
+
 4/12/17 code pulled from:
 
 DBTT Skunkworks project: codification for manuscript.
