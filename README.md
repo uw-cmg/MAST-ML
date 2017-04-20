@@ -8,8 +8,9 @@ DBTT Skunkworks project: codification for manuscript.
 For usage on existing csv files, see for example
 tests/FullFit/default.conf
 
-Run as::
-python <path to AllTests.py> 
+Run as
+
+python /path/to/AllTests.py
 
 in the same folder as default.conf,
 for example,
