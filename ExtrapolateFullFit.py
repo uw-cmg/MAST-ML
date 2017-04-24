@@ -307,7 +307,10 @@ def do_numeric_plots(train_array, test_array, std_array,
             test_index = list()
             train_test_index = list()
         else:
-            train_test_index = train_indices[group]["test_index"]
+            if group in train_indices.keys():
+                train_test_index = train_indices[group]["test_index"]
+            else:
+                train_test_index = list()
             test_index = test_indices[group]["test_index"]
             label = test_labeldata[test_index[0]]
         if not group in std_groups:
