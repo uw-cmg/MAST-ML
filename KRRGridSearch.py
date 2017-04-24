@@ -148,6 +148,12 @@ def execute(model, data, savepath,  lwr_data, grid_density=20, *args, **kwargs):
         for i in grid_scores:
             writer.writerow(i)
 
+    #lowest
+    idx_low=np.argmin(grid_scores[:,2])
+    rms_low = grid_scores[idx_low,2]
+    alpha_rms_low = grid_scores[idx_low,0]
+    gamma_rms_low = grid_scores[idx_low,1]
+    print("Lowest RMS: %3.3f at alpha=%3.4g and gamma=%3.4g" % (rms_low, alpha_rms_low, gamma_rms_low))
     #Heatmap of RMS scores vs the alpha and gamma
     plt.figure(1)
     plt.hexbin(np.log10(grid_scores[:,0]), np.log10(grid_scores[:,1]), C = grid_scores[:,2], gridsize=15, cmap=cm.plasma, bins=None, vmax = max(grid_scores[:,2]))
