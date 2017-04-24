@@ -210,7 +210,7 @@ def add_generic_effective_fluence_field(db, newcname, ref_flux=3e10, pvalue=0.26
     """
     myfunc = getattr(dtf,"get_effective_fluence")
     records = db[newcname].find()
-    pvalstr = "%i" % (pvalue*100.0)
+    pvalstr = "%02.0i" % (pvalue*100.0)
     newfield = "eff fl 100p=%s" % pvalstr
     for record in records:
         fieldval = myfunc(flux=record["flux_n_cm2_sec"],
