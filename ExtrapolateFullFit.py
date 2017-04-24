@@ -192,7 +192,7 @@ def do_single_train_test_std_plot(train_x=None, train_y=None, test_x=None,
     linestyles=""
     outlines=""
     if not train_x is None:
-        labellist.append("Training")
+        labellist.append("Training subset")
         xdatalist.append(train_x)
         ydatalist.append(train_y)
         xerrlist.append(None)
