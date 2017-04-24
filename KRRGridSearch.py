@@ -116,12 +116,9 @@ def alloy_cv(model, data):
     return np.mean(rms_list)
 
 #todo kwarg the choice of CV type to pass in config
-def execute(model, data, savepath,  lwr_data, *args, **kwargs):
+def execute(model, data, savepath,  lwr_data, grid_density=20, *args, **kwargs):
     #grid_density = 20 #original = 20; testing 8 is sufficient
-    if not "grid_density" in kwargs.keys():
-        grid_density = 20
-    else:
-        grid_density = float(kwargs["grid_density"])
+    grid_density=float(grid_density)
     alpha_grid = np.logspace(-6,0,grid_density)
     gamma_grid = np.logspace(-1.5,1.5,grid_density)
     
@@ -153,7 +150,7 @@ def execute(model, data, savepath,  lwr_data, *args, **kwargs):
 
     #Heatmap of RMS scores vs the alpha and gamma
     plt.figure(1)
-    plt.hexbin(np.log10(grid_scores[:,0]), np.log10(grid_scores[:,1]), C = grid_scores[:,2], gridsize=15, cmap=cm.plasma, bins=None, vmax = 60)
+    plt.hexbin(np.log10(grid_scores[:,0]), np.log10(grid_scores[:,1]), C = grid_scores[:,2], gridsize=15, cmap=cm.plasma, bins=None, vmax = max(grid_scores[:,2]))
     plt.xlabel('log alpha')
     plt.ylabel('log gamma')
     cb = plt.colorbar()
