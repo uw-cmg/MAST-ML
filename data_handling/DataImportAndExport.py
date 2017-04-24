@@ -60,7 +60,7 @@ def add_standard_fields(db, cname, verbose=0):
     cas.add_log10_of_a_field(db, cname,"fluence_n_cm2")
     cas.add_log10_of_a_field(db, cname,"flux_n_cm2_sec")
     for pval in np.arange(0.0,1.01,0.01):
-        pvalstr = "%02.0i" % (100*pval)
+        pvalstr = "%i" % (100*pval)
         cas.add_generic_effective_fluence_field(db, cname, 3e10, pval)
     return
 
@@ -72,7 +72,7 @@ def add_normalized_fields(db, cname, clist=list(), verbose=0):
     cas.add_minmax_normalization_of_a_field(db, cname, "temperature_C",
             verbose=verbose, collectionlist = clist)
     for pval in np.arange(0.0,1.01,0.01):
-        pvalstr = "%02.0i" % (100*pval)
+        pvalstr = "%i" % (100*pval)
         cas.add_minmax_normalization_of_a_field(db, cname, 
                 "log(eff fl 100p=%s)" % pvalstr,
                 verbose=verbose, collectionlist = clist)
@@ -187,7 +187,7 @@ def create_standard_conditions(db, cname, ref_flux=3e10, temp=290, min_sec=3e6, 
     cas.add_log10_of_a_field(db, cname,"fluence_n_cm2")
     cas.add_log10_of_a_field(db, cname,"flux_n_cm2_sec")
     for pval in np.arange(0.0,1.01,0.01):
-        pvalstr = "%02.0i" % (100*pval)
+        pvalstr = "%i" % (100*pval)
         cas.add_generic_effective_fluence_field(db, cname, 3e10, pval)
         cas.add_minmax_normalization_of_a_field(db, cname, 
                 "log(eff fl 100p=%s)" % pvalstr,
@@ -219,12 +219,12 @@ def main(importpath):
     cas.transfer_nonignore_records(db, "ucsb_ivar_and_ivarplus","expt_ivar")
     add_standard_fields(db, "expt_ivar")
     ##CD1 IVAR
-    cas.rename_field(db,"cd_ivar_2016","CD_delta_sigma_y_MPa", "delta_sigma_y_MPa")
-    clean_cd1_ivar(db, "cd_ivar_2016")
-    cas.transfer_ignore_records(db, "cd_ivar_2016","cd1_ivar_ignore")
-    cas.export_spreadsheet(db, "cd1_ivar_ignore", exportpath)
-    cas.transfer_nonignore_records(db, "cd_ivar_2016","cd1_ivar")
-    add_standard_fields(db, "cd1_ivar")
+    #cas.rename_field(db,"cd_ivar_2016","CD_delta_sigma_y_MPa", "delta_sigma_y_MPa")
+    #clean_cd1_ivar(db, "cd_ivar_2016")
+    #cas.transfer_ignore_records(db, "cd_ivar_2016","cd1_ivar_ignore")
+    #cas.export_spreadsheet(db, "cd1_ivar_ignore", exportpath)
+    #cas.transfer_nonignore_records(db, "cd_ivar_2016","cd1_ivar")
+    #add_standard_fields(db, "cd1_ivar")
     ##CD2 IVAR
     cas.rename_field(db,"cd_ivar_2017","CD_delta_sigma_y_MPa","delta_sigma_y_MPa")
     clean_cd1_ivar(db, "cd_ivar_2017") 
@@ -233,10 +233,10 @@ def main(importpath):
     cas.transfer_nonignore_records(db, "cd_ivar_2017","cd2_ivar")
     add_standard_fields(db, "cd2_ivar")
     ##CD1 LWR
-    reformat_lwr(db, "cd_lwr_2016", "cd_lwr_2016_bynum")
-    clean_cd1_lwr(db, "cd_lwr_2016")
-    clean_lwr(db, "cd_lwr_2016")
-    create_lwr(db, "cd1_lwr", "cd_lwr_2016", exportpath)
+    #reformat_lwr(db, "cd_lwr_2016", "cd_lwr_2016_bynum")
+    #clean_cd1_lwr(db, "cd_lwr_2016")
+    #clean_lwr(db, "cd_lwr_2016")
+    #create_lwr(db, "cd1_lwr", "cd_lwr_2016", exportpath)
     ##CD2 LWR
     clean_lwr(db, "cd_lwr_2017")
     create_lwr(db, "cd2_lwr", "cd_lwr_2017", exportpath)
@@ -252,29 +252,30 @@ def main(importpath):
     add_standard_fields(db, "expt_atr2")
     #Normalization
     add_normalized_fields(db, "expt_ivar", ["expt_ivar","expt_atr2","cd2_lwr"])
-    add_normalized_fields(db, "cd1_ivar", ["cd1_ivar","cd1_lwr"])
-    add_normalized_fields(db, "cd1_lwr", ["cd1_ivar","cd1_lwr"])
+    #add_normalized_fields(db, "cd1_ivar", ["cd1_ivar","cd1_lwr"])
+    #add_normalized_fields(db, "cd1_lwr", ["cd1_ivar","cd1_lwr"])
     add_normalized_fields(db, "cd2_ivar", ["cd2_ivar","cd2_lwr"])
     add_normalized_fields(db, "cd2_lwr", ["cd2_ivar","cd2_lwr"])
     add_normalized_fields(db, "expt_atr2", ["expt_ivar","expt_atr2","cd2_lwr"])
     #
     create_standard_conditions(db, "lwr_std_expt",3e10,290,3e6,5e9,["expt_ivar","expt_atr2","cd1_lwr"])
     create_standard_conditions(db, "atr2_std_expt",3.64e12,291,3e5,1.5e8,["expt_ivar","expt_atr2","cd1_lwr"])
-    create_standard_conditions(db, "lwr_std_cd1",3e10,290,3e6,5e9,["cd1_ivar","cd1_lwr"])
+    #create_standard_conditions(db, "lwr_std_cd1",3e10,290,3e6,5e9,["cd1_ivar","cd1_lwr"])
     create_standard_conditions(db, "lwr_std_cd2",3e10,290,3e6,5e9,["cd2_ivar","cd2_lwr"])
     #
     cas.export_spreadsheet(db, "expt_ivar", exportpath)
-    cas.export_spreadsheet(db, "cd1_ivar", exportpath)
+    #cas.export_spreadsheet(db, "cd1_ivar", exportpath)
     cas.export_spreadsheet(db, "cd2_ivar", exportpath)
-    cas.export_spreadsheet(db, "cd1_lwr", exportpath)
+    #cas.export_spreadsheet(db, "cd1_lwr", exportpath)
     cas.export_spreadsheet(db, "cd2_lwr", exportpath)
     cas.export_spreadsheet(db, "expt_atr2", exportpath)
     cas.export_spreadsheet(db, "lwr_std_expt", exportpath)
-    cas.export_spreadsheet(db, "lwr_std_cd1", exportpath)
+    #cas.export_spreadsheet(db, "lwr_std_cd1", exportpath)
     cas.export_spreadsheet(db, "lwr_std_cd2", exportpath)
     cas.export_spreadsheet(db, "atr2_std_expt", exportpath)
     #verify data
-    clist=["expt_ivar","cd1_ivar","cd2_ivar","cd1_lwr","cd2_lwr","expt_atr2"]
+    #clist=["expt_ivar","cd1_ivar","cd2_ivar","cd1_lwr","cd2_lwr","expt_atr2"]
+    clist=["expt_ivar","cd2_ivar","cd2_lwr","expt_atr2"]
     dver.make_per_alloy_plots(db, clist, "%s/verification_plots" % exportpath) 
     #Additional to-do
     ##
