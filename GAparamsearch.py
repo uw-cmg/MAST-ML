@@ -232,6 +232,9 @@ class GAParamSearcher():
                             methods should be able to accept string arguments
         """
         afm_dict=dict()
+        if len(afm_str) == 0:
+            self.afm_dict=afm_dict
+            return afm_dict
         afm_split = afm_str.split(";")
         for afm_item in afm_split:
             isplit = afm_item.split(",")
@@ -478,9 +481,9 @@ def execute(model, data, savepath, lwr_data,
     convergence_generations=30,
     max_generations=200,
     testing=0,
-    additional_feature_methods="calculate_EffectiveFluence,flux_feature:flux n/cm2/s,fluence_feature:fluence n/cm2",
     fit_filter_out="",
     topredict_filter_out="",
+    additional_feature_methods="",
     *args,**kwargs):
     """
         Args:
@@ -513,6 +516,7 @@ def execute(model, data, savepath, lwr_data,
                     must be keyword arguments.
                     For two effective fluences with two p-values:
                     "calculate_EffectiveFluence,flux_feature:flux_n_cm2_sec,fluence_feature:fluence_n_cm2;calculate_EffectiveFluence,flux_feature:flux_n_cm2_sec,fluence_feature:flux_n_cm2" or similar
+                    additional_feature_methods=calculate_EffectiveFluence,flux_feature:flux n/cm2/s,fluence_feature:fluence n/cm2
         fit_filter_out <str>: semicolon-delimited list of
                         field name, operator, value triplets for filtering
                         out data for fitting
