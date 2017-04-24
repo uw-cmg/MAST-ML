@@ -219,7 +219,7 @@ def do_single_train_test_std_plot(train_x=None, train_y=None, test_x=None,
         markers = markers + "*,"
         outlines = outlines + "blue,"
     if not std_x is None:
-        labellist.append("Predicted")
+        labellist.append("Predicted, standard")
         xdatalist.append(std_x)
         ydatalist.append(std_y)
         xerrlist.append(None)
