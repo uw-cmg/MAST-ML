@@ -167,10 +167,20 @@ def execute(model, data, savepath,
     if numeric_field_name is None:
         return
     else:
-        do_numeric_plots(test_data_array, std_data_array, split_xlabel, split_ylabel, savepath, group_field_name)
+        if group_field_name == None:
+            train_data_array = np.array([np.asarray(data.get_data(numeric_field_name)).ravel(), train_ydata]).transpose()
+        else:
+            train_data_array = np.array([np.asarray(data.get_data(numeric_field_name)).ravel(), 
+                    np.asarray(data.get_data(group_field_name)).ravel(),
+                    np.asarray(data.get_data(label_field_name)).ravel(),
+                    train_ydata]).transpose()
+            
+        do_numeric_plots(train_data_array, test_data_array, std_data_array, split_xlabel, split_ylabel, savepath, group_field_name)
     return
 
-def do_single_train_test_std_plot(train_x="", train_y="", test_x="", test_y="", 
+def do_single_train_test_std_plot(train_x=None, train_y=None, test_x=None, 
+                test_y=None,                 
+                test_y_validate=None,
                 std_x=None, std_y=None, 
                 xlabel="", ylabel="", savepath="", plotlabel=""):
     xdatalist=list()
@@ -180,14 +190,25 @@ def do_single_train_test_std_plot(train_x="", train_y="", test_x="", test_y="",
     labellist=list()
     markers=""
     linestyles=""
+    outlines=""
     if not train_x is None:
-        labellist.append("Measured")
+        labellist.append("Training")
         xdatalist.append(train_x)
         ydatalist.append(train_y)
         xerrlist.append(None)
         yerrlist.append(None)
         linestyles = linestyles + "None,"
+        markers = markers + "+,"
+        outlines = outlines + "black,"
+    if not test_y_validate is None:
+        labellist.append("Measured")
+        xdatalist.append(test_x)
+        ydatalist.append(test_y_validate)
+        xerrlist.append(None)
+        yerrlist.append(None)
+        linestyles = linestyles + "None,"
         markers = markers + "o,"
+        outlines = outlines + "red,"
     if not test_y is None:
         labellist.append("Predicted")
         xdatalist.append(test_x)
@@ -196,6 +217,7 @@ def do_single_train_test_std_plot(train_x="", train_y="", test_x="", test_y="",
         yerrlist.append(None)
         linestyles = linestyles + "None,"
         markers = markers + "*,"
+        outlines = outlines + "blue,"
     if not std_x is None:
         labellist.append("Predicted")
         xdatalist.append(std_x)
@@ -204,6 +226,7 @@ def do_single_train_test_std_plot(train_x="", train_y="", test_x="", test_y="",
         yerrlist.append(None)
         linestyles = linestyles + "-"
         markers = markers + "None"
+        outlines = outlines + "blue,"
     kwargs_p = dict()
     kwargs_p['savepath'] = os.path.join(savepath,"%s" % plotlabel)
     if not os.path.isdir(kwargs_p['savepath']):
@@ -213,8 +236,9 @@ def do_single_train_test_std_plot(train_x="", train_y="", test_x="", test_y="",
     kwargs_p['guideline'] = 0
     kwargs_p['linestyles'] = linestyles
     kwargs_p['markers'] = markers
-    kwargs_p['sizes'] = "10,10,10"
-    kwargs_p['faces'] = "None,None,None"
+    kwargs_p['outlines'] = outlines
+    kwargs_p['sizes'] = "10,10,10,10"
+    kwargs_p['faces'] = "None,None,None,None"
     kwargs_p['xdatalist'] = xdatalist
     kwargs_p['ydatalist'] = ydatalist
     kwargs_p['xerrlist'] = xerrlist
@@ -223,7 +247,7 @@ def do_single_train_test_std_plot(train_x="", train_y="", test_x="", test_y="",
     kwargs_p['plotlabel'] = plotlabel
     plotxy.multiple_overlay(**kwargs_p)
     return
-def do_numeric_plots(test_array, std_array, 
+def do_numeric_plots(train_array, test_array, std_array, 
             xlabel,
             ylabel,
             savepath,group_field_name=None):
@@ -234,11 +258,13 @@ def do_numeric_plots(test_array, std_array,
         midx = 1
         pidx = 2
     else:
-        numidx=0
-        gidx = 1
-        lidx = 2
-        midx = 3
-        pidx = 4
+        numidx=0 #numeric
+        gidx = 1 #group
+        lidx = 2 #label
+        midx = 3 #measured
+        pidx = 4 #predicted
+    train_numericdata = train_array[:,numidx]
+    train_measured = train_array[:,midx]
     test_numericdata = test_array[:,numidx] #from FullFit
     test_measured = test_array[:,midx]
     test_predicted = test_array[:,pidx]
@@ -248,9 +274,10 @@ def do_numeric_plots(test_array, std_array,
     else:
         std_numericdata = std_array[:,numidx]
         std_predicted = std_array[:,pidx] #measured does not matter for standard
-    do_single_train_test_std_plot(train_x = test_numericdata,
-            train_y = test_measured,
+    do_single_train_test_std_plot(train_x = train_numericdata,
+            train_y = train_measured,
             test_x = test_numericdata,
+            test_y_validate = test_measured,
             test_y = test_predicted,
             std_x = std_numericdata,
             std_y = std_predicted,
@@ -262,7 +289,9 @@ def do_numeric_plots(test_array, std_array,
         return #no other plots to do
     test_groupdata = test_array[:,gidx] #group
     test_labeldata = test_array[:,lidx]
+    train_groupdata = train_array[:,gidx]
     test_indices = gttd.get_logo_indices(test_groupdata)
+    train_indices = gttd.get_logo_indices(train_groupdata)
     test_groups = list(test_indices.keys())
     if std_array is None:
         all_groups = np.copy(test_groups)
@@ -276,7 +305,9 @@ def do_numeric_plots(test_array, std_array,
     for group in all_groups:
         if not group in test_groups:
             test_index = list()
+            train_test_index = list()
         else:
+            train_test_index = train_indices[group]["test_index"]
             test_index = test_indices[group]["test_index"]
             label = test_labeldata[test_index[0]]
         if not group in std_groups:
@@ -284,9 +315,10 @@ def do_numeric_plots(test_array, std_array,
         else:
             std_index = std_indices[group]["test_index"]
             label = std_labeldata[std_index[0]]
-        trainx = test_numericdata[test_index]
-        trainy = test_measured[test_index]
+        trainx = train_numericdata[train_test_index]
+        trainy = train_measured[train_test_index]
         testx = test_numericdata[test_index]
+        testy_validate = test_measured[test_index]
         testy = test_predicted[test_index]
         if std_array is None:
             stdx = None
@@ -295,7 +327,8 @@ def do_numeric_plots(test_array, std_array,
             stdx = std_numericdata[std_index]
             stdy = std_predicted[std_index]
         do_single_train_test_std_plot(train_x = trainx, train_y = trainy,
-                test_x = testx, test_y = testy,
+                test_x = testx, test_y_validate = testy_validate, 
+                test_y = testy,
                 std_x = stdx, std_y = stdy,
                 xlabel=xlabel,
                 ylabel=ylabel,
