@@ -220,6 +220,26 @@ def execute(model, data, savepath,
                     plotlabel="alldata",
                     savepath = savepath,
                     group_index = None)
+    if group_field_name is None: #no individual numeric plots by group necessary
+        return
+    groups = np.unique(train_groupdata)
+    for test_label in test_labels:
+        groups = np.concatenate((groups, np.unique(test_sets[test_label]['test_groupdata'])))
+    groups = np.unique(groups)
+    for group in groups:
+        do_numeric_plots(train_x = train_numericdata_toplot,
+                    train_y = train_ydata_toplot,
+                    train_groupdata = train_groupdata_toplot,
+                    data_labels = list(data_labels),
+                    test_sets = dict(test_sets),
+                    markers=markers,
+                    outlines = outlines,
+                    linestyles = linestyles,
+                    xlabel = split_xlabel,
+                    ylabel = split_ylabel,
+                    plotlabel="%s" % group,
+                    savepath = savepath,
+                    group_index = group)
     return
 
 def do_numeric_plots(train_x="",train_y="",
