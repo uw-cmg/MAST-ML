@@ -209,6 +209,7 @@ def execute(model, data, savepath,
         test_sets[test_label]['test_predicted'] = np.array(test_sets[test_label]['fullfit_results_array'][:,predictedidx])
     do_numeric_plots(train_x = train_numericdata_toplot,
                     train_y = train_ydata_toplot,
+                    train_groupdata = train_groupdata_toplot,
                     data_labels = list(data_labels),
                     test_sets = dict(test_sets),
                     markers=markers,
@@ -216,16 +217,20 @@ def execute(model, data, savepath,
                     linestyles = linestyles,
                     xlabel = split_xlabel,
                     ylabel = split_ylabel,
-                    savepath = savepath)
+                    plotlabel="alldata",
+                    savepath = savepath,
+                    group_index = None)
     return
 
 def do_numeric_plots(train_x="",train_y="",
+            train_groupdata=None,
             data_labels="",
             test_sets="", 
             markers="", outlines="", linestyles="", 
             xlabel="X",
             ylabel="Y",
-            savepath="", index=""):
+            plotlabel="",
+            savepath="", group_index=None):
     #plot all results together by numericdata
     markerlist = markers.split(",")
     outlinelist = outlines.split(",")
@@ -235,43 +240,56 @@ def do_numeric_plots(train_x="",train_y="",
     xerrlist=list()
     yerrlist=list()
     labellist=list()
-    xdatalist.append(train_x)
-    ydatalist.append(train_y)
-    xerrlist.append(None)
-    yerrlist.append(None)
-    labellist.append(data_labels[0])
-    markerstr = markerlist[0] + ","
-    linestylestr = linestylelist[0] + ","
-    outlinestr = outlinelist[0] + ","
-    facestr="None,"
-    sizestr="10,"
-    linect = 0 #0 is training data
+    linect = 0
+    if group_index is None:
+        train_index = range(0, len(train_x))
+    else:
+        train_indices = gttd.get_logo_indices(train_groupdata)
+        train_index = train_indices[group_index]['test_index']
+    if len(train_index) > 0:
+        train_x_g = train_x[train_index]
+        train_y_g = train_y[train_index]
+        xdatalist.append(train_x_g)
+        ydatalist.append(train_y_g)
+        xerrlist.append(None)
+        yerrlist.append(None)
+        labellist.append(data_labels[0])
+        markerstr = markerlist[0] + ","
+        linestylestr = linestylelist[0] + ","
+        outlinestr = outlinelist[0] + ","
+        facestr="None,"
+        sizestr="10,"
     for test_label in data_labels[1:]:
         mytest = dict(test_sets[test_label])
-        if not (mytest['test_ydata'] is None):
+        if group_index is None:
+            test_index = range(0, len(mytest['test_predicted']))
+        else:
+            test_indices = gttd.get_logo_indices(mytest['test_groupdata'])
+            test_index = test_indices[group_index]['test_index']
+        if len(test_index) > 0:
+            if not (mytest['test_ydata'] is None):
+                linect = linect + 1
+                xdatalist.append(mytest['test_numericdata'][test_index])
+                ydatalist.append(mytest['test_ydata'][test_index])
+                xerrlist.append(None)
+                yerrlist.append(None)
+                labellist.append("%s, measured" % test_label)
+                markerstr = markerstr + markerlist[linect] + ","
+                outlinestr = outlinestr + outlinelist[linect] + ","
+                linestylestr = linestylestr + linestylelist[linect] + ","
+                sizestr = sizestr+ "10,"
+                facestr = facestr+ "None,"
             linect = linect + 1
             xdatalist.append(mytest['test_numericdata'])
-            ydatalist.append(mytest['test_ydata'])
+            ydatalist.append(mytest['test_predicted'])
             xerrlist.append(None)
             yerrlist.append(None)
-            labellist.append("%s, measured" % test_label)
+            labellist.append("%s, predicted" % test_label)
             markerstr = markerstr + markerlist[linect] + ","
             outlinestr = outlinestr + outlinelist[linect] + ","
             linestylestr = linestylestr + linestylelist[linect] + ","
             sizestr = sizestr+ "10,"
             facestr = facestr+ "None,"
-        linect = linect + 1
-        xdatalist.append(mytest['test_numericdata'])
-        ydatalist.append(mytest['test_predicted'])
-        xerrlist.append(None)
-        yerrlist.append(None)
-        labellist.append("%s, predicted" % test_label)
-        markerstr = markerstr + markerlist[linect] + ","
-        outlinestr = outlinestr + outlinelist[linect] + ","
-        linestylestr = linestylestr + linestylelist[linect] + ","
-        sizestr = sizestr+ "10,"
-        facestr = facestr+ "None,"
-    plotlabel = "alldata"
     kwargs_p = dict()
     kwargs_p['savepath'] = os.path.join(savepath,"%s" % plotlabel)
     if not os.path.isdir(kwargs_p['savepath']):
