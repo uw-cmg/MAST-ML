@@ -307,8 +307,8 @@ def do_numeric_plots(train_x="",train_y="",
                 sizestr = sizestr+ "10,"
                 facestr = facestr+ "None,"
             linect = linect + 1
-            xdatalist.append(mytest['test_numericdata'])
-            ydatalist.append(mytest['test_predicted'])
+            xdatalist.append(mytest['test_numericdata'][test_index])
+            ydatalist.append(mytest['test_predicted'][test_index])
             xerrlist.append(None)
             yerrlist.append(None)
             labellist.append("%s, predicted" % test_label)
