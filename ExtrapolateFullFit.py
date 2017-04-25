@@ -274,7 +274,10 @@ def do_numeric_plots(train_x="",train_y="",
         train_index = range(0, len(train_x))
     else:
         train_indices = gttd.get_logo_indices(train_groupdata)
-        train_index = train_indices[group_index]['test_index']
+        if group_index in train_indices.keys():
+            train_index = train_indices[group_index]['test_index']
+        else:
+            train_index = list()
     if len(train_index) > 0:
         train_x_g = train_x[train_index]
         train_y_g = train_y[train_index]
@@ -294,7 +297,10 @@ def do_numeric_plots(train_x="",train_y="",
             test_index = range(0, len(mytest['test_predicted']))
         else:
             test_indices = gttd.get_logo_indices(mytest['test_groupdata'])
-            test_index = test_indices[group_index]['test_index']
+            if group_index in test_indices.keys():
+                test_index = test_indices[group_index]['test_index']
+            else:
+                test_index = list()
         if len(test_index) > 0:
             if not (mytest['test_ydata'] is None):
                 linect = linect + 1
