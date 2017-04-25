@@ -24,7 +24,6 @@ def execute(model, data, savepath,
         outlines="",
         labels="",
         linestyles="",
-        manypoints_to_lines=50,
         measured_error_field_name = None,
         plot_filter_out = "",
         fit_only_on_matched_groups = 0,
@@ -59,10 +58,7 @@ def execute(model, data, savepath,
         labels <str>: comma-delimited list of labels for split plots; order
                         should be Train, Test, Test, Test... with testing
                         data in order of test_csv
-        manypoints_to_lines <int>: number of points after which a line should
-                    be used instead of markers
     """
-    manypoints_to_lines = int(manypoints_to_lines)
     stepsize=float(stepsize)
     #get datasets
     ##training
