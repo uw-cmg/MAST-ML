@@ -138,6 +138,17 @@ def execute(model, data, savepath,
                 train_groupdata = np.asarray(data.get_data(group_field_name)).ravel()
                 test_sets[test_label]['train_groupdata'] = train_groupdata
                 data.remove_all_filters()
+    else:
+        if group_field_name is None:
+            pass
+        else:
+            train_groupdata = np.asarray(data.get_data(group_field_name)).ravel()
+            train_xdata = np.asarray(data.get_x_data())
+            train_ydata = np.asarray(data.get_y_data()).ravel()
+            for test_label in test_labels:
+                test_sets[test_label]['train_xdata'] = train_xdata
+                test_sets[test_label]['train_ydata'] = train_ydata
+                test_sets[test_label]['train_groupdata'] = train_groupdata
     #
     if len(plot_filter_out) > 0:
         ftriplets = plot_filter_out.split(";")
