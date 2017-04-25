@@ -101,11 +101,10 @@ def execute(model, data, savepath,
                     pass
                 test_data.add_exclusive_filter(ffield, foperator, fval)
         hasy = test_data.set_y_feature(data.y_feature) # same feature as fitting data
-        if hasy:
-            test_sets[test_label]['test_ydata'] = np.asarray(test_data.get_y_data()).ravel()
-        else:
+        if hasy is False:
             test_data.set_y_feature(data.x_features[0]) # dummy y feature
-            test_sets[test_label]['test_ydata'] = None
+            test_sets[test_label]['dummy_ydata'] = True
+        test_sets[test_label]['test_ydata'] = np.asarray(test_data.get_y_data()).ravel()
         test_data.set_x_features(data.x_features) #same features as fitting data
         test_sets[test_label]['test_data']=test_data
         test_sets[test_label]['test_xdata'] = np.asarray(test_data.get_x_data())
@@ -214,6 +213,8 @@ def execute(model, data, savepath,
         predictedidx = 4 #predicted
     #set results
     for test_label in test_labels:
+        if 'dummy_ydata' in test_sets[test_label].keys(): #dummy y data was needed for full fit, but is no longer needed
+            test_sets[test_label]['test_ydata'] = None 
         test_sets[test_label]['test_predicted'] = np.array(test_sets[test_label]['fullfit_results_array'][:,predictedidx])
     do_numeric_plots(train_x = train_numericdata_toplot,
                     train_y = train_ydata_toplot,
