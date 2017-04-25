@@ -104,6 +104,7 @@ def execute(model, data, savepath,
         if hasy:
             test_sets[test_label]['test_ydata'] = np.asarray(test_data.get_y_data()).ravel()
         else:
+            test_data.set_y_feature(data.x_features[0]) # dummy y feature
             test_sets[test_label]['test_ydata'] = None
         test_data.set_x_features(data.x_features) #same features as fitting data
         test_sets[test_label]['test_data']=test_data
