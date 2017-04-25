@@ -269,6 +269,11 @@ def do_numeric_plots(train_x="",train_y="",
     xerrlist=list()
     yerrlist=list()
     labellist=list()
+    markerstr=""
+    linestylestr=""
+    outlinestr=""
+    facestr=""
+    sizestr=""
     linect = 0
     if group_index is None:
         train_index = range(0, len(train_x))
