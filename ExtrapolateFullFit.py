@@ -23,7 +23,7 @@ def execute(model, data, savepath,
         markers="",
         outlines="",
         labels="",
-        sizes="",
+        linestyles="",
         manypoints_to_lines=50,
         measured_error_field_name = None,
         plot_filter_out = "",
@@ -55,6 +55,7 @@ def execute(model, data, savepath,
                                         Only works if group_field_name is set.
         markers <str>: comma-delimited marker list for split plots
         outlines <str>: comma-delimited color list for split plots
+        linestyles <str>: comma-delimited list of line styles for split plots
         labels <str>: comma-delimited list of labels for split plots; order
                         should be Train, Test, Test, Test... with testing
                         data in order of test_csv
@@ -65,8 +66,6 @@ def execute(model, data, savepath,
     stepsize=float(stepsize)
     #get datasets
     ##training
-    train_xdata = np.asarray(data.get_x_data())
-    train_ydata = np.asarray(data.get_y_data()).ravel()
     if numeric_field_name == None: #help identify each point
         numeric_field_name = data.x_features[0]
     if not(group_field_name is None):
@@ -144,6 +143,26 @@ def execute(model, data, savepath,
                 test_sets[test_label]['train_groupdata'] = train_groupdata
                 data.remove_all_filters()
     #
+    if len(plot_filter_out) > 0:
+        ftriplets = plot_filter_out.split(";")
+        for ftriplet in ftriplets:
+            fpcs = ftriplet.split(",")
+            ffield = fpcs[0].strip()
+            foperator = fpcs[1].strip()
+            fval = fpcs[2].strip()
+            try:
+                fval = float(fval)
+            except (ValueError, TypeError):
+                pass
+            data.add_exclusive_filter(ffield, foperator, fval)
+    train_xdata_toplot = np.asarray(data.get_x_data())
+    train_ydata_toplot = np.asarray(data.get_y_data()).ravel()
+    train_numericdata_toplot = np.asarray(data.get_data(numeric_field_name)).ravel()
+    if not(group_field_name is None):
+        train_groupdata_toplot = np.asarray(data.get_data(group_field_name)).ravel()
+    else:
+        train_groupdata_toplot = None
+    #
     for test_label in test_labels:
         kwargs_f = dict()
         kwargs_f['xlabel'] = xlabel
@@ -168,21 +187,110 @@ def execute(model, data, savepath,
         kwargs_f['full_xtest'] = test_sets[test_label]['test_xdata']
         kwargs_f['full_ytest'] = test_sets[test_label]['test_ydata']
         test_data_array = FullFit.do_full_fit(model, **kwargs_f)
-        test_sets[test_label]['fullfit_array'] = test_data_array
+        test_sets[test_label]['fullfit_results_array'] = test_data_array
     
     if numeric_field_name is None: #no numeric plots to do
         return
+    #return #TTM DEBUG
+    if group_field_name == None:
+        numericidx=0
+        groupidx = -1
+        labelidx = -1
+        measuredidx = 1
+        predictedidx = 2
     else:
-        return #TTM DEBUG
-        if group_field_name == None:
-            train_data_array = np.array([np.asarray(data.get_data(numeric_field_name)).ravel(), train_ydata]).transpose()
-        else:
-            train_data_array = np.array([np.asarray(data.get_data(numeric_field_name)).ravel(), 
-                    np.asarray(data.get_data(group_field_name)).ravel(),
-                    np.asarray(data.get_data(label_field_name)).ravel(),
-                    train_ydata]).transpose()
-            
-        do_numeric_plots(train_data_array, test_data_array, std_data_array, split_xlabel, split_ylabel, savepath, group_field_name)
+        numericidx=0 #numeric
+        groupidx = 1 #group
+        labelidx = 2 #label
+        measuredidx = 3 #measured
+        predictedidx = 4 #predicted
+    #set results
+    for test_label in test_labels:
+        test_sets[test_label]['test_predicted'] = np.array(test_sets[test_label]['fullfit_results_array'][:,predictedidx])
+    do_numeric_plots(train_x = train_numericdata_toplot,
+                    train_y = train_ydata_toplot,
+                    data_labels = list(data_labels),
+                    test_sets = dict(test_sets),
+                    markers=markers,
+                    outlines = outlines,
+                    linestyles = linestyles,
+                    xlabel = split_xlabel,
+                    ylabel = split_ylabel,
+                    savepath = savepath)
+    return
+
+def do_numeric_plots(train_x="",train_y="",
+            data_labels="",
+            test_sets="", 
+            markers="", outlines="", linestyles="", 
+            xlabel="X",
+            ylabel="Y",
+            savepath="", index=""):
+    #plot all results together by numericdata
+    markerlist = markers.split(",")
+    outlinelist = outlines.split(",")
+    linestylelist = linestyles.split(",")
+    xdatalist=list()
+    ydatalist=list()
+    xerrlist=list()
+    yerrlist=list()
+    labellist=list()
+    xdatalist.append(train_x)
+    ydatalist.append(train_y)
+    xerrlist.append(None)
+    yerrlist.append(None)
+    labellist.append(data_labels[0])
+    markerstr = markerlist[0] + ","
+    linestylestr = linestylelist[0] + ","
+    outlinestr = outlinelist[0] + ","
+    facestr="None,"
+    sizestr="10,"
+    linect = 0 #0 is training data
+    for test_label in data_labels[1:]:
+        mytest = dict(test_sets[test_label])
+        if not (mytest['test_ydata'] is None):
+            linect = linect + 1
+            xdatalist.append(mytest['test_numericdata'])
+            ydatalist.append(mytest['test_ydata'])
+            xerrlist.append(None)
+            yerrlist.append(None)
+            labellist.append("%s, measured" % test_label)
+            markerstr = markerstr + markerlist[linect] + ","
+            outlinestr = outlinestr + outlinelist[linect] + ","
+            linestylestr = linestylestr + linestylelist[linect] + ","
+            sizestr = sizestr+ "10,"
+            facestr = facestr+ "None,"
+        linect = linect + 1
+        xdatalist.append(mytest['test_numericdata'])
+        ydatalist.append(mytest['test_predicted'])
+        xerrlist.append(None)
+        yerrlist.append(None)
+        labellist.append("%s, predicted" % test_label)
+        markerstr = markerstr + markerlist[linect] + ","
+        outlinestr = outlinestr + outlinelist[linect] + ","
+        linestylestr = linestylestr + linestylelist[linect] + ","
+        sizestr = sizestr+ "10,"
+        facestr = facestr+ "None,"
+    plotlabel = "alldata"
+    kwargs_p = dict()
+    kwargs_p['savepath'] = os.path.join(savepath,"%s" % plotlabel)
+    if not os.path.isdir(kwargs_p['savepath']):
+        os.mkdir(kwargs_p['savepath'])
+    kwargs_p['xlabel'] = xlabel
+    kwargs_p['ylabel'] = ylabel
+    kwargs_p['guideline'] = 0
+    kwargs_p['linestyles'] = linestylestr[:-1] #remove trailing comma
+    kwargs_p['markers'] = markerstr[:-1]
+    kwargs_p['outlines'] = outlinestr[:-1]
+    kwargs_p['sizes'] = sizestr[:-1]
+    kwargs_p['faces'] = facestr[:-1]
+    kwargs_p['xdatalist'] = xdatalist
+    kwargs_p['ydatalist'] = ydatalist
+    kwargs_p['xerrlist'] = xerrlist
+    kwargs_p['yerrlist'] = yerrlist
+    kwargs_p['labellist'] = labellist
+    kwargs_p['plotlabel'] = plotlabel
+    plotxy.multiple_overlay(**kwargs_p)
     return
 
 def do_single_train_test_std_plot(train_x=None, train_y=None, test_x=None, 
@@ -254,7 +362,7 @@ def do_single_train_test_std_plot(train_x=None, train_y=None, test_x=None,
     kwargs_p['plotlabel'] = plotlabel
     plotxy.multiple_overlay(**kwargs_p)
     return
-def do_numeric_plots(train_array, test_array, std_array, 
+def do_numeric_plots_old(train_array, test_array, std_array, 
             xlabel,
             ylabel,
             savepath,group_field_name=None):
