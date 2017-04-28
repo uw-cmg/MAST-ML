@@ -20,13 +20,10 @@ class MASTMLDriver(object):
         logging.info('Successfully read in your MASTML input file, %s' % str(self.configfile))
 
         configdict = config.get_config_dict()
-        logging.info('Successfully parsed your MASTML input file')
-
         mastmlwrapper = MASTMLWrapper(configdict=configdict)
         datasetup = mastmlwrapper.process_config_keyword(keyword='Data Setup')
-        print(datasetup)
         models_and_tests_setup = mastmlwrapper.process_config_keyword(keyword='Models and Tests to Run')
-        print(models_and_tests_setup)
+        logging.info('Successfully parsed your MASTML input file')
 
         # Temporary call to data_parser for now, but will later deprecate
         data = data_parser.parse(datasetup['data_path'], datasetup['weights'])
@@ -37,18 +34,18 @@ class MASTMLDriver(object):
             os.mkdir(save_path)
         logging.info('Parsed the input data located under %s' % str(datasetup['data_path']))
 
-        # Run listed tests for each model
+        # Gather models and run listed tests for each model
         model_list = []
         for k, v in models_and_tests_setup.items():
             if k == "models":
                 if type(v) is str:
                     print('Getting model %s' % v)
-                    ml_model = mastmlwrapper.get_machinelearning_model(keyword=v)
+                    ml_model = mastmlwrapper.get_machinelearning_model(model_type=v)
                     model_list.append(ml_model)
                 if type(v) is list:
                     for model in models_and_tests_setup['models']:
                         print('Getting model %s' % model)
-                        ml_model = mastmlwrapper.get_machinelearning_model(keyword=model)
+                        ml_model = mastmlwrapper.get_machinelearning_model(model_type=model)
                         model_list.append(ml_model)
             if k == "test_cases":
                 # Run the specified test cases for every model
@@ -57,6 +54,8 @@ class MASTMLDriver(object):
                     import KFoldCV as KFoldCV
                     KFoldCV.execute(model=model, data=data, savepath=save_path)
                     FullFit.execute(model=model, data=data, savepath=save_path)
+
+
 
 
 
@@ -89,7 +88,6 @@ class MASTMLDriver(object):
         # os.chdir(curdir)
         matplotlib.pyplot.close("all")
         """
-
 
 
 if __name__ == '__main__':

@@ -46,8 +46,8 @@ class MASTMLWrapper(object):
             keywordsetup[k] = v
         return keywordsetup
 
-    def get_machinelearning_model(self, keyword):
-        if keyword == 'gkrr_model':
+    def get_machinelearning_model(self, model_type):
+        if model_type == 'gkrr_model':
             model = KernelRidge(alpha=float(self.configdict['Model Parameters']['gkrr_model']['alpha']),
                                 coef0=int(self.configdict['Model Parameters']['gkrr_model']['coef0']),
                                 degree=int(self.configdict['Model Parameters']['gkrr_model']['degree']),
@@ -55,9 +55,16 @@ class MASTMLWrapper(object):
                                 kernel=str(self.configdict['Model Parameters']['gkrr_model']['kernel']),
                                 kernel_params=None)
             return model
-        if keyword == 'dtr_model':
+        if model_type == 'dtr_model':
             model = tree.DecisionTreeRegressor(criterion=str(self.configdict['Model Parameters']['dtr_model']['split criterion']),
                                                max_depth=int(self.configdict['Model Parameters']['dtr_model']['max_depth']),
                                                min_samples_leaf=int(self.configdict['Model Parameters']['dtr_model']['min_samples_leaf']),
                                                min_samples_split=int(self.configdict['Model Parameters']['dtr_model']['min_samples_split']))
             return model
+
+    # This method will call the different classes corresponding to each test type, which are being organized by Tam
+    def get_machinelearning_test(self, test_type):
+        if test_type == 'KFold_CV':
+            pass
+        if test_type == 'FullFit':
+            pass
