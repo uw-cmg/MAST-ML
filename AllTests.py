@@ -1,16 +1,24 @@
-import configuration_parser
+#import configuration_parser
 import importlib
 import data_parser
 import matplotlib
 import sys
 import os
-import numpy as np
+from ConfigFileParser import ConfigFileParser
 
+"""
 if len(sys.argv) > 1:
     config = configuration_parser.parse(sys.argv[1])
 else:
     config = configuration_parser.parse('default.conf')
+"""
 
+config = ConfigFileParser(configfile='default.conf')
+configdict = config.get_parsed_config_dict()
+print(configdict)
+
+
+"""
 parameter_names = ['model', 'data_path', 'save_path', 'Y', 'X', 'lwr_data_path', 'weights']
 
 all_tests = config.get('AllTests', 'test_cases').split(',')
@@ -86,3 +94,4 @@ for case_name in all_tests:
     case.execute(model, data, save_path, lwr_data = lwr_data, **kwargs)
     #os.chdir(curdir)
     matplotlib.pyplot.close("all")
+"""
