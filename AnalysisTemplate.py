@@ -12,8 +12,7 @@ import plot_data.plot_xy as plotxy
 import portion_data.get_test_train_data as gttd
 import os
 import time
-
-class Analysis:
+class Analysis():
     """Basic analysis class.
         Template for other classes.
         Combine many analysis classes to do meta-analysis
@@ -27,7 +26,7 @@ class Analysis:
         input_features=None,
         target_feature=None,
         labeling_features=None,
-        save_path=None,
+        savepath=None,
         analysis_name=None,
         *args, **kwargs):
         """Initialize class.
@@ -40,9 +39,10 @@ class Analysis:
                 self.input_features=""
                 self.target_feature=""
                 self.labeling_features=""
-                self.save_path=""
+                self.savepath=""
                 self.analysis_name=""
             Other attributes:
+                self.resultspath=""
                 self.training_dataset=""
                 self.testing_dataset=""
                 self.training_input_data_unfiltered=""
@@ -57,45 +57,62 @@ class Analysis:
                 self.testing_target_prediction=""
                 self.statistics=dict()
         """
-        print(kwargs)
-        self.training_csv=None
-        self.testing_csv=None
-        self.model=None
-        self.train_index=None
-        self.test_index=None
-        self.input_features=None
-        self.target_feature=None
-        self.labeling_features=None
-        self.save_path=None
-        self.analysis_name=None
-        print(kwargs)
-        for key, value in kwargs.items():
-            setattr(self, key, value)
-            print(key, value)
-        print(self.input_features)
-        #
-        if self.save_path is None:
-            self.save_path = os.getcwd()
-        self.save_path = os.path.abspath(self.save_path)
-        if self.analysis_name is None:
-            self.analysis_name = "Results_%s" % time.strftime("%Y%m%d_%H%M%S")
-        if not os.path.isdir(self.analysis_name):
-            os.mkdir(os.path.join(self.save_path, self.analysis_name))
-        if self.labeling_features is None:
+        #Attribute initialization and checks
+        #training csv
+        if training_csv is None:
+            raise ValueError("training_csv is not set")
+        training_csv = os.path.abspath(training_csv)
+        if not(os.path.isfile(training_csv)):
+            raise OSError("No file found at %s" % training_csv)
+        self.training_csv=training_csv
+        #testing csv
+        if testing_csv is None:
+            raise ValueError("testing_csv is not set")
+        testing_csv = os.path.abspath(testing_csv)
+        if not(os.path.isfile(testing_csv)):
+            raise OSError("No file found at %s" % testing_csv)
+        self.testing_csv=testing_csv
+        #model
+        self.model=model
+        #train/test index
+        self.train_index=train_index
+        self.test_index=test_index
+        #features
+        if input_features is None:
+            raise ValueError("input_features is not set")
+        self.input_features=input_features
+        if target_feature is None:
+            raise ValueError("target_feature is not set")
+        self.target_feature=target_feature
+        if labeling_features is None:
             self.labeling_features = list(self.input_features)
+        else:
+            self.labeling_features = labeling_features
+        # paths
+        if savepath is None:
+            savepath = os.getcwd()
+        savepath = os.path.abspath(savepath)
+        self.savepath = savepath
+        if analysis_name is None:
+            self.analysis_name = "Results_%s" % time.strftime("%Y%m%d_%H%M%S")
+        else:
+            self.analysis_name = analysis_name
         #
-        self.training_dataset=""
-        self.testing_dataset=""
-        self.training_input_data_unfiltered=""
-        self.training_target_data_unfiltered=""
-        self.testing_input_data_unfiltered=""
-        self.testing_target_data_unfiltered=""
-        self.training_input_data=""
-        self.training_target_data=""
-        self.testing_input_data=""
-        self.testing_target_data=""
-        self.trained_model=""
-        self.testing_target_prediction=""
+        self.resultspath=os.path.join(self.savepath, self.analysis_name)
+        if not os.path.isdir(self.resultspath):
+            os.mkdir(self.resultspath)
+        self.training_dataset=None
+        self.testing_dataset=None
+        self.training_input_data_unfiltered=None
+        self.training_target_data_unfiltered=None
+        self.testing_input_data_unfiltered=None
+        self.testing_target_data_unfiltered=None
+        self.training_input_data=None
+        self.training_target_data=None
+        self.testing_input_data=None
+        self.testing_target_data=None
+        self.trained_model=None
+        self.testing_target_prediction=None
         self.statistics=dict()
         #
         self.do_analysis()
@@ -104,7 +121,7 @@ class Analysis:
     def do_analysis(self):
         self.get_datasets()
         self.get_unfiltered_data()
-        self.get_test_train_indices()
+        self.get_train_test_indices()
         self.get_data()
         self.get_model()
         self.get_trained_model()
@@ -126,17 +143,17 @@ class Analysis:
     def get_unfiltered_data(self):
         """Replace with pandas dataframes
         """
-        self.training_dataset.set_x_features(self.input_features)
         self.training_dataset.set_y_feature(self.target_feature)
+        self.training_dataset.set_x_features(self.input_features)
         self.training_input_data_unfiltered = np.asarray(self.training_dataset.get_x_data())
         self.training_target_data_unfiltered = np.asarray(self.training_dataset.get_y_data()).ravel()
-        self.testing_dataset.set_x_features(self.input_features)
-        self.testing_input_data_unfiltered = np.asarray(self.testing_dataset.get_x_data())
         hasy = self.testing_dataset.set_y_feature(self.target_feature)
         if hasy:
             self.testing_target_data_unfiltered = np.asarray(self.testing_dataset.get_y_data()).ravel()
         else:
             pass #keep self.testing_target_data as None
+        self.testing_dataset.set_x_features(self.input_features)
+        self.testing_input_data_unfiltered = np.asarray(self.testing_dataset.get_x_data())
         return
     
     def get_train_test_indices(self):
@@ -152,7 +169,8 @@ class Analysis:
         self.training_input_data = self.training_input_data_unfiltered[self.train_index]
         self.training_target_data = self.training_target_data_unfiltered[self.train_index]
         self.testing_input_data = self.testing_input_data_unfiltered[self.test_index]
-        self.testing_target_data = self.testing_target_data_unfiltered[self.test_index]
+        if not (self.testing_target_data_unfiltered is None):
+            self.testing_target_data = self.testing_target_data_unfiltered[self.test_index]
         return
 
 
@@ -161,7 +179,7 @@ class Analysis:
             raise ValueError("No model.")
         return
     def get_trained_model(self):
-        trained_model = model.fit(self.training_input_data, self.training_target_data)
+        trained_model = self.model.fit(self.training_input_data, self.training_target_data)
         self.trained_model = trained_model
         return
 
@@ -179,14 +197,17 @@ class Analysis:
         return mean_error
 
     def get_mean_absolute_error(self):
-        mean_absolute_error = mean_absolute_error(self.testing_target_data, self.testing_target_prediction)
-        return mean_absolute_error
+        mean_abs_err = mean_absolute_error(self.testing_target_data, self.testing_target_prediction)
+        return mean_abs_err
 
     def get_rsquared(self):
         rsquared = r2_score(self.testing_target_data, self.testing_target_prediction)
         return rsquared
 
     def get_statistics(self):
+        if self.testing_target_data is None:
+            print("No testing target data. Statistics will not be collected.")
+            return
         self.statistics['rmse'] = self.get_rmse()
         self.statistics['mean_error'] = self.get_mean_error()
         self.statistics['mean_absolute_error'] = self.get_mean_absolute_error()
@@ -194,11 +215,11 @@ class Analysis:
         return
 
     def print_statistics(self):
-        statname = os.path.join(self.save_path, self.analysis_name, "statistics.txt")
+        statname = os.path.join(self.resultspath, "statistics.txt")
         with open(statname, 'w') as statfile:
             statfile.write("Statistics\n")
             statfile.write("%s\n" % time.asctime())
-            for skey, svalue in self.statistics.keys():
+            for skey, svalue in self.statistics.items():
                 statfile.write("%s:%3.4f" % (skey, svalue))
         return
 
@@ -206,15 +227,18 @@ class Analysis:
         """
             Modify once dataframe is in place
         """
-        ocsvname = os.path.join(self.save_path, self.analysis_name, "output_data.csv")
+        ocsvname = os.path.join(self.resultspath, "output_data.csv")
         headerline = ""
         printarray = ""
         print_features = self.labeling_features
         print_features.extend(self.input_features)
-        print_features.extend(self.target_feature)
+        if not (self.testing_target_data is None):
+            print_features.extend(self.target_feature)
         for feature_name in print_features:
             headerline = headerline + feature_name + ","
-            feature_vector = np.asarray(self.testing_data.get_data(feature_name)).ravel()[self.test_index]
+            feature_vector = np.asarray(self.testing_dataset.get_data(feature_name)).ravel()[self.test_index]
+            print("FEATURE:",feature_name)
+            print("SHAPE:",feature_vector.shape)
             if printarray is None:
                 printarray = feature_vector
             else:
@@ -226,6 +250,9 @@ class Analysis:
         return
 
     def plot_results(self):
+        if self.testing_target_data is None:
+            print("No testing target data. Predicted vs. measured plot will not be plotted.")
+            return
         plot_kwargs=dict()
         plot_kwargs['xlabel'] = "Measured"
         plot_kwargs['ylabel'] = "Predicted"
@@ -234,13 +261,13 @@ class Analysis:
         notelist.append("RMSE: %3.3f" % self.statistics['rmse'])
         notelist.append("R-squared: %3.3f" % self.statistics['rsquared'])
         plot_kwargs['notelist'] = notelist
-        plot_kwargs['save_path'] = os.path.join(self.save_path, self.analysis_name)
+        plot_kwargs['savepath'] = os.path.join(self.resultspath)
         plotxy.single(self.testing_target_data,
                 self.testing_target_prediction,
                 **plot_kwargs)
         return
 
-def execute(model="", data="", savepath="", lwr_data="",
+def execute(model="", data="", savepath=None, lwr_data="",
         training_csv=None,
         testing_csv=None,
         train_index=None,
@@ -248,24 +275,23 @@ def execute(model="", data="", savepath="", lwr_data="",
         input_features=None,
         target_feature=None,
         labeling_features=None,
-        save_path=None,
         analysis_name=None,
         *args, **kwargs):
     """Remove once alltests is updated
     """
-    kwargs=dict()
-    kwargs['training_csv'] = training_csv
-    kwargs['testing_csv'] = testing_csv
-    kwargs['model'] = model
-    kwargs['train_index'] = train_index
-    kwargs['test_index'] = test_index
-    kwargs['input_features'] = list(input_features.split(",")) #LIST
-    kwargs['target_feature'] = target_feature
-    kwargs['labeling_features'] = labeling_features
-    kwargs['save_path'] = save_path
-    kwargs['analysis_name'] = analysis_name
-    print(kwargs)
-    mya = Analysis(**kwargs)
+    akwargs=dict()
+    akwargs['training_csv'] = training_csv
+    akwargs['testing_csv'] = testing_csv
+    akwargs['model'] = model
+    akwargs['train_index'] = train_index
+    akwargs['test_index'] = test_index
+    akwargs['input_features'] = list(input_features.split(",")) #LIST
+    akwargs['target_feature'] = target_feature
+    akwargs['labeling_features'] = labeling_features
+    akwargs['savepath'] = savepath
+    akwargs['analysis_name'] = analysis_name
+    print(akwargs)
+    mya = Analysis(**akwargs)
     return
         
 
