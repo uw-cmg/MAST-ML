@@ -12,6 +12,32 @@ import plot_data.plot_xy as plotxy
 import portion_data.get_test_train_data as gttd
 import os
 import time
+import logging
+logger = logging.getLogger()
+
+def timeit(method):
+    """Timing function for logger.
+        Taken from http://stackoverflow.com/questions/38314993/standard-logging-for-every-method-in-a-class.
+    """
+    def timed(*args, **kw):
+        ts = time.time()
+        result = method(*args, **kw)
+        te = time.time()
+        delta = te - ts
+
+        hours, remainder = divmod(delta, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        logger.info('%s.%s took %02d:%02d:%02.6f',
+                     method.__module__,
+                     method.__name__,
+                     int(hours),
+                     int(minutes),
+                     seconds)
+
+        return result
+
+    return timed
+
 class Analysis():
     """Basic analysis class.
         Template for other classes.
@@ -43,6 +69,7 @@ class Analysis():
                 self.analysis_name=""
             Other attributes:
                 self.resultspath=""
+                self.logfile=""
                 self.training_dataset=""
                 self.testing_dataset=""
                 self.training_input_data_unfiltered=""
@@ -57,27 +84,27 @@ class Analysis():
                 self.testing_target_prediction=""
                 self.statistics=dict()
         """
-        #Attribute initialization and checks
-        #training csv
+        # Keyword-set attributes
+        # training csv
         if training_csv is None:
             raise ValueError("training_csv is not set")
         training_csv = os.path.abspath(training_csv)
         if not(os.path.isfile(training_csv)):
             raise OSError("No file found at %s" % training_csv)
         self.training_csv=training_csv
-        #testing csv
+        # testing csv
         if testing_csv is None:
             raise ValueError("testing_csv is not set")
         testing_csv = os.path.abspath(testing_csv)
         if not(os.path.isfile(testing_csv)):
             raise OSError("No file found at %s" % testing_csv)
         self.testing_csv=testing_csv
-        #model
+        # model
         self.model=model
-        #train/test index
+        # train/test index
         self.train_index=train_index
         self.test_index=test_index
-        #features
+        # features
         if input_features is None:
             raise ValueError("input_features is not set")
         self.input_features=input_features
@@ -97,10 +124,15 @@ class Analysis():
             self.analysis_name = "Results_%s" % time.strftime("%Y%m%d_%H%M%S")
         else:
             self.analysis_name = analysis_name
-        #
+        # Self-set attributes
+        # results path
         self.resultspath=os.path.join(self.savepath, self.analysis_name)
         if not os.path.isdir(self.resultspath):
             os.mkdir(self.resultspath)
+        # logger
+        self.logfile = os.path.join(self.resultspath, "code_log")
+        logging.basicConfig(filename=self.logfile, level=logging.INFO)
+        # initialize the rest; will be set in code later
         self.training_dataset=None
         self.testing_dataset=None
         self.training_input_data_unfiltered=None
@@ -117,7 +149,8 @@ class Analysis():
         #
         self.do_analysis()
         return
-
+    
+    @timeit
     def do_analysis(self):
         self.get_datasets()
         self.get_unfiltered_data()
@@ -220,7 +253,7 @@ class Analysis():
             statfile.write("Statistics\n")
             statfile.write("%s\n" % time.asctime())
             for skey, svalue in self.statistics.items():
-                statfile.write("%s:%3.4f" % (skey, svalue))
+                statfile.write("%s:%3.4f\n" % (skey, svalue))
         return
 
     def print_output_csv(self):
