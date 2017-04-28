@@ -52,9 +52,13 @@ class MASTMLDriver(object):
                         model_list.append(ml_model)
             if k == "test_cases":
                 # Run the specified test cases for every model
-                for model in model_list:
-                    from FullFit import execute
-                    execute(model=model, data=data, savepath=save_path)
+                for i, model in enumerate(model_list):
+                    import FullFit as FullFit
+                    import KFoldCV as KFoldCV
+                    KFoldCV.execute(model=model, data=data, savepath=save_path)
+                    FullFit.execute(model=model, data=data, savepath=save_path)
+
+
 
         for model in model_list:
             print(model)
