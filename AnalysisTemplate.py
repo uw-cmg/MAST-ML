@@ -130,7 +130,7 @@ class Analysis():
         if not os.path.isdir(self.resultspath):
             os.mkdir(self.resultspath)
         # logger
-        self.logfile = os.path.join(self.resultspath, "code_log")
+        self.logfile = os.path.join(self.resultspath, "logfile")
         logging.basicConfig(filename=self.logfile, level=logging.INFO)
         # initialize the rest; will be set in code later
         self.training_dataset=None
@@ -165,6 +165,7 @@ class Analysis():
         self.plot_results()
         return
 
+    @timeit
     def get_datasets(self):
         """Get datasets. 
             Replace depending on configuration file modifications
@@ -173,6 +174,7 @@ class Analysis():
         self.testing_dataset = data_parser.parse(self.testing_csv)
         return
     
+    @timeit
     def get_unfiltered_data(self):
         """Replace with pandas dataframes
         """
@@ -189,6 +191,7 @@ class Analysis():
         self.testing_input_data_unfiltered = np.asarray(self.testing_dataset.get_x_data())
         return
     
+    @timeit
     def get_train_test_indices(self):
         if (self.train_index is None):
             train_obs = self.training_input_data_unfiltered.shape[0]
@@ -197,7 +200,8 @@ class Analysis():
             test_obs = self.testing_input_data_unfiltered.shape[0]
             self.test_index = np.arange(0, test_obs)
         return
-
+    
+    @timeit
     def get_data(self):
         self.training_input_data = self.training_input_data_unfiltered[self.train_index]
         self.training_target_data = self.training_target_data_unfiltered[self.train_index]
@@ -206,16 +210,19 @@ class Analysis():
             self.testing_target_data = self.testing_target_data_unfiltered[self.test_index]
         return
 
-
+    @timeit
     def get_model(self):
         if (self.model is None):
             raise ValueError("No model.")
         return
+
+    @timeit
     def get_trained_model(self):
         trained_model = self.model.fit(self.training_input_data, self.training_target_data)
         self.trained_model = trained_model
         return
 
+    @timeit
     def get_prediction(self):
         self.testing_target_prediction = self.trained_model.predict(self.testing_input_data)
         return
@@ -236,7 +243,8 @@ class Analysis():
     def get_rsquared(self):
         rsquared = r2_score(self.testing_target_data, self.testing_target_prediction)
         return rsquared
-
+    
+    @timeit
     def get_statistics(self):
         if self.testing_target_data is None:
             print("No testing target data. Statistics will not be collected.")
@@ -247,6 +255,7 @@ class Analysis():
         self.statistics['rsquared'] = self.get_rsquared()
         return
 
+    @timeit
     def print_statistics(self):
         statname = os.path.join(self.resultspath, "statistics.txt")
         with open(statname, 'w') as statfile:
@@ -256,6 +265,7 @@ class Analysis():
                 statfile.write("%s:%3.4f\n" % (skey, svalue))
         return
 
+    @timeit
     def print_output_csv(self):
         """
             Modify once dataframe is in place
@@ -279,7 +289,8 @@ class Analysis():
         printarray=printarray.transpose()
         ptools.mixed_array_to_csv(ocsvname, headerline, printarray)
         return
-
+    
+    @timeit
     def plot_results(self):
         if self.testing_target_data is None:
             print("No testing target data. Predicted vs. measured plot will not be plotted.")
