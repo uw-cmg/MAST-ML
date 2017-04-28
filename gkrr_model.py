@@ -4,6 +4,8 @@ __author__ = 'haotian'
 
 
 def get():
+    from warnings import warn
+    warn('The usage of gkrr_model.py will be deprecated', DeprecationWarning)
     config = configuration_parser.parse()
     alpha = config.getfloat(__name__, 'alpha')
     coef0 = config.getint(__name__, 'coef0')
