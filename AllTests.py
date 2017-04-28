@@ -5,6 +5,9 @@ import matplotlib
 import sys
 import os
 from ConfigFileParser import ConfigFileParser
+from pprint import pprint
+import logging
+
 
 """
 if len(sys.argv) > 1:
@@ -13,9 +16,48 @@ else:
     config = configuration_parser.parse('default.conf')
 """
 
-config = ConfigFileParser(configfile='default.conf')
-configdict = config.get_parsed_config_dict()
-print(configdict)
+class MASTMLInitializer(object):
+
+    def __init__(self, configfile):
+        self.configfile = configfile
+        logging.basicConfig(filename='MASTMLlog.log', level='INFO')
+
+    def run_MASTML(self):
+        config = ConfigFileParser(configfile=self.configfile)
+        logging.info('Successfully read in your MASTML input file, %s' % str(self.configfile))
+        configdict = config.get_config_dict()
+        logging.info('Successfully parsed your MASTML input file')
+
+        """
+        print(configdict)
+        configdict_depth = config._get_config_dict_depth(test_dict=configdict)
+        print(configdict_depth)
+
+        section_lvl1_list = []; section_lvl2_list = []
+        for k, v in configdict.items():
+            section_lvl1_list.append(k)
+            if config._get_config_dict_depth(test_dict=v) > 1:
+                for kk, vv in v.items():
+                    section_lvl2_list.append(kk)
+
+        print(section_lvl1_list)
+        print(section_lvl2_list)
+        """
+        all_tests = configdict.get('Models and Tests to Run')
+        print(all_tests)
+        print(all_tests['model'])
+        for case in all_tests['test_cases']:
+            print(case)
+
+
+if __name__ == '__main__':
+    if len(sys.argv) > 1:
+        mastml = MASTMLInitializer(configfile=sys.argv[1])
+        mastml.run_MASTML()
+    else:
+        print('Specify the name of your MASTML input file, such as "mastmlinput.conf", and run as "python AllTests.py mastmlinput.conf" ')
+
+
 
 
 """
