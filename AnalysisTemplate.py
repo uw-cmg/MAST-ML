@@ -229,16 +229,14 @@ class Analysis():
         """
         ocsvname = os.path.join(self.resultspath, "output_data.csv")
         headerline = ""
-        printarray = ""
+        printarray = None
         print_features = self.labeling_features
         print_features.extend(self.input_features)
         if not (self.testing_target_data is None):
-            print_features.extend(self.target_feature)
+            print_features.append(self.target_feature)
         for feature_name in print_features:
             headerline = headerline + feature_name + ","
             feature_vector = np.asarray(self.testing_dataset.get_data(feature_name)).ravel()[self.test_index]
-            print("FEATURE:",feature_name)
-            print("SHAPE:",feature_vector.shape)
             if printarray is None:
                 printarray = feature_vector
             else:
@@ -290,7 +288,7 @@ def execute(model="", data="", savepath=None, lwr_data="",
     akwargs['labeling_features'] = labeling_features
     akwargs['savepath'] = savepath
     akwargs['analysis_name'] = analysis_name
-    print(akwargs)
+    #print(akwargs)
     mya = Analysis(**akwargs)
     return
         
