@@ -130,7 +130,7 @@ class Analysis():
         if not os.path.isdir(self.resultspath):
             os.mkdir(self.resultspath)
         # logger
-        self.logfile = os.path.join(self.resultspath, "logfile")
+        self.logfile = os.path.join(self.savepath, "logfile")
         logging.basicConfig(filename=self.logfile, level=logging.INFO)
         # initialize the rest; will be set in code later
         self.training_dataset=None
@@ -147,6 +147,8 @@ class Analysis():
         self.testing_target_prediction=None
         self.statistics=dict()
         #
+        logger.info("-------- %s --------" % self.analysis_name)
+        logger.info("Starting analysis at %s" % time.asctime())
         self.do_analysis()
         return
     
@@ -186,7 +188,8 @@ class Analysis():
         if hasy:
             self.testing_target_data_unfiltered = np.asarray(self.testing_dataset.get_y_data()).ravel()
         else:
-            pass #keep self.testing_target_data as None
+            self.testing_dataset.set_y_feature(self.input_features[0]) #dummy y feature
+            #self.testing_target_data remains None
         self.testing_dataset.set_x_features(self.input_features)
         self.testing_input_data_unfiltered = np.asarray(self.testing_dataset.get_x_data())
         return
@@ -247,7 +250,7 @@ class Analysis():
     @timeit
     def get_statistics(self):
         if self.testing_target_data is None:
-            print("No testing target data. Statistics will not be collected.")
+            logger.warning("No testing target data. Statistics will not be collected.")
             return
         self.statistics['rmse'] = self.get_rmse()
         self.statistics['mean_error'] = self.get_mean_error()
@@ -293,7 +296,7 @@ class Analysis():
     @timeit
     def plot_results(self):
         if self.testing_target_data is None:
-            print("No testing target data. Predicted vs. measured plot will not be plotted.")
+            logger.warning("No testing target data. Predicted vs. measured plot will not be plotted.")
             return
         plot_kwargs=dict()
         plot_kwargs['xlabel'] = "Measured"
@@ -332,7 +335,6 @@ def execute(model="", data="", savepath=None, lwr_data="",
     akwargs['labeling_features'] = labeling_features
     akwargs['savepath'] = savepath
     akwargs['analysis_name'] = analysis_name
-    #print(akwargs)
     mya = Analysis(**akwargs)
     return
         
