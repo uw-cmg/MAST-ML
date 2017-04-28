@@ -282,7 +282,7 @@ def main(importpath):
     return exportpath
 
 if __name__ == "__main__":
-    importpath = "../../../data/DBTT_mongo/imports_201702"
+    importpath = "../../../data/DBTT_mongo/imports_201704"
     importpath = os.path.abspath(importpath)
     exportpath = main(importpath)
     print("Files in %s" % exportpath)
