@@ -4,6 +4,7 @@ from configobj import ConfigObj, ConfigObjError
 import sys
 import os
 from sklearn.kernel_ridge import KernelRidge
+import sklearn.tree as tree
 
 class ConfigFileParser(object):
     """Class to read in and parse contents of config file
@@ -13,14 +14,6 @@ class ConfigFileParser(object):
 
     def get_config_dict(self):
         return self._parse_config_file()
-
-    def _parse_config_dict(self):
-        config_dict = self._parse_config_file()
-        config_dict_parsed = {}
-        for section_name, section_contents in config_dict.items():
-            for subsection_name, subsection_contents in section_contents.items():
-                config_dict_parsed[subsection_name]=subsection_contents
-        return config_dict_parsed
 
     def _get_config_dict_depth(self, test_dict, level=0):
         if not isinstance(test_dict, dict) or not test_dict:
@@ -54,11 +47,17 @@ class MASTMLWrapper(object):
         return keywordsetup
 
     def get_machinelearning_model(self, keyword):
-        if keyword == "gkrr_model":
+        if keyword == 'gkrr_model':
             model = KernelRidge(alpha=float(self.configdict['Model Parameters']['gkrr_model']['alpha']),
                                 coef0=int(self.configdict['Model Parameters']['gkrr_model']['coef0']),
                                 degree=int(self.configdict['Model Parameters']['gkrr_model']['degree']),
                                 gamma=float(self.configdict['Model Parameters']['gkrr_model']['gamma']),
                                 kernel=str(self.configdict['Model Parameters']['gkrr_model']['kernel']),
                                 kernel_params=None)
+            return model
+        if keyword == 'dtr_model':
+            model = tree.DecisionTreeRegressor(criterion=str(self.configdict['Model Parameters']['dtr_model']['split criterion']),
+                                               max_depth=int(self.configdict['Model Parameters']['dtr_model']['max_depth']),
+                                               min_samples_leaf=int(self.configdict['Model Parameters']['dtr_model']['min_samples_leaf']),
+                                               min_samples_split=int(self.configdict['Model Parameters']['dtr_model']['min_samples_split']))
             return model
