@@ -1,0 +1,3 @@
+Statistics
+Fri Apr 28 11:53:16 2017
+mean_absolute_error:0.0631rsquared:0.9842mean_error:-0.0000rmse:0.0845
