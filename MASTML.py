@@ -1,7 +1,6 @@
-import configuration_parser
-import importlib
+__author__ = 'Ryan Jacobs'
+
 import data_parser
-import matplotlib
 import sys
 import os
 from MASTMLInitializer import ConfigFileParser, MASTMLWrapper
@@ -42,55 +41,33 @@ class MASTMLDriver(object):
                     print('Getting model %s' % v)
                     ml_model = mastmlwrapper.get_machinelearning_model(model_type=v)
                     model_list.append(ml_model)
+                    logging.info('Adding model %s to queue...' % str(v))
                 if type(v) is list:
                     for model in models_and_tests_setup['models']:
                         print('Getting model %s' % model)
                         ml_model = mastmlwrapper.get_machinelearning_model(model_type=model)
                         model_list.append(ml_model)
+                        logging.info('Adding model %s to queue...' % str(model))
             if k == "test_cases":
                 # Run the specified test cases for every model
                 for i, model in enumerate(model_list):
-                    import FullFit as FullFit
-                    import KFoldCV as KFoldCV
-                    KFoldCV.execute(model=model, data=data, savepath=save_path)
-                    FullFit.execute(model=model, data=data, savepath=save_path)
+                    mastmlwrapper.get_machinelearning_test(test_type=models_and_tests_setup['test_cases'][i],
+                                                                     model=model, data=data, save_path=save_path)
+                    logging.info('Ran test %s for your %s model' % (str(models_and_tests_setup['test_cases'][i]), str(model)))
 
-
-        for model in model_list:
-            print(model)
-        # Temporary call to FullFit.py until remade into classes by Tam
-
-
+        # Move input and log files to output directory, end MASTML session
         if os.path.exists(datasetup['save_path']+"/"+'MASTMLlog.log'):
             os.remove(datasetup['save_path']+"/"+'MASTMLlog.log')
-            shutil.move(cwd + "/" + 'MASTMLlog.log', datasetup['save_path'])
-        else:
-            shutil.move(cwd+"/"+'MASTMLlog.log', datasetup['save_path'])
+        shutil.move(cwd+"/"+'MASTMLlog.log', datasetup['save_path'])
+        shutil.copy(cwd+"/"+str(self.configfile), datasetup['save_path'])
 
-        """
-        # Instead of using this, use MASTMLWrapper routine to call each model
-        model = importlib.import_module(model).get()
-
-        print("running test {}".format(case_name))
-        case_base = case_name.split("_")[0]
-        case = importlib.import_module(case_base)  # TTM
-        kwargs = config[case_name]
-        # TTM save for later: change and make new paths
-        # curdir = os.getcwd()
-        save_path = os.path.abspath(save_path)
-        if not os.path.isdir(save_path):
-            os.mkdir(save_path)
-        # os.chdir(save_path)
-        case.execute(model, data, save_path, lwr_data=lwr_data, **kwargs)
-        # os.chdir(curdir)
-        matplotlib.pyplot.close("all")
-        """
-
+        return
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
         mastml = MASTMLDriver(configfile=sys.argv[1])
         mastml.run_MASTML()
+        logging.info('Your MASTML runs are complete!')
     else:
         print('Specify the name of your MASTML input file, such as "mastmlinput.conf", and run as "python AllTests.py mastmlinput.conf" ')
 
