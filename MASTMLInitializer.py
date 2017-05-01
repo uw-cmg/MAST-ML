@@ -1,4 +1,4 @@
-__author__ = 'Ryan Jacobs'
+__author__ = 'Ryan Jacobs, Tam Mayeshiba'
 
 from configobj import ConfigObj, ConfigObjError
 import sys
@@ -9,6 +9,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
 import sklearn.tree as tree
 import neurolab as nl
+import importlib
 
 class ConfigFileParser(object):
     """Class to read in and parse contents of config file
@@ -107,11 +108,10 @@ class MASTMLWrapper(object):
             return model_fitted
 
     # This method will call the different classes corresponding to each test type, which are being organized by Tam
-    def get_machinelearning_test(self, test_type, model, data, save_path):
-        if test_type == 'KFold_CV':
-            import KFoldCV as KFoldCV
-            KFoldCV.execute(model=model, data=data, savepath=save_path)
-        if test_type == 'FullFit':
-            import FullFit as FullFit
-            FullFit.execute(model=model, data=data, savepath=save_path)
+    def get_machinelearning_test(self, test_type, model, data, save_path,
+            *args,**kwargs):
+        mod_name = test_type.split("_")[0] #ex. KFoldCV_5fold goes to KFoldCV
+        test_module = importlib.import_module('%s' % (mod_name))
+        test_execute = getattr(test_module, 'execute')
+        test_execute(model=model, data=data, savepath=save_path, **kwargs)
         return None
