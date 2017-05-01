@@ -13,6 +13,24 @@ from AnalysisTemplate import AnalysisTemplate
 from AnalysisTemplate import timeit
 
 class FullFit(AnalysisTemplate):
+    """Do full fit.
+        training_dataset,
+        testing_dataset,
+        model,
+        save_path,
+        train_index,
+        test_index,
+        input_features,
+        target_feature,
+        labeling_features, see AnalysisTemplate.
+        xlabel <str>: Label for full-fit x-axis.
+        ylabel <str>: Label for full-fit y-axis
+        stepsize <float>: Step size for plot grid
+        group_field_name <str>: (optional) field name for grouping data
+                                        field may be numeric
+        measured_error_field_name <str>: field name for measured y-data error (optional)
+        Plots results in a Predicted vs. Measured square plot.
+    """
     def __init__(self, 
         training_dataset=None,
         testing_dataset=None,
@@ -41,14 +59,12 @@ class FullFit(AnalysisTemplate):
         self.ylabel = ylabel
         self.stepsize = float(stepsize)
         self.group_field_name = group_field_name
-        self.label_field_name = label_field_name
-        self.numeric_field_name = numeric_field_name
         self.measured_error_field_name = measured_error_field_name
         return
     
     @timeit
-    def do_single_fit(self):
-        self.save_path = os.path.join(self.save_path,"single_fit")
+    def do_single_fit(self, subfolder="single_fit"):
+        self.save_path = os.path.join(self.save_path,subfolder)
         if not os.path.isdir(self.save_path):
             os.mkdir(self.save_path)
         self.get_unfiltered_data()
