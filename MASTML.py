@@ -33,9 +33,8 @@ class MASTMLDriver(object):
             os.mkdir(save_path)
         logging.info('Parsed the input data located under %s' % str(datasetup['data_path']))
 
-        # Gather models and run listed tests for each model
+        # Gather models
         model_list = []
-        # Since want to set up models first, evaluate key by name
         model_val = models_and_tests_setup['models']
         print(model_val)
         if type(model_val) is str:
@@ -57,8 +56,8 @@ class MASTMLDriver(object):
         elif type(test_val) is list:
             for test in test_val:
                 test_list.append(test)
+        # Run the specified test cases for every model
         for test_type in test_list:
-            # Run the specified test cases for every model
             logging.info('Looking up parameters for test type %s' % test_type)
             test_params = configdict["Test Parameters"][test_type]
             for midx, model in enumerate(model_list):
@@ -66,7 +65,6 @@ class MASTMLDriver(object):
                         model=model, data=data, save_path=save_path,
                         **test_params)
                 logging.info('Ran test %s for your %s model' % (test_type, str(model)))
-
         # Move input and log files to output directory, end MASTML session
         if not(os.path.abspath(datasetup['save_path']) == cwd):
             if os.path.exists(datasetup['save_path']+"/"+'MASTMLlog.log'):
