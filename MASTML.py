@@ -89,8 +89,12 @@ class MASTMLDriver(object):
             # Get default features if not set
             if not ('input_features' in test_params.keys()):
                 test_params['input_features'] = self.string_or_list_input_to_list(generalsetup['input_features'])
+            else:
+                test_params['input_features'] = self.string_or_list_input_to_list(test_params['input_features'])
             if not ('target_feature' in test_params.keys()):
                 test_params['target_feature'] = generalsetup['target_feature']
+            if 'labeling_features' in test_params.keys():
+                test_params['labeling_features'] = self.string_or_list_input_to_list(test_params['labeling_features'])
             # Set save path
             test_save_path = os.path.join(save_path, test_type)
             # Run the test case for every model
