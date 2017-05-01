@@ -73,6 +73,7 @@ def single(xvals, yvals,
             timex="",
             startx=None,
             endx=None,
+            stepsize=None,
             divide_x = None,
             divide_y = None,
             notelist=list(),
@@ -99,7 +100,7 @@ def single(xvals, yvals,
     kwargs['ylabel'] = ylabel
     kwargs['xerrlist'] = list([xerr])
     kwargs['yerrlist'] = list([yerr])
-    kwargs['stepsize'] = None ###no stepsize?
+    kwargs['stepsize'] = stepsize
     if plotlabel == "":
         plotlabel = "%s_vs_%s" % (ylabel, xlabel)
     kwargs['plotlabel'] = plotlabel
