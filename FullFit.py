@@ -11,6 +11,7 @@ import portion_data.get_test_train_data as gttd
 import os
 from AnalysisTemplate import AnalysisTemplate
 from AnalysisTemplate import timeit
+import logging
 
 class FullFit(AnalysisTemplate):
     """Do full fit.
@@ -29,6 +30,7 @@ class FullFit(AnalysisTemplate):
         group_field_name <str>: (optional) field name for grouping data
                                         field may be numeric
         measured_error_field_name <str>: field name for measured y-data error (optional)
+        mark_outlying_groups <int>: Number of outlying groups to mark
         Plots results in a Predicted vs. Measured square plot.
     """
     def __init__(self, 
@@ -48,34 +50,61 @@ class FullFit(AnalysisTemplate):
         label_field_name = None,
         numeric_field_name = None,
         measured_error_field_name = None,
+        mark_outlying_groups = 2,
         *args, **kwargs):
         AnalysisTemplate.__init__(self, 
-            training_dataset, testing_dataset,
-            model, save_path,
-            train_index, test_index,
-            input_features, target_feature,
-            labeling_features)
+            training_dataset=training_dataset, 
+            testing_dataset=testing_dataset,
+            model=model, 
+            save_path = save_path,
+            train_index = train_index, 
+            test_index = test_index,
+            input_features = input_features, 
+            target_feature = target_feature,
+            labeling_features = labeling_features)
         self.xlabel = xlabel
         self.ylabel = ylabel
         self.stepsize = float(stepsize)
         self.group_field_name = group_field_name
         self.measured_error_field_name = measured_error_field_name
+        self.mark_outlying_groups = int(mark_outlying_groups)
+        self.overall_analysis=None
+        self.train_group_data = None
+        self.test_group_data = None
+        self.train_group_indices = None
+        self.test_group_indices = None
+        self.train_groups=None
+        self.test_groups =None
+        self.overall_group_dict=dict()
+        self.overall_group_highest_rmses=list()
+        self.group_analysis_dict=dict()
+        self.measured_error_data = None
         return
     
     @timeit
     def do_single_fit(self, subfolder="single_fit"):
-        self.save_path = os.path.join(self.save_path,subfolder)
-        if not os.path.isdir(self.save_path):
-            os.mkdir(self.save_path)
-        self.get_unfiltered_data()
-        self.get_train_test_indices()
-        self.get_data()
-        self.get_model()
-        self.get_trained_model()
-        self.get_prediction()
-        self.get_statistics()
-        self.print_statistics()
-        self.print_output_csv()
+        single_save = os.path.join(self.save_path, subfolder)
+        single_analysis = AnalysisTemplate(
+                training_dataset = self.training_dataset,
+                testing_dataset= self.testing_dataset,
+                model=self.model, 
+                save_path = single_save,
+                train_index = self.train_index, 
+                test_index = self.test_index,
+                input_features = self.input_features, 
+                target_feature = self.target_feature,
+                labeling_features = self.labeling_features)
+        if not os.path.isdir(single_save):
+            os.mkdir(single_save)
+        single_analysis.get_unfiltered_data()
+        single_analysis.get_train_test_indices()
+        single_analysis.get_data()
+        single_analysis.get_model()
+        single_analysis.get_trained_model()
+        single_analysis.get_prediction()
+        single_analysis.get_statistics()
+        single_analysis.print_statistics()
+        single_analysis.print_output_csv()
         addl_plot_kwargs = dict()
         addl_plot_kwargs['xlabel'] = self.xlabel
         addl_plot_kwargs['ylabel'] = self.ylabel
@@ -83,14 +112,102 @@ class FullFit(AnalysisTemplate):
         if self.measured_error_field_name is None:
             pass
         else:
-            addl_plot_kwargs['xerr'] = np.asarray(self.training_dataset.get_data(self.measured_error_field_name)).ravel()
-        self.plot_results(addl_plot_kwargs)
+            self.measured_error_data = np.asarray(self.training_dataset.get_data(self.measured_error_field_name)).ravel()
+            addl_plot_kwargs['xerr'] = self.measured_error_data
+        single_analysis.plot_results(addl_plot_kwargs)
+        return single_analysis
+
+    @timeit
+    def set_group_info(self):
+        self.test_group_data = np.asarray(self.testing_dataset.get_data(self.group_field_name)).ravel()
+        self.train_group_data = np.asarray(self.training_dataset.get_data(self.group_field_name)).ravel()
+        self.train_group_indices = gttd.get_logo_indices(self.train_group_data)
+        self.test_group_indices = gttd.get_logo_indices(self.test_group_data)
+        self.train_groups = list(self.train_group_indices.keys())
+        self.test_groups = list(self.test_group_indices.keys())
         return
 
+    @timeit
+    def get_overall_group_dict(self):
+        osg_dict=dict()
+        highest_rmses=list()
+        num_mark = min(self.mark_outlying_groups, len(self.test_groups))
+        for oidx in range(0, num_mark):
+            highest_rmses.append((0, "nogroup"))
+        for group in self.test_groups:
+            g_index = self.test_group_indices[group]["test_index"]
+            g_ypredict= self.overall_analysis.testing_target_prediction[g_index]
+            g_ydata = self.overall_analysis.testing_target_data[g_index]
+            #g_mean_error = np.mean(g_ypredict - g_ydata)
+            g_rmse = np.sqrt(mean_squared_error(g_ypredict, g_ydata))
+            if self.measured_error_field_name is None:
+                g_ydata_err = None
+            else:
+                g_ydata_err = self.measured_error_data[g_index]
+            osg_dict[group] = dict()
+            osg_dict[group]['target_data'] = g_ydata
+            osg_dict[group]['target_data_err'] = g_ydata_err
+            osg_dict[group]['predicted_data'] = g_ypredict
+            osg_dict[group]['rmse'] = g_rmse
+            min_entry = min(highest_rmses)
+            min_rmse = min_entry[0]
+            if g_rmse > min_rmse:
+                highest_rmses[highest_rmses.index(min_entry)]= (g_rmse, group)
+        logging.debug("Highest RMSEs: %s" % highest_rmses)
+        self.overall_group_dict=dict(osg_dict)
+        self.overall_group_highest_rmses = list(highest_rmses)
+        return
+
+    def plot_group_splits_with_outliers(self):
+        xdatalist=list()
+        ydatalist=list()
+        labellist=list()
+        xerrlist=list()
+        yerrlist=list()
+        group_notelist=list()
+        group_notelist.append("RMSE from overall fitting:")
+        group_notelist.append("Overall: %3.2f" % self.overall_analysis.statistics['rmse']) #overall rmse
+        xdatalist.append(self.overall_analysis.testing_target_data)
+        xerrlist.append(self.measured_error_data)
+        ydatalist.append(self.overall_analysis.testing_target_prediction)
+        yerrlist.append(None)
+        labellist.append("All data")
+        for gridx in range(0, len(self.overall_group_highest_rmses)):
+            group=self.overall_group_highest_rmses[gridx][1]
+            rmse =self.overall_group_highest_rmses[gridx][0]
+            xdatalist.append(self.overall_group_dict[group]['target_data'])
+            xerrlist.append(self.overall_group_dict[group]['target_data_err'])
+            ydatalist.append(self.overall_group_dict[group]['predicted_data'])
+            yerrlist.append(None)
+            labellist.append(group)
+            group_notelist.append('{:<1}: {:.2f}'.format(group, rmse))
+        plot_save_path = os.path.join(self.save_path, "overall_overlay")
+        if not os.path.isdir(plot_save_path):
+            os.mkdir(plot_save_path)
+        kwargs=dict()
+        kwargs['xlabel'] = self.xlabel
+        kwargs['ylabel'] = self.ylabel
+        kwargs['save_path'] = plot_save_path
+        kwargs['xdatalist'] = xdatalist
+        kwargs['ydatalist'] = ydatalist
+        kwargs['stepsize'] = self.stepsize
+        kwargs['xerrlist'] = xerrlist
+        kwargs['yerrlist'] = yerrlist
+        kwargs['labellist'] = labellist
+        kwargs['notelist'] = group_notelist
+        kwargs['plotlabel'] = "OverallFit_overlay"
+        plotxy.multiple_overlay(**kwargs) 
+        return
 
     @timeit
     def run(self):
-        self.do_single_fit()
+        self.overall_analysis = self.do_single_fit()
+        print(self.overall_analysis.statistics)
+        if self.group_field_name is None: #no additional analysis to do
+            return
+        self.set_group_info()
+        self.get_overall_group_dict()
+        self.plot_group_splits_with_outliers()
         return
 
 
