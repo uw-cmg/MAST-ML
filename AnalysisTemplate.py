@@ -276,7 +276,7 @@ class AnalysisTemplate():
         return
     
     @timeit
-    def plot_results(self):
+    def plot_results(self, addl_plot_kwargs=None):
         if self.testing_target_data is None:
             logger.warning("No testing target data. Predicted vs. measured plot will not be plotted.")
             return
@@ -289,6 +289,9 @@ class AnalysisTemplate():
         notelist.append("R-squared: %3.3f" % self.statistics['rsquared'])
         plot_kwargs['notelist'] = notelist
         plot_kwargs['save_path'] = self.save_path
+        if not (addl_plot_kwargs is None):
+            for addl_plot_kwarg in addl_plot_kwargs:
+                plot_kwargs[addl_plot_kwarg] = addl_plot_kwargs[addl_plot_kwarg]
         plotxy.single(self.testing_target_data,
                 self.testing_target_prediction,
                 **plot_kwargs)
