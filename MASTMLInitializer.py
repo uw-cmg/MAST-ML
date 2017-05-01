@@ -1,4 +1,4 @@
-__author__ = 'Ryan Jacobs'
+__author__ = 'Ryan Jacobs, Tam Mayeshiba'
 
 from configobj import ConfigObj, ConfigObjError
 import sys
@@ -9,6 +9,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
 import sklearn.tree as tree
 import neurolab as nl
+import importlib
 
 class ConfigFileParser(object):
     """Class to read in and parse contents of config file
@@ -83,9 +84,16 @@ class MASTMLWrapper(object):
             return model
         if model_type == 'decision_tree_model':
             model = tree.DecisionTreeRegressor(criterion=str(self.configdict['Model Parameters']['decision_tree_model']['split_criterion']),
+                                               splitter=str(self.configdict['Model Parameters']['extra_tree_model']['splitter']),
                                                max_depth=int(self.configdict['Model Parameters']['decision_tree_model']['max_depth']),
                                                min_samples_leaf=int(self.configdict['Model Parameters']['decision_tree_model']['min_samples_leaf']),
                                                min_samples_split=int(self.configdict['Model Parameters']['decision_tree_model']['min_samples_split']))
+        if model_type == 'extra_tree_model':
+            model = tree.ExtraTreeRegressor(criterion=str(self.configdict['Model Parameters']['extra_tree_model']['split_criterion']),
+                                               splitter=str(self.configdict['Model Parameters']['extra_tree_model']['splitter']),
+                                               max_depth=int(self.configdict['Model Parameters']['extra_tree_model']['max_depth']),
+                                               min_samples_leaf=int(self.configdict['Model Parameters']['extra_tree_model']['min_samples_leaf']),
+                                               min_samples_split=int(self.configdict['Model Parameters']['extra_tree_model']['min_samples_split']))
             return model
         if model_type == 'randomforest_model':
             model = RandomForestRegressor(criterion=str(self.configdict['Model Parameters']['randomforest_model']['split_criterion']),
@@ -115,12 +123,9 @@ class MASTMLWrapper(object):
         # Add generic file import for non-sklearn models
 
     # This method will call the different classes corresponding to each test type, which are being organized by Tam
-    # This method will fit the data (or subsets of it) to the given model object type.
-    def get_machinelearning_test(self, test_type, model, data, save_path):
-        if test_type == 'KFold_CV':
-            import KFoldCV as KFoldCV
-            KFoldCV.execute(model=model, data=data, savepath=save_path)
-        if test_type == 'FullFit':
-            import FullFit as FullFit
-            FullFit.execute(model=model, data=data, savepath=save_path)
+    def get_machinelearning_test(self, test_type, model, data, save_path, *args, **kwargs):
+        mod_name = test_type.split("_")[0] #ex. KFoldCV_5fold goes to KFoldCV
+        test_module = importlib.import_module('%s' % (mod_name))
+        test_execute = getattr(test_module, 'execute')
+        test_execute(model=model, data=data, savepath=save_path, **kwargs)
         return None
