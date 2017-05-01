@@ -33,7 +33,7 @@ class MASTMLDriver(object):
         model_list = self._gather_models(mastmlwrapper=mastmlwrapper)
         # Gather tests
         test_list = self._gather_tests(mastmlwrapper=mastmlwrapper, configdict=configdict, model_list=model_list,
-                                       data= data, save_path=datasetup['save_path'])
+                                       data=data, save_path=datasetup['save_path'])
         # End MASTML session
         self._move_log_and_input_files(mastmlwrapper=mastmlwrapper)
         return
@@ -64,7 +64,7 @@ class MASTMLDriver(object):
 
     def _gather_tests(self, mastmlwrapper, configdict, model_list, data, save_path):
         models_and_tests_setup = mastmlwrapper.process_config_keyword(keyword='Models and Tests to Run')
-        test_list= []
+        test_list = []
         test_val = models_and_tests_setup['test_cases']
         if type(test_val) is str:
             test_list.append(test_val)
