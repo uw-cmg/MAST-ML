@@ -330,7 +330,7 @@ def execute(model="", data="", savepath=None, lwr_data="",
     akwargs['model'] = model
     akwargs['train_index'] = train_index
     akwargs['test_index'] = test_index
-    akwargs['input_features'] = list(input_features.split(",")) #LIST
+    akwargs['input_features'] = input_features #configobj reads as list
     akwargs['target_feature'] = target_feature
     akwargs['labeling_features'] = labeling_features
     akwargs['savepath'] = savepath
