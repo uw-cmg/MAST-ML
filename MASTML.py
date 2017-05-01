@@ -51,8 +51,11 @@ class MASTMLDriver(object):
             if skey == "test_cases":
                 # Run the specified test cases for every model
                 for tidx, model in enumerate(model_list):
-                    mastmlwrapper.get_machinelearning_test(test_type=models_and_tests_setup['test_cases'][tidx],
-                                                                     model=model, data=data, save_path=save_path)
+                    test_type = models_and_tests_setup['test_cases'][tidx]
+                    test_params = configdict["Test Parameters"][test_type]
+                    mastmlwrapper.get_machinelearning_test(test_type=test_type,
+                            model=model, data=data, save_path=save_path,
+                            **test_params)
                     logging.info('Ran test %s for your %s model' % (str(models_and_tests_setup['test_cases'][tidx]), str(model)))
 
         # Move input and log files to output directory, end MASTML session
