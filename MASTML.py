@@ -35,25 +35,25 @@ class MASTMLDriver(object):
 
         # Gather models and run listed tests for each model
         model_list = []
-        for k, v in models_and_tests_setup.items():
-            if k == "models":
-                if type(v) is str:
-                    print('Getting model %s' % v)
-                    ml_model = mastmlwrapper.get_machinelearning_model(model_type=v)
+        for skey, sval in models_and_tests_setup.items():
+            if skey == "models":
+                if type(sval) is str:
+                    print('Getting model %s' % sval)
+                    ml_model = mastmlwrapper.get_machinelearning_model(model_type=sval)
                     model_list.append(ml_model)
-                    logging.info('Adding model %s to queue...' % str(v))
-                if type(v) is list:
+                    logging.info('Adding model %s to queue...' % str(sval))
+                if type(sval) is list:
                     for model in models_and_tests_setup['models']:
                         print('Getting model %s' % model)
                         ml_model = mastmlwrapper.get_machinelearning_model(model_type=model)
                         model_list.append(ml_model)
                         logging.info('Adding model %s to queue...' % str(model))
-            if k == "test_cases":
+            if skey == "test_cases":
                 # Run the specified test cases for every model
-                for i, model in enumerate(model_list):
-                    mastmlwrapper.get_machinelearning_test(test_type=models_and_tests_setup['test_cases'][i],
+                for tidx, model in enumerate(model_list):
+                    mastmlwrapper.get_machinelearning_test(test_type=models_and_tests_setup['test_cases'][tidx],
                                                                      model=model, data=data, save_path=save_path)
-                    logging.info('Ran test %s for your %s model' % (str(models_and_tests_setup['test_cases'][i]), str(model)))
+                    logging.info('Ran test %s for your %s model' % (str(models_and_tests_setup['test_cases'][tidx]), str(model)))
 
         # Move input and log files to output directory, end MASTML session
         if not(os.path.abspath(datasetup['save_path']) == cwd):
