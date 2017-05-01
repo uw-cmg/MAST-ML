@@ -5,6 +5,8 @@ __author__ = 'haotian'
 
 
 def get():
+    from warnings import warn
+    warn('The usage of lkrr_model.py will be deprecated', DeprecationWarning)
     config = configuration_parser.parse()
     alpha = config.getfloat(__name__, 'alpha')
     gamma = config.getfloat(__name__, 'gamma')

@@ -5,6 +5,8 @@ __author__ = 'hao yuan'
 
 
 def get():
+    from warnings import warn
+    warn('The usage of randomforest_model.py will be deprecated', DeprecationWarning)
     config = configuration_parser.parse()
     estimators = config.getint(__name__, 'estimators')
     exec('max_depth = ' + config.get(__name__, 'max_depth'),locals(),globals())

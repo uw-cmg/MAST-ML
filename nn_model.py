@@ -20,6 +20,8 @@ class model():
 
 
 def get():
+	from warnings import warn
+	warn('The usage of nn_model.py will be deprecated', DeprecationWarning)
 	config = configuration_parser.parse()
 	minmax = ast.literal_eval(config.get(__name__, 'minmax'))
 	size = ast.literal_eval(config.get(__name__, 'size'))
