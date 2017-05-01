@@ -3,7 +3,7 @@ __author__ = 'Ryan Jacobs'
 import data_parser
 import sys
 import os
-from MASTMLInitializer import ConfigFileParser, MASTMLWrapper
+from MASTMLInitializer import ConfigFileParser, MASTMLWrapper, ConfigFileValidator
 import logging
 import shutil
 
@@ -17,7 +17,9 @@ class MASTMLDriver(object):
         # Parse MASTML input file
         mastmlwrapper, configdict = self._generate_mastml_wrapper()
         logging.info('Successfully read in and parsed your MASTML input file, %s' % str(self.configfile))
+        print(configdict)
 
+        """
         # Parse input data files
         # Temporary call to data_parser for now, but will later deprecate
         datasetup = mastmlwrapper.process_config_keyword(keyword='Data Setup')
@@ -36,11 +38,11 @@ class MASTMLDriver(object):
                                        data=data, save_path=datasetup['save_path'])
         # End MASTML session
         self._move_log_and_input_files(mastmlwrapper=mastmlwrapper)
+        """
         return
 
     def _generate_mastml_wrapper(self):
-        config = ConfigFileParser(configfile=self.configfile)
-        configdict = config.get_config_dict()
+        configdict = ConfigFileValidator(configfile=self.configfile).run_config_validation()
         mastmlwrapper = MASTMLWrapper(configdict=configdict)
         return mastmlwrapper, configdict
 
