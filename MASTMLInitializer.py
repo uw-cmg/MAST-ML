@@ -10,6 +10,7 @@ from sklearn.ensemble import RandomForestRegressor
 import sklearn.tree as tree
 import neurolab as nl
 import importlib
+import logging
 
 class ConfigFileParser(object):
     """Class to read in and parse contents of config file
@@ -108,6 +109,8 @@ class MASTMLWrapper(object):
         mod_name = test_type.split("_")[0] #ex. KFoldCV_5fold goes to KFoldCV
         test_module = importlib.import_module('%s' % (mod_name))
         test_class_def = getattr(test_module, mod_name)
+        logging.debug("Parameters passed by keyword:")
+        logging.debug(kwargs)
         test_class = test_class_def(model=model, data=data,
                             savepath = save_path,
                             **kwargs)
