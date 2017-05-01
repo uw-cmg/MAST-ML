@@ -3,7 +3,7 @@ __author__ = 'Ryan Jacobs'
 import data_parser
 import sys
 import os
-from MASTMLInitializer import ConfigFileParser, MASTMLWrapper, ConfigFileValidator
+from MASTMLInitializer import ConfigFileParser, MASTMLWrapper
 import logging
 import shutil
 
@@ -33,37 +33,44 @@ class MASTMLDriver(object):
             os.mkdir(save_path)
         logging.info('Parsed the input data located under %s' % str(datasetup['data_path']))
 
-        # Gather models and run listed tests for each model
+        # Gather models
         model_list = []
-        for k, v in models_and_tests_setup.items():
-            if k == "models":
-                if type(v) is str:
-                    print('Getting model %s' % v)
-                    ml_model = mastmlwrapper.get_machinelearning_model(model_type=v)
-                    model_list.append(ml_model)
-                    logging.info('Adding model %s to queue...' % str(v))
-                if type(v) is list:
-                    for model in models_and_tests_setup['models']:
-                        print('Getting model %s' % model)
-                        ml_model = mastmlwrapper.get_machinelearning_model(model_type=model)
-                        model_list.append(ml_model)
-                        logging.info('Adding model %s to queue...' % str(model))
-            if k == "test_cases":
-                # Run the specified test cases for every model
-                for i, model in enumerate(model_list):
-                    mastmlwrapper.get_machinelearning_test(test_type=models_and_tests_setup['test_cases'][i],
-                                                                     model=model, data=data, save_path=save_path)
-                    logging.info('Ran test %s for your %s model' % (str(models_and_tests_setup['test_cases'][i]), str(model)))
-
-        cfv = ConfigFileValidator(configfile=self.configfile)
-        cfv.get_config()
-
+        model_val = models_and_tests_setup['models']
+        print(model_val)
+        if type(model_val) is str:
+            logging.info('Getting model %s' % model_val)
+            ml_model = mastmlwrapper.get_machinelearning_model(model_type=model_val)
+            model_list.append(ml_model)
+            logging.info('Adding model %s to queue...' % str(model_val))
+        elif type(model_val) is list:
+            for model in model_val:
+                logging.info('Getting model %s' % model)
+                ml_model = mastmlwrapper.get_machinelearning_model(model_type=model)
+                model_list.append(ml_model)
+                logging.info('Adding model %s to queue...' % str(model))
+        # Gather test types
+        test_list=list()
+        test_val = models_and_tests_setup['test_cases']
+        if type(test_val) is str:
+            test_list.append(test_val)
+        elif type(test_val) is list:
+            for test in test_val:
+                test_list.append(test)
+        # Run the specified test cases for every model
+        for test_type in test_list:
+            logging.info('Looking up parameters for test type %s' % test_type)
+            test_params = configdict["Test Parameters"][test_type]
+            for midx, model in enumerate(model_list):
+                mastmlwrapper.get_machinelearning_test(test_type=test_type,
+                        model=model, data=data, save_path=save_path,
+                        **test_params)
+                logging.info('Ran test %s for your %s model' % (test_type, str(model)))
         # Move input and log files to output directory, end MASTML session
-        if os.path.exists(datasetup['save_path']+"/"+'MASTMLlog.log'):
-            os.remove(datasetup['save_path']+"/"+'MASTMLlog.log')
-        shutil.move(cwd+"/"+'MASTMLlog.log', datasetup['save_path'])
-        shutil.copy(cwd+"/"+str(self.configfile), datasetup['save_path'])
-
+        if not(os.path.abspath(datasetup['save_path']) == cwd):
+            if os.path.exists(datasetup['save_path']+"/"+'MASTMLlog.log'):
+                os.remove(datasetup['save_path']+"/"+'MASTMLlog.log')
+            shutil.move(cwd+"/"+'MASTMLlog.log', datasetup['save_path'])
+            shutil.copy(cwd+"/"+str(self.configfile), datasetup['save_path'])
         return
 
 if __name__ == '__main__':

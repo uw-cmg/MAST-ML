@@ -1,0 +1,30 @@
+INFO:root:-------- template_test --------
+INFO:root:Starting analysis at Fri Apr 28 12:36:51 2017
+INFO:root:AnalysisTemplate.get_datasets took 00:00:0.006093
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000613
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000011
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000027
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.053591
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000540
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000537
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000356
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.002894
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.877686
+INFO:root:AnalysisTemplate.do_analysis took 00:00:0.943363
+INFO:root:-------- template_test_no_y --------
+INFO:root:Starting analysis at Fri Apr 28 12:36:52 2017
+INFO:root:AnalysisTemplate.get_datasets took 00:00:0.022169
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000637
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000012
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000031
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.001073
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000978
+WARNING:root:No testing target data. Statistics will not be collected.
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000085
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000374
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.006554
+WARNING:root:No testing target data. Predicted vs. measured plot will not be plotted.
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.000072
+INFO:root:AnalysisTemplate.do_analysis took 00:00:0.033156
