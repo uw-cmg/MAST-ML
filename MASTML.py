@@ -16,6 +16,15 @@ class MASTMLDriver(object):
         else:
             logging.basicConfig(filename='MASTMLlog.log', level='INFO')
 
+    def string_or_list_input_to_list(self, unknown_input_val):
+        input_list=list()
+        if type(unknown_input_val) is str:
+            input_list.append(unknown_input_val)
+        elif type(unknown_input_val) is list:
+            for unknown_input in unknown_input_val:
+                input_list.append(unknown_input)
+        return input_list
+
     def run_MASTML(self):
         cwd = os.getcwd()
         config = ConfigFileParser(configfile=self.configfile)
@@ -34,10 +43,16 @@ class MASTMLDriver(object):
             os.mkdir(save_path)
 
         # Temporary call to data_parser for now, but will later deprecate
-        data = data_parser.parse(datasetup['data_path'], datasetup['weights'])
-        data.set_x_features(datasetup['X'])
-        data.set_y_feature(datasetup['y'])
-        logging.info('Parsed the input data located under %s' % str(datasetup['data_path']))
+        data_dict=dict()
+        for data_name in datasetup.keys():
+            data_path = datasetup[data_name]['data_path']
+            data_weights = datasetup[data_name]['weights']
+            if not(os.path.isfile(data_path)):
+                raise OSError("No file found at %s" % data_path)
+            data_dict[data_name] = data_parser.parse(data_path, data_weights)
+            #data_dict[data_name].set_x_features(datasetup['X']) #set in test classes, not here, since different tests could have different X and y features
+            #data_dict[data_name].set_y_feature(datasetup['y'])
+            logging.info('Parsed the input data located under %s' % data_path)
 
         # Gather models
         model_list = []
@@ -55,28 +70,34 @@ class MASTMLDriver(object):
                 model_list.append(ml_model)
                 logging.info('Adding model %s to queue...' % str(model))
         # Gather test types
-        test_list=list()
-        test_val = models_and_tests_setup['test_cases']
-        if type(test_val) is str:
-            test_list.append(test_val)
-        elif type(test_val) is list:
-            for test in test_val:
-                test_list.append(test)
+        test_list=self.string_or_list_input_to_list(models_and_tests_setup['test_cases'])
         # Run the specified test cases for every model
         for test_type in test_list:
             logging.info('Looking up parameters for test type %s' % test_type)
             test_params = configdict["Test Parameters"][test_type]
+            # Set data lists
+            training_dataset_name_list = self.string_or_list_input_to_list(test_params['training_dataset'])
+            training_dataset_list = list()
+            for dname in training_dataset_name_list:
+                training_dataset_list.append(data_dict[dname])
+            test_params['training_dataset'] = training_dataset_list
+            testing_dataset_name_list = self.string_or_list_input_to_list(test_params['testing_dataset'])
+            testing_dataset_list = list()
+            for dname in testing_dataset_name_list:
+                testing_dataset_list.append(data_dict[dname])
+            test_params['testing_dataset'] = testing_dataset_list
+            # Run the test case for every model
             for midx, model in enumerate(model_list):
                 mastmlwrapper.get_machinelearning_test(test_type=test_type,
-                        model=model, data=data, save_path=save_path,
+                        model=model, save_path=save_path,
                         **test_params)
                 logging.info('Ran test %s for your %s model' % (test_type, str(model)))
         # Move input and log files to output directory, end MASTML session
-        if not(os.path.abspath(datasetup['save_path']) == cwd):
-            if os.path.exists(datasetup['save_path']+"/"+'MASTMLlog.log'):
-                os.remove(datasetup['save_path']+"/"+'MASTMLlog.log')
-            shutil.move(cwd+"/"+'MASTMLlog.log', datasetup['save_path'])
-            shutil.copy(cwd+"/"+str(self.configfile), datasetup['save_path'])
+        if not(os.path.abspath(generalsetup['save_path']) == cwd):
+            if os.path.exists(generalsetup['save_path']+"/"+'MASTMLlog.log'):
+                os.remove(generalsetup['save_path']+"/"+'MASTMLlog.log')
+            shutil.move(cwd+"/"+'MASTMLlog.log', generalsetup['save_path'])
+            shutil.copy(cwd+"/"+str(self.configfile), generalsetup['save_path'])
         return
 
 if __name__ == '__main__':
