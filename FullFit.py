@@ -9,6 +9,74 @@ import plot_data.plot_predicted_vs_measured as plotpm
 import plot_data.plot_xy as plotxy
 import portion_data.get_test_train_data as gttd
 import os
+from AnalysisTemplate import AnalysisTemplate
+from AnalysisTemplate import timeit
+
+class FullFit(AnalysisTemplate):
+    def __init__(self, 
+        training_dataset=None,
+        testing_dataset=None,
+        model=None,
+        save_path=None,
+        train_index=None,
+        test_index=None,
+        input_features=None,
+        target_feature=None,
+        labeling_features=None,
+        xlabel="Measured",
+        ylabel="Predicted",
+        stepsize=1,
+        group_field_name = None,
+        label_field_name = None,
+        numeric_field_name = None,
+        measured_error_field_name = None,
+        *args, **kwargs):
+        AnalysisTemplate.__init__(self, 
+            training_dataset, testing_dataset,
+            model, save_path,
+            train_index, test_index,
+            input_features, target_feature,
+            labeling_features)
+        self.xlabel = xlabel
+        self.ylabel = ylabel
+        self.stepsize = float(stepsize)
+        self.group_field_name = group_field_name
+        self.label_field_name = label_field_name
+        self.numeric_field_name = numeric_field_name
+        self.measured_error_field_name = measured_error_field_name
+        return
+    
+    @timeit
+    def do_single_fit(self):
+        self.save_path = os.path.join(self.save_path,"single_fit")
+        if not os.path.isdir(self.save_path):
+            os.mkdir(self.save_path)
+        self.get_unfiltered_data()
+        self.get_train_test_indices()
+        self.get_data()
+        self.get_model()
+        self.get_trained_model()
+        self.get_prediction()
+        self.get_statistics()
+        self.print_statistics()
+        self.print_output_csv()
+        addl_plot_kwargs = dict()
+        addl_plot_kwargs['xlabel'] = self.xlabel
+        addl_plot_kwargs['ylabel'] = self.ylabel
+        addl_plot_kwargs['stepsize'] = self.stepsize
+        if self.measured_error_field_name is None:
+            pass
+        else:
+            addl_plot_kwargs['xerr'] = np.asarray(self.training_dataset.get_data(self.measured_error_field_name)).ravel()
+        self.plot_results(addl_plot_kwargs)
+        return
+
+
+    @timeit
+    def run(self):
+        self.do_single_fit()
+        return
+
 
 def do_single_fit(model, 
             trainx=None,
