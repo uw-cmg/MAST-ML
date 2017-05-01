@@ -86,8 +86,10 @@ class AnalysisTemplate():
         # training csv
         if training_dataset is None:
             raise ValueError("training_dataset is not set")
-        if type(training_dataset) is list: #allow inheriting classes to get multiple datasets
+        if type(training_dataset) is list: #allow inheriting classes to get multiple datasets; MASTML will pass list of data objects
             self.training_dataset=training_dataset[0] #first item
+        elif type(training_dataset) is str:
+            self.training_dataset = data_parser.parse(training_dataset)
         else:
             self.training_dataset = training_dataset
         # testing csv
@@ -95,6 +97,8 @@ class AnalysisTemplate():
             raise ValueError("testing_dataset is not set")
         if type(testing_dataset) is list:
             self.testing_dataset = testing_dataset[0]
+        elif type(testing_dataset) is str:
+            self.testing_dataset = data_parser.parse(testing_dataset)
         else:
             self.testing_dataset=testing_dataset
         # model
@@ -131,8 +135,6 @@ class AnalysisTemplate():
         #self.logfile = os.path.join(self.save_path, "logfile")
         #logging.basicConfig(filename=self.logfile, level=logging.INFO)
         # initialize the rest; will be set in code later
-        self.training_dataset=None
-        self.testing_dataset=None
         self.training_input_data_unfiltered=None
         self.training_target_data_unfiltered=None
         self.testing_input_data_unfiltered=None
