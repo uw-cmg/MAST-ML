@@ -112,6 +112,9 @@ class MASTMLWrapper(object):
             *args,**kwargs):
         mod_name = test_type.split("_")[0] #ex. KFoldCV_5fold goes to KFoldCV
         test_module = importlib.import_module('%s' % (mod_name))
-        test_execute = getattr(test_module, 'execute')
-        test_execute(model=model, data=data, savepath=save_path, **kwargs)
+        test_class_def = getattr(test_module, mod_name)
+        test_class = test_class_def(model=model, data=data,
+                            savepath = save_path,
+                            **kwargs)
+        test_class.run()
         return None
