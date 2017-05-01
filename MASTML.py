@@ -56,11 +56,11 @@ class MASTMLDriver(object):
                     logging.info('Ran test %s for your %s model' % (str(models_and_tests_setup['test_cases'][i]), str(model)))
 
         # Move input and log files to output directory, end MASTML session
-        if os.path.exists(datasetup['save_path']+"/"+'MASTMLlog.log'):
-            os.remove(datasetup['save_path']+"/"+'MASTMLlog.log')
-        shutil.move(cwd+"/"+'MASTMLlog.log', datasetup['save_path'])
-        shutil.copy(cwd+"/"+str(self.configfile), datasetup['save_path'])
-
+        if not(os.path.abspath(datasetup['save_path']) == cwd):
+            if os.path.exists(datasetup['save_path']+"/"+'MASTMLlog.log'):
+                os.remove(datasetup['save_path']+"/"+'MASTMLlog.log')
+            shutil.move(cwd+"/"+'MASTMLlog.log', datasetup['save_path'])
+            shutil.copy(cwd+"/"+str(self.configfile), datasetup['save_path'])
         return
 
 if __name__ == '__main__':
