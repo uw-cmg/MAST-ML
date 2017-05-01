@@ -44,34 +44,32 @@ class AnalysisTemplate():
         Combine many analysis classes to do meta-analysis
     """
     def __init__(self, 
-        training_csv=None,
-        testing_csv=None,
+        training_dataset=None,
+        testing_dataset=None,
         model=None,
+        save_path=None,
         train_index=None,
         test_index=None,
         input_features=None,
         target_feature=None,
         labeling_features=None,
-        savepath=None,
         analysis_name=None,
         *args, **kwargs):
         """Initialize class.
             Attributes that can be set through keywords:
-                self.training_csv=""
-                self.testing_csv=""
+                self.training_dataset=""
+                self.testing_dataset=""
                 self.model=""
                 self.train_index=""
                 self.test_index=""
                 self.input_features=""
                 self.target_feature=""
                 self.labeling_features=""
-                self.savepath=""
+                self.save_path=""
                 self.analysis_name=""
             Other attributes:
                 self.resultspath=""
                 self.logfile=""
-                self.training_dataset=""
-                self.testing_dataset=""
                 self.training_input_data_unfiltered=""
                 self.training_target_data_unfiltered=""
                 self.testing_input_data_unfiltered=""
@@ -86,19 +84,19 @@ class AnalysisTemplate():
         """
         # Keyword-set attributes
         # training csv
-        if training_csv is None:
-            raise ValueError("training_csv is not set")
-        training_csv = os.path.abspath(training_csv)
-        if not(os.path.isfile(training_csv)):
-            raise OSError("No file found at %s" % training_csv)
-        self.training_csv=training_csv
+        if training_dataset is None:
+            raise ValueError("training_dataset is not set")
+        if type(training_dataset) is list: #allow inheriting classes to get multiple datasets
+            self.training_dataset=training_dataset[0] #first item
+        else:
+            self.training_dataset = training_dataset
         # testing csv
-        if testing_csv is None:
-            raise ValueError("testing_csv is not set")
-        testing_csv = os.path.abspath(testing_csv)
-        if not(os.path.isfile(testing_csv)):
-            raise OSError("No file found at %s" % testing_csv)
-        self.testing_csv=testing_csv
+        if testing_dataset is None:
+            raise ValueError("testing_dataset is not set")
+        if type(testing_dataset) is list:
+            self.testing_dataset = testing_dataset[0]
+        else:
+            self.testing_dataset=testing_dataset
         # model
         self.model=model
         # train/test index
@@ -116,21 +114,21 @@ class AnalysisTemplate():
         else:
             self.labeling_features = labeling_features
         # paths
-        if savepath is None:
-            savepath = os.getcwd()
-        savepath = os.path.abspath(savepath)
-        self.savepath = savepath
+        if save_path is None:
+            save_path = os.getcwd()
+        save_path = os.path.abspath(save_path)
+        self.save_path = save_path
         if analysis_name is None:
             self.analysis_name = "Results_%s" % time.strftime("%Y%m%d_%H%M%S")
         else:
             self.analysis_name = analysis_name
         # Self-set attributes
         # results path
-        self.resultspath=os.path.join(self.savepath, self.analysis_name)
+        self.resultspath=os.path.join(self.save_path, self.analysis_name)
         if not os.path.isdir(self.resultspath):
             os.mkdir(self.resultspath)
         # logger - initialized in MASTML.py
-        #self.logfile = os.path.join(self.savepath, "logfile")
+        #self.logfile = os.path.join(self.save_path, "logfile")
         #logging.basicConfig(filename=self.logfile, level=logging.INFO)
         # initialize the rest; will be set in code later
         self.training_dataset=None
@@ -153,7 +151,6 @@ class AnalysisTemplate():
    
     @timeit
     def run(self):
-        self.get_datasets()
         self.get_unfiltered_data()
         self.get_train_test_indices()
         self.get_data()
@@ -166,14 +163,6 @@ class AnalysisTemplate():
         self.plot_results()
         return
 
-    @timeit
-    def get_datasets(self):
-        """Get datasets. 
-            Replace depending on configuration file modifications
-        """
-        self.training_dataset = data_parser.parse(self.training_csv)
-        self.testing_dataset = data_parser.parse(self.testing_csv)
-        return
     
     @timeit
     def get_unfiltered_data(self):
@@ -305,36 +294,9 @@ class AnalysisTemplate():
         notelist.append("RMSE: %3.3f" % self.statistics['rmse'])
         notelist.append("R-squared: %3.3f" % self.statistics['rsquared'])
         plot_kwargs['notelist'] = notelist
-        plot_kwargs['savepath'] = os.path.join(self.resultspath)
+        plot_kwargs['save_path'] = os.path.join(self.resultspath)
         plotxy.single(self.testing_target_data,
                 self.testing_target_prediction,
                 **plot_kwargs)
         return
-
-def execute(model="", data="", savepath=None, lwr_data="",
-        training_csv=None,
-        testing_csv=None,
-        train_index=None,
-        test_index=None,
-        input_features=None,
-        target_feature=None,
-        labeling_features=None,
-        analysis_name=None,
-        *args, **kwargs):
-    """Remove once alltests is updated
-    """
-    akwargs=dict()
-    akwargs['training_csv'] = training_csv
-    akwargs['testing_csv'] = testing_csv
-    akwargs['model'] = model
-    akwargs['train_index'] = train_index
-    akwargs['test_index'] = test_index
-    akwargs['input_features'] = input_features #configobj reads as list
-    akwargs['target_feature'] = target_feature
-    akwargs['labeling_features'] = labeling_features
-    akwargs['savepath'] = savepath
-    akwargs['analysis_name'] = analysis_name
-    mya = Analysis(**akwargs)
-    return
-        
 
