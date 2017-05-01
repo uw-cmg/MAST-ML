@@ -1,0 +1,224 @@
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:-------- template_test --------
+INFO:root:Starting analysis at Mon May  1 11:23:58 2017
+INFO:root:AnalysisTemplate.get_datasets took 00:00:0.018791
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.002285
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000016
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000032
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000005
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.708509
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.009624
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.010306
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000297
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.005913
+INFO:root:AnalysisTemplate.plot_results took 00:00:1.875526
+INFO:root:AnalysisTemplate.do_analysis took 00:00:2.634135
+INFO:root:Ran test AnalysisTemplate_withy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:-------- template_test --------
+INFO:root:Starting analysis at Mon May  1 11:26:11 2017
+INFO:root:AnalysisTemplate.get_datasets took 00:00:0.005926
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000560
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000011
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000027
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.066760
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000439
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000490
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000298
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.003979
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.860012
+INFO:root:AnalysisTemplate.do_analysis took 00:00:0.939458
+INFO:root:Ran test AnalysisTemplate_withy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:-------- template_test --------
+INFO:root:Starting analysis at Mon May  1 11:37:01 2017
+INFO:root:AnalysisTemplate.get_datasets took 00:00:0.006171
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000542
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000010
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000026
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.066031
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000449
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000470
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000272
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.002866
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.992630
+INFO:root:AnalysisTemplate.do_analysis took 00:00:1.070399
+INFO:root:Ran test AnalysisTemplate_withy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:-------- template_test --------
+INFO:root:Starting analysis at Mon May  1 11:40:23 2017
+INFO:root:AnalysisTemplate.get_datasets took 00:00:0.006379
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000575
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000011
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000032
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.040673
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000450
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000482
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000253
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.002956
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.825784
+INFO:root:AnalysisTemplate.do_analysis took 00:00:0.878506
+INFO:root:Ran test AnalysisTemplate_withy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:-------- template_test_no_y --------
+INFO:root:Starting analysis at Mon May  1 11:40:24 2017
+INFO:root:AnalysisTemplate.get_datasets took 00:00:0.015956
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000619
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000010
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000027
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000809
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000366
+WARNING:root:No testing target data. Statistics will not be collected.
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000049
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000262
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.003525
+WARNING:root:No testing target data. Predicted vs. measured plot will not be plotted.
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.000077
+INFO:root:AnalysisTemplate.do_analysis took 00:00:0.022551
+INFO:root:Ran test AnalysisTemplate_noy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:-------- template_test --------
+INFO:root:Starting analysis at Mon May  1 11:42:36 2017
+INFO:root:AnalysisTemplate.get_datasets took 00:00:0.010068
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000684
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000012
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000032
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.675031
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.021472
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.009856
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.015131
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.003600
+INFO:root:AnalysisTemplate.plot_results took 00:00:1.498993
+INFO:root:AnalysisTemplate.do_analysis took 00:00:2.254561
+INFO:root:Ran test AnalysisTemplate_withy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:-------- template_test_no_y --------
+INFO:root:Starting analysis at Mon May  1 11:42:39 2017
+INFO:root:AnalysisTemplate.get_datasets took 00:00:0.037084
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000767
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000014
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000037
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000003
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.001540
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000539
+WARNING:root:No testing target data. Statistics will not be collected.
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000061
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000272
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.003464
+WARNING:root:No testing target data. Predicted vs. measured plot will not be plotted.
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.000070
+INFO:root:AnalysisTemplate.do_analysis took 00:00:0.045074
+INFO:root:Ran test AnalysisTemplate_noy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up test type AnalysisTemplate_withy
+INFO:root:-------- template_test --------
+INFO:root:Starting analysis at Mon May  1 11:43:56 2017
+INFO:root:AnalysisTemplate.get_datasets took 00:00:0.010093
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000923
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000016
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000044
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.041314
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000448
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000488
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000329
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.003100
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.844210
+INFO:root:AnalysisTemplate.do_analysis took 00:00:0.902052
+INFO:root:Ran test AnalysisTemplate_withy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Looking up test type AnalysisTemplate_noy
+INFO:root:-------- template_test_no_y --------
+INFO:root:Starting analysis at Mon May  1 11:43:57 2017
+INFO:root:AnalysisTemplate.get_datasets took 00:00:0.005562
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000915
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000024
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000057
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.001964
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000664
+WARNING:root:No testing target data. Statistics will not be collected.
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000093
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000382
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.002712
+WARNING:root:No testing target data. Predicted vs. measured plot will not be plotted.
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.000051
+INFO:root:AnalysisTemplate.do_analysis took 00:00:0.013727
+INFO:root:Ran test AnalysisTemplate_noy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
