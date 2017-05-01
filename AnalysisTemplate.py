@@ -129,9 +129,9 @@ class Analysis():
         self.resultspath=os.path.join(self.savepath, self.analysis_name)
         if not os.path.isdir(self.resultspath):
             os.mkdir(self.resultspath)
-        # logger
-        self.logfile = os.path.join(self.savepath, "logfile")
-        logging.basicConfig(filename=self.logfile, level=logging.INFO)
+        # logger - initialized in MASTML.py
+        #self.logfile = os.path.join(self.savepath, "logfile")
+        #logging.basicConfig(filename=self.logfile, level=logging.INFO)
         # initialize the rest; will be set in code later
         self.training_dataset=None
         self.testing_dataset=None
