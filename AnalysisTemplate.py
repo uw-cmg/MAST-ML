@@ -38,7 +38,7 @@ def timeit(method):
 
     return timed
 
-class Analysis():
+class AnalysisTemplate():
     """Basic analysis class.
         Template for other classes.
         Combine many analysis classes to do meta-analysis
@@ -149,11 +149,10 @@ class Analysis():
         #
         logger.info("-------- %s --------" % self.analysis_name)
         logger.info("Starting analysis at %s" % time.asctime())
-        self.do_analysis()
         return
-    
+   
     @timeit
-    def do_analysis(self):
+    def run(self):
         self.get_datasets()
         self.get_unfiltered_data()
         self.get_train_test_indices()
