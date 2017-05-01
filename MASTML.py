@@ -23,17 +23,20 @@ class MASTMLDriver(object):
 
         configdict = config.get_config_dict()
         mastmlwrapper = MASTMLWrapper(configdict=configdict)
+        generalsetup = mastmlwrapper.process_config_keyword(keyword='General Setup')
         datasetup = mastmlwrapper.process_config_keyword(keyword='Data Setup')
         models_and_tests_setup = mastmlwrapper.process_config_keyword(keyword='Models and Tests to Run')
         logging.info('Successfully parsed your MASTML input file')
+        
+        # General setup
+        save_path = os.path.abspath(generalsetup['save_path'])
+        if not os.path.isdir(save_path):
+            os.mkdir(save_path)
 
         # Temporary call to data_parser for now, but will later deprecate
         data = data_parser.parse(datasetup['data_path'], datasetup['weights'])
         data.set_x_features(datasetup['X'])
         data.set_y_feature(datasetup['y'])
-        save_path = os.path.abspath(datasetup['save_path'])
-        if not os.path.isdir(save_path):
-            os.mkdir(save_path)
         logging.info('Parsed the input data located under %s' % str(datasetup['data_path']))
 
         # Gather models
