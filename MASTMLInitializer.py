@@ -101,11 +101,6 @@ class MASTMLWrapper(object):
 
         # Add generic file import for non-sklearn models
 
-    def fit_machinelearning_model(self, data):
-        if self.configdict['Models and Tests to Run']['models']['nn_model_neurolab']:
-            model, training_method, epochs, show, goal = self.get_machinelearning_model(model_type='nn_model_neurolab')
-            model_fitted = model.train('x_train', 'y_train', epochs=epochs, show=show, goal=goal)
-            return model_fitted
 
     # This method will call the different classes corresponding to each test type, which are being organized by Tam
     def get_machinelearning_test(self, test_type, model, data, save_path,
