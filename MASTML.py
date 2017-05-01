@@ -35,30 +35,37 @@ class MASTMLDriver(object):
 
         # Gather models and run listed tests for each model
         model_list = []
-        for skey, sval in models_and_tests_setup.items():
-            if skey == "models":
-                if type(sval) is str:
-                    logging.info('Getting model %s' % sval)
-                    ml_model = mastmlwrapper.get_machinelearning_model(model_type=sval)
-                    model_list.append(ml_model)
-                    logging.info('Adding model %s to queue...' % str(sval))
-                if type(sval) is list:
-                    for model in models_and_tests_setup['models']:
-                        logging.info('Getting model %s' % model)
-                        ml_model = mastmlwrapper.get_machinelearning_model(model_type=model)
-                        model_list.append(ml_model)
-                        logging.info('Adding model %s to queue...' % str(model))
-            if skey == "test_cases":
-                # Run the specified test cases for every model
-                #print(models_and_tests_setup[skey])
-                for test_type in models_and_tests_setup[skey]:
-                    logging.info('Looking up test type %s' % test_type)
-                    test_params = configdict["Test Parameters"][test_type]
-                    for midx, model in enumerate(model_list):
-                        mastmlwrapper.get_machinelearning_test(test_type=test_type,
-                                model=model, data=data, save_path=save_path,
-                                **test_params)
-                        logging.info('Ran test %s for your %s model' % (test_type, str(model)))
+        # Since want to set up models first, evaluate key by name
+        model_val = models_and_tests_setup['models']
+        print(model_val)
+        if type(model_val) is str:
+            logging.info('Getting model %s' % model_val)
+            ml_model = mastmlwrapper.get_machinelearning_model(model_type=model_val)
+            model_list.append(ml_model)
+            logging.info('Adding model %s to queue...' % str(model_val))
+        elif type(model_val) is list:
+            for model in model_val:
+                logging.info('Getting model %s' % model)
+                ml_model = mastmlwrapper.get_machinelearning_model(model_type=model)
+                model_list.append(ml_model)
+                logging.info('Adding model %s to queue...' % str(model))
+        # Gather test types
+        test_list=list()
+        test_val = models_and_tests_setup['test_cases']
+        if type(test_val) is str:
+            test_list.append(test_val)
+        elif type(test_val) is list:
+            for test in test_val:
+                test_list.append(test)
+        for test_type in test_list:
+            # Run the specified test cases for every model
+            logging.info('Looking up parameters for test type %s' % test_type)
+            test_params = configdict["Test Parameters"][test_type]
+            for midx, model in enumerate(model_list):
+                mastmlwrapper.get_machinelearning_test(test_type=test_type,
+                        model=model, data=data, save_path=save_path,
+                        **test_params)
+                logging.info('Ran test %s for your %s model' % (test_type, str(model)))
 
         # Move input and log files to output directory, end MASTML session
         if not(os.path.abspath(datasetup['save_path']) == cwd):
