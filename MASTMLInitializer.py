@@ -1,6 +1,7 @@
 __author__ = 'Ryan Jacobs, Tam Mayeshiba'
 
 from configobj import ConfigObj, ConfigObjError
+from validate import Validator, VdtTypeError
 import sys
 import os
 from sklearn.kernel_ridge import KernelRidge
@@ -44,10 +45,22 @@ class ConfigFileValidator(ConfigFileParser):
         super(ConfigFileValidator, self).__init__(self)
         self.configfile = configfile
 
-    def get_config(self):
+    def run_config_validation(self):
+        validator = self._generate_validator()
+        config = ConfigObj(self.configfile)
         configdict = self.get_config_dict()
-        print(configdict)
-        return
+        #validation = config.validate(validator=validator)
+        #print(validation)
+        try:
+            configdict['models'] = validator.check(check='string', value=configdict['models'])
+        except(VdtTypeError):
+            configdict['models'] = validator.check(check='int_list', value=configdict['models'])
+        print(configdict['models'])
+        print(type(configdict['models'][0]))
+        return configdict
+
+    def _generate_validator(self):
+        return Validator()
 
 
 class MASTMLWrapper(object):
