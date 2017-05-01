@@ -14,17 +14,13 @@ class MASTMLDriver(object):
         logging.basicConfig(filename='MASTMLlog.log', level='INFO')
 
     def run_MASTML(self):
-        cwd = os.getcwd()
-        config = ConfigFileParser(configfile=self.configfile)
-        logging.info('Successfully read in your MASTML input file, %s' % str(self.configfile))
+        # Parse MASTML input file
+        mastmlwrapper, configdict = self._generate_mastml_wrapper()
+        logging.info('Successfully read in and parsed your MASTML input file, %s' % str(self.configfile))
 
-        configdict = config.get_config_dict()
-        mastmlwrapper = MASTMLWrapper(configdict=configdict)
-        datasetup = mastmlwrapper.process_config_keyword(keyword='Data Setup')
-        models_and_tests_setup = mastmlwrapper.process_config_keyword(keyword='Models and Tests to Run')
-        logging.info('Successfully parsed your MASTML input file')
-
+        # Parse input data files
         # Temporary call to data_parser for now, but will later deprecate
+        datasetup = mastmlwrapper.process_config_keyword(keyword='Data Setup')
         data = data_parser.parse(datasetup['data_path'], datasetup['weights'])
         data.set_x_features(datasetup['X'])
         data.set_y_feature(datasetup['y'])
@@ -34,9 +30,25 @@ class MASTMLDriver(object):
         logging.info('Parsed the input data located under %s' % str(datasetup['data_path']))
 
         # Gather models
+        model_list = self._gather_models(mastmlwrapper=mastmlwrapper)
+        # Gather tests
+        test_list = self._gather_tests(mastmlwrapper=mastmlwrapper, configdict=configdict, model_list=model_list,
+                                       data= data, save_path=datasetup['save_path'])
+        # End MASTML session
+        self._move_log_and_input_files(mastmlwrapper=mastmlwrapper)
+        return
+
+    def _generate_mastml_wrapper(self):
+        config = ConfigFileParser(configfile=self.configfile)
+        configdict = config.get_config_dict()
+        mastmlwrapper = MASTMLWrapper(configdict=configdict)
+        return mastmlwrapper, configdict
+
+    def _gather_models(self, mastmlwrapper):
+        models_and_tests_setup = mastmlwrapper.process_config_keyword(keyword='Models and Tests to Run')
         model_list = []
         model_val = models_and_tests_setup['models']
-        print(model_val)
+        #print(model_val)
         if type(model_val) is str:
             logging.info('Getting model %s' % model_val)
             ml_model = mastmlwrapper.get_machinelearning_model(model_type=model_val)
@@ -48,8 +60,11 @@ class MASTMLDriver(object):
                 ml_model = mastmlwrapper.get_machinelearning_model(model_type=model)
                 model_list.append(ml_model)
                 logging.info('Adding model %s to queue...' % str(model))
-        # Gather test types
-        test_list=list()
+        return model_list
+
+    def _gather_tests(self, mastmlwrapper, configdict, model_list, data, save_path):
+        models_and_tests_setup = mastmlwrapper.process_config_keyword(keyword='Models and Tests to Run')
+        test_list= []
         test_val = models_and_tests_setup['test_cases']
         if type(test_val) is str:
             test_list.append(test_val)
@@ -65,7 +80,11 @@ class MASTMLDriver(object):
                         model=model, data=data, save_path=save_path,
                         **test_params)
                 logging.info('Ran test %s for your %s model' % (test_type, str(model)))
-        # Move input and log files to output directory, end MASTML session
+        return test_list
+
+    def _move_log_and_input_files(self, mastmlwrapper):
+        cwd = os.getcwd()
+        datasetup = mastmlwrapper.process_config_keyword(keyword='Data Setup')
         if not(os.path.abspath(datasetup['save_path']) == cwd):
             if os.path.exists(datasetup['save_path']+"/"+'MASTMLlog.log'):
                 os.remove(datasetup['save_path']+"/"+'MASTMLlog.log')
