@@ -11,7 +11,10 @@ class MASTMLDriver(object):
 
     def __init__(self, configfile):
         self.configfile = configfile
-        logging.basicConfig(filename='MASTMLlog.log', level='INFO')
+        if os.getenv("MAST_DEBUG") == "1":
+            logging.basicConfig(filename='MASTMLlog.log', level='DEBUG')
+        else:
+            logging.basicConfig(filename='MASTMLlog.log', level='INFO')
 
     def run_MASTML(self):
         cwd = os.getcwd()
