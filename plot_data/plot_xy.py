@@ -68,7 +68,7 @@ def single(xvals, yvals,
             ylabel="Y",
             title="",
             plotlabel="",
-            savepath="",
+            save_path="",
             guideline=0,
             timex="",
             startx=None,
@@ -104,7 +104,7 @@ def single(xvals, yvals,
         plotlabel = "%s_vs_%s" % (ylabel, xlabel)
     kwargs['plotlabel'] = plotlabel
     kwargs['labellist'] = list(["_%s" % plotlabel]) #keep out of legend
-    kwargs['savepath'] = savepath
+    kwargs['save_path'] = save_path
     kwargs['guideline'] = guideline
     kwargs['timex'] = timex
     kwargs['startx'] = startx
@@ -127,7 +127,7 @@ def dual_overlay(xdata1, ydata1,
         xerr2=None,
         yerr2=None,
         stepsize=None,
-        savepath="",
+        save_path="",
         plotlabel="dual_overlay",
         guideline=0,
         fill=1,
@@ -144,7 +144,7 @@ def dual_overlay(xdata1, ydata1,
 
     kwargs=dict()
     kwargs['stepsize'] = stepsize
-    kwargs['savepath'] = savepath
+    kwargs['save_path'] = save_path
     kwargs['plotlabel'] = plotlabel
     kwargs['guideline'] = guideline
     kwargs['fill'] = fill
@@ -167,7 +167,7 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
         xerrlist=list(),
         yerrlist=list(),
         stepsize=None,
-        savepath="",
+        save_path="",
         plotlabel="multiple_overlay",
         guideline=0,
         timex="",
@@ -399,12 +399,12 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
     except AttributeError: # no labeled lines
         pass
     plt.tight_layout()
-    plt.savefig(os.path.join(savepath, "%s" % plotlabel), dpi=200, bbox_inches='tight')
+    plt.savefig(os.path.join(save_path, "%s" % plotlabel), dpi=200, bbox_inches='tight')
     plt.close()
     #PRINT DATA
     for nidx in range(0, numlines):
         label = labellist[nidx]
-        savecsv = os.path.join(savepath,"data_%s.csv" % label)
+        savecsv = os.path.join(save_path,"data_%s.csv" % label)
         savecsv = savecsv.replace(" ","_")
         headerstr="%s" % xlabel
         myarrlist = list()
