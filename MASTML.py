@@ -86,6 +86,11 @@ class MASTMLDriver(object):
             for dname in testing_dataset_name_list:
                 testing_dataset_list.append(data_dict[dname])
             test_params['testing_dataset'] = testing_dataset_list
+            # Get default features if not set
+            if not ('input_features' in test_params.keys()):
+                test_params['input_features'] = self.string_or_list_input_to_list(generalsetup['input_features'])
+            if not ('target_feature' in test_params.keys()):
+                test_params['target_feature'] = generalsetup['target_feature']
             # Run the test case for every model
             for midx, model in enumerate(model_list):
                 mastmlwrapper.get_machinelearning_test(test_type=test_type,
