@@ -3,7 +3,7 @@ __author__ = 'Ryan Jacobs'
 import data_parser
 import sys
 import os
-from MASTMLInitializer import ConfigFileParser, MASTMLWrapper
+from MASTMLInitializer import ConfigFileParser, MASTMLWrapper, ConfigFileValidator
 import logging
 import shutil
 
@@ -54,6 +54,9 @@ class MASTMLDriver(object):
                     mastmlwrapper.get_machinelearning_test(test_type=models_and_tests_setup['test_cases'][i],
                                                                      model=model, data=data, save_path=save_path)
                     logging.info('Ran test %s for your %s model' % (str(models_and_tests_setup['test_cases'][i]), str(model)))
+
+        cfv = ConfigFileValidator(configfile=self.configfile)
+        cfv.get_config()
 
         # Move input and log files to output directory, end MASTML session
         if os.path.exists(datasetup['save_path']+"/"+'MASTMLlog.log'):

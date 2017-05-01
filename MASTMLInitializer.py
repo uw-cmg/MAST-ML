@@ -36,6 +36,19 @@ class ConfigFileParser(object):
         else:
             raise OSError('The input file you specified, %s, does not exist in the path %s' % (str(self.configfile), str(cwd)))
 
+class ConfigFileValidator(ConfigFileParser):
+    """Class to validate contents of user-specified MASTML input file and flag any errors
+    """
+    def __init__(self, configfile):
+        super(ConfigFileValidator, self).__init__(self)
+        self.configfile = configfile
+
+    def get_config(self):
+        configdict = self.get_config_dict()
+        print(configdict)
+        return
+
+
 class MASTMLWrapper(object):
     """Class that takes parameters from parsed config file and performs calls to appropriate MASTML methods
     """
@@ -50,6 +63,7 @@ class MASTMLWrapper(object):
             keywordsetup[k] = v
         return keywordsetup
 
+    # This method returns relevant model object based on input file. Fitting the model is performed later
     def get_machinelearning_model(self, model_type):
         if model_type == 'linear_model':
             model = LinearRegression(fit_intercept=bool(self.configdict['Model Parameters']['linear_model']['fit_intercept']))
@@ -86,7 +100,7 @@ class MASTMLWrapper(object):
             model = nl.net.newff(minmax=int(self.configdict['Model Parameters']['nn_model_neurolab']['minmax']),
                                  size=int(self.configdict['Model Parameters']['nn_model_neurolab']['size']),
                                  transf=str(self.configdict['Model Parameters']['nn_model_neurolab']['transfer_function']))
-            train = str(self.configdict['Model Parameters']['nn_model_neurolab']['minmax']['training_method'])
+            train = str(self.configdict['Model Parameters']['nn_model_neurolab']['training_method'])
             epochs = int(self.configdict['Model Parameters']['nn_model_neurolab']['epochs'])
             show = bool(self.configdict['Model Parameters']['nn_model_neurolab']['show'])
             goal = float(self.configdict['Model Parameters']['nn_model_neurolab']['goal'])
@@ -100,13 +114,8 @@ class MASTMLWrapper(object):
 
         # Add generic file import for non-sklearn models
 
-    def fit_machinelearning_model(self, data):
-        if self.configdict['Models and Tests to Run']['models']['nn_model_neurolab']:
-            model, training_method, epochs, show, goal = self.get_machinelearning_model(model_type='nn_model_neurolab')
-            model_fitted = model.train('x_train', 'y_train', epochs=epochs, show=show, goal=goal)
-            return model_fitted
-
     # This method will call the different classes corresponding to each test type, which are being organized by Tam
+    # This method will fit the data (or subsets of it) to the given model object type.
     def get_machinelearning_test(self, test_type, model, data, save_path):
         if test_type == 'KFold_CV':
             import KFoldCV as KFoldCV
