@@ -91,10 +91,12 @@ class MASTMLDriver(object):
                 test_params['input_features'] = self.string_or_list_input_to_list(generalsetup['input_features'])
             if not ('target_feature' in test_params.keys()):
                 test_params['target_feature'] = generalsetup['target_feature']
+            # Set save path
+            test_save_path = os.path.join(save_path, test_type)
             # Run the test case for every model
             for midx, model in enumerate(model_list):
                 mastmlwrapper.get_machinelearning_test(test_type=test_type,
-                        model=model, save_path=save_path,
+                        model=model, save_path=test_save_path,
                         **test_params)
                 logging.info('Ran test %s for your %s model' % (test_type, str(model)))
         # Move input and log files to output directory, end MASTML session

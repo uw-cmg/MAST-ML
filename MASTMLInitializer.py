@@ -112,7 +112,7 @@ class MASTMLWrapper(object):
         logging.debug("Parameters passed by keyword:")
         logging.debug(kwargs)
         test_class = test_class_def(model=model,
-                            savepath = save_path,
+                            save_path = save_path,
                             **kwargs)
         test_class.run()
         return None

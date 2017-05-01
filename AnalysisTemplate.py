@@ -53,7 +53,6 @@ class AnalysisTemplate():
         input_features=None,
         target_feature=None,
         labeling_features=None,
-        analysis_name=None,
         *args, **kwargs):
         """Initialize class.
             Attributes that can be set through keywords:
@@ -66,10 +65,8 @@ class AnalysisTemplate():
                 self.target_feature=""
                 self.labeling_features=""
                 self.save_path=""
-                self.analysis_name=""
             Other attributes:
-                self.resultspath=""
-                self.logfile=""
+                self.analysis_name=""
                 self.training_input_data_unfiltered=""
                 self.training_target_data_unfiltered=""
                 self.testing_input_data_unfiltered=""
@@ -122,19 +119,14 @@ class AnalysisTemplate():
             save_path = os.getcwd()
         save_path = os.path.abspath(save_path)
         self.save_path = save_path
-        if analysis_name is None:
-            self.analysis_name = "Results_%s" % time.strftime("%Y%m%d_%H%M%S")
-        else:
-            self.analysis_name = analysis_name
+        if not os.path.isdir(self.save_path):
+            os.mkdir(self.save_path)
+        #if analysis_name is None:
+        #    self.analysis_name = "Results_%s" % time.strftime("%Y%m%d_%H%M%S")
+        #else:
+        #    self.analysis_name = analysis_name
         # Self-set attributes
-        # results path
-        self.resultspath=os.path.join(self.save_path, self.analysis_name)
-        if not os.path.isdir(self.resultspath):
-            os.mkdir(self.resultspath)
-        # logger - initialized in MASTML.py
-        #self.logfile = os.path.join(self.save_path, "logfile")
-        #logging.basicConfig(filename=self.logfile, level=logging.INFO)
-        # initialize the rest; will be set in code later
+        self.analysis_name = os.path.basename(self.save_path)
         self.training_input_data_unfiltered=None
         self.training_target_data_unfiltered=None
         self.testing_input_data_unfiltered=None
@@ -250,7 +242,7 @@ class AnalysisTemplate():
 
     @timeit
     def print_statistics(self):
-        statname = os.path.join(self.resultspath, "statistics.txt")
+        statname = os.path.join(self.save_path, "statistics.txt")
         with open(statname, 'w') as statfile:
             statfile.write("Statistics\n")
             statfile.write("%s\n" % time.asctime())
@@ -263,7 +255,7 @@ class AnalysisTemplate():
         """
             Modify once dataframe is in place
         """
-        ocsvname = os.path.join(self.resultspath, "output_data.csv")
+        ocsvname = os.path.join(self.save_path, "output_data.csv")
         headerline = ""
         printarray = None
         print_features = self.labeling_features
@@ -296,7 +288,7 @@ class AnalysisTemplate():
         notelist.append("RMSE: %3.3f" % self.statistics['rmse'])
         notelist.append("R-squared: %3.3f" % self.statistics['rsquared'])
         plot_kwargs['notelist'] = notelist
-        plot_kwargs['save_path'] = os.path.join(self.resultspath)
+        plot_kwargs['save_path'] = self.save_path
         plotxy.single(self.testing_target_data,
                 self.testing_target_prediction,
                 **plot_kwargs)
