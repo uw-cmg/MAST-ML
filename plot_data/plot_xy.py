@@ -407,8 +407,8 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
     #PRINT DATA
     for nidx in range(0, numlines):
         label = labellist[nidx]
-        savecsv = os.path.join(save_path,"data_%s.csv" % label)
-        savecsv = savecsv.replace(" ","_")
+        nospace_label = label.replace(" ","_")
+        savecsv = os.path.join(save_path,"data_%s.csv" % nospace_label)
         headerstr="%s" % xlabel
         myarrlist = list()
         myarrlist.append(xdatalist[nidx])
