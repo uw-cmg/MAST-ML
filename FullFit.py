@@ -83,15 +83,15 @@ class FullFit(AnalysisTemplate):
         return
     
     @timeit
-    def do_single_fit(self, subfolder="single_fit"):
-        single_save = os.path.join(self.save_path, subfolder)
+    def do_single_fit(self, label="single_fit", train_index=None, test_index=None):
+        single_save = os.path.join(self.save_path, label)
         single_analysis = AnalysisTemplate(
                 training_dataset = self.training_dataset,
                 testing_dataset= self.testing_dataset,
                 model=self.model, 
                 save_path = single_save,
-                train_index = self.train_index, 
-                test_index = self.test_index,
+                train_index = train_index, 
+                test_index = test_index,
                 input_features = self.input_features, 
                 target_feature = self.target_feature,
                 labeling_features = self.labeling_features)
@@ -110,6 +110,8 @@ class FullFit(AnalysisTemplate):
         addl_plot_kwargs['xlabel'] = self.xlabel
         addl_plot_kwargs['ylabel'] = self.ylabel
         addl_plot_kwargs['stepsize'] = self.stepsize
+        addl_plot_kwargs['label'] = label
+        addl_plot_kwargs['save_path'] = single_save
         if self.measured_error_field_name is None:
             pass
         else:
@@ -193,13 +195,10 @@ class FullFit(AnalysisTemplate):
             labellist.insert(0,"All others")
             all_other_rmse = np.sqrt(mean_squared_error(otherydata, otherxdata))
             group_notelist.append('{:<1}: {:.2f}'.format("All others", all_other_rmse))
-        plot_save_path = os.path.join(self.save_path, label)
-        if not os.path.isdir(plot_save_path):
-            os.mkdir(plot_save_path)
         kwargs=dict()
         kwargs['xlabel'] = self.xlabel
         kwargs['ylabel'] = self.ylabel
-        kwargs['save_path'] = plot_save_path
+        kwargs['save_path'] = os.path.join(self.save_path, label)
         kwargs['xdatalist'] = xdatalist
         kwargs['ydatalist'] = ydatalist
         kwargs['stepsize'] = self.stepsize
