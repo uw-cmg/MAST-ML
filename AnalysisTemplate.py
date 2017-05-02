@@ -259,7 +259,7 @@ class AnalysisTemplate():
         ocsvname = os.path.join(self.save_path, "output_data.csv")
         headerline = ""
         printarray = None
-        print_features = self.labeling_features
+        print_features = list(self.labeling_features)
         print_features.extend(self.input_features)
         if not (self.testing_target_data is None):
             print_features.append(self.target_feature)
