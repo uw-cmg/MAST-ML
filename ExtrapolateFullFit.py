@@ -7,8 +7,143 @@ from sklearn.kernel_ridge import KernelRidge
 from sklearn.metrics import mean_squared_error
 import data_analysis.printout_tools as ptools
 import portion_data.get_test_train_data as gttd
-import FullFit
+from FullFit import FullFit
+from AnalysisTemplate import timeit
+from AnalysisTemplate import AnalysisTemplate
 import plot_data.plot_xy as plotxy
+
+class ExtrapolateFullFit(AnalysisTemplate):
+    """Do extrapolation
+        training_dataset,
+        testing_dataset,
+        model,
+        save_path,
+        train_index,
+        test_index,
+        input_features,
+        target_feature,
+        labeling_features, see AnalysisTemplate.
+        xlabel <str>: x-axis label for predicted-vs-measured plot
+        ylabel <str>: y-axis label for predicted-vs-measured plot
+        stepsize <float>: step size for predicted-vs-measured plot grid
+        group_field_name <float>: (optional) field name for grouping data
+                                        field may be numeric
+        measured_error_field_name <str>: field name for measured y-data error (optional)
+        mark_outlying_groups <int>: Number of outlying groups to mark
+        split_xlabel <str>: x-axis label for per-group plots of predicted and
+                                measured y data versus data from field of
+                                numeric_field_name
+        split_ylabel <str>: y-axis label for per-group plots
+        plot_filter_out <str>: semicolon-delimited filters for plotting,
+                                each a comma-delimited triplet, for example,
+                                temperature,<,3000
+                                See data_parser
+        fit_only_on_matched_groups <int>: 1 - fit only on groups that exist
+                                            in both the training data and
+                                            the test_csv data
+                                          0 - fit on all data in the training
+                                                dataset (default)
+                                        Only works if group_field_name is set.
+        markers <str>: comma-delimited marker list for split plots
+        outlines <str>: comma-delimited color list for split plots
+        linestyles <str>: comma-delimited list of line styles for split plots
+        data_labels <str>: comma-delimited list of labels for split plots; order
+                        should be Train, Test, Test, Test... with testing
+                        data in order of test_csv
+    """
+    def __init__(self, 
+        training_dataset=None,
+        testing_dataset=None,
+        model=None,
+        save_path=None,
+        train_index=None,
+        test_index=None,
+        input_features=None,
+        target_feature=None,
+        labeling_features=None,
+        xlabel="Measured",
+        ylabel="Predicted",
+        stepsize=1,
+        group_field_name = None,
+        measured_error_field_name = None,
+        mark_outlying_groups = 2,
+        split_xlabel = "X",
+        split_ylabel = "Prediction",
+        markers="",
+        outlines="",
+        data_labels="",
+        linestyles="",
+        plot_filter_out = "",
+        fit_only_on_matched_groups = 0,
+        *args, **kwargs):
+        self.training_dataset = training_dataset
+        self.testing_dataset = testing_dataset #expect more than one
+        self.model = model
+        self.save_path = save_path
+        self.train_index = train_index
+        self.test_index = test_index
+        self.input_features = input_features
+        self.target_feature = target_feature
+        self.labeling_features = labeling_features
+        self.xlabel = xlabel
+        self.ylabel = ylabel
+        self.stepsize = float(stepsize)
+        self.group_field_name = group_field_name
+        self.measured_error_field_name = measured_error_field_name
+        self.measured_error_data = None
+        self.mark_outlying_groups = int(mark_outlying_groups)
+        self.markers = markers
+        self.outlines = outlines
+        self.data_labels = data_labels
+        self.linestyles = linestyles
+        self.plot_filter_out = plot_filter_out
+        self.fit_only_on_matched_groups = int(fit_only_on_matched_groups)
+        self.extrapolation_dict=dict()
+        return
+    
+    @timeit
+    def get_extrapolation_dict(self):
+        test_data_labels = self.data_labels[1:] #first label is training data
+        for tidx in range(0, len(self.testing_dataset)):
+            print(tidx)
+            train_set = self.training_dataset[0] #MASTML gives single entry as list
+            test_set = self.testing_dataset[tidx]
+            label = test_data_labels[tidx]
+            if self.fit_only_on_matched_groups == 1:
+                if self.group_field_name is None:
+                    pass  #no grouping, nothing to do
+                else:
+                    train_groupdata = np.asarray(train_set.get_data(self.group_field_name)).ravel()
+                    test_groupdata = np.asarray(test_set.get_data(self.group_field_name)).ravel()
+                    groups_not_in_test = np.setdiff1d(train_groupdata, test_groupdata)
+                    for outgroup in groups_not_in_test:
+                        train_set.add_exclusive_filter(self.group_field_name,"=",outgroup)
+            else:
+                pass #no group filtering necessary
+            self.extrapolation_dict[label] = FullFit(training_dataset=train_set,
+                    testing_dataset = test_set,
+                    model = self.model,
+                    save_path = os.path.join(self.save_path,label),
+                    train_index = None,
+                    test_index = None,
+                    input_features = list(self.input_features),
+                    target_feature = self.target_feature,
+                    labeling_features = list(self.labeling_features),
+                    xlabel = self.xlabel,
+                    ylabel = self.ylabel,
+                    stepsize = self.stepsize,
+                    group_field_name = self.group_field_name,
+                    measured_error_field_name = self.measured_error_field_name,
+                    mark_outlying_groups = self.mark_outlying_groups)
+            self.extrapolation_dict[label].run()
+        return
+
+    @timeit
+    def run(self):
+        self.get_extrapolation_dict()
+        print(self.extrapolation_dict)
+        return
+
 
 def execute(model, data, savepath, 
         test_csvs = None,
