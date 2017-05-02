@@ -400,6 +400,8 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
     except AttributeError: # no labeled lines
         pass
     plt.tight_layout()
+    if not os.path.isdir(save_path):
+        os.mkdir(save_path)
     plt.savefig(os.path.join(save_path, "%s" % plotlabel), dpi=200, bbox_inches='tight')
     plt.close()
     #PRINT DATA
