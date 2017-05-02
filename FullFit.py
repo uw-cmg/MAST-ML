@@ -118,6 +118,7 @@ class FullFit(AnalysisTemplate):
         single_analysis.get_statistics()
         single_analysis.print_statistics()
         single_analysis.print_output_csv()
+        single_analysis.print_readme()
         addl_plot_kwargs = dict()
         addl_plot_kwargs['xlabel'] = self.xlabel
         addl_plot_kwargs['ylabel'] = self.ylabel
@@ -232,7 +233,6 @@ class FullFit(AnalysisTemplate):
         for group in all_groups:
             train_index = self.train_group_indices[group]['test_index']
             test_index = self.test_group_indices[group]['test_index']
-            print(group, train_index, test_index)
             self.group_analysis_dict[group] = self.do_single_fit(label=group,
                                                 train_index=train_index,
                                                 test_index=test_index)
