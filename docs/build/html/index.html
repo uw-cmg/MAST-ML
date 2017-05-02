@@ -46,12 +46,36 @@
 <p>Contents:</p>
 <div class="toctree-wrapper compound">
 </div>
-<span class="target" id="module-AnalysisTemplate"></span><dl class="class">
-<dt id="AnalysisTemplate.Analysis">
-<em class="property">class </em><code class="descclassname">AnalysisTemplate.</code><code class="descname">Analysis</code><span class="sig-paren">(</span><em>training_csv=None</em>, <em>testing_csv=None</em>, <em>model=None</em>, <em>train_index=None</em>, <em>test_index=None</em>, <em>input_features=None</em>, <em>target_feature=None</em>, <em>labeling_features=None</em>, <em>savepath=None</em>, <em>analysis_name=None</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AnalysisTemplate.html#Analysis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AnalysisTemplate.Analysis" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="module-AnalysisTemplate"></span><span class="target" id="module-FullFit"></span><dl class="class">
+<dt id="AnalysisTemplate.AnalysisTemplate">
+<em class="property">class </em><code class="descclassname">AnalysisTemplate.</code><code class="descname">AnalysisTemplate</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>train_index=None</em>, <em>test_index=None</em>, <em>input_features=None</em>, <em>target_feature=None</em>, <em>labeling_features=None</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AnalysisTemplate.html#AnalysisTemplate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AnalysisTemplate.AnalysisTemplate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Basic analysis class.
 Template for other classes.
 Combine many analysis classes to do meta-analysis</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="FullFit.FullFit">
+<em class="property">class </em><code class="descclassname">FullFit.</code><code class="descname">FullFit</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>train_index=None</em>, <em>test_index=None</em>, <em>input_features=None</em>, <em>target_feature=None</em>, <em>labeling_features=None</em>, <em>xlabel='Measured'</em>, <em>ylabel='Predicted'</em>, <em>stepsize=1</em>, <em>group_field_name=None</em>, <em>measured_error_field_name=None</em>, <em>mark_outlying_groups=2</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/FullFit.html#FullFit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#FullFit.FullFit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do full fit.
+training_dataset,
+testing_dataset,
+model,
+save_path,
+train_index,
+test_index,
+input_features,
+target_feature,
+labeling_features, see AnalysisTemplate.
+xlabel &lt;str&gt;: Label for full-fit x-axis.
+ylabel &lt;str&gt;: Label for full-fit y-axis
+stepsize &lt;float&gt;: Step size for plot grid
+group_field_name &lt;str&gt;: (optional) field name for grouping data</p>
+<blockquote>
+<div>field may be numeric</div></blockquote>
+<p>measured_error_field_name &lt;str&gt;: field name for measured y-data error (optional)
+mark_outlying_groups &lt;int&gt;: Number of outlying groups to mark
+Plots results in a Predicted vs. Measured square plot.</p>
 </dd></dl>
 
 </div>

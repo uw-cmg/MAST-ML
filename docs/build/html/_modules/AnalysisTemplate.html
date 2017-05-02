@@ -82,40 +82,35 @@
 
     <span class="k">return</span> <span class="n">timed</span>
 
-<div class="viewcode-block" id="Analysis"><a class="viewcode-back" href="../index.html#AnalysisTemplate.Analysis">[docs]</a><span class="k">class</span> <span class="nc">Analysis</span><span class="p">():</span>
+<div class="viewcode-block" id="AnalysisTemplate"><a class="viewcode-back" href="../index.html#AnalysisTemplate.AnalysisTemplate">[docs]</a><span class="k">class</span> <span class="nc">AnalysisTemplate</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Basic analysis class.</span>
 <span class="sd">        Template for other classes.</span>
 <span class="sd">        Combine many analysis classes to do meta-analysis</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
-        <span class="n">training_csv</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">testing_csv</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">training_dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">testing_dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">save_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">train_index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">test_index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">input_features</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">target_feature</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">labeling_features</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">savepath</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">analysis_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialize class.</span>
 <span class="sd">            Attributes that can be set through keywords:</span>
-<span class="sd">                self.training_csv=&quot;&quot;</span>
-<span class="sd">                self.testing_csv=&quot;&quot;</span>
+<span class="sd">                self.training_dataset=&quot;&quot;</span>
+<span class="sd">                self.testing_dataset=&quot;&quot;</span>
 <span class="sd">                self.model=&quot;&quot;</span>
 <span class="sd">                self.train_index=&quot;&quot;</span>
 <span class="sd">                self.test_index=&quot;&quot;</span>
 <span class="sd">                self.input_features=&quot;&quot;</span>
 <span class="sd">                self.target_feature=&quot;&quot;</span>
 <span class="sd">                self.labeling_features=&quot;&quot;</span>
-<span class="sd">                self.savepath=&quot;&quot;</span>
-<span class="sd">                self.analysis_name=&quot;&quot;</span>
+<span class="sd">                self.save_path=&quot;&quot;</span>
 <span class="sd">            Other attributes:</span>
-<span class="sd">                self.resultspath=&quot;&quot;</span>
-<span class="sd">                self.logfile=&quot;&quot;</span>
-<span class="sd">                self.training_dataset=&quot;&quot;</span>
-<span class="sd">                self.testing_dataset=&quot;&quot;</span>
+<span class="sd">                self.analysis_name=&quot;&quot;</span>
 <span class="sd">                self.training_input_data_unfiltered=&quot;&quot;</span>
 <span class="sd">                self.training_target_data_unfiltered=&quot;&quot;</span>
 <span class="sd">                self.testing_input_data_unfiltered=&quot;&quot;</span>
@@ -130,19 +125,23 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Keyword-set attributes</span>
         <span class="c1"># training csv</span>
-        <span class="k">if</span> <span class="n">training_csv</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;training_csv is not set&quot;</span><span class="p">)</span>
-        <span class="n">training_csv</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">training_csv</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">training_csv</span><span class="p">)):</span>
-            <span class="k">raise</span> <span class="ne">OSError</span><span class="p">(</span><span class="s2">&quot;No file found at </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">training_csv</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">training_csv</span><span class="o">=</span><span class="n">training_csv</span>
+        <span class="k">if</span> <span class="n">training_dataset</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;training_dataset is not set&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">training_dataset</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span> <span class="c1">#allow inheriting classes to get multiple datasets; MASTML will pass list of data objects</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">training_dataset</span><span class="o">=</span><span class="n">training_dataset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c1">#first item</span>
+        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">training_dataset</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">training_dataset</span> <span class="o">=</span> <span class="n">data_parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">training_dataset</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">training_dataset</span> <span class="o">=</span> <span class="n">training_dataset</span>
         <span class="c1"># testing csv</span>
-        <span class="k">if</span> <span class="n">testing_csv</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;testing_csv is not set&quot;</span><span class="p">)</span>
-        <span class="n">testing_csv</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">testing_csv</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">testing_csv</span><span class="p">)):</span>
-            <span class="k">raise</span> <span class="ne">OSError</span><span class="p">(</span><span class="s2">&quot;No file found at </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">testing_csv</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">testing_csv</span><span class="o">=</span><span class="n">testing_csv</span>
+        <span class="k">if</span> <span class="n">testing_dataset</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;testing_dataset is not set&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">testing_dataset</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span> <span class="o">=</span> <span class="n">testing_dataset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">testing_dataset</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span> <span class="o">=</span> <span class="n">data_parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">testing_dataset</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">=</span><span class="n">testing_dataset</span>
         <span class="c1"># model</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">=</span><span class="n">model</span>
         <span class="c1"># train/test index</span>
@@ -156,29 +155,22 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;target_feature is not set&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">target_feature</span><span class="o">=</span><span class="n">target_feature</span>
         <span class="k">if</span> <span class="n">labeling_features</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">labeling_features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_features</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">labeling_features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">labeling_features</span> <span class="o">=</span> <span class="n">labeling_features</span>
         <span class="c1"># paths</span>
-        <span class="k">if</span> <span class="n">savepath</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">savepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
-        <span class="n">savepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">savepath</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">savepath</span> <span class="o">=</span> <span class="n">savepath</span>
-        <span class="k">if</span> <span class="n">analysis_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">analysis_name</span> <span class="o">=</span> <span class="s2">&quot;Results_</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">_%H%M%S&quot;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">analysis_name</span> <span class="o">=</span> <span class="n">analysis_name</span>
+        <span class="k">if</span> <span class="n">save_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">save_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+        <span class="n">save_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_path</span> <span class="o">=</span> <span class="n">save_path</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_path</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_path</span><span class="p">)</span>
+        <span class="c1">#if analysis_name is None:</span>
+        <span class="c1">#    self.analysis_name = &quot;Results_%s&quot; % time.strftime(&quot;%Y%m%d_%H%M%S&quot;)</span>
+        <span class="c1">#else:</span>
+        <span class="c1">#    self.analysis_name = analysis_name</span>
         <span class="c1"># Self-set attributes</span>
-        <span class="c1"># results path</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">resultspath</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">savepath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">analysis_name</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resultspath</span><span class="p">):</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resultspath</span><span class="p">)</span>
-        <span class="c1"># logger</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">savepath</span><span class="p">,</span> <span class="s2">&quot;logfile&quot;</span><span class="p">)</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">logfile</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
-        <span class="c1"># initialize the rest; will be set in code later</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">training_dataset</span><span class="o">=</span><span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">=</span><span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">analysis_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_path</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">training_input_data_unfiltered</span><span class="o">=</span><span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">training_target_data_unfiltered</span><span class="o">=</span><span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">testing_input_data_unfiltered</span><span class="o">=</span><span class="kc">None</span>
@@ -193,12 +185,10 @@
         <span class="c1">#</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;-------- </span><span class="si">%s</span><span class="s2"> --------&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">analysis_name</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Starting analysis at </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">time</span><span class="o">.</span><span class="n">asctime</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">do_analysis</span><span class="p">()</span>
         <span class="k">return</span>
-    
+   
     <span class="nd">@timeit</span>
-    <span class="k">def</span> <span class="nf">do_analysis</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">get_datasets</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">get_unfiltered_data</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">get_train_test_indices</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
@@ -209,16 +199,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">print_statistics</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">print_output_csv</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">plot_results</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print_readme</span><span class="p">()</span>
         <span class="k">return</span>
 
-    <span class="nd">@timeit</span>
-    <span class="k">def</span> <span class="nf">get_datasets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get datasets. </span>
-<span class="sd">            Replace depending on configuration file modifications</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">training_dataset</span> <span class="o">=</span> <span class="n">data_parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training_csv</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span> <span class="o">=</span> <span class="n">data_parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_csv</span><span class="p">)</span>
-        <span class="k">return</span>
     
     <span class="nd">@timeit</span>
     <span class="k">def</span> <span class="nf">get_unfiltered_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -233,7 +216,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">testing_target_data_unfiltered</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">get_y_data</span><span class="p">())</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">set_y_feature</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_features</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="c1">#dummy y feature</span>
-            <span class="c1">#self.testing_target_data remains None</span>
+            <span class="c1">#self.testing_target_data_unfiltered remains None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">set_x_features</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_features</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">testing_input_data_unfiltered</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">get_x_data</span><span class="p">())</span>
         <span class="k">return</span>
@@ -304,7 +287,7 @@
 
     <span class="nd">@timeit</span>
     <span class="k">def</span> <span class="nf">print_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">statname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resultspath</span><span class="p">,</span> <span class="s2">&quot;statistics.txt&quot;</span><span class="p">)</span>
+        <span class="n">statname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_path</span><span class="p">,</span> <span class="s2">&quot;statistics.txt&quot;</span><span class="p">)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">statname</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">statfile</span><span class="p">:</span>
             <span class="n">statfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Statistics</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">statfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">time</span><span class="o">.</span><span class="n">asctime</span><span class="p">())</span>
@@ -317,10 +300,10 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            Modify once dataframe is in place</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">ocsvname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resultspath</span><span class="p">,</span> <span class="s2">&quot;output_data.csv&quot;</span><span class="p">)</span>
+        <span class="n">ocsvname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_path</span><span class="p">,</span> <span class="s2">&quot;output_data.csv&quot;</span><span class="p">)</span>
         <span class="n">headerline</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="n">printarray</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="n">print_features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">labeling_features</span>
+        <span class="n">print_features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labeling_features</span><span class="p">)</span>
         <span class="n">print_features</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_features</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_target_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
             <span class="n">print_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_feature</span><span class="p">)</span>
@@ -338,7 +321,7 @@
         <span class="k">return</span>
     
     <span class="nd">@timeit</span>
-    <span class="k">def</span> <span class="nf">plot_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">plot_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addl_plot_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing_target_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No testing target data. Predicted vs. measured plot will not be plotted.&quot;</span><span class="p">)</span>
             <span class="k">return</span>
@@ -350,38 +333,48 @@
         <span class="n">notelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;RMSE: </span><span class="si">%3.3f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;rmse&#39;</span><span class="p">])</span>
         <span class="n">notelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;R-squared: </span><span class="si">%3.3f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;rsquared&#39;</span><span class="p">])</span>
         <span class="n">plot_kwargs</span><span class="p">[</span><span class="s1">&#39;notelist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">notelist</span>
-        <span class="n">plot_kwargs</span><span class="p">[</span><span class="s1">&#39;savepath&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resultspath</span><span class="p">)</span>
+        <span class="n">plot_kwargs</span><span class="p">[</span><span class="s1">&#39;save_path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_path</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">addl_plot_kwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">addl_plot_kwarg</span> <span class="ow">in</span> <span class="n">addl_plot_kwargs</span><span class="p">:</span>
+                <span class="n">plot_kwargs</span><span class="p">[</span><span class="n">addl_plot_kwarg</span><span class="p">]</span> <span class="o">=</span> <span class="n">addl_plot_kwargs</span><span class="p">[</span><span class="n">addl_plot_kwarg</span><span class="p">]</span>
         <span class="n">plotxy</span><span class="o">.</span><span class="n">single</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_target_data</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">testing_target_prediction</span><span class="p">,</span>
                 <span class="o">**</span><span class="n">plot_kwargs</span><span class="p">)</span>
-        <span class="k">return</span></div>
+        <span class="k">return</span>
 
-<span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">savepath</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lwr_data</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-        <span class="n">training_csv</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">testing_csv</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">train_index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">test_index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">input_features</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">target_feature</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">labeling_features</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">analysis_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Remove once alltests is updated</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">akwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">()</span>
-    <span class="n">akwargs</span><span class="p">[</span><span class="s1">&#39;training_csv&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">training_csv</span>
-    <span class="n">akwargs</span><span class="p">[</span><span class="s1">&#39;testing_csv&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">testing_csv</span>
-    <span class="n">akwargs</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span>
-    <span class="n">akwargs</span><span class="p">[</span><span class="s1">&#39;train_index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">train_index</span>
-    <span class="n">akwargs</span><span class="p">[</span><span class="s1">&#39;test_index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">test_index</span>
-    <span class="n">akwargs</span><span class="p">[</span><span class="s1">&#39;input_features&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">input_features</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">))</span> <span class="c1">#LIST</span>
-    <span class="n">akwargs</span><span class="p">[</span><span class="s1">&#39;target_feature&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">target_feature</span>
-    <span class="n">akwargs</span><span class="p">[</span><span class="s1">&#39;labeling_features&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">labeling_features</span>
-    <span class="n">akwargs</span><span class="p">[</span><span class="s1">&#39;savepath&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">savepath</span>
-    <span class="n">akwargs</span><span class="p">[</span><span class="s1">&#39;analysis_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">analysis_name</span>
-    <span class="n">mya</span> <span class="o">=</span> <span class="n">Analysis</span><span class="p">(</span><span class="o">**</span><span class="n">akwargs</span><span class="p">)</span>
-    <span class="k">return</span>
-        
+    <span class="nd">@timeit</span>
+    <span class="k">def</span> <span class="nf">print_readme</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">rlist</span><span class="o">=</span><span class="nb">list</span><span class="p">()</span>
+        <span class="n">rlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;----- Folder contents -----</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">rlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;output_data.csv:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">rlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;    Output data, consisting of:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">rlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;    Labeling features columns, if any</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">rlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;    Input features columns</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing_target_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;    Target feature column</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">rlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;    Target prediction column</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">rlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;statistics.txt:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">rlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;    Statistics for the fit.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing_target_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;    No statistics were collected because there</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">rlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;        was no measured data (target feature data)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">rlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;        in the testing dataset.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">rlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;    For this reason, there is also no plot of</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">rlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;        predicted vs. measured data.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{y}</span><span class="s2"> vs </span><span class="si">{x}</span><span class="s2">.png:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">rlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;    Plot of predicted vs. measured data</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">rlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;data_ .csv</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">rlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;    Plotted data, in csv format</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">rlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;    Measured data column</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">rlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;    Measured data error column (all zeros is no error)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">rlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;    Predicted data column</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">rlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;    Predicted data error column (all zeros is no error)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_path</span><span class="p">,</span><span class="s2">&quot;README&quot;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">rfile</span><span class="p">:</span>
+            <span class="n">rfile</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="n">rlist</span><span class="p">)</span>
+        <span class="k">return</span></div>
 
 </pre></div>
 
