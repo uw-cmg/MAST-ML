@@ -111,7 +111,7 @@ class AnalysisTemplate():
             raise ValueError("target_feature is not set")
         self.target_feature=target_feature
         if labeling_features is None:
-            self.labeling_features = list(self.input_features)
+            self.labeling_features = list()
         else:
             self.labeling_features = labeling_features
         # paths
@@ -155,6 +155,7 @@ class AnalysisTemplate():
         self.print_statistics()
         self.print_output_csv()
         self.plot_results()
+        self.print_readme()
         return
 
     
@@ -171,7 +172,7 @@ class AnalysisTemplate():
             self.testing_target_data_unfiltered = np.asarray(self.testing_dataset.get_y_data()).ravel()
         else:
             self.testing_dataset.set_y_feature(self.input_features[0]) #dummy y feature
-            #self.testing_target_data remains None
+            #self.testing_target_data_unfiltered remains None
         self.testing_dataset.set_x_features(self.input_features)
         self.testing_input_data_unfiltered = np.asarray(self.testing_dataset.get_x_data())
         return
@@ -295,5 +296,39 @@ class AnalysisTemplate():
         plotxy.single(self.testing_target_data,
                 self.testing_target_prediction,
                 **plot_kwargs)
+        return
+
+    @timeit
+    def print_readme(self):
+        rlist=list()
+        rlist.append("----- Folder contents -----\n")
+        rlist.append("output_data.csv:\n")
+        rlist.append("    Output data, consisting of:\n")
+        rlist.append("    Labeling features columns, if any\n")
+        rlist.append("    Input features columns\n")
+        if self.testing_target_data is None:
+            pass
+        else:
+            rlist.append("    Target feature column\n")
+        rlist.append("    Target prediction column\n")
+        rlist.append("statistics.txt:\n")
+        rlist.append("    Statistics for the fit.\n")
+        if self.testing_target_data is None:
+            rlist.append("    No statistics were collected because there\n")
+            rlist.append("        was no measured data (target feature data)\n")
+            rlist.append("        in the testing dataset.\n")
+            rlist.append("    For this reason, there is also no plot of\n")
+            rlist.append("        predicted vs. measured data.\n")
+        else:
+            rlist.append("{y} vs {x}.png:\n")
+            rlist.append("    Plot of predicted vs. measured data\n")
+            rlist.append("data_ .csv\n")
+            rlist.append("    Plotted data, in csv format\n")
+            rlist.append("    Measured data column\n")
+            rlist.append("    Measured data error column (all zeros is no error)\n")
+            rlist.append("    Predicted data column\n")
+            rlist.append("    Predicted data error column (all zeros is no error)\n")
+        with open(os.path.join(self.save_path,"README"), 'w') as rfile:
+            rfile.writelines(rlist)
         return
 
