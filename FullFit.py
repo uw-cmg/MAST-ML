@@ -154,6 +154,8 @@ class FullFit(AnalysisTemplate):
         for group in self.test_groups:
             g_index = self.test_group_indices[group]["test_index"]
             g_ypredict= self.overall_analysis.testing_target_prediction[g_index]
+            if self.overall_analysis.testing_target_data is None:
+                continue #no target data; cannot add to plotting
             g_ydata = self.overall_analysis.testing_target_data[g_index]
             #g_mean_error = np.mean(g_ypredict - g_ydata)
             g_rmse = np.sqrt(mean_squared_error(g_ypredict, g_ydata))
@@ -293,20 +295,26 @@ class FullFit(AnalysisTemplate):
             rlist.append("Other folders would appear if\n")
             rlist.append("    group_field_name were to be set.\n")
         else:
-            rlist.append("overall_overlay\n")
-            rlist.append("    The single overall fit, but with RMSE\n")
-            rlist.append("        data split out by group contributions,\n")
-            rlist.append("        comparing predicted and measured data\n")
-            rlist.append("        within each group.\n")
-            rlist.append("    Predictions are made using a model fitted\n")
-            rlist.append("        to all of the data at once.\n")
-            rlist.append("split_overlay\n")
-            rlist.append("    Predicted vs. measured data and RMSEs\n")
-            rlist.append("        for fits to each individual group.\n")
-            rlist.append("    The plot overlays each of these fits.\n")
-            rlist.append("<group> folders\n")
-            rlist.append("    Individual group fits, which are overlayed\n")
-            rlist.append("        in the split_overlay folder.\n")
+            if self.overall_analysis.testing_target_data is None:
+                rlist.append("<group> folders\n")
+                rlist.append("    Individual group fits.\n")
+                rlist.append("Overlayed plot folders would have appeared,\n")
+                rlist.append("    but there is no testing data to plot.\n")
+            else:
+                rlist.append("overall_overlay\n")
+                rlist.append("    The single overall fit, but with RMSE\n")
+                rlist.append("        data split out by group contributions,\n")
+                rlist.append("        comparing predicted and measured data\n")
+                rlist.append("        within each group.\n")
+                rlist.append("    Predictions are made using a model fitted\n")
+                rlist.append("        to all of the data at once.\n")
+                rlist.append("split_overlay\n")
+                rlist.append("    Predicted vs. measured data and RMSEs\n")
+                rlist.append("        for fits to each individual group.\n")
+                rlist.append("    The plot overlays each of these fits.\n")
+                rlist.append("<group> folders\n")
+                rlist.append("    Individual group fits, which are overlayed\n")
+                rlist.append("        in the split_overlay folder.\n")
         with open(os.path.join(self.save_path,"README"), 'w') as rfile:
             rfile.writelines(rlist)
         return
@@ -318,17 +326,23 @@ class FullFit(AnalysisTemplate):
             return
         self.set_group_info()
         self.get_overall_group_dict()
-        self.plot_group_splits_with_outliers(group_dict=self.overall_group_dict,
-            outlying_groups = self.overall_outlying_groups,
-            label="overall_overlay", 
-            group_notelist=["RMSEs for overall fit:",
-                "Overall: %3.2f" % self.overall_analysis.statistics['rmse']])
+        if self.overall_analysis.testing_target_data is None:
+            pass  #can't make overlay plots because there is no predicted data
+        else:
+            self.plot_group_splits_with_outliers(group_dict=self.overall_group_dict,
+                outlying_groups = self.overall_outlying_groups,
+                label="overall_overlay", 
+                group_notelist=["RMSEs for overall fit:",
+                    "Overall: %3.2f" % self.overall_analysis.statistics['rmse']])
         self.get_group_analysis_dict()
-        self.get_split_group_dict()
-        self.plot_group_splits_with_outliers(group_dict=self.split_group_dict,
-            outlying_groups = self.split_outlying_groups,
-            label="split_overlay",
-            group_notelist=["RMSEs for per-group fits:"])
+        if self.overall_analysis.testing_target_data is None:
+            pass #can't make overlay plots because there is no predicted data
+        else:
+            self.get_split_group_dict()
+            self.plot_group_splits_with_outliers(group_dict=self.split_group_dict,
+                outlying_groups = self.split_outlying_groups,
+                label="split_overlay",
+                group_notelist=["RMSEs for per-group fits:"])
         self.print_readme()
         return
 
