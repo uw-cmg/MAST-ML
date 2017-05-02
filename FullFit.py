@@ -178,6 +178,7 @@ class FullFit(AnalysisTemplate):
             self.overall_outlying_groups.append(high_rmse[1])
         return
 
+    @timeit
     def plot_group_splits_with_outliers(self, group_dict=None, outlying_groups=list(), label="group_splits", group_notelist=list()):
         xdatalist=list()
         ydatalist=list()
@@ -224,6 +225,23 @@ class FullFit(AnalysisTemplate):
         kwargs['plotlabel'] = label
         kwargs['guideline'] = 1
         plotxy.multiple_overlay(**kwargs) 
+        self.print_overlay_readme(label=label)
+        return
+    
+    @timeit
+    def print_overlay_readme(self, label=""):
+        rlist=list()
+        rlist.append("----- Folder contents -----\n")
+        rlist.append("%s.png\n" % label)
+        rlist.append("    Overlayed plot.\n")
+        rlist.append("    See containing folder's README for more detail.\n")
+        rlist.append("data_{series}.csv\n")
+        rlist.append("    Data for each series in the plot:\n")
+        rlist.append("    x data column\n")
+        rlist.append("    x error column (all zeros is no error)\n")
+        rlist.append("    y data column, labeled as the series in the plot\n")
+        with open(os.path.join(self.save_path,label,"README"), 'w') as rfile:
+            rfile.writelines(rlist)
         return
 
     @timeit
@@ -238,6 +256,7 @@ class FullFit(AnalysisTemplate):
                                                 test_index=test_index)
         return
 
+    @timeit
     def get_split_group_dict(self):
         osg_dict=dict()
         highest_rmses=list()
@@ -267,9 +286,36 @@ class FullFit(AnalysisTemplate):
         return
 
     @timeit
+    def print_readme(self):
+        rlist=list()
+        rlist.append("----- Folder contents -----\n")
+        rlist.append("single_fit\n")
+        rlist.append("    Folder containing a single overall fit.\n")
+        if self.group_field_name is None:
+            rlist.append("Other folders would appear if\n")
+            rlist.append("    group_field_name were to be set.\n")
+        else:
+            rlist.append("overall_overlay\n")
+            rlist.append("    The single overall fit, but with RMSE\n")
+            rlist.append("        data split out by group contributions,\n")
+            rlist.append("        comparing predicted and measured data\n")
+            rlist.append("        within each group.\n")
+            rlist.append("    Predictions are made using a model fitted\n")
+            rlist.append("        to all of the data at once.\n")
+            rlist.append("split_overlay\n")
+            rlist.append("    Predicted vs. measured data and RMSEs\n")
+            rlist.append("        for fits to each individual group.\n")
+            rlist.append("    The plot overlays each of these fits.\n")
+            rlist.append("<group> folders\n")
+            rlist.append("    Individual group fits, which are overlayed\n")
+            rlist.append("        in the split_overlay folder.\n")
+        with open(os.path.join(self.save_path,"README"), 'w') as rfile:
+            rfile.writelines(rlist)
+        return
+
+    @timeit
     def run(self):
         self.overall_analysis = self.do_single_fit()
-        print(self.overall_analysis.statistics)
         if self.group_field_name is None: #no additional analysis to do
             return
         self.set_group_info()
@@ -285,6 +331,7 @@ class FullFit(AnalysisTemplate):
             outlying_groups = self.split_outlying_groups,
             label="split_overlay",
             group_notelist=["RMSEs for per-group fits:"])
+        self.print_readme()
         return
 
 
