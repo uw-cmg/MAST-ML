@@ -28,9 +28,7 @@ def mixed_array_to_csv(csvname, headerstring, array):
     """
     with open(csvname,"w") as dfile:
         dfile.write("%s\n" % headerstring)
-    
-    (nlines, ncols) = array.shape
-    with open(csvname,"a") as dfile:
+        (nlines, ncols) = array.shape
         for ridx in range(0, nlines):
             line = ""
             for cidx in range(0, ncols):
