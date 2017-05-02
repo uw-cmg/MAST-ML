@@ -47,8 +47,6 @@ class FullFit(AnalysisTemplate):
         ylabel="Predicted",
         stepsize=1,
         group_field_name = None,
-        label_field_name = None,
-        numeric_field_name = None,
         measured_error_field_name = None,
         mark_outlying_groups = 2,
         *args, **kwargs):
