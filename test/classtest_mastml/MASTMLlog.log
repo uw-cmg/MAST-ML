@@ -6187,3 +6187,2027 @@ INFO:root:FullFit.run took 00:00:8.534459
 INFO:root:Ran test FullFit_test for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
       kernel_params=None) model
 INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type AnalysisTemplate_withy
+INFO:root:-------- AnalysisTemplate_withy --------
+INFO:root:Starting analysis at Tue May  2 15:42:40 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.001452
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000020
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000053
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.629749
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.024844
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.005562
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000245
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.001946
+INFO:root:AnalysisTemplate.plot_results took 00:00:1.404518
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000278
+INFO:root:AnalysisTemplate.run took 00:00:2.070213
+INFO:root:Ran test AnalysisTemplate_withy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Looking up parameters for test type AnalysisTemplate_noy
+INFO:root:-------- AnalysisTemplate_noy --------
+INFO:root:Starting analysis at Tue May  2 15:42:42 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000817
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000014
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000031
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.009490
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.005458
+WARNING:root:No testing target data. Statistics will not be collected.
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000095
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000359
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.001433
+WARNING:root:No testing target data. Predicted vs. measured plot will not be plotted.
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.000094
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000224
+INFO:root:AnalysisTemplate.run took 00:00:0.019480
+INFO:root:Ran test AnalysisTemplate_noy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Looking up parameters for test type FullFit_test
+INFO:root:-------- FullFit_test --------
+INFO:root:Starting analysis at Tue May  2 15:42:42 2017
+INFO:root:-------- single_fit --------
+INFO:root:Starting analysis at Tue May  2 15:42:42 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000583
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000011
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000028
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000778
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000409
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000461
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000185
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.011528
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000197
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.791595
+INFO:root:FullFit.do_single_fit took 00:00:0.807056
+INFO:root:FullFit.set_group_info took 00:00:0.076468
+INFO:root:FullFit.get_overall_group_dict took 00:00:0.000606
+INFO:root:FullFit.print_overlay_readme took 00:00:0.000154
+INFO:root:FullFit.plot_group_splits_with_outliers took 00:00:0.861325
+INFO:root:-------- B --------
+INFO:root:Starting analysis at Tue May  2 15:42:44 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000607
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000023
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.001375
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000236
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000454
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000184
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.002224
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000197
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.727873
+INFO:root:FullFit.do_single_fit took 00:00:0.734455
+INFO:root:-------- A --------
+INFO:root:Starting analysis at Tue May  2 15:42:45 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000562
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000023
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000532
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000221
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000453
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000205
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.002699
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000166
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.744280
+INFO:root:FullFit.do_single_fit took 00:00:0.750272
+INFO:root:-------- C --------
+INFO:root:Starting analysis at Tue May  2 15:42:45 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000581
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000022
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000609
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000245
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000473
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000185
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.003893
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000148
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.736546
+INFO:root:FullFit.do_single_fit took 00:00:0.743952
+INFO:root:-------- D --------
+INFO:root:Starting analysis at Tue May  2 15:42:46 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000569
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000022
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000600
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000427
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000551
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000187
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.004685
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000165
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.778980
+INFO:root:FullFit.do_single_fit took 00:00:0.787446
+INFO:root:-------- B --------
+INFO:root:Starting analysis at Tue May  2 15:42:47 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000577
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000023
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000551
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000234
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000454
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000181
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.004995
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000178
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.789724
+INFO:root:FullFit.do_single_fit took 00:00:0.798159
+INFO:root:-------- A --------
+INFO:root:Starting analysis at Tue May  2 15:42:48 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.001319
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000003
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000037
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000789
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000248
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000455
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000181
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.005780
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000179
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.724218
+INFO:root:FullFit.do_single_fit took 00:00:0.734849
+INFO:root:-------- C --------
+INFO:root:Starting analysis at Tue May  2 15:42:49 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000586
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000026
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000638
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000246
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000462
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000220
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.010455
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000197
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.759074
+INFO:root:FullFit.do_single_fit took 00:00:0.773479
+INFO:root:-------- D --------
+INFO:root:Starting analysis at Tue May  2 15:42:49 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.001413
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000003
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000039
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000797
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000238
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000456
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000206
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.008575
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000152
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.775098
+INFO:root:FullFit.do_single_fit took 00:00:0.788632
+INFO:root:FullFit.get_group_analysis_dict took 00:00:6.111995
+INFO:root:FullFit.get_split_group_dict took 00:00:0.000058
+INFO:root:FullFit.print_overlay_readme took 00:00:0.000402
+INFO:root:FullFit.plot_group_splits_with_outliers took 00:00:0.961281
+INFO:root:FullFit.print_readme took 00:00:0.000218
+INFO:root:FullFit.run took 00:00:8.819704
+INFO:root:Ran test FullFit_test for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type AnalysisTemplate_withy
+INFO:root:-------- AnalysisTemplate_withy --------
+INFO:root:Starting analysis at Tue May  2 15:56:04 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.001171
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000019
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000051
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.086195
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000441
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000479
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000282
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.001748
+INFO:root:AnalysisTemplate.plot_results took 00:00:1.022448
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000174
+INFO:root:AnalysisTemplate.run took 00:00:1.114196
+INFO:root:Ran test AnalysisTemplate_withy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Looking up parameters for test type AnalysisTemplate_noy
+INFO:root:-------- AnalysisTemplate_noy --------
+INFO:root:Starting analysis at Tue May  2 15:56:05 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000504
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000010
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000020
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.001271
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000487
+WARNING:root:No testing target data. Statistics will not be collected.
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000070
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000208
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.000894
+WARNING:root:No testing target data. Predicted vs. measured plot will not be plotted.
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.000049
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000160
+INFO:root:AnalysisTemplate.run took 00:00:0.004534
+INFO:root:Ran test AnalysisTemplate_noy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Looking up parameters for test type FullFit_test
+INFO:root:-------- FullFit_test --------
+INFO:root:Starting analysis at Tue May  2 15:56:05 2017
+INFO:root:-------- single_fit --------
+INFO:root:Starting analysis at Tue May  2 15:56:05 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000551
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000009
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000022
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000736
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000363
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000543
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.053244
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.002898
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000277
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.758608
+INFO:root:FullFit.do_single_fit took 00:00:0.818626
+INFO:root:FullFit.set_group_info took 00:00:0.013981
+INFO:root:FullFit.get_overall_group_dict took 00:00:0.000539
+INFO:root:FullFit.print_overlay_readme took 00:00:0.000214
+INFO:root:FullFit.plot_group_splits_with_outliers took 00:00:0.884743
+INFO:root:-------- C --------
+INFO:root:Starting analysis at Tue May  2 15:56:07 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000582
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000023
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000849
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000323
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000572
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.048039
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.002191
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000168
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.732922
+INFO:root:FullFit.do_single_fit took 00:00:0.787105
+INFO:root:-------- B --------
+INFO:root:Starting analysis at Tue May  2 15:56:08 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.001402
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000003
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000061
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.001133
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000315
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000600
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000219
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.002677
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000156
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.833570
+INFO:root:FullFit.do_single_fit took 00:00:0.841950
+INFO:root:-------- A --------
+INFO:root:Starting analysis at Tue May  2 15:56:09 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000801
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000030
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000728
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000310
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000624
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.027407
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.003331
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000146
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.775358
+INFO:root:FullFit.do_single_fit took 00:00:0.810227
+INFO:root:-------- D --------
+INFO:root:Starting analysis at Tue May  2 15:56:10 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000533
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000023
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000541
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000230
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000439
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000217
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.004514
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000189
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.754337
+INFO:root:FullFit.do_single_fit took 00:00:0.762432
+INFO:root:-------- C --------
+INFO:root:Starting analysis at Tue May  2 15:56:10 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.001421
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000003
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000073
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000863
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000341
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000744
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000407
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.006780
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000142
+INFO:root:AnalysisTemplate.plot_results took 00:00:1.080223
+INFO:root:FullFit.do_single_fit took 00:00:1.093310
+INFO:root:-------- B --------
+INFO:root:Starting analysis at Tue May  2 15:56:11 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.001333
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000039
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000922
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000407
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000795
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000365
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.008562
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000210
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.853550
+INFO:root:FullFit.do_single_fit took 00:00:0.868303
+INFO:root:-------- A --------
+INFO:root:Starting analysis at Tue May  2 15:56:12 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.001008
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000037
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000772
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000218
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000443
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000244
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.006334
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000202
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.877425
+INFO:root:FullFit.do_single_fit took 00:00:0.888656
+INFO:root:-------- D --------
+INFO:root:Starting analysis at Tue May  2 15:56:13 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000548
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000023
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000600
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000243
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000444
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000197
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.008265
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000252
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.768828
+INFO:root:FullFit.do_single_fit took 00:00:0.781037
+INFO:root:FullFit.get_group_analysis_dict took 00:00:6.834229
+INFO:root:FullFit.get_split_group_dict took 00:00:0.000060
+INFO:root:FullFit.print_overlay_readme took 00:00:0.000319
+INFO:root:FullFit.plot_group_splits_with_outliers took 00:00:1.032346
+INFO:root:FullFit.print_readme took 00:00:0.049783
+INFO:root:FullFit.run took 00:00:9.635247
+INFO:root:Ran test FullFit_test for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type AnalysisTemplate_withy
+INFO:root:-------- AnalysisTemplate_withy --------
+INFO:root:Starting analysis at Tue May  2 15:57:33 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.001450
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000018
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000044
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.063199
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000442
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000488
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000260
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.002779
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.852092
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000146
+INFO:root:AnalysisTemplate.run took 00:00:0.922151
+INFO:root:Ran test AnalysisTemplate_withy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Looking up parameters for test type AnalysisTemplate_noy
+INFO:root:-------- AnalysisTemplate_noy --------
+INFO:root:Starting analysis at Tue May  2 15:57:34 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000548
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000010
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000019
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.001107
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000367
+WARNING:root:No testing target data. Statistics will not be collected.
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000055
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000182
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.000840
+WARNING:root:No testing target data. Predicted vs. measured plot will not be plotted.
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.000049
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000130
+INFO:root:AnalysisTemplate.run took 00:00:0.004023
+INFO:root:Ran test AnalysisTemplate_noy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Looking up parameters for test type FullFit_test
+INFO:root:-------- FullFit_test --------
+INFO:root:Starting analysis at Tue May  2 15:57:34 2017
+INFO:root:-------- single_fit --------
+INFO:root:Starting analysis at Tue May  2 15:57:34 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000556
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000008
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000022
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000694
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000385
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000454
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000196
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.002651
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000146
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.770994
+INFO:root:FullFit.do_single_fit took 00:00:0.777282
+INFO:root:FullFit.set_group_info took 00:00:0.014071
+INFO:root:FullFit.get_overall_group_dict took 00:00:0.000567
+INFO:root:FullFit.print_overlay_readme took 00:00:0.000138
+INFO:root:FullFit.plot_group_splits_with_outliers took 00:00:0.852381
+INFO:root:-------- C --------
+INFO:root:Starting analysis at Tue May  2 15:57:36 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000630
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000023
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000798
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000234
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000453
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.048296
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.002182
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000139
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.726212
+INFO:root:FullFit.do_single_fit took 00:00:0.780139
+INFO:root:-------- D --------
+INFO:root:Starting analysis at Tue May  2 15:57:37 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000548
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000023
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000544
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000233
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000446
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000522
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.002995
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000141
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.761506
+INFO:root:FullFit.do_single_fit took 00:00:0.768069
+INFO:root:-------- B --------
+INFO:root:Starting analysis at Tue May  2 15:57:38 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000546
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000022
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000762
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000229
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000447
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000176
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.003386
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000132
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.717872
+INFO:root:FullFit.do_single_fit took 00:00:0.724684
+INFO:root:-------- A --------
+INFO:root:Starting analysis at Tue May  2 15:57:38 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000541
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000022
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000529
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000218
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000449
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000165
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.003746
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000142
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.708730
+INFO:root:FullFit.do_single_fit took 00:00:0.715652
+INFO:root:-------- C --------
+INFO:root:Starting analysis at Tue May  2 15:57:39 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000541
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000023
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000546
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000233
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000448
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000167
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.005388
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000134
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.731174
+INFO:root:FullFit.do_single_fit took 00:00:0.739834
+INFO:root:-------- D --------
+INFO:root:Starting analysis at Tue May  2 15:57:40 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.001420
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000003
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000055
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000811
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000238
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000454
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000176
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.006726
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000146
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.737340
+INFO:root:FullFit.do_single_fit took 00:00:0.749008
+INFO:root:-------- B --------
+INFO:root:Starting analysis at Tue May  2 15:57:40 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000576
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000022
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000530
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000229
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000676
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000228
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.009064
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000189
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.723742
+INFO:root:FullFit.do_single_fit took 00:00:0.736502
+INFO:root:-------- A --------
+INFO:root:Starting analysis at Tue May  2 15:57:41 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000536
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000022
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000526
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000219
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000449
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000167
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.006667
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000167
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.724478
+INFO:root:FullFit.do_single_fit took 00:00:0.734402
+INFO:root:FullFit.get_group_analysis_dict took 00:00:5.948971
+INFO:root:FullFit.get_split_group_dict took 00:00:0.000057
+INFO:root:FullFit.print_overlay_readme took 00:00:0.000144
+INFO:root:FullFit.plot_group_splits_with_outliers took 00:00:0.867626
+INFO:root:FullFit.print_readme took 00:00:0.000400
+INFO:root:FullFit.run took 00:00:8.461988
+INFO:root:Ran test FullFit_test for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type AnalysisTemplate_withy
+INFO:root:-------- AnalysisTemplate_withy --------
+INFO:root:Starting analysis at Tue May  2 15:59:47 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000552
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000011
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000026
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.040096
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000441
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000486
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000290
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.002088
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.754742
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000138
+INFO:root:AnalysisTemplate.run took 00:00:0.799771
+INFO:root:Ran test AnalysisTemplate_withy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Looking up parameters for test type AnalysisTemplate_noy
+INFO:root:-------- AnalysisTemplate_noy --------
+INFO:root:Starting analysis at Tue May  2 15:59:48 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000508
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000017
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000019
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.001040
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000366
+WARNING:root:No testing target data. Statistics will not be collected.
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000050
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000174
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.000964
+WARNING:root:No testing target data. Predicted vs. measured plot will not be plotted.
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.000068
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000132
+INFO:root:AnalysisTemplate.run took 00:00:0.004051
+INFO:root:Ran test AnalysisTemplate_noy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Looking up parameters for test type FullFit_test
+INFO:root:-------- FullFit_test --------
+INFO:root:Starting analysis at Tue May  2 15:59:48 2017
+INFO:root:-------- single_fit --------
+INFO:root:Starting analysis at Tue May  2 15:59:48 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000560
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000009
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000022
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000702
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000367
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000447
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000170
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.003199
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000153
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.772392
+INFO:root:FullFit.do_single_fit took 00:00:0.779133
+INFO:root:FullFit.set_group_info took 00:00:0.012973
+INFO:root:FullFit.get_overall_group_dict took 00:00:0.000600
+INFO:root:FullFit.print_overlay_readme took 00:00:0.000275
+INFO:root:FullFit.plot_group_splits_with_outliers took 00:00:0.824940
+INFO:root:-------- C --------
+INFO:root:Starting analysis at Tue May  2 15:59:50 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000576
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000023
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000841
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000241
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000455
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.057023
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.003061
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000144
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.761349
+INFO:root:FullFit.do_single_fit took 00:00:0.824903
+INFO:root:-------- A --------
+INFO:root:Starting analysis at Tue May  2 15:59:51 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000567
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000025
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000886
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000309
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000468
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.010804
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.003504
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000155
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.715686
+INFO:root:FullFit.do_single_fit took 00:00:0.733674
+INFO:root:-------- D --------
+INFO:root:Starting analysis at Tue May  2 15:59:51 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000535
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000022
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000551
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000234
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000447
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000164
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.004910
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000148
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.719076
+INFO:root:FullFit.do_single_fit took 00:00:0.727209
+INFO:root:-------- B --------
+INFO:root:Starting analysis at Tue May  2 15:59:52 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000521
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000022
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000540
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000237
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000448
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000170
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.005480
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000138
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.737613
+INFO:root:FullFit.do_single_fit took 00:00:0.746276
+INFO:root:-------- C --------
+INFO:root:Starting analysis at Tue May  2 15:59:53 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000540
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000023
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000554
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000233
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000448
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000170
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.007246
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000153
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.735351
+INFO:root:FullFit.do_single_fit took 00:00:0.745880
+INFO:root:-------- A --------
+INFO:root:Starting analysis at Tue May  2 15:59:53 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000552
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000022
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000528
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000216
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000448
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000163
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.007276
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000225
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.714425
+INFO:root:FullFit.do_single_fit took 00:00:0.725116
+INFO:root:-------- D --------
+INFO:root:Starting analysis at Tue May  2 15:59:54 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000538
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000023
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000552
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000232
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000449
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000167
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.009493
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000147
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.743560
+INFO:root:FullFit.do_single_fit took 00:00:0.756306
+INFO:root:-------- B --------
+INFO:root:Starting analysis at Tue May  2 15:59:55 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000542
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000022
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000540
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000229
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000449
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000167
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.009796
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000135
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.714296
+INFO:root:FullFit.do_single_fit took 00:00:0.727333
+INFO:root:FullFit.get_group_analysis_dict took 00:00:5.987282
+INFO:root:FullFit.get_split_group_dict took 00:00:0.000056
+INFO:root:FullFit.print_overlay_readme took 00:00:0.000295
+INFO:root:FullFit.plot_group_splits_with_outliers took 00:00:0.896119
+INFO:root:FullFit.print_readme took 00:00:0.000518
+INFO:root:FullFit.run took 00:00:8.502332
+INFO:root:Ran test FullFit_test for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type AnalysisTemplate_withy
+INFO:root:-------- AnalysisTemplate_withy --------
+INFO:root:Starting analysis at Tue May  2 16:00:20 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000554
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000011
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000031
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.060301
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000446
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000483
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000310
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.002371
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.878386
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000148
+INFO:root:AnalysisTemplate.run took 00:00:0.943987
+INFO:root:Ran test AnalysisTemplate_withy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Looking up parameters for test type AnalysisTemplate_noy
+INFO:root:-------- AnalysisTemplate_noy --------
+INFO:root:Starting analysis at Tue May  2 16:00:21 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000494
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000010
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000018
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.001035
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000360
+WARNING:root:No testing target data. Statistics will not be collected.
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000048
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000175
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.000957
+WARNING:root:No testing target data. Predicted vs. measured plot will not be plotted.
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.000056
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000131
+INFO:root:AnalysisTemplate.run took 00:00:0.004009
+INFO:root:Ran test AnalysisTemplate_noy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Looking up parameters for test type FullFit_test
+INFO:root:-------- FullFit_test --------
+INFO:root:Starting analysis at Tue May  2 16:00:21 2017
+INFO:root:-------- single_fit --------
+INFO:root:Starting analysis at Tue May  2 16:00:21 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000564
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000009
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000021
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000787
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000361
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000437
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000181
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.003125
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000154
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.749087
+INFO:root:FullFit.do_single_fit took 00:00:0.755850
+INFO:root:FullFit.set_group_info took 00:00:0.010903
+INFO:root:FullFit.get_overall_group_dict took 00:00:0.000572
+INFO:root:FullFit.print_overlay_readme took 00:00:0.000139
+INFO:root:FullFit.plot_group_splits_with_outliers took 00:00:0.822155
+INFO:root:-------- D --------
+INFO:root:Starting analysis at Tue May  2 16:00:22 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000568
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000021
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000778
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000229
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000434
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000167
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.003293
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000136
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.729797
+INFO:root:FullFit.do_single_fit took 00:00:0.736550
+INFO:root:-------- B --------
+INFO:root:Starting analysis at Tue May  2 16:00:23 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000555
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000023
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000804
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000234
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000433
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000221
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.003815
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000140
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.755291
+INFO:root:FullFit.do_single_fit took 00:00:0.762724
+INFO:root:-------- A --------
+INFO:root:Starting analysis at Tue May  2 16:00:24 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000543
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000022
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000583
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000214
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000438
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000163
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.004364
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000144
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.706521
+INFO:root:FullFit.do_single_fit took 00:00:0.714116
+INFO:root:-------- C --------
+INFO:root:Starting analysis at Tue May  2 16:00:24 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000566
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000023
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000562
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000232
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000435
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000167
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.007080
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000212
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.721295
+INFO:root:FullFit.do_single_fit took 00:00:0.731847
+INFO:root:-------- D --------
+INFO:root:Starting analysis at Tue May  2 16:00:25 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000554
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000023
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000541
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000228
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000433
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000169
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.007030
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000137
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.719665
+INFO:root:FullFit.do_single_fit took 00:00:0.729894
+INFO:root:-------- B --------
+INFO:root:Starting analysis at Tue May  2 16:00:26 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000541
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000022
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000537
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000226
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000438
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000167
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.007561
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000171
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.711045
+INFO:root:FullFit.do_single_fit took 00:00:0.721869
+INFO:root:-------- A --------
+INFO:root:Starting analysis at Tue May  2 16:00:27 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000565
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000025
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000591
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000291
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000585
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000241
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.009935
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000195
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.888047
+INFO:root:FullFit.do_single_fit took 00:00:0.901905
+INFO:root:-------- C --------
+INFO:root:Starting analysis at Tue May  2 16:00:27 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000719
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000026
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000675
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000370
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000688
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000275
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.009990
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000209
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.902353
+INFO:root:FullFit.do_single_fit took 00:00:0.930055
+INFO:root:FullFit.get_group_analysis_dict took 00:00:6.229924
+INFO:root:FullFit.get_split_group_dict took 00:00:0.000227
+INFO:root:FullFit.print_overlay_readme took 00:00:0.000142
+INFO:root:FullFit.plot_group_splits_with_outliers took 00:00:0.863262
+INFO:root:FullFit.print_readme took 00:00:0.000133
+INFO:root:FullFit.run took 00:00:8.683953
+INFO:root:Ran test FullFit_test for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type AnalysisTemplate_withy
+INFO:root:-------- AnalysisTemplate_withy --------
+INFO:root:Starting analysis at Tue May  2 16:01:18 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.001139
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000019
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000052
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.060109
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000443
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000491
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000301
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.002015
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.875601
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000147
+INFO:root:AnalysisTemplate.run took 00:00:0.941513
+INFO:root:Ran test AnalysisTemplate_withy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Looking up parameters for test type AnalysisTemplate_noy
+INFO:root:-------- AnalysisTemplate_noy --------
+INFO:root:Starting analysis at Tue May  2 16:01:19 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000738
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000010
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000020
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.001042
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000362
+WARNING:root:No testing target data. Statistics will not be collected.
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000050
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000184
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.001752
+WARNING:root:No testing target data. Predicted vs. measured plot will not be plotted.
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.000052
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000132
+INFO:root:AnalysisTemplate.run took 00:00:0.005119
+INFO:root:Ran test AnalysisTemplate_noy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Looking up parameters for test type FullFit_test
+INFO:root:-------- FullFit_test --------
+INFO:root:Starting analysis at Tue May  2 16:01:19 2017
+INFO:root:-------- single_fit --------
+INFO:root:Starting analysis at Tue May  2 16:01:19 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000599
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000010
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000023
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000717
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000362
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000466
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000258
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.002728
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000144
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.758431
+INFO:root:FullFit.do_single_fit took 00:00:0.765155
+INFO:root:FullFit.set_group_info took 00:00:0.016716
+INFO:root:FullFit.get_overall_group_dict took 00:00:0.000568
+INFO:root:FullFit.print_overlay_readme took 00:00:0.000139
+INFO:root:FullFit.plot_group_splits_with_outliers took 00:00:0.885418
+INFO:root:-------- A --------
+INFO:root:Starting analysis at Tue May  2 16:01:21 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000588
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000021
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.001369
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000227
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000462
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000182
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.001998
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000151
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.716931
+INFO:root:FullFit.do_single_fit took 00:00:0.723090
+INFO:root:-------- D --------
+INFO:root:Starting analysis at Tue May  2 16:01:22 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000587
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000028
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000661
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000320
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000614
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000229
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.003597
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000152
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.771238
+INFO:root:FullFit.do_single_fit took 00:00:0.778647
+INFO:root:-------- C --------
+INFO:root:Starting analysis at Tue May  2 16:01:22 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000540
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000022
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000553
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000232
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000435
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000169
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.003891
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000149
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.735115
+INFO:root:FullFit.do_single_fit took 00:00:0.742208
+INFO:root:-------- B --------
+INFO:root:Starting analysis at Tue May  2 16:01:23 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000544
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000022
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000530
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000223
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000436
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000172
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.007451
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000247
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.701760
+INFO:root:FullFit.do_single_fit took 00:00:0.712878
+INFO:root:-------- A --------
+INFO:root:Starting analysis at Tue May  2 16:01:24 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.001418
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000003
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000053
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000680
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000225
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000441
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000183
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.004493
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000221
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.831955
+INFO:root:FullFit.do_single_fit took 00:00:0.841548
+INFO:root:-------- D --------
+INFO:root:Starting analysis at Tue May  2 16:01:25 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000725
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000028
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000655
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000237
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000529
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000305
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.006446
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000168
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.793611
+INFO:root:FullFit.do_single_fit took 00:00:0.804025
+INFO:root:-------- C --------
+INFO:root:Starting analysis at Tue May  2 16:01:25 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000551
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000023
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000542
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000228
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000436
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000169
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.010014
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000190
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.728853
+INFO:root:FullFit.do_single_fit took 00:00:0.742230
+INFO:root:-------- B --------
+INFO:root:Starting analysis at Tue May  2 16:01:26 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000570
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000022
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000536
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000229
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000440
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000165
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.007233
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000225
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.727972
+INFO:root:FullFit.do_single_fit took 00:00:0.738526
+INFO:root:FullFit.get_group_analysis_dict took 00:00:6.083843
+INFO:root:FullFit.get_split_group_dict took 00:00:0.000061
+INFO:root:FullFit.print_overlay_readme took 00:00:0.000192
+INFO:root:FullFit.plot_group_splits_with_outliers took 00:00:0.826680
+INFO:root:FullFit.print_readme took 00:00:0.040479
+INFO:root:FullFit.run took 00:00:8.619827
+INFO:root:Ran test FullFit_test for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type AnalysisTemplate_withy
+INFO:root:-------- AnalysisTemplate_withy --------
+INFO:root:Starting analysis at Tue May  2 16:06:23 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000562
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000010
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000029
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.039767
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000434
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000485
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000274
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.003058
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.768749
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000151
+INFO:root:AnalysisTemplate.run took 00:00:0.814514
+INFO:root:Ran test AnalysisTemplate_withy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Looking up parameters for test type AnalysisTemplate_noy
+INFO:root:-------- AnalysisTemplate_noy --------
+INFO:root:Starting analysis at Tue May  2 16:06:23 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000503
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000009
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000019
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.001038
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000360
+WARNING:root:No testing target data. Statistics will not be collected.
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000056
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000176
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.000949
+WARNING:root:No testing target data. Predicted vs. measured plot will not be plotted.
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.000072
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000132
+INFO:root:AnalysisTemplate.run took 00:00:0.004097
+INFO:root:Ran test AnalysisTemplate_noy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Looking up parameters for test type FullFit_test
+INFO:root:-------- FullFit_test --------
+INFO:root:Starting analysis at Tue May  2 16:06:23 2017
+INFO:root:-------- single_fit --------
+INFO:root:Starting analysis at Tue May  2 16:06:23 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000566
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000009
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000023
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000705
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000361
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000435
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000169
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.004728
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000182
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.798458
+INFO:root:FullFit.do_single_fit took 00:00:0.806979
+INFO:root:FullFit.set_group_info took 00:00:0.015413
+INFO:root:FullFit.get_overall_group_dict took 00:00:0.000558
+INFO:root:FullFit.print_overlay_readme took 00:00:0.000195
+INFO:root:FullFit.plot_group_splits_with_outliers took 00:00:0.883176
+INFO:root:-------- A --------
+INFO:root:Starting analysis at Tue May  2 16:06:25 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000775
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000003
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000040
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.001168
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000289
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000458
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000257
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.003417
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000157
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.780121
+INFO:root:FullFit.do_single_fit took 00:00:0.788229
+INFO:root:-------- D --------
+INFO:root:Starting analysis at Tue May  2 16:06:26 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000541
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000023
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000541
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000228
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000434
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000174
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.003088
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000151
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.819129
+INFO:root:FullFit.do_single_fit took 00:00:0.825416
+INFO:root:-------- C --------
+INFO:root:Starting analysis at Tue May  2 16:06:27 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000571
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000024
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000547
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000229
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000434
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000203
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.007838
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000206
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.782792
+INFO:root:FullFit.do_single_fit took 00:00:0.794210
+INFO:root:-------- B --------
+INFO:root:Starting analysis at Tue May  2 16:06:28 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000589
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000025
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000624
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000314
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000472
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000246
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.007986
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000208
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.772274
+INFO:root:FullFit.do_single_fit took 00:00:0.784199
+INFO:root:-------- A --------
+INFO:root:Starting analysis at Tue May  2 16:06:28 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000591
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000023
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000515
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000214
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000437
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000207
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.004691
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000170
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.729563
+INFO:root:FullFit.do_single_fit took 00:00:0.737663
+INFO:root:-------- D --------
+INFO:root:Starting analysis at Tue May  2 16:06:29 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000567
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000023
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000544
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000229
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000433
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000168
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.006262
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000171
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.737937
+INFO:root:FullFit.do_single_fit took 00:00:0.747566
+INFO:root:-------- C --------
+INFO:root:Starting analysis at Tue May  2 16:06:30 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.001304
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000003
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000036
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000849
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000450
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000575
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000268
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.007721
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000152
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.732102
+INFO:root:FullFit.do_single_fit took 00:00:0.745255
+INFO:root:-------- B --------
+INFO:root:Starting analysis at Tue May  2 16:06:31 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000544
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000022
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000570
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000227
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000436
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000176
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.007424
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000142
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.712664
+INFO:root:FullFit.do_single_fit took 00:00:0.723390
+INFO:root:FullFit.get_group_analysis_dict took 00:00:6.146550
+INFO:root:FullFit.get_split_group_dict took 00:00:0.000058
+INFO:root:FullFit.print_overlay_readme took 00:00:0.000139
+INFO:root:FullFit.plot_group_splits_with_outliers took 00:00:0.919165
+INFO:root:FullFit.print_readme took 00:00:0.000397
+INFO:root:FullFit.run took 00:00:8.772909
+INFO:root:Ran test FullFit_test for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type AnalysisTemplate_withy
+INFO:root:-------- AnalysisTemplate_withy --------
+INFO:root:Starting analysis at Tue May  2 16:09:05 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000559
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000011
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000027
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.070300
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000440
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000492
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000246
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.001866
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.793483
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000150
+INFO:root:AnalysisTemplate.run took 00:00:0.868527
+INFO:root:Ran test AnalysisTemplate_withy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Looking up parameters for test type AnalysisTemplate_noy
+INFO:root:-------- AnalysisTemplate_noy --------
+INFO:root:Starting analysis at Tue May  2 16:09:06 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000520
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000010
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000019
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.001081
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000365
+WARNING:root:No testing target data. Statistics will not be collected.
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000050
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000176
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.001033
+WARNING:root:No testing target data. Predicted vs. measured plot will not be plotted.
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.000050
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000133
+INFO:root:AnalysisTemplate.run took 00:00:0.004161
+INFO:root:Ran test AnalysisTemplate_noy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Looking up parameters for test type FullFit_test
+INFO:root:-------- FullFit_test --------
+INFO:root:Starting analysis at Tue May  2 16:09:06 2017
+INFO:root:-------- single_fit --------
+INFO:root:Starting analysis at Tue May  2 16:09:06 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000594
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000010
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000026
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000762
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000368
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000479
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000196
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.003652
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000145
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.790068
+INFO:root:FullFit.do_single_fit took 00:00:0.797464
+INFO:root:FullFit.set_group_info took 00:00:0.012796
+INFO:root:FullFit.get_overall_group_dict took 00:00:0.001001
+INFO:root:FullFit.print_overlay_readme took 00:00:0.000139
+INFO:root:FullFit.plot_group_splits_with_outliers took 00:00:0.817953
+INFO:root:-------- C --------
+INFO:root:Starting analysis at Tue May  2 16:09:07 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000579
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000022
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000792
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000235
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000436
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.009345
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.004443
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000205
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.727199
+INFO:root:FullFit.do_single_fit took 00:00:0.744726
+INFO:root:-------- B --------
+INFO:root:Starting analysis at Tue May  2 16:09:08 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000579
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000021
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000782
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000230
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000480
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000190
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.002808
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000215
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.743614
+INFO:root:FullFit.do_single_fit took 00:00:0.750272
+INFO:root:-------- D --------
+INFO:root:Starting analysis at Tue May  2 16:09:09 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000576
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000022
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000545
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000233
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000439
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000449
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.005477
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000143
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.782953
+INFO:root:FullFit.do_single_fit took 00:00:0.792037
+INFO:root:-------- A --------
+INFO:root:Starting analysis at Tue May  2 16:09:09 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000573
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000022
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000525
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000216
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000438
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000179
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.004752
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000152
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.699578
+INFO:root:FullFit.do_single_fit took 00:00:0.707626
+INFO:root:-------- C --------
+INFO:root:Starting analysis at Tue May  2 16:09:10 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000588
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000022
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000548
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000230
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000438
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000181
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.009454
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000163
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.724609
+INFO:root:FullFit.do_single_fit took 00:00:0.737502
+INFO:root:-------- B --------
+INFO:root:Starting analysis at Tue May  2 16:09:11 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000584
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000022
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000532
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000226
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000440
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000179
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.005708
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000135
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.717027
+INFO:root:FullFit.do_single_fit took 00:00:0.726071
+INFO:root:-------- D --------
+INFO:root:Starting analysis at Tue May  2 16:09:12 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000584
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000023
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000545
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000232
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000436
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000181
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.007281
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000204
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.721610
+INFO:root:FullFit.do_single_fit took 00:00:0.732392
+INFO:root:-------- A --------
+INFO:root:Starting analysis at Tue May  2 16:09:12 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000575
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000022
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000522
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000221
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000436
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000179
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.008577
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000143
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.691186
+INFO:root:FullFit.do_single_fit took 00:00:0.703056
+INFO:root:FullFit.get_group_analysis_dict took 00:00:5.894315
+INFO:root:FullFit.get_split_group_dict took 00:00:0.000063
+INFO:root:FullFit.print_overlay_readme took 00:00:0.000139
+INFO:root:FullFit.plot_group_splits_with_outliers took 00:00:0.812825
+INFO:root:FullFit.print_readme took 00:00:0.000128
+INFO:root:FullFit.run took 00:00:8.337192
+INFO:root:Ran test FullFit_test for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type AnalysisTemplate_withy
+INFO:root:-------- AnalysisTemplate_withy --------
+INFO:root:Starting analysis at Tue May  2 16:09:34 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000563
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000010
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000027
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.061699
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000436
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000486
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000243
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.001916
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.788747
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000150
+INFO:root:AnalysisTemplate.run took 00:00:0.855179
+INFO:root:Ran test AnalysisTemplate_withy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Looking up parameters for test type AnalysisTemplate_noy
+INFO:root:-------- AnalysisTemplate_noy --------
+INFO:root:Starting analysis at Tue May  2 16:09:35 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000511
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000010
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000020
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.001035
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000362
+WARNING:root:No testing target data. Statistics will not be collected.
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000049
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000172
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.000979
+WARNING:root:No testing target data. Predicted vs. measured plot will not be plotted.
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.000062
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000132
+INFO:root:AnalysisTemplate.run took 00:00:0.004082
+INFO:root:Ran test AnalysisTemplate_noy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Looking up parameters for test type FullFit_test
+INFO:root:-------- FullFit_test --------
+INFO:root:Starting analysis at Tue May  2 16:09:35 2017
+INFO:root:-------- single_fit --------
+INFO:root:Starting analysis at Tue May  2 16:09:35 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000575
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000010
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000024
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000721
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000362
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000431
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000186
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.002749
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000154
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.756967
+INFO:root:FullFit.do_single_fit took 00:00:0.763369
+INFO:root:FullFit.set_group_info took 00:00:0.011988
+INFO:root:FullFit.get_overall_group_dict took 00:00:0.000549
+INFO:root:FullFit.print_overlay_readme took 00:00:0.000136
+INFO:root:FullFit.plot_group_splits_with_outliers took 00:00:0.860203
+INFO:root:-------- A --------
+INFO:root:Starting analysis at Tue May  2 16:09:36 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000598
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000022
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000975
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000226
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000438
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000194
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.001535
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000147
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.703657
+INFO:root:FullFit.do_single_fit took 00:00:0.709001
+INFO:root:-------- D --------
+INFO:root:Starting analysis at Tue May  2 16:09:37 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000608
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000023
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000546
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000227
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000435
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000179
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.003031
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000143
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.764778
+INFO:root:FullFit.do_single_fit took 00:00:0.771371
+INFO:root:-------- B --------
+INFO:root:Starting analysis at Tue May  2 16:09:38 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.001354
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000004
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000052
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000003
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000780
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000226
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000468
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000184
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.001343
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000136
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.701019
+INFO:root:FullFit.do_single_fit took 00:00:0.707153
+INFO:root:-------- C --------
+INFO:root:Starting analysis at Tue May  2 16:09:39 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000590
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000028
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000646
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000314
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000593
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000244
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.002290
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000182
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.718291
+INFO:root:FullFit.do_single_fit took 00:00:0.724685
+INFO:root:-------- A --------
+INFO:root:Starting analysis at Tue May  2 16:09:39 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000567
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000025
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000580
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000224
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000437
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000217
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.002250
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000139
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.712047
+INFO:root:FullFit.do_single_fit took 00:00:0.718036
+INFO:root:-------- D --------
+INFO:root:Starting analysis at Tue May  2 16:09:40 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000573
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000024
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000544
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000228
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000432
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000181
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.001487
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000159
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.735115
+INFO:root:FullFit.do_single_fit took 00:00:0.739916
+INFO:root:-------- B --------
+INFO:root:Starting analysis at Tue May  2 16:09:41 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000606
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000022
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000536
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000228
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000430
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000179
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.002676
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000154
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.688609
+INFO:root:FullFit.do_single_fit took 00:00:0.694636
+INFO:root:-------- C --------
+INFO:root:Starting analysis at Tue May  2 16:09:41 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000579
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000023
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000546
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000230
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000434
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000180
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.001442
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000148
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.713306
+INFO:root:FullFit.do_single_fit took 00:00:0.718075
+INFO:root:FullFit.get_group_analysis_dict took 00:00:5.783719
+INFO:root:FullFit.get_split_group_dict took 00:00:0.000061
+INFO:root:FullFit.print_overlay_readme took 00:00:0.000135
+INFO:root:FullFit.plot_group_splits_with_outliers took 00:00:0.814994
+INFO:root:FullFit.print_readme took 00:00:0.000128
+INFO:root:FullFit.run took 00:00:8.235553
+INFO:root:Ran test FullFit_test for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type AnalysisTemplate_withy
+INFO:root:-------- AnalysisTemplate_withy --------
+INFO:root:Starting analysis at Tue May  2 16:10:57 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000558
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000011
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000026
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.040431
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000431
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000481
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000252
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.002986
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.781047
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000151
+INFO:root:AnalysisTemplate.run took 00:00:0.827625
+INFO:root:Ran test AnalysisTemplate_withy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Looking up parameters for test type AnalysisTemplate_noy
+INFO:root:-------- AnalysisTemplate_noy --------
+INFO:root:Starting analysis at Tue May  2 16:10:58 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.001037
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000024
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000043
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000003
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.001614
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000360
+WARNING:root:No testing target data. Statistics will not be collected.
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000049
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000184
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.000854
+WARNING:root:No testing target data. Predicted vs. measured plot will not be plotted.
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.000049
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000150
+INFO:root:AnalysisTemplate.run took 00:00:0.005522
+INFO:root:Ran test AnalysisTemplate_noy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Looking up parameters for test type FullFit_test
+INFO:root:-------- FullFit_test --------
+INFO:root:Starting analysis at Tue May  2 16:10:58 2017
+INFO:root:-------- single_fit --------
+INFO:root:Starting analysis at Tue May  2 16:10:58 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000564
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000009
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000022
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000763
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000368
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000437
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000180
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.002640
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000161
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.828007
+INFO:root:FullFit.do_single_fit took 00:00:0.834339
+INFO:root:FullFit.set_group_info took 00:00:0.012945
+INFO:root:FullFit.get_overall_group_dict took 00:00:0.000558
+INFO:root:FullFit.print_overlay_readme took 00:00:0.000366
+INFO:root:FullFit.plot_group_splits_with_outliers took 00:00:1.071788
+INFO:root:-------- C --------
+INFO:root:Starting analysis at Tue May  2 16:11:00 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.001079
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000042
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.001480
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000356
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000634
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000294
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.001913
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000201
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.801043
+INFO:root:FullFit.do_single_fit took 00:00:0.809104
+INFO:root:-------- D --------
+INFO:root:Starting analysis at Tue May  2 16:11:00 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.001028
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000003
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000039
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000914
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000417
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000610
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000291
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.002116
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000229
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.911789
+INFO:root:FullFit.do_single_fit took 00:00:0.919205
+INFO:root:-------- B --------
+INFO:root:Starting analysis at Tue May  2 16:11:01 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000556
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000024
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000821
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000231
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000441
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000205
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.001302
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000229
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.811240
+INFO:root:FullFit.do_single_fit took 00:00:0.816391
+INFO:root:-------- A --------
+INFO:root:Starting analysis at Tue May  2 16:11:02 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000631
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000023
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000525
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000401
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000607
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000229
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.001292
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000207
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.776111
+INFO:root:FullFit.do_single_fit took 00:00:0.781505
+INFO:root:-------- C --------
+INFO:root:Starting analysis at Tue May  2 16:11:03 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000811
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000003
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000031
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000738
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000324
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000608
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000293
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.002531
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000195
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.814739
+INFO:root:FullFit.do_single_fit took 00:00:0.821870
+INFO:root:-------- D --------
+INFO:root:Starting analysis at Tue May  2 16:11:04 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000548
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000024
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000550
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000232
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000435
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000213
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.001400
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000163
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.893153
+INFO:root:FullFit.do_single_fit took 00:00:0.897876
+INFO:root:-------- B --------
+INFO:root:Starting analysis at Tue May  2 16:11:05 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000543
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000023
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000548
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000227
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000631
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.035296
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.002957
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000249
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.970231
+INFO:root:FullFit.do_single_fit took 00:00:1.012088
+INFO:root:-------- A --------
+INFO:root:Starting analysis at Tue May  2 16:11:06 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000586
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000025
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000580
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000295
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000589
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000222
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.001250
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000230
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.823992
+INFO:root:FullFit.do_single_fit took 00:00:0.829192
+INFO:root:FullFit.get_group_analysis_dict took 00:00:6.887896
+INFO:root:FullFit.get_split_group_dict took 00:00:0.000060
+INFO:root:FullFit.print_overlay_readme took 00:00:0.000196
+INFO:root:FullFit.plot_group_splits_with_outliers took 00:00:0.938331
+INFO:root:FullFit.print_readme took 00:00:0.014846
+INFO:root:FullFit.run took 00:00:9.761765
+INFO:root:Ran test FullFit_test for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type AnalysisTemplate_withy
+INFO:root:-------- AnalysisTemplate_withy --------
+INFO:root:Starting analysis at Tue May  2 16:11:20 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000564
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000011
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000026
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.044772
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000511
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000507
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000263
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.001843
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.872356
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000165
+INFO:root:AnalysisTemplate.run took 00:00:0.922005
+INFO:root:Ran test AnalysisTemplate_withy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Looking up parameters for test type AnalysisTemplate_noy
+INFO:root:-------- AnalysisTemplate_noy --------
+INFO:root:Starting analysis at Tue May  2 16:11:21 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000517
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000010
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000020
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.001325
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000380
+WARNING:root:No testing target data. Statistics will not be collected.
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000051
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000193
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.000908
+WARNING:root:No testing target data. Predicted vs. measured plot will not be plotted.
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.000074
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000150
+INFO:root:AnalysisTemplate.run took 00:00:0.004410
+INFO:root:Ran test AnalysisTemplate_noy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Looking up parameters for test type FullFit_test
+INFO:root:-------- FullFit_test --------
+INFO:root:Starting analysis at Tue May  2 16:11:21 2017
+INFO:root:-------- single_fit --------
+INFO:root:Starting analysis at Tue May  2 16:11:21 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000569
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000009
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000023
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000721
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000365
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000446
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000215
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.002767
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000159
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.855869
+INFO:root:FullFit.do_single_fit took 00:00:0.862301
+INFO:root:FullFit.set_group_info took 00:00:0.011736
+INFO:root:FullFit.get_overall_group_dict took 00:00:0.000646
+INFO:root:FullFit.print_overlay_readme took 00:00:0.000209
+INFO:root:FullFit.plot_group_splits_with_outliers took 00:00:0.920701
+INFO:root:-------- D --------
+INFO:root:Starting analysis at Tue May  2 16:11:23 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.001665
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000003
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000043
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000003
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.001442
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.001132
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.001569
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000602
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.002701
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000231
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.756876
+INFO:root:FullFit.do_single_fit took 00:00:0.768941
+INFO:root:-------- A --------
+INFO:root:Starting analysis at Tue May  2 16:11:23 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000559
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000023
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000774
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000221
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000448
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000180
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.001186
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000175
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.795290
+INFO:root:FullFit.do_single_fit took 00:00:0.800077
+INFO:root:-------- B --------
+INFO:root:Starting analysis at Tue May  2 16:11:24 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000548
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000023
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000541
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000230
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000445
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000177
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.001319
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000166
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.831240
+INFO:root:FullFit.do_single_fit took 00:00:0.835863
+INFO:root:-------- C --------
+INFO:root:Starting analysis at Tue May  2 16:11:25 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000567
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000024
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000601
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000359
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000455
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000208
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.001456
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000176
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.753001
+INFO:root:FullFit.do_single_fit took 00:00:0.758181
+INFO:root:-------- D --------
+INFO:root:Starting analysis at Tue May  2 16:11:26 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.001455
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000003
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000057
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000833
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000303
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000567
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000215
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.001432
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000154
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.851091
+INFO:root:FullFit.do_single_fit took 00:00:0.857845
+INFO:root:-------- A --------
+INFO:root:Starting analysis at Tue May  2 16:11:27 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000583
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000024
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000604
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000296
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000599
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000417
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.003227
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000298
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.740505
+INFO:root:FullFit.do_single_fit took 00:00:0.748320
+INFO:root:-------- B --------
+INFO:root:Starting analysis at Tue May  2 16:11:27 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.001430
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000010
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000026
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000797
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000234
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000447
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000188
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.001422
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000176
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.761984
+INFO:root:FullFit.do_single_fit took 00:00:0.768277
+INFO:root:-------- C --------
+INFO:root:Starting analysis at Tue May  2 16:11:28 2017
+INFO:root:AnalysisTemplate.get_unfiltered_data took 00:00:0.000564
+INFO:root:AnalysisTemplate.get_train_test_indices took 00:00:0.000002
+INFO:root:AnalysisTemplate.get_data took 00:00:0.000023
+INFO:root:AnalysisTemplate.get_model took 00:00:0.000001
+INFO:root:AnalysisTemplate.get_trained_model took 00:00:0.000554
+INFO:root:AnalysisTemplate.get_prediction took 00:00:0.000233
+INFO:root:AnalysisTemplate.get_statistics took 00:00:0.000446
+INFO:root:AnalysisTemplate.print_statistics took 00:00:0.000178
+INFO:root:AnalysisTemplate.print_output_csv took 00:00:0.001430
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000151
+INFO:root:AnalysisTemplate.plot_results took 00:00:0.851247
+INFO:root:FullFit.do_single_fit took 00:00:0.856032
+INFO:root:FullFit.get_group_analysis_dict took 00:00:6.394402
+INFO:root:FullFit.get_split_group_dict took 00:00:0.000065
+INFO:root:FullFit.print_overlay_readme took 00:00:0.000168
+INFO:root:FullFit.plot_group_splits_with_outliers took 00:00:0.925289
+INFO:root:FullFit.print_readme took 00:00:0.000220
+INFO:root:FullFit.run took 00:00:9.116076
+INFO:root:Ran test FullFit_test for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
