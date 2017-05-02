@@ -77,6 +77,7 @@ class FullFit(AnalysisTemplate):
         self.test_groups =None
         self.overall_group_dict=dict()
         self.overall_group_highest_rmses=list()
+        self.overall_outlying_groups=list()
         self.group_analysis_dict=dict()
         self.measured_error_data = None
         return
@@ -156,32 +157,43 @@ class FullFit(AnalysisTemplate):
         logging.debug("Highest RMSEs: %s" % highest_rmses)
         self.overall_group_dict=dict(osg_dict)
         self.overall_group_highest_rmses = list(highest_rmses)
+        for high_rmse in highest_rmses:
+            self.overall_outlying_groups.append(high_rmse[1])
         return
 
-    def plot_group_splits_with_outliers(self):
+    def plot_group_splits_with_outliers(self, group_dict=None, outlying_groups=list(), label="group_splits", group_notelist=list()):
         xdatalist=list()
         ydatalist=list()
         labellist=list()
         xerrlist=list()
         yerrlist=list()
-        group_notelist=list()
-        group_notelist.append("RMSE from overall fitting:")
-        group_notelist.append("Overall: %3.2f" % self.overall_analysis.statistics['rmse']) #overall rmse
-        xdatalist.append(self.overall_analysis.testing_target_data)
-        xerrlist.append(self.measured_error_data)
-        ydatalist.append(self.overall_analysis.testing_target_prediction)
-        yerrlist.append(None)
-        labellist.append("All data")
-        for gridx in range(0, len(self.overall_group_highest_rmses)):
-            group=self.overall_group_highest_rmses[gridx][1]
-            rmse =self.overall_group_highest_rmses[gridx][0]
-            xdatalist.append(self.overall_group_dict[group]['target_data'])
-            xerrlist.append(self.overall_group_dict[group]['target_data_err'])
-            ydatalist.append(self.overall_group_dict[group]['predicted_data'])
-            yerrlist.append(None)
-            labellist.append(group)
-            group_notelist.append('{:<1}: {:.2f}'.format(group, rmse))
-        plot_save_path = os.path.join(self.save_path, "overall_overlay")
+        otherxdata=list()
+        otherxerrdata=list()
+        otherydata=list()
+        test_groups = list(self.test_groups)
+        test_groups.sort()
+        for group in test_groups:
+            if group in outlying_groups:
+                rmse = group_dict[group]['rmse']
+                xdatalist.append(group_dict[group]['target_data'])
+                xerrlist.append(group_dict[group]['target_data_err'])
+                ydatalist.append(group_dict[group]['predicted_data'])
+                yerrlist.append(None)
+                labellist.append(group)
+                group_notelist.append('{:<1}: {:.2f}'.format(group, rmse))
+            else:
+                otherxdata.extend(group_dict[group]['target_data'])
+                otherxerrdata.extend(group_dict[group]['target_data_err'])
+                otherydata.extend(group_dict[group]['predicted_data'])
+        if len(otherxdata) > 0:
+            xdatalist.insert(0,otherxdata) #prepend
+            xerrlist.insert(0,otherxerrdata)
+            ydatalist.insert(0,otherydata)
+            yerrlist.insert(0,None)
+            labellist.insert(0,"All others")
+            all_other_rmse = np.sqrt(mean_squared_error(otherydata, otherxdata))
+            group_notelist.append('{:<1}: {:.2f}'.format("All others", all_other_rmse))
+        plot_save_path = os.path.join(self.save_path, label)
         if not os.path.isdir(plot_save_path):
             os.mkdir(plot_save_path)
         kwargs=dict()
@@ -195,7 +207,8 @@ class FullFit(AnalysisTemplate):
         kwargs['yerrlist'] = yerrlist
         kwargs['labellist'] = labellist
         kwargs['notelist'] = group_notelist
-        kwargs['plotlabel'] = "OverallFit_overlay"
+        kwargs['plotlabel'] = label
+        kwargs['guideline'] = 1
         plotxy.multiple_overlay(**kwargs) 
         return
 
@@ -207,7 +220,11 @@ class FullFit(AnalysisTemplate):
             return
         self.set_group_info()
         self.get_overall_group_dict()
-        self.plot_group_splits_with_outliers()
+        self.plot_group_splits_with_outliers(group_dict=self.overall_group_dict,
+            outlying_groups = self.overall_outlying_groups,
+            label="overall_overlay", 
+            group_notelist=["RMSEs for overall fit:",
+                "Overall: %3.2f" % self.overall_analysis.statistics['rmse']])
         return
 
 
