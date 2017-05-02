@@ -76,14 +76,26 @@ class FullFit(AnalysisTemplate):
         self.train_groups=None
         self.test_groups =None
         self.overall_group_dict=dict()
-        self.overall_group_highest_rmses=list()
         self.overall_outlying_groups=list()
-        self.group_analysis_dict=dict()
         self.measured_error_data = None
+        self.group_analysis_dict=dict()
+        self.split_outlying_groups=list()
+        self.split_group_dict=dict()
         return
     
     @timeit
     def do_single_fit(self, label="single_fit", train_index=None, test_index=None):
+        """Do a single fit.
+            Args:
+                label <str>: subfolder label
+                train_index <None or list>: training index:
+                                list of data index numbers to use,
+                                for example, to filter data by groups
+                test_index <None or list>: testing index
+            Returns:
+                AnalysisTemplate object
+                Plots and saves information to the 'label' subfolder
+        """
         single_save = os.path.join(self.save_path, label)
         single_analysis = AnalysisTemplate(
                 training_dataset = self.training_dataset,
@@ -116,7 +128,10 @@ class FullFit(AnalysisTemplate):
             pass
         else:
             self.measured_error_data = np.asarray(self.training_dataset.get_data(self.measured_error_field_name)).ravel()
-            addl_plot_kwargs['xerr'] = self.measured_error_data
+            if train_index is None:
+                addl_plot_kwargs['xerr'] = self.measured_error_data
+            else:
+                addl_plot_kwargs['xerr'] = self.measured_error_data[train_index]
         single_analysis.plot_results(addl_plot_kwargs)
         return single_analysis
 
@@ -148,9 +163,9 @@ class FullFit(AnalysisTemplate):
             else:
                 g_ydata_err = self.measured_error_data[g_index]
             osg_dict[group] = dict()
-            osg_dict[group]['target_data'] = g_ydata
-            osg_dict[group]['target_data_err'] = g_ydata_err
-            osg_dict[group]['predicted_data'] = g_ypredict
+            osg_dict[group]['xdata'] = g_ydata
+            osg_dict[group]['xerrdata'] = g_ydata_err
+            osg_dict[group]['ydata'] = g_ypredict
             osg_dict[group]['rmse'] = g_rmse
             min_entry = min(highest_rmses)
             min_rmse = min_entry[0]
@@ -158,7 +173,6 @@ class FullFit(AnalysisTemplate):
                 highest_rmses[highest_rmses.index(min_entry)]= (g_rmse, group)
         logging.debug("Highest RMSEs: %s" % highest_rmses)
         self.overall_group_dict=dict(osg_dict)
-        self.overall_group_highest_rmses = list(highest_rmses)
         for high_rmse in highest_rmses:
             self.overall_outlying_groups.append(high_rmse[1])
         return
@@ -177,16 +191,16 @@ class FullFit(AnalysisTemplate):
         for group in test_groups:
             if group in outlying_groups:
                 rmse = group_dict[group]['rmse']
-                xdatalist.append(group_dict[group]['target_data'])
-                xerrlist.append(group_dict[group]['target_data_err'])
-                ydatalist.append(group_dict[group]['predicted_data'])
+                xdatalist.append(group_dict[group]['xdata'])
+                xerrlist.append(group_dict[group]['xerrdata'])
+                ydatalist.append(group_dict[group]['ydata'])
                 yerrlist.append(None)
                 labellist.append(group)
                 group_notelist.append('{:<1}: {:.2f}'.format(group, rmse))
             else:
-                otherxdata.extend(group_dict[group]['target_data'])
-                otherxerrdata.extend(group_dict[group]['target_data_err'])
-                otherydata.extend(group_dict[group]['predicted_data'])
+                otherxdata.extend(group_dict[group]['xdata'])
+                otherxerrdata.extend(group_dict[group]['xerrdata'])
+                otherydata.extend(group_dict[group]['ydata'])
         if len(otherxdata) > 0:
             xdatalist.insert(0,otherxdata) #prepend
             xerrlist.insert(0,otherxerrdata)
@@ -212,6 +226,47 @@ class FullFit(AnalysisTemplate):
         return
 
     @timeit
+    def get_group_analysis_dict(self):
+        all_groups = list(self.train_groups)
+        all_groups.extend(list(self.test_groups))
+        for group in all_groups:
+            train_index = self.train_group_indices[group]['test_index']
+            test_index = self.test_group_indices[group]['test_index']
+            print(group, train_index, test_index)
+            self.group_analysis_dict[group] = self.do_single_fit(label=group,
+                                                train_index=train_index,
+                                                test_index=test_index)
+        return
+
+    def get_split_group_dict(self):
+        osg_dict=dict()
+        highest_rmses=list()
+        num_mark = min(self.mark_outlying_groups, len(self.test_groups))
+        for oidx in range(0, num_mark):
+            highest_rmses.append((0, "nogroup"))
+        sgdict=dict()
+        for group in self.group_analysis_dict.keys():
+            g_analysis = self.group_analysis_dict[group] #AnalysisTemplate obj.
+            sgdict[group]=dict()
+            sgdict[group]['xdata'] = g_analysis.testing_target_data
+            if self.measured_error_field_name is None:
+                sgdict[group]['xerrdata'] = None
+            else:
+                sgdict[group]['xerrdata'] = self.measured_error_data[g_analysis.test_index]
+            sgdict[group]['ydata'] = g_analysis.testing_target_prediction
+            g_rmse = g_analysis.statistics['rmse']
+            sgdict[group]['rmse'] = g_rmse
+            min_entry = min(highest_rmses)
+            min_rmse = min_entry[0]
+            if g_rmse > min_rmse:
+                highest_rmses[highest_rmses.index(min_entry)]= (g_rmse, group)
+        logging.debug("Highest RMSEs: %s" % highest_rmses)
+        self.split_group_dict=dict(sgdict)
+        for high_rmse in highest_rmses:
+            self.split_outlying_groups.append(high_rmse[1])
+        return
+
+    @timeit
     def run(self):
         self.overall_analysis = self.do_single_fit()
         print(self.overall_analysis.statistics)
@@ -224,6 +279,12 @@ class FullFit(AnalysisTemplate):
             label="overall_overlay", 
             group_notelist=["RMSEs for overall fit:",
                 "Overall: %3.2f" % self.overall_analysis.statistics['rmse']])
+        self.get_group_analysis_dict()
+        self.get_split_group_dict()
+        self.plot_group_splits_with_outliers(group_dict=self.split_group_dict,
+            outlying_groups = self.split_outlying_groups,
+            label="split_overlay",
+            group_notelist=["RMSEs for per-group fits:"])
         return
 
 
