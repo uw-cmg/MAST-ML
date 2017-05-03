@@ -11,6 +11,7 @@ from FullFit import FullFit
 from AnalysisTemplate import timeit
 from AnalysisTemplate import AnalysisTemplate
 import plot_data.plot_xy as plotxy
+import plot_data.plot_from_dict as plotdict
 
 class ExtrapolateFullFit(AnalysisTemplate):
     """Do extrapolation
@@ -145,7 +146,7 @@ class ExtrapolateFullFit(AnalysisTemplate):
 
     @timeit
     def make_overall_plot(self, plabel="unfiltered_overall", use_filters=False):
-        """Make unfiltered overall plot of predicted vs. measured"""
+        """Make overall plot of predicted vs. measured"""
         edict=dict() #here 'groups' will be data series. 
         group_notelist = list()
         if use_filters:
@@ -182,22 +183,7 @@ class ExtrapolateFullFit(AnalysisTemplate):
         if len(series_list) == 0:
             logging.info("No series for overall plot in extrapolatefullfit.")
             return
-        fullfit_for_plotting = FullFit(training_dataset=self.training_dataset,
-                    testing_dataset = self.testing_dataset,
-                    model = self.model,
-                    save_path = self.save_path,
-                    train_index = None,
-                    test_index = None,
-                    input_features = list(self.input_features),
-                    target_feature = self.target_feature,
-                    labeling_features = list(self.labeling_features),
-                    xlabel = self.xlabel,
-                    ylabel = self.ylabel,
-                    stepsize = self.stepsize,
-                    group_field_name = self.group_field_name,
-                    measured_error_field_name = self.measured_error_field_name,
-                    mark_outlying_groups = self.mark_outlying_groups)
-        fullfit_for_plotting.plot_group_splits_with_outliers(group_dict=edict,
+        plotdict.plot_group_splits_with_outliers(group_dict=edict,
             outlying_groups = series_list,
             label=plabel,
             group_notelist = list(group_notelist))
@@ -246,68 +232,13 @@ class ExtrapolateFullFit(AnalysisTemplate):
         return
 
     @timeit
-    def make_series_feature_plot(self, plabel="feature_plots", use_filters=False, group=None):
+    def make_series_feature_plot(self, plabel="feature_plots", use_filters=False, show_training=True, group=None):
         """Make series feature plot
         """
-        fdict=dict()
-        
-
-        for label in self.extrpolation_dict.keys():
-            pass
         edict=dict() #here 'groups' will be data series. 
         group_notelist = list()
-        if use_filters:
-            group_notelist.append("Data not displayed:")
-            for pfstr in self.plot_filter_out:
-                group_notelist.append(pfstr.replace(";"," "))
-            for label in self.extrapolation_dict.keys():
-                if not('rmse' in self.extrapolation_dict[label].overall_analysis.statistics):
-                    continue #no measured data; cannot be plotted
-                edict[label] = dict()
-                plot_filter = self.plot_filter_dict[label]
-                edict[label]['xdata'] = np.asarray(self.extrapolation_dict[label].overall_analysis.testing_dataset.get_y_data()).ravel()[plot_filter]
-                if self.measured_error_field_name is None:
-                    edict[label]['xerrdata'] = None
-                else:
-                    edict[label]['xerrdata'] = np.asarray(self.extrapolation_dict[label].overall_analysis.testing_dataset.get_data(self.measured_error_field_name)).ravel()[plot_filter]
-                edict[label]['ydata'] = np.asarray(self.extrapolation_dict[label].overall_analysis.testing_dataset.get_data("Prediction")).ravel()[plot_filter]
-                edict[label]['rmse'] = np.sqrt(mean_squared_error(edict[label]['ydata'],edict[label]['xdata']))
-            group_notelist.append("RMSEs for displayed data:")
-        else:
-            for label in self.extrapolation_dict.keys():
-                if not('rmse' in self.extrapolation_dict[label].overall_analysis.statistics):
-                    continue #no measured data; cannot be plotted
-                edict[label]['rmse'] = self.extrapolation_dict[label].overall_analysis.statistics['rmse']
-                edict[label]['xdata'] = self.extrapolation_dict[label].overall_analysis.testing_target_data
-                if self.measured_error_field_name is None:
-                    edict[label]['xerrdata'] = None
-                else:
-                    edict[label]['xerrdata'] = self.extrapolation_dict[label].measured_error_data
-                edict[label]['ydata'] = self.extrapolation_dict[label].overall_analysis.testing_target_prediction
-            group_notelist.append("RMSEs:")
-        series_list = list(edict.keys())
-        if len(series_list) == 0:
-            logging.info("No series for overall plot in extrapolatefullfit.")
-            return
-        fullfit_for_plotting = FullFit(training_dataset=self.training_dataset,
-                    testing_dataset = self.testing_dataset,
-                    model = self.model,
-                    save_path = self.save_path,
-                    train_index = None,
-                    test_index = None,
-                    input_features = list(self.input_features),
-                    target_feature = self.target_feature,
-                    labeling_features = list(self.labeling_features),
-                    xlabel = self.xlabel,
-                    ylabel = self.ylabel,
-                    stepsize = self.stepsize,
-                    group_field_name = self.group_field_name,
-                    measured_error_field_name = self.measured_error_field_name,
-                    mark_outlying_groups = self.mark_outlying_groups)
-        fullfit_for_plotting.plot_group_splits_with_outliers(group_dict=edict,
-            outlying_groups = series_list,
-            label=plabel,
-            group_notelist = list(group_notelist))
+        if show_training:
+            pass
         return
 
     @timeit
