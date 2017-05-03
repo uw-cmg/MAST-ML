@@ -13,6 +13,7 @@ import portion_data.get_test_train_data as gttd
 import os
 import time
 import logging
+import copy
 logger = logging.getLogger()
 
 def timeit(method):
@@ -79,20 +80,20 @@ class AnalysisTemplate():
         if training_dataset is None:
             raise ValueError("training_dataset is not set")
         if type(training_dataset) is list: #allow inheriting classes to get multiple datasets; MASTML will pass list of data objects
-            self.training_dataset=training_dataset[0] #first item
+            self.training_dataset= copy.deepcopy(training_dataset[0]) #first item
         elif type(training_dataset) is str:
             self.training_dataset = data_parser.parse(training_dataset)
         else:
-            self.training_dataset = training_dataset
+            self.training_dataset = copy.deepcopy(training_dataset)
         # testing csv
         if testing_dataset is None:
             raise ValueError("testing_dataset is not set")
         if type(testing_dataset) is list:
-            self.testing_dataset = testing_dataset[0]
+            self.testing_dataset = copy.deepcopy(testing_dataset[0])
         elif type(testing_dataset) is str:
             self.testing_dataset = data_parser.parse(testing_dataset)
         else:
-            self.testing_dataset=testing_dataset
+            self.testing_dataset=copy.deepcopy(testing_dataset)
         # model
         self.model=model
         # features
@@ -235,6 +236,8 @@ class AnalysisTemplate():
         print_features.extend(self.input_features)
         if not (self.testing_target_data is None):
             print_features.append(self.target_feature)
+            if not (self.target_error_feature is None):
+                print_features.append(self.target_error_feature)
         for feature_name in print_features:
             headerline = headerline + feature_name + ","
             feature_vector = np.asarray(self.testing_dataset.get_data(feature_name)).ravel()
