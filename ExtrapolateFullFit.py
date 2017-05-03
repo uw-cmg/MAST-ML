@@ -30,10 +30,11 @@ class ExtrapolateFullFit(AnalysisTemplate):
                                         field may be numeric
         measured_error_field_name <str>: field name for measured y-data error (optional)
         mark_outlying_groups <int>: Number of outlying groups to mark
-        split_xlabel <str>: x-axis label for per-group plots of predicted and
+        feature_plot_xlabel <str>: x-axis label for per-group plots of predicted and
                                 measured y data versus data from field of
                                 numeric_field_name
-        split_ylabel <str>: y-axis label for per-group plots
+        feature_plot_ylabel <str>: y-axis label for per-group plots
+        feature_plot_field <str>: field for per-group feature plots
         plot_filter_out <str>: semicolon-delimited filters for plotting,
                                 each a comma-delimited triplet, for example,
                                 temperature,<,3000
@@ -67,8 +68,9 @@ class ExtrapolateFullFit(AnalysisTemplate):
         group_field_name = None,
         measured_error_field_name = None,
         mark_outlying_groups = 2,
-        split_xlabel = "X",
-        split_ylabel = "Prediction",
+        feature_plot_xlabel = "X",
+        feature_plot_ylabel = "Prediction",
+        feature_plot_field = "",
         markers="",
         outlines="",
         data_labels="",
@@ -91,13 +93,16 @@ class ExtrapolateFullFit(AnalysisTemplate):
         self.group_field_name = group_field_name
         self.measured_error_field_name = measured_error_field_name
         self.measured_error_data = None
+        self.fit_only_on_matched_groups = int(fit_only_on_matched_groups)
         self.mark_outlying_groups = int(mark_outlying_groups)
+        self.feature_plot_field = feature_plot_field
+        self.feature_plot_xlabel = feature_plot_xlabel
+        self.feature_plot_ylabel = feature_plot_ylabel
         self.markers = markers
         self.outlines = outlines
         self.data_labels = data_labels
         self.linestyles = linestyles
         self.plot_filter_out = plot_filter_out
-        self.fit_only_on_matched_groups = int(fit_only_on_matched_groups)
         self.extrapolation_dict=dict()
         return
     
@@ -138,8 +143,49 @@ class ExtrapolateFullFit(AnalysisTemplate):
         return
 
     @timeit
+    def make_unfiltered_overall_plot(self, plabel="unfiltered_overall"):
+        """Make unfiltered overall plot of predicted vs. measured"""
+        edict=dict() #here 'groups' will be data series. 
+        for label in self.extrapolation_dict.keys():
+            if not('rmse' in self.extrapolation_dict[label].overall_analysis.statistics):
+                continue #no measured data; cannot be plotted
+            edict[label] = dict()
+            edict[label]['rmse'] = self.extrapolation_dict[label].overall_analysis.statistics['rmse']
+            edict[label]['xdata'] = self.extrapolation_dict[label].overall_analysis.testing_target_data
+            if self.measured_error_field_name is None:
+                edict[label]['xerrdata'] = None
+            else:
+                edict[label]['xerrdata'] = self.extrapolation_dict[label].measured_error_data
+            edict[label]['ydata'] = self.extrapolation_dict[label].overall_analysis.testing_target_prediction
+        series_list = list(edict.keys())
+        if len(series_list) == 0:
+            logging.info("No series for overall plot in extrapolatefullfit.")
+            return
+        fullfit_for_plotting = FullFit(training_dataset=self.training_dataset,
+                    testing_dataset = self.testing_dataset,
+                    model = self.model,
+                    save_path = self.save_path,
+                    train_index = None,
+                    test_index = None,
+                    input_features = list(self.input_features),
+                    target_feature = self.target_feature,
+                    labeling_features = list(self.labeling_features),
+                    xlabel = self.xlabel,
+                    ylabel = self.ylabel,
+                    stepsize = self.stepsize,
+                    group_field_name = self.group_field_name,
+                    measured_error_field_name = self.measured_error_field_name,
+                    mark_outlying_groups = self.mark_outlying_groups)
+        fullfit_for_plotting.plot_group_splits_with_outliers(group_dict=edict,
+            outlying_groups = series_list,
+            label="overall_plot_unfiltered",
+            group_notelist = ["RMSE:"])
+        return
+
+    @timeit
     def run(self):
         self.get_extrapolation_dict()
+        self.make_unfiltered_overall_plot()
         print(self.extrapolation_dict)
         return
 
