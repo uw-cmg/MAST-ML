@@ -235,11 +235,18 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
     smallfont = 0.85*matplotlib.rcParams['font.size']
     notestep = 0.07
     plt.figure()
-    faces = faces.split(",")
-    outlines = outlines.split(",")
-    linestyles = linestyles.split(",")
-    markers = markers.split(",")
-    sizes=np.array(sizes.split(","),'float')
+    if not(type(faces) is list):
+        faces = faces.split(",")
+    if not(type(outlines) is list):
+        outlines = outlines.split(",")
+    if not(type(linestyles) is list):
+        linestyles = linestyles.split(",")
+    if not(type(markers) is list):
+        markers = markers.split(",")
+    if not(type(sizes) is list):
+        sizes=np.array(sizes.split(","),'float')
+    else:
+        sizes = np.array(sizes, 'float') #make sure they are floats
     fig, ax1 = plt.subplots()
     if doubley:
         ax2 = ax1.twinx()
