@@ -240,37 +240,50 @@ class ExtrapolateFullFit(AnalysisTemplate):
         """
         edict=dict() #here 'groups' will be data series. 
         group_notelist = list()
-        if show_training:
-            pass
         if use_filters:
             group_notelist.append("Data not displayed:")
             for pfstr in self.plot_filter_out:
                 group_notelist.append(pfstr.replace(";"," "))
+        if show_training:
+            label = self.data_labels[0] #training label
+            edict[label] = dict()
+            if use_filters:
+                use_index = self.plot_filter_dict[label]
+            else:
+                use_index = self.train_index
+                if use_index is None:
+                    use_index = np.arange(0, len(np.asarray(self.training_dataset[0].get_data(self.target_feature)).ravel()))
+            edict[label]['xdata'] = np.asarray(self.training_dataset[0].get_data(self.feature_plot_field)).ravel()[use_index]
+            edict[label]['xerrdata'] = None
+            edict[label]['ydata'] = np.asarray(self.training_dataset[0].get_data(self.target_feature)).ravel()[use_index]
         for label in self.extrapolation_dict.keys():
             edict[label] = dict()
             if use_filters:
-                plot_filter = self.plot_filter_dict[label]
-                edict[label]['xdata'] = np.asarray(self.extrapolation_dict[label].overall_analysis.testing_dataset.get_y_data()).ravel()[plot_filter]
-                if self.measured_error_field_name is None:
-                    edict[label]['xerrdata'] = None
-                else:
-                    edict[label]['xerrdata'] = np.asarray(self.extrapolation_dict[label].overall_analysis.testing_dataset.get_data(self.measured_error_field_name)).ravel()[plot_filter]
-                edict[label]['ydata'] = np.asarray(self.extrapolation_dict[label].overall_analysis.testing_dataset.get_data("Prediction")).ravel()[plot_filter]
+                use_index = self.plot_filter_dict[label]
             else:
-                edict[label]['xdata'] = self.extrapolation_dict[label].overall_analysis.testing_target_data
-                if self.measured_error_field_name is None:
-                    edict[label]['xerrdata'] = None
-                else:
-                    edict[label]['xerrdata'] = self.extrapolation_dict[label].measured_error_data
-                edict[label]['ydata'] = self.extrapolation_dict[label].overall_analysis.testing_target_prediction
+                use_index = self.extrapolation_dict[label].test_index
+                if use_index is None:
+                    use_index = np.arange(0, self.extrapolation_dict[label].overall_analysis.testing_input_data.shape[0])
+            edict[label]['xdata'] = np.asarray(self.extrapolation_dict[label].overall_analysis.testing_dataset.get_data(self.feature_plot_field)).ravel()[use_index]
+            edict[label]['xerrdata'] = None
+            edict[label]['ydata'] = np.asarray(self.extrapolation_dict[label].overall_analysis.testing_dataset.get_data("Prediction")).ravel()[use_index]
         series_list = list(edict.keys())
         if len(series_list) == 0:
-            logging.info("No series for overall plot in extrapolatefullfit.")
+            logging.info("No series for plot.")
             return
+        addl_kwargs=dict()
+        addl_kwargs['guideline'] = 0
+        addl_kwargs['save_path'] = os.path.join(self.save_path, plabel)
+        addl_kwargs['xlabel'] = self.feature_plot_xlabel
+        addl_kwargs['ylabel'] = self.feature_plot_ylabel
+        addl_kwargs['markers'] = self.markers
+        addl_kwargs['outlines'] = self.outlines
+        addl_kwargs['linestyles'] = self.linestyles
         plotdict.plot_group_splits_with_outliers(group_dict=edict,
             outlying_groups = series_list,
             label=plabel,
-            group_notelist = list(group_notelist))
+            group_notelist = list(group_notelist),
+            addl_kwargs = dict(addl_kwargs))
         return
 
     @timeit
@@ -280,6 +293,10 @@ class ExtrapolateFullFit(AnalysisTemplate):
         if not(self.plot_filter_out is None):
             self.make_plotting_filter_dict()
             self.make_overall_plot("overall_plot_filtered",use_filters=True)
+        self.make_series_feature_plot("series_feature_plot_unfiltered",use_filters=False, 
+                show_training=True, group=None)
+        self.make_series_feature_plot("series_feature_plot_filtered",use_filters=True, 
+                show_training=True, group=None)
         print(self.extrapolation_dict)
         print(self.plot_filter_dict)
         return
