@@ -126,11 +126,11 @@ class FullFit(AnalysisTemplate):
         if self.measured_error_field_name is None:
             pass
         else:
-            self.measured_error_data = np.asarray(self.training_dataset.get_data(self.measured_error_field_name)).ravel()
-            if train_index is None:
+            self.measured_error_data = np.asarray(self.testing_dataset.get_data(self.measured_error_field_name)).ravel()
+            if test_index is None:
                 addl_plot_kwargs['xerr'] = self.measured_error_data
             else:
-                addl_plot_kwargs['xerr'] = self.measured_error_data[train_index]
+                addl_plot_kwargs['xerr'] = self.measured_error_data[test_index]
         single_analysis.plot_results(addl_plot_kwargs)
         return single_analysis
 
