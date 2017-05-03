@@ -251,9 +251,7 @@ class ExtrapolateFullFit(AnalysisTemplate):
                 else:
                     use_index = self.plot_filter_dict[label][group]
             else:
-                use_index = self.train_index
-                if use_index is None:
-                    use_index = np.arange(0, len(np.asarray(self.training_dataset[0].get_data(self.target_feature)).ravel()))
+                use_index = np.arange(0, len(np.asarray(self.training_dataset[0].get_data(self.target_feature)).ravel()))
             edict[label]['xdata'] = np.asarray(self.training_dataset[0].get_data(self.feature_plot_field)).ravel()[use_index]
             edict[label]['xerrdata'] = None
             edict[label]['ydata'] = np.asarray(self.training_dataset[0].get_data(self.target_feature)).ravel()[use_index]
@@ -265,9 +263,7 @@ class ExtrapolateFullFit(AnalysisTemplate):
                 else:
                     use_index = self.plot_filter_dict[label][group]
             else:
-                use_index = self.extrapolation_dict[label].test_index
-                if use_index is None:
-                    use_index = np.arange(0, self.extrapolation_dict[label].overall_analysis.testing_input_data.shape[0])
+                use_index = np.arange(0, self.extrapolation_dict[label].overall_analysis.testing_input_data.shape[0])
             edict[label]['xdata'] = np.asarray(self.extrapolation_dict[label].overall_analysis.testing_dataset.get_data(self.feature_plot_field)).ravel()[use_index]
             edict[label]['xerrdata'] = None
             edict[label]['ydata'] = np.asarray(self.extrapolation_dict[label].overall_analysis.testing_dataset.get_data("Prediction")).ravel()[use_index]
