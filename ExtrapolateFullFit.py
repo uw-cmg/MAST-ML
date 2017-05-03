@@ -183,10 +183,13 @@ class ExtrapolateFullFit(AnalysisTemplate):
         if len(series_list) == 0:
             logging.info("No series for overall plot in extrapolatefullfit.")
             return
+        addl_kwargs=dict()
+        addl_kwargs['save_path'] = os.path.join(self.save_path, plabel)
         plotdict.plot_group_splits_with_outliers(group_dict=edict,
             outlying_groups = series_list,
             label=plabel,
-            group_notelist = list(group_notelist))
+            group_notelist = list(group_notelist),
+            addl_kwargs = dict(addl_kwargs))
         return
     
     @timeit
@@ -239,6 +242,35 @@ class ExtrapolateFullFit(AnalysisTemplate):
         group_notelist = list()
         if show_training:
             pass
+        if use_filters:
+            group_notelist.append("Data not displayed:")
+            for pfstr in self.plot_filter_out:
+                group_notelist.append(pfstr.replace(";"," "))
+        for label in self.extrapolation_dict.keys():
+            edict[label] = dict()
+            if use_filters:
+                plot_filter = self.plot_filter_dict[label]
+                edict[label]['xdata'] = np.asarray(self.extrapolation_dict[label].overall_analysis.testing_dataset.get_y_data()).ravel()[plot_filter]
+                if self.measured_error_field_name is None:
+                    edict[label]['xerrdata'] = None
+                else:
+                    edict[label]['xerrdata'] = np.asarray(self.extrapolation_dict[label].overall_analysis.testing_dataset.get_data(self.measured_error_field_name)).ravel()[plot_filter]
+                edict[label]['ydata'] = np.asarray(self.extrapolation_dict[label].overall_analysis.testing_dataset.get_data("Prediction")).ravel()[plot_filter]
+            else:
+                edict[label]['xdata'] = self.extrapolation_dict[label].overall_analysis.testing_target_data
+                if self.measured_error_field_name is None:
+                    edict[label]['xerrdata'] = None
+                else:
+                    edict[label]['xerrdata'] = self.extrapolation_dict[label].measured_error_data
+                edict[label]['ydata'] = self.extrapolation_dict[label].overall_analysis.testing_target_prediction
+        series_list = list(edict.keys())
+        if len(series_list) == 0:
+            logging.info("No series for overall plot in extrapolatefullfit.")
+            return
+        plotdict.plot_group_splits_with_outliers(group_dict=edict,
+            outlying_groups = series_list,
+            label=plabel,
+            group_notelist = list(group_notelist))
         return
 
     @timeit
