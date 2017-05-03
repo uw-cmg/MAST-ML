@@ -25,7 +25,15 @@ def get_xy_sorted(xvals, yvals, xerr, yerr, verbose=0):
         arraylist.append(dummy_yerr)
     else:
         arraylist.append(yerr)
-    combarr = np.array(arraylist,'float')
+    try:
+        combarr = np.array(arraylist,'float')
+    except ValueError as ve:
+        import traceback
+        print("Error combining array")
+        print("Shapes for arraylist xvals, yvals, xerr, yerr")
+        for cidx in range(0,4):
+            print(arraylist[cidx].shape)
+        raise ValueError(traceback.print_exc())
     if verbose > 0:
         print("Original:")
         print(combarr)
