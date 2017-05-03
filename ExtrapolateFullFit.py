@@ -19,17 +19,15 @@ class ExtrapolateFullFit(AnalysisTemplate):
         testing_dataset,
         model,
         save_path,
-        train_index,
-        test_index,
         input_features,
         target_feature,
+        target_error_feature,
         labeling_features, see AnalysisTemplate.
         xlabel <str>: x-axis label for predicted-vs-measured plot
         ylabel <str>: y-axis label for predicted-vs-measured plot
         stepsize <float>: step size for predicted-vs-measured plot grid
         group_field_name <float>: (optional) field name for grouping data
                                         field may be numeric
-        measured_error_field_name <str>: field name for measured y-data error (optional)
         mark_outlying_groups <int>: Number of outlying groups to mark
         feature_plot_xlabel <str>: x-axis label for per-group plots of predicted and
                                 measured y data versus data from field of
@@ -58,16 +56,14 @@ class ExtrapolateFullFit(AnalysisTemplate):
         testing_dataset=None,
         model=None,
         save_path=None,
-        train_index=None,
-        test_index=None,
         input_features=None,
         target_feature=None,
+        target_error_feature=None,
         labeling_features=None,
         xlabel="Measured",
         ylabel="Predicted",
         stepsize=1,
         group_field_name = None,
-        measured_error_field_name = None,
         mark_outlying_groups = 2,
         feature_plot_xlabel = "X",
         feature_plot_ylabel = "Prediction",
@@ -83,17 +79,14 @@ class ExtrapolateFullFit(AnalysisTemplate):
         self.testing_dataset = testing_dataset #expect more than one
         self.model = model
         self.save_path = save_path
-        self.train_index = train_index
-        self.test_index = test_index
         self.input_features = input_features
         self.target_feature = target_feature
+        self.target_error_feature = target_error_feature
         self.labeling_features = labeling_features
         self.xlabel = xlabel
         self.ylabel = ylabel
         self.stepsize = float(stepsize)
         self.group_field_name = group_field_name
-        self.measured_error_field_name = measured_error_field_name
-        self.measured_error_data = None
         self.fit_only_on_matched_groups = int(fit_only_on_matched_groups)
         self.mark_outlying_groups = int(mark_outlying_groups)
         self.feature_plot_field = feature_plot_field
@@ -130,16 +123,14 @@ class ExtrapolateFullFit(AnalysisTemplate):
                     testing_dataset = test_set,
                     model = self.model,
                     save_path = os.path.join(self.save_path,label),
-                    train_index = None,
-                    test_index = None,
                     input_features = list(self.input_features),
                     target_feature = self.target_feature,
+                    target_error_feature = self.target_error_feature,
                     labeling_features = list(self.labeling_features),
                     xlabel = self.xlabel,
                     ylabel = self.ylabel,
                     stepsize = self.stepsize,
                     group_field_name = self.group_field_name,
-                    measured_error_field_name = self.measured_error_field_name,
                     mark_outlying_groups = self.mark_outlying_groups)
             self.extrapolation_dict[label].run()
         return
@@ -153,32 +144,25 @@ class ExtrapolateFullFit(AnalysisTemplate):
             group_notelist.append("Data not displayed:")
             for pfstr in self.plot_filter_out:
                 group_notelist.append(pfstr.replace(";"," "))
-            for label in self.extrapolation_dict.keys():
-                if not('rmse' in self.extrapolation_dict[label].overall_analysis.statistics.keys()):
-                    continue #no measured data; cannot be plotted
-                edict[label] = dict()
-                plot_filter = self.plot_filter_dict[label]['nogroup']
-                edict[label]['xdata'] = np.asarray(self.extrapolation_dict[label].overall_analysis.testing_dataset.get_y_data()).ravel()[plot_filter]
-                if self.measured_error_field_name is None:
-                    edict[label]['xerrdata'] = None
-                else:
-                    edict[label]['xerrdata'] = np.asarray(self.extrapolation_dict[label].overall_analysis.testing_dataset.get_data(self.measured_error_field_name)).ravel()[plot_filter]
-                edict[label]['ydata'] = np.asarray(self.extrapolation_dict[label].overall_analysis.testing_dataset.get_data("Prediction")).ravel()[plot_filter]
-                edict[label]['rmse'] = np.sqrt(mean_squared_error(edict[label]['ydata'],edict[label]['xdata']))
             group_notelist.append("RMSEs for displayed data:")
         else:
-            for label in self.extrapolation_dict.keys():
-                if not('rmse' in self.extrapolation_dict[label].overall_analysis.statistics.keys()):
-                    continue #no measured data; cannot be plotted
-                edict[label] = dict()
-                edict[label]['rmse'] = self.extrapolation_dict[label].overall_analysis.statistics['rmse']
-                edict[label]['xdata'] = self.extrapolation_dict[label].overall_analysis.testing_target_data
-                if self.measured_error_field_name is None:
-                    edict[label]['xerrdata'] = None
-                else:
-                    edict[label]['xerrdata'] = self.extrapolation_dict[label].measured_error_data
-                edict[label]['ydata'] = self.extrapolation_dict[label].overall_analysis.testing_target_prediction
             group_notelist.append("RMSEs:")
+        for label in self.extrapolation_dict.keys():
+            if not('rmse' in self.extrapolation_dict[label].overall_analysis.statistics.keys()):
+                continue #no measured data; cannot be plotted
+            s_analysis = self.extrapolation_dict[label].overall_analysis
+            if use_filters:
+                use_index = self.plot_filter_dict[label]['nogroup']
+            else:
+                use_index = np.arange(0, len(s_analysis.testing_target_prediction))
+            edict[label] = dict()
+            edict[label]['xdata'] = s_analysis.testing_target_data[use_index]
+            if self.target_error_feature is None:
+                edict[label]['xerrdata'] = np.zeros(len(use_index))
+            else:
+                edict[label]['xerrdata'] = s_analysis.testing_target_data_error[use_index]
+            edict[label]['ydata'] = s_analysis.testing_target_prediction[use_index]
+            edict[label]['rmse'] = np.sqrt(mean_squared_error(edict[label]['ydata'],edict[label]['xdata']))
         series_list = list(edict.keys())
         if len(series_list) == 0:
             logging.info("No series for overall plot in extrapolatefullfit.")
@@ -230,32 +214,21 @@ class ExtrapolateFullFit(AnalysisTemplate):
         pdict=dict()
         for label in self.extrapolation_dict.keys():
             pdict[label]=dict()
-            pdict[label]['nogroup'] = self.make_plotting_filter_index(self.extrapolation_dict[label].testing_dataset, self.extrapolation_dict[label].test_index)
+            pdict[label]['nogroup'] = self.make_plotting_filter_index(self.extrapolation_dict[label].testing_dataset)
             if self.group_field_name is None:
                 pass
             else:
                 for group in self.extrapolation_dict[label].test_groups:
-                    test_index = self.extrapolation_dict[label].test_index
-                    if test_index is None:
-                        pre_index = self.extrapolation_dict[label].test_group_indices[group]['test_index']
-                    else:
-                        pre_index = np.intersect1d(test_index, self.extrapolation_dict[label].test_group_indices[group]['test_index'])
-                    pdict[label][group] = self.make_plotting_filter_index(self.extrapolation_dict[label].testing_dataset, pre_index)
+                    pdict[label][group] = self.make_plotting_filter_index(self.extrapolation_dict[label].testing_dataset, self.extrapolation_dict[label].test_group_indices[group]['test_index'])
         #for training data, all have same training data; use last label
         tlabel = self.data_labels[0]
         pdict[tlabel]=dict()
-        pdict[tlabel]['nogroup'] = self.make_plotting_filter_index(self.training_dataset[0], self.extrapolation_dict[label].train_index)
+        pdict[tlabel]['nogroup'] = self.make_plotting_filter_index(self.training_dataset[0])
         if self.group_field_name is None:
             pass
         else:
             for group in self.extrapolation_dict[label].train_groups:
-                train_index = self.extrapolation_dict[label].train_index
-                if train_index is None:
-                    pre_index = self.extrapolation_dict[label].train_group_indices[group]['test_index']
-                else:
-                    pre_index = np.intersect1d(train_index, self.extrapolation_dict[label].train_group_indices[group]['test_index'])
-                    pdict[label][group] = self.make_plotting_filter_index(self.extrapolation_dict[label].testing_dataset, pre_index)
-                pdict[tlabel][group] = self.make_plotting_filter_index(self.training_dataset[0], pre_index)
+                pdict[tlabel][group] = self.make_plotting_filter_index(self.training_dataset[0], self.extrapolation_dict[label].train_group_indices[group]['test_index'])
         self.plot_filter_dict = dict(pdict)
         return
 
