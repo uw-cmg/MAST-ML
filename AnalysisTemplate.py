@@ -50,7 +50,7 @@ class AnalysisTemplate():
         save_path=None,
         input_features=None,
         target_feature=None,
-        target_feature_error=None,
+        target_error_feature=None,
         labeling_features=None,
         *args, **kwargs):
         """Initialize class.
@@ -262,6 +262,7 @@ class AnalysisTemplate():
         notelist.append("R-squared: %3.3f" % self.statistics['rsquared'])
         plot_kwargs['notelist'] = notelist
         plot_kwargs['save_path'] = self.save_path
+        plot_kwargs['xerr'] = self.testing_target_data_error
         if not (addl_plot_kwargs is None):
             for addl_plot_kwarg in addl_plot_kwargs:
                 plot_kwargs[addl_plot_kwarg] = addl_plot_kwargs[addl_plot_kwarg]
