@@ -71,7 +71,7 @@ class AnalysisTemplate():
                 self.testing_target_data=""
                 self.trained_model=""
                 self.testing_target_prediction=""
-                self.testing_target_error_data=""
+                self.testing_target_data_error=""
                 self.statistics=dict()
         """
         # Keyword-set attributes
@@ -126,6 +126,7 @@ class AnalysisTemplate():
         self.testing_target_data=None
         self.trained_model=None
         self.testing_target_prediction=None
+        self.testing_target_data_error=None
         self.statistics=dict()
         #
         logger.info("-------- %s --------" % self.analysis_name)
@@ -158,7 +159,7 @@ class AnalysisTemplate():
         if hasy:
             self.testing_target_data = np.asarray(self.testing_dataset.get_y_data()).ravel()
             if not(self.target_error_feature is None):
-                self.testing_target_error_data = np.asarray(self.testing_dataset.get_data(self.target_error_feature)).ravel()
+                self.testing_target_data_error = np.asarray(self.testing_dataset.get_data(self.target_error_feature)).ravel()
         else:
             self.testing_dataset.set_y_feature(self.input_features[0]) #dummy y feature
             #self.testing_target_data remains None
