@@ -210,7 +210,13 @@ class AnalysisTemplate():
 
     @timeit
     def get_prediction(self):
+        prediction_for_unfiltered = list()
+        for pidx in range(0, len(self.testing_target_data_unfiltered)):
+            prediction_for_unfiltered.append(np.nan)
+        prediction_for_unfiltered = np.array(prediction_for_unfiltered)
         self.testing_target_prediction = self.trained_model.predict(self.testing_input_data)
+        prediction_for_unfiltered[self.test_index] = np.array(self.testing_target_prediction)
+        self.testing_dataset.add_feature("Prediction",prediction_for_unfiltered)
         return
 
     def get_rmse(self):
