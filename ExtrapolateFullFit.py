@@ -329,8 +329,6 @@ class ExtrapolateFullFit(AnalysisTemplate):
                     show_training=True, group=group)
             self.make_series_feature_plot("series_feature_plot_filtered_%s" % group,use_filters=True, 
                     show_training=True, group=group)
-        print(self.extrapolation_dict)
-        print(self.plot_filter_dict)
         return
 
 
