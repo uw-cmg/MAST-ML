@@ -256,17 +256,25 @@ class ExtrapolateFullFit(AnalysisTemplate):
             edict[label]['xerrdata'] = None
             edict[label]['ydata'] = np.asarray(self.training_dataset[0].get_data(self.target_feature)).ravel()[use_index]
         for label in self.extrapolation_dict.keys():
-            edict[label] = dict()
+            s_analysis = self.extrapolation_dict[label].overall_analysis
             if use_filters:
                 if group is None:
                     use_index = self.plot_filter_dict[label]['nogroup']
                 else:
                     use_index = self.plot_filter_dict[label][group]
             else:
-                use_index = np.arange(0, self.extrapolation_dict[label].overall_analysis.testing_input_data.shape[0])
-            edict[label]['xdata'] = np.asarray(self.extrapolation_dict[label].overall_analysis.testing_dataset.get_data(self.feature_plot_field)).ravel()[use_index]
-            edict[label]['xerrdata'] = None
-            edict[label]['ydata'] = np.asarray(self.extrapolation_dict[label].overall_analysis.testing_dataset.get_data("Prediction")).ravel()[use_index]
+                use_index = np.arange(0, s_analysis.testing_input_data.shape[0])
+            if not(s_analysis.testing_target_data is None):
+                mlabel = "%s measured" % label
+                edict[mlabel] = dict()
+                edict[mlabel]['xdata'] = np.asarray(s_analysis.testing_dataset.get_data(self.feature_plot_field)).ravel()[use_index]
+                edict[mlabel]['xerrdata'] = None
+                edict[mlabel]['ydata'] = s_analysis.testing_target_data[use_index]
+            slabel = "%s predicted" % label
+            edict[slabel] = dict()
+            edict[slabel]['xdata'] = np.asarray(s_analysis.testing_dataset.get_data(self.feature_plot_field)).ravel()[use_index]
+            edict[slabel]['xerrdata'] = None
+            edict[slabel]['ydata'] = s_analysis.testing_target_prediction[use_index]
         series_list = list(edict.keys())
         if len(series_list) == 0:
             logging.info("No series for plot.")
@@ -279,6 +287,10 @@ class ExtrapolateFullFit(AnalysisTemplate):
         addl_kwargs['markers'] = self.markers
         addl_kwargs['outlines'] = self.outlines
         addl_kwargs['linestyles'] = self.linestyles
+        faces = list()
+        for fidx in range(0, len(self.markers)):
+            faces.append("None")
+        addl_kwargs['faces'] = faces
         plotdict.plot_group_splits_with_outliers(group_dict=edict,
             outlying_groups = series_list,
             label=plabel,
