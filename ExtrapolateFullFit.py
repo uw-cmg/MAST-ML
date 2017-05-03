@@ -181,6 +181,40 @@ class ExtrapolateFullFit(AnalysisTemplate):
             label="overall_plot_unfiltered",
             group_notelist = ["RMSE:"])
         return
+    
+    @timeit
+    def add_plotting_filter_index_to_extrapolation_dict(self):
+        """Needs rework with dataframes
+        """
+        for label in self.extrapolation_dict.keys():
+            plot_index = list()
+            out_index = list()
+            for pfstr in self.plot_filter_out:
+                pflist = pfstr.split(";")
+                feature = pflist[0].strip()
+                symbol = pflist[1].strip()
+                rawvalue = pflist[2].strip()
+                try:
+                    value = float(rawvalue)
+                except ValueError:
+                    value = rawvalue
+                featuredata = np.asarray(self.extrapolation_dict[label].testing_dataset.get_data(feature)).ravel()
+                for fidx in range(0, len(featuredata)):
+                    fdata = featuredata[fidx]
+                    if symbol == "<":
+                        if fdata < value:
+                            out_index.append(fidx)
+                    elif symbol == ">":
+                        if fdata > value:
+                            out_index.append(fidx)
+                    elif symbol == "=":
+                        if fdata == value:
+                            out_index.append(fidx)
+            test_index = self.extrapolation_dict[label].test_index
+            out_index = np.unique(out_index)
+            plot_index = np.setdiff1d(test_index, out_index)
+            self.extrapolation_dict[label]['plot_filter_index'] = plot_index
+        return
 
     @timeit
     def run(self):
