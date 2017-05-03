@@ -105,7 +105,6 @@ class ExtrapolateFullFit(AnalysisTemplate):
     def get_extrapolation_dict(self):
         test_data_labels = self.data_labels[1:] #first label is training data
         for tidx in range(0, len(self.testing_dataset)):
-            print(tidx)
             train_set = self.training_dataset[0] #MASTML gives single entry as list
             test_set = self.testing_dataset[tidx]
             label = test_data_labels[tidx]
