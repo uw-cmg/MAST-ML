@@ -211,7 +211,7 @@ class AnalysisTemplate():
     @timeit
     def get_prediction(self):
         prediction_for_unfiltered = list()
-        for pidx in range(0, len(self.testing_target_data_unfiltered)):
+        for pidx in range(0, self.testing_input_data_unfiltered.shape[0]):
             prediction_for_unfiltered.append(np.nan)
         prediction_for_unfiltered = np.array(prediction_for_unfiltered)
         self.testing_target_prediction = self.trained_model.predict(self.testing_input_data)
