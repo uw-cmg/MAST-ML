@@ -96,7 +96,12 @@ class ExtrapolateFullFit(AnalysisTemplate):
         self.outlines = outlines
         self.data_labels = data_labels
         self.linestyles = linestyles
-        self.plot_filter_out = plot_filter_out.split(",")
+        if type(plot_filter_out) is list:
+            self.plot_filter_out = plot_filter_out
+        elif type(plot_filter_out) is str:
+            self.plot_filter_out = plot_filter_out.split(",")
+        else:
+            self.plot_filter_out = plot_filter_out
         self.extrapolation_dict=dict()
         self.plot_filter_dict = None
         return
