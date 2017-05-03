@@ -177,7 +177,7 @@ class ExtrapolateFullFit(AnalysisTemplate):
         return
     
     @timeit
-    def make_plotting_filter_index(self, dataset, preexisting_index):
+    def make_plotting_filter_index(self, dataset, preexisting_index=None):
         plot_index = list()
         out_index = list()
         for pfstr in self.plot_filter_out:
@@ -201,7 +201,7 @@ class ExtrapolateFullFit(AnalysisTemplate):
                 elif symbol == "=":
                     if fdata == value:
                         out_index.append(fidx)
-        if preexisting_index == None:
+        if preexisting_index is None:
             preexisting_index = np.arange(0, len(np.asarray(dataset.get_data(feature)).ravel()))
         out_index = np.unique(out_index)
         plot_index = np.setdiff1d(preexisting_index, out_index)
