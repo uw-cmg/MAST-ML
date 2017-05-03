@@ -48,8 +48,6 @@ class AnalysisTemplate():
         testing_dataset=None,
         model=None,
         save_path=None,
-        train_index=None,
-        test_index=None,
         input_features=None,
         target_feature=None,
         labeling_features=None,
@@ -59,18 +57,12 @@ class AnalysisTemplate():
                 self.training_dataset=""
                 self.testing_dataset=""
                 self.model=""
-                self.train_index=""
-                self.test_index=""
                 self.input_features=""
                 self.target_feature=""
                 self.labeling_features=""
                 self.save_path=""
             Other attributes:
                 self.analysis_name=""
-                self.training_input_data_unfiltered=""
-                self.training_target_data_unfiltered=""
-                self.testing_input_data_unfiltered=""
-                self.testing_target_data_unfiltered=""
                 self.training_input_data=""
                 self.training_target_data=""
                 self.testing_input_data=""
@@ -100,9 +92,6 @@ class AnalysisTemplate():
             self.testing_dataset=testing_dataset
         # model
         self.model=model
-        # train/test index
-        self.train_index=train_index
-        self.test_index=test_index
         # features
         if input_features is None:
             raise ValueError("input_features is not set")
@@ -127,10 +116,6 @@ class AnalysisTemplate():
         #    self.analysis_name = analysis_name
         # Self-set attributes
         self.analysis_name = os.path.basename(self.save_path)
-        self.training_input_data_unfiltered=None
-        self.training_target_data_unfiltered=None
-        self.testing_input_data_unfiltered=None
-        self.testing_target_data_unfiltered=None
         self.training_input_data=None
         self.training_target_data=None
         self.testing_input_data=None
@@ -145,9 +130,7 @@ class AnalysisTemplate():
    
     @timeit
     def run(self):
-        self.get_unfiltered_data()
-        self.get_train_test_indices()
-        self.get_data()
+        self.set_data()
         self.get_model()
         self.get_trained_model()
         self.get_prediction()
@@ -160,40 +143,21 @@ class AnalysisTemplate():
 
     
     @timeit
-    def get_unfiltered_data(self):
+    def set_data(self):
         """Replace with pandas dataframes
         """
         self.training_dataset.set_y_feature(self.target_feature)
         self.training_dataset.set_x_features(self.input_features)
-        self.training_input_data_unfiltered = np.asarray(self.training_dataset.get_x_data())
-        self.training_target_data_unfiltered = np.asarray(self.training_dataset.get_y_data()).ravel()
+        self.training_input_data = np.asarray(self.training_dataset.get_x_data())
+        self.training_target_data = np.asarray(self.training_dataset.get_y_data()).ravel()
         hasy = self.testing_dataset.set_y_feature(self.target_feature)
         if hasy:
-            self.testing_target_data_unfiltered = np.asarray(self.testing_dataset.get_y_data()).ravel()
+            self.testing_target_data = np.asarray(self.testing_dataset.get_y_data()).ravel()
         else:
             self.testing_dataset.set_y_feature(self.input_features[0]) #dummy y feature
-            #self.testing_target_data_unfiltered remains None
+            #self.testing_target_data remains None
         self.testing_dataset.set_x_features(self.input_features)
-        self.testing_input_data_unfiltered = np.asarray(self.testing_dataset.get_x_data())
-        return
-    
-    @timeit
-    def get_train_test_indices(self):
-        if (self.train_index is None):
-            train_obs = self.training_input_data_unfiltered.shape[0]
-            self.train_index = np.arange(0, train_obs)
-        if (self.test_index is None):
-            test_obs = self.testing_input_data_unfiltered.shape[0]
-            self.test_index = np.arange(0, test_obs)
-        return
-    
-    @timeit
-    def get_data(self):
-        self.training_input_data = self.training_input_data_unfiltered[self.train_index]
-        self.training_target_data = self.training_target_data_unfiltered[self.train_index]
-        self.testing_input_data = self.testing_input_data_unfiltered[self.test_index]
-        if not (self.testing_target_data_unfiltered is None):
-            self.testing_target_data = self.testing_target_data_unfiltered[self.test_index]
+        self.testing_input_data = np.asarray(self.testing_dataset.get_x_data())
         return
 
     @timeit
@@ -210,13 +174,8 @@ class AnalysisTemplate():
 
     @timeit
     def get_prediction(self):
-        prediction_for_unfiltered = list()
-        for pidx in range(0, self.testing_input_data_unfiltered.shape[0]):
-            prediction_for_unfiltered.append(np.nan)
-        prediction_for_unfiltered = np.array(prediction_for_unfiltered)
         self.testing_target_prediction = self.trained_model.predict(self.testing_input_data)
-        prediction_for_unfiltered[self.test_index] = np.array(self.testing_target_prediction)
-        self.testing_dataset.add_feature("Prediction",prediction_for_unfiltered)
+        self.testing_dataset.add_feature("Prediction",self.testing_target_prediction)
         return
 
     def get_rmse(self):
@@ -271,7 +230,7 @@ class AnalysisTemplate():
             print_features.append(self.target_feature)
         for feature_name in print_features:
             headerline = headerline + feature_name + ","
-            feature_vector = np.asarray(self.testing_dataset.get_data(feature_name)).ravel()[self.test_index]
+            feature_vector = np.asarray(self.testing_dataset.get_data(feature_name)).ravel()
             if printarray is None:
                 printarray = feature_vector
             else:
