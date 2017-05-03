@@ -93,6 +93,8 @@ class MASTMLDriver(object):
                 test_params['input_features'] = self.string_or_list_input_to_list(test_params['input_features'])
             if not ('target_feature' in test_params.keys()):
                 test_params['target_feature'] = generalsetup['target_feature']
+            if not ('target_error_feature' in test_params.keys()):
+                test_params['target_error_feature'] = generalsetup['target_error_feature']
             if 'labeling_features' in test_params.keys():
                 test_params['labeling_features'] = self.string_or_list_input_to_list(test_params['labeling_features'])
             # Set save path
