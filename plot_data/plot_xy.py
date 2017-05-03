@@ -424,17 +424,18 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
         label = labellist[nidx]
         nospace_label = label.replace(" ","_")
         savecsv = os.path.join(save_path,"data_%s.csv" % nospace_label)
-        headerstr="%s" % xlabel
+        headerstr="%s," % xlabel
         myarrlist = list()
         myarrlist.append(xdatalist[nidx])
         if not(xerr is None):
-            headerstr = headerstr + ",xerr,"
+            headerstr = headerstr + "xerr,"
             myarrlist.append(xerrlist[nidx])
-        headerstr = headerstr + "%s" % label
+        headerstr = headerstr + "%s," % label
         myarrlist.append(ydatalist[nidx])
         if not (yerr is None):
-            headerstr = headerstr + ",yerr"
+            headerstr = headerstr + "yerr,"
             myarrlist.append(yerrlist[nidx])
+        headerstr=headerstr[:-1] #remove last comma
         myarray = np.asarray(myarrlist).transpose()
         ptools.mixed_array_to_csv(savecsv, headerstr, myarray)
     return
