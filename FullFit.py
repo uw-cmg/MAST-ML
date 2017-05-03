@@ -7,6 +7,7 @@ from sklearn.metrics import mean_squared_error
 import data_analysis.printout_tools as ptools
 import plot_data.plot_predicted_vs_measured as plotpm
 import plot_data.plot_xy as plotxy
+import plot_data.plot_from_dict as plotdict
 import portion_data.get_test_train_data as gttd
 import os
 from AnalysisTemplate import AnalysisTemplate
@@ -180,51 +181,17 @@ class FullFit(AnalysisTemplate):
 
     @timeit
     def plot_group_splits_with_outliers(self, group_dict=None, outlying_groups=list(), label="group_splits", group_notelist=list()):
-        xdatalist=list()
-        ydatalist=list()
-        labellist=list()
-        xerrlist=list()
-        yerrlist=list()
-        otherxdata=list()
-        otherxerrdata=list()
-        otherydata=list()
-        groups = list(group_dict.keys())
-        groups.sort()
-        for group in groups:
-            if group in outlying_groups:
-                rmse = group_dict[group]['rmse']
-                xdatalist.append(group_dict[group]['xdata'])
-                xerrlist.append(group_dict[group]['xerrdata'])
-                ydatalist.append(group_dict[group]['ydata'])
-                yerrlist.append(None)
-                labellist.append(group)
-                group_notelist.append('{:<1}: {:.2f}'.format(group, rmse))
-            else:
-                otherxdata.extend(group_dict[group]['xdata'])
-                otherxerrdata.extend(group_dict[group]['xerrdata'])
-                otherydata.extend(group_dict[group]['ydata'])
-        if len(otherxdata) > 0:
-            xdatalist.insert(0,otherxdata) #prepend
-            xerrlist.insert(0,otherxerrdata)
-            ydatalist.insert(0,otherydata)
-            yerrlist.insert(0,None)
-            labellist.insert(0,"All others")
-            all_other_rmse = np.sqrt(mean_squared_error(otherydata, otherxdata))
-            group_notelist.append('{:<1}: {:.2f}'.format("All others", all_other_rmse))
-        kwargs=dict()
-        kwargs['xlabel'] = self.xlabel
-        kwargs['ylabel'] = self.ylabel
-        kwargs['save_path'] = os.path.join(self.save_path, label)
-        kwargs['xdatalist'] = xdatalist
-        kwargs['ydatalist'] = ydatalist
-        kwargs['stepsize'] = self.stepsize
-        kwargs['xerrlist'] = xerrlist
-        kwargs['yerrlist'] = yerrlist
-        kwargs['labellist'] = labellist
-        kwargs['notelist'] = group_notelist
-        kwargs['plotlabel'] = label
-        kwargs['guideline'] = 1
-        plotxy.multiple_overlay(**kwargs) 
+        addl_kwargs=dict()
+        addl_kwargs['xlabel'] = self.xlabel
+        addl_kwargs['ylabel'] = self.ylabel
+        addl_kwargs['save_path'] = os.path.join(self.save_path, label)
+        addl_kwargs['stepsize'] = self.stepsize
+        addl_kwargs['guideline'] = 1
+        plotdict.plot_group_splits_with_outliers(group_dict = dict(group_dict),
+            outlying_groups = list(outlying_groups),
+            label=label, 
+            group_notelist=list(group_notelist),
+            addl_kwargs = dict(addl_kwargs))
         self.print_overlay_readme(label=label)
         return
     
