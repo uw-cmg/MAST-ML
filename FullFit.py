@@ -93,6 +93,7 @@ class FullFit(AnalysisTemplate):
                 save_path = single_save,
                 input_features = self.input_features, 
                 target_feature = self.target_feature,
+                target_error_feature = self.target_error_feature,
                 labeling_features = self.labeling_features)
         if not os.path.isdir(single_save):
             os.mkdir(single_save)
@@ -222,7 +223,7 @@ class FullFit(AnalysisTemplate):
             if self.target_error_feature is None:
                 sgdict[group]['xerrdata'] = np.zeros(len(g_analysis.testing_target_data))
             else:
-                sgdict[group]['xerrdata'] = self.testing_target_data_error
+                sgdict[group]['xerrdata'] = g_analysis.testing_target_data_error
             sgdict[group]['ydata'] = g_analysis.testing_target_prediction
             g_rmse = g_analysis.statistics['rmse']
             sgdict[group]['rmse'] = g_rmse
