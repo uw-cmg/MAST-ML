@@ -20,17 +20,15 @@ class FullFit(AnalysisTemplate):
         testing_dataset,
         model,
         save_path,
-        train_index,
-        test_index,
         input_features,
         target_feature,
+        target_error_feature,
         labeling_features, see AnalysisTemplate.
         xlabel <str>: Label for full-fit x-axis.
         ylabel <str>: Label for full-fit y-axis
         stepsize <float>: Step size for plot grid
         group_field_name <str>: (optional) field name for grouping data
                                         field may be numeric
-        measured_error_field_name <str>: field name for measured y-data error (optional)
         mark_outlying_groups <int>: Number of outlying groups to mark
         Plots results in a Predicted vs. Measured square plot.
     """
@@ -39,16 +37,14 @@ class FullFit(AnalysisTemplate):
         testing_dataset=None,
         model=None,
         save_path=None,
-        train_index=None,
-        test_index=None,
         input_features=None,
         target_feature=None,
+        target_error_feature=None,
         labeling_features=None,
         xlabel="Measured",
         ylabel="Predicted",
         stepsize=1,
         group_field_name = None,
-        measured_error_field_name = None,
         mark_outlying_groups = 2,
         *args, **kwargs):
         AnalysisTemplate.__init__(self, 
@@ -56,16 +52,14 @@ class FullFit(AnalysisTemplate):
             testing_dataset=testing_dataset,
             model=model, 
             save_path = save_path,
-            train_index = train_index, 
-            test_index = test_index,
             input_features = input_features, 
             target_feature = target_feature,
+            target_error_feature = target_error_feature,
             labeling_features = labeling_features)
         self.xlabel = xlabel
         self.ylabel = ylabel
         self.stepsize = float(stepsize)
         self.group_field_name = group_field_name
-        self.measured_error_field_name = measured_error_field_name
         self.mark_outlying_groups = int(mark_outlying_groups)
         self.overall_analysis=None
         self.train_group_data = None
@@ -76,21 +70,17 @@ class FullFit(AnalysisTemplate):
         self.test_groups =None
         self.overall_group_dict=dict()
         self.overall_outlying_groups=list()
-        self.measured_error_data = None
         self.group_analysis_dict=dict()
         self.split_outlying_groups=list()
         self.split_group_dict=dict()
         return
     
     @timeit
-    def do_single_fit(self, label="single_fit", train_index=None, test_index=None):
+    def do_single_fit(self, label="single_fit", group=None):
         """Do a single fit.
             Args:
                 label <str>: subfolder label
-                train_index <None or list>: training index:
-                                list of data index numbers to use,
-                                for example, to filter data by groups
-                test_index <None or list>: testing index
+                group <str or int>: group
             Returns:
                 AnalysisTemplate object
                 Plots and saves information to the 'label' subfolder
@@ -101,16 +91,15 @@ class FullFit(AnalysisTemplate):
                 testing_dataset= self.testing_dataset,
                 model=self.model, 
                 save_path = single_save,
-                train_index = train_index, 
-                test_index = test_index,
                 input_features = self.input_features, 
                 target_feature = self.target_feature,
                 labeling_features = self.labeling_features)
         if not os.path.isdir(single_save):
             os.mkdir(single_save)
-        single_analysis.get_unfiltered_data()
-        single_analysis.get_train_test_indices()
-        single_analysis.get_data()
+        if not (group is None):
+            single_analysis.training_dataset.add_exclusive_filter(self.group_field_name, "<>", group)
+            single_analysis.testing_dataset.add_exclusive_filter(self.group_field_name,"<>", group)
+        single_analysis.set_data()
         single_analysis.get_model()
         single_analysis.get_trained_model()
         single_analysis.get_prediction()
@@ -124,14 +113,6 @@ class FullFit(AnalysisTemplate):
         addl_plot_kwargs['stepsize'] = self.stepsize
         addl_plot_kwargs['label'] = label
         addl_plot_kwargs['save_path'] = single_save
-        if self.measured_error_field_name is None:
-            pass
-        else:
-            self.measured_error_data = np.asarray(self.testing_dataset.get_data(self.measured_error_field_name)).ravel()
-            if test_index is None:
-                addl_plot_kwargs['xerr'] = self.measured_error_data
-            else:
-                addl_plot_kwargs['xerr'] = self.measured_error_data[test_index]
         single_analysis.plot_results(addl_plot_kwargs)
         return single_analysis
 
@@ -158,12 +139,12 @@ class FullFit(AnalysisTemplate):
             if self.overall_analysis.testing_target_data is None:
                 continue #no target data; cannot add to plotting
             g_ydata = self.overall_analysis.testing_target_data[g_index]
+            if self.overall_analysis.testing_target_data_error is None:
+                g_ydata_err = np.zeros(len(g_index))
+            else:
+                g_ydata_err = self.overall_analysis.testing_target_data_error[g_index]
             #g_mean_error = np.mean(g_ypredict - g_ydata)
             g_rmse = np.sqrt(mean_squared_error(g_ypredict, g_ydata))
-            if self.measured_error_field_name is None:
-                g_ydata_err = None
-            else:
-                g_ydata_err = self.measured_error_data[g_index]
             osg_dict[group] = dict()
             osg_dict[group]['xdata'] = g_ydata
             osg_dict[group]['xerrdata'] = g_ydata_err
@@ -222,11 +203,8 @@ class FullFit(AnalysisTemplate):
             if not(group in self.test_group_indices.keys()):
                 logging.info("Skipping group %s not in testing data" % group)
                 continue
-            train_index = self.train_group_indices[group]['test_index']
-            test_index = self.test_group_indices[group]['test_index']
             self.group_analysis_dict[group] = self.do_single_fit(label=group,
-                                                train_index=train_index,
-                                                test_index=test_index)
+                                                group=group)
         return
 
     @timeit
@@ -241,10 +219,10 @@ class FullFit(AnalysisTemplate):
             g_analysis = self.group_analysis_dict[group] #AnalysisTemplate obj.
             sgdict[group]=dict()
             sgdict[group]['xdata'] = g_analysis.testing_target_data
-            if self.measured_error_field_name is None:
-                sgdict[group]['xerrdata'] = None
+            if self.target_error_feature is None:
+                sgdict[group]['xerrdata'] = np.zeros(len(g_analysis.testing_target_data))
             else:
-                sgdict[group]['xerrdata'] = self.measured_error_data[g_analysis.test_index]
+                sgdict[group]['xerrdata'] = self.testing_target_data_error
             sgdict[group]['ydata'] = g_analysis.testing_target_prediction
             g_rmse = g_analysis.statistics['rmse']
             sgdict[group]['rmse'] = g_rmse
