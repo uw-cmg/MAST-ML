@@ -11,6 +11,7 @@ from sklearn.ensemble import RandomForestRegressor
 import sklearn.tree as tree
 import neurolab as nl
 import importlib
+import logging
 
 class ConfigFileParser(object):
     """Class to read in and parse contents of config file
@@ -41,23 +42,128 @@ class ConfigFileParser(object):
 class ConfigFileValidator(ConfigFileParser):
     """Class to validate contents of user-specified MASTML input file and flag any errors
     """
-    def __init__(self, configfile):
+    def __init__(self, configfile, validationfile):
         super(ConfigFileValidator, self).__init__(self)
         self.configfile = configfile
+        self.validationfile = validationfile
 
     def run_config_validation(self):
+        errors_present = False
         validator = self._generate_validator()
-        config = ConfigObj(self.configfile)
         configdict = self.get_config_dict()
-        #validation = config.validate(validator=validator)
-        #print(validation)
+        validationdict = ConfigFileParser(configfile=self.validationfile).get_config_dict()
+        configdict, errors_present = self._check_config_headings(configdict=configdict, validationdict=validationdict,
+                                                                 validator=validator, errors_present=errors_present)
+        self._check_for_errors(errors_present=errors_present)
+        configdict, errors_present = self._check_general_setup(configdict=configdict, validationdict=validationdict,
+                                                               validator=validator, errors_present=errors_present)
+        self._check_for_errors(errors_present=errors_present)
+        configdict, errors_present = self._check_data_setup(configdict=configdict, validationdict=validationdict,
+                                                            validator=validator, errors_present=errors_present)
+        self._check_for_errors(errors_present=errors_present)
+        configdict, errors_present = self._check_models_and_tests_to_run(configdict=configdict, validationdict=validationdict,
+                                                            validator=validator, errors_present=errors_present)
+
+        """
         try:
             configdict['models'] = validator.check(check='string', value=configdict['models'])
         except(VdtTypeError):
             configdict['models'] = validator.check(check='int_list', value=configdict['models'])
         print(configdict['models'])
         print(type(configdict['models'][0]))
-        return configdict
+        """
+
+        return configdict, errors_present
+
+    def _check_config_headings(self, configdict, validationdict, validator, errors_present):
+        try:
+            for k in configdict.keys():
+                k = validator.check(check='string', value=k)
+        except(VdtTypeError):
+            logging.info('The section %s in your input file did not successfully import as a string' % str(k))
+            errors_present = bool(True)
+
+        for k in validationdict.keys():
+            if k not in configdict.keys():
+                logging.info('You are missing the %s section in your input file' % str(k))
+                errors_present = bool(True)
+
+        return configdict, errors_present
+
+    def _check_general_setup(self, configdict, validationdict, validator, errors_present):
+        try:
+            for k, v in configdict['General Setup'].items():
+                if k == 'save_path' or k == 'target_feature':
+                    k = validator.check(check='string', value=k)
+                    configdict['General Setup'][k] = validator.check(check='string', value=configdict['General Setup'][k])
+                if k == 'input_features':
+                    try:
+                        k = validator.check(check='string', value=k)
+                    except(VdtTypeError):
+                        k = validator.check(check='string_list', value=k)
+        except(VdtTypeError):
+            logging.info('The parameter %s in your General Setup section did not successfully import as a string' % str(k))
+            errors_present = bool(True)
+
+        for k in validationdict['General Setup'].keys():
+            if k not in configdict['General Setup'].keys():
+                logging.info('The General Setup section of your input file is missing the input parameter: %s' % str(k))
+                errors_present = bool(True)
+
+        return configdict, errors_present
+
+    def _check_data_setup(self, configdict, validationdict, validator, errors_present):
+        try:
+            for k, v in configdict['Data Setup'].items():
+                k = validator.check(check='string', value=k)
+        except(VdtTypeError):
+            logging.info('The parameter %s in your Data Setup section did not successfully import as a string' % str(k))
+            errors_present = bool(True)
+
+        try:
+            for k, v in configdict['Data Setup'].items():
+                for kk, vv in v.items():
+                    configdict['Data Setup'][k][kk] = validator.check(check='string', value=configdict['Data Setup'][k][kk])
+        except(VdtTypeError):
+            logging.info('The parameter %s in your Data Setup section did not successfully import as a string' % str(kk))
+            errors_present = bool(True)
+
+        for k in validationdict['Data Setup'].keys():
+            if k == 'Initial' and k not in configdict['Data Setup'].keys():
+                logging.info('The Data Setup section of your input file is missing the input parameter: %s' % str(k))
+                errors_present = bool(True)
+
+        return configdict, errors_present
+
+    def _check_models_and_tests_to_run(self, configdict, validationdict, validator, errors_present):
+        try:
+            for k, v in configdict['Models and Tests to Run'].items():
+                k = validator.check(check='string', value=k)
+                if type(v) is str:
+                    v = validator.check(check='string', value=v)
+                elif type(v) is list:
+                    v = validator.check(check='string_list', value=v)
+                else:
+                    logging.log('The parameter %s = %s in your Models and Tests to Run section is an invalid data type.'
+                                'Supported types are string (one entry) or list of strings (multiple entries)' % str(k), str(v))
+        except(VdtTypeError):
+            logging.info('The parameter %s = %s in your Models and Tests to Run section did not successfully import as a string' % str(k), str(v))
+            errors_present = bool(True)
+
+
+
+        return configdict, errors_present
+
+    def _check_test_parameters(self, configdict, validator):
+        pass
+
+    def _check_model_parameters(self, configdict, validator):
+        pass
+
+    def _check_for_errors(self, errors_present):
+        if errors_present == bool(True):
+            logging.info('Errors have been detected in your MASTML setup. Please correct the errors and re-run MASTML')
+            sys.exit()
 
     def _generate_validator(self):
         return Validator()
