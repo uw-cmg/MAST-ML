@@ -50,6 +50,7 @@ class AnalysisTemplate():
         save_path=None,
         input_features=None,
         target_feature=None,
+        target_feature_error=None,
         labeling_features=None,
         *args, **kwargs):
         """Initialize class.
@@ -59,6 +60,7 @@ class AnalysisTemplate():
                 self.model=""
                 self.input_features=""
                 self.target_feature=""
+                self.target_error_feature=""
                 self.labeling_features=""
                 self.save_path=""
             Other attributes:
@@ -69,6 +71,7 @@ class AnalysisTemplate():
                 self.testing_target_data=""
                 self.trained_model=""
                 self.testing_target_prediction=""
+                self.testing_target_error_data=""
                 self.statistics=dict()
         """
         # Keyword-set attributes
@@ -99,6 +102,7 @@ class AnalysisTemplate():
         if target_feature is None:
             raise ValueError("target_feature is not set")
         self.target_feature=target_feature
+        self.target_error_feature = target_error_feature
         if labeling_features is None:
             self.labeling_features = list()
         else:
@@ -153,6 +157,8 @@ class AnalysisTemplate():
         hasy = self.testing_dataset.set_y_feature(self.target_feature)
         if hasy:
             self.testing_target_data = np.asarray(self.testing_dataset.get_y_data()).ravel()
+            if not(self.target_error_feature is None):
+                self.testing_target_error_data = np.asarray(self.testing_dataset.get_data(self.target_error_feature)).ravel()
         else:
             self.testing_dataset.set_y_feature(self.input_features[0]) #dummy y feature
             #self.testing_target_data remains None
