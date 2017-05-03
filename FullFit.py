@@ -188,9 +188,9 @@ class FullFit(AnalysisTemplate):
         otherxdata=list()
         otherxerrdata=list()
         otherydata=list()
-        test_groups = list(self.test_groups)
-        test_groups.sort()
-        for group in test_groups:
+        groups = list(group_dict.keys())
+        groups.sort()
+        for group in groups:
             if group in outlying_groups:
                 rmse = group_dict[group]['rmse']
                 xdatalist.append(group_dict[group]['xdata'])
@@ -249,6 +249,12 @@ class FullFit(AnalysisTemplate):
         all_groups = list(self.train_groups)
         all_groups.extend(list(self.test_groups))
         for group in all_groups:
+            if not(group in self.train_group_indices.keys()):
+                logging.info("Skipping group %s not in training data" % group)
+                continue
+            if not(group in self.test_group_indices.keys()):
+                logging.info("Skipping group %s not in testing data" % group)
+                continue
             train_index = self.train_group_indices[group]['test_index']
             test_index = self.test_group_indices[group]['test_index']
             self.group_analysis_dict[group] = self.do_single_fit(label=group,
@@ -297,7 +303,12 @@ class FullFit(AnalysisTemplate):
         else:
             if self.overall_analysis.testing_target_data is None:
                 rlist.append("<group> folders\n")
-                rlist.append("    Individual group fits.\n")
+                rlist.append("    Individual group fits, training on\n")
+                rlist.append("        a single group and testing on\n")
+                rlist.append("        a single group.\n")
+                rlist.append("    Only groups that appear in both the\n")
+                rlist.append("        training data and the testing data\n")
+                rlist.append("        have their own folder.\n")
                 rlist.append("Overlayed plot folders would have appeared,\n")
                 rlist.append("    but there is no testing data to plot.\n")
             else:
