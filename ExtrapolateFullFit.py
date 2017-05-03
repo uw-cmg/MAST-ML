@@ -157,7 +157,7 @@ class ExtrapolateFullFit(AnalysisTemplate):
                 if not('rmse' in self.extrapolation_dict[label].overall_analysis.statistics.keys()):
                     continue #no measured data; cannot be plotted
                 edict[label] = dict()
-                plot_filter = self.plot_filter_dict[label]
+                plot_filter = self.plot_filter_dict[label]['nogroup']
                 edict[label]['xdata'] = np.asarray(self.extrapolation_dict[label].overall_analysis.testing_dataset.get_y_data()).ravel()[plot_filter]
                 if self.measured_error_field_name is None:
                     edict[label]['xerrdata'] = None
@@ -229,8 +229,33 @@ class ExtrapolateFullFit(AnalysisTemplate):
         """
         pdict=dict()
         for label in self.extrapolation_dict.keys():
-            pdict[label] = self.make_plotting_filter_index(self.extrapolation_dict[label].testing_dataset, self.extrapolation_dict[label].test_index)
-        pdict[self.data_labels[0]] = self.make_plotting_filter_index(self.training_dataset[0], self.train_index)
+            pdict[label]=dict()
+            pdict[label]['nogroup'] = self.make_plotting_filter_index(self.extrapolation_dict[label].testing_dataset, self.extrapolation_dict[label].test_index)
+            if self.group_field_name is None:
+                pass
+            else:
+                for group in self.extrapolation_dict[label].test_groups:
+                    test_index = self.extrapolation_dict[label].test_index
+                    if test_index is None:
+                        pre_index = self.extrapolation_dict[label].test_group_indices[group]['test_index']
+                    else:
+                        pre_index = np.intersect1d(test_index, self.extrapolation_dict[label].test_group_indices[group]['test_index'])
+                    pdict[label][group] = self.make_plotting_filter_index(self.extrapolation_dict[label].testing_dataset, pre_index)
+        #for training data, all have same training data; use last label
+        tlabel = self.data_labels[0]
+        pdict[tlabel]=dict()
+        pdict[tlabel]['nogroup'] = self.make_plotting_filter_index(self.training_dataset[0], self.extrapolation_dict[label].train_index)
+        if self.group_field_name is None:
+            pass
+        else:
+            for group in self.extrapolation_dict[label].train_groups:
+                train_index = self.extrapolation_dict[label].train_index
+                if train_index is None:
+                    pre_index = self.extrapolation_dict[label].train_group_indices[group]['test_index']
+                else:
+                    pre_index = np.intersect1d(train_index, self.extrapolation_dict[label].train_group_indices[group]['test_index'])
+                    pdict[label][group] = self.make_plotting_filter_index(self.extrapolation_dict[label].testing_dataset, pre_index)
+                pdict[tlabel][group] = self.make_plotting_filter_index(self.training_dataset[0], pre_index)
         self.plot_filter_dict = dict(pdict)
         return
 
@@ -248,7 +273,10 @@ class ExtrapolateFullFit(AnalysisTemplate):
             label = self.data_labels[0] #training label
             edict[label] = dict()
             if use_filters:
-                use_index = self.plot_filter_dict[label]
+                if group is None:
+                    use_index = self.plot_filter_dict[label]['nogroup']
+                else:
+                    use_index = self.plot_filter_dict[label][group]
             else:
                 use_index = self.train_index
                 if use_index is None:
@@ -259,7 +287,10 @@ class ExtrapolateFullFit(AnalysisTemplate):
         for label in self.extrapolation_dict.keys():
             edict[label] = dict()
             if use_filters:
-                use_index = self.plot_filter_dict[label]
+                if group is None:
+                    use_index = self.plot_filter_dict[label]['nogroup']
+                else:
+                    use_index = self.plot_filter_dict[label][group]
             else:
                 use_index = self.extrapolation_dict[label].test_index
                 if use_index is None:
@@ -293,10 +324,11 @@ class ExtrapolateFullFit(AnalysisTemplate):
         if not(self.plot_filter_out is None):
             self.make_plotting_filter_dict()
             self.make_overall_plot("overall_plot_filtered",use_filters=True)
-        self.make_series_feature_plot("series_feature_plot_unfiltered",use_filters=False, 
-                show_training=True, group=None)
-        self.make_series_feature_plot("series_feature_plot_filtered",use_filters=True, 
-                show_training=True, group=None)
+        for group in self.plot_filter_dict[self.data_labels[0]].keys():
+            self.make_series_feature_plot("series_feature_plot_unfiltered_%s" % group,use_filters=False, 
+                    show_training=True, group=group)
+            self.make_series_feature_plot("series_feature_plot_filtered_%s" % group,use_filters=True, 
+                    show_training=True, group=group)
         print(self.extrapolation_dict)
         print(self.plot_filter_dict)
         return
