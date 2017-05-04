@@ -8,6 +8,7 @@ from sklearn.metrics import mean_squared_error
 import data_analysis.printout_tools as ptools
 import portion_data.get_test_train_data as gttd
 from SingleFit import timeit
+from SingleFit import SingleFit
 from SingleFitGrouped import SingleFitGrouped
 import plot_data.plot_xy as plotxy
 import plot_data.plot_from_dict as plotdict
@@ -141,7 +142,8 @@ class PredictionVsFeature(SingleFitGrouped):
         self.readme_list.append("----- Fitting and prediction -----\n")
         self.readme_list.append("See results per dataset in subfolders\n")
         for testset in self.testing_dataset_dict.keys():
-            self.sfg_dict[testset] = SingleFitGrouped( 
+            self.readme_list.append("  %s\n" % testset)
+            sfg_obj = SingleFitGrouped( 
                 training_dataset = self.training_dataset, 
                 testing_dataset = self.testing_dataset_dict[testset],
                 model = self.model, 
@@ -157,8 +159,22 @@ class PredictionVsFeature(SingleFitGrouped):
                 grouping_feature = self.grouping_feature,
                 mark_outlying_groups = self.mark_outlying_groups,
                 fit_only_on_matched_groups = self.fit_only_on_matched_groups)
-            self.sfg_dict[testset].run()
-            self.readme_list.append("  %s" % testset)
+            # Not all testing sets will have target data
+            sfg_obj.set_group_info()
+            if sfg_obj.fit_only_on_matched_groups == 1:
+                out_training_groups = np.setdiff1d(sfg_obj.train_groups, 
+                                                    sfg_obj.test_groups)
+                for group in out_training_groups:
+                    sfg_obj.training_dataset.add_exclusive_filter(sfg_obj.grouping_feature,"=",group)
+            SingleFit.set_data(sfg_obj)
+            sfg_obj.fit()
+            sfg_obj.get_prediction()
+            sfg_obj.print_output_csv()
+            if not (sfg_obj.testing_target_data is None):
+                sfg_obj.get_statistics()
+                sfg_obj.print_statistics()
+            sfg_obj.print_readme()
+            self.sfg_dict[testset] = sfg_obj
         return
 
     @timeit
