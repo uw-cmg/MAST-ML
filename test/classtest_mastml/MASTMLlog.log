@@ -47790,3 +47790,400 @@ INFO:root:SingleFit.run took 00:00:2.372084
 INFO:root:Ran test FitPerGroup_test for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
       kernel_params=None) model
 INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Parsed the input data located under ../random_data/random_set2_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noA.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type SingleFitGrouped_test
+INFO:root:-------- SingleFitGrouped_test --------
+INFO:root:Starting analysis at Thu May  4 14:34:38 2017
+INFO:root:SingleFit.set_up took 00:00:0.078207
+INFO:root:SingleFit.fit took 00:00:0.681188
+INFO:root:SingleFit.predict took 00:00:0.017256
+INFO:root:SingleFitGrouped.plot_group_splits_with_outliers took 00:00:0.908510
+INFO:root:SingleFit.plot took 00:00:2.350396
+INFO:root:SingleFit.print_readme took 00:00:0.000201
+INFO:root:SingleFit.run took 00:00:3.127801
+INFO:root:Ran test SingleFitGrouped_test for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_set2_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noA.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type SingleFitGrouped_match
+INFO:root:-------- SingleFitGrouped_match --------
+INFO:root:Starting analysis at Thu May  4 14:36:01 2017
+INFO:root:SingleFit.set_up took 00:00:0.009795
+INFO:root:SingleFit.fit took 00:00:0.040825
+INFO:root:SingleFit.predict took 00:00:0.004288
+INFO:root:SingleFitGrouped.plot_group_splits_with_outliers took 00:00:0.896510
+INFO:root:SingleFit.plot took 00:00:1.707657
+INFO:root:SingleFit.print_readme took 00:00:0.000246
+INFO:root:SingleFit.run took 00:00:1.763347
+INFO:root:Ran test SingleFitGrouped_match for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Looking up parameters for test type SingleFitGrouped_nomatch
+INFO:root:-------- SingleFitGrouped_nomatch --------
+INFO:root:Starting analysis at Thu May  4 14:36:03 2017
+INFO:root:SingleFit.set_up took 00:00:0.010193
+INFO:root:SingleFit.fit took 00:00:0.000947
+INFO:root:SingleFit.predict took 00:00:0.004428
+INFO:root:SingleFitGrouped.plot_group_splits_with_outliers took 00:00:0.866389
+INFO:root:SingleFit.plot took 00:00:1.697621
+INFO:root:SingleFit.print_readme took 00:00:0.000179
+INFO:root:SingleFit.run took 00:00:1.713821
+INFO:root:Ran test SingleFitGrouped_nomatch for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noA.csv
+INFO:root:Parsed the input data located under ../random_data/random_set2_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type SingleFitGrouped_match
+INFO:root:-------- SingleFitGrouped_match --------
+INFO:root:Starting analysis at Thu May  4 14:37:21 2017
+INFO:root:SingleFit.set_up took 00:00:0.013606
+INFO:root:SingleFit.fit took 00:00:0.068384
+INFO:root:SingleFit.predict took 00:00:0.004939
+INFO:root:SingleFitGrouped.plot_group_splits_with_outliers took 00:00:0.952028
+INFO:root:SingleFit.plot took 00:00:1.867194
+INFO:root:SingleFit.print_readme took 00:00:0.000239
+INFO:root:SingleFit.run took 00:00:1.954899
+INFO:root:Ran test SingleFitGrouped_match for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Looking up parameters for test type SingleFitGrouped_nomatch
+INFO:root:-------- SingleFitGrouped_nomatch --------
+INFO:root:Starting analysis at Thu May  4 14:37:23 2017
+INFO:root:SingleFit.set_up took 00:00:0.009816
+INFO:root:SingleFit.fit took 00:00:0.001226
+INFO:root:SingleFit.predict took 00:00:0.004360
+INFO:root:SingleFitGrouped.plot_group_splits_with_outliers took 00:00:0.955889
+INFO:root:SingleFit.plot took 00:00:1.766885
+INFO:root:SingleFit.print_readme took 00:00:0.000162
+INFO:root:SingleFit.run took 00:00:1.782959
+INFO:root:Ran test SingleFitGrouped_nomatch for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noA.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_set2_data.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type SingleFitGrouped_match
+INFO:root:-------- SingleFitGrouped_match --------
+INFO:root:Starting analysis at Thu May  4 14:39:08 2017
+INFO:root:SingleFit.set_up took 00:00:0.010056
+INFO:root:SingleFit.fit took 00:00:0.065223
+INFO:root:SingleFit.predict took 00:00:0.005064
+INFO:root:SingleFitGrouped.plot_group_splits_with_outliers took 00:00:0.822153
+INFO:root:SingleFit.plot took 00:00:1.611289
+INFO:root:SingleFit.print_readme took 00:00:0.000133
+INFO:root:SingleFit.run took 00:00:1.692293
+INFO:root:Ran test SingleFitGrouped_match for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Looking up parameters for test type SingleFitGrouped_nomatch
+INFO:root:-------- SingleFitGrouped_nomatch --------
+INFO:root:Starting analysis at Thu May  4 14:39:09 2017
+INFO:root:SingleFit.set_up took 00:00:0.014509
+INFO:root:SingleFit.fit took 00:00:0.001250
+INFO:root:SingleFit.predict took 00:00:0.004341
+INFO:root:SingleFitGrouped.plot_group_splits_with_outliers took 00:00:0.803870
+INFO:root:SingleFit.plot took 00:00:1.573397
+INFO:root:SingleFit.print_readme took 00:00:0.000237
+INFO:root:SingleFit.run took 00:00:1.594283
+INFO:root:Ran test SingleFitGrouped_nomatch for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noA.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Parsed the input data located under ../random_data/random_set2_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noD.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type SingleFit_withy
+INFO:root:-------- SingleFit_withy --------
+INFO:root:Starting analysis at Thu May  4 14:57:35 2017
+INFO:root:SingleFit.set_up took 00:00:0.000997
+INFO:root:SingleFit.fit took 00:00:0.605047
+INFO:root:SingleFit.predict took 00:00:0.019468
+INFO:root:SingleFit.plot took 00:00:1.551386
+INFO:root:SingleFit.print_readme took 00:00:0.000357
+INFO:root:SingleFit.run took 00:00:2.178069
+INFO:root:Ran test SingleFit_withy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Looking up parameters for test type SingleFit_withfilter
+INFO:root:-------- SingleFit_withfilter --------
+INFO:root:Starting analysis at Thu May  4 14:57:37 2017
+INFO:root:SingleFit.set_up took 00:00:0.000820
+INFO:root:SingleFit.fit took 00:00:0.001155
+INFO:root:SingleFit.predict took 00:00:0.004095
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noA.csv
+INFO:root:Parsed the input data located under ../random_data/random_set2_data.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type SingleFit_withy
+INFO:root:-------- SingleFit_withy --------
+INFO:root:Starting analysis at Thu May  4 14:58:18 2017
+INFO:root:SingleFit.set_up took 00:00:0.000688
+INFO:root:SingleFit.fit took 00:00:0.051539
+INFO:root:SingleFit.predict took 00:00:0.004088
+INFO:root:SingleFit.plot took 00:00:0.837763
+INFO:root:SingleFit.print_readme took 00:00:0.000337
+INFO:root:SingleFit.run took 00:00:0.895467
+INFO:root:Ran test SingleFit_withy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Looking up parameters for test type SingleFit_withfilter
+INFO:root:-------- SingleFit_withfilter --------
+INFO:root:Starting analysis at Thu May  4 14:58:19 2017
+INFO:root:SingleFit.set_up took 00:00:0.002950
+INFO:root:SingleFit.fit took 00:00:0.002658
+INFO:root:SingleFit.predict took 00:00:0.007296
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noA.csv
+INFO:root:Parsed the input data located under ../random_data/random_set2_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noD.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type SingleFit_withy
+INFO:root:-------- SingleFit_withy --------
+INFO:root:Starting analysis at Thu May  4 14:59:10 2017
+INFO:root:SingleFit.set_up took 00:00:0.001684
+INFO:root:SingleFit.fit took 00:00:0.058226
+INFO:root:SingleFit.predict took 00:00:0.003978
+INFO:root:SingleFit.plot took 00:00:0.871828
+INFO:root:SingleFit.print_readme took 00:00:0.000142
+INFO:root:SingleFit.run took 00:00:0.936465
+INFO:root:Ran test SingleFit_withy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Looking up parameters for test type SingleFit_withfilter
+INFO:root:-------- SingleFit_withfilter --------
+INFO:root:Starting analysis at Thu May  4 14:59:11 2017
+INFO:root:SingleFit.set_up took 00:00:0.000631
+INFO:root:SingleFit.fit took 00:00:0.000998
+INFO:root:SingleFit.predict took 00:00:0.003723
+INFO:root:SingleFit.plot took 00:00:0.749802
+INFO:root:SingleFit.print_readme took 00:00:0.000187
+INFO:root:SingleFit.run took 00:00:0.755807
+INFO:root:Ran test SingleFit_withfilter for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_set2_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noA.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type SingleFit_withy
+INFO:root:-------- SingleFit_withy --------
+INFO:root:Starting analysis at Thu May  4 15:00:21 2017
+INFO:root:SingleFit.set_up took 00:00:0.001244
+INFO:root:SingleFit.fit took 00:00:0.216917
+INFO:root:SingleFit.predict took 00:00:0.021811
+INFO:root:SingleFit.plot took 00:00:1.059321
+INFO:root:SingleFit.print_readme took 00:00:0.000134
+INFO:root:SingleFit.run took 00:00:1.300014
+INFO:root:Ran test SingleFit_withy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Looking up parameters for test type SingleFit_withfilter
+INFO:root:-------- SingleFit_withfilter --------
+INFO:root:Starting analysis at Thu May  4 15:00:22 2017
+INFO:root:SingleFit.set_up took 00:00:0.000641
+INFO:root:SingleFit.fit took 00:00:0.000958
+INFO:root:SingleFit.predict took 00:00:0.003527
+INFO:root:SingleFit.plot took 00:00:0.741322
+INFO:root:SingleFit.print_readme took 00:00:0.000131
+INFO:root:SingleFit.run took 00:00:0.747022
+INFO:root:Ran test SingleFit_withfilter for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noA.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_set2_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type SingleFit_withy
+INFO:root:-------- SingleFit_withy --------
+INFO:root:Starting analysis at Thu May  4 15:00:58 2017
+INFO:root:SingleFit.set_up took 00:00:0.000665
+INFO:root:SingleFit.fit took 00:00:0.040884
+INFO:root:SingleFit.predict took 00:00:0.004078
+INFO:root:SingleFit.plot took 00:00:0.769714
+INFO:root:SingleFit.print_readme took 00:00:0.000145
+INFO:root:SingleFit.run took 00:00:0.816050
+INFO:root:Ran test SingleFit_withy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Looking up parameters for test type SingleFit_withfilter
+INFO:root:-------- SingleFit_withfilter --------
+INFO:root:Starting analysis at Thu May  4 15:00:58 2017
+INFO:root:SingleFit.set_up took 00:00:0.000649
+INFO:root:SingleFit.fit took 00:00:0.001052
+INFO:root:SingleFit.predict took 00:00:0.003683
+INFO:root:SingleFit.plot took 00:00:0.740804
+INFO:root:SingleFit.print_readme took 00:00:0.000379
+INFO:root:SingleFit.run took 00:00:0.747286
+INFO:root:Ran test SingleFit_withfilter for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_set2_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noA.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type SingleFitGrouped_test
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Parsed the input data located under ../random_data/random_set2_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noA.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type SingleFitGrouped_test
+INFO:root:-------- SingleFitGrouped_test --------
+INFO:root:Starting analysis at Thu May  4 15:05:02 2017
+INFO:root:SingleFit.set_up took 00:00:0.057320
+INFO:root:SingleFit.fit took 00:00:0.056307
+INFO:root:SingleFit.predict took 00:00:0.033648
+INFO:root:SingleFitGrouped.plot_group_splits_with_outliers took 00:00:0.853045
+INFO:root:SingleFit.plot took 00:00:1.771800
+INFO:root:SingleFit.print_readme took 00:00:0.000134
+INFO:root:SingleFit.run took 00:00:1.919724
+INFO:root:Ran test SingleFitGrouped_test for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noA.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_set2_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy_noD.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type SingleFitGrouped_test
+INFO:root:-------- SingleFitGrouped_test --------
+INFO:root:Starting analysis at Thu May  4 15:07:57 2017
+INFO:root:SingleFit.set_up took 00:00:0.014213
+INFO:root:SingleFit.fit took 00:00:0.175335
+INFO:root:SingleFit.predict took 00:00:0.008665
+INFO:root:SingleFitGrouped.plot_group_splits_with_outliers took 00:00:0.992242
+INFO:root:SingleFit.plot took 00:00:2.164173
+INFO:root:SingleFit.print_readme took 00:00:0.000161
+INFO:root:SingleFit.run took 00:00:2.363152
+INFO:root:Ran test SingleFitGrouped_test for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noA.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_set2_data.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type SingleFitGrouped_test
+INFO:root:-------- SingleFitGrouped_test --------
+INFO:root:Starting analysis at Thu May  4 15:10:09 2017
+INFO:root:SingleFit.set_up took 00:00:0.011781
+INFO:root:SingleFit.fit took 00:00:0.048467
+INFO:root:SingleFit.predict took 00:00:0.005450
+INFO:root:SingleFitGrouped.plot_group_splits_with_outliers took 00:00:0.857380
+INFO:root:SingleFit.plot took 00:00:1.705921
+INFO:root:SingleFit.print_readme took 00:00:0.000162
+INFO:root:SingleFit.run took 00:00:1.772290
+INFO:root:Ran test SingleFitGrouped_test for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Parsed the input data located under ../random_data/random_set2_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noA.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type SingleFitGrouped_test
+INFO:root:-------- SingleFitGrouped_test --------
+INFO:root:Starting analysis at Thu May  4 15:12:11 2017
+INFO:root:SingleFit.set_up took 00:00:0.016398
+INFO:root:SingleFit.fit took 00:00:0.069971
+INFO:root:SingleFit.predict took 00:00:0.005497
+INFO:root:SingleFitGrouped.plot_group_splits_with_outliers took 00:00:0.860616
+INFO:root:SingleFit.plot took 00:00:1.744488
+INFO:root:SingleFit.print_readme took 00:00:0.000153
+INFO:root:SingleFit.run took 00:00:1.837018
+INFO:root:Ran test SingleFitGrouped_test for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Looking up parameters for test type SingleFitGrouped_withfilter
+INFO:root:-------- SingleFitGrouped_withfilter --------
+INFO:root:Starting analysis at Thu May  4 15:12:13 2017
+INFO:root:SingleFit.set_up took 00:00:0.014680
+INFO:root:SingleFit.fit took 00:00:0.001077
+INFO:root:SingleFit.predict took 00:00:0.005336
+INFO:root:SingleFitGrouped.plot_group_splits_with_outliers took 00:00:0.881532
+INFO:root:SingleFit.plot took 00:00:1.663305
+INFO:root:SingleFit.print_readme took 00:00:0.000437
+INFO:root:SingleFit.run took 00:00:1.685496
+INFO:root:Ran test SingleFitGrouped_withfilter for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
