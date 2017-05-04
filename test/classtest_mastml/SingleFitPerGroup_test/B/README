@@ -1,11 +1,11 @@
-Thu May  4 14:21:07 2017
+Thu May  4 15:51:04 2017
 ----- Model parameters -----
-coef0: 1
-gamma: 0.518
 degree: 3
-alpha: 0.00139
+gamma: 0.518
+coef0: 1
 kernel_params: None
 kernel: rbf
+alpha: 0.00139
 ----- Output data -----
 output_data.csv file created with columns:
    labeling features: ['str_cat', 'num_id']
@@ -14,9 +14,9 @@ output_data.csv file created with columns:
    target error feature: N_linear_feature
    prediction: Prediction
 ----- Statistics -----
-rsquared:0.9914
-mean_absolute_error:0.0391
 mean_error:0.0000
+mean_absolute_error:0.0391
+rsquared:0.9914
 rmse:0.0558
 ----- Plotting -----
 Plot single_fit.png created.
