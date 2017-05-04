@@ -1,11 +1,11 @@
-Thu May  4 14:15:22 2017
+Thu May  4 14:21:07 2017
 ----- Model parameters -----
-kernel: rbf
-kernel_params: None
 coef0: 1
 gamma: 0.518
-alpha: 0.00139
 degree: 3
+alpha: 0.00139
+kernel_params: None
+kernel: rbf
 ----- Output data -----
 output_data.csv file created with columns:
    labeling features: ['str_cat', 'num_id']
@@ -15,9 +15,9 @@ output_data.csv file created with columns:
    prediction: Prediction
 ----- Statistics -----
 rsquared:0.9956
+mean_absolute_error:0.0351
 mean_error:0.0000
 rmse:0.0514
-mean_absolute_error:0.0351
 ----- Plotting -----
 Plot single_fit.png created.
     Plotted data is in the data_... csv file.
