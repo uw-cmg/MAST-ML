@@ -66,12 +66,23 @@ class SingleFitGrouped(SingleFit):
         *args, **kwargs):
         """
         Additional class attributes to parent class:
+            Set by keyword:
             self.grouping_feature <str>: Grouping feature
             self.mark_outlying_groups <int>: Number of outlying groups to mark.
                                 If greater than the number of groups,
                                 all groups will be marked separately.
             self.fit_only_on_matched_groups <int>: If 1, fit only on 
                                 groups in training that are also in testing.
+            Set in code:
+            self.train_group_data <numpy array>: Grouping data for training set
+            self.train_group_indices <dict of list>: Group indices for training
+            self.train_groups <list>: Groups in the training set
+            self.test_group_data <numpy array>: Grouping data for testing set
+            self.test_group_indices <dict of list>: Group indices for testing
+            self.test_groups <list>: Groups in the testing set
+            self.per_group_statistics <dict>: Dictionary of per-group RMSEs
+            self.outlying_groups <list>: List of groups with highest RMSE
+            self.plotting_dict <dict>: Dictionary of data to plot
         """
         SingleFit.__init__(self, 
             training_dataset=training_dataset, 
