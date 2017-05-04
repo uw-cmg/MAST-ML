@@ -117,6 +117,8 @@ class AnalysisTemplate():
         else:
             self.testing_dataset=copy.deepcopy(testing_dataset)
         # model
+        if model is None:
+            raise ValueError("No model.")
         self.model=model
         # features
         if input_features is None:
