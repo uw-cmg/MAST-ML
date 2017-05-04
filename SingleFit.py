@@ -60,6 +60,9 @@ class SingleFit():
         xlabel <str>: Label for full-fit x-axis (default "Measured")
         ylabel <str>: Label for full-fit y-axis (default "Predicted")
         stepsize <float>: Step size for plot grid (default None)
+        plot_filter_out <list>: List of semicolon-delimited strings with
+                            feature;operator;value for filtering out
+                            values for plotting.
     Returns:
         Analysis in the path marked by save_path
 
@@ -81,6 +84,7 @@ class SingleFit():
         xlabel="Measured",
         ylabel="Predicted",
         stepsize=None,
+        plot_filter_out=None,
         *args, **kwargs):
         """Initialize class.
             Attributes that can be set through keywords:
@@ -95,6 +99,7 @@ class SingleFit():
                 self.xlabel
                 self.ylabel
                 self.stepsize
+                self.plot_filter_out
             Other attributes:
                 self.analysis_name <str>
                 self.training_input_data <numpy array>: training input feature data
@@ -104,8 +109,11 @@ class SingleFit():
                 self.testing_target_data_error <numpy array or None>: testing target data error
                 self.trained_model <sklearn model>: trained model
                 self.testing_target_prediction <numpy array>: testing target predicted data
-                self.statistics=dict() <dict of float>: statistics dictionary
-                self.readme_list=list() <dict of str>: stores lines for readme
+                self.statistics <dict of float>: statistics dictionary
+                self.readme_list <dict of str>: stores lines for readme
+                self.plotting_index <list of int>: index of testing target data
+                            and testing target prediction to plot (after
+                            self.plot_filter_out has been applied)
         """
         # Keyword-set attributes
         # training csv
@@ -156,6 +164,12 @@ class SingleFit():
             self.stepsize = stepsize
         else:
             self.stepsize = float(stepsize)
+        if type(plot_filter_out) is list:
+            self.plot_filter_out = plot_filter_out
+        elif type(plot_filter_out) is str:
+            self.plot_filter_out = plot_filter_out.split(",")
+        else:
+            self.plot_filter_out = plot_filter_out
         # Self-set attributes
         self.analysis_name = os.path.basename(self.save_path)
         self.training_input_data=None
@@ -167,6 +181,7 @@ class SingleFit():
         self.testing_target_prediction=None
         self.statistics=dict()
         self.readme_list=list()
+        self.plotting_index=None
         #
         logger.info("-------- %s --------" % self.analysis_name)
         logger.info("Starting analysis at %s" % time.asctime())
@@ -203,6 +218,7 @@ class SingleFit():
 
     @timeit
     def plot(self):
+        self.get_plotting_index()
         self.plot_results()
         return
 
@@ -314,6 +330,44 @@ class SingleFit():
         printarray=printarray.transpose()
         ptools.mixed_array_to_csv(ocsvname, headerline, printarray)
         return
+
+
+    def get_plotting_index(self):
+        """Get plotting index of points to plot
+        Update with dataframe
+        Inefficient.
+        """
+        if self.plot_filter_out is None:
+            return
+        out_index = list()
+        for pfstr in self.plot_filter_out:
+            pflist = pfstr.split(";")
+            feature = pflist[0].strip()
+            symbol = pflist[1].strip()
+            rawvalue = pflist[2].strip()
+            try:
+                value = float(rawvalue)
+            except ValueError:
+                value = rawvalue
+            featuredata = np.asarray(self.testing_dataset.get_data(feature)).ravel()
+            for fidx in range(0, len(featuredata)):
+                fdata = featuredata[fidx]
+                if fdata is None:
+                    continue
+                if symbol == "<":
+                    if fdata < value:
+                        out_index.append(fidx)
+                elif symbol == ">":
+                    if fdata > value:
+                        out_index.append(fidx)
+                elif symbol == "=":
+                    if fdata == value:
+                        out_index.append(fidx)
+        all_index = np.arange(0, len(self.testing_target_prediction))
+        out_index = np.unique(out_index)
+        plotting_index = np.setdiff1d(all_index, out_index) 
+        self.plotting_index = list(plotting_index)
+        return
     
     def plot_results(self, addl_plot_kwargs=None):
         self.readme_list.append("----- Plotting -----\n")
@@ -337,9 +391,18 @@ class SingleFit():
         if not (addl_plot_kwargs is None):
             for addl_plot_kwarg in addl_plot_kwargs:
                 plot_kwargs[addl_plot_kwarg] = addl_plot_kwargs[addl_plot_kwarg]
-        plotxy.single(self.testing_target_data,
-                self.testing_target_prediction,
-                **plot_kwargs)
+        if self.plot_filter_out is None:
+            plotxy.single(self.testing_target_data,
+                    self.testing_target_prediction,
+                    **plot_kwargs)
+        else:
+            notelist.append("Data not shown:")
+            for pfstr in self.plot_filter_out:
+                notelist.append("  %s" % pfstr.replace(";"," "))
+            plot_kwargs['xerr'] = self.testing_target_data_error[self.plotting_index]
+            plotxy.single(self.testing_target_data[self.plotting_index],
+                    self.testing_target_prediction[self.plotting_index],
+                    **plot_kwargs)
         self.readme_list.append("Plot single_fit.png created.\n")
         self.readme_list.append("    Plotted data is in the data_... csv file.\n")
         self.readme_list.append("    All zeros for error columns indicate no error.\n")
