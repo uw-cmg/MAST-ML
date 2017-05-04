@@ -96,6 +96,7 @@ class AnalysisTemplate():
                 self.testing_target_prediction=""
                 self.testing_target_data_error=""
                 self.statistics=dict()
+                self.readme_list=list()
         """
         # Keyword-set attributes
         # training csv
@@ -149,6 +150,7 @@ class AnalysisTemplate():
         self.trained_model=None
         self.testing_target_prediction=None
         self.statistics=dict()
+        self.readme_list=list()
         #
         logger.info("-------- %s --------" % self.analysis_name)
         logger.info("Starting analysis at %s" % time.asctime())
@@ -165,12 +167,14 @@ class AnalysisTemplate():
 
     @timeit
     def set_up(self):
+        self.readme_list.append("%s\n" % time.asctime())
         self.set_data()
         return
 
     @timeit
     def fit(self):
         self.get_trained_model()
+        self.print_model()
         return
    
     @timeit
@@ -210,6 +214,12 @@ class AnalysisTemplate():
         trained_model = self.model.fit(self.training_input_data, self.training_target_data)
         self.trained_model = trained_model
         return
+    
+    def print_model(self):
+        self.readme_list.append("----- Model parameters -----\n")
+        for param, paramval in self.trained_model.get_params().items():
+            self.readme_list.append("%s: %s\n" % (param, paramval))
+        return
 
     def get_prediction(self):
         self.testing_target_prediction = self.trained_model.predict(self.testing_input_data)
@@ -244,27 +254,37 @@ class AnalysisTemplate():
         return
 
     def print_statistics(self):
-        statname = os.path.join(self.save_path, "statistics.txt")
-        with open(statname, 'w') as statfile:
-            statfile.write("Statistics\n")
-            statfile.write("%s\n" % time.asctime())
+        self.readme_list.append("----- Statistics -----\n")
+        if len(self.statistics) == 0:
+            self.readme_list.append("No target data.\n")
+            self.readme_list.append("No statistics comparing target data and prediction were collected.\n")
+        else:
             for skey, svalue in self.statistics.items():
-                statfile.write("%s:%3.4f\n" % (skey, svalue))
+                self.readme_list.append("%s:%3.4f\n" % (skey, svalue))
         return
 
     def print_output_csv(self):
         """
             Modify once dataframe is in place
         """
+        self.readme_list.append("----- Output data -----\n")
         ocsvname = os.path.join(self.save_path, "output_data.csv")
+        self.readme_list.append("output_data.csv file created with columns:\n")
         headerline = ""
         printarray = None
-        print_features = list(self.labeling_features)
+        if len(self.labeling_features) > 0:
+            self.readme_list.append("   labeling features: %s\n" % self.labeling_features)
+            print_features = list(self.labeling_features)
+        else:
+            print_features = list()
         print_features.extend(self.input_features)
+        self.readme_list.append("   input features: %s\n" % self.input_features)
         if not (self.testing_target_data is None):
             print_features.append(self.target_feature)
+            self.readme_list.append("   target feature: %s\n" % self.target_feature)
             if not (self.target_error_feature is None):
                 print_features.append(self.target_error_feature)
+                self.readme_list.append("   target error feature: %s\n" % self.target_error_feature)
         for feature_name in print_features:
             headerline = headerline + feature_name + ","
             feature_vector = np.asarray(self.testing_dataset.get_data(feature_name)).ravel()
@@ -273,18 +293,23 @@ class AnalysisTemplate():
             else:
                 printarray = np.vstack((printarray, feature_vector))
         headerline = headerline + "Prediction"
+        self.readme_list.append("   prediction: Prediction\n")
         printarray = np.vstack((printarray, self.testing_target_prediction))
         printarray=printarray.transpose()
         ptools.mixed_array_to_csv(ocsvname, headerline, printarray)
         return
     
     def plot_results(self, addl_plot_kwargs=None):
+        self.readme_list.append("----- Plotting -----\n")
         if self.testing_target_data is None:
             logger.warning("No testing target data. Predicted vs. measured plot will not be plotted.")
+            self.readme_list.append("No target data.\n")
+            self.readme_list.append("No plot comparing predicted vs. measured data was made.\n")
             return
         plot_kwargs=dict()
         plot_kwargs['xlabel'] = "Measured"
         plot_kwargs['ylabel'] = "Predicted"
+        plot_kwargs['plotlabel'] = "single_fit"
         plot_kwargs['guideline'] = 1
         notelist=list()
         notelist.append("RMSE: %3.3f" % self.statistics['rmse'])
@@ -298,39 +323,14 @@ class AnalysisTemplate():
         plotxy.single(self.testing_target_data,
                 self.testing_target_prediction,
                 **plot_kwargs)
+        self.readme_list.append("Plot single_fit.png created.\n")
+        self.readme_list.append("    Plotted data is in the data_... csv file.\n")
+        self.readme_list.append("    All zeros for error columns indicate no error.\n")
         return
 
     @timeit
     def print_readme(self):
-        rlist=list()
-        rlist.append("----- Folder contents -----\n")
-        rlist.append("output_data.csv:\n")
-        rlist.append("    Output data, consisting of:\n")
-        rlist.append("    Labeling features columns, if any\n")
-        rlist.append("    Input features columns\n")
-        if self.testing_target_data is None:
-            pass
-        else:
-            rlist.append("    Target feature column\n")
-        rlist.append("    Target prediction column\n")
-        rlist.append("statistics.txt:\n")
-        rlist.append("    Statistics for the fit.\n")
-        if self.testing_target_data is None:
-            rlist.append("    No statistics were collected because there\n")
-            rlist.append("        was no measured data (target feature data)\n")
-            rlist.append("        in the testing dataset.\n")
-            rlist.append("    For this reason, there is also no plot of\n")
-            rlist.append("        predicted vs. measured data.\n")
-        else:
-            rlist.append("{y} vs {x}.png:\n")
-            rlist.append("    Plot of predicted vs. measured data\n")
-            rlist.append("data_ .csv\n")
-            rlist.append("    Plotted data, in csv format\n")
-            rlist.append("    Measured data column\n")
-            rlist.append("    Measured data error column (all zeros is no error)\n")
-            rlist.append("    Predicted data column\n")
-            rlist.append("    Predicted data error column (all zeros is no error)\n")
         with open(os.path.join(self.save_path,"README"), 'w') as rfile:
-            rfile.writelines(rlist)
+            rfile.writelines(self.readme_list)
         return
 
