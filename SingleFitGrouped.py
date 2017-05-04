@@ -31,6 +31,11 @@ class SingleFitGrouped(SingleFit):
         stepsize, see parent class
         grouping_feature <str>: feature name for grouping data
         mark_outlying_groups <int>: Number of outlying groups to mark
+        fit_only_on_matched_groups <int>: 0 - fit on all data in the training
+                                                dataset (default)
+                                          1 - fit only on groups in the training
+                                                dataset that are also in the
+                                                testing dataset
 
     Returns:
         Analysis in the save_path folder
@@ -55,6 +60,7 @@ class SingleFitGrouped(SingleFit):
         stepsize=1,
         grouping_feature = None,
         mark_outlying_groups = 2,
+        fit_only_on_matched_groups = 0,
         *args, **kwargs):
         """
         Additional class attributes to parent class:
@@ -62,6 +68,8 @@ class SingleFitGrouped(SingleFit):
             self.mark_outlying_groups <int>: Number of outlying groups to mark.
                                 If greater than the number of groups,
                                 all groups will be marked separately.
+            self.fit_only_on_matched_groups <int>: If 1, fit only on 
+                                groups in training that are also in testing.
         """
         SingleFit.__init__(self, 
             training_dataset=training_dataset, 
@@ -79,7 +87,11 @@ class SingleFitGrouped(SingleFit):
             raise ValueError("grouping_feature is not set.")
         self.grouping_feature = grouping_feature
         self.mark_outlying_groups = int(mark_outlying_groups)
+        self.fit_only_on_matched_groups = int(fit_only_on_matched_groups)
         # Sets later in code
+        self.train_group_data = None
+        self.train_group_indices = None
+        self.train_groups =None
         self.test_group_data = None
         self.test_group_indices = None
         self.test_groups =None
@@ -89,6 +101,11 @@ class SingleFitGrouped(SingleFit):
         return
     
     def set_data(self):
+        self.set_group_info()
+        if self.fit_only_on_matched_groups == 1:
+            out_training_groups = np.setdiff1d(self.train_groups, self.test_groups)
+            for group in out_training_groups:
+                self.training_dataset.add_exclusive_filter(self.grouping_feature,"=",group)
         SingleFit.set_data(self)
         if self.testing_target_data is None:
             raise ValueError("testing target data cannot be None")
@@ -96,7 +113,6 @@ class SingleFitGrouped(SingleFit):
 
     def get_statistics(self):
         SingleFit.get_statistics(self)
-        self.set_group_info()
         self.get_per_group_statistics()
         self.get_outlying_groups()
         return
@@ -117,6 +133,9 @@ class SingleFitGrouped(SingleFit):
         return
     
     def set_group_info(self):
+        self.train_group_data = np.asarray(self.training_dataset.get_data(self.grouping_feature)).ravel()
+        self.train_group_indices = gttd.get_logo_indices(self.train_group_data)
+        self.train_groups = list(self.train_group_indices.keys())
         self.test_group_data = np.asarray(self.testing_dataset.get_data(self.grouping_feature)).ravel()
         self.test_group_indices = gttd.get_logo_indices(self.test_group_data)
         self.test_groups = list(self.test_group_indices.keys())
