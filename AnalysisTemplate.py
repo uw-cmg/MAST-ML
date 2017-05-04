@@ -78,25 +78,25 @@ class AnalysisTemplate():
         *args, **kwargs):
         """Initialize class.
             Attributes that can be set through keywords:
-                self.training_dataset=""
-                self.testing_dataset=""
-                self.model=""
-                self.input_features=""
-                self.target_feature=""
-                self.target_error_feature=""
-                self.labeling_features=""
-                self.save_path=""
+                self.training_dataset
+                self.testing_dataset
+                self.model
+                self.input_features
+                self.target_feature
+                self.target_error_feature
+                self.labeling_features
+                self.save_path
             Other attributes:
-                self.analysis_name=""
-                self.training_input_data=""
-                self.training_target_data=""
-                self.testing_input_data=""
-                self.testing_target_data=""
-                self.trained_model=""
-                self.testing_target_prediction=""
-                self.testing_target_data_error=""
-                self.statistics=dict()
-                self.readme_list=list()
+                self.analysis_name <str>
+                self.training_input_data <numpy array>: training input feature data
+                self.training_target_data <numpy array>: training target feature data
+                self.testing_input_data <numpy array>: testing input feature data
+                self.testing_target_data <numpy array>: testing target data
+                self.testing_target_data_error <numpy array or None>: testing target data error
+                self.trained_model <sklearn model>: trained model
+                self.testing_target_prediction <numpy array>: testing target predicted data
+                self.statistics=dict() <dict of float>: statistics dictionary
+                self.readme_list=list() <dict of str>: stores lines for readme
         """
         # Keyword-set attributes
         # training csv
