@@ -46922,3 +46922,213 @@ INFO:root:AnalysisTemplate.run took 00:00:0.005726
 INFO:root:Ran test AnalysisTemplate_noy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
       kernel_params=None) model
 INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_set2_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noA.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type AnalysisTemplate_withy
+INFO:root:-------- AnalysisTemplate_withy --------
+INFO:root:Starting analysis at Thu May  4 11:32:01 2017
+INFO:root:AnalysisTemplate.set_up took 00:00:0.001094
+INFO:root:AnalysisTemplate.fit took 00:00:0.043530
+INFO:root:AnalysisTemplate.predict took 00:00:0.004807
+INFO:root:AnalysisTemplate.plot took 00:00:0.833985
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000224
+INFO:root:AnalysisTemplate.run took 00:00:0.884314
+INFO:root:Ran test AnalysisTemplate_withy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Looking up parameters for test type AnalysisTemplate_noy
+INFO:root:-------- AnalysisTemplate_noy --------
+INFO:root:Starting analysis at Thu May  4 11:32:02 2017
+INFO:root:AnalysisTemplate.set_up took 00:00:0.000543
+INFO:root:AnalysisTemplate.fit took 00:00:0.001664
+WARNING:root:No testing target data. Statistics will not be collected.
+INFO:root:AnalysisTemplate.predict took 00:00:0.002506
+WARNING:root:No testing target data. Predicted vs. measured plot will not be plotted.
+INFO:root:AnalysisTemplate.plot took 00:00:0.000076
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000156
+INFO:root:AnalysisTemplate.run took 00:00:0.005638
+INFO:root:Ran test AnalysisTemplate_noy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noA.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_set2_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type AnalysisTemplate_withy
+INFO:root:-------- AnalysisTemplate_withy --------
+INFO:root:Starting analysis at Thu May  4 11:32:50 2017
+INFO:root:AnalysisTemplate.set_up took 00:00:0.001070
+INFO:root:AnalysisTemplate.fit took 00:00:0.055170
+INFO:root:AnalysisTemplate.predict took 00:00:0.004283
+INFO:root:AnalysisTemplate.plot took 00:00:0.745582
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000134
+INFO:root:AnalysisTemplate.run took 00:00:0.806830
+INFO:root:Ran test AnalysisTemplate_withy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Looking up parameters for test type AnalysisTemplate_noy
+INFO:root:-------- AnalysisTemplate_noy --------
+INFO:root:Starting analysis at Thu May  4 11:32:51 2017
+INFO:root:AnalysisTemplate.set_up took 00:00:0.000494
+INFO:root:AnalysisTemplate.fit took 00:00:0.001249
+WARNING:root:No testing target data. Statistics will not be collected.
+INFO:root:AnalysisTemplate.predict took 00:00:0.002008
+WARNING:root:No testing target data. Predicted vs. measured plot will not be plotted.
+INFO:root:AnalysisTemplate.plot took 00:00:0.000069
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000142
+INFO:root:AnalysisTemplate.run took 00:00:0.004365
+INFO:root:Ran test AnalysisTemplate_noy for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noA.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_set2_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy_noD.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type FullFit_test
+INFO:root:-------- FullFit_test --------
+INFO:root:Starting analysis at Thu May  4 11:42:44 2017
+INFO:root:AnalysisTemplate.set_up took 00:00:0.000746
+INFO:root:AnalysisTemplate.fit took 00:00:0.044063
+INFO:root:AnalysisTemplate.predict took 00:00:0.005555
+INFO:root:AnalysisTemplate.plot took 00:00:0.873444
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.023358
+INFO:root:AnalysisTemplate.run took 00:00:0.947987
+INFO:root:Ran test FullFit_test for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_set2_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noA.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type FullFit_test
+INFO:root:-------- FullFit_test --------
+INFO:root:Starting analysis at Thu May  4 11:42:54 2017
+INFO:root:AnalysisTemplate.set_up took 00:00:0.001227
+INFO:root:AnalysisTemplate.fit took 00:00:0.044318
+INFO:root:AnalysisTemplate.predict took 00:00:0.005590
+INFO:root:AnalysisTemplate.plot took 00:00:0.845411
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000520
+INFO:root:AnalysisTemplate.run took 00:00:0.897966
+INFO:root:Ran test FullFit_test for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noA.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_set2_data.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type FullFit_test
+INFO:root:-------- FullFit_test --------
+INFO:root:Starting analysis at Thu May  4 12:12:10 2017
+INFO:root:AnalysisTemplate.set_up took 00:00:0.001124
+INFO:root:AnalysisTemplate.fit took 00:00:0.047451
+INFO:root:AnalysisTemplate.predict took 00:00:0.015757
+INFO:root:FullFit.print_overlay_readme took 00:00:0.000206
+INFO:root:FullFit.plot_group_splits_with_outliers took 00:00:0.915531
+INFO:root:AnalysisTemplate.plot took 00:00:1.836769
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000189
+INFO:root:AnalysisTemplate.run took 00:00:1.901864
+INFO:root:Ran test FullFit_test for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noA.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_set2_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type FullFit_test
+INFO:root:-------- FullFit_test --------
+INFO:root:Starting analysis at Thu May  4 12:13:28 2017
+INFO:root:AnalysisTemplate.set_up took 00:00:0.000786
+INFO:root:AnalysisTemplate.fit took 00:00:0.057587
+INFO:root:AnalysisTemplate.predict took 00:00:0.011268
+INFO:root:FullFit.print_overlay_readme took 00:00:0.000140
+INFO:root:FullFit.plot_group_splits_with_outliers took 00:00:0.908376
+INFO:root:AnalysisTemplate.plot took 00:00:1.745971
+INFO:root:AnalysisTemplate.print_readme took 00:00:0.000132
+INFO:root:AnalysisTemplate.run took 00:00:1.816290
+INFO:root:Ran test FullFit_test for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_set2_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noA.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type FullFit_test
+INFO:root:-------- FullFit_test --------
+INFO:root:Starting analysis at Thu May  4 12:16:27 2017
+INFO:root:SingleFit.set_up took 00:00:0.000730
+INFO:root:SingleFit.fit took 00:00:0.040443
+INFO:root:SingleFit.predict took 00:00:0.011002
+INFO:root:FullFit.print_overlay_readme took 00:00:0.000140
+INFO:root:FullFit.plot_group_splits_with_outliers took 00:00:0.856116
+INFO:root:SingleFit.plot took 00:00:1.695912
+INFO:root:SingleFit.print_readme took 00:00:0.000136
+INFO:root:SingleFit.run took 00:00:1.748654
+INFO:root:Ran test FullFit_test for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
+INFO:root:Successfully read in your MASTML input file, test.conf
+INFO:root:Successfully parsed your MASTML input file
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_set2_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noA.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type SingleFitGrouped_test
+INFO:root:-------- SingleFitGrouped_test --------
+INFO:root:Starting analysis at Thu May  4 12:18:20 2017
+INFO:root:SingleFit.set_up took 00:00:0.001269
+INFO:root:SingleFit.fit took 00:00:0.049231
+INFO:root:SingleFit.predict took 00:00:0.011489
+INFO:root:SingleFitGrouped.print_overlay_readme took 00:00:0.000228
+INFO:root:SingleFitGrouped.plot_group_splits_with_outliers took 00:00:0.914918
+INFO:root:SingleFit.plot took 00:00:1.765551
+INFO:root:SingleFit.print_readme took 00:00:0.000217
+INFO:root:SingleFit.run took 00:00:1.828315
+INFO:root:Ran test SingleFitGrouped_test for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:Your MASTML runs are complete!
