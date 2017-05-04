@@ -40,9 +40,31 @@ def timeit(method):
     return timed
 
 class AnalysisTemplate():
-    """Basic analysis class.
-        Template for other classes.
-        Combine many analysis classes to do meta-analysis
+    """This is the basic analysis class.
+
+    This class provides a template for other classes. Combine many classes 
+    to do meta-analysis.
+
+    Args:
+        training_dataset <Data object>: training dataset
+        testing_dataset <Data object>: testing dataset
+        model <sklearn model>: machine-learning model
+        save_path <str>: save path
+        input_features <list of str>: list of input feature names
+        target_feature <str>: target feature name
+        target_error_feature <str>: name of the feature describing error
+                                    in the target feature (optional)
+        labeling_features <list of str>: list of labeling feature names
+                                         that can help identify specific
+                                         points
+    Returns:
+        Analysis in the path marked by save_path
+
+    Raises:
+        ValueError if the following are not set:
+                    training_dataset, testing_dataset,
+                    input_features, target_feature,
+                    model
     """
     def __init__(self, 
         training_dataset=None,
