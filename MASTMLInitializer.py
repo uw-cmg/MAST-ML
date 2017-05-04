@@ -52,14 +52,18 @@ class ConfigFileValidator(ConfigFileParser):
         validator = self._generate_validator()
         configdict = self.get_config_dict()
         validationdict = ConfigFileParser(configfile=self.validationfile).get_config_dict()
+        logging.info('MASTML is checking that the section names of your input file are valid...')
         configdict, errors_present = self._check_config_headings(configdict=configdict, validationdict=validationdict,
                                                                  validator=validator, errors_present=errors_present)
         self._check_for_errors(errors_present=errors_present)
         section_headings = [k for k in validationdict.keys()]
+        logging.info('MASTML is checking that the subsection names and values in your input file are valid...')
         for section_heading in section_headings:
             errors_present = self._check_section_names(configdict=configdict, validationdict=validationdict,
                                                        errors_present=errors_present, section_heading=section_heading)
             self._check_for_errors(errors_present=errors_present)
+        logging.info('MASTML is converting the datatypes of values in your input file...')
+        for section_heading in section_headings:
             configdict, errors_present = self._check_section_datatypes(configdict=configdict, validationdict=validationdict,
                                                                        validator=validator, errors_present=errors_present,
                                                                        section_heading=section_heading)
@@ -106,11 +110,16 @@ class ConfigFileValidator(ConfigFileParser):
     def _check_section_names(self, configdict, validationdict, errors_present, section_heading):
         # Check that required section or subsections are present in user's input file.
         configdict_depth = self._get_config_dict_depth(test_dict=configdict[section_heading])
-        if section_heading in ['General Setup', 'Data Setup']:
+        if section_heading in ['General Setup', 'Data Setup', 'Models and Tests to Run']:
             for k in validationdict[section_heading].keys():
                 if k not in configdict[section_heading].keys():
                     logging.info('The %s section of your input file has an input parameter entered incorrectly: %s' % (section_heading, k))
                     errors_present = bool(True)
+                if k in ['models', 'test_cases']:
+                    for case in configdict[section_heading][k]:
+                        if case not in validationdict[section_heading][k]:
+                            logging.info('The %s : %s section of your input file has an input parameter entered incorrectly: %s' % (section_heading, k, case))
+                            errors_present = bool(True)
                 if configdict_depth > 1:
                     for kk in validationdict[section_heading][k].keys():
                         if kk not in configdict[section_heading][k].keys():

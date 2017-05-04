@@ -6,6 +6,7 @@ import os
 from MASTMLInitializer import ConfigFileParser, MASTMLWrapper, ConfigFileValidator
 import logging
 import shutil
+import time
 from pprint import pprint
 
 class MASTMLDriver(object):
@@ -15,6 +16,8 @@ class MASTMLDriver(object):
         logging.basicConfig(filename='MASTMLlog.log', level='INFO')
 
     def run_MASTML(self):
+        current_time = time.strftime('%Y'+'-'+'%m'+'-'+'%d'+', '+'%H'+' hours, '+'%M'+' minutes, '+'and '+'%S'+' seconds')
+        logging.info('Initiated new MASTML session at: %s' % current_time)
         # Parse MASTML input file
         mastmlwrapper, configdict, errors_present = self._generate_mastml_wrapper()
         logging.info('Successfully read in and parsed your MASTML input file, %s' % str(self.configfile))
