@@ -66,11 +66,6 @@ class SingleFitPerGroup(SingleFitGrouped):
         self.all_groups = list()
         self.plot_groups = list()
         self.per_group_singlefits = dict()
-
-        self.per_group_statistics = dict()
-        self.outlying_groups = list()
-        self.plotting_dict = dict()
-
         """
         SingleFitGrouped.__init__(self, 
             training_dataset=training_dataset, 
@@ -88,32 +83,10 @@ class SingleFitPerGroup(SingleFitGrouped):
             grouping_feature = grouping_feature,
             mark_outlying_groups = mark_outlying_groups,
             fit_only_on_matched_groups = 0)
-        if grouping_feature is None:
-            raise ValueError("grouping_feature is not set.")
-        self.grouping_feature = grouping_feature
-        self.mark_outlying_groups = int(mark_outlying_groups)
         # Sets later in code
-        self.train_group_data = None
-        self.train_group_indices = None
-        self.train_groups =None
-        self.test_group_data = None
-        self.test_group_indices = None
-        self.test_groups = None
-        self.all_groups = list()
-        self.plot_groups = list()
         self.per_group_singlefits = dict()
-
-        self.per_group_statistics = dict()
-        self.outlying_groups = list()
-        self.plotting_dict = dict()
         return
     
-    def set_data(self):
-        SingleFit.set_data(self)
-        if self.testing_target_data is None:
-            raise ValueError("testing target data cannot be None")
-        return
-
     @timeit
     def predict(self):
         self.get_group_predictions()
@@ -121,12 +94,13 @@ class SingleFitPerGroup(SingleFitGrouped):
         self.print_statistics()
         return
 
+    @timeit
+    def plot(self):
+        self.plot_results()
+        return
+
     def get_group_predictions(self):
-        self.set_group_info()
-        for group in self.all_groups:
-            if not(group in self.plot_groups):
-                logging.info("Skipping group %s because either testing or training data is missing." % group)
-                continue
+        for group in self.test_groups:
             group_training_dataset = copy.deepcopy(self.training_dataset)
             group_testing_dataset = copy.deepcopy(self.testing_dataset)
             group_training_dataset.add_exclusive_filter(self.grouping_feature, "<>", group)
@@ -142,7 +116,8 @@ class SingleFitPerGroup(SingleFitGrouped):
                     labeling_features = list(self.labeling_features),
                     xlabel = self.xlabel,
                     ylabel = self.ylabel,
-                    stepsize = self.stepsize)
+                    stepsize = self.stepsize,
+                    plot_filter_out = self.plot_filter_out)
             self.per_group_singlefits[group].run()
         return
 
@@ -155,7 +130,7 @@ class SingleFitPerGroup(SingleFitGrouped):
     def print_statistics(self):
         self.readme_list.append("----- Statistics -----\n")
         self.readme_list.append("RMSEs from individual group fits:\n")
-        for group in self.plot_groups:
+        for group in self.test_groups:
             g_rmse = self.per_group_statistics[group]
             if g_rmse is None:
                 self.readme_list.append("    %s: None\n" % (group))
@@ -165,79 +140,58 @@ class SingleFitPerGroup(SingleFitGrouped):
 
     def plot_results(self):
         self.get_plotting_dict()
-        self.plot_group_splits_with_outliers(group_dict=dict(self.plotting_dict), outlying_groups=list(self.outlying_groups), label="group_fits_overlay", group_notelist=["RMSEs for individual group fits:"])
+        group_notelist=list()
+        if not(self.plot_filter_out is None):
+            group_notelist.append("Data not shown:")
+            for pfstr in self.plot_filter_out:
+                group_notelist.append("  %s" % pfstr.replace(";"," "))
+        group_notelist.append("RMSEs for individual group fits:")
+        self.plot_group_splits_with_outliers(group_dict=dict(self.plotting_dict), 
+                outlying_groups=list(self.outlying_groups), 
+                label="per_group_fits_overlay", 
+                group_notelist=list(group_notelist))
         self.readme_list.append("----- Plotting -----\n")
-        self.readme_list.append("Plot in subfolder group_fits_overlay created,\n")
+        self.readme_list.append("Plot in subfolder per_group_fits_overlay created,\n")
         self.readme_list.append("    labeling worst-fitting groups and their RMSEs.\n")
         return
     
     def set_group_info(self):
-        self.train_group_data = np.asarray(self.training_dataset.get_data(self.grouping_feature)).ravel()
-        self.train_group_indices = gttd.get_logo_indices(self.train_group_data)
-        self.train_groups = list(self.train_group_indices.keys())
-        self.test_group_data = np.asarray(self.testing_dataset.get_data(self.grouping_feature)).ravel()
-        self.test_group_indices = gttd.get_logo_indices(self.test_group_data)
-        self.test_groups = list(self.test_group_indices.keys())
-        self.all_groups = np.union1d(self.train_groups, self.test_groups)
-        self.plot_groups = np.intersect1d(self.train_groups, self.test_groups) #have both training and testing data
+        SingleFitGrouped.set_group_info(self)
+        all_groups = np.union1d(self.train_groups, self.test_groups)
+        plot_groups = np.intersect1d(self.train_groups, self.test_groups) #have both training and testing data
+        for group in all_groups:
+            if group not in plot_groups:
+                logging.info("Skipping group %s for futher analysis because training or testing data is missing." % group)
+        self.train_groups = plot_groups #Can only train if have training data
+        self.test_groups = plot_groups #Can only test if have testing data
         return
 
     def get_per_group_statistics(self):
-        for group in self.plot_groups: 
+        for group in self.test_groups: 
             if 'rmse' in self.per_group_singlefits[group].statistics.keys():
                 self.per_group_statistics[group] = self.per_group_singlefits[group].statistics['rmse']
             else:
                 self.per_group_statistics[group] = None
         return
 
-    def get_outlying_groups(self):
-        self.outlying_groups = list()
-        highest_rmses = list()
-        num_mark = min(self.mark_outlying_groups, len(self.plot_groups))
-        for oidx in range(0, num_mark):
-            highest_rmses.append((0, "nogroup"))
-        for group in self.plot_groups:
-            min_entry = min(highest_rmses)
-            min_rmse = min_entry[0]
-            g_rmse = self.per_group_statistics[group]
-            if g_rmse is None:
-                continue
-            if g_rmse > min_rmse:
-                highest_rmses[highest_rmses.index(min_entry)]= (g_rmse, group)
-        logging.debug("Highest RMSEs: %s" % highest_rmses)
-        for high_rmse in highest_rmses:
-            self.outlying_groups.append(high_rmse[1])
-        return
-
     def get_plotting_dict(self):
         plot_dict=dict()
-        for group in self.plot_groups:
+        for group in self.test_groups:
             g_singlefit = self.per_group_singlefits[group]
-            g_ypredict= g_singlefit.testing_target_prediction
-            g_ydata = g_singlefit.testing_target_data
+            if not(g_singlefit.plotting_index is None):
+                plot_index = g_singlefit.plotting_index
+            else:
+                plot_index = np.arange(0, len(g_singlefit.testing_target_prediction))
+            g_ypredict= g_singlefit.testing_target_prediction[plot_index]
+            g_ydata = g_singlefit.testing_target_data[plot_index]
             if g_singlefit.testing_target_data_error is None:
                 g_ydata_err = np.zeros(len(g_ydata))
             else:
-                g_ydata_err = g_singlefit.testing_target_data_error
+                g_ydata_err = g_singlefit.testing_target_data_error[plot_index]
             plot_dict[group] = dict()
             plot_dict[group]['xdata'] = g_ydata
             plot_dict[group]['xerrdata'] = g_ydata_err
             plot_dict[group]['ydata'] = g_ypredict
             plot_dict[group]['rmse'] = g_singlefit.statistics['rmse']
         self.plotting_dict=dict(plot_dict)
-        return
-
-    @timeit
-    def plot_group_splits_with_outliers(self, group_dict=None, outlying_groups=list(), label="group_splits", group_notelist=list()):
-        addl_kwargs=dict()
-        addl_kwargs['xlabel'] = self.xlabel
-        addl_kwargs['ylabel'] = self.ylabel
-        addl_kwargs['save_path'] = os.path.join(self.save_path, label)
-        addl_kwargs['stepsize'] = self.stepsize
-        addl_kwargs['guideline'] = 1
-        plotdict.plot_group_splits_with_outliers(group_dict = dict(group_dict),
-            outlying_groups = list(outlying_groups),
-            label=label, 
-            group_notelist=list(group_notelist),
-            addl_kwargs = dict(addl_kwargs))
         return
