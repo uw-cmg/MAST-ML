@@ -1,13 +1,18 @@
------ Folder contents -----
-output_data.csv:
-    Output data, consisting of:
-    Labeling features columns, if any
-    Input features columns
-    Target prediction column
-statistics.txt:
-    Statistics for the fit.
-    No statistics were collected because there
-        was no measured data (target feature data)
-        in the testing dataset.
-    For this reason, there is also no plot of
-        predicted vs. measured data.
+Thu May  4 11:18:56 2017
+----- Model parameters -----
+coef0: 1
+alpha: 0.00139
+gamma: 0.518
+kernel: rbf
+degree: 3
+kernel_params: None
+----- Output data -----
+output_data.csv file created with columns:
+   input features: ['time']
+   prediction: Prediction
+----- Statistics -----
+No target data.
+No statistics comparing target data and prediction were collected.
+----- Plotting -----
+No target data.
+No plot comparing predicted vs. measured data was made.

@@ -1,17 +1,23 @@
------ Folder contents -----
-output_data.csv:
-    Output data, consisting of:
-    Labeling features columns, if any
-    Input features columns
-    Target feature column
-    Target prediction column
-statistics.txt:
-    Statistics for the fit.
-{y} vs {x}.png:
-    Plot of predicted vs. measured data
-data_ .csv
-    Plotted data, in csv format
-    Measured data column
-    Measured data error column (all zeros is no error)
-    Predicted data column
-    Predicted data error column (all zeros is no error)
+Thu May  4 11:18:55 2017
+----- Model parameters -----
+coef0: 1
+alpha: 0.00139
+gamma: 0.518
+kernel: rbf
+degree: 3
+kernel_params: None
+----- Output data -----
+output_data.csv file created with columns:
+   input features: ['time', 'N_sine_feature', 'N_linear_feature']
+   target feature: y_feature
+   target error feature: N_linear_feature
+   prediction: Prediction
+----- Statistics -----
+rmse:0.0879
+mean_absolute_error:0.0666
+rsquared:0.9830
+mean_error:0.0000
+----- Plotting -----
+Plot single_fit.png created.
+    Plotted data is in the data_... csv file.
+    All zeros for error columns indicate no error.
