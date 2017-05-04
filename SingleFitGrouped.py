@@ -59,10 +59,10 @@ class SingleFitGrouped(SingleFit):
         xlabel="Measured",
         ylabel="Predicted",
         stepsize=1,
+        plot_filter_out = None,
         grouping_feature = None,
         mark_outlying_groups = 2,
         fit_only_on_matched_groups = 0,
-        plot_filter_out = None,
         *args, **kwargs):
         """
         Additional class attributes to parent class:
