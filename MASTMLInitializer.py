@@ -83,21 +83,21 @@ class ConfigFileValidator(ConfigFileParser):
         return configdict, errors_present
 
     def _check_section_datatypes(self, configdict, validationdict, validator, errors_present, section_heading):
+        # First do some manual cleanup
+        if section_heading == 'Models and Tests to Run' and type(configdict['Models and Tests to Run']['models']) is str:
+            templist = []
+            templist.append(configdict['Models and Tests to Run']['models'])
+            configdict['Models and Tests to Run']['models'] = templist
+            print(configdict['Models and Tests to Run']['models'])
+
         # Check the data type of section and subsection headings and values
         configdict_depth = self._get_config_dict_depth(test_dict=configdict[section_heading])
-
         datatypes = ['string', 'integer', 'float', 'boolean', 'string_list', 'int_list', 'float_list']
         if section_heading in ['General Setup', 'Data Setup', 'Models and Tests to Run', 'Model Parameters']:
             for k in configdict[section_heading].keys():
                 if configdict_depth == 1:
                     try:
                         datatype = validationdict[section_heading][k]
-
-                        print(section_heading, k, configdict[section_heading][k], type(configdict[section_heading][k]), configdict_depth)
-                        if k == 'models' and type(configdict[section_heading][k]) is str:
-                            # (Convert from str to list containing str here)
-                            print(configdict[section_heading][k])
-
                         if datatype in datatypes:
                             configdict[section_heading][k] = validator.check(check=datatype, value=configdict[section_heading][k])
                     except VdtTypeError:
@@ -126,7 +126,6 @@ class ConfigFileValidator(ConfigFileParser):
                 if k in ['models', 'test_cases']:
                     for case in configdict[section_heading][k]:
                         if case not in validationdict[section_heading][k]:
-                            print("this is where")
                             logging.info('The %s : %s section of your input file has an input parameter entered incorrectly: %s' % (section_heading, k, case))
                             errors_present = bool(True)
                 if configdict_depth > 1:

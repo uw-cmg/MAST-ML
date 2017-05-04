@@ -21,16 +21,12 @@ class MASTMLDriver(object):
         # Parse MASTML input file
         mastmlwrapper, configdict, errors_present = self._generate_mastml_wrapper()
         logging.info('Successfully read in and parsed your MASTML input file, %s' % str(self.configfile))
-        #print('Updated configdict:')
-        #for k, v in configdict.items():
-        #    print(k), pprint(v)
 
+        generalsetup = mastmlwrapper.process_config_keyword(keyword='General Setup')
+        datasetup = mastmlwrapper.process_config_keyword(keyword='Data Setup')
 
         # Parse input data files
         # Temporary call to data_parser for now, but will later deprecate
-        """
-        generalsetup = mastmlwrapper.process_config_keyword(keyword='General Setup')
-        datasetup = mastmlwrapper.process_config_keyword(keyword='Data Setup')
         data = data_parser.parse(datasetup['Initial']['data_path'], datasetup['Initial']['weights'])
         data.set_x_features(generalsetup['input_features'])
         data.set_y_feature(generalsetup['target_feature'])
@@ -46,9 +42,6 @@ class MASTMLDriver(object):
                                        data=data, save_path=generalsetup['save_path'])
         # End MASTML session
         self._move_log_and_input_files(mastmlwrapper=mastmlwrapper)
-        """
-
-
         return
 
     def _generate_mastml_wrapper(self):
