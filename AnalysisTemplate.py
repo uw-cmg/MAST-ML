@@ -156,7 +156,7 @@ class AnalysisTemplate():
    
     @timeit
     def run(self):
-        self.setup()
+        self.set_up()
         self.fit()
         self.predict()
         self.plot()
@@ -164,7 +164,7 @@ class AnalysisTemplate():
         return
 
     @timeit
-    def setup(self):
+    def set_up(self):
         self.set_data()
         return
 
