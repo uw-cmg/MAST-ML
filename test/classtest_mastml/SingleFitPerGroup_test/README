@@ -1,0 +1,14 @@
+Thu May  4 14:21:07 2017
+----- Model parameters -----
+coef0: 1
+gamma: 0.518
+degree: 3
+alpha: 0.00139
+kernel_params: None
+kernel: rbf
+----- Statistics -----
+RMSEs from individual group fits:
+    B: 0.056
+    C: 0.051
+Plot in subfolder group_fits_overlay created,
+    labeling worst-fitting groups and their RMSEs.
