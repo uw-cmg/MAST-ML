@@ -155,6 +155,7 @@ class FitPerGroup(SingleFit):
     def plot_results(self):
         self.get_plotting_dict()
         self.plot_group_splits_with_outliers(group_dict=dict(self.plotting_dict), outlying_groups=list(self.outlying_groups), label="group_fits_overlay", group_notelist=["RMSEs for individual group fits:"])
+        self.readme_list.append("----- Plotting -----\n")
         self.readme_list.append("Plot in subfolder group_fits_overlay created,\n")
         self.readme_list.append("    labeling worst-fitting groups and their RMSEs.\n")
         return
