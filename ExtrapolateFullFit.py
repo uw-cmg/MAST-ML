@@ -197,6 +197,8 @@ class ExtrapolateFullFit(AnalysisTemplate):
             featuredata = np.asarray(dataset.get_data(feature)).ravel()
             for fidx in range(0, len(featuredata)):
                 fdata = featuredata[fidx]
+                if fdata is None:
+                    continue
                 if symbol == "<":
                     if fdata < value:
                         out_index.append(fidx)
