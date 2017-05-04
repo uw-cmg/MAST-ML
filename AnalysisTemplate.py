@@ -139,19 +139,15 @@ class AnalysisTemplate():
         self.save_path = save_path
         if not os.path.isdir(self.save_path):
             os.mkdir(self.save_path)
-        #if analysis_name is None:
-        #    self.analysis_name = "Results_%s" % time.strftime("%Y%m%d_%H%M%S")
-        #else:
-        #    self.analysis_name = analysis_name
         # Self-set attributes
         self.analysis_name = os.path.basename(self.save_path)
         self.training_input_data=None
         self.training_target_data=None
+        self.testing_target_data_error=None
         self.testing_input_data=None
         self.testing_target_data=None
         self.trained_model=None
         self.testing_target_prediction=None
-        self.testing_target_data_error=None
         self.statistics=dict()
         #
         logger.info("-------- %s --------" % self.analysis_name)
@@ -160,19 +156,36 @@ class AnalysisTemplate():
    
     @timeit
     def run(self):
-        self.set_data()
-        self.get_model()
-        self.get_trained_model()
-        self.get_prediction()
-        self.get_statistics()
-        self.print_statistics()
-        self.print_output_csv()
-        self.plot_results()
+        self.setup()
+        self.fit()
+        self.predict()
+        self.plot()
         self.print_readme()
         return
 
-    
     @timeit
+    def setup(self):
+        self.set_data()
+        return
+
+    @timeit
+    def fit(self):
+        self.get_trained_model()
+        return
+   
+    @timeit
+    def predict(self):
+        self.get_prediction()
+        self.print_output_csv()
+        self.get_statistics()
+        self.print_statistics()
+        return
+
+    @timeit
+    def plot(self):
+        self.plot_results()
+        return
+
     def set_data(self):
         """Replace with pandas dataframes
         """
@@ -192,19 +205,12 @@ class AnalysisTemplate():
         self.testing_input_data = np.asarray(self.testing_dataset.get_x_data())
         return
 
-    @timeit
-    def get_model(self):
-        if (self.model is None):
-            raise ValueError("No model.")
-        return
 
-    @timeit
     def get_trained_model(self):
         trained_model = self.model.fit(self.training_input_data, self.training_target_data)
         self.trained_model = trained_model
         return
 
-    @timeit
     def get_prediction(self):
         self.testing_target_prediction = self.trained_model.predict(self.testing_input_data)
         self.testing_dataset.add_feature("Prediction",self.testing_target_prediction)
@@ -227,7 +233,6 @@ class AnalysisTemplate():
         rsquared = r2_score(self.testing_target_data, self.testing_target_prediction)
         return rsquared
     
-    @timeit
     def get_statistics(self):
         if self.testing_target_data is None:
             logger.warning("No testing target data. Statistics will not be collected.")
@@ -238,7 +243,6 @@ class AnalysisTemplate():
         self.statistics['rsquared'] = self.get_rsquared()
         return
 
-    @timeit
     def print_statistics(self):
         statname = os.path.join(self.save_path, "statistics.txt")
         with open(statname, 'w') as statfile:
@@ -248,7 +252,6 @@ class AnalysisTemplate():
                 statfile.write("%s:%3.4f\n" % (skey, svalue))
         return
 
-    @timeit
     def print_output_csv(self):
         """
             Modify once dataframe is in place
@@ -275,7 +278,6 @@ class AnalysisTemplate():
         ptools.mixed_array_to_csv(ocsvname, headerline, printarray)
         return
     
-    @timeit
     def plot_results(self, addl_plot_kwargs=None):
         if self.testing_target_data is None:
             logger.warning("No testing target data. Predicted vs. measured plot will not be plotted.")
