@@ -228,5 +228,4 @@ class FitPerGroup(SingleFit):
             label=label, 
             group_notelist=list(group_notelist),
             addl_kwargs = dict(addl_kwargs))
-        self.print_overlay_readme(label=label)
         return
