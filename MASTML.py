@@ -52,7 +52,7 @@ class MASTMLDriver(object):
         return
 
     def _generate_mastml_wrapper(self):
-        configdict, errors_present = ConfigFileValidator(configfile=self.configfile, validationfile='mastmlinputvalidation.conf').run_config_validation()
+        configdict, errors_present = ConfigFileValidator(configfile=self.configfile).run_config_validation()
         mastmlwrapper = MASTMLWrapper(configdict=configdict)
         return mastmlwrapper, configdict, errors_present
 

@@ -42,43 +42,39 @@ class ConfigFileParser(object):
 class ConfigFileValidator(ConfigFileParser):
     """Class to validate contents of user-specified MASTML input file and flag any errors
     """
-    def __init__(self, configfile, validationfile):
+    def __init__(self, configfile):
         super(ConfigFileValidator, self).__init__(self)
         self.configfile = configfile
-        self.validationfile = validationfile
 
     def run_config_validation(self):
         errors_present = False
         validator = self._generate_validator()
         configdict = self.get_config_dict()
-        validationdict = ConfigFileParser(configfile=self.validationfile).get_config_dict()
+        validationdict_names = ConfigFileParser(configfile='mastmlinputvalidationnames.conf').get_config_dict()
+        validationdict_types = ConfigFileParser(configfile='mastmlinputvalidationtypes.conf').get_config_dict()
         logging.info('MASTML is checking that the section names of your input file are valid...')
-        configdict, errors_present = self._check_config_headings(configdict=configdict, validationdict=validationdict,
+        configdict, errors_present = self._check_config_headings(configdict=configdict, validationdict=validationdict_names,
                                                                  validator=validator, errors_present=errors_present)
         self._check_for_errors(errors_present=errors_present)
-        section_headings = [k for k in validationdict.keys()]
-        logging.info('MASTML is checking that the subsection names and values in your input file are valid...')
-        for section_heading in section_headings:
-            errors_present = self._check_section_names(configdict=configdict, validationdict=validationdict,
-                                                       errors_present=errors_present, section_heading=section_heading)
-            self._check_for_errors(errors_present=errors_present)
+        section_headings = [k for k in validationdict_names.keys()]
+
         logging.info('MASTML is converting the datatypes of values in your input file...')
         for section_heading in section_headings:
-            configdict, errors_present = self._check_section_datatypes(configdict=configdict, validationdict=validationdict,
+            configdict, errors_present = self._check_section_datatypes(configdict=configdict, validationdict=validationdict_types,
                                                                        validator=validator, errors_present=errors_present,
                                                                        section_heading=section_heading)
             self._check_for_errors(errors_present=errors_present)
 
+        logging.info('MASTML is checking that the subsection names and values in your input file are valid...')
+        for section_heading in section_headings:
+            errors_present = self._check_section_names(configdict=configdict, validationdict=validationdict_names,
+                                                       errors_present=errors_present, section_heading=section_heading)
+            self._check_for_errors(errors_present=errors_present)
+
+
         return configdict, errors_present
 
     def _check_config_headings(self, configdict, validationdict, validator, errors_present):
-        try:
-            for k in configdict.keys():
-                k = validator.check(check='string', value=k)
-        except(VdtTypeError):
-            logging.info('The section %s in your input file did not successfully import as a string' % str(k))
-            errors_present = bool(True)
-
         for k in validationdict.keys():
             if k not in configdict.keys():
                 logging.info('You are missing the %s section in your input file' % str(k))
@@ -89,21 +85,33 @@ class ConfigFileValidator(ConfigFileParser):
     def _check_section_datatypes(self, configdict, validationdict, validator, errors_present, section_heading):
         # Check the data type of section and subsection headings and values
         configdict_depth = self._get_config_dict_depth(test_dict=configdict[section_heading])
-        try:
-            for k, v in configdict[section_heading].items():
-                try:
-                    k = validator.check(check='string', value=k)
-                except(VdtTypeError):
-                    k = validator.check(check='string_list', value=k)
+
+        datatypes = ['string', 'integer', 'float', 'boolean', 'string_list', 'int_list', 'float_list']
+        if section_heading in ['General Setup', 'Data Setup', 'Models and Tests to Run', 'Model Parameters']:
+            for k in configdict[section_heading].keys():
+                if configdict_depth == 1:
+                    try:
+                        datatype = validationdict[section_heading][k]
+
+                        print(section_heading, k, configdict[section_heading][k], type(configdict[section_heading][k]), configdict_depth)
+                        if k == 'models' and type(configdict[section_heading][k]) is str:
+                            # (Convert from str to list containing str here)
+                            print(configdict[section_heading][k])
+
+                        if datatype in datatypes:
+                            configdict[section_heading][k] = validator.check(check=datatype, value=configdict[section_heading][k])
+                    except VdtTypeError:
+                        logging.info('The parameter %s in your %s section did not successfully convert to %s' % (k, section_heading, datatype))
+
                 if configdict_depth > 1:
-                    for kk, vv in v.items():
+                    for kk in configdict[section_heading][k].keys():
                         try:
-                            configdict[section_heading][k][kk] = validator.check(check='string', value=configdict[section_heading][k][kk])
+                            if k in validationdict[section_heading]:
+                                datatype = validationdict[section_heading][k][kk]
+                                if datatype in datatypes:
+                                    configdict[section_heading][k][kk] = validator.check(check=datatype, value=configdict[section_heading][k][kk])
                         except(VdtTypeError):
-                            configdict[section_heading][k][kk] = validator.check(check='string_list', value=configdict[section_heading][k][kk])
-        except(VdtTypeError):
-            logging.info('The parameter %s in your %s section did not successfully import as a string or list of strings' % (k, section_heading))
-            errors_present = bool(True)
+                            logging.info('The parameter %s in your %s : %s section did not successfully convert to string' % (section_heading, k, kk))
 
         return configdict, errors_present
 
@@ -118,14 +126,13 @@ class ConfigFileValidator(ConfigFileParser):
                 if k in ['models', 'test_cases']:
                     for case in configdict[section_heading][k]:
                         if case not in validationdict[section_heading][k]:
+                            print("this is where")
                             logging.info('The %s : %s section of your input file has an input parameter entered incorrectly: %s' % (section_heading, k, case))
                             errors_present = bool(True)
                 if configdict_depth > 1:
                     for kk in validationdict[section_heading][k].keys():
                         if kk not in configdict[section_heading][k].keys():
-                            logging.info(
-                                'The %s section of your input file has an input parameter entered incorrectly: %s : %s' % (
-                                section_heading, k, kk))
+                            logging.info('The %s section of your input file has an input parameter entered incorrectly: %s : %s' % (section_heading, k, kk))
                             errors_present = bool(True)
         return errors_present
 
