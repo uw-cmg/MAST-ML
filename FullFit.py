@@ -15,7 +15,9 @@ from AnalysisTemplate import timeit
 import logging
 
 class FullFit(AnalysisTemplate):
-    """Do full fit.
+    """Do a single full fit and split out group contributions to RMSE.
+
+    Args:
         training_dataset,
         testing_dataset,
         model,
@@ -23,14 +25,21 @@ class FullFit(AnalysisTemplate):
         input_features,
         target_feature,
         target_error_feature,
-        labeling_features, see AnalysisTemplate.
-        xlabel <str>: Label for full-fit x-axis.
-        ylabel <str>: Label for full-fit y-axis
-        stepsize <float>: Step size for plot grid
-        group_field_name <str>: (optional) field name for grouping data
-                                        field may be numeric
+        labeling_features, 
+        xlabel, 
+        ylabel,
+        stepsize, see parent class
+        grouping_feature <str>: feature name for grouping data
         mark_outlying_groups <int>: Number of outlying groups to mark
-        Plots results in a Predicted vs. Measured square plot.
+
+    Returns:
+        Analysis in the save_path folder
+        Plots results in a predicted vs. measured square plot.
+
+    Raises:
+        ValueError if grouping_feature is not set
+        ValueError if testing target data is None; has to have at least
+                    some testing target data to plot
     """
     def __init__(self, 
         training_dataset=None,
@@ -44,9 +53,16 @@ class FullFit(AnalysisTemplate):
         xlabel="Measured",
         ylabel="Predicted",
         stepsize=1,
-        group_field_name = None,
+        grouping_feature = None,
         mark_outlying_groups = 2,
         *args, **kwargs):
+        """
+        Additional class attributes to parent class:
+            self.grouping_feature <str>: Grouping feature
+            self.mark_outlying_groups <int>: Number of outlying groups to mark.
+                                If greater than the number of groups,
+                                all groups will be marked separately.
+        """
         AnalysisTemplate.__init__(self, 
             training_dataset=training_dataset, 
             testing_dataset=testing_dataset,
@@ -55,110 +71,100 @@ class FullFit(AnalysisTemplate):
             input_features = input_features, 
             target_feature = target_feature,
             target_error_feature = target_error_feature,
-            labeling_features = labeling_features)
-        self.xlabel = xlabel
-        self.ylabel = ylabel
-        self.stepsize = float(stepsize)
-        self.group_field_name = group_field_name
+            labeling_features = labeling_features,
+            xlabel=xlabel,
+            ylabel=ylabel,
+            stepsize=stepsize)
+        if grouping_feature is None:
+            raise ValueError("grouping_feature is not set.")
+        self.grouping_feature = grouping_feature
         self.mark_outlying_groups = int(mark_outlying_groups)
-        self.overall_analysis=None
-        self.train_group_data = None
+        # Sets later in code
         self.test_group_data = None
-        self.train_group_indices = None
         self.test_group_indices = None
-        self.train_groups=None
         self.test_groups =None
-        self.overall_group_dict=dict()
-        self.overall_outlying_groups=list()
-        self.group_analysis_dict=dict()
-        self.split_outlying_groups=list()
-        self.split_group_dict=dict()
+        self.per_group_statistics = dict()
+        self.outlying_groups = list()
+        self.plotting_dict = dict()
         return
     
-    @timeit
-    def do_single_fit(self, label="single_fit", group=None):
-        """Do a single fit.
-            Args:
-                label <str>: subfolder label
-                group <str or int>: group
-            Returns:
-                AnalysisTemplate object
-                Plots and saves information to the 'label' subfolder
-        """
-        single_save = os.path.join(self.save_path, label)
-        single_analysis = AnalysisTemplate(
-                training_dataset = self.training_dataset,
-                testing_dataset= self.testing_dataset,
-                model=self.model, 
-                save_path = single_save,
-                input_features = self.input_features, 
-                target_feature = self.target_feature,
-                target_error_feature = self.target_error_feature,
-                labeling_features = self.labeling_features)
-        if not os.path.isdir(single_save):
-            os.mkdir(single_save)
-        if not (group is None):
-            single_analysis.training_dataset.add_exclusive_filter(self.group_field_name, "<>", group)
-            single_analysis.testing_dataset.add_exclusive_filter(self.group_field_name,"<>", group)
-        single_analysis.set_data()
-        single_analysis.get_model()
-        single_analysis.get_trained_model()
-        single_analysis.get_prediction()
-        single_analysis.get_statistics()
-        single_analysis.print_statistics()
-        single_analysis.print_output_csv()
-        single_analysis.print_readme()
-        addl_plot_kwargs = dict()
-        addl_plot_kwargs['xlabel'] = self.xlabel
-        addl_plot_kwargs['ylabel'] = self.ylabel
-        addl_plot_kwargs['stepsize'] = self.stepsize
-        addl_plot_kwargs['label'] = label
-        addl_plot_kwargs['save_path'] = single_save
-        single_analysis.plot_results(addl_plot_kwargs)
-        return single_analysis
+    def set_data(self):
+        AnalysisTemplate.set_data(self)
+        if self.testing_target_data is None:
+            raise ValueError("testing target data cannot be None")
+        return
 
-    @timeit
+    def get_statistics(self):
+        AnalysisTemplate.get_statistics(self)
+        self.set_group_info()
+        self.get_per_group_statistics()
+        self.get_outlying_groups()
+        return
+
+    def print_statistics(self):
+        AnalysisTemplate.print_statistics(self)
+        self.readme_list.append("Per-group RMSEs from overall fit:\n")
+        for group in self.test_groups:
+            self.readme_list.append("    %s: %3.3f\n" % (group, self.per_group_statistics[group]))
+        return
+
+    def plot_results(self):
+        AnalysisTemplate.plot_results(self)
+        self.get_plotting_dict()
+        self.plot_group_splits_with_outliers(group_dict=dict(self.plotting_dict), outlying_groups=list(self.outlying_groups), label="per_group_info", group_notelist=["RMSEs for overall fit:"])
+        self.readme_list.append("Plot in subfolder per_group_info created\n")
+        self.readme_list.append("    labeling outlying groups and their RMSEs.\n")
+        return
+    
     def set_group_info(self):
-        self.test_group_data = np.asarray(self.testing_dataset.get_data(self.group_field_name)).ravel()
-        self.train_group_data = np.asarray(self.training_dataset.get_data(self.group_field_name)).ravel()
-        self.train_group_indices = gttd.get_logo_indices(self.train_group_data)
+        self.test_group_data = np.asarray(self.testing_dataset.get_data(self.grouping_feature)).ravel()
         self.test_group_indices = gttd.get_logo_indices(self.test_group_data)
-        self.train_groups = list(self.train_group_indices.keys())
         self.test_groups = list(self.test_group_indices.keys())
         return
 
-    @timeit
-    def get_overall_group_dict(self):
-        osg_dict=dict()
-        highest_rmses=list()
+    def get_per_group_statistics(self):
+        for group in self.test_groups:
+            g_index = self.test_group_indices[group]["test_index"]
+            g_ypredict= self.testing_target_prediction[g_index]
+            g_ydata = self.testing_target_data[g_index]
+            #g_mean_error = np.mean(g_ypredict - g_ydata)
+            g_rmse = np.sqrt(mean_squared_error(g_ypredict, g_ydata))
+            self.per_group_statistics[group] = g_rmse
+        return
+
+    def get_outlying_groups(self):
+        self.outlying_groups = list()
+        highest_rmses = list()
         num_mark = min(self.mark_outlying_groups, len(self.test_groups))
         for oidx in range(0, num_mark):
             highest_rmses.append((0, "nogroup"))
         for group in self.test_groups:
-            g_index = self.test_group_indices[group]["test_index"]
-            g_ypredict= self.overall_analysis.testing_target_prediction[g_index]
-            if self.overall_analysis.testing_target_data is None:
-                continue #no target data; cannot add to plotting
-            g_ydata = self.overall_analysis.testing_target_data[g_index]
-            if self.overall_analysis.testing_target_data_error is None:
-                g_ydata_err = np.zeros(len(g_index))
-            else:
-                g_ydata_err = self.overall_analysis.testing_target_data_error[g_index]
-            #g_mean_error = np.mean(g_ypredict - g_ydata)
-            g_rmse = np.sqrt(mean_squared_error(g_ypredict, g_ydata))
-            osg_dict[group] = dict()
-            osg_dict[group]['xdata'] = g_ydata
-            osg_dict[group]['xerrdata'] = g_ydata_err
-            osg_dict[group]['ydata'] = g_ypredict
-            osg_dict[group]['rmse'] = g_rmse
             min_entry = min(highest_rmses)
             min_rmse = min_entry[0]
+            g_rmse = self.per_group_statistics[group]
             if g_rmse > min_rmse:
                 highest_rmses[highest_rmses.index(min_entry)]= (g_rmse, group)
         logging.debug("Highest RMSEs: %s" % highest_rmses)
-        self.overall_group_dict=dict(osg_dict)
         for high_rmse in highest_rmses:
-            self.overall_outlying_groups.append(high_rmse[1])
+            self.outlying_groups.append(high_rmse[1])
+        return
+
+    def get_plotting_dict(self):
+        plot_dict=dict()
+        for group in self.test_groups:
+            g_index = self.test_group_indices[group]["test_index"]
+            g_ypredict= self.testing_target_prediction[g_index]
+            g_ydata = self.testing_target_data[g_index]
+            if self.testing_target_data_error is None:
+                g_ydata_err = np.zeros(len(g_index))
+            else:
+                g_ydata_err = self.testing_target_data_error[g_index]
+            plot_dict[group] = dict()
+            plot_dict[group]['xdata'] = g_ydata
+            plot_dict[group]['xerrdata'] = g_ydata_err
+            plot_dict[group]['ydata'] = g_ypredict
+            plot_dict[group]['rmse'] = self.per_group_statistics[group]
+        self.plotting_dict=dict(plot_dict)
         return
 
     @timeit
@@ -238,14 +244,14 @@ class FullFit(AnalysisTemplate):
         return
 
     @timeit
-    def print_readme(self):
+    def old_print_readme(self):
         rlist=list()
         rlist.append("----- Folder contents -----\n")
         rlist.append("single_fit\n")
         rlist.append("    Folder containing a single overall fit.\n")
-        if self.group_field_name is None:
+        if self.grouping_feature is None:
             rlist.append("Other folders would appear if\n")
-            rlist.append("    group_field_name were to be set.\n")
+            rlist.append("    grouping_feature were to be set.\n")
         else:
             if self.overall_analysis.testing_target_data is None:
                 rlist.append("<group> folders\n")
@@ -277,9 +283,9 @@ class FullFit(AnalysisTemplate):
         return
 
     @timeit
-    def run(self):
+    def old_run(self):
         self.overall_analysis = self.do_single_fit()
-        if self.group_field_name is None: #no additional analysis to do
+        if self.grouping_feature is None: #no additional analysis to do
             return
         self.set_group_info()
         self.get_overall_group_dict()
