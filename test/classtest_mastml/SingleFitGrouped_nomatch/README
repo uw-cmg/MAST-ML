@@ -1,0 +1,30 @@
+Thu May  4 14:39:09 2017
+----- Model parameters -----
+degree: 3
+coef0: 1
+kernel_params: None
+kernel: rbf
+alpha: 0.00139
+gamma: 0.518
+----- Output data -----
+output_data.csv file created with columns:
+   labeling features: ['str_cat', 'num_id']
+   input features: ['time', 'N_sine_feature', 'N_linear_feature']
+   target feature: y_feature
+   target error feature: N_linear_feature
+   prediction: Prediction
+----- Statistics -----
+mean_error:0.0087
+rmse:0.0908
+mean_absolute_error:0.0684
+rsquared:0.9821
+Per-group RMSEs from overall fit:
+    C: 0.070
+    B: 0.108
+    A: 0.097
+----- Plotting -----
+Plot single_fit.png created.
+    Plotted data is in the data_... csv file.
+    All zeros for error columns indicate no error.
+Plot in subfolder per_group_info created
+    labeling outlying groups and their RMSEs.
