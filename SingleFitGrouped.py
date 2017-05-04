@@ -28,7 +28,8 @@ class SingleFitGrouped(SingleFit):
         labeling_features, 
         xlabel, 
         ylabel,
-        stepsize, see parent class
+        stepsize, 
+        plot_filter_out, see parent class
         grouping_feature <str>: feature name for grouping data
         mark_outlying_groups <int>: Number of outlying groups to mark
         fit_only_on_matched_groups <int>: 0 - fit on all data in the training
@@ -61,6 +62,7 @@ class SingleFitGrouped(SingleFit):
         grouping_feature = None,
         mark_outlying_groups = 2,
         fit_only_on_matched_groups = 0,
+        plot_filter_out = None,
         *args, **kwargs):
         """
         Additional class attributes to parent class:
@@ -82,7 +84,8 @@ class SingleFitGrouped(SingleFit):
             labeling_features = labeling_features,
             xlabel=xlabel,
             ylabel=ylabel,
-            stepsize=stepsize)
+            stepsize=stepsize,
+            plot_filter_out = plot_filter_out)
         if grouping_feature is None:
             raise ValueError("grouping_feature is not set.")
         self.grouping_feature = grouping_feature
@@ -127,7 +130,13 @@ class SingleFitGrouped(SingleFit):
     def plot_results(self):
         SingleFit.plot_results(self)
         self.get_plotting_dict()
-        self.plot_group_splits_with_outliers(group_dict=dict(self.plotting_dict), outlying_groups=list(self.outlying_groups), label="per_group_info", group_notelist=["RMSEs for overall fit:"])
+        group_notelist=list()
+        if not(self.plot_filter_out is None):
+            group_notelist.append("Data not shown:")
+            for pfstr in self.plot_filter_out:
+                group_notelist.append("  %s" % pfstr.replace(";"," "))
+        group_notelist.append("RMSEs for overall fit:")
+        self.plot_group_splits_with_outliers(group_dict=dict(self.plotting_dict), outlying_groups=list(self.outlying_groups), label="per_group_info", group_notelist=list(group_notelist))
         self.readme_list.append("Plot in subfolder per_group_info created\n")
         self.readme_list.append("    labeling outlying groups and their RMSEs.\n")
         return
@@ -172,6 +181,8 @@ class SingleFitGrouped(SingleFit):
         plot_dict=dict()
         for group in self.test_groups:
             g_index = self.test_group_indices[group]["test_index"]
+            if not(self.plot_filter_out is None):
+                g_index = np.intersect1d(g_index, self.plotting_index) 
             g_ypredict= self.testing_target_prediction[g_index]
             g_ydata = self.testing_target_data[g_index]
             if self.testing_target_data_error is None:
