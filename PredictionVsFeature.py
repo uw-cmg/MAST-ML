@@ -11,38 +11,31 @@ from SingleFit import timeit
 from SingleFitGrouped import SingleFitGrouped
 import plot_data.plot_xy as plotxy
 import plot_data.plot_from_dict as plotdict
+import copy
+import time
 
 class PredictionVsFeature(SingleFitGrouped):
-    """Do extrapolation
+    """Make prediction vs. feature plots from a single fit.
         training_dataset,
-        testing_dataset,
+        testing_dataset, (Multiple testing datasets are allowed as a list.)
         model,
         save_path,
         input_features,
         target_feature,
         target_error_feature,
-        labeling_features, see AnalysisTemplate.
-        xlabel <str>: x-axis label for predicted-vs-measured plot
-        ylabel <str>: y-axis label for predicted-vs-measured plot
-        stepsize <float>: step size for predicted-vs-measured plot grid
-        group_field_name <float>: (optional) field name for grouping data
-                                        field may be numeric
-        mark_outlying_groups <int>: Number of outlying groups to mark
+        labeling_features,
+        xlabel,
+        ylabel,
+        stepsize,
+        plot_filter_out,
+        grouping_feature,
+        fit_only_on_matched_groups,
+        mark_outlying_groups, see parent class.
         feature_plot_xlabel <str>: x-axis label for per-group plots of predicted and
                                 measured y data versus data from field of
                                 numeric_field_name
         feature_plot_ylabel <str>: y-axis label for per-group plots
-        feature_plot_field <str>: field for per-group feature plots
-        plot_filter_out <str>: semicolon-delimited filters for plotting,
-                                each a comma-delimited triplet, for example,
-                                temperature,<,3000
-                                See data_parser
-        fit_only_on_matched_groups <int>: 1 - fit only on groups that exist
-                                            in both the training data and
-                                            the test_csv data
-                                          0 - fit on all data in the training
-                                                dataset (default)
-                                        Only works if group_field_name is set.
+        feature_plot_feature <str>: feature for per-group feature plots
         markers <str>: comma-delimited marker list for split plots
         outlines <str>: comma-delimited color list for split plots
         linestyles <str>: comma-delimited list of line styles for split plots
@@ -62,81 +55,114 @@ class PredictionVsFeature(SingleFitGrouped):
         xlabel="Measured",
         ylabel="Predicted",
         stepsize=1,
-        group_field_name = None,
+        plot_filter_out = "",
+        grouping_feature = None,
         mark_outlying_groups = 2,
+        fit_only_on_matched_groups = 0,
         feature_plot_xlabel = "X",
         feature_plot_ylabel = "Prediction",
-        feature_plot_field = "",
+        feature_plot_feature = "",
         markers="",
         outlines="",
         data_labels="",
         linestyles="",
-        plot_filter_out = "",
-        fit_only_on_matched_groups = 0,
         *args, **kwargs):
-        self.training_dataset = training_dataset
-        self.testing_dataset = testing_dataset #expect more than one
-        self.model = model
-        self.save_path = save_path
-        self.input_features = input_features
-        self.target_feature = target_feature
-        self.target_error_feature = target_error_feature
-        self.labeling_features = labeling_features
-        self.xlabel = xlabel
-        self.ylabel = ylabel
-        self.stepsize = float(stepsize)
-        self.group_field_name = group_field_name
-        self.fit_only_on_matched_groups = int(fit_only_on_matched_groups)
-        self.mark_outlying_groups = int(mark_outlying_groups)
-        self.feature_plot_field = feature_plot_field
+        """
+            Additional class attributes not in parent class:
+           
+            Set by keyword:
+            self.testing_datasets <list of data objects>: testing datasets
+            self.feature_plot_xlabel <str>: x-axis label for feature plots
+            self.feature_plot_ylabel <str>: y-axis label for feature plots
+            self.feature_plot_feature <str>: feature for feature plots
+            self.markers <list of str>: list of markers for plotting
+            self.outlines <list of str>: list of edge colors for plotting
+            self.linestyles <list of str>: list of linestyles for plotting
+            self.data_labels <list of str>: list of data labels for plotting
+            
+            Set by code:
+            self.testing_dataset_dict <dict of data objects>: testing datasets
+            self.sfg_dict <dict of SingleFitGrouped objects>
+        """
+        SingleFitGrouped.__init__(self, 
+            training_dataset=training_dataset, 
+            testing_dataset=testing_dataset,
+            model=model, 
+            save_path = save_path,
+            input_features = input_features, 
+            target_feature = target_feature,
+            target_error_feature = target_error_feature,
+            labeling_features = labeling_features,
+            xlabel=xlabel,
+            ylabel=ylabel,
+            stepsize=stepsize,
+            plot_filter_out = plot_filter_out,
+            grouping_feature = grouping_feature,
+            mark_outlying_groups = mark_outlying_groups,
+            fit_only_on_matched_groups = fit_only_on_matched_groups)
+        #Sets by keyword
+        self.testing_datasets = testing_dataset #expect a list of one or more testing datasets
         self.feature_plot_xlabel = feature_plot_xlabel
         self.feature_plot_ylabel = feature_plot_ylabel
+        self.feature_plot_feature = feature_plot_feature
         self.markers = markers
         self.outlines = outlines
         self.data_labels = data_labels
         self.linestyles = linestyles
-        if type(plot_filter_out) is list:
-            self.plot_filter_out = plot_filter_out
-        elif type(plot_filter_out) is str:
-            self.plot_filter_out = plot_filter_out.split(",")
-        else:
-            self.plot_filter_out = plot_filter_out
-        self.extrapolation_dict=dict()
-        self.plot_filter_dict = None
+        #Sets in code
+        self.testing_dataset_dict = dict() 
+        self.sfg_dict=dict()
         return
-    
+   
     @timeit
-    def get_extrapolation_dict(self):
-        test_data_labels = self.data_labels[1:] #first label is training data
-        for tidx in range(0, len(self.testing_dataset)):
-            train_set = self.training_dataset[0] #MASTML gives single entry as list
-            test_set = self.testing_dataset[tidx]
-            label = test_data_labels[tidx]
-            if self.fit_only_on_matched_groups == 1:
-                if self.group_field_name is None:
-                    pass  #no grouping, nothing to do
-                else:
-                    train_groupdata = np.asarray(train_set.get_data(self.group_field_name)).ravel()
-                    test_groupdata = np.asarray(test_set.get_data(self.group_field_name)).ravel()
-                    groups_not_in_test = np.setdiff1d(train_groupdata, test_groupdata)
-                    for outgroup in groups_not_in_test:
-                        train_set.add_exclusive_filter(self.group_field_name,"=",outgroup)
-            else:
-                pass #no group filtering necessary
-            self.extrapolation_dict[label] = FullFit(training_dataset=train_set,
-                    testing_dataset = test_set,
-                    model = self.model,
-                    save_path = os.path.join(self.save_path,label),
-                    input_features = list(self.input_features),
-                    target_feature = self.target_feature,
-                    target_error_feature = self.target_error_feature,
-                    labeling_features = list(self.labeling_features),
-                    xlabel = self.xlabel,
-                    ylabel = self.ylabel,
-                    stepsize = self.stepsize,
-                    group_field_name = self.group_field_name,
-                    mark_outlying_groups = self.mark_outlying_groups)
-            self.extrapolation_dict[label].run()
+    def run(self):
+        self.set_up()
+        self.get_sfg_dict()
+        self.plot()
+        self.print_readme()
+        return
+
+    @timeit
+    def set_up(self):
+        self.readme_list.append("%s\n" % time.asctime())
+        tidxs = np.arange(0, len(self.testing_datasets)) 
+        for tidx in tidxs:
+            test_data_label = self.data_labels[tidx+1] #first one is training
+            self.testing_dataset_dict[test_data_label] = copy.deepcopy(self.testing_datasets[tidx])
+        return
+
+    @timeit
+    def get_sfg_dict(self):
+        """Get SingleFitGrouped dictionary.
+        
+            Each entry will be a SingleFitGrouped object,
+            one for each of the testing datasets.
+        """
+        self.readme_list.append("----- Fitting and prediction -----\n")
+        self.readme_list.append("See results per dataset in subfolders\n")
+        for testset in self.testing_dataset_dict.keys():
+            self.sfg_dict[testset] = SingleFitGrouped( 
+                training_dataset = self.training_dataset, 
+                testing_dataset = self.testing_dataset_dict[testset],
+                model = self.model, 
+                save_path = os.path.join(self.save_path, str(testset)),
+                input_features = self.input_features, 
+                target_feature = self.target_feature,
+                target_error_feature = self.target_error_feature,
+                labeling_features = self.labeling_features,
+                xlabel=self.xlabel,
+                ylabel=self.ylabel,
+                stepsize=self.stepsize,
+                plot_filter_out = self.plot_filter_out,
+                grouping_feature = self.grouping_feature,
+                mark_outlying_groups = self.mark_outlying_groups,
+                fit_only_on_matched_groups = self.fit_only_on_matched_groups)
+            self.sfg_dict[testset].run()
+            self.readme_list.append("  %s" % testset)
+        return
+
+    @timeit
+    def plot(self):
         return
 
     @timeit
@@ -305,7 +331,7 @@ class PredictionVsFeature(SingleFitGrouped):
         return
 
     @timeit
-    def run(self):
+    def oldrun(self):
         self.get_extrapolation_dict()
         self.make_overall_plot("overall_plot_unfiltered",use_filters=False)
         if not(self.plot_filter_out is None):
