@@ -10,11 +10,11 @@ import plot_data.plot_xy as plotxy
 import plot_data.plot_from_dict as plotdict
 import portion_data.get_test_train_data as gttd
 import os
-from AnalysisTemplate import AnalysisTemplate
-from AnalysisTemplate import timeit
+from SingleFit import SingleFit
+from SingleFit import timeit
 import logging
 
-class FullFit(AnalysisTemplate):
+class FullFit(SingleFit):
     """Do a single full fit and split out group contributions to RMSE.
 
     Args:
@@ -63,7 +63,7 @@ class FullFit(AnalysisTemplate):
                                 If greater than the number of groups,
                                 all groups will be marked separately.
         """
-        AnalysisTemplate.__init__(self, 
+        SingleFit.__init__(self, 
             training_dataset=training_dataset, 
             testing_dataset=testing_dataset,
             model=model, 
@@ -89,27 +89,27 @@ class FullFit(AnalysisTemplate):
         return
     
     def set_data(self):
-        AnalysisTemplate.set_data(self)
+        SingleFit.set_data(self)
         if self.testing_target_data is None:
             raise ValueError("testing target data cannot be None")
         return
 
     def get_statistics(self):
-        AnalysisTemplate.get_statistics(self)
+        SingleFit.get_statistics(self)
         self.set_group_info()
         self.get_per_group_statistics()
         self.get_outlying_groups()
         return
 
     def print_statistics(self):
-        AnalysisTemplate.print_statistics(self)
+        SingleFit.print_statistics(self)
         self.readme_list.append("Per-group RMSEs from overall fit:\n")
         for group in self.test_groups:
             self.readme_list.append("    %s: %3.3f\n" % (group, self.per_group_statistics[group]))
         return
 
     def plot_results(self):
-        AnalysisTemplate.plot_results(self)
+        SingleFit.plot_results(self)
         self.get_plotting_dict()
         self.plot_group_splits_with_outliers(group_dict=dict(self.plotting_dict), outlying_groups=list(self.outlying_groups), label="per_group_info", group_notelist=["RMSEs for overall fit:"])
         self.readme_list.append("Plot in subfolder per_group_info created\n")
@@ -223,7 +223,7 @@ class FullFit(AnalysisTemplate):
             highest_rmses.append((0, "nogroup"))
         sgdict=dict()
         for group in self.group_analysis_dict.keys():
-            g_analysis = self.group_analysis_dict[group] #AnalysisTemplate obj.
+            g_analysis = self.group_analysis_dict[group] #SingleFit obj.
             sgdict[group]=dict()
             sgdict[group]['xdata'] = g_analysis.testing_target_data
             if self.target_error_feature is None:
