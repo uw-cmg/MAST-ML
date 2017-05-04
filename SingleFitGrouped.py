@@ -14,7 +14,7 @@ from SingleFit import SingleFit
 from SingleFit import timeit
 import logging
 
-class FullFit(SingleFit):
+class SingleFitGrouped(SingleFit):
     """Do a single full fit and split out group contributions to RMSE.
 
     Args:
