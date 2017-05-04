@@ -46,17 +46,20 @@ class AnalysisTemplate():
     to do meta-analysis.
 
     Args:
-        training_dataset <Data object>: training dataset
-        testing_dataset <Data object>: testing dataset
-        model <sklearn model>: machine-learning model
-        save_path <str>: save path
-        input_features <list of str>: list of input feature names
-        target_feature <str>: target feature name
-        target_error_feature <str>: name of the feature describing error
+        training_dataset <Data object>: Training dataset
+        testing_dataset <Data object>: Testing dataset
+        model <sklearn model>: Machine-learning model
+        save_path <str>: Save path
+        input_features <list of str>: List of input feature names
+        target_feature <str>: Target feature name
+        target_error_feature <str>: Name of the feature describing error
                                     in the target feature (optional)
-        labeling_features <list of str>: list of labeling feature names
+        labeling_features <list of str>: List of labeling feature names
                                          that can help identify specific
                                          points
+        xlabel <str>: Label for full-fit x-axis (default "Measured")
+        ylabel <str>: Label for full-fit y-axis (default "Predicted")
+        stepsize <float>: Step size for plot grid (default None)
     Returns:
         Analysis in the path marked by save_path
 
@@ -75,6 +78,9 @@ class AnalysisTemplate():
         target_feature=None,
         target_error_feature=None,
         labeling_features=None,
+        xlabel="Measured",
+        ylabel="Predicted",
+        stepsize=None,
         *args, **kwargs):
         """Initialize class.
             Attributes that can be set through keywords:
@@ -86,6 +92,9 @@ class AnalysisTemplate():
                 self.target_error_feature
                 self.labeling_features
                 self.save_path
+                self.xlabel
+                self.ylabel
+                self.stepsize
             Other attributes:
                 self.analysis_name <str>
                 self.training_input_data <numpy array>: training input feature data
@@ -140,6 +149,13 @@ class AnalysisTemplate():
         self.save_path = save_path
         if not os.path.isdir(self.save_path):
             os.mkdir(self.save_path)
+        # plot customization
+        self.xlabel = xlabel
+        self.ylabel = ylabel
+        if stepsize is None:
+            self.stepsize = stepsize
+        else:
+            self.stepsize = float(stepsize)
         # Self-set attributes
         self.analysis_name = os.path.basename(self.save_path)
         self.training_input_data=None
@@ -307,9 +323,10 @@ class AnalysisTemplate():
             self.readme_list.append("No plot comparing predicted vs. measured data was made.\n")
             return
         plot_kwargs=dict()
-        plot_kwargs['xlabel'] = "Measured"
-        plot_kwargs['ylabel'] = "Predicted"
+        plot_kwargs['xlabel'] = self.xlabel
+        plot_kwargs['ylabel'] = self.ylabel
         plot_kwargs['plotlabel'] = "single_fit"
+        plot_kwargs['stepsize'] = self.stepsize
         plot_kwargs['guideline'] = 1
         notelist=list()
         notelist.append("RMSE: %3.3f" % self.statistics['rmse'])
