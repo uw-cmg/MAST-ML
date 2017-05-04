@@ -39,7 +39,7 @@ def timeit(method):
 
     return timed
 
-class AnalysisTemplate():
+class SingleFit():
     """This is the basic analysis class.
 
     This class provides a template for other classes. Combine many classes 
