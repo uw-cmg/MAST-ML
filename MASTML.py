@@ -36,11 +36,8 @@ class MASTMLDriver(object):
         save_path = self._perform_general_setup(mastmlwrapper=mastmlwrapper)
 
         # Parse input data files
-        Xdata, ydata, x_features, y_feature = self._parse_input_data(mastmlwrapper=mastmlwrapper, configdict=configdict)
-        #data_dict = self._parse_input_data(mastmlwrapper=mastmlwrapper, configdict=configdict)
+        Xdata, ydata, x_features, y_feature, data_dict = self._parse_input_data(mastmlwrapper=mastmlwrapper, configdict=configdict)
 
-
-        """
         # Gather models
         model_list = self._gather_models(mastmlwrapper=mastmlwrapper)
 
@@ -50,7 +47,6 @@ class MASTMLDriver(object):
 
         # End MASTML session
         self._move_log_and_input_files(mastmlwrapper=mastmlwrapper)
-        """
 
         return
 
