@@ -1,13 +1,12 @@
-__author__ = 'Ryan Jacobs'
+__author__ = 'Ryan Jacobs, Tam Mayeshiba'
 
 import data_parser
 import sys
 import os
-from MASTMLInitializer import ConfigFileParser, MASTMLWrapper, ConfigFileValidator
+from MASTMLInitializer import MASTMLWrapper, ConfigFileValidator
 import logging
 import shutil
 import time
-from pprint import pprint
 
 class MASTMLDriver(object):
 
@@ -39,6 +38,7 @@ class MASTMLDriver(object):
 
         # Gather models
         model_list = self._gather_models(mastmlwrapper=mastmlwrapper)
+
         # Gather tests
         test_list = self._gather_tests(mastmlwrapper=mastmlwrapper, configdict=configdict, data_dict=data_dict,
                                        model_list=model_list, save_path=save_path)
