@@ -43,8 +43,7 @@ class ConfigFileValidator(ConfigFileParser):
     """Class to validate contents of user-specified MASTML input file and flag any errors
     """
     def __init__(self, configfile):
-        super(ConfigFileValidator, self).__init__(self)
-        self.configfile = configfile
+        super().__init__(configfile)
 
     def run_config_validation(self):
         errors_present = False

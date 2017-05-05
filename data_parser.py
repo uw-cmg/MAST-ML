@@ -1,7 +1,7 @@
 __author__ = 'haotian;Tam'
 import numpy as np
 import traceback
-def parse(filename, weights = False, separator=','):
+def parse(filename, weights=False, separator=','):
     """
     parse a file into parse.Data object
     :param filename: name of the file to be parsed
@@ -90,18 +90,20 @@ class Data:
             print("can't find [{}] in features".format(feature))
             return False
         self.y_feature = feature
-        self.add_exclusive_filter(self.y_feature,'=','FLAG')
+        self.add_exclusive_filter(self.y_feature, '=', 'FLAG')
         self.overwrite_data_w_filtered_data()
         return True
 
-    #append data within self.data to self.filtered_data satisfying (operator,threshold) for a feature
+    # append data within self.data to self.filtered_data satisfying (operator,threshold) for a feature
     def add_inclusive_filter(self, feature, operator, threshold):
         if feature not in self.__features:
             print("can't find [{}] in features".format(feature))
             return False
         index = self.__features.index(feature)
-        if self.__filtered_data == self.__data: filtered_data = []
-        else: filtered_data = self.__filtered_data
+        if self.__filtered_data == self.__data:
+            filtered_data = []
+        else:
+            filtered_data = self.__filtered_data
         for line in self.__data:
             if line in filtered_data: continue
             if line[index] is None:
@@ -124,7 +126,7 @@ class Data:
         self.__filtered_data = filtered_data
         return True
 
-    #remove data from self.filtered_data not satisfying (operator,threshold) for a feature
+    # remove data from self.filtered_data not satisfying (operator,threshold) for a feature
     def add_exclusive_filter(self, feature, operator, threshold):
         if feature not in self.__features:
             print("can't find [{}] in features".format(feature))
@@ -142,18 +144,18 @@ class Data:
                 elif operator == "=":
                     if (line[index]) == threshold:
                         remove_list.append(line)
-            elif  '>' in operator and line[index] > threshold:
+            elif '>' in operator and line[index] > threshold:
                 remove_list.append(line)
-                #filtered_data.remove(line)
+                # filtered_data.remove(line)
             elif '=' in operator and line[index] == threshold:
                 remove_list.append(line)
-                #filtered_data.remove(line)
+                # filtered_data.remove(line)
             elif '<' in operator and line[index] < threshold:
                 remove_list.append(line)
-                #filtered_data.remove(line)
+                # filtered_data.remove(line)
             elif 'contains' in operator and str(threshold) in str(line[index]):
                 remove_list.append(line)
-                #filtered_data.remove(line)
+                # filtered_data.remove(line)
         for line in remove_list:
             filtered_data.remove(line)
         self.__filtered_data = filtered_data
@@ -163,12 +165,12 @@ class Data:
         self.__filtered_data = list(self.__data)
         return True
 
-    #the equivalent of parsing a CSV of filtered data
+    # the equivalent of parsing a CSV of filtered data
     def overwrite_data_w_filtered_data(self):
         self.__data = self.__filtered_data
 
-    #todo clarify, different from 's' normalization?
-    def std_normalization(self, features = None):
+    # todo clarify, different from 's' normalization?
+    def std_normalization(self, features=None):
         if features is None:
             features = [self.y_feature]
         elif isinstance(features, str):
@@ -184,18 +186,18 @@ class Data:
             for i in x:
                 if i is not None:
                     result.append(i)
-            avg = sum(result)/len(result)
+            avg = sum(result) / len(result)
             sqr_err = 0
             for i in result:
-                sqr_err += (i-avg)**2
+                sqr_err += (i - avg) ** 2
             sqr_err /= len(result)
-            std_err = sqr_err**0.5
+            std_err = sqr_err ** 0.5
             result = []
             for i in x:
                 if i is None:
                     result.append(None)
                 else:
-                    result.append((i-avg)/std_err)
+                    result.append((i - avg) / std_err)
             self.add_feature('std_N_{}'.format(feature), result)
 
     def normalization(self, features=None, normalization_type='s'):
@@ -217,17 +219,17 @@ class Data:
                 cur_max = self.__max_min[0][index]
                 cur_min = self.__max_min[1][index]
                 if cur_max is None:
-                    print ('feature[{}] max is none'.format(feature))
+                    print('feature[{}] max is none'.format(feature))
                 elif cur_min is None:
-                    print ('feature[{}] min is none'.format(feature))
+                    print('feature[{}] min is none'.format(feature))
                 for line in self.__data:
                     if line[index] is None:
                         result.append(None)
                     else:
-                        result.append((line[index]-cur_min)/(cur_max-cur_min))
+                        result.append((line[index] - cur_min) / (cur_max - cur_min))
                 self.add_feature('N_{}'.format(feature), result)
-                    #line[index] = (line[index]-cur_min)/(cur_max-cur_min)
-                #for line in self.__filtered_data:
+                # line[index] = (line[index]-cur_min)/(cur_max-cur_min)
+                # for line in self.__filtered_data:
                 #    line[index] = (line[index]-cur_min)/(cur_max-cur_min)
         elif normalization_type == 't':
             all_max = max([self.__max_min[0][x] for x in range(len(self.__features)) if self.__features[x] in features])
@@ -241,10 +243,10 @@ class Data:
                     if line[index] is None:
                         result.append(None)
                     else:
-                        result.append((line[index]-all_min)/(all_max-all_min))
+                        result.append((line[index] - all_min) / (all_max - all_min))
                 self.add_feature('N_{}'.format(feature), result)
-                    #line[index] = (line[index]-all_min)/(all_max-all_min)
-                #for line in self.__filtered_data:
+                # line[index] = (line[index]-all_min)/(all_max-all_min)
+                # for line in self.__filtered_data:
                 #    line[index] = (line[index]-all_min)/(all_max-all_min)
         else:
             print("unknown normalization_type '{}'; "
@@ -259,7 +261,7 @@ class Data:
         index = self.__features.index(feature)
         cur_max = self.__max_min[0][index]
         cur_min = self.__max_min[1][index]
-        return data*(cur_max-cur_min)+cur_min
+        return data * (cur_max - cur_min) + cur_min
 
     def get_data(self, features=None):
         if isinstance(features, str):
@@ -280,7 +282,7 @@ class Data:
         return self.get_data(features=self.x_features)
 
     def get_y_data(self):
-         return self.get_data(features=self.y_feature)
+        return self.get_data(features=self.y_feature)
 
     def __calculate_data_range(self):
         self.__max_min = []
@@ -325,13 +327,13 @@ class Data:
         f = open(filename, 'w')
         index_list = [self.__features.index(feature) for feature in features]
         for i in range(len(index_list)):
-            if i != len(index_list)-1:
+            if i != len(index_list) - 1:
                 f.write('{},'.format(features[i]))
             else:
                 f.write('{}\n'.format(features[i]))
         for line in data:
             for i in range(len(index_list)):
-                if i != len(index_list)-1:
+                if i != len(index_list) - 1:
                     f.write('{},'.format(line[index_list[i]]))
                 else:
                     f.write('{}\n'.format(line[index_list[i]]))
@@ -340,7 +342,7 @@ class Data:
 
     def add_feature(self, name, value):
         if len(value) != len(self.__data):
-            print ('unmatch data length')
+            print('unmatch data length')
             return False
         self.__features.append(name)
         for i in range(len(value)):
@@ -351,9 +353,9 @@ class Data:
         print('feature [{}] added'.format(name))
         self.__calculate_data_range()
         return True
-    
-    def normalize_feature_global_minmax(self, featurename="", 
-                gmin=None, gmax=None, newname=""):
+
+    def normalize_feature_global_minmax(self, featurename="",
+                                        gmin=None, gmax=None, newname=""):
         """Normalize a feature using predetermined minimum and maximum values.
             Use for normalizing across multiple data_parser Data objects.
         """
@@ -362,17 +364,17 @@ class Data:
             return False
         if newname == "":
             newname = "N_{}".format(featurename)
-        index = self.__features.index(feature) 
-        #Consider using numpy, which can handle python None in subtraction
+        index = self.__features.index(feature)
+        # Consider using numpy, which can handle python None in subtraction
         # and division, as NaN; but may not work with add_feature
-        #origarr = np.array(self.__data[:,index],'float')
-        #result = (origarr - gmin)/(gmax - gmin)
+        # origarr = np.array(self.__data[:,index],'float')
+        # result = (origarr - gmin)/(gmax - gmin)
         result = list()
         for line in self.__data:
             if line[index] is None:
                 result.append(None)
             else:
-                result.append((line[index]-gmin)/(gmax-gmin))
+                result.append((line[index] - gmin) / (gmax - gmin))
         self.add_feature(newname, result)
         return True
 
