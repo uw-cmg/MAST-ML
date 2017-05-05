@@ -1,6 +1,7 @@
 __author__ = 'Ryan Jacobs, Tam Mayeshiba'
 
 from configobj import ConfigObj, ConfigObjError
+from validate import Validator, VdtTypeError
 import sys
 import os
 from sklearn.kernel_ridge import KernelRidge
@@ -38,6 +39,116 @@ class ConfigFileParser(object):
         else:
             raise OSError('The input file you specified, %s, does not exist in the path %s' % (str(self.configfile), str(cwd)))
 
+class ConfigFileValidator(ConfigFileParser):
+    """Class to validate contents of user-specified MASTML input file and flag any errors
+    """
+    def __init__(self, configfile):
+        super(ConfigFileValidator, self).__init__(self)
+        self.configfile = configfile
+
+    def run_config_validation(self):
+        errors_present = False
+        validator = self._generate_validator()
+        configdict = self.get_config_dict()
+        validationdict_names = ConfigFileParser(configfile='mastmlinputvalidationnames.conf').get_config_dict()
+        validationdict_types = ConfigFileParser(configfile='mastmlinputvalidationtypes.conf').get_config_dict()
+        logging.info('MASTML is checking that the section names of your input file are valid...')
+        configdict, errors_present = self._check_config_headings(configdict=configdict, validationdict=validationdict_names,
+                                                                 validator=validator, errors_present=errors_present)
+        self._check_for_errors(errors_present=errors_present)
+        section_headings = [k for k in validationdict_names.keys()]
+
+        logging.info('MASTML is converting the datatypes of values in your input file...')
+        for section_heading in section_headings:
+            configdict, errors_present = self._check_section_datatypes(configdict=configdict, validationdict=validationdict_types,
+                                                                       validator=validator, errors_present=errors_present,
+                                                                       section_heading=section_heading)
+            self._check_for_errors(errors_present=errors_present)
+
+        logging.info('MASTML is checking that the subsection names and values in your input file are valid...')
+        for section_heading in section_headings:
+            errors_present = self._check_section_names(configdict=configdict, validationdict=validationdict_names,
+                                                       errors_present=errors_present, section_heading=section_heading)
+            self._check_for_errors(errors_present=errors_present)
+
+
+        return configdict, errors_present
+
+    def _check_config_headings(self, configdict, validationdict, validator, errors_present):
+        for k in validationdict.keys():
+            if k not in configdict.keys():
+                logging.info('You are missing the %s section in your input file' % str(k))
+                errors_present = bool(True)
+
+        return configdict, errors_present
+
+    def _check_section_datatypes(self, configdict, validationdict, validator, errors_present, section_heading):
+        # First do some manual cleanup for values that can be string or string_list, because of issue with configobj
+        if section_heading == 'Models and Tests to Run':
+            if type(configdict['Models and Tests to Run']['models']) is str:
+                templist = []
+                templist.append(configdict['Models and Tests to Run']['models'])
+                configdict['Models and Tests to Run']['models'] = templist
+            if type(configdict['Models and Tests to Run']['test_cases']) is str:
+                templist = []
+                templist.append(configdict['Models and Tests to Run']['test_cases'])
+                configdict['Models and Tests to Run']['test_cases'] = templist
+
+        # Check the data type of section and subsection headings and values
+        configdict_depth = self._get_config_dict_depth(test_dict=configdict[section_heading])
+        datatypes = ['string', 'integer', 'float', 'boolean', 'string_list', 'int_list', 'float_list']
+        if section_heading in ['General Setup', 'Data Setup', 'Models and Tests to Run', 'Model Parameters']:
+            for k in configdict[section_heading].keys():
+                if configdict_depth == 1:
+                    try:
+                        datatype = validationdict[section_heading][k]
+                        if datatype in datatypes:
+                            configdict[section_heading][k] = validator.check(check=datatype, value=configdict[section_heading][k])
+                    except VdtTypeError:
+                        logging.info('The parameter %s in your %s section did not successfully convert to %s' % (k, section_heading, datatype))
+                        errors_present = bool(True)
+
+                if configdict_depth > 1:
+                    for kk in configdict[section_heading][k].keys():
+                        try:
+                            if k in validationdict[section_heading]:
+                                datatype = validationdict[section_heading][k][kk]
+                                if datatype in datatypes:
+                                    configdict[section_heading][k][kk] = validator.check(check=datatype, value=configdict[section_heading][k][kk])
+                        except(VdtTypeError):
+                            logging.info('The parameter %s in your %s : %s section did not successfully convert to string' % (section_heading, k, kk))
+                            errors_present = bool(True)
+
+        return configdict, errors_present
+
+    def _check_section_names(self, configdict, validationdict, errors_present, section_heading):
+        # Check that required section or subsections are present in user's input file.
+        configdict_depth = self._get_config_dict_depth(test_dict=configdict[section_heading])
+        if section_heading in ['General Setup', 'Data Setup', 'Models and Tests to Run']:
+            for k in validationdict[section_heading].keys():
+                if k not in configdict[section_heading].keys():
+                    logging.info('The %s section of your input file has an input parameter entered incorrectly: %s' % (section_heading, k))
+                    errors_present = bool(True)
+                if k in ['models', 'test_cases']:
+                    for case in configdict[section_heading][k]:
+                        if case not in validationdict[section_heading][k]:
+                            logging.info('The %s : %s section of your input file has an input parameter entered incorrectly: %s' % (section_heading, k, case))
+                            errors_present = bool(True)
+                if configdict_depth > 1:
+                    for kk in validationdict[section_heading][k].keys():
+                        if kk not in configdict[section_heading][k].keys():
+                            logging.info('The %s section of your input file has an input parameter entered incorrectly: %s : %s' % (section_heading, k, kk))
+                            errors_present = bool(True)
+        return errors_present
+
+    def _check_for_errors(self, errors_present):
+        if errors_present == bool(True):
+            logging.info('Errors have been detected in your MASTML setup. Please correct the errors and re-run MASTML')
+            sys.exit()
+
+    def _generate_validator(self):
+        return Validator()
+
 class MASTMLWrapper(object):
     """Class that takes parameters from parsed config file and performs calls to appropriate MASTML methods
     """
@@ -52,6 +163,7 @@ class MASTMLWrapper(object):
             keywordsetup[k] = v
         return keywordsetup
 
+    # This method returns relevant model object based on input file. Fitting the model is performed later
     def get_machinelearning_model(self, model_type):
         if model_type == 'linear_model':
             model = LinearRegression(fit_intercept=bool(self.configdict['Model Parameters']['linear_model']['fit_intercept']))
@@ -71,9 +183,17 @@ class MASTMLWrapper(object):
             return model
         if model_type == 'decision_tree_model':
             model = tree.DecisionTreeRegressor(criterion=str(self.configdict['Model Parameters']['decision_tree_model']['split_criterion']),
+                                               splitter=str(self.configdict['Model Parameters']['decision_tree_model']['splitter']),
                                                max_depth=int(self.configdict['Model Parameters']['decision_tree_model']['max_depth']),
                                                min_samples_leaf=int(self.configdict['Model Parameters']['decision_tree_model']['min_samples_leaf']),
                                                min_samples_split=int(self.configdict['Model Parameters']['decision_tree_model']['min_samples_split']))
+            return model
+        if model_type == 'extra_tree_model':
+            model = tree.ExtraTreeRegressor(criterion=str(self.configdict['Model Parameters']['extra_tree_model']['split_criterion']),
+                                               splitter=str(self.configdict['Model Parameters']['extra_tree_model']['splitter']),
+                                               max_depth=int(self.configdict['Model Parameters']['extra_tree_model']['max_depth']),
+                                               min_samples_leaf=int(self.configdict['Model Parameters']['extra_tree_model']['min_samples_leaf']),
+                                               min_samples_split=int(self.configdict['Model Parameters']['extra_tree_model']['min_samples_split']))
             return model
         if model_type == 'randomforest_model':
             model = RandomForestRegressor(criterion=str(self.configdict['Model Parameters']['randomforest_model']['split_criterion']),
@@ -88,7 +208,7 @@ class MASTMLWrapper(object):
             model = nl.net.newff(minmax=int(self.configdict['Model Parameters']['nn_model_neurolab']['minmax']),
                                  size=int(self.configdict['Model Parameters']['nn_model_neurolab']['size']),
                                  transf=str(self.configdict['Model Parameters']['nn_model_neurolab']['transfer_function']))
-            train = str(self.configdict['Model Parameters']['nn_model_neurolab']['minmax']['training_method'])
+            train = str(self.configdict['Model Parameters']['nn_model_neurolab']['training_method'])
             epochs = int(self.configdict['Model Parameters']['nn_model_neurolab']['epochs'])
             show = bool(self.configdict['Model Parameters']['nn_model_neurolab']['show'])
             goal = float(self.configdict['Model Parameters']['nn_model_neurolab']['goal'])
@@ -104,8 +224,7 @@ class MASTMLWrapper(object):
 
 
     # This method will call the different classes corresponding to each test type, which are being organized by Tam
-    def get_machinelearning_test(self, test_type, model, save_path,
-            *args,**kwargs):
+    def get_machinelearning_test(self, test_type, model, save_path, *args, **kwargs):
         mod_name = test_type.split("_")[0] #ex. KFoldCV_5fold goes to KFoldCV
         test_module = importlib.import_module('%s' % (mod_name))
         test_class_def = getattr(test_module, mod_name)

@@ -1,21 +1,19 @@
-__author__ = 'Ryan Jacobs'
+__author__ = 'Ryan Jacobs, Tam Mayeshiba'
 
 import data_parser
 import sys
 import os
-from MASTMLInitializer import ConfigFileParser, MASTMLWrapper
+from MASTMLInitializer import MASTMLWrapper, ConfigFileValidator
 import logging
 import shutil
+import time
 
 class MASTMLDriver(object):
 
     def __init__(self, configfile):
         self.configfile = configfile
-        if os.getenv("MAST_DEBUG") == "1":
-            logging.basicConfig(filename='MASTMLlog.log', level='DEBUG')
-        else:
-            logging.basicConfig(filename='MASTMLlog.log', level='INFO')
 
+    # This will later be removed as the parsed input file should have values all containing correct datatype
     def string_or_list_input_to_list(self, unknown_input_val):
         input_list=list()
         if type(unknown_input_val) is str:
@@ -26,24 +24,51 @@ class MASTMLDriver(object):
         return input_list
 
     def run_MASTML(self):
-        cwd = os.getcwd()
-        config = ConfigFileParser(configfile=self.configfile)
-        logging.info('Successfully read in your MASTML input file, %s' % str(self.configfile))
+        # Begin MASTML session
+        self._initalize_mastml_session()
 
-        configdict = config.get_config_dict()
-        mastmlwrapper = MASTMLWrapper(configdict=configdict)
-        generalsetup = mastmlwrapper.process_config_keyword(keyword='General Setup')
-        datasetup = mastmlwrapper.process_config_keyword(keyword='Data Setup')
-        models_and_tests_setup = mastmlwrapper.process_config_keyword(keyword='Models and Tests to Run')
-        logging.info('Successfully parsed your MASTML input file')
-        
+        # Parse MASTML input file
+        mastmlwrapper, configdict, errors_present = self._generate_mastml_wrapper()
+
         # General setup
+        save_path = self._perform_general_setup(mastmlwrapper=mastmlwrapper)
+
+        # Parse input data files
+        data_dict = self._parse_input_data(mastmlwrapper=mastmlwrapper)
+
+        # Gather models
+        model_list = self._gather_models(mastmlwrapper=mastmlwrapper)
+
+        # Gather tests
+        test_list = self._gather_tests(mastmlwrapper=mastmlwrapper, configdict=configdict, data_dict=data_dict,
+                                       model_list=model_list, save_path=save_path)
+
+        # End MASTML session
+        self._move_log_and_input_files(mastmlwrapper=mastmlwrapper)
+        return
+
+    def _initalize_mastml_session(self):
+        logging.basicConfig(filename='MASTMLlog.log', level='INFO')
+        current_time = time.strftime('%Y'+'-'+'%m'+'-'+'%d'+', '+'%H'+' hours, '+'%M'+' minutes, '+'and '+'%S'+' seconds')
+        logging.info('Initiated new MASTML session at: %s' % current_time)
+        return
+
+    def _generate_mastml_wrapper(self):
+        configdict, errors_present = ConfigFileValidator(configfile=self.configfile).run_config_validation()
+        mastmlwrapper = MASTMLWrapper(configdict=configdict)
+        logging.info('Successfully read in and parsed your MASTML input file, %s' % str(self.configfile))
+        return mastmlwrapper, configdict, errors_present
+
+    def _perform_general_setup(self, mastmlwrapper):
+        generalsetup = mastmlwrapper.process_config_keyword(keyword='General Setup')
         save_path = os.path.abspath(generalsetup['save_path'])
         if not os.path.isdir(save_path):
             os.mkdir(save_path)
+        return save_path
 
-        # Temporary call to data_parser for now, but will later deprecate
+    def _parse_input_data(self, mastmlwrapper):
         data_dict=dict()
+        datasetup = mastmlwrapper.process_config_keyword(keyword='Data Setup')
         for data_name in datasetup.keys():
             data_path = datasetup[data_name]['data_path']
             data_weights = datasetup[data_name]['weights']
@@ -53,11 +78,13 @@ class MASTMLDriver(object):
             #data_dict[data_name].set_x_features(datasetup['X']) #set in test classes, not here, since different tests could have different X and y features
             #data_dict[data_name].set_y_feature(datasetup['y'])
             logging.info('Parsed the input data located under %s' % data_path)
+        return data_dict
 
-        # Gather models
+    def _gather_models(self, mastmlwrapper):
+        models_and_tests_setup = mastmlwrapper.process_config_keyword(keyword='Models and Tests to Run')
         model_list = []
         model_val = models_and_tests_setup['models']
-        print(model_val)
+        #print(model_val)
         if type(model_val) is str:
             logging.info('Getting model %s' % model_val)
             ml_model = mastmlwrapper.get_machinelearning_model(model_type=model_val)
@@ -69,8 +96,13 @@ class MASTMLDriver(object):
                 ml_model = mastmlwrapper.get_machinelearning_model(model_type=model)
                 model_list.append(ml_model)
                 logging.info('Adding model %s to queue...' % str(model))
+        return model_list
+
+    def _gather_tests(self, mastmlwrapper, configdict, data_dict, model_list, save_path):
+        models_and_tests_setup = mastmlwrapper.process_config_keyword(keyword='Models and Tests to Run')
+        generalsetup = mastmlwrapper.process_config_keyword(keyword='General Setup')
         # Gather test types
-        test_list=self.string_or_list_input_to_list(models_and_tests_setup['test_cases'])
+        test_list = self.string_or_list_input_to_list(models_and_tests_setup['test_cases'])
         # Run the specified test cases for every model
         for test_type in test_list:
             logging.info('Looking up parameters for test type %s' % test_type)
@@ -105,10 +137,15 @@ class MASTMLDriver(object):
             # Run the test case for every model
             for midx, model in enumerate(model_list):
                 mastmlwrapper.get_machinelearning_test(test_type=test_type,
-                        model=model, save_path=test_save_path,
-                        **test_params)
+                                                       model=model, save_path=test_save_path,
+                                                       **test_params)
                 logging.info('Ran test %s for your %s model' % (test_type, str(model)))
-        # Move input and log files to output directory, end MASTML session
+
+        return test_list
+
+    def _move_log_and_input_files(self, mastmlwrapper):
+        cwd = os.getcwd()
+        generalsetup = mastmlwrapper.process_config_keyword(keyword='General Setup')
         if not(os.path.abspath(generalsetup['save_path']) == cwd):
             if os.path.exists(generalsetup['save_path']+"/"+'MASTMLlog.log'):
                 os.remove(generalsetup['save_path']+"/"+'MASTMLlog.log')
