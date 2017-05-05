@@ -347,7 +347,12 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
                     fontsize=smallfont)
         notey = notey - notestep
     #ANNOTATIONS FOR LARGEST
-    marklargest = np.array(marklargest.split(","),'int')
+    if type(marklargest) is str:
+        marklargest = np.array(marklargest.split(","),'int')
+    elif type(marklargest) is list:
+        marklargest = np.array(marklargest,'int')
+    else:
+        raise ValueError("marklargest %s could not be identified." % marklargest)
     for nidx in range(0, numlines):
         marknum = marklargest[nidx]
         if marknum == 0: #no marking
