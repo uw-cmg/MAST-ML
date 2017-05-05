@@ -132,8 +132,11 @@ class ConfigFileValidator(ConfigFileParser):
                 if k in ['models', 'test_cases']:
                     for case in configdict[section_heading][k]:
                         if case not in validationdict[section_heading][k]:
-                            logging.info('The %s : %s section of your input file has an input parameter entered incorrectly: %s' % (section_heading, k, case))
-                            errors_present = bool(True)
+                            logging.info('The %s : %s section of your input file has an unknown input parameter %s. Trying base name in front of underscores.' % (section_heading, k, case))
+                            case_base = case.split("_")[0] #Allow permuatations of the same test, like SingleFit_myfitA and SingleFit_myfitB
+                            if case_base not in validationdict[section_heading][k]:
+                                logging.info('The %s : %s section of your input file has an input parameter entered incorrectly: %s' % (section_heading, k, case))
+                                errors_present = bool(True)
                 if configdict_depth > 1:
                     for kk in validationdict[section_heading][k].keys():
                         if kk not in configdict[section_heading][k].keys():
