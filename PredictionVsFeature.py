@@ -13,6 +13,7 @@ import plot_data.plot_xy as plotxy
 import plot_data.plot_from_dict as plotdict
 import copy
 import time
+import logging
 
 class PredictionVsFeature(SingleFit):
     """Make prediction vs. feature plots from a single fit.
