@@ -1,8 +1,9 @@
+Fri May  5 13:53:23 2017
 ----- Model parameters -----
-kernel_params: None
 alpha: 0.00139
 gamma: 0.518
 coef0: 1
+kernel_params: None
 degree: 3
 kernel: rbf
 ----- Output data -----
@@ -10,3 +11,9 @@ output_data.csv file created with columns:
    labeling features: ['str_cat', 'num_id']
    input features: ['time', 'N_sine_feature', 'N_linear_feature']
    prediction: Prediction
+----- Statistics -----
+No target data.
+No statistics comparing target data and prediction were collected.
+----- Plotting -----
+No target data.
+No plot comparing predicted vs. measured data was made.

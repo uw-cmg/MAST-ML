@@ -1,8 +1,9 @@
+Fri May  5 13:53:24 2017
 ----- Model parameters -----
-kernel_params: None
 alpha: 0.00139
 gamma: 0.518
 coef0: 1
+kernel_params: None
 degree: 3
 kernel: rbf
 ----- Output data -----
@@ -18,12 +19,9 @@ mean_error: 0.0182
 rmse: 0.1315
 rmse_plot_filter_out: 0.1169
 rsquared: 0.9618
-Per-group RMSEs from overall fit:
-    A: rmse: 0.127
-    A: rmse_plot_filter_out: 0.111
-    B: rmse: 0.114
-    B: rmse_plot_filter_out: 0.119
-    D: rmse: 0.160
-    D: rmse_plot_filter_out: 0.106
-    C: rmse: 0.124
-    C: rmse_plot_filter_out: 0.129
+----- Plotting -----
+Plot filtering out:
+  time_>_4.2
+Plot single_fit.png created.
+    Plotted data is in the data_... csv file.
+    All zeros for error columns indicate no error.

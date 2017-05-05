@@ -1,6 +1,20 @@
-Fri May  5 11:53:01 2017
+Fri May  5 13:53:23 2017
+----- Model parameters -----
+alpha: 0.00139
+gamma: 0.518
+coef0: 1
+kernel_params: None
+degree: 3
+kernel: rbf
 ----- Fitting and prediction -----
 See results per dataset in subfolders
   Extrapolation test
   Initial repredict
   Set2
+----- Plotting -----
+See plots in subfolders:
+  feature_plot_group_None
+  feature_plot_group_A
+  feature_plot_group_B
+  feature_plot_group_C
+  feature_plot_group_D
