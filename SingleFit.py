@@ -410,6 +410,9 @@ class SingleFit():
                     self.testing_target_prediction,
                     **plot_kwargs)
         else:
+            self.readme_list.append("Plot filtering out:\n")
+            for pfstr in self.plot_filter_out:
+                self.readme_list.append("  %s\n" % pfstr.replace(";","_"))
             notelist.append("Shown-only RMSE: %3.3f" % self.statistics['rmse_plot_filter_out'])
             notelist.append("Data not shown:")
             for pfstr in self.plot_filter_out:
