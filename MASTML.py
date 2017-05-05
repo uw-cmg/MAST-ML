@@ -140,12 +140,13 @@ class MASTMLDriver(object):
                     test_params['target_error_feature'] = generalsetup['target_error_feature']
             if 'labeling_features' in test_params.keys():
                 test_params['labeling_features'] = self.string_or_list_input_to_list(test_params['labeling_features'])
-            # Set save path
-            test_save_path = os.path.join(save_path, test_type)
-            if not os.path.isdir(test_save_path):
-                os.mkdir(test_save_path)
             # Run the test case for every model
             for midx, model in enumerate(model_list):
+                # Set save path, allowing for multiple tests and models and potentially multiple of the same model (KernelRidge rbf kernel, KernelRidge linear kernel, etc.)
+                test_folder = "%s_%s%i" % (test_type, model.__class__.__name__, midx)
+                test_save_path = os.path.join(save_path, test_folder)
+                if not os.path.isdir(test_save_path):
+                    os.mkdir(test_save_path)
                 mastmlwrapper.get_machinelearning_test(test_type=test_type,
                                                        model=model, save_path=test_save_path,
                                                        **test_params)

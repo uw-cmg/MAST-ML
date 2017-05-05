@@ -135,7 +135,10 @@ class SingleFitGrouped(SingleFit):
         SingleFit.print_statistics(self)
         self.readme_list.append("Per-group RMSEs from overall fit:\n")
         for group in self.test_groups:
-            self.readme_list.append("    %s: %3.3f\n" % (group, self.per_group_statistics[group]))
+            skeys = list(self.per_group_statistics[group].keys())
+            skeys.sort()
+            for skey in skeys:
+                self.readme_list.append("    %s: %s: %3.3f\n" % (group, skey, self.per_group_statistics[group][skey]))
         return
 
     def plot_results(self):
@@ -146,7 +149,12 @@ class SingleFitGrouped(SingleFit):
             group_notelist.append("Data not shown:")
             for pfstr in self.plot_filter_out:
                 group_notelist.append("  %s" % pfstr.replace(";"," "))
-        group_notelist.append("RMSEs for overall fit:")
+        if self.plot_filter_out is None:
+            group_notelist.append("RMSEs for overall fit:")
+            group_notelist.append("Overall: %3.3f" % self.statistics['rmse'])
+        else:
+            group_notelist.append("RMSEs for shown data:")
+            group_notelist.append("Overall: %3.3f" % self.statistics['rmse_plot_filter_out'])
         self.plot_group_splits_with_outliers(group_dict=dict(self.plotting_dict), outlying_groups=list(self.outlying_groups), label="per_group_info", group_notelist=list(group_notelist))
         self.readme_list.append("Plot in subfolder per_group_info created\n")
         self.readme_list.append("    labeling outlying groups and their RMSEs.\n")
@@ -168,7 +176,16 @@ class SingleFitGrouped(SingleFit):
             g_ydata = self.testing_target_data[g_index]
             #g_mean_error = np.mean(g_ypredict - g_ydata)
             g_rmse = np.sqrt(mean_squared_error(g_ypredict, g_ydata))
-            self.per_group_statistics[group] = g_rmse
+            self.per_group_statistics[group] = dict()
+            self.per_group_statistics[group]['rmse'] = g_rmse
+            if not(self.plot_filter_out is None):
+                g_index = np.intersect1d(g_index, self.plotting_index) 
+                if len(g_index) > 0:
+                    g_ypredict= self.testing_target_prediction[g_index]
+                    g_ydata = self.testing_target_data[g_index]
+                    #g_mean_error = np.mean(g_ypredict - g_ydata)
+                    g_rmse = np.sqrt(mean_squared_error(g_ypredict, g_ydata))
+                    self.per_group_statistics[group]['rmse_plot_filter_out'] = g_rmse
         return
 
     def get_outlying_groups(self):
@@ -177,19 +194,28 @@ class SingleFitGrouped(SingleFit):
         num_mark = min(self.mark_outlying_groups, len(self.test_groups))
         for oidx in range(0, num_mark):
             highest_rmses.append((0, "nogroup"))
+        if self.plot_filter_out is None:
+            criterion = 'rmse'
+        else:
+            criterion = 'rmse_plot_filter_out'
         for group in self.test_groups:
             min_entry = min(highest_rmses)
             min_rmse = min_entry[0]
-            g_rmse = self.per_group_statistics[group]
-            if g_rmse > min_rmse:
-                highest_rmses[highest_rmses.index(min_entry)]= (g_rmse, group)
-        logging.debug("Highest RMSEs: %s" % highest_rmses)
+            if criterion in self.per_group_statistics[group].keys():
+                g_rmse = self.per_group_statistics[group][criterion]
+                if g_rmse > min_rmse:
+                    highest_rmses[highest_rmses.index(min_entry)]= (g_rmse, group)
+        logging.debug("Highest %s list: %s" % (criterion, highest_rmses))
         for high_rmse in highest_rmses:
             self.outlying_groups.append(high_rmse[1])
         return
 
     def get_plotting_dict(self):
         plot_dict=dict()
+        if self.plot_filter_out is None:
+            criterion = 'rmse'
+        else:
+            criterion = 'rmse_plot_filter_out'
         for group in self.test_groups:
             g_index = self.test_group_indices[group]["test_index"]
             if not(self.plot_filter_out is None):
@@ -204,7 +230,10 @@ class SingleFitGrouped(SingleFit):
             plot_dict[group]['xdata'] = g_ydata
             plot_dict[group]['xerrdata'] = g_ydata_err
             plot_dict[group]['ydata'] = g_ypredict
-            plot_dict[group]['rmse'] = self.per_group_statistics[group]
+            if criterion in self.per_group_statistics[group].keys():
+                plot_dict[group]['rmse'] = self.per_group_statistics[group][criterion]
+            else:
+                plot_dict[group]['rmse'] = None
         self.plotting_dict=dict(plot_dict)
         return
 

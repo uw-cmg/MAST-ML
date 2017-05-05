@@ -218,7 +218,6 @@ class SingleFit():
 
     @timeit
     def plot(self):
-        self.get_plotting_index()
         self.plot_results()
         return
 
@@ -283,6 +282,8 @@ class SingleFit():
         self.statistics['mean_error'] = self.get_mean_error()
         self.statistics['mean_absolute_error'] = self.get_mean_absolute_error()
         self.statistics['rsquared'] = self.get_rsquared()
+        self.get_plotting_index()
+        self.plot_filter_update_statistics()
         return
 
     def print_statistics(self):
@@ -291,8 +292,10 @@ class SingleFit():
             self.readme_list.append("No target data.\n")
             self.readme_list.append("No statistics comparing target data and prediction were collected.\n")
         else:
-            for skey, svalue in self.statistics.items():
-                self.readme_list.append("%s:%3.4f\n" % (skey, svalue))
+            skeys = list(self.statistics.keys())
+            skeys.sort()
+            for skey in skeys:
+                self.readme_list.append("%s: %3.4f\n" % (skey, self.statistics[skey]))
         return
 
     def print_output_csv(self):
@@ -368,6 +371,17 @@ class SingleFit():
         plotting_index = np.setdiff1d(all_index, out_index) 
         self.plotting_index = list(plotting_index)
         return
+        
+    def plot_filter_update_statistics(self):
+        if self.plot_filter_out is None:
+            return
+        if self.testing_target_data is None:
+            return
+        target_data_pfo = self.testing_target_data[self.plotting_index]
+        target_prediction_pfo = self.testing_target_prediction[self.plotting_index]
+        rmse_pfo = np.sqrt(mean_squared_error(target_prediction_pfo, target_data_pfo)) 
+        self.statistics['rmse_plot_filter_out'] = rmse_pfo
+        return
     
     def plot_results(self, addl_plot_kwargs=None):
         self.readme_list.append("----- Plotting -----\n")
@@ -396,6 +410,10 @@ class SingleFit():
                     self.testing_target_prediction,
                     **plot_kwargs)
         else:
+            self.readme_list.append("Plot filtering out:\n")
+            for pfstr in self.plot_filter_out:
+                self.readme_list.append("  %s\n" % pfstr.replace(";","_"))
+            notelist.append("Shown-only RMSE: %3.3f" % self.statistics['rmse_plot_filter_out'])
             notelist.append("Data not shown:")
             for pfstr in self.plot_filter_out:
                 notelist.append("  %s" % pfstr.replace(";"," "))
