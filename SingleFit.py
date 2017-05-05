@@ -213,13 +213,13 @@ class SingleFit():
         self.get_prediction()
         self.print_output_csv()
         self.get_statistics()
+        self.get_plotting_index()
+        self.plot_filter_update_statistics()
         self.print_statistics()
         return
 
     @timeit
     def plot(self):
-        self.get_plotting_index()
-        self.plot_filter_update_statistics()
         self.plot_results()
         return
 
@@ -292,8 +292,10 @@ class SingleFit():
             self.readme_list.append("No target data.\n")
             self.readme_list.append("No statistics comparing target data and prediction were collected.\n")
         else:
-            for skey, svalue in self.statistics.items():
-                self.readme_list.append("%s:%3.4f\n" % (skey, svalue))
+            skeys = list(self.statistics.keys())
+            skeys.sort()
+            for skey in skeys:
+                self.readme_list.append("%s: %3.4f\n" % (skey, self.statistics[skey]))
         return
 
     def print_output_csv(self):
