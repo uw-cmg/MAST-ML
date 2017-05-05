@@ -221,7 +221,7 @@ class PredictionVsFeature(SingleFit):
             elif len(measured) == 0:
                 pass
             else:
-                series_label = "%s, measured" % testset
+                series_label = "%s measured" % testset
                 pdict[series_label] = dict()
                 pdict[series_label]['xdata'] = feature_data
                 pdict[series_label]['xerrdata'] = None
@@ -229,7 +229,7 @@ class PredictionVsFeature(SingleFit):
             if len(predicted) == 0:
                 pass
             else:
-                series_label = "%s, predicted" % testset
+                series_label = "%s predicted" % testset
                 pdict[series_label] = dict()
                 pdict[series_label]['xdata'] = feature_data
                 pdict[series_label]['xerrdata'] = None
