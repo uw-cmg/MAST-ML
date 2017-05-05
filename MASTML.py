@@ -132,8 +132,8 @@ class MASTMLDriver(object):
                 test_params['labeling_features'] = self.string_or_list_input_to_list(test_params['labeling_features'])
             # Run the test case for every model
             for midx, model in enumerate(model_list):
-                # Set save path
-                test_folder = "%s_%s" % (test_type, model.__class__.__name__)
+                # Set save path, allowing for multiple tests and models and potentially multiple of the same model (KernelRidge rbf kernel, KernelRidge linear kernel, etc.)
+                test_folder = "%s_%s%i" % (test_type, model.__class__.__name__, midx)
                 test_save_path = os.path.join(save_path, test_folder)
                 if not os.path.isdir(test_save_path):
                     os.mkdir(test_save_path)
