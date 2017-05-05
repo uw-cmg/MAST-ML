@@ -1,9 +1,9 @@
-Thu May  4 15:51:04 2017
+Fri May  5 11:45:35 2017
 ----- Model parameters -----
-degree: 3
-gamma: 0.518
-coef0: 1
 kernel_params: None
+gamma: 0.518
+degree: 3
+coef0: 1
 kernel: rbf
 alpha: 0.00139
 ----- Output data -----
@@ -14,11 +14,14 @@ output_data.csv file created with columns:
    target error feature: N_linear_feature
    prediction: Prediction
 ----- Statistics -----
-mean_error:0.0000
-mean_absolute_error:0.0391
-rsquared:0.9914
-rmse:0.0558
+mean_absolute_error: 0.0391
+mean_error: 0.0000
+rmse: 0.0558
+rmse_plot_filter_out: 0.0597
+rsquared: 0.9914
 ----- Plotting -----
+Plot filtering out:
+  time_>_7.5
 Plot single_fit.png created.
     Plotted data is in the data_... csv file.
     All zeros for error columns indicate no error.
