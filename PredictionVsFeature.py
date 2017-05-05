@@ -16,6 +16,8 @@ import time
 
 class PredictionVsFeature(SingleFit):
     """Make prediction vs. feature plots from a single fit.
+
+    Args:
         training_dataset,
         testing_dataset, (Multiple testing datasets are allowed as a list.)
         model,
@@ -38,6 +40,12 @@ class PredictionVsFeature(SingleFit):
         outlines <str>: comma-delimited color list for split plots
         linestyles <str>: comma-delimited list of line styles for split plots
         data_labels <str>: comma-delimited list of testing dataset labels for split plots
+
+    Returns:
+        Analysis in save_path folder
+
+    Raises:
+        ValueError if feature_plot_feature is not set
     """
     def __init__(self, 
         training_dataset=None,
@@ -55,7 +63,7 @@ class PredictionVsFeature(SingleFit):
         grouping_feature = None,
         feature_plot_xlabel = "X",
         feature_plot_ylabel = "Prediction",
-        feature_plot_feature = "",
+        feature_plot_feature = None,
         markers="",
         outlines="",
         data_labels="",
@@ -100,6 +108,8 @@ class PredictionVsFeature(SingleFit):
         self.testing_datasets = testing_dataset #expect a list of one or more testing datasets
         self.feature_plot_xlabel = feature_plot_xlabel
         self.feature_plot_ylabel = feature_plot_ylabel
+        if feature_plot_feature is None:
+            raise ValueError("feature plot's x feature is not set in feature_plot_feature")
         self.feature_plot_feature = feature_plot_feature
         self.markers = markers
         self.outlines = outlines
@@ -199,13 +209,13 @@ class PredictionVsFeature(SingleFit):
                     logging.info("No group %s for test set %s. Skipping." % (group, testset))
                     continue
                 group_index = ts_dict['group_indices'][group]['test_index']
-            print("Group index, plotting index for group %s" % group)
-            print(group_index)
-            print(plotting_index)
             display_index = np.intersect1d(group_index, plotting_index)
-            feature_data = ts_dict['feature_data']
-            measured = ts_sf.testing_target_data
-            predicted = ts_sf.testing_target_prediction
+            feature_data = ts_dict['feature_data'][display_index]
+            if ts_sf.testing_target_data is None:
+                measured = None
+            else:
+                measured = ts_sf.testing_target_data[display_index]
+            predicted = ts_sf.testing_target_prediction[display_index]
             if measured is None:
                 pass
             elif len(measured) == 0:
