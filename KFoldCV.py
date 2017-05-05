@@ -10,10 +10,11 @@ import data_analysis.printout_tools as ptools
 import plot_data.plot_predicted_vs_measured as plotpm
 import plot_data.plot_xy as plotxy
 from SingleFit import SingleFit
+from LeaveOutPercentCV import LeaveOutPercentCV
 from SingleFit import timeit
 from sklearn.metrics import r2_score
 
-class KFoldCV(SingleFit):
+class KFoldCV(LeaveOutPercentCV):
     """KFold cross validation
    
     Args:
@@ -27,11 +28,11 @@ class KFoldCV(SingleFit):
         labeling_features, 
         xlabel, 
         ylabel,
-        stepsize, see parent class.
+        stepsize,
+        mark_outlying_points,
+        num_cvtests,
+        fix_random_for_testing, see parent class.
         num_folds <int>: Number of folds for KFold CV
-        num_cvtests <int>: Number of CV tests (K folds in a KFoldCV is 1 test)
-        fix_random_for_testing <int>: 1- fix random shuffle for testing purposes
-                                      0 (default) Use random shuffle
  
     Returns:
         Analysis in the save_path folder
@@ -52,25 +53,20 @@ class KFoldCV(SingleFit):
         xlabel="Measured",
         ylabel="Predicted",
         stepsize=1,
-        num_folds=2,
+        mark_outlying_points=None,
         num_cvtests=10,
         fix_random_for_testing=0,
+        num_folds=2,
         *args, **kwargs):
         """
         Additional class attributes to parent class:
             Set by keyword:
             self.num_folds <int>: Number of folds for KFold test
-            self.num_cvtests <int>: Number of KFold tests to perform
             Set in code:
-            self.cvmodel <sklearn CV model>: Cross-validation model
-            self.cvtest_dict <dict>: Dictionary of CV test information and
-                                        results, one entry for each cvtest.
-            self.best_test_index <int>: Test number of best test
-            self.worst_test_index <int>: Test number of worst test
         """
         if not(training_dataset == testing_dataset):
             raise ValueError("Only testing_dataset will be used. Use the same values for training_dataset and testing_dataset")
-        SingleFit.__init__(self, 
+        LeaveOutPercentCV.__init__(self, 
             training_dataset=training_dataset, #only testing_dataset is used
             testing_dataset=testing_dataset,
             model=model, 
@@ -81,41 +77,24 @@ class KFoldCV(SingleFit):
             labeling_features = labeling_features,
             xlabel=xlabel,
             ylabel=ylabel,
-            stepsize=stepsize)
+            stepsize=stepsize,
+            mark_outlying_points = mark_outlying_points,
+            percent_leave_out = -1, #not using this field
+            num_cvtests = num_cvtests,
+            fix_random_for_testing = fix_random_for_testing)
         self.num_folds = int(num_folds)
-        self.num_cvtests = int(num_cvtests)
-        if int(fix_random_for_testing) == 1:
-            np.random.seed(0)
-        # Sets later in code
-        self.cvmodel = None
-        self.cvtest_dict=dict()
-        self.best_test_index = None
-        self.worst_test_index = None
         return 
-
-    @timeit
-    def set_up(self):
-        SingleFit.set_up(self)
-        self.set_up_cv()
-        return
-    @timeit
-    def fit(self):
-        self.cv_fit_and_predict()
-        return
-
-    def predict(self):
-        #Predictions themselves are covered in self.fit()
-        self.get_statistics()
-        self.print_statistics()
-        self.readme_list.append("----- Output data -----\n")
-        self.print_output_csv(label="best", cvtest_entry=self.cvtest_dict[self.best_test_index])
-        self.print_output_csv(label="worst", cvtest_entry=self.cvtest_dict[self.worst_test_index])
-        return
 
     @timeit
     def plot(self):
         self.readme_list.append("----- Plotting -----\n")
-        self.plot_best_worst_overlay()
+        notelist=list()
+        notelist.append("Mean over %i tests of:" % self.num_cvtests)
+        notelist.append("  {:d}-fold-average RMSE:".format(self.num_folds))
+        notelist.append("    {:.2f} $\pm$ {:.2f}".format(self.statistics['avg_fold_avg_rmses'], self.statistics['std_fold_avg_rmses']))
+        notelist.append("  {:d}-fold-average mean error:".format(self.num_folds))
+        notelist.append("    {:.2f} $\pm$ {:.2f}".format(self.statistics['avg_fold_avg_mean_errors'], self.statistics['std_fold_avg_mean_errors']))
+        self.plot_best_worst_overlay(notelist=list(notelist))
         return
 
     def set_up_cv(self):
@@ -220,32 +199,4 @@ class KFoldCV(SingleFit):
         printarray = np.vstack((printarray, cvtest_entry['fold_array']))
         printarray=printarray.transpose()
         ptools.mixed_array_to_csv(ocsvname, headerline, printarray)
-        return
-
-    def plot_best_worst_overlay(self):
-        kwargs2 = dict()
-        kwargs2['xlabel'] = self.xlabel
-        kwargs2['ylabel'] = self.ylabel
-        kwargs2['label1'] = "Test with lowest fold-average RMSE"
-        kwargs2['label2'] = "Test with highest fold-average RMSE"
-        notelist=list()
-        notelist.append("Mean over %i tests of:" % self.num_cvtests)
-        notelist.append("  {:d}-fold-average RMSE:".format(self.num_folds))
-        notelist.append("    {:.2f} $\pm$ {:.2f}".format(self.statistics['avg_fold_avg_rmses'], self.statistics['std_fold_avg_rmses']))
-        notelist.append("  {:d}-fold-average mean error:".format(self.num_folds))
-        notelist.append("    {:.2f} $\pm$ {:.2f}".format(self.statistics['avg_fold_avg_mean_errors'], self.statistics['std_fold_avg_mean_errors']))
-        kwargs2['notelist'] = notelist
-        kwargs2['guideline'] = 1
-        kwargs2['fill'] = 1
-        kwargs2['equalsize'] = 1
-        kwargs2['plotlabel'] = "best_worst_overlay"
-        kwargs2['save_path'] = self.save_path
-        kwargs2['stepsize'] = self.stepsize
-        plotxy.dual_overlay(self.testing_target_data, 
-                self.cvtest_dict[self.best_test_index]['prediction_array'],
-                self.testing_target_data,
-                self.cvtest_dict[self.worst_test_index]['prediction_array'],
-                **kwargs2)
-        self.readme_list.append("Plot best_worst_overlay.png created\n")
-        self.readme_list.append("    showing the best and worst of %i tests.\n" % self.num_cvtests)
         return
