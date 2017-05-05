@@ -71,14 +71,13 @@ class InputDataParser(object):
 class FeatureFilter(InputDataParser):
     """Class to selectively filter features from a dataframe
     """
-    def __init__(self, datapath, configdict):
-        super().__init__(datapath, configdict)
+    def __init__(self, datapath, configdict, dataframe, as_array):
+        super().__init__(datapath, configdict, dataframe, as_array)
 
     def remove_features(self, features_to_remove):
-        dataframe, x_features, y_feature = self.parse()
         for feature in features_to_remove:
-            del dataframe[feature]
-        return dataframe
+            del self.dataframe[feature]
+        return self.dataframe
 
 
 class DataNormalization(InputDataParser):
