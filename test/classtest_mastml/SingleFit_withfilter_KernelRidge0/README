@@ -1,11 +1,11 @@
-Fri May  5 11:09:38 2017
+Fri May  5 11:19:46 2017
 ----- Model parameters -----
 kernel: rbf
+coef0: 1
 degree: 3
 alpha: 0.00139
-gamma: 0.518
 kernel_params: None
-coef0: 1
+gamma: 0.518
 ----- Output data -----
 output_data.csv file created with columns:
    input features: ['time', 'N_sine_feature', 'N_linear_feature']
@@ -19,6 +19,10 @@ rmse: 0.0879
 rmse_plot_filter_out: 0.0912
 rsquared: 0.9830
 ----- Plotting -----
+Plot filtering out:
+  time_>_7.8
+  time_<_1.3
+  str_cat_=_A
 Plot single_fit.png created.
     Plotted data is in the data_... csv file.
     All zeros for error columns indicate no error.
