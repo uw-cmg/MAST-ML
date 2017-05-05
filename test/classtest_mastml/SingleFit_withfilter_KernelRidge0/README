@@ -1,11 +1,11 @@
-Fri May  5 11:19:46 2017
+Fri May  5 13:40:40 2017
 ----- Model parameters -----
-kernel: rbf
-coef0: 1
 degree: 3
-alpha: 0.00139
-kernel_params: None
+coef0: 1
 gamma: 0.518
+kernel_params: None
+kernel: rbf
+alpha: 0.00139
 ----- Output data -----
 output_data.csv file created with columns:
    input features: ['time', 'N_sine_feature', 'N_linear_feature']
