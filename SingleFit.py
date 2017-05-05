@@ -417,7 +417,8 @@ class SingleFit():
             notelist.append("Data not shown:")
             for pfstr in self.plot_filter_out:
                 notelist.append("  %s" % pfstr.replace(";"," "))
-            plot_kwargs['xerr'] = self.testing_target_data_error[self.plotting_index]
+            if not(self.testing_target_data_error is None):
+                plot_kwargs['xerr'] = self.testing_target_data_error[self.plotting_index]
             plotxy.single(self.testing_target_data[self.plotting_index],
                     self.testing_target_prediction[self.plotting_index],
                     **plot_kwargs)
