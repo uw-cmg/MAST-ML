@@ -83,6 +83,12 @@ class ConfigFileValidator(ConfigFileParser):
 
     def _check_section_datatypes(self, configdict, validationdict, validator, errors_present, section_heading):
         # First do some manual cleanup for values that can be string or string_list, because of issue with configobj
+        if section_heading == 'General Setup':
+            if type(configdict['General Setup']['input_features']) is str:
+                templist = []
+                templist.append(configdict['General Setup']['input_features'])
+                configdict['General Setup']['input_features'] = templist
+
         if section_heading == 'Models and Tests to Run':
             if type(configdict['Models and Tests to Run']['models']) is str:
                 templist = []
