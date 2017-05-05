@@ -83,12 +83,16 @@ class ConfigFileValidator(ConfigFileParser):
         return configdict, errors_present
 
     def _check_section_datatypes(self, configdict, validationdict, validator, errors_present, section_heading):
-        # First do some manual cleanup
-        if section_heading == 'Models and Tests to Run' and type(configdict['Models and Tests to Run']['models']) is str:
-            templist = []
-            templist.append(configdict['Models and Tests to Run']['models'])
-            configdict['Models and Tests to Run']['models'] = templist
-            print(configdict['Models and Tests to Run']['models'])
+        # First do some manual cleanup for values that can be string or string_list, because of issue with configobj
+        if section_heading == 'Models and Tests to Run':
+            if type(configdict['Models and Tests to Run']['models']) is str:
+                templist = []
+                templist.append(configdict['Models and Tests to Run']['models'])
+                configdict['Models and Tests to Run']['models'] = templist
+            if type(configdict['Models and Tests to Run']['test_cases']) is str:
+                templist = []
+                templist.append(configdict['Models and Tests to Run']['test_cases'])
+                configdict['Models and Tests to Run']['test_cases'] = templist
 
         # Check the data type of section and subsection headings and values
         configdict_depth = self._get_config_dict_depth(test_dict=configdict[section_heading])
@@ -102,6 +106,7 @@ class ConfigFileValidator(ConfigFileParser):
                             configdict[section_heading][k] = validator.check(check=datatype, value=configdict[section_heading][k])
                     except VdtTypeError:
                         logging.info('The parameter %s in your %s section did not successfully convert to %s' % (k, section_heading, datatype))
+                        errors_present = bool(True)
 
                 if configdict_depth > 1:
                     for kk in configdict[section_heading][k].keys():
@@ -112,6 +117,7 @@ class ConfigFileValidator(ConfigFileParser):
                                     configdict[section_heading][k][kk] = validator.check(check=datatype, value=configdict[section_heading][k][kk])
                         except(VdtTypeError):
                             logging.info('The parameter %s in your %s : %s section did not successfully convert to string' % (section_heading, k, kk))
+                            errors_present = bool(True)
 
         return configdict, errors_present
 
@@ -217,8 +223,7 @@ class MASTMLWrapper(object):
 
 
     # This method will call the different classes corresponding to each test type, which are being organized by Tam
-    def get_machinelearning_test(self, test_type, model, data, save_path,
-            *args,**kwargs):
+    def get_machinelearning_test(self, test_type, model, save_path, *args, **kwargs):
         mod_name = test_type.split("_")[0] #ex. KFoldCV_5fold goes to KFoldCV
         test_module = importlib.import_module('%s' % (mod_name))
         test_class_def = getattr(test_module, mod_name)
