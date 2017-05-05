@@ -151,8 +151,10 @@ class SingleFitGrouped(SingleFit):
                 group_notelist.append("  %s" % pfstr.replace(";"," "))
         if self.plot_filter_out is None:
             group_notelist.append("RMSEs for overall fit:")
+            group_notelist.append("Overall: %3.3f" % self.statistics['rmse'])
         else:
             group_notelist.append("RMSEs for shown data:")
+            group_notelist.append("Overall: %3.3f" % self.statistics['rmse_plot_filter_out'])
         self.plot_group_splits_with_outliers(group_dict=dict(self.plotting_dict), outlying_groups=list(self.outlying_groups), label="per_group_info", group_notelist=list(group_notelist))
         self.readme_list.append("Plot in subfolder per_group_info created\n")
         self.readme_list.append("    labeling outlying groups and their RMSEs.\n")
