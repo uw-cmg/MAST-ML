@@ -11,7 +11,7 @@ import plot_data.plot_predicted_vs_measured as plotpm
 import plot_data.plot_xy as plotxy
 
 def execute(model, data, savepath, lwr_data="", 
-            num_runs=200,
+            num_cvtests=200,
             num_folds=5,
             xlabel="Measured",
             ylabel="Predicted",
@@ -21,8 +21,8 @@ def execute(model, data, savepath, lwr_data="",
     """Basic cross validation
         Args:
             model, data, savepath, lwr_data: see AllTests.py
-            num_runs <int>: number of runs to repeat each cross-validation
-                            split (e.g. num_runs iterations of 5fold CV, where
+            num_cvtests <int>: number of runs to repeat each cross-validation
+                            split (e.g. num_cvtests iterations of 5fold CV, where
                             each 5-fold CV has 5 test-train sets)
                             Default 200.
             num_folds <int>: number of folds.
@@ -32,7 +32,7 @@ def execute(model, data, savepath, lwr_data="",
             numeric_field_name <str>: Field name of a numeric field which
                             may help identify data
     """
-    num_runs = int(num_runs)
+    num_cvtests = int(num_cvtests)
     num_folds = int(num_folds)
     stepsize = float(stepsize)
     
@@ -42,7 +42,7 @@ def execute(model, data, savepath, lwr_data="",
     dlen = len(Xdata)
     indices = np.arange(0, dlen)
 
-    print("Using %i %i-folds." % (num_runs,num_folds))
+    print("Using %i %i-folds." % (num_cvtests,num_folds))
     cvmodel = KFold(n_splits=num_folds, shuffle=True)
 
     Y_predicted_best = list()
@@ -55,8 +55,8 @@ def execute(model, data, savepath, lwr_data="",
 
     Mean_RMS_List = list()
     Mean_ME_List = list()
-    for numrun in range(num_runs):
-        print("Run %i/%i" % (numrun+1, num_runs))
+    for numrun in range(num_cvtests):
+        print("Run %i/%i" % (numrun+1, num_cvtests))
         run_rms_list = list()
         run_me_list = list()
         Run_Y_Pred = np.empty(dlen)
@@ -107,7 +107,7 @@ def execute(model, data, savepath, lwr_data="",
 
     if not (os.path.isdir(savepath)):
         os.mkdir(savepath)
-    print("The average mean-over-{:d}-folds RMSE was {:.3f} over {:d} tests".format(num_folds, avgRMS, num_runs))
+    print("The average mean-over-{:d}-folds RMSE was {:.3f} over {:d} tests".format(num_folds, avgRMS, num_cvtests))
     print("The median mean RMSE was {:.3f}".format(medRMS))
     print("The max mean RMSE was {:.3f}".format(maxRMS))
     print("The min mean RMSE was {:.3f}".format(minRMS))
@@ -138,7 +138,7 @@ def execute(model, data, savepath, lwr_data="",
     kwargs2['label1'] = "Test with lowest fold-average RMSE"
     kwargs2['label2'] = "Test with highest fold-average RMSE"
     notelist=list()
-    notelist.append("Mean over %i tests of:" % num_runs)
+    notelist.append("Mean over %i tests of:" % num_cvtests)
     notelist.append("  {:d}-fold-average RMSE:".format(num_folds))
     notelist.append("    {:.2f} $\pm$ {:.2f}".format(avgRMS, sd))
     notelist.append("  {:d}-fold-average mean error:".format(num_folds))
