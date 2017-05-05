@@ -1,0 +1,9 @@
+----- Folder contents -----
+split_overlay.png
+    Overlayed plot.
+    See containing folder's README for more detail.
+data_{series}.csv
+    Data for each series in the plot:
+    x data column
+    x error column (all zeros is no error)
+    y data column, labeled as the series in the plot

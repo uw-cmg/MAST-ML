@@ -25,7 +25,15 @@ def get_xy_sorted(xvals, yvals, xerr, yerr, verbose=0):
         arraylist.append(dummy_yerr)
     else:
         arraylist.append(yerr)
-    combarr = np.array(arraylist,'float')
+    try:
+        combarr = np.array(arraylist,'float')
+    except ValueError as ve:
+        import traceback
+        print("Error combining array")
+        print("Shapes for arraylist xvals, yvals, xerr, yerr")
+        for cidx in range(0,4):
+            print(arraylist[cidx].shape)
+        raise ValueError(traceback.print_exc())
     if verbose > 0:
         print("Original:")
         print(combarr)
@@ -68,11 +76,12 @@ def single(xvals, yvals,
             ylabel="Y",
             title="",
             plotlabel="",
-            savepath="",
+            save_path="",
             guideline=0,
             timex="",
             startx=None,
             endx=None,
+            stepsize=None,
             divide_x = None,
             divide_y = None,
             notelist=list(),
@@ -99,12 +108,12 @@ def single(xvals, yvals,
     kwargs['ylabel'] = ylabel
     kwargs['xerrlist'] = list([xerr])
     kwargs['yerrlist'] = list([yerr])
-    kwargs['stepsize'] = None ###no stepsize?
+    kwargs['stepsize'] = stepsize
     if plotlabel == "":
         plotlabel = "%s_vs_%s" % (ylabel, xlabel)
     kwargs['plotlabel'] = plotlabel
     kwargs['labellist'] = list(["_%s" % plotlabel]) #keep out of legend
-    kwargs['savepath'] = savepath
+    kwargs['save_path'] = save_path
     kwargs['guideline'] = guideline
     kwargs['timex'] = timex
     kwargs['startx'] = startx
@@ -127,7 +136,7 @@ def dual_overlay(xdata1, ydata1,
         xerr2=None,
         yerr2=None,
         stepsize=None,
-        savepath="",
+        save_path="",
         plotlabel="dual_overlay",
         guideline=0,
         fill=1,
@@ -144,7 +153,7 @@ def dual_overlay(xdata1, ydata1,
 
     kwargs=dict()
     kwargs['stepsize'] = stepsize
-    kwargs['savepath'] = savepath
+    kwargs['save_path'] = save_path
     kwargs['plotlabel'] = plotlabel
     kwargs['guideline'] = guideline
     kwargs['fill'] = fill
@@ -167,7 +176,7 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
         xerrlist=list(),
         yerrlist=list(),
         stepsize=None,
-        savepath="",
+        save_path="",
         plotlabel="multiple_overlay",
         guideline=0,
         timex="",
@@ -226,11 +235,18 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
     smallfont = 0.85*matplotlib.rcParams['font.size']
     notestep = 0.07
     plt.figure()
-    faces = faces.split(",")
-    outlines = outlines.split(",")
-    linestyles = linestyles.split(",")
-    markers = markers.split(",")
-    sizes=np.array(sizes.split(","),'float')
+    if not(type(faces) is list):
+        faces = faces.split(",")
+    if not(type(outlines) is list):
+        outlines = outlines.split(",")
+    if not(type(linestyles) is list):
+        linestyles = linestyles.split(",")
+    if not(type(markers) is list):
+        markers = markers.split(",")
+    if not(type(sizes) is list):
+        sizes=np.array(sizes.split(","),'float')
+    else:
+        sizes = np.array(sizes, 'float') #make sure they are floats
     fig, ax1 = plt.subplots()
     if doubley:
         ax2 = ax1.twinx()
@@ -399,24 +415,27 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
     except AttributeError: # no labeled lines
         pass
     plt.tight_layout()
-    plt.savefig(os.path.join(savepath, "%s" % plotlabel), dpi=200, bbox_inches='tight')
+    if not os.path.isdir(save_path):
+        os.mkdir(save_path)
+    plt.savefig(os.path.join(save_path, "%s" % plotlabel), dpi=200, bbox_inches='tight')
     plt.close()
     #PRINT DATA
     for nidx in range(0, numlines):
         label = labellist[nidx]
-        savecsv = os.path.join(savepath,"data_%s.csv" % label)
-        savecsv = savecsv.replace(" ","_")
-        headerstr="%s" % xlabel
+        nospace_label = label.replace(" ","_")
+        savecsv = os.path.join(save_path,"data_%s.csv" % nospace_label)
+        headerstr="%s," % xlabel
         myarrlist = list()
         myarrlist.append(xdatalist[nidx])
         if not(xerr is None):
-            headerstr = headerstr + ",xerr,"
+            headerstr = headerstr + "xerr,"
             myarrlist.append(xerrlist[nidx])
-        headerstr = headerstr + "%s" % label
+        headerstr = headerstr + "%s," % label
         myarrlist.append(ydatalist[nidx])
         if not (yerr is None):
-            headerstr = headerstr + ",yerr"
+            headerstr = headerstr + "yerr,"
             myarrlist.append(yerrlist[nidx])
+        headerstr=headerstr[:-1] #remove last comma
         myarray = np.asarray(myarrlist).transpose()
         ptools.mixed_array_to_csv(savecsv, headerstr, myarray)
     return

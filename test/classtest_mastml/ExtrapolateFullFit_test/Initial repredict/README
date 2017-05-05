@@ -1,0 +1,17 @@
+----- Folder contents -----
+single_fit
+    Folder containing a single overall fit.
+overall_overlay
+    The single overall fit, but with RMSE
+        data split out by group contributions,
+        comparing predicted and measured data
+        within each group.
+    Predictions are made using a model fitted
+        to all of the data at once.
+split_overlay
+    Predicted vs. measured data and RMSEs
+        for fits to each individual group.
+    The plot overlays each of these fits.
+<group> folders
+    Individual group fits, which are overlayed
+        in the split_overlay folder.

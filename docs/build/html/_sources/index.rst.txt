@@ -12,10 +12,13 @@ Contents:
    :maxdepth: 2
 
 .. automodule:: AnalysisTemplate
+.. automodule:: FullFit
 
-.. autoclass:: AnalysisTemplate.Analysis
+.. autoclass:: AnalysisTemplate.AnalysisTemplate
    :members:
 
+.. autoclass:: FullFit.FullFit
+   :members:
 
 Indices and tables
 ==================

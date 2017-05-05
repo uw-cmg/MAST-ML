@@ -215,10 +215,17 @@ class MASTMLWrapper(object):
 
         # Add generic file import for non-sklearn models
 
+
     # This method will call the different classes corresponding to each test type, which are being organized by Tam
-    def get_machinelearning_test(self, test_type, model, data, save_path, *args, **kwargs):
+    def get_machinelearning_test(self, test_type, model, data, save_path,
+            *args,**kwargs):
         mod_name = test_type.split("_")[0] #ex. KFoldCV_5fold goes to KFoldCV
         test_module = importlib.import_module('%s' % (mod_name))
-        test_execute = getattr(test_module, 'execute')
-        test_execute(model=model, data=data, savepath=save_path, **kwargs)
+        test_class_def = getattr(test_module, mod_name)
+        logging.debug("Parameters passed by keyword:")
+        logging.debug(kwargs)
+        test_class = test_class_def(model=model,
+                            save_path = save_path,
+                            **kwargs)
+        test_class.run()
         return None
