@@ -4,6 +4,7 @@ import data_parser
 import sys
 import os
 from MASTMLInitializer import MASTMLWrapper, ConfigFileValidator
+from DataParser import InputDataParser
 import logging
 import shutil
 import time
@@ -29,13 +30,17 @@ class MASTMLDriver(object):
 
         # Parse MASTML input file
         mastmlwrapper, configdict, errors_present = self._generate_mastml_wrapper()
+        datasetup = mastmlwrapper.process_config_keyword(keyword='Data Setup')
 
         # General setup
         save_path = self._perform_general_setup(mastmlwrapper=mastmlwrapper)
 
         # Parse input data files
-        data_dict = self._parse_input_data(mastmlwrapper=mastmlwrapper)
+        Xdata, ydata, x_features, y_feature = self._parse_input_data(mastmlwrapper=mastmlwrapper, configdict=configdict)
+        #data_dict = self._parse_input_data(mastmlwrapper=mastmlwrapper, configdict=configdict)
 
+
+        """
         # Gather models
         model_list = self._gather_models(mastmlwrapper=mastmlwrapper)
 
@@ -45,6 +50,8 @@ class MASTMLDriver(object):
 
         # End MASTML session
         self._move_log_and_input_files(mastmlwrapper=mastmlwrapper)
+        """
+
         return
 
     def _initalize_mastml_session(self):
@@ -66,7 +73,12 @@ class MASTMLDriver(object):
             os.mkdir(save_path)
         return save_path
 
-    def _parse_input_data(self, mastmlwrapper):
+    def _parse_input_data(self, mastmlwrapper, configdict):
+        datasetup = mastmlwrapper.process_config_keyword(keyword='Data Setup')
+        Xdata, ydata, x_features, y_feature = InputDataParser(datapath=datasetup['Initial']['data_path'],
+                                                              configdict=configdict, dataframe=None, as_array=False).parse()
+
+        # Tam's code is here
         data_dict=dict()
         datasetup = mastmlwrapper.process_config_keyword(keyword='Data Setup')
         for data_name in datasetup.keys():
@@ -78,7 +90,9 @@ class MASTMLDriver(object):
             #data_dict[data_name].set_x_features(datasetup['X']) #set in test classes, not here, since different tests could have different X and y features
             #data_dict[data_name].set_y_feature(datasetup['y'])
             logging.info('Parsed the input data located under %s' % data_path)
-        return data_dict
+
+
+        return Xdata, ydata, x_features, y_feature, data_dict
 
     def _gather_models(self, mastmlwrapper):
         models_and_tests_setup = mastmlwrapper.process_config_keyword(keyword='Models and Tests to Run')
