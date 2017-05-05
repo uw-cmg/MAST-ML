@@ -1,0 +1,29 @@
+----- Model parameters -----
+kernel_params: None
+alpha: 0.00139
+gamma: 0.518
+coef0: 1
+degree: 3
+kernel: rbf
+----- Output data -----
+output_data.csv file created with columns:
+   labeling features: ['str_cat', 'num_id']
+   input features: ['time', 'N_sine_feature', 'N_linear_feature']
+   target feature: y_feature
+   target error feature: N_linear_feature
+   prediction: Prediction
+----- Statistics -----
+mean_absolute_error: 0.0666
+mean_error: 0.0000
+rmse: 0.0879
+rmse_plot_filter_out: 0.0839
+rsquared: 0.9830
+Per-group RMSEs from overall fit:
+    A: rmse: 0.097
+    A: rmse_plot_filter_out: 0.063
+    B: rmse: 0.108
+    B: rmse_plot_filter_out: 0.123
+    D: rmse: 0.080
+    D: rmse_plot_filter_out: 0.063
+    C: rmse: 0.070
+    C: rmse_plot_filter_out: 0.046
