@@ -275,6 +275,7 @@ class SingleFit():
         return rsquared
     
     def get_statistics(self):
+        self.get_plotting_index()
         if self.testing_target_data is None:
             logger.warning("No testing target data. Statistics will not be collected.")
             return
@@ -282,7 +283,6 @@ class SingleFit():
         self.statistics['mean_error'] = self.get_mean_error()
         self.statistics['mean_absolute_error'] = self.get_mean_absolute_error()
         self.statistics['rsquared'] = self.get_rsquared()
-        self.get_plotting_index()
         self.plot_filter_update_statistics()
         return
 
