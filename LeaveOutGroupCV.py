@@ -100,15 +100,23 @@ class LeaveOutGroupCV(LeaveOutPercentCV):
     @timeit
     def plot(self):
         self.readme_list.append("----- Plotting -----\n")
+        notelist=list()
+        notelist.append("Mean RMSE: {:.2f}".format(self.statistics['avg_rmse']))
+        kwargs=dict()
+        kwargs['xlabel'] = self.xlabel
+        kwargs['ylabel'] = self.ylabel
+        kwargs['notelist'] = notelist
+        kwargs['savepath'] = self.save_path
+        group_label_list=list()
+        group_value_list=list()
+        rms_list=list()
+        for cvtest in self.cvtest_dict.keys():
+            group_label_list.append(self.cvtest_dict[cvtest]['group'])
+            group_value_list.append(cvtest)
+            rms_list.append(self.cvtest_dict[cvtest]['rmse'])
+        kwargs['group_label_list'] = group_label_list
+        plotrmse.vs_leftoutgroup(group_value_list, rms_list, **kwargs)
         return
-        #notelist=list()
-        #notelist.append("Mean over %i LO %i%% tests:" % (self.num_cvtests, self.percent_leave_out))
-        #notelist.append("RMSE:")
-        #notelist.append("    {:.2f} $\pm$ {:.2f}".format(self.statistics['avg_rmse'], self.statistics['std_rmse']))
-        #notelist.append("Mean error:")
-        #notelist.append("    {:.2f} $\pm$ {:.2f}".format(self.statistics['avg_mean_error'], self.statistics['std_mean_error']))
-        #self.plot_best_worst_overlay(notelist=list(notelist))
-        #return
 
     def set_up_cv(self):
         if self.testing_target_data is None:
@@ -260,8 +268,6 @@ def execute(model, data, savepath,
     print('Mean RMSE: ', np.mean(rms_list))
     print('Mean Mean Error: ', np.mean(me_list))
 
-    notelist=list()
-    notelist.append("Mean RMSE: {:.2f}".format(np.mean(rms_list)))
     
     kwargs=dict()
     kwargs['xlabel'] = xlabel

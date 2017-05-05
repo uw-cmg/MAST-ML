@@ -1,0 +1,46 @@
+Fri May  5 18:14:12 2017
+----- CV setup -----
+-1 CV tests,
+leaving out str_cat groups.
+----- Statistics -----
+avg_mean_error: 0.0007
+avg_rmse: 0.1301
+rmse_best: 0.1098
+rmse_worst: 0.1537
+std_mean_error: 0.0178
+std_rmse: 0.0156
+Statistics by group:
+  A: rmse: 0.154
+  A: mean_error: 0.006
+  C: rmse: 0.110
+  C: mean_error: 0.022
+  B: rmse: 0.130
+  B: mean_error: 0.003
+  D: rmse: 0.127
+  D: mean_error: -0.028
+----- Output data -----
+A_test_data.csv file created with columns:
+   labeling features: ['str_cat']
+   input features: ['time', 'N_sine_feature', 'N_linear_feature']
+   target feature: y_feature
+   target error feature: N_linear_feature
+   prediction: Prediction
+C_test_data.csv file created with columns:
+   labeling features: ['str_cat']
+   input features: ['time', 'N_sine_feature', 'N_linear_feature']
+   target feature: y_feature
+   target error feature: N_linear_feature
+   prediction: Prediction
+B_test_data.csv file created with columns:
+   labeling features: ['str_cat']
+   input features: ['time', 'N_sine_feature', 'N_linear_feature']
+   target feature: y_feature
+   target error feature: N_linear_feature
+   prediction: Prediction
+D_test_data.csv file created with columns:
+   labeling features: ['str_cat']
+   input features: ['time', 'N_sine_feature', 'N_linear_feature']
+   target feature: y_feature
+   target error feature: N_linear_feature
+   prediction: Prediction
+----- Plotting -----
