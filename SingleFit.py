@@ -219,6 +219,7 @@ class SingleFit():
     @timeit
     def plot(self):
         self.get_plotting_index()
+        self.plot_filter_update_statistics()
         self.plot_results()
         return
 
@@ -368,6 +369,17 @@ class SingleFit():
         plotting_index = np.setdiff1d(all_index, out_index) 
         self.plotting_index = list(plotting_index)
         return
+        
+    def plot_filter_update_statistics(self):
+        if self.plot_filter_out is None:
+            return
+        if self.testing_target_data is None:
+            return
+        target_data_pfo = self.testing_target_data[self.plotting_index]
+        target_prediction_pfo = self.testing_target_prediction[self.plotting_index]
+        rmse_pfo = np.sqrt(mean_squared_error(target_prediction_pfo, target_data_pfo)) 
+        self.statistics['rmse_plot_filter_out'] = rmse_pfo
+        return
     
     def plot_results(self, addl_plot_kwargs=None):
         self.readme_list.append("----- Plotting -----\n")
@@ -396,6 +408,7 @@ class SingleFit():
                     self.testing_target_prediction,
                     **plot_kwargs)
         else:
+            notelist.append("Shown-only RMSE: %3.3f" % self.statistics['rmse_plot_filter_out'])
             notelist.append("Data not shown:")
             for pfstr in self.plot_filter_out:
                 notelist.append("  %s" % pfstr.replace(";"," "))
