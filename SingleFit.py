@@ -213,8 +213,6 @@ class SingleFit():
         self.get_prediction()
         self.print_output_csv()
         self.get_statistics()
-        self.get_plotting_index()
-        self.plot_filter_update_statistics()
         self.print_statistics()
         return
 
@@ -284,6 +282,8 @@ class SingleFit():
         self.statistics['mean_error'] = self.get_mean_error()
         self.statistics['mean_absolute_error'] = self.get_mean_absolute_error()
         self.statistics['rsquared'] = self.get_rsquared()
+        self.get_plotting_index()
+        self.plot_filter_update_statistics()
         return
 
     def print_statistics(self):
