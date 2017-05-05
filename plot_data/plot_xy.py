@@ -191,6 +191,7 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
         outlines="#8B0000,#00008B,#004400,#542788,#b35806,#252525",
         faces="red,blue,green,#6a51a3,orange,#bdbdbd",
         sizes="15,10,8,8,8,8",
+        legendloc=None,
         *args, **kwargs):
     """Plot multiple xy overlay with same x axis
     """
@@ -406,6 +407,8 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
             loc1 = "lower right"
         else:
             loc1 = "best"
+        if not(legendloc is None):
+            loc1 = legendloc
         lgd1=ax1.legend(loc = loc1, 
                     fontsize=smallfont, 
                     numpoints=1,

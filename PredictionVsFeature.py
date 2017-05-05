@@ -69,6 +69,7 @@ class PredictionVsFeature(SingleFit):
         outlines="",
         data_labels="",
         linestyles="",
+        legendloc=None,
         *args, **kwargs):
         """
             Additional class attributes not in parent class:
@@ -83,6 +84,7 @@ class PredictionVsFeature(SingleFit):
             self.outlines <list of str>: list of edge colors for plotting
             self.linestyles <list of str>: list of linestyles for plotting
             self.data_labels <list of str>: list of data labels for plotting
+            self.legendloc <str>: legend location (optional)
             
             Set by code:
             self.testing_dataset_dict <dict of data objects>: testing datasets and their information:
@@ -116,6 +118,7 @@ class PredictionVsFeature(SingleFit):
         self.outlines = outlines
         self.data_labels = data_labels
         self.linestyles = linestyles
+        self.legendloc = legendloc
         #Sets in code
         self.testing_dataset_dict = dict() 
         return
@@ -247,6 +250,7 @@ class PredictionVsFeature(SingleFit):
         addl_kwargs['markers'] = self.markers
         addl_kwargs['outlines'] = self.outlines
         addl_kwargs['linestyles'] = self.linestyles
+        addl_kwargs['legendloc'] = self.legendloc
         faces = list()
         for fidx in range(0, len(self.markers)):
             faces.append("None")
