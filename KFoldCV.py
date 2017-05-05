@@ -114,6 +114,8 @@ class KFoldCV(SingleFit):
 
     @timeit
     def plot(self):
+        self.readme_list.append("----- Plotting -----\n")
+        self.plot_best_worst_overlay()
         return
 
     def set_up_cv(self):
@@ -140,6 +142,7 @@ class KFoldCV(SingleFit):
     def cv_fit_and_predict(self):
         for cvtest in self.cvtest_dict.keys():
             fold_rmses = np.zeros(self.num_folds)
+            fold_mean_errors = np.zeros(self.num_folds)
             fold_array = np.zeros(len(self.testing_target_data))
             prediction_array = np.zeros(len(self.testing_target_data))
             for fold in self.cvtest_dict[cvtest].keys():
@@ -151,25 +154,33 @@ class KFoldCV(SingleFit):
                 fit = self.model.fit(input_train, target_train)
                 predict_test = self.model.predict(input_test)
                 rmse = np.sqrt(mean_squared_error(predict_test, target_test))
-                self.cvtest_dict[cvtest][fold]['rmse'] = rmse
+                merr = mean_error(predict_test, target_test)
                 fold_rmses[fold] = rmse
+                fold_mean_errors[fold] = merr
                 fold_array[fdict['test_index']] = fold
                 prediction_array[fdict['test_index']] = predict_test
             self.cvtest_dict[cvtest]["avg_rmse"] = np.mean(fold_rmses)
+            self.cvtest_dict[cvtest]["avg_mean_error"] = np.mean(fold_mean_errors)
             self.cvtest_dict[cvtest]["fold_array"] = fold_array
             self.cvtest_dict[cvtest]["prediction_array"] = prediction_array
         return
 
     def get_statistics(self):
         cvtest_avg_rmses = list()
+        cvtest_avg_mean_errors = list()
         for cvtest in range(0, self.num_cvtests):
             cvtest_avg_rmses.append(self.cvtest_dict[cvtest]["avg_rmse"])
+            cvtest_avg_mean_errors.append(self.cvtest_dict[cvtest]["avg_mean_error"])
         highest_rmse = max(cvtest_avg_rmses)
         self.worst_test_index = cvtest_avg_rmses.index(highest_rmse)
         lowest_rmse = min(cvtest_avg_rmses)
         self.best_test_index = cvtest_avg_rmses.index(lowest_rmse)
-        self.statistics['avg_avg_rmses'] = np.mean(cvtest_avg_rmses)
-        self.statistics['std_avg_rmses'] = np.std(cvtest_avg_rmses)
+        self.statistics['avg_fold_avg_rmses'] = np.mean(cvtest_avg_rmses)
+        self.statistics['std_fold_avg_rmses'] = np.std(cvtest_avg_rmses)
+        self.statistics['avg_fold_avg_mean_errors'] = np.mean(cvtest_avg_mean_errors)
+        self.statistics['std_fold_avg_mean_errors'] = np.std(cvtest_avg_mean_errors)
+        self.statistics['fold_avg_rmse_best'] = lowest_rmse
+        self.statistics['fold_avg_rmse_worst'] = highest_rmse
         return
 
     def print_output_csv(self, label="", cvtest_entry=None):
@@ -209,159 +220,32 @@ class KFoldCV(SingleFit):
         printarray = np.vstack((printarray, cvtest_entry['fold_array']))
         printarray=printarray.transpose()
         ptools.mixed_array_to_csv(ocsvname, headerline, printarray)
+        return
 
-def execute(model, data, savepath, lwr_data="", 
-            num_cvtests=200,
-            num_folds=5,
-            xlabel="Measured",
-            ylabel="Predicted",
-            stepsize=1,
-            numeric_field_name=None,
-            *args, **kwargs):
-    """Basic cross validation
-        Args:
-            model, data, savepath, lwr_data: see AllTests.py
-            num_cvtests <int>: number of runs to repeat each cross-validation
-                            split (e.g. num_cvtests iterations of 5fold CV, where
-                            each 5-fold CV has 5 test-train sets)
-                            Default 200.
-            num_folds <int>: number of folds.
-            xlabel <str>: x-axis label for predicted-vs-measured plot
-            ylabel <str>: y-axis label
-            stepsize <float>: step size for plot grid
-            numeric_field_name <str>: Field name of a numeric field which
-                            may help identify data
-    """
-    num_cvtests = int(num_cvtests)
-    num_folds = int(num_folds)
-    stepsize = float(stepsize)
-    
-    # get data
-    Ydata = np.array(data.get_y_data()).ravel()
-    Xdata = np.array(data.get_x_data())
-    dlen = len(Xdata)
-    indices = np.arange(0, dlen)
-
-    print("Using %i %i-folds." % (num_cvtests,num_folds))
-    cvmodel = KFold(n_splits=num_folds, shuffle=True)
-
-    Y_predicted_best = list()
-    Y_predicted_worst = list()
-    Y_predicted_best_fold_numbers = list()
-    Y_predicted_worst_fold_numbers = list()
-
-    maxRMS =  0
-    minRMS =  1000000
-
-    Mean_RMS_List = list()
-    Mean_ME_List = list()
-    for numrun in range(num_cvtests):
-        print("Run %i/%i" % (numrun+1, num_cvtests))
-        run_rms_list = list()
-        run_me_list = list()
-        Run_Y_Pred = np.empty(dlen)
-        Run_Fold_Numbers = np.empty(dlen)
-        Run_Abs_Err = np.empty(dlen)
-        Run_Y_Pred.fill(np.nan)
-        Run_Fold_Numbers.fill(np.nan)
-        Run_Abs_Err.fill(np.nan)
-        # split into testing and training sets
-        ntest=0
-        for train, test in cvmodel.split(indices):
-            ntest = ntest + 1
-            print("Test %i.%i" % (numrun+1,ntest))
-            X_train, X_test = Xdata[train], Xdata[test]
-            Y_train, Y_test = Ydata[train], Ydata[test]
-            # train on training sets
-            model.fit(X_train, Y_train)
-            Y_test_Pred = model.predict(X_test)
-            rms = np.sqrt(mean_squared_error(Y_test, Y_test_Pred))
-            me = mean_error(Y_test_Pred,Y_test)
-            run_rms_list.append(rms)
-            run_me_list.append(me)
-            Run_Y_Pred[test] = Y_test_Pred
-            Run_Fold_Numbers[test] = ntest
-            Run_Abs_Err[test] = np.absolute(Y_test - Y_test_Pred)
-
-        mean_run_rms = np.mean(run_rms_list)
-        mean_run_me = np.mean(run_me_list)
-        Mean_RMS_List.append(mean_run_rms)
-        Mean_ME_List.append(mean_run_me)
-        if mean_run_rms > maxRMS:
-            maxRMS = mean_run_rms
-            Y_predicted_worst = Run_Y_Pred
-            Y_predicted_worst_fold_numbers = Run_Fold_Numbers
-            Worst_Abs_Err = Run_Abs_Err
-
-        if mean_run_rms < minRMS:
-            minRMS = mean_run_rms
-            Y_predicted_best = Run_Y_Pred
-            Y_predicted_best_fold_numbers = Run_Fold_Numbers
-            Best_Abs_Err = Run_Abs_Err
-
-    avgRMS = np.mean(Mean_RMS_List)
-    medRMS = np.median(Mean_RMS_List)
-    sd = np.std(Mean_RMS_List)
-    meanME = np.mean(Mean_ME_List)
-    sdME = np.std(Mean_ME_List)
-
-    if not (os.path.isdir(savepath)):
-        os.mkdir(savepath)
-    print("The average mean-over-{:d}-folds RMSE was {:.3f} over {:d} tests".format(num_folds, avgRMS, num_cvtests))
-    print("The median mean RMSE was {:.3f}".format(medRMS))
-    print("The max mean RMSE was {:.3f}".format(maxRMS))
-    print("The min mean RMSE was {:.3f}".format(minRMS))
-    print("The std deviation of the average mean RMSE values was {:.3f}".format(sd))
-    print("The average mean error was {:.3f}".format(meanME))
-    print("The std deviation of the average mean error was {:.3f}".format(sdME))
-
-    notelist_best = list()
-    notelist_best.append("Min RMSE: {:.2f}".format(minRMS))
-    notelist_best.append("Mean RMSE: {:.2f}".format(avgRMS))
-    notelist_best.append("Std. Dev.: {:.2f}".format(sd))
-    
-    notelist_worst = list()
-    notelist_worst.append("Max RMSE: {:.2f}".format(maxRMS))
-    kwargs=dict()
-    kwargs['xlabel'] = xlabel
-    kwargs['ylabel'] = ylabel
-    kwargs['notelist_best'] = notelist_best
-    kwargs['notelist_worst'] = notelist_worst
-    kwargs['savepath'] = savepath
-    kwargs['stepsize'] = stepsize
-
-    plotpm.best_worst(Ydata, Y_predicted_best, Y_predicted_worst, **kwargs)
-
-    kwargs2 = dict()
-    kwargs2['xlabel'] = xlabel
-    kwargs2['ylabel'] = ylabel
-    kwargs2['label1'] = "Test with lowest fold-average RMSE"
-    kwargs2['label2'] = "Test with highest fold-average RMSE"
-    notelist=list()
-    notelist.append("Mean over %i tests of:" % num_cvtests)
-    notelist.append("  {:d}-fold-average RMSE:".format(num_folds))
-    notelist.append("    {:.2f} $\pm$ {:.2f}".format(avgRMS, sd))
-    notelist.append("  {:d}-fold-average mean error:".format(num_folds))
-    notelist.append("    {:.2f} $\pm$ {:.2f}".format(meanME, sdME))
-    kwargs2['notelist'] = notelist
-    kwargs2['guideline'] = 1
-    kwargs2['fill'] = 1
-    kwargs2['equalsize'] = 1
-    kwargs2['plotlabel'] = "best_worst_overlay"
-    kwargs2['savepath'] = savepath
-    kwargs2['stepsize'] = stepsize
-    plotxy.dual_overlay(Ydata, Y_predicted_best, Ydata, Y_predicted_worst, **kwargs2)
-
-    if numeric_field_name == None:
-        numeric_field_name = data.x_features[0]
-
-    labels = np.asarray(data.get_data(numeric_field_name)).ravel()
-    csvname = os.path.join(savepath,"KFold_CV_data.csv")
-    headerline = "%s,Measured,Predicted best,Absolute error best,Fold numbers best,Predicted worst,Absolute error worst,Fold numbers worst" % numeric_field_name
-    myarray = np.array([labels, Ydata,
-                Y_predicted_best, Best_Abs_Err, 
-                Y_predicted_best_fold_numbers,
-                Y_predicted_worst,Worst_Abs_Err,
-                Y_predicted_worst_fold_numbers]).transpose()
-    ptools.array_to_csv(csvname, headerline, myarray)
-    return
+    def plot_best_worst_overlay(self):
+        kwargs2 = dict()
+        kwargs2['xlabel'] = self.xlabel
+        kwargs2['ylabel'] = self.ylabel
+        kwargs2['label1'] = "Test with lowest fold-average RMSE"
+        kwargs2['label2'] = "Test with highest fold-average RMSE"
+        notelist=list()
+        notelist.append("Mean over %i tests of:" % self.num_cvtests)
+        notelist.append("  {:d}-fold-average RMSE:".format(self.num_folds))
+        notelist.append("    {:.2f} $\pm$ {:.2f}".format(self.statistics['avg_fold_avg_rmses'], self.statistics['std_fold_avg_rmses']))
+        notelist.append("  {:d}-fold-average mean error:".format(self.num_folds))
+        notelist.append("    {:.2f} $\pm$ {:.2f}".format(self.statistics['avg_fold_avg_mean_errors'], self.statistics['std_fold_avg_mean_errors']))
+        kwargs2['notelist'] = notelist
+        kwargs2['guideline'] = 1
+        kwargs2['fill'] = 1
+        kwargs2['equalsize'] = 1
+        kwargs2['plotlabel'] = "best_worst_overlay"
+        kwargs2['save_path'] = self.save_path
+        kwargs2['stepsize'] = self.stepsize
+        plotxy.dual_overlay(self.testing_target_data, 
+                self.cvtest_dict[self.best_test_index]['prediction_array'],
+                self.testing_target_data,
+                self.cvtest_dict[self.worst_test_index]['prediction_array'],
+                **kwargs2)
+        self.readme_list.append("Plot best_worst_overlay.png created\n")
+        self.readme_list.append("    showing the best and worst of %i tests.\n" % self.num_cvtests)
+        return
