@@ -11,7 +11,7 @@ class DataParser(object):
     def __init__(self, configdict):
         self.configdict = configdict
 
-    def parse_fromfile(self, datapath, as_array):
+    def parse_fromfile(self, datapath, as_array=False):
 
         dataframe = self.import_data(datapath=datapath)
         x_features, y_feature = self.get_features(dataframe=dataframe, target_feature=None, from_input_file=True)
@@ -24,7 +24,7 @@ class DataParser(object):
 
         return Xdata, ydata, x_features, y_feature, dataframe
 
-    def parse_fromdataframe(self, dataframe, target_feature, as_array):
+    def parse_fromdataframe(self, dataframe, target_feature, as_array=False):
         x_features, y_feature = self.get_features(dataframe=dataframe, target_feature=target_feature, from_input_file=False)
         Xdata, ydata = self.get_data(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
 
@@ -76,26 +76,42 @@ class DataParser(object):
         ydata = dataframe.loc[:, y_feature]
         return Xdata, ydata
 
-class FeatureFilter(object):
+class FeatureOperations(object):
     """Class to selectively filter features from a dataframe
     """
     def __init__(self, dataframe):
         self.dataframe = dataframe
 
-    def remove_features(self, features_to_remove):
+    def remove_duplicate_features(self):
+        # Only removes features that have the same name, not features containing the same data vector
+        (self.dataframe).drop_duplicates()
+        return self.dataframe
+
+    def remove_custom_features(self, features_to_remove):
         for feature in features_to_remove:
             del self.dataframe[feature]
         return self.dataframe
 
-    def add_features(self, features_to_add, data_to_add):
+    def add_custom_features(self, features_to_add, data_to_add):
         for feature in features_to_add:
             self.dataframe[feature] = pd.Series(data=data_to_add, index=(self.dataframe).index)
         return self.dataframe
 
-
-class DataNormalization(object):
+class DataOperations(object):
     def __init__(self, dataframe):
         self.dataframe = dataframe
 
+    def merge_dataframes(self, dataframe_to_merge):
+        dataframe = pd.merge(left=self.dataframe, right=dataframe_to_merge, how='inner')
+        return dataframe
+
+    def dataframe_statistics(self):
+        return (self.dataframe).describe(percentiles=[0.25, 0.50, 0.75])
+
     def normalize_data(self):
         pass
+
+    def unnormalize_data(self):
+        pass
+
+
