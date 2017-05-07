@@ -4,7 +4,7 @@ import data_parser
 import sys
 import os
 from MASTMLInitializer import MASTMLWrapper, ConfigFileValidator
-from DataParser import InputDataParser
+from DataParser import DataParser, FeatureFilter
 import logging
 import shutil
 import time
@@ -36,8 +36,21 @@ class MASTMLDriver(object):
         save_path = self._perform_general_setup(mastmlwrapper=mastmlwrapper)
 
         # Parse input data files
-        Xdata, ydata, x_features, y_feature, data_dict = self._parse_input_data(mastmlwrapper=mastmlwrapper, configdict=configdict)
+        Xdata, ydata, x_features, y_feature, dataframe, data_dict = self._parse_input_data(mastmlwrapper=mastmlwrapper, configdict=configdict)
 
+        print(x_features)
+        print(y_feature)
+
+        x_to_remove = ['x2', 'x3']
+        ff = FeatureFilter(dataframe=dataframe)
+        dataframe = ff.remove_features(features_to_remove=x_to_remove)
+        features_to_add = ['x4']
+        data_to_add = dataframe['x1']
+        dataframe = ff.add_features(features_to_add=features_to_add, data_to_add=data_to_add)
+        Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=configdict).parse_fromdataframe(dataframe=dataframe, target_feature='sin(x)', as_array=False)
+
+
+        """
         # Gather models
         model_list = self._gather_models(mastmlwrapper=mastmlwrapper)
 
@@ -47,6 +60,7 @@ class MASTMLDriver(object):
 
         # End MASTML session
         self._move_log_and_input_files(mastmlwrapper=mastmlwrapper)
+        """
 
         return
 
@@ -71,8 +85,7 @@ class MASTMLDriver(object):
 
     def _parse_input_data(self, mastmlwrapper, configdict):
         datasetup = mastmlwrapper.process_config_keyword(keyword='Data Setup')
-        Xdata, ydata, x_features, y_feature = InputDataParser(datapath=datasetup['Initial']['data_path'],
-                                                              configdict=configdict, dataframe=None, as_array=False).parse()
+        Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=configdict).parse_fromfile(datapath=datasetup['Initial']['data_path'], as_array=False)
 
         # Tam's code is here
         data_dict=dict()
@@ -88,7 +101,7 @@ class MASTMLDriver(object):
             logging.info('Parsed the input data located under %s' % data_path)
 
 
-        return Xdata, ydata, x_features, y_feature, data_dict
+        return Xdata, ydata, x_features, y_feature, dataframe, data_dict
 
     def _gather_models(self, mastmlwrapper):
         models_and_tests_setup = mastmlwrapper.process_config_keyword(keyword='Models and Tests to Run')
