@@ -108,14 +108,16 @@ class LeaveOutGroupCV(LeaveOutPercentCV):
         kwargs['notelist'] = notelist
         kwargs['savepath'] = self.save_path
         group_label_list=list()
-        group_value_list=list()
         rms_list=list()
+        group_rms_list=list()
         for cvtest in self.cvtest_dict.keys():
-            group_label_list.append(self.cvtest_dict[cvtest]['group'])
-            group_value_list.append(cvtest)
-            rms_list.append(self.cvtest_dict[cvtest]['rmse'])
-        kwargs['group_label_list'] = group_label_list
-        plotrmse.vs_leftoutgroup(group_value_list, rms_list, **kwargs)
+            group_rms_list.append((self.cvtest_dict[cvtest]['group'],
+                                    self.cvtest_dict[cvtest]['rmse']))
+        group_rms_list.sort()
+        group_rms_array = np.array(group_rms_list)
+        kwargs['rms_list'] = group_rms_array[:,1]
+        kwargs['group_label_list'] = group_rms_array[:,0]
+        plotrmse.vs_leftoutgroup(**kwargs)
         return
 
     def set_up_cv(self):
