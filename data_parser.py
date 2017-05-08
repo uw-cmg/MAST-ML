@@ -1,7 +1,10 @@
-__author__ = 'haotian;Tam'
+__author__ = 'haotian;Tam;Ben'
 import numpy as np
 import traceback
-def parse(filename, weights=False, separator=','):
+import pandas as pd
+
+
+def parse(filename, weights = False, separator=','):
     """
     parse a file into parse.Data object
     :param filename: name of the file to be parsed
@@ -9,24 +12,8 @@ def parse(filename, weights=False, separator=','):
     :return: the parser.Data object reprenting this data
     """
     try:
-        f = open(filename, 'r')
-        features = f.readline()[:-1].split(separator)
-        data = f.read().splitlines()
-        weighted_data = []
-        f.close()
-        itr = 0
-        for line in data:
-            line = line.split(separator)
-            for i in range(len(line)):
-                line[i] = to_digit(line[i])
-            if weights and 'weight' in features:
-                for i in range(line[features.index('weight')]):
-                    weighted_data.append(line)
-            else:
-                data[itr] = line
-                itr += 1
-        if weights and 'weight' in features:
-            data = weighted_data
+        data = pd.read_csv(filename)
+        features = data.columns
         return Data(features, data)
     except Exception as err:
         traceback.print_exc()
@@ -63,10 +50,11 @@ class Data:
     def __init__(self, features, data):
         self.__features = features
         self.__data = data
-        self.__filtered_data = list(data)
+        self.__filtered_data = data
         self.x_features = features[:-1]
         self.y_feature = None
-        self.__max_min = []
+        self.__max = []
+        self.__min = []
         try:
             self.__calculate_data_range()
         except TypeError:
@@ -90,8 +78,9 @@ class Data:
             print("can't find [{}] in features".format(feature))
             return False
         self.y_feature = feature
-        self.add_exclusive_filter(self.y_feature, '=', 'FLAG')
-        self.overwrite_data_w_filtered_data()
+        #BA - figure out if we want to keep this? a special flag to filter on?
+        #self.add_exclusive_filter(self.y_feature,'=','FLAG')
+        #self.overwrite_data_w_filtered_data()
         return True
 
     # append data within self.data to self.filtered_data satisfying (operator,threshold) for a feature
@@ -99,31 +88,27 @@ class Data:
         if feature not in self.__features:
             print("can't find [{}] in features".format(feature))
             return False
-        index = self.__features.index(feature)
-        if self.__filtered_data == self.__data:
-            filtered_data = []
+        # index = self.__features.index(feature)
+        if self.__filtered_data.equals(self.__data):
+            filtered_data_old = None
         else:
-            filtered_data = self.__filtered_data
-        for line in self.__data:
-            if line in filtered_data: continue
-            if line[index] is None:
-                continue
-            elif type(line[index]) == str:
-                if operator == "<>":
-                    if not (line[index]) == threshold:
-                        filtered_data.append(line)
-                elif operator == "=":
-                    if (line[index]) == threshold:
-                        filtered_data.append(line)
-            elif line[index] > threshold and '>' in operator:
-                filtered_data.append(line)
-            elif line[index] == threshold and '=' in operator:
-                filtered_data.append(line)
-            elif line[index] < threshold and '<' in operator:
-                filtered_data.append(line)
-            elif str(threshold) in str(line[index]) and 'contains' in operator:
-                filtered_data.append(line)
-        self.__filtered_data = filtered_data
+            filtered_data_old = self.__filtered_data
+        if '>' in operator:
+            filtered_data = self.__data[self.__data[feature] > threshold]
+        elif '<' in operator:
+            filtered_data = self.__data[self.__data[feature] < threshold]
+        elif '=' in operator:
+            filtered_data = self.__data[self.__data[feature] == threshold]
+        elif '<>' in operator:
+            filtered_data = self.__data[self.__data[feature] != threshold]
+        elif 'contains' in operator:
+            filtered_data = self.__data[self.__data[feature] == threshold]
+
+        if filtered_data_old is None:
+            filtered_data_cat = filtered_data
+        else:
+            filtered_data_cat = pd.concat([filtered_data,filtered_data_old]).drop_duplicates()
+        self.__filtered_data = filtered_data_cat
         return True
 
     # remove data from self.filtered_data not satisfying (operator,threshold) for a feature
@@ -131,38 +116,27 @@ class Data:
         if feature not in self.__features:
             print("can't find [{}] in features".format(feature))
             return False
-        index = self.__features.index(feature)
-        filtered_data = list(self.__filtered_data)
-        remove_list = []
-        for line in filtered_data:
-            if line[index] is None:
-                continue
-            elif type(line[index]) == str:
-                if operator == "<>":
-                    if not (line[index]) == threshold:
-                        remove_list.append(line)
-                elif operator == "=":
-                    if (line[index]) == threshold:
-                        remove_list.append(line)
-            elif '>' in operator and line[index] > threshold:
-                remove_list.append(line)
-                # filtered_data.remove(line)
-            elif '=' in operator and line[index] == threshold:
-                remove_list.append(line)
-                # filtered_data.remove(line)
-            elif '<' in operator and line[index] < threshold:
-                remove_list.append(line)
-                # filtered_data.remove(line)
-            elif 'contains' in operator and str(threshold) in str(line[index]):
-                remove_list.append(line)
-                # filtered_data.remove(line)
-        for line in remove_list:
-            filtered_data.remove(line)
+        if self.__filtered_data.equals(self.__data):
+            filtered_data_old = self.__data
+        else:
+            filtered_data_old = self.__filtered_data
+
+        if '>' in operator:
+            filtered_data = filtered_data_old[filtered_data_old[feature] > threshold]
+        elif '<' in operator:
+            filtered_data = filtered_data_old[filtered_data_old[feature] < threshold]
+        elif '=' in operator:
+            filtered_data = filtered_data_old[filtered_data_old[feature] == threshold]
+        elif '<>' in operator:
+            filtered_data = filtered_data_old[filtered_data_old[feature] != threshold]
+        elif 'contains' in operator:
+            filtered_data = filtered_data_old[filtered_data_old[feature] == threshold]
+
         self.__filtered_data = filtered_data
         return True
 
     def remove_all_filters(self):
-        self.__filtered_data = list(self.__data)
+        self.__filtered_data = self.__data
         return True
 
     # the equivalent of parsing a CSV of filtered data
@@ -181,7 +155,7 @@ class Data:
                 return False
         for feature in features:
             x = self.get_data(feature)
-            x = [i[0] for i in x]
+            x = [i for i in x[feature]]
             result = []
             for i in x:
                 if i is not None:
@@ -209,15 +183,15 @@ class Data:
             if feature not in self.__features:
                 print("can't find [{}] in features".format(feature))
                 return False
-            if self.__max_min[0][self.__features.index(feature)] is None:
+            if self.__max[self.__features.index(feature)] is None:
                 print("Feature [{}] is not numerical".format(feature))
                 return False
         if normalization_type == 's':
             for feature in features:
                 result = []
                 index = self.__features.index(feature)
-                cur_max = self.__max_min[0][index]
-                cur_min = self.__max_min[1][index]
+                cur_max = self.__max[index]
+                cur_min = self.__min[index]
                 if cur_max is None:
                     print('feature[{}] max is none'.format(feature))
                 elif cur_min is None:
@@ -228,26 +202,20 @@ class Data:
                     else:
                         result.append((line[index] - cur_min) / (cur_max - cur_min))
                 self.add_feature('N_{}'.format(feature), result)
-                # line[index] = (line[index]-cur_min)/(cur_max-cur_min)
-                # for line in self.__filtered_data:
-                #    line[index] = (line[index]-cur_min)/(cur_max-cur_min)
         elif normalization_type == 't':
-            all_max = max([self.__max_min[0][x] for x in range(len(self.__features)) if self.__features[x] in features])
-            all_min = min([self.__max_min[1][x] for x in range(len(self.__features)) if self.__features[x] in features])
+            all_max = max([self.__max[x] for x in range(len(self.__features)) if self.__features[x] in features])
+            all_min = min([self.__min[x] for x in range(len(self.__features)) if self.__features[x] in features])
             for feature in features:
                 result = []
                 index = self.__features.index(feature)
-                self.__max_min[0][index] = all_max
-                self.__max_min[1][index] = all_min
+                self.__max[index] = all_max
+                self.__min[index] = all_min
                 for line in self.__data:
                     if line[index] is None:
                         result.append(None)
                     else:
                         result.append((line[index] - all_min) / (all_max - all_min))
                 self.add_feature('N_{}'.format(feature), result)
-                # line[index] = (line[index]-all_min)/(all_max-all_min)
-                # for line in self.__filtered_data:
-                #    line[index] = (line[index]-all_min)/(all_max-all_min)
         else:
             print("unknown normalization_type '{}'; "
                   "expect 's' for separate or 't' for together".format(normalization_type))
@@ -259,9 +227,9 @@ class Data:
             print("can't find [{}] in features".format(feature))
             return None
         index = self.__features.index(feature)
-        cur_max = self.__max_min[0][index]
-        cur_min = self.__max_min[1][index]
-        return data * (cur_max - cur_min) + cur_min
+        cur_max = self.__max[index]
+        cur_min = self.__min[index]
+        return data*(cur_max-cur_min)+cur_min
 
     def get_data(self, features=None):
         if isinstance(features, str):
@@ -270,11 +238,7 @@ class Data:
             if feature not in self.__features:
                 print("can't find [{}] in features".format(feature))
                 return None
-        output = []
-        index_list = [self.__features.index(feature) for feature in features]
-
-        for line in self.__filtered_data:
-            output.append([line[i] for i in index_list])
+        output = self.__filtered_data[features]
         return output
 
     def get_x_data(self):
@@ -285,29 +249,10 @@ class Data:
         return self.get_data(features=self.y_feature)
 
     def __calculate_data_range(self):
-        self.__max_min = []
-        maxes = list(self.__data[0])
-        mins = list(self.__data[0])
-        for line in self.__data:
-            for i in range(len(line)):
-                if maxes[i] is None:
-                    maxes[i] = line[i]
-                if mins[i] is None:
-                    mins[i] = line[i]
-                if isinstance(line[i], str):
-                    continue
-                if line[i] is not None and maxes[i] is not None and line[i] > maxes[i]:
-                    maxes[i] = line[i]
-                elif line[i] is not None and maxes[i] is not None and line[i] < mins[i]:
-                    mins[i] = line[i]
-        for i in range(len(self.__features)):
-            if isinstance(maxes[i], str):
-                maxes[i] = None
-                mins[i] = None
-        self.__max_min.append(maxes)
-        self.__max_min.append(mins)
+        self.__max = self.__data.max
+        self.__min = self.__data.min
 
-    def output(self, filename, features=None, data='a'):
+    def output(self, filename, features=None, datatype='a'):
         if features is None:
             features = self.__features
         else:
@@ -317,9 +262,9 @@ class Data:
                 if feature not in self.__features:
                     print("can't find [{}] in features, no file is created".format(feature))
                     return False
-        if data == 'a':
+        if datatype == 'a':
             data = self.__data
-        elif data == 'f':
+        elif datatype == 'f':
             data = self.__filtered_data
         else:
             print("can't recognize data [{}], please pass in 'a' for all data, or 'f' for filtered data".format(data))
@@ -340,16 +285,12 @@ class Data:
         f.close()
         return True
 
-    def add_feature(self, name, value):
+    def add_feature(self, name, values):
         if len(value) != len(self.__data):
             print('unmatch data length')
             return False
         self.__features.append(name)
-        for i in range(len(value)):
-            if value[i] is None:
-                self.__data[i].append('')
-                continue
-            self.__data[i].append(value[i])
+        self.__Data = pd.Series(values, index=self.__Data.index)
         print('feature [{}] added'.format(name))
         self.__calculate_data_range()
         return True
@@ -364,17 +305,7 @@ class Data:
             return False
         if newname == "":
             newname = "N_{}".format(featurename)
-        index = self.__features.index(feature)
-        # Consider using numpy, which can handle python None in subtraction
-        # and division, as NaN; but may not work with add_feature
-        # origarr = np.array(self.__data[:,index],'float')
-        # result = (origarr - gmin)/(gmax - gmin)
-        result = list()
-        for line in self.__data:
-            if line[index] is None:
-                result.append(None)
-            else:
-                result.append((line[index] - gmin) / (gmax - gmin))
+        result = (self.__data[featurename]-gmin)/(gmax-gmin)
         self.add_feature(newname, result)
         return True
 
@@ -384,12 +315,6 @@ class Data:
             return False
         if newname == "":
             newname = "log10_{}".format(featurename)
-        index = self.__features.index(feature)
-        result = list()
-        for line in self.__data:
-            if line[index] is None:
-                result.append(None)
-            else:
-                result.append(np.log10(line[index]))
+        result = np.log10(self.__data[featurename])
         self.add_feature(newname, result)
         return True
