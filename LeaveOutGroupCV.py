@@ -116,7 +116,7 @@ class LeaveOutGroupCV(LeaveOutPercentCV):
                                     self.cvtest_dict[cvtest]['rmse']))
         group_rms_list.sort() #sorts by group
         group_rms_array = np.array(group_rms_list)
-        kwargs['rms_list'] = group_rms_array[:,1]
+        kwargs['rms_list'] = np.array(group_rms_array[:,1],'float')
         kwargs['group_list'] = group_rms_array[:,0]
         plotrmse.vs_leftoutgroup(**kwargs)
         return

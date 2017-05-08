@@ -36,6 +36,7 @@ def vs_leftoutgroup(rms_list=None,
             marklargest=None,
             notelist=list(),
             ):
+    rms_list = np.array(rms_list,'float') #verify type
     # graph rmse vs left-out group
     matplotlib.rcParams.update({'font.size': 18})
     smallfont = 0.85*matplotlib.rcParams['font.size']
@@ -64,8 +65,11 @@ def vs_leftoutgroup(rms_list=None,
         pass
     else:
         marklargest = int(marklargest)
+        print(rms_list)
+        print(np.argsort(rms_list))
         for largerms_index in np.argsort(rms_list)[-1*marklargest:]:
             alabel = group_list[largerms_index]
+            print(alabel, largerms_index)
             ax.annotate(s = alabel,
                         xy = (numeric_list[largerms_index], 
                                 rms_list[largerms_index]),
