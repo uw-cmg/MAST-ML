@@ -41,19 +41,21 @@ class MASTMLDriver(object):
         print(x_features)
         print(y_feature)
 
-        x_to_remove = ['x2', 'x3']
-        ff = FeatureOperations(dataframe=dataframe)
-        dataframe = ff.remove_custom_features(features_to_remove=x_to_remove)
-        features_to_add = ['x1']
+        #x_to_remove = ['x2', 'x3']
+        fops = FeatureOperations(dataframe=dataframe)
+        #dataframe = ff.remove_custom_features(features_to_remove=x_to_remove)
+        features_to_add = ['x4']
         data_to_add = dataframe['x1']
-        dataframe = ff.add_custom_features(features_to_add=features_to_add, data_to_add=data_to_add)
-        #Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=configdict).parse_fromdataframe(dataframe=dataframe, target_feature='sin(x)', as_array=False)
+        dataframe = fops.add_custom_features(features_to_add=features_to_add, data_to_add=data_to_add)
         print(dataframe)
+        Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=configdict).parse_fromdataframe(dataframe=dataframe, target_feature='sin(x)', as_array=False)
+        print(x_features)
+        print(y_feature)
         #dataframe = ff.remove_duplicate_features()
-        print(dataframe)
+        #print(dataframe)
         dops = DataOperations(dataframe=dataframe)
-        stats = dops.dataframe_statistics()
-        print(stats)
+        dataframe = dops.remove_duplicate_data(x_features=x_features, y_feature=y_feature)
+        print(dataframe)
 
         """
         # Gather models
