@@ -3,6 +3,7 @@ import data_parser
 import matplotlib
 import matplotlib.pyplot as plt
 from SingleFit import SingleFit
+from SingleFit import timeit
 from sklearn.model_selection import KFold
 from sklearn.model_selection import ShuffleSplit
 from sklearn.metrics import mean_squared_error
@@ -124,39 +125,6 @@ class ParamOptGA(SingleFit):
         self.gene_length = None
         #
         self.gen_dict = None 
-
-
-
-        self.additional_feature_methods = additional_feature_methods
-        self.afm_dict = None
-        self.set_afm_dict(self.additional_feature_methods)
-        self.num_addl_features = len(list(self.afm_dict.keys()))
-        self.hp_dict = None
-        self.set_hp_dict()
-        self.num_hyperparams = len(list(self.hp_dict.keys()))
-        self.num_features = len(self.x_features)
-        self.gene_length = self.num_hyperparams + self.num_addl_features
-        self.gene_keys = list()
-        self.gene_keys.extend(list(self.afm_dict.keys()))
-        hp_keys = list(self.hp_dict.keys())
-        hp_keys.sort()
-        self.gene_keys.extend(hp_keys)
-        self.divisionsList=list()
-        self.topredict_data = topredict_data
-
-        self.topredict_data_unfiltered = data_parser.parse(topredict_data_csv)
-        self.topredict_data_unfiltered.set_x_features(self.x_features)
-        self.topredict_data_unfiltered.set_y_feature(self.topredict_y_feature)
-        
-        self.fit_Ydata = fit_data.get_y_data()
-        self.fit_Xdata = fit_data.get_x_data()
-        self.topredict_Ydata = topredict_data.get_y_data()
-        self.topredict_Xdata = topredict_data.get_x_data()
-
-
-        #TTM not needed?
-        topredict_data.remove_all_filters()
-        Ndata = topredict_data.get_x_data()
         return
 
     def run_ga(self):
@@ -176,14 +144,14 @@ class ParamOptGA(SingleFit):
         while runsSinceBest < self.convergence_generations and gens < self.max_generations: # run until convergence condition is met
             # run a generation imputting population, number of parameters, number of parents, crossover probablility, mutation probability, random shift probability
             print("Generation %i %s" % (gens, time.asctime()), flush=True)
-            gen_dict[gens] = dict()
+            self.gen_dict[gens] = dict()
             Gen = self.generation(list(self.population),
                         crossover_prob = .5, 
                         mutation_prob = .1, 
                         shift_prob = .5)
             #print(Gen['best_rms'])
             #print(Gen['best_parameters'])
-            gen_dict[gens].update(Gen)
+            self.gen_dict[gens].update(Gen)
             population = Gen['new_population']
 
             # updates best parameter set
@@ -208,7 +176,7 @@ class ParamOptGA(SingleFit):
     def old_save_for_evaluating_results_of_multiple_GA(self):
         for GA in GAs:
             bestParamSets.append(bestParams)
-        self.set_divisionsList(self.num_runs*10)
+        self.set_divisionsList(self.num_cvtests*10)
 
 # prints best parameter set for each run, and the results of some tests using it.
         EXTrmsList=[]
@@ -234,7 +202,7 @@ class ParamOptGA(SingleFit):
     @timeit
     def set_up(self):
         SingleFit.set_up(self)
-        self.cv_divisions = self.get_cv_divisions(self.num_runs)
+        self.cv_divisions = self.get_cv_divisions(self.num_cvtests)
         self.set_hp_dict()
         self.set_afm_dict()
         self.set_gene_info()
@@ -253,7 +221,7 @@ class ParamOptGA(SingleFit):
         for pidx in range(self.population_size):
             self.population.append(dict())
         #initailize random population
-        for individual in range(len(population)):
+        for individual in range(len(self.population)):
             self.population[individual] = dict()
             for gene in self.gene_keys:
                 self.population[individual][gene] = random.randrange(0, 101)/100
@@ -328,19 +296,15 @@ class ParamOptGA(SingleFit):
         self.hp_dict=dict(hp_dict)
         return hp_dict
 
-    def set_afm_dict(self, afm_str):
+    def set_afm_dict(self):
         """
-            Args:
-                afm_str <str>: String of "method,argname:argval,argname:argval;method,argname:argval,argname:argval"
-                            methods should be able to accept string arguments
         """
+        if self.additional_feature_methods is None:
+            self.afm_dict=dict()
+            return
         afm_dict=dict()
-        if len(afm_str) == 0:
-            self.afm_dict=afm_dict
-            return afm_dict
-        afm_split = afm_str.split(";")
-        for afm_item in afm_split:
-            isplit = afm_item.split(",")
+        for afm_item in self.additional_feature_methods:
+            isplit = afm_item.split(";")
             methodname = isplit[0]
             methodargs = dict()
             for argidx in range(1, len(isplit)):
@@ -355,11 +319,11 @@ class ParamOptGA(SingleFit):
     def single_avg_cv(self, model, Xdata, Ydata, division_index, 
                             parallel_return_dict=None):
         rms_list = []
-        division_dict = self.divisionsList[division_index]
+        division_dict = self.cv_divisions[division_index]
         # split into testing and training sets
-        for didx in range(len(division_dict['train'])):
-            train_index = division_dict['train'][didx]
-            test_index = division_dict['test'][didx]
+        for didx in range(len(division_dict['train_index'])):
+            train_index = division_dict['train_index'][didx]
+            test_index = division_dict['test_index'][didx]
             X_train, X_test = Xdata[train_index], Xdata[test_index]
             Y_train, Y_test = Ydata[train_index], Ydata[test_index]
             # train on training sets
@@ -373,24 +337,6 @@ class ParamOptGA(SingleFit):
         else:
             parallel_return_dict[division_index] = mean_rms
         return None
-    
-    def single_avg_cv_pooluse(self, init_tuple):
-        model, Xdata, Ydata, division_index = init_tuple
-        rms_list = []
-        division_dict = self.divisionsList[division_index]
-        # split into testing and training sets
-        for didx in range(len(division_dict['train'])):
-            train_index = division_dict['train'][didx]
-            test_index = division_dict['test'][didx]
-            X_train, X_test = Xdata[train_index], Xdata[test_index]
-            Y_train, Y_test = Ydata[train_index], Ydata[test_index]
-            # train on training sets
-            model.fit(X_train, Y_train)
-            Y_test_Pred = model.predict(X_test)
-            my_rms = np.sqrt(mean_squared_error(Y_test, Y_test_Pred))
-            rms_list.append(my_rms)
-        mean_rms = np.mean(rms_list)
-        return mean_rms
 
     def num_runs_cv(self, model, X, Y, num_runs, parallelize=1):
         Xdata = np.asarray(X)
@@ -425,56 +371,57 @@ class ParamOptGA(SingleFit):
 
 
     def calculate_EffectiveFluence(self, p, flux_feature="",fluence_feature=""):
-        train_fluence = self.fit_data.get_data(fluence_feature)
-        train_flux = self.fit_data.get_data(flux_feature)
-        test_fluence = self.topredict_data.get_data(fluence_feature)
-        test_flux = self.topredict_data.get_data(flux_feature)
-        Norm_fluence = self.topredict_data_unfiltered.get_data(fluence_feature)
-        Norm_flux = self.topredict_data_unfiltered.get_data(flux_feature)
+        train_fluence = self.training_dataset.get_data(fluence_feature)
+        train_flux = self.training_dataset.get_data(flux_feature)
+        test_fluence = self.testing_dataset.get_data(fluence_feature)
+        test_flux = self.testing_dataset.get_data(flux_feature)
+        Norm_fluence = self.testing_dataset.get_data(fluence_feature)
+        Norm_flux = self.testing_dataset.get_data(flux_feature)
 
-        Xtrain = np.asarray(np.copy(self.fit_Xdata))
-        Xtest = np.asarray(np.copy(self.topredict_Xdata))
-        TrainEFl = np.zeros(len(Xtrain))
-        TestEFl = np.zeros(len(Xtest))
-        N_TrainEFl = np.zeros(len(Xtrain))
-        N_TestEFl = np.zeros(len(Xtest))
-        NEFl = np.zeros(len(Norm_fluence))
+        #Xtrain = np.asarray(np.copy(self.training_input_data))
+        #Xtest = np.asarray(np.copy(self.testing_input_data))
+        #TrainEFl = np.zeros(len(Xtrain))
+        #TestEFl = np.zeros(len(Xtest))
+        #N_TrainEFl = np.zeros(len(Xtrain))
+        #N_TestEFl = np.zeros(len(Xtest))
+        #NEFl = np.zeros(len(Norm_fluence))
             
-        for n in range(len(Xtrain)):
-            TrainEFl[n] = np.log10( train_fluence[n][0]*( 3E10 / train_flux[n][0] )**p )
-        for n in range(len(Xtest)):
-            TestEFl[n] = np.log10( test_fluence[n][0]*( 3E10 / test_flux[n][0] )**p )
-        for n in range(len(Norm_fluence)):
-            NEFl[n] = np.log10( Norm_fluence[n][0]*( 3E10 / Norm_flux[n][0] )**p )    
+        TrainEFl = np.log10( train_fluence*( 3E10 / train_flux )**p )
+        TestEFl = np.log10( test_fluence*( 3E10 / test_flux )**p )
+        NEFl = np.log10( Norm_fluence*( 3E10 / Norm_flux )**p )    
             
         Nmax = np.max([ np.max(TrainEFl), np.max(NEFl)] )
         Nmin = np.min([ np.min(TrainEFl), np.min(NEFl)] )
         
-        for n in range(len(Xtrain)):
-            N_TrainEFl[n] = (TrainEFl[n]-Nmin)/(Nmax-Nmin)
+        N_TrainEFl= (TrainEFl-Nmin)/(Nmax-Nmin)
 
-        for n in range(len(Xtest)):
-            N_TestEFl[n] = (TestEFl[n]-Nmin)/(Nmax-Nmin)
+        N_TestEFl = (TestEFl-Nmin)/(Nmax-Nmin)
 
-        return (N_TrainEFl, N_TestEFl)
+        return (N_TrainEFl.as_matrix(), N_TestEFl.as_matrix())
 
-    
+    def testing_subtraction(self, col1="",col2=""):
+        col1_data = self.testing_dataset.get_data(col1)
+        col2_data = self.testing_dataset.get_data(col2)
+        new_data = col1_data - col2_data
+        return new_data
+
     def evaluate_individual(self, indidx, pop, parallel_result_dict=None, 
                                     do_extrapolation=0):
-        newX_Train = np.copy(self.fit_Xdata)
-        newX_Test = np.copy(self.topredict_Xdata)
+        newX_Train = np.copy(self.training_input_data)
+        newX_Test = np.copy(self.testing_input_data)
         params = pop[indidx]
         rdict=dict()
         for gene in self.afm_dict.keys():
             afm_kwargs = dict(self.afm_dict[gene])
             (train_feature, test_feature) = getattr(self, gene)(params[gene],
                             **afm_kwargs)
+            print(train_feature, test_feature)
             train_column = np.reshape(train_feature,(len(train_feature),1))
             test_column = np.reshape(test_feature,(len(test_feature),1))
             newX_Train = np.concatenate((newX_Train, train_column), axis=1)
             newX_Test = np.concatenate((newX_Test, test_column), axis=1)
         model = KernelRidge(alpha = 10**(float(params['alpha'])*(-6)), gamma = 10**((float(params['gamma'])*(3))-1.5), kernel = 'rbf')
-        cv_rms = self.num_runs_cv(model, newX_Train, self.fit_Ydata, num_runs = self.num_runs)       
+        cv_rms = self.num_runs_cv(model, newX_Train, self.training_target_data, num_runs = self.num_cvtests)       
         rdict['cv_rms'] = cv_rms
         if parallel_result_dict is None:
             return rdict
