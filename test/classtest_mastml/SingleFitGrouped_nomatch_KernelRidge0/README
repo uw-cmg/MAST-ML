@@ -1,11 +1,11 @@
-Fri May  5 11:36:41 2017
+Mon May  8 13:05:43 2017
 ----- Model parameters -----
+degree: 3
 kernel_params: None
 gamma: 0.518
-kernel: rbf
 alpha: 0.00139
-degree: 3
 coef0: 1
+kernel: rbf
 ----- Output data -----
 output_data.csv file created with columns:
    labeling features: ['str_cat', 'num_id']
@@ -19,8 +19,8 @@ mean_error: 0.0087
 rmse: 0.0908
 rsquared: 0.9821
 Per-group RMSEs from overall fit:
-    B: rmse: 0.108
     A: rmse: 0.097
+    B: rmse: 0.108
     C: rmse: 0.070
 ----- Plotting -----
 Plot single_fit.png created.
