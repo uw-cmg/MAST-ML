@@ -4,7 +4,7 @@ import data_parser
 import sys
 import os
 from MASTMLInitializer import MASTMLWrapper, ConfigFileValidator
-from DataParser import DataParser, FeatureFilter
+from DataParser import DataParser, FeatureOperations, DataOperations
 import logging
 import shutil
 import time
@@ -42,13 +42,18 @@ class MASTMLDriver(object):
         print(y_feature)
 
         x_to_remove = ['x2', 'x3']
-        ff = FeatureFilter(dataframe=dataframe)
-        dataframe = ff.remove_features(features_to_remove=x_to_remove)
-        features_to_add = ['x4']
+        ff = FeatureOperations(dataframe=dataframe)
+        dataframe = ff.remove_custom_features(features_to_remove=x_to_remove)
+        features_to_add = ['x1']
         data_to_add = dataframe['x1']
-        dataframe = ff.add_features(features_to_add=features_to_add, data_to_add=data_to_add)
-        Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=configdict).parse_fromdataframe(dataframe=dataframe, target_feature='sin(x)', as_array=False)
-
+        dataframe = ff.add_custom_features(features_to_add=features_to_add, data_to_add=data_to_add)
+        #Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=configdict).parse_fromdataframe(dataframe=dataframe, target_feature='sin(x)', as_array=False)
+        print(dataframe)
+        #dataframe = ff.remove_duplicate_features()
+        print(dataframe)
+        dops = DataOperations(dataframe=dataframe)
+        stats = dops.dataframe_statistics()
+        print(stats)
 
         """
         # Gather models

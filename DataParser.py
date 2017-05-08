@@ -106,7 +106,7 @@ class DataOperations(object):
         return dataframe
 
     def dataframe_statistics(self):
-        return (self.dataframe).describe(percentiles=[0.25, 0.50, 0.75])
+        return (self.dataframe).describe(include='all')
 
     def normalize_data(self):
         pass
