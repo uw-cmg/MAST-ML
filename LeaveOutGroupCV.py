@@ -144,9 +144,13 @@ class LeaveOutGroupCV(LeaveOutPercentCV):
     def print_statistics(self):
         LeaveOutPercentCV.print_statistics(self)
         self.readme_list.append("Statistics by group:\n")
+        statlist=list()
         for cvtest in range(0, self.num_cvtests):
             for key in ['rmse','mean_error']:
-                self.readme_list.append("  %s: %s: %3.3f\n" % (self.cvtest_dict[cvtest]['group'], key, self.cvtest_dict[cvtest][key]))
+                statlist.append("  %s: %s: %3.3f\n" % (self.cvtest_dict[cvtest]['group'], key, self.cvtest_dict[cvtest][key]))
+        statlist.sort() #sorts by group
+        for stat in statlist:
+            self.readme_list.append(stat)
         return
 
     def print_output_csv(self, label="", cvtest_entry=None):

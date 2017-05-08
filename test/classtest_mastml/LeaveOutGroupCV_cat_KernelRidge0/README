@@ -1,4 +1,4 @@
-Mon May  8 11:35:32 2017
+Mon May  8 11:57:06 2017
 ----- CV setup -----
 -1 CV tests,
 leaving out str_cat groups.
@@ -10,14 +10,14 @@ rmse_worst: 0.1537
 std_mean_error: 0.0178
 std_rmse: 0.0156
 Statistics by group:
-  C: rmse: 0.110
-  C: mean_error: 0.022
-  D: rmse: 0.127
-  D: mean_error: -0.028
-  B: rmse: 0.130
-  B: mean_error: 0.003
-  A: rmse: 0.154
   A: mean_error: 0.006
+  A: rmse: 0.154
+  B: mean_error: 0.003
+  B: rmse: 0.130
+  C: mean_error: 0.022
+  C: rmse: 0.110
+  D: mean_error: -0.028
+  D: rmse: 0.127
 ----- Output data -----
 C_test_data.csv file created with columns:
    labeling features: ['str_cat']
@@ -25,7 +25,7 @@ C_test_data.csv file created with columns:
    target feature: y_feature
    target error feature: N_linear_feature
    prediction: Prediction
-D_test_data.csv file created with columns:
+A_test_data.csv file created with columns:
    labeling features: ['str_cat']
    input features: ['time', 'N_sine_feature', 'N_linear_feature']
    target feature: y_feature
@@ -37,7 +37,7 @@ B_test_data.csv file created with columns:
    target feature: y_feature
    target error feature: N_linear_feature
    prediction: Prediction
-A_test_data.csv file created with columns:
+D_test_data.csv file created with columns:
    labeling features: ['str_cat']
    input features: ['time', 'N_sine_feature', 'N_linear_feature']
    target feature: y_feature

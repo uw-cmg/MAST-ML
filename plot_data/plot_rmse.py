@@ -65,11 +65,8 @@ def vs_leftoutgroup(rms_list=None,
         pass
     else:
         marklargest = int(marklargest)
-        print(rms_list)
-        print(np.argsort(rms_list))
         for largerms_index in np.argsort(rms_list)[-1*marklargest:]:
             alabel = group_list[largerms_index]
-            print(alabel, largerms_index)
             ax.annotate(s = alabel,
                         xy = (numeric_list[largerms_index], 
                                 rms_list[largerms_index]),
