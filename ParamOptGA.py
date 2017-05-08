@@ -2,7 +2,9 @@ import numpy as np
 import data_parser
 import matplotlib
 import matplotlib.pyplot as plt
+from SingleFit import SingleFit
 from sklearn.model_selection import KFold
+from sklearn.model_selection import ShuffleSplit
 from sklearn.metrics import mean_squared_error
 #from evolutionary_search import EvolutionaryAlgorithmSearchCV
 from sklearn.kernel_ridge import KernelRidge
@@ -11,43 +13,131 @@ from multiprocessing import Process,Pool,TimeoutError,Value,Array,Manager
 import random
 import time
 
-class GAParamSearcher():
-    def __init__(self, model="", 
-                    savepath="",
-                    fit_data_csv="",
-                    topredict_data_csv="",
-                    x_features="",
-                    fit_y_feature="",
-                    topredict_y_feature="",
-                    num_folds=2,
-                    num_runs=20,
-                    population_size=50,
-                    convergence_generations=30,
-                    max_generations=200,
-                    multiprocessing_processors=0,
-                    additional_feature_methods="",
-                    fit_filter_out="",
-                    topredict_filter_out="",
-                    testing=0,
-                    *args, **kwargs):
-        self.num_folds = int(num_folds)
-        self.num_runs = int(num_runs)
+class ParamOptGA(SingleFit):
+    """Search for paramters using GA.
+        Allows custom features.
+    Args:
+        training_dataset, (Should be the same as the first testing set.)
+        testing_dataset, (First testing set will determine parameters.
+                        Subsequent sets are for extrapolation information only.)
+        model,
+        save_path,
+        input_features,
+        target_feature, see parent class.
+        num_folds <int>: Number of folds for K-fold CV. Keep blank to use LO% CV
+        percent_leave_out <int>: Percent to leave out for LO%. Keep blank to use                                 K-fold CV.
+        num_cvtests <int>: Number of CV tests for each individual
+        population_size <int>: Number of individuals in each generation's
+                                population
+        convergence_generations <int>: Number of generations where the
+                                        genome must stay constant in order to
+                                        establish convergence
+        max_generations <int>: Maximum number of generations
+        num_parents <int>: Number of best individuals to pull out of each
+                        generation to use as parents in next generation
+        fix_random_for_testing <int>: 1 - Fix random seed for testing
+                                      0 - Randomize (default)
+        use_multiprocessing <int>: 1 - use multiprocessing
+                                   0 - do not use multiprocessing
+        additional_feature_methods <str or list>: comma-delimited string, or
+                        a list, of semicolon-delimited pieces, formatted like:
+                        methodname;parameter1:value1;parameter2:value2;...
+        data_labels <str or list>: comma-delimited string, or a list, of
+                                    labels for the testing datasets
+    Returns:
+        Analysis in save_path folder
+    Raises:
+        ValueError if data_labels is None.
+    """
+    def __init__(self, 
+        training_dataset=None,
+        testing_dataset=None,
+        model=None,
+        save_path=None,
+        input_features=None,
+        target_feature=None,
+        num_folds=2,
+        percent_leave_out=None,
+        num_cvtests=20,
+        population_size=50,
+        convergence_generations=30,
+        max_generations=200,
+        num_parents=10,
+        fix_random_for_testing=0,
+        use_multiprocessing=1,
+        additional_feature_methods=None,
+        data_labels=None,
+        *args, **kwargs):
+        """
+            Additional class attributes not in parent class:
+           
+            Set by keyword:
+            self.testing_datasets <list of data objects>: All testing datasets.
+                            First dataset will be used to find parameters.
+                            Any others are for informational purposes.
+            self.num_folds <int>: Number of folds, if using KFold CV
+            self.percent_leave_out <int>: Percent to leave out of training set,
+                                            if using KFold CV
+            self.num_cvtests <int>: Number of CV tests per individual
+            self.population_size <int>: Number of individuals in a generation
+            self.convergence_generations <int>: Number of generations where
+                                the genome stays the same, to be considered
+                                converged
+            self.max_generations <int>: Maximum number of generations
+            self.num_parents <int>: Number of best individuals to pull out of
+                                  each generation as parents
+            self.use_multiprocessing <int>: 1 to use multiprocessing;
+                                            0 otherwise
+            self.additional_feature_methods <list of str>: List of additional
+                        feature methods for fitting.
+                        Each string takes the format:
+                        methodname;parameter1:value1;parameter2:value2;...
+            self.data_labels <list of str>: List of labels for testing datasets
+            Set by code:
+        """
+        SingleFit.__init__(self, 
+            training_dataset=training_dataset, 
+            testing_dataset=testing_dataset,
+            model=model, 
+            save_path = save_path,
+            input_features = input_features, 
+            target_feature = target_feature)
+        #Sets by keyword
+        self.testing_datasets = testing_datasets
+        if num_folds is None:
+            self.num_folds = None
+        else:
+            self.num_folds = int(num_folds)
+        if percent_leave_out is None:
+            self.percent_leave_out = None  
+        else:
+            self.percent_leave_out = int(percent_leave_out)
+        self.num_cvtests = int(num_cvtests)
         self.population_size = int(population_size)
         self.convergence_generations = int(convergence_generations)
         self.max_generations = int(max_generations)
-        if int(testing) == 1:
-            random.seed(0)
-            self.cv_random_state = np.random.RandomState(0)
+        self.num_parents = int(num_parents)
+        if int(fix_random_for_testing) == 1:
+            np.random.seed(0) 
+        self.use_multiprocessing = int(use_multiprocessing)
+        if type(additional_feature_methods) is list:
+            self.additional_feature_methods = list(additional_feature_methods)
         else:
-            self.cv_random_state = None
-        self.model = model
-        self.savepath = savepath
-        self.procs=int(multiprocessing_processors)
-        self.x_features = x_features.split(",")
-        self.nEFl = len(self.x_features)-7 #TTM hardcode needs change
-        self.fit_y_feature = fit_y_feature
-        self.topredict_y_feature = topredict_y_feature
-        # Additional features are parameters to be optimized
+            self.additional_feature_methods = additional_feature_methods.split(",")
+        if data_labels is None:
+            raise ValueError("data_labels is not set. Label each testing dataset.")
+        if type(data_labels) is list:
+            self.data_labels = list(data_labels)
+        else:
+            self.data_labels = data_labels.split(",")
+        #Sets in code
+        self.testing_dataset_dict=dict()
+        self.cv_divisions = None
+        self.cv_divisions_final = None
+        self.gen_dict = None 
+
+
+
         self.additional_feature_methods = additional_feature_methods
         self.afm_dict = None
         self.set_afm_dict(self.additional_feature_methods)
@@ -62,53 +152,7 @@ class GAParamSearcher():
         hp_keys = list(self.hp_dict.keys())
         hp_keys.sort()
         self.gene_keys.extend(hp_keys)
-        # 
-        self.fit_data = None #fill in below
-        self.topredict_data = None #fill in below
-        self.topredict_data_unfiltered = None
-        self.fit_Xdata = None
-        self.fit_Ydata = None
-        self.topredict_Xdata = None
-        self.topredict_Ydata = None
         self.divisionsList=list()
-
-        fit_data = data_parser.parse(fit_data_csv)
-        fit_data.set_x_features(self.x_features)
-        fit_data.set_y_feature(self.fit_y_feature)
-        
-        fit_data.remove_all_filters()
-        if len(fit_filter_out) > 0:
-            ftriplets = fit_filter_out.split(";")
-            for ftriplet in ftriplets:
-                fpcs = ftriplet.split(",")
-                ffield = fpcs[0].strip()
-                foperator = fpcs[1].strip()
-                fval = fpcs[2].strip()
-                try:
-                    fval = float(fval)
-                except (ValueError, TypeError):
-                    pass
-                fit_data.add_exclusive_filter(ffield, foperator, fval)
-
-        topredict_data = data_parser.parse(topredict_data_csv)
-        topredict_data.set_x_features(self.x_features)
-        topredict_data.set_y_feature(self.topredict_y_feature)
-        
-        topredict_data.remove_all_filters()
-        if len(topredict_filter_out) > 0:
-            ftriplets = topredict_filter_out.split(";")
-            for ftriplet in ftriplets:
-                fpcs = ftriplet.split(",")
-                ffield = fpcs[0].strip()
-                foperator = fpcs[1].strip()
-                fval = fpcs[2].strip()
-                try:
-                    fval = float(fval)
-                except (ValueError, TypeError):
-                    pass
-                topredict_data.add_exclusive_filter(ffield, foperator, fval)
-
-        self.fit_data = fit_data
         self.topredict_data = topredict_data
 
         self.topredict_data_unfiltered = data_parser.parse(topredict_data_csv)
@@ -124,9 +168,10 @@ class GAParamSearcher():
         #TTM not needed?
         topredict_data.remove_all_filters()
         Ndata = topredict_data.get_x_data()
-        #start GA
+        return
 
-        population=list()
+    def run_ga(self):
+        self.current_population=list()
         for pidx in range(self.population_size):
             population.append(dict())
         bestRMSs = []
@@ -195,6 +240,79 @@ class GAParamSearcher():
             self.print_genome(bestParamSets[bestidx],preface=bestpref)
             print(STRrms)
         return
+
+    @timeit
+    def run(self):
+        self.set_up()
+        self.run_ga()
+        self.evaluate_final_best()
+        return
+
+    @timeit
+    def set_up(self):
+        SingleFit.set_up(self)
+        self.set_up_testing_dataset_dict()
+        self.cv_divisions = self.get_cv_divisions(self.num_runs)
+        self.cv_divisions_final = self.get_cv_divisions(self.num_runs * 10)
+        return
+
+    def set_up_testing_dataset_dict(self):
+        tidxs = np.arange(0, len(self.testing_datasets)) 
+        for tidx in tidxs:
+            td_entry = dict()
+            td_entry['dataset'] = copy.deepcopy(self.testing_datasets[tidx])
+            test_data_label = self.data_labels[tidx]
+            td_entry['label'] = test_data_label
+            self.testing_dataset_dict[test_data_label] = dict(td_entry)
+            self.testing_dataset_dict[test_data_label]['SingleFit'] = SingleFit(
+                training_dataset = self.training_dataset, 
+                testing_dataset = self.testing_dataset_dict[test_data_label]['dataset'],
+                model = self.model, 
+                save_path = os.path.join(self.save_path, str(test_data_label)),
+                input_features = self.input_features, 
+                target_feature = self.target_feature)
+            self.testing_dataset_dict[test_data_label]['SingleFit'].set_up()
+        return
+    
+    def get_cv_divisions(self, num_runs=0):
+        """Preset all CV divisions so that all individuals in all
+            generations have the same CV divisions.
+
+            Presetting division ensures that comparisons are consistent,
+            with only the genome changing between individual evaluations.
+        """
+        cv_divisions = list()
+        if not(self.num_folds is None):
+            for kn in range(num_runs):
+                kf = KFold(n_splits=self.num_folds, shuffle=True)
+                splits = kf.split(range(len(self.testing_target_data)))
+                sdict=dict()
+                sdict['train_index'] = list()
+                sdict['test_index'] = list()
+                for train, test in splits:
+                    sdict['train_index'].append(train)
+                    sdict['test_index'].append(test)
+                cv_divisions.append(dict(sdict))
+        elif not(self.percent_leave_out is None):
+            test_fraction = self.percent_leave_out / 100.0
+            for kn in range(num_runs):
+                plo = ShuffleSplit(n_splits=1, 
+                                test_size = test_fraction,
+                                random_state = None)
+                splits = plo.split(range(len(self.testing_target_data)))
+                sdict=dict()
+                sdict['train_index'] = list()
+                sdict['test_index'] = list()
+                for train, test in splits:
+                    sdict['train_index'].append(train)
+                    sdict['test_index'].append(test)
+                cv_divisions.append(dict(sdict))
+        else:
+            raise ValueError("Neither percent_leave_out nor num_folds appears to be set.")
+        return cv_divisions
+
+    
+
     def print_genome(self, genome, preface=""):
         genomestr = "%s: " % preface
         for gene in self.gene_keys:
@@ -467,83 +585,4 @@ class GAParamSearcher():
 
         return { 'new_population':pop, 'best_parameters':parents, 'best_rms':parentRMS }
 
-
-def execute(model, data, savepath, lwr_data,
-    fit_data_csv="DBTT_Data21.csv",
-    topredict_data_csv="CD_LWR_clean8.csv",
-    x_features="N(Cu),N(Ni),N(Mn),N(P),N(Si),N( C ),N(Temp),Alloy",
-    fit_y_feature="CD delta sigma",
-    topredict_y_feature="CD delta sigma",
-    multiprocessing_processors=0,
-    num_folds=2,
-    num_runs=20,
-    population_size=50,
-    convergence_generations=30,
-    max_generations=200,
-    testing=0,
-    fit_filter_out="",
-    topredict_filter_out="",
-    additional_feature_methods="",
-    *args,**kwargs):
-    """
-        Args:
-            fit_data_csv <str>: csv name for fitting data
-            topredict_data_csv <str>: csv name for data to predict
-            x_features <str>: comma-delimited x-feature names
-            fit_y_feature <str>: y feature name for fitting data
-            topredict_y_feature <str>: y feature name for data to predict
-            multiprocessing_processors <int>: number of processors
-                        (on a single node only) for parallelization.
-                        0 (default) - no parallalization.
-            num_folds <int>: number of folds for k-fold reverse split
-            num_runs <int>: number of CV runs
-            population_size <int>: number of individuals in a generation
-            convergence_generations <int>: number of generations for which
-                                the best RMS parameter set stays the same,
-                                after which the GA is considered converged
-            max_generations <int>: maximum number of generations if the
-                                    GA does not converge
-            testing <int>: 0 (default) - not testing; randomize splits
-                            1 - testing; seed all CV splits the same
-                                        and also all the populations
-            additional_feature_methods <str>: semicolon-delimited list of
-                    method names and comma-delimited argument list for
-                    additional on-the-fly features that will also
-                    be parameterized with the gene.
-                    Methods must be able to take string arguments.
-                    A gene numeric value should be the first argument.
-                    These string arguments will then be the next arguments and
-                    must be keyword arguments.
-                    For two effective fluences with two p-values:
-                    "calculate_EffectiveFluence,flux_feature:flux_n_cm2_sec,fluence_feature:fluence_n_cm2;calculate_EffectiveFluence,flux_feature:flux_n_cm2_sec,fluence_feature:flux_n_cm2" or similar
-                    additional_feature_methods=calculate_EffectiveFluence,flux_feature:flux n/cm2/s,fluence_feature:fluence n/cm2
-        fit_filter_out <str>: semicolon-delimited list of
-                        field name, operator, value triplets for filtering
-                        out data for fitting
-        topredict_filter_out <str>: semicolon-delimited list of
-                        field name, operator, value triplets for filtering
-                        out data for prediction (extrapolation)
-    """
-    # The two Alloy descriptors are placeholders for the 2 effective fluences that will be added in.
-    # Add or remove them to change the number of p-values optimized
-    kwargs=dict()
-    kwargs['model'] = model
-    kwargs['savepath'] = savepath
-    kwargs['fit_data_csv'] = fit_data_csv
-    kwargs['topredict_data_csv'] = topredict_data_csv
-    kwargs['x_features'] = x_features
-    kwargs['fit_y_feature'] = fit_y_feature
-    kwargs['topredict_y_feature'] = topredict_y_feature
-    kwargs['multiprocessing_processors'] = multiprocessing_processors
-    kwargs['num_folds'] = num_folds
-    kwargs['population_size'] = population_size
-    kwargs['convergence_generations'] = convergence_generations
-    kwargs['max_generations'] = max_generations
-    kwargs['num_runs'] = num_runs
-    kwargs['testing'] = testing
-    kwargs['additional_feature_methods'] = additional_feature_methods
-    kwargs['fit_filter_out'] = fit_filter_out
-    kwargs['topredict_filter_out'] = topredict_filter_out
-    myga =  GAParamSearcher(**kwargs)
-    return
 
