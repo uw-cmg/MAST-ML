@@ -4,7 +4,7 @@ import data_parser
 import sys
 import os
 from MASTMLInitializer import MASTMLWrapper, ConfigFileValidator
-from DataParser import DataParser, FeatureFilter
+from DataParser import DataParser, FeatureOperations
 import logging
 import shutil
 import time
@@ -41,16 +41,16 @@ class MASTMLDriver(object):
         print(x_features)
         print(y_feature)
 
-        x_to_remove = ['x2', 'x3']
-        ff = FeatureFilter(dataframe=dataframe)
-        dataframe = ff.remove_features(features_to_remove=x_to_remove)
-        features_to_add = ['x4']
-        data_to_add = dataframe['x1']
-        dataframe = ff.add_features(features_to_add=features_to_add, data_to_add=data_to_add)
-        Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=configdict).parse_fromdataframe(dataframe=dataframe, target_feature='sin(x)', as_array=False)
+        #TTM comment out hardcoded testing block from configobj_input branch
+        #x_to_remove = ['x2', 'x3']
+        #ff = FeatureOperations(dataframe=dataframe)
+        #dataframe = ff.remove_features(features_to_remove=x_to_remove)
+        #features_to_add = ['x4']
+        #data_to_add = dataframe['x1']
+        #dataframe = ff.add_features(features_to_add=features_to_add, data_to_add=data_to_add)
+        #Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=configdict).parse_fromdataframe(dataframe=dataframe, target_feature='sin(x)', as_array=False)
 
 
-        """
         # Gather models
         model_list = self._gather_models(mastmlwrapper=mastmlwrapper)
 
@@ -60,7 +60,6 @@ class MASTMLDriver(object):
 
         # End MASTML session
         self._move_log_and_input_files(mastmlwrapper=mastmlwrapper)
-        """
 
         return
 
