@@ -96,6 +96,13 @@ class LeaveOneOutCV(KFoldCV):
         self.print_output_csv(label="loo", cvtest_entry=self.cvtest_dict[0])
         return
 
+    def print_statistics(self):
+        self.readme_list.append("----- Statistics -----\n")
+        statlist=['avg_rmse','std_rmse','avg_mean_error','std_mean_error']
+        for key in statlist:
+            self.readme_list.append("%s: %3.3f\n" % (key,self.cvtest_dict[0][key]))
+        return
+
     @timeit
     def plot(self):
         self.readme_list.append("----- Plotting -----\n")
