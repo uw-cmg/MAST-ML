@@ -85,6 +85,7 @@ class FeatureIO(object):
         return self.dataframe
 
     # This method may not be needed as PCA and feature selection may make it obsolete
+    """
     def remove_duplicate_features_by_values(self, x_features, y_feature):
         # WARNING: this function currently doesn't work. Still looking into this.
         print(x_features, y_feature)
@@ -97,6 +98,7 @@ class FeatureIO(object):
         print(x_features, y_feature)
         dataframe = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
         return dataframe
+    """
 
     def remove_custom_features(self, features_to_remove):
         for feature in features_to_remove:
@@ -113,8 +115,13 @@ class FeatureNormalization(object):
     def __init__(self, dataframe):
         self.dataframe = dataframe
 
-    def normalize_features(self):
-        pass
+    def normalize_features(self, x_features, y_feature):
+        scaler = StandardScaler()
+        array_normalized = scaler.fit_transform(X=self.dataframe[x_features], y=self.dataframe[y_feature])
+        array_normalized = DataframeUtilities()._concatenate_arrays(X_array=array_normalized, y_array=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
+        dataframe_normalized = DataframeUtilities()._array_to_dataframe(array=array_normalized)
+        dataframe_normalized = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe_normalized, x_features=x_features, y_feature=y_feature)
+        return dataframe_normalized
 
     def unnormalize_features(self):
         pass
@@ -131,6 +138,11 @@ class DataframeUtilities(object):
     def _array_to_dataframe(cls, array):
         dataframe = pd.DataFrame(data=array)
         return dataframe
+
+    @classmethod
+    def _concatenate_arrays(cls, X_array, y_array):
+        array = np.concatenate((X_array, y_array), axis=1)
+        return array
 
     @classmethod
     def _assign_columns_as_features(cls, dataframe, x_features, y_feature, remove_first_row=True):
