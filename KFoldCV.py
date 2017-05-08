@@ -139,7 +139,9 @@ class KFoldCV(LeaveOutPercentCV):
                 fold_array[fdict['test_index']] = fold
                 prediction_array[fdict['test_index']] = predict_test
             self.cvtest_dict[cvtest]["avg_rmse"] = np.mean(fold_rmses)
+            self.cvtest_dict[cvtest]["std_rmse"] = np.std(fold_rmses)
             self.cvtest_dict[cvtest]["avg_mean_error"] = np.mean(fold_mean_errors)
+            self.cvtest_dict[cvtest]["std_mean_error"] = np.std(fold_mean_errors)
             self.cvtest_dict[cvtest]["fold_array"] = fold_array
             self.cvtest_dict[cvtest]["prediction_array"] = prediction_array
         return
