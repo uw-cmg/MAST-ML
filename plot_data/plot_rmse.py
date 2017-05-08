@@ -27,8 +27,8 @@ def get_steps(gmin, gmax, resolution=4):
     steplist = np.arange(gstart, gend, gstep)
     return steplist
 
-def vs_leftoutgroup(group_value_list, 
-            rms_list,
+def vs_leftoutgroup(group_value_list = None, 
+            rms_list=None,
             group_label_list = None,
             xlabel="Left out group",
             ylabel="RMSE",
@@ -40,7 +40,17 @@ def vs_leftoutgroup(group_value_list,
     matplotlib.rcParams.update({'font.size': 18})
     smallfont = 0.85*matplotlib.rcParams['font.size']
     fig, ax = plt.subplots(figsize=(10, 4))
-    plt.xticks(np.arange(0, max(group_value_list) + 1, 5))
+    if group_value_list is None:
+        group_value_list = np.arange(0, len(group_label_list))
+    skipticks = np.ceil(len(group_value_list)/10)
+    xticks = np.arange(0, max(group_value_list) + 1, skipticks, dtype='int')
+    if group_label_list is None:
+        plt.xticks(xticks)
+    else:
+        xticklabels = list()
+        for xtick in xticks:
+            xticklabels.append(group_label_list[xtick])
+        plt.xticks(xticks, xticklabels)
     ax.scatter(group_value_list, rms_list, color='black', s=10)
     #plot zero line
     ax.plot((0, max(group_value_list)+1), (0, 0), ls="--", c=".3") 
@@ -55,7 +65,7 @@ def vs_leftoutgroup(group_value_list,
                     fontsize=smallfont)
         notey = notey - notestep
     for x in np.argsort(rms_list)[-5:]:
-        if group_label_list == None:
+        if group_label_list is None:
             alabel = group_value_list[x]
         else:
             alabel = group_label_list[x]
