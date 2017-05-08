@@ -102,9 +102,9 @@ class LeaveOneOutCV(KFoldCV):
         notelist=list()
         notelist.append("Mean over %i LOO tests:" % (self.num_folds))
         notelist.append("RMSE:")
-        notelist.append("    {:.2f} $\pm$ {:.2f}".format(self.statistics['avg_fold_avg_rmses'], self.statistics['std_fold_avg_rmses']))
+        notelist.append("    {:.2f} $\pm$ {:.2f}".format(self.cvtest_dict[0]['avg_rmse'], self.cvtest_dict[0]['std_rmse']))
         notelist.append("Mean error:")
-        notelist.append("    {:.2f} $\pm$ {:.2f}".format(self.statistics['avg_fold_avg_mean_errors'], self.statistics['std_fold_avg_mean_errors']))
+        notelist.append("    {:.2f} $\pm$ {:.2f}".format(self.cvtest_dict[0]['avg_mean_error'], self.cvtest_dict[0]['std_avg_mean_error']))
         self.plot_results(notelist=list(notelist))
         return
     
