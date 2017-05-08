@@ -17,9 +17,8 @@ class ParamOptGA(SingleFit):
     """Search for paramters using GA.
         Allows custom features.
     Args:
-        training_dataset, (Should be the same as the first testing set.)
-        testing_dataset, (First testing set will determine parameters.
-                        Subsequent sets are for extrapolation information only.)
+        training_dataset, (Should be the same as the testing set.)
+        testing_dataset, (Should be same as training set.)
         model,
         save_path,
         input_features,
@@ -42,12 +41,9 @@ class ParamOptGA(SingleFit):
         additional_feature_methods <str or list>: comma-delimited string, or
                         a list, of semicolon-delimited pieces, formatted like:
                         methodname;parameter1:value1;parameter2:value2;...
-        data_labels <str or list>: comma-delimited string, or a list, of
-                                    labels for the testing datasets
     Returns:
         Analysis in save_path folder
     Raises:
-        ValueError if data_labels is None.
     """
     def __init__(self, 
         training_dataset=None,
@@ -66,15 +62,11 @@ class ParamOptGA(SingleFit):
         fix_random_for_testing=0,
         use_multiprocessing=1,
         additional_feature_methods=None,
-        data_labels=None,
         *args, **kwargs):
         """
             Additional class attributes not in parent class:
            
             Set by keyword:
-            self.testing_datasets <list of data objects>: All testing datasets.
-                            First dataset will be used to find parameters.
-                            Any others are for informational purposes.
             self.num_folds <int>: Number of folds, if using KFold CV
             self.percent_leave_out <int>: Percent to leave out of training set,
                                             if using KFold CV
@@ -92,7 +84,6 @@ class ParamOptGA(SingleFit):
                         feature methods for fitting.
                         Each string takes the format:
                         methodname;parameter1:value1;parameter2:value2;...
-            self.data_labels <list of str>: List of labels for testing datasets
             Set by code:
         """
         SingleFit.__init__(self, 
@@ -103,7 +94,6 @@ class ParamOptGA(SingleFit):
             input_features = input_features, 
             target_feature = target_feature)
         #Sets by keyword
-        self.testing_datasets = testing_datasets
         if num_folds is None:
             self.num_folds = None
         else:
@@ -124,16 +114,15 @@ class ParamOptGA(SingleFit):
             self.additional_feature_methods = list(additional_feature_methods)
         else:
             self.additional_feature_methods = additional_feature_methods.split(",")
-        if data_labels is None:
-            raise ValueError("data_labels is not set. Label each testing dataset.")
-        if type(data_labels) is list:
-            self.data_labels = list(data_labels)
-        else:
-            self.data_labels = data_labels.split(",")
         #Sets in code
-        self.testing_dataset_dict=dict()
         self.cv_divisions = None
         self.cv_divisions_final = None
+        self.population = list() #list of dict
+        self.afm_dict = dict()
+        self.hp_dict = dict()
+        self.gene_keys = list()
+        self.gene_length = None
+        #
         self.gen_dict = None 
 
 
@@ -171,59 +160,54 @@ class ParamOptGA(SingleFit):
         return
 
     def run_ga(self):
-        self.current_population=list()
-        for pidx in range(self.population_size):
-            population.append(dict())
+        self.gen_dict=dict()
+
         bestRMSs = []
         bestGens = []
         bestParamSets = []
-        GAruns=0
         runsSinceBest = 0
 
-
         print('running', flush=True)
-        while GAruns < 10: # do 10 GA runs 
-            runsSinceBest = 0
-            GAruns = GAruns+1
-            gens = 1
-            bestRMS = 200
-            bestParams = []
+        runsSinceBest = 0
+        gens = 1
+        bestRMS = 200
+        bestParams = []
 
-            self.set_divisionsList(self.num_runs)
+        while runsSinceBest < self.convergence_generations and gens < self.max_generations: # run until convergence condition is met
+            # run a generation imputting population, number of parameters, number of parents, crossover probablility, mutation probability, random shift probability
+            print("Generation %i %s" % (gens, time.asctime()), flush=True)
+            gen_dict[gens] = dict()
+            Gen = self.generation(list(self.population),
+                        crossover_prob = .5, 
+                        mutation_prob = .1, 
+                        shift_prob = .5)
+            #print(Gen['best_rms'])
+            #print(Gen['best_parameters'])
+            gen_dict[gens].update(Gen)
+            population = Gen['new_population']
 
-            #initailize random population
-            for individual in range(len(population)):
-                population[individual] = dict()
-                for gene in self.gene_keys:
-                    population[individual][gene] = random.randrange(0, 101)/100
+            # updates best parameter set
+            if bestRMS > np.min(Gen['best_rms']) :
+                bestRMS = np.min(Gen['best_rms'])
+                bestParams = Gen['best_parameters'][np.argmin(Gen['best_rms'])]
+                bestRMSs.append(bestRMS)
+                bestGens.append(gens)
+                runsSinceBest = 0
 
-            while runsSinceBest < self.convergence_generations and gens < self.max_generations: # run until convergence condition is met
-                # run a generation imputting population, number of parameters, number of parents, crossover probablility, mutation probability, random shift probability
-                print("Generation %i %s" % (gens, time.asctime()), flush=True)
-                Gen = self.generation(population, self.gene_length, 10, .5, .1, .5)
-                #print(Gen['best_rms'])
-                #print(Gen['best_parameters'])
-                population = Gen['new_population']
+            # prints output for each generation
+            print(time.asctime())
+            genpref = "Results for generation %i" % gens
+            self.print_genome(bestParams,preface=genpref)
+            print(bestRMS, flush=True)
+            print(GAruns, gens, runsSinceBest, flush=True)
+            
+            gens = gens+1
+            runsSinceBest = runsSinceBest+1
+        return
 
-                # updates best parameter set
-                if bestRMS > np.min(Gen['best_rms']) :
-                    bestRMS = np.min(Gen['best_rms'])
-                    bestParams = Gen['best_parameters'][np.argmin(Gen['best_rms'])]
-                    bestRMSs.append(bestRMS)
-                    bestGens.append(gens)
-                    runsSinceBest = 0
-
-                # prints output for each generation
-                print(time.asctime())
-                genpref = "Results for generation %i" % gens
-                self.print_genome(bestParams,preface=genpref)
-                print(bestRMS, flush=True)
-                print(GAruns, gens, runsSinceBest, flush=True)
-                
-                gens = gens+1
-                runsSinceBest = runsSinceBest+1
+    def old_save_for_evaluating_results_of_multiple_GA(self):
+        for GA in GAs:
             bestParamSets.append(bestParams)
-
         self.set_divisionsList(self.num_runs*10)
 
 # prints best parameter set for each run, and the results of some tests using it.
@@ -245,33 +229,34 @@ class ParamOptGA(SingleFit):
     def run(self):
         self.set_up()
         self.run_ga()
-        self.evaluate_final_best()
         return
 
     @timeit
     def set_up(self):
         SingleFit.set_up(self)
-        self.set_up_testing_dataset_dict()
         self.cv_divisions = self.get_cv_divisions(self.num_runs)
-        self.cv_divisions_final = self.get_cv_divisions(self.num_runs * 10)
+        self.set_hp_dict()
+        self.set_afm_dict()
+        self.set_gene_info()
+        self.initialize_population()
         return
 
-    def set_up_testing_dataset_dict(self):
-        tidxs = np.arange(0, len(self.testing_datasets)) 
-        for tidx in tidxs:
-            td_entry = dict()
-            td_entry['dataset'] = copy.deepcopy(self.testing_datasets[tidx])
-            test_data_label = self.data_labels[tidx]
-            td_entry['label'] = test_data_label
-            self.testing_dataset_dict[test_data_label] = dict(td_entry)
-            self.testing_dataset_dict[test_data_label]['SingleFit'] = SingleFit(
-                training_dataset = self.training_dataset, 
-                testing_dataset = self.testing_dataset_dict[test_data_label]['dataset'],
-                model = self.model, 
-                save_path = os.path.join(self.save_path, str(test_data_label)),
-                input_features = self.input_features, 
-                target_feature = self.target_feature)
-            self.testing_dataset_dict[test_data_label]['SingleFit'].set_up()
+    def set_gene_info(self):
+        self.gene_keys = list()
+        self.gene_keys.extend(list(self.afm_dict.keys()))
+        self.gene_keys.extend(list(self.hp_dict.keys()))
+        self.gene_length = len(self.gene_keys)
+        return
+
+    def initialize_population(self):
+        self.population=list()
+        for pidx in range(self.population_size):
+            self.population.append(dict())
+        #initailize random population
+        for individual in range(len(population)):
+            self.population[individual] = dict()
+            for gene in self.gene_keys:
+                self.population[individual][gene] = random.randrange(0, 101)/100
         return
     
     def get_cv_divisions(self, num_runs=0):
@@ -367,20 +352,6 @@ class ParamOptGA(SingleFit):
         self.afm_dict=dict(afm_dict)
         return afm_dict
 
-    def set_divisionsList(self, num_runs):
-        self.divisionsList = list()
-        for kn in range(num_runs):
-            kf = KFold(n_splits=self.num_folds, shuffle=True, random_state=self.cv_random_state)
-            splits = kf.split(range(len(self.fit_Xdata)))
-            sdict=dict()
-            sdict['train'] = list()
-            sdict['test'] = list()
-            for train, test in splits:
-                sdict['train'].append(train)
-                sdict['test'].append(test)
-            self.divisionsList.append(dict(sdict))
-        return
-
     def single_avg_cv(self, model, Xdata, Ydata, division_index, 
                             parallel_return_dict=None):
         rms_list = []
@@ -452,18 +423,6 @@ class ParamOptGA(SingleFit):
         print(n_rms_list, flush=True)
         return (np.mean(n_rms_list))
 
-    def extrapolation (self, model, Xtrain, Ytrain, Xtest, Ytest ):
-        Xtrain = np.asarray(Xtrain)
-        Ytrain = np.asarray(Ytrain)
-        Xtest = np.asarray(Xtest)
-        Ytest = np.asarray(Ytest)
-        model.fit(Xtrain, Ytrain)
-        Ypredict = model.predict(Xtest)
-        
-        rms = np.sqrt(mean_squared_error(Ypredict, Ytest))
-        R2 = r2_score(Ytest, Ypredict)
-        
-        return (rms, R2)
 
     def calculate_EffectiveFluence(self, p, flux_feature="",fluence_feature=""):
         train_fluence = self.fit_data.get_data(fluence_feature)
@@ -515,15 +474,8 @@ class ParamOptGA(SingleFit):
             newX_Train = np.concatenate((newX_Train, train_column), axis=1)
             newX_Test = np.concatenate((newX_Test, test_column), axis=1)
         model = KernelRidge(alpha = 10**(float(params['alpha'])*(-6)), gamma = 10**((float(params['gamma'])*(3))-1.5), kernel = 'rbf')
-        if do_extrapolation == 1:
-            (e_rms, e_r2) = self.extrapolation(model, newX_Train, self.fit_Ydata, newX_Test, self.topredict_Ydata)
-            rdict['e_rms'] = e_rms
-            rdict['e_r2'] = e_r2
-            cv_rms = self.num_runs_cv(model, newX_Train, self.fit_Ydata, num_runs = self.num_runs*10)       
-            rdict['cv_rms'] = cv_rms
-        else:
-            cv_rms = self.num_runs_cv(model, newX_Train, self.fit_Ydata, num_runs = self.num_runs)       
-            rdict['cv_rms'] = cv_rms
+        cv_rms = self.num_runs_cv(model, newX_Train, self.fit_Ydata, num_runs = self.num_runs)       
+        rdict['cv_rms'] = cv_rms
         if parallel_result_dict is None:
             return rdict
         else:
@@ -531,9 +483,9 @@ class ParamOptGA(SingleFit):
             parallel_result_dict[indidx]=rdict
         return 
 
-    def generation(self, pop, num_parameters, num_parents, crossover_prob, mutation_prob, shift_prob):
+    def generation(self, pop, crossover_prob=0.5, mutation_prob=0.1, shift_prob=0.5):
         rmsList = list()
-        if self.procs > 0:
+        if self.use_multiprocessing > 0:
             gen_manager=Manager()
             gen_rms_dict = gen_manager.dict()
             gen_procs = list()
@@ -551,18 +503,18 @@ class ParamOptGA(SingleFit):
                 rmsList.append(self.evaluate_individual(indidx, pop)['cv_rms'])
         #select parents
         parents=list()
-        for pidx in range(num_parents):
+        for pidx in range(self.num_parents):
             parents.append(dict)
         parentRMS = []
-        for newP in range(num_parents):       
+        for newP in range(self.num_parents):       
             parents[newP] = dict(pop[np.argmin(rmsList)])
             parentRMS.append(np.min(rmsList))
             rmsList[np.argmin(rmsList)] = np.max(rmsList)
 
         #progenate new population 
         for ind in range(len(pop)):
-            p1 = parents[random.randrange(0, num_parents)]
-            p2 = parents[random.randrange(0, num_parents)]
+            p1 = parents[random.randrange(0, self.num_parents)]
+            p2 = parents[random.randrange(0, self.num_parents)]
             
             for gene in self.gene_keys:
                 c = random.random()

@@ -4,7 +4,11 @@ import data_parser
 import sys
 import os
 from MASTMLInitializer import MASTMLWrapper, ConfigFileValidator
+<<<<<<< HEAD
 from DataParser import DataParser, FeatureOperations
+=======
+from DataParser import DataParser, FeatureIO, FeatureNormalization
+>>>>>>> 960a5fa1336e0c39f129474529cd73ae6a08e9c9
 import logging
 import shutil
 import time
@@ -40,16 +44,25 @@ class MASTMLDriver(object):
 
         print(x_features)
         print(y_feature)
+        print(dataframe)
+        fn = FeatureNormalization(dataframe=dataframe)
+        dataframe = fn.normalize_features(x_features=x_features, y_feature=y_feature)
+        print(dataframe)
 
-        #TTM comment out hardcoded testing block from configobj_input branch
         #x_to_remove = ['x2', 'x3']
-        #ff = FeatureOperations(dataframe=dataframe)
-        #dataframe = ff.remove_features(features_to_remove=x_to_remove)
+        #fio = FeatureIO(dataframe=dataframe)
+        #dataframe = ff.remove_custom_features(features_to_remove=x_to_remove)
         #features_to_add = ['x4']
         #data_to_add = dataframe['x1']
-        #dataframe = ff.add_features(features_to_add=features_to_add, data_to_add=data_to_add)
+        #dataframe = fio.add_custom_features(features_to_add=features_to_add, data_to_add=data_to_add)
+        #print(dataframe)
         #Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=configdict).parse_fromdataframe(dataframe=dataframe, target_feature='sin(x)', as_array=False)
-
+        #print(x_features)
+        #print(y_feature)
+        #dataframe = ff.remove_duplicate_features()
+        #print(dataframe)
+        #dataframe = fio.remove_duplicate_features_by_values(x_features=x_features, y_feature=y_feature)
+        #print(dataframe)
 
         # Gather models
         model_list = self._gather_models(mastmlwrapper=mastmlwrapper)
