@@ -1,0 +1,23 @@
+Mon May  8 10:55:01 2017
+----- CV setup -----
+1 CV tests,
+each with 100 folds
+Equivalent to 100 leave-one-out CV tests
+----- Statistics -----
+avg_fold_avg_mean_errors: -0.0003
+avg_fold_avg_rmses: 0.0933
+fold_avg_rmse_best: 0.0933
+fold_avg_rmse_worst: 0.0933
+std_fold_avg_mean_errors: 0.0000
+std_fold_avg_rmses: 0.0000
+----- Output data -----
+loo_test_data.csv file created with columns:
+   labeling features: ['str_cat']
+   input features: ['time', 'N_sine_feature', 'N_linear_feature']
+   target feature: y_feature
+   target error feature: N_linear_feature
+   prediction: Prediction
+   fold number: Fold
+----- Plotting -----
+Plot loo_results.png created,
+    showing results of all LOO tests.
