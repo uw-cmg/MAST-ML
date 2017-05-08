@@ -10,19 +10,21 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 class DataParser(object):
     """Class to parse input csv file and create pandas dataframe, and extract features
     """
-    def __init__(self, configdict):
+    def __init__(self, configdict=None):
         self.configdict = configdict
 
     def parse_fromfile(self, datapath, as_array=False):
+        if self.configdict is not None:
+            dataframe = self.import_data(datapath=datapath)
+            x_features, y_feature = self.get_features(dataframe=dataframe, target_feature=None, from_input_file=True)
+            dataframe = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
+            Xdata, ydata = self.get_data(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
 
-        dataframe = self.import_data(datapath=datapath)
-        x_features, y_feature = self.get_features(dataframe=dataframe, target_feature=None, from_input_file=True)
-        dataframe = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
-        Xdata, ydata = self.get_data(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
-
-        if as_array == bool(True):
-            Xdata = np.asarray(Xdata)
-            ydata = np.asarray(ydata)
+            if as_array == bool(True):
+                Xdata = np.asarray(Xdata)
+                ydata = np.asarray(ydata)
+        else:
+            raise OSError('You must specify a configdict as input to use the parse_fromfile method')
 
         return Xdata, ydata, x_features, y_feature, dataframe
 
@@ -44,7 +46,7 @@ class DataParser(object):
             sys.exit()
         return dataframe
 
-    def get_features(self, dataframe, target_feature=None, from_input_file=True):
+    def get_features(self, dataframe, target_feature=None, from_input_file=False):
         if from_input_file == bool(True):
             y_feature = self.configdict['General Setup']['target_feature']
             if self.configdict['General Setup']['input_features'] == ['Auto']:
@@ -116,12 +118,12 @@ class FeatureNormalization(object):
         self.dataframe = dataframe
 
     def normalize_features(self, x_features, y_feature):
-        scaler = StandardScaler()
+        scaler = StandardScaler().fit(X=self.dataframe[x_features])
         array_normalized = scaler.fit_transform(X=self.dataframe[x_features], y=self.dataframe[y_feature])
         array_normalized = DataframeUtilities()._concatenate_arrays(X_array=array_normalized, y_array=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
         dataframe_normalized = DataframeUtilities()._array_to_dataframe(array=array_normalized)
         dataframe_normalized = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe_normalized, x_features=x_features, y_feature=y_feature)
-        return dataframe_normalized
+        return dataframe_normalized, scaler
 
     def unnormalize_features(self):
         pass
