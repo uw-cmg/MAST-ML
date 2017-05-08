@@ -42,7 +42,7 @@ def vs_leftoutgroup(group_value_list = None,
     fig, ax = plt.subplots(figsize=(10, 4))
     if group_value_list is None:
         group_value_list = np.arange(0, len(group_label_list))
-    skipticks = np.ceil(len(group_value_list)/10)
+    skipticks = np.ceil(len(group_value_list)/8)
     xticks = np.arange(0, max(group_value_list) + 1, skipticks, dtype='int')
     if group_label_list is None:
         plt.xticks(xticks)
