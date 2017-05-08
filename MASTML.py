@@ -4,11 +4,7 @@ import data_parser
 import sys
 import os
 from MASTMLInitializer import MASTMLWrapper, ConfigFileValidator
-<<<<<<< HEAD
-from DataParser import DataParser, FeatureOperations
-=======
 from DataParser import DataParser, FeatureIO, FeatureNormalization
->>>>>>> 960a5fa1336e0c39f129474529cd73ae6a08e9c9
 import logging
 import shutil
 import time
