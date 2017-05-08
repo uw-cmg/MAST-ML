@@ -104,8 +104,12 @@ class FeatureIO(object):
             del self.dataframe[feature]
         return self.dataframe
 
-    def keep_custom_features(self, features_to_keep):
-        dataframe = pd.DataFrame()
+    def keep_custom_features(self, features_to_keep, y_feature):
+        dataframe_dict = {}
+        for feature in features_to_keep:
+            dataframe_dict[feature] = self.dataframe[feature]
+        dataframe_dict[y_feature] = self.dataframe[y_feature]
+        dataframe = pd.DataFrame(dataframe_dict)
         return dataframe
 
     def add_custom_features(self, features_to_add, data_to_add):
@@ -117,6 +121,8 @@ class FeatureIO(object):
         # Searches values in feature that meet the condition. If it does, that entire row of data is removed from the dataframe
         pass
 
+    def add_magpie_features(self):
+        pass
 
 class FeatureNormalization(object):
     """This class is used to normalize and unnormalize features in a dataframe.
