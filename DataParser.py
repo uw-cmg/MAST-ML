@@ -69,17 +69,14 @@ class DataParser(object):
         return Xdata, ydata
 
 class FeatureIO(object):
-    """Class to selectively filter features from a dataframe
+    """Class to selectively filter (add/remove) features from a dataframe
     """
     def __init__(self, dataframe):
         self.dataframe = dataframe
 
-    def merge_dataframes(self, dataframe_to_merge):
-        dataframe = pd.merge(left=self.dataframe, right=dataframe_to_merge, how='inner')
-        return dataframe
-
-    def get_dataframe_statistics(self):
-        return (self.dataframe).describe(include='all')
+    @property
+    def get_original_dataframe(self):
+        return self.dataframe
 
     def remove_duplicate_features_by_name(self):
         # Only removes features that have the same name, not features containing the same data vector
@@ -107,15 +104,29 @@ class FeatureIO(object):
             del self.dataframe[feature]
         return self.dataframe
 
+    def keep_custom_features(self, features_to_keep):
+        dataframe = pd.DataFrame()
+        return dataframe
+
     def add_custom_features(self, features_to_add, data_to_add):
         for feature in features_to_add:
             self.dataframe[feature] = pd.Series(data=data_to_add, index=(self.dataframe).index)
         return self.dataframe
 
-class FeatureNormalization(object):
+    def custom_feature_filter(self, feature, condition, value):
+        # Searches values in feature that meet the condition. If it does, that entire row of data is removed from the dataframe
+        pass
 
+
+class FeatureNormalization(object):
+    """This class is used to normalize and unnormalize features in a dataframe.
+    """
     def __init__(self, dataframe):
         self.dataframe = dataframe
+
+    @property
+    def get_original_dataframe(self):
+        return self.dataframe
 
     def normalize_features(self, x_features, y_feature):
         scaler = StandardScaler().fit(X=self.dataframe[x_features])
@@ -130,6 +141,16 @@ class FeatureNormalization(object):
 
 
 class DataframeUtilities(object):
+    """This class is a collection of basic utilities for dataframe manipulation, and exchanging between dataframes and numpy arrays
+    """
+    @classmethod
+    def _merge_dataframes(cls, dataframe1, dataframe2):
+        dataframe = pd.merge(left=dataframe1, right=dataframe2, how='inner')
+        return dataframe
+
+    @classmethod
+    def _get_dataframe_statistics(cls, dataframe):
+        return dataframe.describe(include='all')
 
     @classmethod
     def _dataframe_to_array(cls, dataframe):
