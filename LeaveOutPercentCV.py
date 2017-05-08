@@ -108,6 +108,7 @@ class LeaveOutPercentCV(SingleFit):
         self.cv_fit_and_predict()
         return
 
+    @timeit
     def predict(self):
         #Predictions themselves are covered in self.fit()
         self.get_statistics()
