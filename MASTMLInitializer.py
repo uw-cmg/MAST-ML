@@ -43,8 +43,7 @@ class ConfigFileValidator(ConfigFileParser):
     """Class to validate contents of user-specified MASTML input file and flag any errors
     """
     def __init__(self, configfile):
-        super(ConfigFileValidator, self).__init__(self)
-        self.configfile = configfile
+        super().__init__(configfile)
 
     def run_config_validation(self):
         errors_present = False
@@ -84,6 +83,12 @@ class ConfigFileValidator(ConfigFileParser):
 
     def _check_section_datatypes(self, configdict, validationdict, validator, errors_present, section_heading):
         # First do some manual cleanup for values that can be string or string_list, because of issue with configobj
+        if section_heading == 'General Setup':
+            if type(configdict['General Setup']['input_features']) is str:
+                templist = []
+                templist.append(configdict['General Setup']['input_features'])
+                configdict['General Setup']['input_features'] = templist
+
         if section_heading == 'Models and Tests to Run':
             if type(configdict['Models and Tests to Run']['models']) is str:
                 templist = []
