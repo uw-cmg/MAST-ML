@@ -17,8 +17,7 @@ class DataParser(object):
 
         dataframe = self.import_data(datapath=datapath)
         x_features, y_feature = self.get_features(dataframe=dataframe, target_feature=None, from_input_file=True)
-        fops = FeatureOperations(dataframe=dataframe)
-        dataframe = fops.assign_columns_as_features(x_features=x_features, y_feature=y_feature)
+        dataframe = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
         Xdata, ydata = self.get_data(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
 
         if as_array == bool(True):
@@ -67,16 +66,37 @@ class DataParser(object):
         ydata = dataframe.loc[:, y_feature]
         return Xdata, ydata
 
-class FeatureOperations(object):
+class FeatureIO(object):
     """Class to selectively filter features from a dataframe
     """
     def __init__(self, dataframe):
         self.dataframe = dataframe
 
-    def remove_duplicate_features(self):
+    def merge_dataframes(self, dataframe_to_merge):
+        dataframe = pd.merge(left=self.dataframe, right=dataframe_to_merge, how='inner')
+        return dataframe
+
+    def get_dataframe_statistics(self):
+        return (self.dataframe).describe(include='all')
+
+    def remove_duplicate_features_by_name(self):
         # Only removes features that have the same name, not features containing the same data vector
         (self.dataframe).drop_duplicates()
         return self.dataframe
+
+    # This method may not be needed as PCA and feature selection may make it obsolete
+    def remove_duplicate_features_by_values(self, x_features, y_feature):
+        # WARNING: this function currently doesn't work. Still looking into this.
+        print(x_features, y_feature)
+        selector = VarianceThreshold(threshold = 0)
+        array = selector.fit_transform(X=self.dataframe[x_features], y=self.dataframe[y_feature])
+        y_data = np.asarray(self.dataframe[y_feature]).reshape([-1, 1])
+        data = np.concatenate((array, y_data), axis=1)
+        print(data)
+        dataframe = pd.DataFrame(data=data)
+        print(x_features, y_feature)
+        dataframe = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
+        return dataframe
 
     def remove_custom_features(self, features_to_remove):
         for feature in features_to_remove:
@@ -88,47 +108,38 @@ class FeatureOperations(object):
             self.dataframe[feature] = pd.Series(data=data_to_add, index=(self.dataframe).index)
         return self.dataframe
 
-    def assign_columns_as_features(self, x_features, y_feature, remove_first_row=True):
+class FeatureNormalization(object):
+
+    def __init__(self, dataframe):
+        self.dataframe = dataframe
+
+    def normalize_features(self):
+        pass
+
+    def unnormalize_features(self):
+        pass
+
+
+class DataframeUtilities(object):
+
+    @classmethod
+    def _dataframe_to_array(cls, dataframe):
+        array = np.asarray(dataframe)
+        return array
+
+    @classmethod
+    def _array_to_dataframe(cls, array):
+        dataframe = pd.DataFrame(data=array)
+        return dataframe
+
+    @classmethod
+    def _assign_columns_as_features(cls, dataframe, x_features, y_feature, remove_first_row=True):
         column_dict = {}
         x_and_y_features = [feature for feature in x_features]
         x_and_y_features.append(y_feature)
         for i, feature in enumerate(x_and_y_features):
             column_dict[i] = feature
-        dataframe = self.dataframe.rename(columns=column_dict)
+        dataframe = dataframe.rename(columns=column_dict)
         if remove_first_row == bool(True):
             dataframe = dataframe.drop([0])  # Need to remove feature names from first row so can obtain data
         return dataframe
-
-class DataOperations(object):
-    def __init__(self, dataframe):
-        self.dataframe = dataframe
-
-    # This method may not be needed as PCA and feature selection may make it obsolete
-    def remove_duplicate_data(self, x_features, y_feature):
-        # WARNING: this function currently doesn't work. Still looking into this.
-        print(x_features, y_feature)
-        selector = VarianceThreshold(threshold = 0)
-        array = selector.fit_transform(X=self.dataframe[x_features], y=self.dataframe[y_feature])
-        y_data = np.asarray(self.dataframe[y_feature]).reshape([-1, 1])
-        data = np.concatenate((array, y_data), axis=1)
-        print(data)
-        dataframe = pd.DataFrame(data=data)
-        fops = FeatureOperations(dataframe=dataframe)
-        print(x_features, y_feature)
-        dataframe = fops.assign_columns_as_features(x_features=x_features, y_feature=y_feature)
-        return dataframe
-
-    def merge_dataframes(self, dataframe_to_merge):
-        dataframe = pd.merge(left=self.dataframe, right=dataframe_to_merge, how='inner')
-        return dataframe
-
-    def dataframe_statistics(self):
-        return (self.dataframe).describe(include='all')
-
-    def normalize_data(self):
-        pass
-
-    def unnormalize_data(self):
-        pass
-
-
