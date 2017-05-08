@@ -107,16 +107,17 @@ class LeaveOutGroupCV(LeaveOutPercentCV):
         kwargs['ylabel'] = self.ylabel
         kwargs['notelist'] = notelist
         kwargs['savepath'] = self.save_path
+        kwargs['marklargest'] = self.mark_outlying_points
         group_label_list=list()
         rms_list=list()
         group_rms_list=list()
         for cvtest in self.cvtest_dict.keys():
             group_rms_list.append((self.cvtest_dict[cvtest]['group'],
                                     self.cvtest_dict[cvtest]['rmse']))
-        group_rms_list.sort()
+        group_rms_list.sort() #sorts by group
         group_rms_array = np.array(group_rms_list)
         kwargs['rms_list'] = group_rms_array[:,1]
-        kwargs['group_label_list'] = group_rms_array[:,0]
+        kwargs['group_list'] = group_rms_array[:,0]
         plotrmse.vs_leftoutgroup(**kwargs)
         return
 
