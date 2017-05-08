@@ -106,7 +106,7 @@ class LeaveOutGroupCV(LeaveOutPercentCV):
         kwargs['xlabel'] = self.xlabel
         kwargs['ylabel'] = self.ylabel
         kwargs['notelist'] = notelist
-        kwargs['savepath'] = self.save_path
+        kwargs['save_path'] = self.save_path
         kwargs['marklargest'] = self.mark_outlying_points
         group_label_list=list()
         rms_list=list()
@@ -119,19 +119,20 @@ class LeaveOutGroupCV(LeaveOutPercentCV):
         kwargs['rms_list'] = np.array(group_rms_array[:,1],'float')
         kwargs['group_list'] = group_rms_array[:,0]
         plotrmse.vs_leftoutgroup(**kwargs)
+        self.readme_list.append("Plot leave_out_group.png created.\n")
         return
 
     def set_up_cv(self):
         if self.testing_target_data is None:
             raise ValueError("Testing target data cannot be none for cross validation.")
         indices = np.arange(0, len(self.testing_target_data))
-        self.readme_list.append("----- CV setup -----\n")
-        self.readme_list.append("%i CV tests,\n" % self.num_cvtests)
-        self.readme_list.append("leaving out %s groups.\n" % self.grouping_feature)
         self.group_data = np.asarray(self.testing_dataset.get_data(self.grouping_feature)).ravel()
         self.group_indices = gttd.get_logo_indices(self.group_data)
         self.groups = list(self.group_indices.keys())
         self.num_cvtests = len(self.groups)
+        self.readme_list.append("----- CV setup -----\n")
+        self.readme_list.append("%i CV tests,\n" % self.num_cvtests)
+        self.readme_list.append("leaving out %s groups.\n" % self.grouping_feature)
         self.cvmodel = self.model
         for cvtest in range(0, self.num_cvtests):
             group = self.groups[cvtest]

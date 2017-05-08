@@ -1,6 +1,6 @@
-Mon May  8 11:57:06 2017
+Mon May  8 12:02:07 2017
 ----- CV setup -----
--1 CV tests,
+4 CV tests,
 leaving out str_cat groups.
 ----- Statistics -----
 avg_mean_error: 0.0007
@@ -19,19 +19,7 @@ Statistics by group:
   D: mean_error: -0.028
   D: rmse: 0.127
 ----- Output data -----
-C_test_data.csv file created with columns:
-   labeling features: ['str_cat']
-   input features: ['time', 'N_sine_feature', 'N_linear_feature']
-   target feature: y_feature
-   target error feature: N_linear_feature
-   prediction: Prediction
 A_test_data.csv file created with columns:
-   labeling features: ['str_cat']
-   input features: ['time', 'N_sine_feature', 'N_linear_feature']
-   target feature: y_feature
-   target error feature: N_linear_feature
-   prediction: Prediction
-B_test_data.csv file created with columns:
    labeling features: ['str_cat']
    input features: ['time', 'N_sine_feature', 'N_linear_feature']
    target feature: y_feature
@@ -43,4 +31,17 @@ D_test_data.csv file created with columns:
    target feature: y_feature
    target error feature: N_linear_feature
    prediction: Prediction
+C_test_data.csv file created with columns:
+   labeling features: ['str_cat']
+   input features: ['time', 'N_sine_feature', 'N_linear_feature']
+   target feature: y_feature
+   target error feature: N_linear_feature
+   prediction: Prediction
+B_test_data.csv file created with columns:
+   labeling features: ['str_cat']
+   input features: ['time', 'N_sine_feature', 'N_linear_feature']
+   target feature: y_feature
+   target error feature: N_linear_feature
+   prediction: Prediction
 ----- Plotting -----
+Plot leave_out_group.png created.

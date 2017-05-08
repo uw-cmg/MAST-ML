@@ -32,7 +32,7 @@ def vs_leftoutgroup(rms_list=None,
             xlabel="Left out group",
             ylabel="RMSE",
             title="",
-            savepath="",
+            save_path="",
             marklargest=None,
             notelist=list(),
             ):
@@ -71,7 +71,7 @@ def vs_leftoutgroup(rms_list=None,
                         xy = (numeric_list[largerms_index], 
                                 rms_list[largerms_index]),
                         fontsize=smallfont)
-    fig.savefig(os.path.join(savepath, "leavegroupout_cv"), dpi=200, bbox_inches='tight')
+    fig.savefig(os.path.join(save_path, "leave_out_group"), dpi=200, bbox_inches='tight')
     fig.clf()
     plt.close()
     return
