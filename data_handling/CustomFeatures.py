@@ -42,20 +42,17 @@ class CustomFeatures():
         self.df = copy.deepcopy(dataframe)
         return
 
-    def calculate_EffectiveFluence(self, pvalue, flux_feature="",fluence_feature=""):
+    def calculate_EffectiveFluence(self, pvalue, ref_flux = 3e10, flux_feature="",fluence_feature="", scale_min = 1e17, scale_max = 1e25):
         fluence = self.df[fluence_feature]
         flux = self.df[flux_feature]
-        Norm_fluence = self.df[fluence_feature]
-        Norm_flux = self.df[flux_feature]
 
-        EFl = np.log10( fluence*( 3E10 / flux )**pvalue )
-        NEFl = np.log10( Norm_fluence*( 3E10 / Norm_flux )**pvalue )    
-        
-        Nmax = np.max([ np.max(EFl), np.max(NEFl)] )
-        Nmin = np.min([ np.min(EFl), np.min(NEFl)] )
-        
-        N_EFl= (EFl-Nmin)/(Nmax-Nmin) #substitute with a self.featurenorm call?
-        
+        EFl = fluence * (ref_flux / flux) ** pvalue
+        EFl = np.log10(EFl)
+        fio = FeatureIO(self.df)
+        fio.add_features(["EFl"],EFl)
+        N_EFl = fio.minmax_scale_single_feature("EFl", 
+                                            smin = scale_min,
+                                            smax = scale_max)
 
         return N_EFl
 
