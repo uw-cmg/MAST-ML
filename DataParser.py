@@ -3,10 +3,12 @@ __author__ = 'Ryan Jacobs'
 import pandas as pd
 import logging
 import sys
+import os
 import numpy as np
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.preprocessing import StandardScaler
-from matminer.descriptors.composition_features import get_magpie_descriptor
+#from matminer.descriptors.composition_features import get_magpie_descriptor
+from pymatgen import Element, Composition
 
 class DataParser(object):
     """Class to parse input csv file and create pandas dataframe, and extract features
@@ -20,8 +22,7 @@ class DataParser(object):
             x_features, y_feature = self.get_features(dataframe=dataframe, target_feature=None, from_input_file=True)
             #dataframe = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe, x_features=x_features, y_feature=y_feature, column_names=column_names, remove_first_row=True)
             Xdata, ydata = self.get_data(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
-            print(x_features, y_feature)
-            print(dataframe)
+
             if as_array == bool(True):
                 Xdata = np.asarray(Xdata)
                 ydata = np.asarray(ydata)
@@ -142,14 +143,45 @@ class FeatureIO(object):
         dataframe = self.dataframe.drop(self.dataframe.index[rows_to_remove])
         return dataframe
 
-    def add_magpie_features(self):
-        magpie_descriptor_names = ['AtomicVolume']
-        compositions = ['LaMnO3']
-        magpiedata_list = []
-        for composition, descriptor_name in zip(compositions, magpie_descriptor_names):
-            magpiedata = get_magpie_descriptor(comp=composition, descriptor_name=descriptor_name)
-            magpiedata_list.append(magpiedata)
-        return magpiedata_list
+    def generate_atomic_magpie_features(self, composition_list):
+        # Get .table files containing feature values for each element, assign file names as feature names
+        data_path = './magpiedata/magpie_elementdata'
+        magpie_feature_names = []
+        for f in os.listdir(data_path):
+            if '.table' in f:
+                magpie_feature_names.append(f[:-6])
+
+        # Make pymatgen Composition objects out of specified compositions
+        compositions = []
+        for composition in composition_list:
+            compositions.append(Composition(composition))
+
+        magpiedata = {}
+        for composition in compositions:
+            # Get elements from composition, and atomic number from resulting element
+            element_amounts = composition.get_el_amt_dict()
+
+            composition_dict = {}
+            atomic_numbers = []
+            for k, v in element_amounts.items():
+                composition_dict[k] = {"amount": v, "atomic_number": Element(k).Z}
+                atomic_numbers.append(Element(k).Z)
+
+            for feature_name in magpie_feature_names:
+                atomic_values = []
+                f = open(data_path + '/' + feature_name + '.table', 'r')
+                # Get Magpie data of relevant atomic numbers for this composition
+                for line, feature_value in enumerate(f.readlines()):
+                    if line+1 in atomic_numbers:
+                        if "Missing" not in feature_value:
+                            if feature_name != "OxidationStates":
+                                atomic_values.append(float(feature_value.strip()))
+                        if "Missing" in feature_value:
+                            atomic_values.append('NaN')
+                magpiedata[feature_name] = atomic_values
+                f.close()
+
+        return magpiedata
 
 class FeatureNormalization(object):
     """This class is used to normalize and unnormalize features in a dataframe.
