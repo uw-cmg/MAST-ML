@@ -168,12 +168,22 @@ class FeatureNormalization(object):
         dataframe_unnormalized = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe_unnormalized, x_features=x_features, y_feature=y_feature, remove_first_row=False)
         return dataframe_unnormalized, scaler
 
+    def normalize_and_merge_with_original_dataframe(self, x_features, y_feature):
+        dataframe_normalized, scaler = self.normalize_features(x_features=x_features, y_feature=y_feature)
+        dataframe = DataframeUtilities()._merge_dataframe_columns(dataframe1=self.dataframe, dataframe2=dataframe_normalized)
+        return dataframe
+
 class DataframeUtilities(object):
     """This class is a collection of basic utilities for dataframe manipulation, and exchanging between dataframes and numpy arrays
     """
     @classmethod
-    def _merge_dataframes(cls, dataframe1, dataframe2):
-        dataframe = pd.merge(left=dataframe1, right=dataframe2, how='inner')
+    def _merge_dataframe_columns(cls, dataframe1, dataframe2):
+        dataframe = pd.concat([dataframe1, dataframe2], axis=1)
+        return dataframe
+
+    @classmethod
+    def _merge_dataframe_rows(cls, dataframe1, dataframe2):
+        dataframe = pd.merge(left=dataframe1, right=dataframe2, how='outer')
         return dataframe
 
     @classmethod
@@ -187,7 +197,7 @@ class DataframeUtilities(object):
 
     @classmethod
     def _array_to_dataframe(cls, array):
-        dataframe = pd.DataFrame(data=array)
+        dataframe = pd.DataFrame(data=array, index=range(1, len(array)+1))
         return dataframe
 
     @classmethod
