@@ -5,7 +5,8 @@ import logging
 import sys
 import numpy as np
 from sklearn.feature_selection import VarianceThreshold
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.preprocessing import StandardScaler
+from matminer.descriptors.composition_features import get_magpie_descriptor
 
 class DataParser(object):
     """Class to parse input csv file and create pandas dataframe, and extract features
@@ -157,12 +158,15 @@ class FeatureNormalization(object):
         array_normalized = scaler.fit_transform(X=self.dataframe[x_features], y=self.dataframe[y_feature])
         array_normalized = DataframeUtilities()._concatenate_arrays(X_array=array_normalized, y_array=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
         dataframe_normalized = DataframeUtilities()._array_to_dataframe(array=array_normalized)
-        dataframe_normalized = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe_normalized, x_features=x_features, y_feature=y_feature)
+        dataframe_normalized = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe_normalized, x_features=x_features, y_feature=y_feature, remove_first_row=False)
         return dataframe_normalized, scaler
 
-    def unnormalize_features(self):
-        pass
-
+    def unnormalize_features(self, x_features, y_feature, scaler):
+        array_unnormalized = scaler.inverse_transform(X=self.dataframe[x_features])
+        array_unnormalized = DataframeUtilities()._concatenate_arrays(X_array=array_unnormalized, y_array=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
+        dataframe_unnormalized = DataframeUtilities()._array_to_dataframe(array=array_unnormalized)
+        dataframe_unnormalized = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe_unnormalized, x_features=x_features, y_feature=y_feature, remove_first_row=False)
+        return dataframe_unnormalized, scaler
 
 class DataframeUtilities(object):
     """This class is a collection of basic utilities for dataframe manipulation, and exchanging between dataframes and numpy arrays
