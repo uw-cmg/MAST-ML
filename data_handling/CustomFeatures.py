@@ -60,6 +60,8 @@ class CustomFeatures():
         col1_data = self.df[col1]
         col2_data = self.df[col2]
         new_data = col1_data - col2_data + param
-
-        return new_data
+        fio = FeatureIO(self.df)
+        fio.add_features(["Subtraction_test"],new_data)
+        N_new_data = fio.minmax_scale_single_feature("Subtraction_test")
+        return N_new_data
 
