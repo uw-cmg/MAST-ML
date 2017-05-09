@@ -117,9 +117,27 @@ class FeatureIO(object):
             self.dataframe[feature] = pd.Series(data=data_to_add, index=(self.dataframe).index)
         return self.dataframe
 
-    def custom_feature_filter(self, feature, condition, value):
+    def custom_feature_filter(self, feature, operator, threshold):
         # Searches values in feature that meet the condition. If it does, that entire row of data is removed from the dataframe
-        pass
+        rows_to_remove = []
+        for i in range(len(self.dataframe[feature])):
+            if operator == '<':
+                if float(self.dataframe[feature].iloc[i]) < threshold:
+                    rows_to_remove.append(i)
+            if operator == '>':
+                if float(self.dataframe[feature].iloc[i]) > threshold:
+                    rows_to_remove.append(i)
+            if operator == '=':
+                if float(self.dataframe[feature].iloc[i]) == threshold:
+                    rows_to_remove.append(i)
+            if operator == '<=':
+                if float(self.dataframe[feature].iloc[i]) <= threshold:
+                    rows_to_remove.append(i)
+            if operator == '>=':
+                if float(self.dataframe[feature].iloc[i]) >= threshold:
+                    rows_to_remove.append(i)
+        dataframe = self.dataframe.drop(self.dataframe.index[rows_to_remove])
+        return dataframe
 
     def add_magpie_features(self):
         pass
