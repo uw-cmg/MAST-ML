@@ -16,10 +16,10 @@ import time
 import copy
 from DataParser import FeatureNormalization
 from DataParser import FeatureIO
-__author__ = "Tam"
+__author__ = "Tam Mayeshiba"
 
-class CustomDataHandler():
-    """Data handling class for creating custom columns.
+class CustomFeatures():
+    """Class for creating custom feature columns.
         New methods may be added.
 
     Args:
