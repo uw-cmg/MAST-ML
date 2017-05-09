@@ -2,6 +2,7 @@ import numpy as np
 import data_parser
 import matplotlib
 import matplotlib.pyplot as plt
+import copy
 from SingleFit import SingleFit
 from SingleFit import timeit
 from sklearn.model_selection import KFold
@@ -152,7 +153,7 @@ class ParamOptGA(SingleFit):
             #print(Gen['best_rms'])
             #print(Gen['best_parameters'])
             self.gen_dict[gens].update(Gen)
-            population = Gen['new_population']
+            self.population = list(Gen['new_population'])
 
             # updates best parameter set
             if bestRMS > np.min(Gen['best_rms']) :
@@ -161,16 +162,27 @@ class ParamOptGA(SingleFit):
                 bestRMSs.append(bestRMS)
                 bestGens.append(gens)
                 runsSinceBest = 0
+            self.gen_dict[gens]['GA_best_parameters'] = copy.deepcopy(bestParams)
+            self.gen_dict[gens]['GA_best_rms'] = bestRMS
 
             # prints output for each generation
             print(time.asctime())
             genpref = "Results for generation %i" % gens
             self.print_genome(bestParams,preface=genpref)
             print(bestRMS, flush=True)
-            print(GAruns, gens, runsSinceBest, flush=True)
+            print(gens, runsSinceBest, flush=True)
             
             gens = gens+1
             runsSinceBest = runsSinceBest+1
+        return
+
+    def print_gen_dict(self):
+        gens = list(self.gen_dict.keys())
+        gens.sort()
+        for gen in gens:
+            print("Generation: %i" % gen)
+            self.print_genome(self.gen_dict[gen]['GA_best_parameters'])
+            print(self.gen_dict[gen]['GA_best_rms'])
         return
 
     def old_save_for_evaluating_results_of_multiple_GA(self):
@@ -197,6 +209,7 @@ class ParamOptGA(SingleFit):
     def run(self):
         self.set_up()
         self.run_ga()
+        self.print_gen_dict()
         return
 
     @timeit
@@ -224,7 +237,7 @@ class ParamOptGA(SingleFit):
         for individual in range(len(self.population)):
             self.population[individual] = dict()
             for gene in self.gene_keys:
-                self.population[individual][gene] = random.randrange(0, 101)/100
+                self.population[individual][gene] = np.random.randint(0, 101)/100
         return
     
     def get_cv_divisions(self, num_runs=0):
@@ -343,13 +356,7 @@ class ParamOptGA(SingleFit):
         Ydata = np.asarray(Y)
         n_rms_list = list()
         
-        if self.procs > 100000: #save code for future use
-            cv_pool = Pool(self.procs)
-            n_input_list = list()
-            for nidx in range(num_runs):
-                n_input_list.append((model, Xdata, Ydata, nidx))
-            n_rms_list = cv_pool.map(self.single_avg_cv_pooluse, n_input_list)
-        elif self.procs > 0: 
+        if self.use_multiprocessing > 0: 
             cv_manager=Manager()
             n_rms_dict = cv_manager.dict()
             cv_procs = list()
@@ -399,29 +406,25 @@ class ParamOptGA(SingleFit):
 
         return (N_TrainEFl.as_matrix(), N_TestEFl.as_matrix())
 
-    def testing_subtraction(self, col1="",col2=""):
-        col1_data = self.testing_dataset.get_data(col1)
-        col2_data = self.testing_dataset.get_data(col2)
-        new_data = col1_data - col2_data
+    def testing_subtraction(self, param, col1="",col2=""):
+        col1_data = np.asarray(self.testing_dataset.get_data(col1)).ravel()
+        col2_data = np.asarray(self.testing_dataset.get_data(col2)).ravel()
+        new_data = col1_data - col2_data + param
+        new_data = new_data.reshape((len(new_data), 1))
         return new_data
 
     def evaluate_individual(self, indidx, pop, parallel_result_dict=None, 
                                     do_extrapolation=0):
-        newX_Train = np.copy(self.training_input_data)
         newX_Test = np.copy(self.testing_input_data)
         params = pop[indidx]
         rdict=dict()
         for gene in self.afm_dict.keys():
             afm_kwargs = dict(self.afm_dict[gene])
-            (train_feature, test_feature) = getattr(self, gene)(params[gene],
+            test_feature = getattr(self, gene)(params[gene],
                             **afm_kwargs)
-            print(train_feature, test_feature)
-            train_column = np.reshape(train_feature,(len(train_feature),1))
-            test_column = np.reshape(test_feature,(len(test_feature),1))
-            newX_Train = np.concatenate((newX_Train, train_column), axis=1)
-            newX_Test = np.concatenate((newX_Test, test_column), axis=1)
+            newX_Test = np.concatenate((newX_Test, test_feature), axis=1)
         model = KernelRidge(alpha = 10**(float(params['alpha'])*(-6)), gamma = 10**((float(params['gamma'])*(3))-1.5), kernel = 'rbf')
-        cv_rms = self.num_runs_cv(model, newX_Train, self.training_target_data, num_runs = self.num_cvtests)       
+        cv_rms = self.num_runs_cv(model, newX_Test, self.testing_target_data, num_runs = self.num_cvtests)       
         rdict['cv_rms'] = cv_rms
         if parallel_result_dict is None:
             return rdict
