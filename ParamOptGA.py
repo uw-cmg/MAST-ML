@@ -12,7 +12,6 @@ from sklearn.metrics import mean_squared_error
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.metrics import r2_score
 from multiprocessing import Process,Pool,TimeoutError,Value,Array,Manager
-import random
 import time
 
 class ParamOptGA(SingleFit):
@@ -126,6 +125,9 @@ class ParamOptGA(SingleFit):
         self.gene_length = None
         #
         self.gen_dict = None 
+        self.overall_best_parameters = None
+        self.overall_best_rmse = None
+        self.converged = 0
         return
 
     def run_ga(self):
@@ -174,15 +176,18 @@ class ParamOptGA(SingleFit):
             
             gens = gens+1
             runsSinceBest = runsSinceBest+1
+        self.overall_best_parameters = copy.deepcopy(bestParams)
+        self.overall_best_rmse = bestRMS
+        if gens < self.max_generations:
+            self.converged = 1
         return
 
     def print_gen_dict(self):
         gens = list(self.gen_dict.keys())
         gens.sort()
         for gen in gens:
-            print("Generation: %i" % gen)
-            self.print_genome(self.gen_dict[gen]['GA_best_parameters'])
-            print(self.gen_dict[gen]['GA_best_rms'])
+            prefacestr = "Generation : %i, rmse %3.6f" % (gen, self.gen_dict[gen]['GA_best_rms'])
+            self.print_genome(self.gen_dict[gen]['GA_best_parameters'], preface = prefacestr)
         return
 
     def old_save_for_evaluating_results_of_multiple_GA(self):
@@ -286,10 +291,10 @@ class ParamOptGA(SingleFit):
             geneval = genome[gene]
             if gene == 'alpha':
                 geneval = 10**(float(geneval)*(-6))
-                genedisp = "%3.12f" % geneval
+                genedisp = "%3.6f" % geneval
             elif gene == 'gamma':
                 geneval = 10**((float(geneval)*(3))-1.5)
-                genedisp = "%3.12f" % geneval
+                genedisp = "%3.6f" % geneval
             elif gene == "calculate_EffectiveFluence":
                 genestr="Eff. fl. p"
                 genedisp = "%0.2f" % geneval
@@ -463,13 +468,13 @@ class ParamOptGA(SingleFit):
 
         #progenate new population 
         for ind in range(len(pop)):
-            p1 = parents[random.randrange(0, self.num_parents)]
-            p2 = parents[random.randrange(0, self.num_parents)]
+            p1 = parents[np.random.randint(0, self.num_parents)]
+            p2 = parents[np.random.randint(0, self.num_parents)]
             
             for gene in self.gene_keys:
-                c = random.random()
-                m = random.random()
-                s = random.random()
+                c = np.random.rand()
+                m = np.random.rand()
+                s = np.random.rand()
 
                 if c <= crossover_prob:
                     pop[ind][gene] = p1[gene]
@@ -477,13 +482,13 @@ class ParamOptGA(SingleFit):
                     pop[ind][gene] = p2[gene]
                 if (s <= shift_prob):
                     if (pop[ind][gene] >= 0) and (pop[ind][gene] <= 1):
-                        pop[ind][gene] = np.abs( pop[ind][gene] + random.randrange(-4,5)/100 )   # random shift
+                        pop[ind][gene] = np.abs( pop[ind][gene] + np.random.randint(-4,5)/100 )   # random shift
                     if (pop[ind][gene] < 0):    
                         pop[ind][gene] = 0
                     if (pop[ind][gene] > 1):    
                         pop[ind][gene] = 1                 
                 if m <= mutation_prob:
-                    pop[ind][gene] = random.randrange(0,101)/100   # mutation
+                    pop[ind][gene] = np.random.randint(0,101)/100   # mutation
 
         return { 'new_population':pop, 'best_parameters':parents, 'best_rms':parentRMS }
 
