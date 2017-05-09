@@ -18,9 +18,10 @@ class DataParser(object):
         if self.configdict is not None:
             dataframe = self.import_data(datapath=datapath)
             x_features, y_feature = self.get_features(dataframe=dataframe, target_feature=None, from_input_file=True)
-            dataframe = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
+            #dataframe = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe, x_features=x_features, y_feature=y_feature, column_names=column_names, remove_first_row=True)
             Xdata, ydata = self.get_data(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
-
+            print(x_features, y_feature)
+            print(dataframe)
             if as_array == bool(True):
                 Xdata = np.asarray(Xdata)
                 ydata = np.asarray(ydata)
@@ -41,7 +42,8 @@ class DataParser(object):
 
     def import_data(self, datapath):
         try:
-            dataframe = pd.read_csv(datapath, header=None)
+            dataframe = pd.read_csv(datapath, header=0)
+            #column_names = dataframe.iloc[0].tolist()
         except IOError:
             logging.info('Error reading in your input data file, specify a valid path to your input data')
             sys.exit()
@@ -141,7 +143,13 @@ class FeatureIO(object):
         return dataframe
 
     def add_magpie_features(self):
-        pass
+        magpie_descriptor_names = ['AtomicVolume']
+        compositions = ['LaMnO3']
+        magpiedata_list = []
+        for composition, descriptor_name in zip(compositions, magpie_descriptor_names):
+            magpiedata = get_magpie_descriptor(comp=composition, descriptor_name=descriptor_name)
+            magpiedata_list.append(magpiedata)
+        return magpiedata_list
 
 class FeatureNormalization(object):
     """This class is used to normalize and unnormalize features in a dataframe.
