@@ -6,6 +6,7 @@ import sys
 import numpy as np
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import minmax_scale
 #TTM install error - commenting out for now
 #from matminer.descriptors.composition_features import get_magpie_descriptor
 
@@ -180,6 +181,15 @@ class FeatureNormalization(object):
         dataframe_normalized = DataframeUtilities()._array_to_dataframe(array=array_normalized)
         dataframe_normalized = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe_normalized, x_features=x_features, y_feature=y_feature, remove_first_row=False)
         return dataframe_normalized, scaler
+    
+    def minmax_scale_single_feature(self, featurename, smin=None, smax=None):
+        feature = self.dataframe[featurename]
+        if smin is None:
+            smin = np.min(feature)
+        if smax is None:
+            smax = np.max(feature)
+        scaled_feature = (feature - smin) / (smax - smin)
+        return scaled_feature
 
     def unnormalize_features(self, x_features, y_feature, scaler):
         array_unnormalized = scaler.inverse_transform(X=self.dataframe[x_features])
