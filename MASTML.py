@@ -43,10 +43,8 @@ class MASTMLDriver(object):
 
         print(x_features)
         print(y_feature)
-        print(dataframe[0:2][x_features])
         fn = FeatureNormalization(dataframe=dataframe)
         dataframe = fn.normalize_features(x_features=x_features, y_feature=y_feature)
-        print(dataframe[0:2])
 
         #x_to_remove = ['x2', 'x3']
         #fio = FeatureIO(dataframe=dataframe)
@@ -97,7 +95,6 @@ class MASTMLDriver(object):
     def _parse_input_data(self, mastmlwrapper, configdict):
         self.datasetup = mastmlwrapper.process_config_keyword(keyword='Data Setup')
         Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=configdict).parse_fromfile(datapath=self.datasetup['Initial']['data_path'], as_array=False)
-        print(dataframe[0:2])
         # Tam's code is here
         from data_handling.DataHandler import DataHandler
         data_dict=dict()

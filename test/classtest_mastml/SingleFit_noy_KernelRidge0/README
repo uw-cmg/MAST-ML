@@ -1,18 +1,27 @@
-Mon May  8 13:05:32 2017
+Tue May  9 15:59:25 2017
 ----- Model parameters -----
-coef0: 1
-gamma: 0.518
 kernel_params: None
 degree: 3
+gamma: 0.518
+coef0: 1
 alpha: 0.00139
 kernel: rbf
 ----- Output data -----
 output_data.csv file created with columns:
-   input features: ['time', 'N_linear_feature']
-   prediction: Prediction
+    str_cat
+    num_cat
+    time
+    N_sine_feature
+    N_linear_feature
+    y_feature
+    N_linear_feature
+    Prediction
 ----- Statistics -----
-No target data.
-No statistics comparing target data and prediction were collected.
+mean_absolute_error: 0.0666
+mean_error: 0.0000
+rmse: 0.0879
+rsquared: 0.9830
 ----- Plotting -----
-No target data.
-No plot comparing predicted vs. measured data was made.
+Plot single_fit.png created.
+    Plotted data is in the data_... csv file.
+    Error column of all zeros indicates no error.

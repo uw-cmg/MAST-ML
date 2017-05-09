@@ -48,6 +48,8 @@ class DataHandler():
         Attributes:
             #Set by keyword
             self.data <dataframe>: Main dataframe; all data
+            self.data_unfiltered <dataframe>: Main dataframe; all data
+                                                (archive in case of filters)
             self.input_data <dataframe>: Input data
             self.target_data <dataframe>: Target data
             self.input_features <list of str>: Input features
@@ -62,6 +64,7 @@ class DataHandler():
             raise ValueError("No dataframe.")
         #Set by keyword
         self.data = copy.deepcopy(data)
+        self.data_unfiltered = copy.deepcopy(data)
         self.input_data = copy.deepcopy(input_data)
         self.target_data = copy.deepcopy(target_data)
         self.input_features = list(input_features)
@@ -82,12 +85,28 @@ class DataHandler():
         if not (self.target_error_feature) is None:
             self.target_error_data = self.data[self.target_error_feature]
         return
+    
+    def set_up_data_from_features(self):
+        if not (self.target_error_feature) is None:
+            self.target_error_data = self.data[self.target_error_feature]
+        self.input_data = self.data[self.input_features]
+        self.target_data = self.data[self.target_feature]
+        if "Prediction" in self.data.columns:
+            self.target_prediction = self.data["Prediction"]
+        return
 
     def add_prediction(self, prediction_data):
         fio = FeatureIO(self.data)
         self.data = fio.add_custom_features(["Prediction"], prediction_data)
         print(self.data[0:2])
         self.target_prediction = self.data["Prediction"]
+        return
+
+    def add_filters(self, filter_list):
+        for (feature, operator, threshold) in filter_list:
+            fio = FeatureIO(self.data)
+            self.data= fio.custom_feature_filter(feature,operator,threshold)
+        self.set_up_data_from_features()
         return
 
     def print_data(self, csvname="data.csv"):

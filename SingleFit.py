@@ -87,18 +87,9 @@ class SingleFit():
                 self.plot_filter_out
             Other attributes:
                 self.analysis_name <str>
-                self.training_input_data <numpy array>: training input feature data
-                self.training_target_data <numpy array>: training target feature data
-                self.testing_input_data <numpy array>: testing input feature data
-                self.testing_target_data <numpy array>: testing target data
-                self.testing_target_data_error <numpy array or None>: testing target data error
                 self.trained_model <sklearn model>: trained model
-                self.testing_target_prediction <numpy array>: testing target predicted data
                 self.statistics <dict of float>: statistics dictionary
                 self.readme_list <dict of str>: stores lines for readme
-                self.plotting_index <list of int>: index of testing target data
-                            and testing target prediction to plot (after
-                            self.plot_filter_out has been applied)
         """
         # Keyword-set attributes
         # training csv
@@ -133,18 +124,13 @@ class SingleFit():
             self.stepsize = stepsize
         else:
             self.stepsize = float(stepsize)
-        if type(plot_filter_out) is list:
-            self.plot_filter_out = plot_filter_out
-        elif type(plot_filter_out) is str:
-            self.plot_filter_out = plot_filter_out.split(",")
-        else:
-            self.plot_filter_out = plot_filter_out
+        self.plot_filter_out = self.get_plot_filter(plot_filter_out)
         # Self-set attributes
         self.analysis_name = os.path.basename(self.save_path)
         self.trained_model=None
         self.statistics=dict()
         self.readme_list=list()
-        self.plotting_index=None
+        self.testing_dataset_filtered=None
         #
         logger.info("-------- %s --------" % self.analysis_name)
         logger.info("Starting analysis at %s" % time.asctime())
@@ -238,7 +224,6 @@ class SingleFit():
         return rsquared
     
     def get_statistics(self):
-        self.get_plotting_index()
         if self.testing_dataset.target_data is None:
             logger.warning("No testing target data. Statistics will not be collected.")
             return
@@ -261,29 +246,29 @@ class SingleFit():
                 self.readme_list.append("%s: %3.4f\n" % (skey, self.statistics[skey]))
         return
 
-    def print_output_csv(self):
+    def print_output_csv(self, csvname="output_data.csv"):
         """
             Modify once dataframe is in place
         """
         self.readme_list.append("----- Output data -----\n")
-        ocsvname = os.path.join(self.save_path, "output_data.csv")
+        ocsvname = os.path.join(self.save_path, csvname)
         cols_printed = self.testing_dataset.print_data(ocsvname)
-        self.readme_list.append("output_data.csv file created with columns:\n")
+        self.readme_list.append("%s file created with columns:\n" % csvname)
         for col in cols_printed:
-            self.readme_list.append("    %s" % col)
+            self.readme_list.append("    %s\n" % col)
         return
 
-
-    def get_plotting_index(self):
-        """Get plotting index of points to plot
-        Update with dataframe
-        Inefficient.
-        """
-        if self.plot_filter_out is None:
+    def get_plot_filter(self, plot_filter_out):
+        if plot_filter_out is None:
+            self.plot_filter_out = None
             return
-        out_index = list()
-        for pfstr in self.plot_filter_out:
-            pflist = pfstr.split(";")
+        pf_tuple_list = list()
+        if type(plot_filter_out) is list:
+            pfo_list = plot_filter_out
+        elif type(plot_filter_out) is str:
+            pfo_list = plot_filter_out.split(",")
+        for pfo_item in pfo_list:
+            pflist = pfo_item.split(";")
             feature = pflist[0].strip()
             symbol = pflist[1].strip()
             rawvalue = pflist[2].strip()
@@ -291,40 +276,23 @@ class SingleFit():
                 value = float(rawvalue)
             except ValueError:
                 value = rawvalue
-            featuredata = np.asarray(self.testing_dataset.get_data(feature)).ravel()
-            for fidx in range(0, len(featuredata)):
-                fdata = featuredata[fidx]
-                if fdata is None:
-                    continue
-                if symbol == "<":
-                    if fdata < value:
-                        out_index.append(fidx)
-                elif symbol == ">":
-                    if fdata > value:
-                        out_index.append(fidx)
-                elif symbol == "=":
-                    if fdata == value:
-                        out_index.append(fidx)
-        all_index = np.arange(0, len(self.testing_target_prediction))
-        out_index = np.unique(out_index)
-        plotting_index = np.setdiff1d(all_index, out_index) 
-        self.plotting_index = list(plotting_index)
-        return
+            pf_tuple_list.append((feature, symbol, value))
+        return pf_tuple_list
         
     def plot_filter_update_statistics(self):
         if self.plot_filter_out is None:
             return
-        if self.testing_target_data is None:
+        if self.testing_dataset.target_data is None:
             return
-        target_data_pfo = self.testing_target_data[self.plotting_index]
-        target_prediction_pfo = self.testing_target_prediction[self.plotting_index]
-        rmse_pfo = np.sqrt(mean_squared_error(target_prediction_pfo, target_data_pfo)) 
+        self.testing_dataset.add_filters(self.plot_filter_out)
+        self.print_output_csv("output_data_filtered.csv")
+        rmse_pfo = np.sqrt(mean_squared_error(self.testing_dataset.target_prediction, self.testing_dataset.target_data)) 
         self.statistics['rmse_plot_filter_out'] = rmse_pfo
         return
     
     def plot_results(self, addl_plot_kwargs=None):
         self.readme_list.append("----- Plotting -----\n")
-        if self.testing_target_data is None:
+        if self.testing_dataset.target_data is None:
             logger.warning("No testing target data. Predicted vs. measured plot will not be plotted.")
             self.readme_list.append("No target data.\n")
             self.readme_list.append("No plot comparing predicted vs. measured data was made.\n")
@@ -340,30 +308,25 @@ class SingleFit():
         notelist.append("R-squared: %3.3f" % self.statistics['rsquared'])
         plot_kwargs['notelist'] = notelist
         plot_kwargs['save_path'] = self.save_path
-        plot_kwargs['xerr'] = self.testing_target_data_error
+        plot_kwargs['xerr'] = self.testing_dataset.target_error_data
         if not (addl_plot_kwargs is None):
             for addl_plot_kwarg in addl_plot_kwargs:
                 plot_kwargs[addl_plot_kwarg] = addl_plot_kwargs[addl_plot_kwarg]
-        if self.plot_filter_out is None:
-            plotxy.single(self.testing_target_data,
-                    self.testing_target_prediction,
-                    **plot_kwargs)
-        else:
+        if not(self.plot_filter_out is None):
             self.readme_list.append("Plot filtering out:\n")
-            for pfstr in self.plot_filter_out:
-                self.readme_list.append("  %s\n" % pfstr.replace(";","_"))
+            for (feature, symbol, threshold) in self.plot_filter_out:
+                self.readme_list.append("  %s %s %s\n" % (feature, symbol, threshold))
             notelist.append("Shown-only RMSE: %3.3f" % self.statistics['rmse_plot_filter_out'])
             notelist.append("Data not shown:")
-            for pfstr in self.plot_filter_out:
-                notelist.append("  %s" % pfstr.replace(";"," "))
-            if not(self.testing_target_data_error is None):
-                plot_kwargs['xerr'] = self.testing_target_data_error[self.plotting_index]
-            plotxy.single(self.testing_target_data[self.plotting_index],
-                    self.testing_target_prediction[self.plotting_index],
+            for (feature, symbol, threshold) in self.plot_filter_out:
+                notelist.append("  %s %s %s" % (feature, symbol, threshold))
+        #Data should already have been filtered by now
+        plotxy.single(self.testing_dataset.target_data,
+                    self.testing_dataset.target_prediction,
                     **plot_kwargs)
         self.readme_list.append("Plot single_fit.png created.\n")
         self.readme_list.append("    Plotted data is in the data_... csv file.\n")
-        self.readme_list.append("    All zeros for error columns indicate no error.\n")
+        self.readme_list.append("    Error column of all zeros indicates no error.\n")
         return
 
     @timeit

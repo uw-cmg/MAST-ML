@@ -6,7 +6,9 @@ import sys
 import numpy as np
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.preprocessing import StandardScaler
-from matminer.descriptors.composition_features import get_magpie_descriptor
+#TTM install error - commenting out for now
+#from matminer.descriptors.composition_features import get_magpie_descriptor
+
 
 class DataParser(object):
     """Class to parse input csv file and create pandas dataframe, and extract features
@@ -124,20 +126,28 @@ class FeatureIO(object):
         # Searches values in feature that meet the condition. If it does, that entire row of data is removed from the dataframe
         rows_to_remove = []
         for i in range(len(self.dataframe[feature])):
+            fdata = self.dataframe[feature].iloc[i]
+            try:
+                fdata = float(fdata)
+            except ValueError:
+                fdata = fdata
             if operator == '<':
-                if float(self.dataframe[feature].iloc[i]) < threshold:
+                if fdata < threshold:
                     rows_to_remove.append(i)
             if operator == '>':
-                if float(self.dataframe[feature].iloc[i]) > threshold:
+                if fdata > threshold:
                     rows_to_remove.append(i)
             if operator == '=':
-                if float(self.dataframe[feature].iloc[i]) == threshold:
+                if fdata == threshold:
                     rows_to_remove.append(i)
             if operator == '<=':
-                if float(self.dataframe[feature].iloc[i]) <= threshold:
+                if fdata <= threshold:
                     rows_to_remove.append(i)
             if operator == '>=':
-                if float(self.dataframe[feature].iloc[i]) >= threshold:
+                if fdata >= threshold:
+                    rows_to_remove.append(i)
+            if operator == '<>':
+                if not(fdata == threshold):
                     rows_to_remove.append(i)
         dataframe = self.dataframe.drop(self.dataframe.index[rows_to_remove])
         return dataframe
