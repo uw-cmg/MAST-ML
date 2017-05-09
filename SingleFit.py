@@ -46,17 +46,10 @@ class SingleFit():
     to do meta-analysis.
 
     Args:
-        training_dataset <Data object>: Training dataset
-        testing_dataset <Data object>: Testing dataset
+        training_dataset <DataHandler object>: Training dataset handler
+        testing_dataset <DataHandler object>: Testing dataset handler
         model <sklearn model>: Machine-learning model
         save_path <str>: Save path
-        input_features <list of str>: List of input feature names
-        target_feature <str>: Target feature name
-        target_error_feature <str>: Name of the feature describing error
-                                    in the target feature (optional)
-        labeling_features <list of str>: List of labeling feature names
-                                         that can help identify specific
-                                         points
         xlabel <str>: Label for full-fit x-axis (default "Measured")
         ylabel <str>: Label for full-fit y-axis (default "Predicted")
         stepsize <float>: Step size for plot grid (default None)
@@ -77,10 +70,6 @@ class SingleFit():
         testing_dataset=None,
         model=None,
         save_path=None,
-        input_features=None,
-        target_feature=None,
-        target_error_feature=None,
-        labeling_features=None,
         xlabel="Measured",
         ylabel="Predicted",
         stepsize=None,
@@ -91,10 +80,6 @@ class SingleFit():
                 self.training_dataset
                 self.testing_dataset
                 self.model
-                self.input_features
-                self.target_feature
-                self.target_error_feature
-                self.labeling_features
                 self.save_path
                 self.xlabel
                 self.ylabel
@@ -121,8 +106,6 @@ class SingleFit():
             raise ValueError("training_dataset is not set")
         if type(training_dataset) is list: #allow inheriting classes to get multiple datasets; MASTML will pass list of data objects
             self.training_dataset= copy.deepcopy(training_dataset[0]) #first item
-        elif type(training_dataset) is str:
-            self.training_dataset = data_parser.parse(training_dataset)
         else:
             self.training_dataset = copy.deepcopy(training_dataset)
         # testing csv
@@ -130,26 +113,12 @@ class SingleFit():
             raise ValueError("testing_dataset is not set")
         if type(testing_dataset) is list:
             self.testing_dataset = copy.deepcopy(testing_dataset[0])
-        elif type(testing_dataset) is str:
-            self.testing_dataset = data_parser.parse(testing_dataset)
         else:
             self.testing_dataset=copy.deepcopy(testing_dataset)
         # model
         if model is None:
             raise ValueError("No model.")
         self.model=model
-        # features
-        if input_features is None:
-            raise ValueError("input_features is not set")
-        self.input_features=input_features
-        if target_feature is None:
-            raise ValueError("target_feature is not set")
-        self.target_feature=target_feature
-        self.target_error_feature = target_error_feature
-        if labeling_features is None:
-            self.labeling_features = list()
-        else:
-            self.labeling_features = labeling_features
         # paths
         if save_path is None:
             save_path = os.getcwd()
@@ -172,13 +141,7 @@ class SingleFit():
             self.plot_filter_out = plot_filter_out
         # Self-set attributes
         self.analysis_name = os.path.basename(self.save_path)
-        self.training_input_data=None
-        self.training_target_data=None
-        self.testing_target_data_error=None
-        self.testing_input_data=None
-        self.testing_target_data=None
         self.trained_model=None
-        self.testing_target_prediction=None
         self.statistics=dict()
         self.readme_list=list()
         self.plotting_index=None
@@ -199,7 +162,7 @@ class SingleFit():
     @timeit
     def set_up(self):
         self.readme_list.append("%s\n" % time.asctime())
-        self.set_data()
+        #self.set_data()
         return
 
     @timeit
@@ -242,7 +205,7 @@ class SingleFit():
 
 
     def get_trained_model(self):
-        trained_model = self.model.fit(self.training_input_data, self.training_target_data)
+        trained_model = self.model.fit(self.training_dataset.input_data, self.training_dataset.target_data)
         self.trained_model = trained_model
         return
     
@@ -253,30 +216,30 @@ class SingleFit():
         return
 
     def get_prediction(self):
-        self.testing_target_prediction = self.trained_model.predict(self.testing_input_data)
-        self.testing_dataset.add_feature("Prediction",self.testing_target_prediction)
+        target_prediction = self.trained_model.predict(self.testing_dataset.input_data)
+        self.testing_dataset.add_prediction(target_prediction)
         return
 
     def get_rmse(self):
-        rmse = np.sqrt(mean_squared_error(self.testing_target_data, self.testing_target_prediction))        
+        rmse = np.sqrt(mean_squared_error(self.testing_dataset.target_data, self.testing_dataset.target_prediction))        
         return rmse
     
     def get_mean_error(self):
-        pred_minus_true =self.testing_target_prediction-self.testing_target_data
+        pred_minus_true =self.testing_dataset.target_prediction-self.testing_dataset.target_data
         mean_error = np.mean(pred_minus_true)
         return mean_error
 
     def get_mean_absolute_error(self):
-        mean_abs_err = mean_absolute_error(self.testing_target_data, self.testing_target_prediction)
+        mean_abs_err = mean_absolute_error(self.testing_dataset.target_data, self.testing_dataset.target_prediction)
         return mean_abs_err
 
     def get_rsquared(self):
-        rsquared = r2_score(self.testing_target_data, self.testing_target_prediction)
+        rsquared = r2_score(self.testing_dataset.target_data, self.testing_dataset.target_prediction)
         return rsquared
     
     def get_statistics(self):
         self.get_plotting_index()
-        if self.testing_target_data is None:
+        if self.testing_dataset.target_data is None:
             logger.warning("No testing target data. Statistics will not be collected.")
             return
         self.statistics['rmse'] = self.get_rmse()
@@ -304,34 +267,10 @@ class SingleFit():
         """
         self.readme_list.append("----- Output data -----\n")
         ocsvname = os.path.join(self.save_path, "output_data.csv")
+        cols_printed = self.testing_dataset.print_data(ocsvname)
         self.readme_list.append("output_data.csv file created with columns:\n")
-        headerline = ""
-        printarray = None
-        if len(self.labeling_features) > 0:
-            self.readme_list.append("   labeling features: %s\n" % self.labeling_features)
-            print_features = list(self.labeling_features)
-        else:
-            print_features = list()
-        print_features.extend(self.input_features)
-        self.readme_list.append("   input features: %s\n" % self.input_features)
-        if not (self.testing_target_data is None):
-            print_features.append(self.target_feature)
-            self.readme_list.append("   target feature: %s\n" % self.target_feature)
-            if not (self.target_error_feature is None):
-                print_features.append(self.target_error_feature)
-                self.readme_list.append("   target error feature: %s\n" % self.target_error_feature)
-        for feature_name in print_features:
-            headerline = headerline + feature_name + ","
-            feature_vector = np.asarray(self.testing_dataset.get_data(feature_name)).ravel()
-            if printarray is None:
-                printarray = feature_vector
-            else:
-                printarray = np.vstack((printarray, feature_vector))
-        headerline = headerline + "Prediction"
-        self.readme_list.append("   prediction: Prediction\n")
-        printarray = np.vstack((printarray, self.testing_target_prediction))
-        printarray=printarray.transpose()
-        ptools.mixed_array_to_csv(ocsvname, headerline, printarray)
+        for col in cols_printed:
+            self.readme_list.append("    %s" % col)
         return
 
 

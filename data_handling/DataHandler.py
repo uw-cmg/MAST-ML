@@ -8,7 +8,6 @@ from SingleFit import timeit
 from sklearn.model_selection import KFold
 from sklearn.model_selection import ShuffleSplit
 from sklearn.metrics import mean_squared_error
-#from evolutionary_search import EvolutionaryAlgorithmSearchCV
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.metrics import r2_score
 from multiprocessing import Process,Pool,TimeoutError,Value,Array,Manager
@@ -23,34 +22,83 @@ class DataHandler():
         (Combines old data_parser functionality with new DataParser methods)
 
     Args:
-        dataframe <pandas dataframe>
-        Xdata <pandas dataframe>: X data (input data)
-        ydata <pandas dataframe>: y data (target data)
-        x_features <list of str>: x features (input features)
-        y_feature <list of str>: y feature (target feature)
-        
-        as parsed from DataParser
+        data <pandas dataframe>
+        input_data <pandas dataframe>: X data (input data)
+        target_data <pandas dataframe>: y data (target data)
+        input_features <list of str>: x features (input features)
+        target_feature <str>: y feature (target feature)
+                (the above five as parsed from DataParser)
+        target_error_feature <str>: error in y feature (target error feature)
+        labeling_features <list of str>: features to help identify data in
+                                            plots
 
     Returns:
     Raises:
         ValueError if dataframe is None
     """
-    def __init__(self, dataframe=None, Xdata=None, ydata=None, 
-                    x_features=None, y_feature=None):
+    def __init__(self, data=None, 
+                    input_data=None, 
+                    target_data=None, 
+                    input_features=None, 
+                    target_feature=None,
+                    target_error_feature=None,
+                    labeling_features=None):
         """Data Handler
             
         Attributes:
+            #Set by keyword
             self.data <dataframe>: Main dataframe; all data
             self.input_data <dataframe>: Input data
             self.target_data <dataframe>: Target data
             self.input_features <list of str>: Input features
-            self.target_feature <list of str>: Target feature
+            self.target_feature <str>: Target feature
+            self.target_error_feature <str>: Target error feature
+            self.labeling_features <list of str>: Labeling features
+            #Set in code
+            self.target_error_data <dataframe>
+            self.target_prediction <dataframe>
         """
-        if dataframe is None:
+        if data is None:
             raise ValueError("No dataframe.")
-        self.data = copy.deepcopy(dataframe)
-        self.input_data = copy.deepcopy(Xdata)
-        self.target_data = copy.deepcopy(ydata)
-        self.input_features = x_features
-        self.target_feature = y_feature
+        #Set by keyword
+        self.data = copy.deepcopy(data)
+        self.input_data = copy.deepcopy(input_data)
+        self.target_data = copy.deepcopy(target_data)
+        self.input_features = list(input_features)
+        self.target_feature = target_feature
+        self.target_error_feature = target_error_feature
+        if labeling_features is None:
+            self.labeling_features = labeling_features
+        else:
+            self.labeling_features = list(labeling_features)
+        #Set in code
+        self.target_error_data = None
+        self.target_prediction = None
+        #Run upon initialization
+        self.set_up_data()
         return
+
+    def set_up_data(self):
+        if not (self.target_error_feature) is None:
+            self.target_error_data = self.data[self.target_error_feature]
+        return
+
+    def add_prediction(self, prediction_data):
+        fio = FeatureIO(self.data)
+        self.data = fio.add_custom_features("Prediction", prediction_data)
+        self.target_prediction = self.data["Prediction"]
+        return
+
+    def print_data(self, csvname="data.csv"):
+        cols = list()
+        if not self.labeling_features is None:
+            cols.extend(self.labeling_features)
+        cols.extend(self.input_features)
+        cols.append(self.target_feature)
+        if not self.target_error_feature is None:
+            cols.append(self.target_error_feature)
+        if not self.target_prediction is None:
+            cols.append("Prediction")
+        self.data.to_csv(csvname,
+                        columns=list(cols))
+        return cols

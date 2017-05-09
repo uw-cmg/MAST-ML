@@ -13,6 +13,9 @@ class MASTMLDriver(object):
 
     def __init__(self, configfile):
         self.configfile = configfile
+        #Set in code
+        self.generalsetup = None
+        self.datasetup = None
 
     # This will later be removed as the parsed input file should have values all containing correct datatype
     def string_or_list_input_to_list(self, unknown_input_val):
@@ -41,6 +44,7 @@ class MASTMLDriver(object):
         print(x_features)
         print(y_feature)
         print(dataframe)
+        print(dataframe[x_features])
         fn = FeatureNormalization(dataframe=dataframe)
         dataframe = fn.normalize_features(x_features=x_features, y_feature=y_feature)
         print(dataframe)
@@ -85,25 +89,39 @@ class MASTMLDriver(object):
         return mastmlwrapper, configdict, errors_present
 
     def _perform_general_setup(self, mastmlwrapper):
-        generalsetup = mastmlwrapper.process_config_keyword(keyword='General Setup')
-        save_path = os.path.abspath(generalsetup['save_path'])
+        self.generalsetup = mastmlwrapper.process_config_keyword(keyword='General Setup')
+        save_path = os.path.abspath(self.generalsetup['save_path'])
         if not os.path.isdir(save_path):
             os.mkdir(save_path)
         return save_path
 
     def _parse_input_data(self, mastmlwrapper, configdict):
-        datasetup = mastmlwrapper.process_config_keyword(keyword='Data Setup')
-        Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=configdict).parse_fromfile(datapath=datasetup['Initial']['data_path'], as_array=False)
-
+        self.datasetup = mastmlwrapper.process_config_keyword(keyword='Data Setup')
+        Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=configdict).parse_fromfile(datapath=self.datasetup['Initial']['data_path'], as_array=False)
         # Tam's code is here
+        from data_handling.DataHandler import DataHandler
         data_dict=dict()
-        datasetup = mastmlwrapper.process_config_keyword(keyword='Data Setup')
-        for data_name in datasetup.keys():
-            data_path = datasetup[data_name]['data_path']
-            data_weights = datasetup[data_name]['weights']
+        for data_name in self.datasetup.keys():
+            data_path = self.datasetup[data_name]['data_path']
+            data_weights = self.datasetup[data_name]['weights']
             if not(os.path.isfile(data_path)):
                 raise OSError("No file found at %s" % data_path)
-            data_dict[data_name] = data_parser.parse(data_path, data_weights)
+            if 'labeling_features' in self.generalsetup.keys():
+                labeling_features = self.string_or_list_input_to_list(self.generalsetup['labeling_features'])
+            else:
+                labeling_features = None
+            if 'target_error_feature' in self.generalsetup.keys():
+                target_error_feature = self.generalsetup['target_error_feature']
+            else:
+                target_error_feature = None
+            data_dict[data_name] = DataHandler(data = dataframe, 
+                                input_data = Xdata, 
+                                target_data = ydata, 
+                                input_features = x_features,
+                                target_feature = y_feature,
+                                target_error_feature = target_error_feature,
+                                labeling_features = labeling_features) #
+            #data_dict[data_name] = data_parser.parse(data_path, data_weights)
             #data_dict[data_name].set_x_features(datasetup['X']) #set in test classes, not here, since different tests could have different X and y features
             #data_dict[data_name].set_y_feature(datasetup['y'])
             logging.info('Parsed the input data located under %s' % data_path)
@@ -150,17 +168,18 @@ class MASTMLDriver(object):
                 testing_dataset_list.append(data_dict[dname])
             test_params['testing_dataset'] = testing_dataset_list
             # Get default features if not set
-            if not ('input_features' in test_params.keys()):
-                test_params['input_features'] = self.string_or_list_input_to_list(generalsetup['input_features'])
-            else:
-                test_params['input_features'] = self.string_or_list_input_to_list(test_params['input_features'])
-            if not ('target_feature' in test_params.keys()):
-                test_params['target_feature'] = generalsetup['target_feature']
-            if not ('target_error_feature' in test_params.keys()):
-                if 'target_error_feature' in generalsetup.keys():
-                    test_params['target_error_feature'] = generalsetup['target_error_feature']
-            if 'labeling_features' in test_params.keys():
-                test_params['labeling_features'] = self.string_or_list_input_to_list(test_params['labeling_features'])
+            # TTM move this functionality into data handler
+            #if not ('input_features' in test_params.keys()):
+            #    test_params['input_features'] = self.string_or_list_input_to_list(generalsetup['input_features'])
+            #else:
+            #    test_params['input_features'] = self.string_or_list_input_to_list(test_params['input_features'])
+            #if not ('target_feature' in test_params.keys()):
+            #    test_params['target_feature'] = generalsetup['target_feature']
+            #if not ('target_error_feature' in test_params.keys()):
+            #    if 'target_error_feature' in generalsetup.keys():
+            #        test_params['target_error_feature'] = generalsetup['target_error_feature']
+            #if 'labeling_features' in test_params.keys():
+            #    test_params['labeling_features'] = self.string_or_list_input_to_list(test_params['labeling_features'])
             # Run the test case for every model
             for midx, model in enumerate(model_list):
                 # Set save path, allowing for multiple tests and models and potentially multiple of the same model (KernelRidge rbf kernel, KernelRidge linear kernel, etc.)
