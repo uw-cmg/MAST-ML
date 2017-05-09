@@ -8,6 +8,9 @@ from SingleFit import timeit
 from sklearn.model_selection import KFold
 from sklearn.model_selection import ShuffleSplit
 from sklearn.metrics import mean_squared_error
+from data_handling.CustomDataHandler import CustomDataHandler
+from DataParser import FeatureNormalization
+from DataParser import FeatureIO
 #from evolutionary_search import EvolutionaryAlgorithmSearchCV
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.metrics import r2_score
@@ -420,14 +423,15 @@ class ParamOptGA(SingleFit):
 
     def evaluate_individual(self, indidx, pop, parallel_result_dict=None, 
                                     do_extrapolation=0):
-        newX_Test = np.copy(self.testing_input_data)
+        newX_Test = self.testing_dataset.get_x_data()
         params = pop[indidx]
         rdict=dict()
         for gene in self.afm_dict.keys():
             afm_kwargs = dict(self.afm_dict[gene])
-            test_feature = getattr(self, gene)(params[gene],
-                            **afm_kwargs)
-            newX_Test = np.concatenate((newX_Test, test_feature), axis=1)
+            cdh = CustomDataHandler(self.testing_dataset.get_data())
+            new_feature_data = getattr(cdh, gene)(params[gene], **afm_kwargs)
+            fio = FeatureIO(newX_Test)
+            newX_Test = fio.add_custom_features(gene, new_feature_data)
         model = KernelRidge(alpha = 10**(float(params['alpha'])*(-6)), gamma = 10**((float(params['gamma'])*(3))-1.5), kernel = 'rbf')
         cv_rms = self.num_runs_cv(model, newX_Test, self.testing_target_data, num_runs = self.num_cvtests)       
         rdict['cv_rms'] = cv_rms
