@@ -5,7 +5,8 @@ import logging
 import sys
 import numpy as np
 from sklearn.feature_selection import VarianceThreshold
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.preprocessing import StandardScaler
+from matminer.descriptors.composition_features import get_magpie_descriptor
 
 class DataParser(object):
     """Class to parse input csv file and create pandas dataframe, and extract features
@@ -17,9 +18,10 @@ class DataParser(object):
         if self.configdict is not None:
             dataframe = self.import_data(datapath=datapath)
             x_features, y_feature = self.get_features(dataframe=dataframe, target_feature=None, from_input_file=True)
-            #dataframe = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
+            #dataframe = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe, x_features=x_features, y_feature=y_feature, column_names=column_names, remove_first_row=True)
             Xdata, ydata = self.get_data(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
-
+            print(x_features, y_feature)
+            print(dataframe)
             if as_array == bool(True):
                 Xdata = np.asarray(Xdata)
                 ydata = np.asarray(ydata)
@@ -40,8 +42,8 @@ class DataParser(object):
 
     def import_data(self, datapath):
         try:
-            dataframe = pd.read_csv(datapath)
-            #dataframe = pd.read_csv(datapath, header=None)
+            dataframe = pd.read_csv(datapath, header=0)
+            #column_names = dataframe.iloc[0].tolist()
         except IOError:
             logging.info('Error reading in your input data file, specify a valid path to your input data')
             sys.exit()
@@ -118,12 +120,36 @@ class FeatureIO(object):
             self.dataframe[feature] = pd.Series(data=data_to_add, index=(self.dataframe).index)
         return self.dataframe
 
-    def custom_feature_filter(self, feature, condition, value):
+    def custom_feature_filter(self, feature, operator, threshold):
         # Searches values in feature that meet the condition. If it does, that entire row of data is removed from the dataframe
-        pass
+        rows_to_remove = []
+        for i in range(len(self.dataframe[feature])):
+            if operator == '<':
+                if float(self.dataframe[feature].iloc[i]) < threshold:
+                    rows_to_remove.append(i)
+            if operator == '>':
+                if float(self.dataframe[feature].iloc[i]) > threshold:
+                    rows_to_remove.append(i)
+            if operator == '=':
+                if float(self.dataframe[feature].iloc[i]) == threshold:
+                    rows_to_remove.append(i)
+            if operator == '<=':
+                if float(self.dataframe[feature].iloc[i]) <= threshold:
+                    rows_to_remove.append(i)
+            if operator == '>=':
+                if float(self.dataframe[feature].iloc[i]) >= threshold:
+                    rows_to_remove.append(i)
+        dataframe = self.dataframe.drop(self.dataframe.index[rows_to_remove])
+        return dataframe
 
     def add_magpie_features(self):
-        pass
+        magpie_descriptor_names = ['AtomicVolume']
+        compositions = ['LaMnO3']
+        magpiedata_list = []
+        for composition, descriptor_name in zip(compositions, magpie_descriptor_names):
+            magpiedata = get_magpie_descriptor(comp=composition, descriptor_name=descriptor_name)
+            magpiedata_list.append(magpiedata)
+        return magpiedata_list
 
 class FeatureNormalization(object):
     """This class is used to normalize and unnormalize features in a dataframe.
@@ -140,19 +166,32 @@ class FeatureNormalization(object):
         array_normalized = scaler.fit_transform(X=self.dataframe[x_features], y=self.dataframe[y_feature])
         array_normalized = DataframeUtilities()._concatenate_arrays(X_array=array_normalized, y_array=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
         dataframe_normalized = DataframeUtilities()._array_to_dataframe(array=array_normalized)
-        dataframe_normalized = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe_normalized, x_features=x_features, y_feature=y_feature)
+        dataframe_normalized = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe_normalized, x_features=x_features, y_feature=y_feature, remove_first_row=False)
         return dataframe_normalized, scaler
 
-    def unnormalize_features(self):
-        pass
+    def unnormalize_features(self, x_features, y_feature, scaler):
+        array_unnormalized = scaler.inverse_transform(X=self.dataframe[x_features])
+        array_unnormalized = DataframeUtilities()._concatenate_arrays(X_array=array_unnormalized, y_array=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
+        dataframe_unnormalized = DataframeUtilities()._array_to_dataframe(array=array_unnormalized)
+        dataframe_unnormalized = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe_unnormalized, x_features=x_features, y_feature=y_feature, remove_first_row=False)
+        return dataframe_unnormalized, scaler
 
+    def normalize_and_merge_with_original_dataframe(self, x_features, y_feature):
+        dataframe_normalized, scaler = self.normalize_features(x_features=x_features, y_feature=y_feature)
+        dataframe = DataframeUtilities()._merge_dataframe_columns(dataframe1=self.dataframe, dataframe2=dataframe_normalized)
+        return dataframe
 
 class DataframeUtilities(object):
     """This class is a collection of basic utilities for dataframe manipulation, and exchanging between dataframes and numpy arrays
     """
     @classmethod
-    def _merge_dataframes(cls, dataframe1, dataframe2):
-        dataframe = pd.merge(left=dataframe1, right=dataframe2, how='inner')
+    def _merge_dataframe_columns(cls, dataframe1, dataframe2):
+        dataframe = pd.concat([dataframe1, dataframe2], axis=1)
+        return dataframe
+
+    @classmethod
+    def _merge_dataframe_rows(cls, dataframe1, dataframe2):
+        dataframe = pd.merge(left=dataframe1, right=dataframe2, how='outer')
         return dataframe
 
     @classmethod
@@ -166,7 +205,7 @@ class DataframeUtilities(object):
 
     @classmethod
     def _array_to_dataframe(cls, array):
-        dataframe = pd.DataFrame(data=array)
+        dataframe = pd.DataFrame(data=array, index=range(1, len(array)+1))
         return dataframe
 
     @classmethod
