@@ -4,7 +4,7 @@ import data_parser
 import sys
 import os
 from MASTMLInitializer import MASTMLWrapper, ConfigFileValidator
-from DataParser import DataParser, FeatureIO, FeatureNormalization
+from DataParser import DataParser, FeatureIO, FeatureNormalization, DataframeUtilities
 import logging
 import shutil
 import time
@@ -38,13 +38,43 @@ class MASTMLDriver(object):
         # Parse input data files
         Xdata, ydata, x_features, y_feature, dataframe, data_dict = self._parse_input_data(mastmlwrapper=mastmlwrapper, configdict=configdict)
 
+        print('Features:')
         print(x_features)
         print(y_feature)
-        print(dataframe)
-        fn = FeatureNormalization(dataframe=dataframe)
-        dataframe = fn.normalize_features(x_features=x_features, y_feature=y_feature)
+        print('\n'+'Original:')
         print(dataframe)
 
+        fio = FeatureIO(dataframe=dataframe)
+        dataframe2 = fio.remove_custom_features(features_to_remove=['num_id', 'num_cat', 'str_cat'])
+        print('\n'+'Filtered:')
+        print(dataframe2)
+
+        dps = DataParser()
+        Xdata, ydata, x_features, y_feature, dataframe_parse = dps.parse_fromdataframe(dataframe=dataframe2, target_feature=y_feature)
+        fn = FeatureNormalization(dataframe=dataframe2)
+        dataframe3, scaler = fn.normalize_features(x_features=x_features, y_feature=y_feature)
+        print('\n' + 'Normalized:')
+        print(dataframe3)
+        fn = FeatureNormalization(dataframe=dataframe3)
+        dataframe4, scaler = fn.unnormalize_features(x_features=x_features, y_feature=y_feature, scaler=scaler)
+        print('\n' + 'Unnormalized:')
+        print(dataframe4)
+
+        fio = FeatureIO(dataframe=dataframe4)
+        magpiedata = fio.generate_atomic_magpie_features(composition_list=['LiCoO2'])
+        print(magpiedata)
+
+        #dataframe = DataframeUtilities()._merge_dataframe_rows(dataframe1=dataframe, dataframe2=dataframe2)
+        #print(dataframe)
+        """
+        dataframe = fn.normalize_and_merge_with_original_dataframe(x_features=x_features, y_feature=y_feature)
+        print('\n'+ 'Normalized and merged with original:')
+        print(dataframe)
+        fn = FeatureNormalization(dataframe=dataframe)
+        dataframe, scaler = fn.unnormalize_features(x_features=x_features, y_feature=y_feature, scaler=scaler)
+        print('\n' + 'UnNormalized:')
+        print(dataframe)
+        """
         #x_to_remove = ['x2', 'x3']
         #fio = FeatureIO(dataframe=dataframe)
         #dataframe = ff.remove_custom_features(features_to_remove=x_to_remove)
@@ -109,7 +139,6 @@ class MASTMLDriver(object):
             #data_dict[data_name].set_x_features(datasetup['X']) #set in test classes, not here, since different tests could have different X and y features
             #data_dict[data_name].set_y_feature(datasetup['y'])
             logging.info('Parsed the input data located under %s' % data_path)
-
 
         return Xdata, ydata, x_features, y_feature, dataframe, data_dict
 
