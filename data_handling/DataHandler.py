@@ -85,7 +85,8 @@ class DataHandler():
 
     def add_prediction(self, prediction_data):
         fio = FeatureIO(self.data)
-        self.data = fio.add_custom_features("Prediction", prediction_data)
+        self.data = fio.add_custom_features(["Prediction"], prediction_data)
+        print(self.data[0:2])
         self.target_prediction = self.data["Prediction"]
         return
 

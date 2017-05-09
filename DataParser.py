@@ -17,7 +17,7 @@ class DataParser(object):
         if self.configdict is not None:
             dataframe = self.import_data(datapath=datapath)
             x_features, y_feature = self.get_features(dataframe=dataframe, target_feature=None, from_input_file=True)
-            dataframe = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
+            #dataframe = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
             Xdata, ydata = self.get_data(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
 
             if as_array == bool(True):
@@ -40,7 +40,8 @@ class DataParser(object):
 
     def import_data(self, datapath):
         try:
-            dataframe = pd.read_csv(datapath, header=None)
+            dataframe = pd.read_csv(datapath)
+            #dataframe = pd.read_csv(datapath, header=None)
         except IOError:
             logging.info('Error reading in your input data file, specify a valid path to your input data')
             sys.exit()
@@ -179,6 +180,7 @@ class DataframeUtilities(object):
         x_and_y_features = [feature for feature in x_features]
         x_and_y_features.append(y_feature)
         for i, feature in enumerate(x_and_y_features):
+            print("ASSIGN: %i %s" % (i, feature))
             column_dict[i] = feature
         dataframe = dataframe.rename(columns=column_dict)
         if remove_first_row == bool(True):
