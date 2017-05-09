@@ -22,8 +22,6 @@ class DataParser(object):
             x_features, y_feature = self.get_features(dataframe=dataframe, target_feature=None, from_input_file=True)
             #dataframe = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe, x_features=x_features, y_feature=y_feature, column_names=column_names, remove_first_row=True)
             Xdata, ydata = self.get_data(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
-            print(x_features, y_feature)
-            print(dataframe)
             if as_array == bool(True):
                 Xdata = np.asarray(Xdata)
                 ydata = np.asarray(ydata)
@@ -70,7 +68,11 @@ class DataParser(object):
 
     def get_data(self, dataframe, x_features, y_feature):
         Xdata = dataframe.loc[:, x_features]
-        ydata = dataframe.loc[:, y_feature]
+        if not(y_feature in dataframe.columns):
+            logging.warning("%s not in columns" % y_feature)
+            ydata = None
+        else:
+            ydata = dataframe.loc[:, y_feature]
         return Xdata, ydata
 
 class FeatureIO(object):
@@ -229,7 +231,6 @@ class DataframeUtilities(object):
         x_and_y_features = [feature for feature in x_features]
         x_and_y_features.append(y_feature)
         for i, feature in enumerate(x_and_y_features):
-            print("ASSIGN: %i %s" % (i, feature))
             column_dict[i] = feature
         dataframe = dataframe.rename(columns=column_dict)
         if remove_first_row == bool(True):

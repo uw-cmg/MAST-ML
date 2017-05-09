@@ -1,11 +1,11 @@
-Tue May  9 15:59:25 2017
+Tue May  9 16:10:52 2017
 ----- Model parameters -----
-kernel_params: None
-degree: 3
+alpha: 0.00139
 gamma: 0.518
 coef0: 1
-alpha: 0.00139
+kernel_params: None
 kernel: rbf
+degree: 3
 ----- Output data -----
 output_data.csv file created with columns:
     str_cat
@@ -13,15 +13,11 @@ output_data.csv file created with columns:
     time
     N_sine_feature
     N_linear_feature
-    y_feature
     N_linear_feature
     Prediction
 ----- Statistics -----
-mean_absolute_error: 0.0666
-mean_error: 0.0000
-rmse: 0.0879
-rsquared: 0.9830
+No target data.
+No statistics comparing target data and prediction were collected.
 ----- Plotting -----
-Plot single_fit.png created.
-    Plotted data is in the data_... csv file.
-    Error column of all zeros indicates no error.
+No target data.
+No plot comparing predicted vs. measured data was made.

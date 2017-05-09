@@ -111,11 +111,12 @@ class MASTMLDriver(object):
                 target_error_feature = self.generalsetup['target_error_feature']
             else:
                 target_error_feature = None
-            data_dict[data_name] = DataHandler(data = dataframe, 
-                                input_data = Xdata, 
-                                target_data = ydata, 
-                                input_features = x_features,
-                                target_feature = y_feature,
+            myXdata, myydata, myx_features, myy_feature, mydataframe = DataParser(configdict=configdict).parse_fromfile(datapath=self.datasetup[data_name]['data_path'], as_array=False)
+            data_dict[data_name] = DataHandler(data = mydataframe, 
+                                input_data = myXdata, 
+                                target_data = myydata, 
+                                input_features = myx_features,
+                                target_feature = myy_feature,
                                 target_error_feature = target_error_feature,
                                 labeling_features = labeling_features) #
             #data_dict[data_name] = data_parser.parse(data_path, data_weights)

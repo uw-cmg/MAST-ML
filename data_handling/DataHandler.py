@@ -98,7 +98,6 @@ class DataHandler():
     def add_prediction(self, prediction_data):
         fio = FeatureIO(self.data)
         self.data = fio.add_custom_features(["Prediction"], prediction_data)
-        print(self.data[0:2])
         self.target_prediction = self.data["Prediction"]
         return
 
@@ -114,7 +113,8 @@ class DataHandler():
         if not self.labeling_features is None:
             cols.extend(self.labeling_features)
         cols.extend(self.input_features)
-        cols.append(self.target_feature)
+        if not self.target_data is None:
+            cols.append(self.target_feature)
         if not self.target_error_feature is None:
             cols.append(self.target_error_feature)
         if not self.target_prediction is None:
