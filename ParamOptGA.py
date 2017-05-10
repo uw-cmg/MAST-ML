@@ -8,7 +8,7 @@ from SingleFit import timeit
 from sklearn.model_selection import KFold
 from sklearn.model_selection import ShuffleSplit
 from sklearn.metrics import mean_squared_error
-from data_handling.CustomDataHandler import CustomDataHandler
+from data_handling.CustomFeatures import CustomFeatures
 from DataParser import FeatureNormalization
 from DataParser import FeatureIO
 #from evolutionary_search import EvolutionaryAlgorithmSearchCV
@@ -25,8 +25,6 @@ class ParamOptGA(SingleFit):
         testing_dataset, (Should be same as training set.)
         model,
         save_path,
-        input_features,
-        target_feature, see parent class.
         num_folds <int>: Number of folds for K-fold CV. Keep blank to use LO% CV
         percent_leave_out <int>: Percent to leave out for LO%. Keep blank to use                                 K-fold CV.
         num_cvtests <int>: Number of CV tests for each individual
@@ -54,8 +52,6 @@ class ParamOptGA(SingleFit):
         testing_dataset=None,
         model=None,
         save_path=None,
-        input_features=None,
-        target_feature=None,
         num_folds=2,
         percent_leave_out=None,
         num_cvtests=20,
@@ -94,9 +90,7 @@ class ParamOptGA(SingleFit):
             training_dataset=training_dataset, 
             testing_dataset=testing_dataset,
             model=model, 
-            save_path = save_path,
-            input_features = input_features, 
-            target_feature = target_feature)
+            save_path = save_path)
         #Sets by keyword
         if num_folds is None:
             self.num_folds = None
@@ -259,7 +253,7 @@ class ParamOptGA(SingleFit):
         if not(self.num_folds is None):
             for kn in range(num_runs):
                 kf = KFold(n_splits=self.num_folds, shuffle=True)
-                splits = kf.split(range(len(self.testing_target_data)))
+                splits = kf.split(range(len(self.testing_dataset.target_data)))
                 sdict=dict()
                 sdict['train_index'] = list()
                 sdict['test_index'] = list()
@@ -273,7 +267,7 @@ class ParamOptGA(SingleFit):
                 plo = ShuffleSplit(n_splits=1, 
                                 test_size = test_fraction,
                                 random_state = None)
-                splits = plo.split(range(len(self.testing_target_data)))
+                splits = plo.split(range(len(self.testing_dataset.target_data)))
                 sdict=dict()
                 sdict['train_index'] = list()
                 sdict['test_index'] = list()
@@ -384,56 +378,19 @@ class ParamOptGA(SingleFit):
         print(n_rms_list, flush=True)
         return (np.mean(n_rms_list))
 
-
-    def calculate_EffectiveFluence(self, p, flux_feature="",fluence_feature=""):
-        train_fluence = self.training_dataset.get_data(fluence_feature)
-        train_flux = self.training_dataset.get_data(flux_feature)
-        test_fluence = self.testing_dataset.get_data(fluence_feature)
-        test_flux = self.testing_dataset.get_data(flux_feature)
-        Norm_fluence = self.testing_dataset.get_data(fluence_feature)
-        Norm_flux = self.testing_dataset.get_data(flux_feature)
-
-        #Xtrain = np.asarray(np.copy(self.training_input_data))
-        #Xtest = np.asarray(np.copy(self.testing_input_data))
-        #TrainEFl = np.zeros(len(Xtrain))
-        #TestEFl = np.zeros(len(Xtest))
-        #N_TrainEFl = np.zeros(len(Xtrain))
-        #N_TestEFl = np.zeros(len(Xtest))
-        #NEFl = np.zeros(len(Norm_fluence))
-            
-        TrainEFl = np.log10( train_fluence*( 3E10 / train_flux )**p )
-        TestEFl = np.log10( test_fluence*( 3E10 / test_flux )**p )
-        NEFl = np.log10( Norm_fluence*( 3E10 / Norm_flux )**p )    
-            
-        Nmax = np.max([ np.max(TrainEFl), np.max(NEFl)] )
-        Nmin = np.min([ np.min(TrainEFl), np.min(NEFl)] )
-        
-        N_TrainEFl= (TrainEFl-Nmin)/(Nmax-Nmin)
-
-        N_TestEFl = (TestEFl-Nmin)/(Nmax-Nmin)
-
-        return (N_TrainEFl.as_matrix(), N_TestEFl.as_matrix())
-
-    def testing_subtraction(self, param, col1="",col2=""):
-        col1_data = np.asarray(self.testing_dataset.get_data(col1)).ravel()
-        col2_data = np.asarray(self.testing_dataset.get_data(col2)).ravel()
-        new_data = col1_data - col2_data + param
-        new_data = new_data.reshape((len(new_data), 1))
-        return new_data
-
     def evaluate_individual(self, indidx, pop, parallel_result_dict=None, 
                                     do_extrapolation=0):
-        newX_Test = self.testing_dataset.get_x_data()
+        newX_Test = copy.deepcopy(self.testing_dataset.input_data)
         params = pop[indidx]
         rdict=dict()
         for gene in self.afm_dict.keys():
             afm_kwargs = dict(self.afm_dict[gene])
-            cdh = CustomDataHandler(self.testing_dataset.get_data())
+            cdh = CustomFeatures(self.testing_dataset.data)
             new_feature_data = getattr(cdh, gene)(params[gene], **afm_kwargs)
             fio = FeatureIO(newX_Test)
             newX_Test = fio.add_custom_features(gene, new_feature_data)
         model = KernelRidge(alpha = 10**(float(params['alpha'])*(-6)), gamma = 10**((float(params['gamma'])*(3))-1.5), kernel = 'rbf')
-        cv_rms = self.num_runs_cv(model, newX_Test, self.testing_target_data, num_runs = self.num_cvtests)       
+        cv_rms = self.num_runs_cv(model, newX_Test, self.testing_dataset.target_data, num_runs = self.num_cvtests)       
         rdict['cv_rms'] = cv_rms
         if parallel_result_dict is None:
             return rdict

@@ -49,8 +49,9 @@ class CustomFeatures():
         EFl = fluence * (ref_flux / flux) ** pvalue
         EFl = np.log10(EFl)
         fio = FeatureIO(self.df)
-        fio.add_features(["EFl"],EFl)
-        N_EFl = fio.minmax_scale_single_feature("EFl", 
+        new_df = fio.add_custom_features(["EFl"],EFl)
+        fnorm = FeatureNormalization(new_df)
+        N_EFl = fnorm.minmax_scale_single_feature("EFl", 
                                             smin = scale_min,
                                             smax = scale_max)
 
@@ -61,7 +62,8 @@ class CustomFeatures():
         col2_data = self.df[col2]
         new_data = col1_data - col2_data + param
         fio = FeatureIO(self.df)
-        fio.add_features(["Subtraction_test"],new_data)
-        N_new_data = fio.minmax_scale_single_feature("Subtraction_test")
+        new_df = fio.add_custom_features(["Subtraction_test"],new_data)
+        fnorm = FeatureNormalization(new_df)
+        N_new_data = fnorm.minmax_scale_single_feature("Subtraction_test")
         return N_new_data
 
