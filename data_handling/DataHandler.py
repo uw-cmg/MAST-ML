@@ -84,37 +84,6 @@ class DataHandler():
             self.groups = np.unique(self.group_data)
         return
 
-    def get_logo_indices(self, verbose=1):
-        """
-            np.unique sorts the group value array.
-            logo also sorts.
-            The resulting dictionary will have indices with the group value.
-        """
-        raise NotImplementedError("Removing function.")
-        if self.group_data is None:
-            logging.warning("get_logo_indices called but self.group_data is None")
-            return
-        logo = LeaveOneGroupOut()
-        dummy_arr = np.arange(0, len(self.group_data))
-        groupvals = np.unique(self.group_data)
-        indices = dict()
-        nfold = 0
-        for train_index, test_index in logo.split(dummy_arr, 
-                                                groups=self.group_data):
-            groupval = groupvals[nfold]
-            indices[groupval] = dict()
-            indices[groupval]["others_index"] = train_index
-            indices[groupval]["my_index"] = test_index
-            nfold = nfold + 1
-        if verbose > 0:
-            ikeys = list(indices.keys())
-            ikeys.sort()
-            for ikey in ikeys:
-                print("Group:", ikey)
-                for label in ["others_index","my_index"]:
-                    print("%s:" % label, indices[ikey][label])
-        self.group_indices = dict(indices)
-        return indices 
 
     def set_up_data_from_features(self):
         """To reset data, for example, if self.data has been changed
