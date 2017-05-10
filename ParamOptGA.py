@@ -42,7 +42,7 @@ class ParamOptGA(SingleFit):
                                    0 - do not use multiprocessing
         additional_feature_methods <str or list>: comma-delimited string, or
                         a list, of semicolon-delimited pieces, formatted like:
-                        methodname;parameter1:value1;parameter2:value2;...
+                        methodname;number_of_genes;parameter1:value1;parameter2:value2;...
     Returns:
         Analysis in save_path folder
     Raises:
@@ -118,8 +118,7 @@ class ParamOptGA(SingleFit):
         self.population = list() #list of dict
         self.afm_dict = dict()
         self.hp_dict = dict()
-        self.gene_keys = list()
-        self.gene_length = None
+        self.gene_dict = dict()
         #
         self.gen_dict = None 
         self.overall_best_parameters = None
@@ -225,21 +224,27 @@ class ParamOptGA(SingleFit):
         return
 
     def set_gene_info(self):
-        self.gene_keys = list()
-        self.gene_keys.extend(list(self.afm_dict.keys()))
-        self.gene_keys.extend(list(self.hp_dict.keys()))
-        self.gene_length = len(self.gene_keys)
+        self.gene_dict=dict()
+        self.gene_dict.update(self.hp_dict) #model, with subkeys of hyperparams
+        for afm_key in self.afm_dict.keys():
+            self.gene_dict[afm_key] = dict()
+            self.gene_dict[afm_key].update(self.afm_dict[afm_key]['params'])
+        print(self.gene_dict)
         return
 
-    def initialize_population(self):
+    def initialize_population(self, verbose=1):
         self.population=list()
         for pidx in range(self.population_size):
             self.population.append(dict())
         #initailize random population
         for individual in range(len(self.population)):
-            self.population[individual] = dict()
-            for gene in self.gene_keys:
-                self.population[individual][gene] = np.random.randint(0, 101)/100
+            for gene in self.gene_dict.keys():
+                self.population[individual][gene] = dict()
+                for geneidx in self.gene_dict[gene].keys():
+                    self.population[individual][gene][geneidx] = np.random.randint(0, 101)/100
+        if verbose > 0:
+            for indiv in self.population:
+                print(indiv)
         return
     
     def get_cv_divisions(self, num_runs=0):
@@ -283,31 +288,30 @@ class ParamOptGA(SingleFit):
 
     def print_genome(self, genome, preface=""):
         genomestr = "%s: " % preface
-        for gene in self.gene_keys:
-            genestr = gene
-            geneval = genome[gene]
-            if gene == 'alpha':
-                geneval = 10**(float(geneval)*(-6))
-                genedisp = "%3.6f" % geneval
-            elif gene == 'gamma':
-                geneval = 10**((float(geneval)*(3))-1.5)
-                genedisp = "%3.6f" % geneval
-            elif gene == "calculate_EffectiveFluence":
-                genestr="Eff. fl. p"
-                genedisp = "%0.2f" % geneval
-            else:
-                genedisp = "%s" % geneval
-            genomestr = genomestr + "%s: %s, " % (genestr, genedisp)
-        genomestr = genomestr[:-2] #remove last space and comma
-        print(genomestr, flush=True)
+        genes = list(genome.keys())
+        genes.sort()
+        for gene in genes:
+            geneidxs = list(genome[gene].keys())
+            for geneidx in geneidxs:
+                geneval = genome[gene][geneidx]
+                if geneidx == 'alpha':
+                    geneval = 10**(float(geneval)*(-6))
+                elif geneidx == 'gamma':
+                    geneval = 10**((float(geneval)*(3))-1.5)
+                genedisp = "%s %s: %3.6f" % (gene, geneidx, geneval)
+        print(genedisp, flush=True)
         return
 
     def set_hp_dict(self):
         """ #for GKRR, alpha and gamma
         """
         hp_dict=dict()
-        hp_dict['alpha']=None
-        hp_dict['gamma']=None
+        hp_dict['model'] = dict()
+        if self.model.__class__.__name__ == "KernelRidge":
+            hp_dict['model']['alpha']=None
+            hp_dict['model']['gamma']=None
+        else:
+            raise ValueError("Only Kernel Ridge with alpha and gamma optimization supported so far.")
         self.hp_dict=dict(hp_dict)
         return hp_dict
 
@@ -321,13 +325,18 @@ class ParamOptGA(SingleFit):
         for afm_item in self.additional_feature_methods:
             isplit = afm_item.split(";")
             methodname = isplit[0]
+            num_params = int(isplit[1])
             methodargs = dict()
-            for argidx in range(1, len(isplit)):
+            for argidx in range(2, len(isplit)):
                 argitem = isplit[argidx]
                 argname=argitem.split(":")[0]
                 argval = argitem.split(":")[1]
                 methodargs[argname] = argval
-            afm_dict[methodname] = methodargs
+            afm_dict[methodname] = dict()
+            afm_dict[methodname]['args'] = dict(methodargs)
+            afm_dict[methodname]['params'] = dict()
+            for pidx in range(0, num_params):
+                afm_dict[methodname]['params'][pidx] = None
         self.afm_dict=dict(afm_dict)
         return afm_dict
 
