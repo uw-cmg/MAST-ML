@@ -268,7 +268,7 @@ class SingleFit():
         self.testing_dataset.add_filters(self.plot_filter_out)
         self.print_output_csv("output_data_filtered.csv")
         rmse_pfo = np.sqrt(mean_squared_error(self.testing_dataset.target_prediction, self.testing_dataset.target_data)) 
-        self.statistics['rmse_plot_filter_out'] = rmse_pfo
+        self.statistics['filtered_rmse'] = rmse_pfo
         return
     
     def plot_results(self, addl_plot_kwargs=None):
@@ -297,7 +297,7 @@ class SingleFit():
             self.readme_list.append("Plot filtering out:\n")
             for (feature, symbol, threshold) in self.plot_filter_out:
                 self.readme_list.append("  %s %s %s\n" % (feature, symbol, threshold))
-            notelist.append("Shown-only RMSE: %3.3f" % self.statistics['rmse_plot_filter_out'])
+            notelist.append("Shown-only RMSE: %3.3f" % self.statistics['filtered_rmse'])
             notelist.append("Data not shown:")
             for (feature, symbol, threshold) in self.plot_filter_out:
                 notelist.append("  %s %s %s" % (feature, symbol, threshold))
