@@ -148,7 +148,6 @@ class SingleFit():
     @timeit
     def set_up(self):
         self.readme_list.append("%s\n" % time.asctime())
-        #self.set_data()
         return
 
     @timeit
@@ -170,24 +169,6 @@ class SingleFit():
         self.plot_results()
         return
 
-    def set_data(self):
-        """Replace with pandas dataframes
-        """
-        self.training_dataset.set_y_feature(self.target_feature)
-        self.training_dataset.set_x_features(self.input_features)
-        self.training_input_data = np.asarray(self.training_dataset.get_x_data())
-        self.training_target_data = np.asarray(self.training_dataset.get_y_data()).ravel()
-        hasy = self.testing_dataset.set_y_feature(self.target_feature)
-        if hasy:
-            self.testing_target_data = np.asarray(self.testing_dataset.get_y_data()).ravel()
-            if not(self.target_error_feature is None):
-                self.testing_target_data_error = np.asarray(self.testing_dataset.get_data(self.target_error_feature)).ravel()
-        else:
-            self.testing_dataset.set_y_feature(self.input_features[0]) #dummy y feature
-            #self.testing_target_data remains None
-        self.testing_dataset.set_x_features(self.input_features)
-        self.testing_input_data = np.asarray(self.testing_dataset.get_x_data())
-        return
 
 
     def get_trained_model(self):
