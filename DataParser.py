@@ -5,9 +5,7 @@ import logging
 import sys
 import os
 import numpy as np
-from sklearn.feature_selection import VarianceThreshold
 from sklearn.preprocessing import StandardScaler
-#from matminer.descriptors.composition_features import get_magpie_descriptor
 from pymatgen import Element, Composition
 
 class DataParser(object):
@@ -87,22 +85,6 @@ class FeatureIO(object):
         (self.dataframe).drop_duplicates()
         return self.dataframe
 
-    # This method may not be needed as PCA and feature selection may make it obsolete
-    """
-    def remove_duplicate_features_by_values(self, x_features, y_feature):
-        # WARNING: this function currently doesn't work. Still looking into this.
-        print(x_features, y_feature)
-        selector = VarianceThreshold(threshold = 0)
-        array = selector.fit_transform(X=self.dataframe[x_features], y=self.dataframe[y_feature])
-        y_data = np.asarray(self.dataframe[y_feature]).reshape([-1, 1])
-        data = np.concatenate((array, y_data), axis=1)
-        print(data)
-        dataframe = pd.DataFrame(data=data)
-        print(x_features, y_feature)
-        dataframe = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
-        return dataframe
-    """
-
     def remove_custom_features(self, features_to_remove):
         for feature in features_to_remove:
             del self.dataframe[feature]
@@ -143,46 +125,6 @@ class FeatureIO(object):
         dataframe = self.dataframe.drop(self.dataframe.index[rows_to_remove])
         return dataframe
 
-    def generate_atomic_magpie_features(self, composition_list):
-        # Get .table files containing feature values for each element, assign file names as feature names
-        data_path = './magpiedata/magpie_elementdata'
-        magpie_feature_names = []
-        for f in os.listdir(data_path):
-            if '.table' in f:
-                magpie_feature_names.append(f[:-6])
-
-        # Make pymatgen Composition objects out of specified compositions
-        compositions = []
-        for composition in composition_list:
-            compositions.append(Composition(composition))
-
-        magpiedata = {}
-        for composition in compositions:
-            # Get elements from composition, and atomic number from resulting element
-            element_amounts = composition.get_el_amt_dict()
-
-            composition_dict = {}
-            atomic_numbers = []
-            for k, v in element_amounts.items():
-                composition_dict[k] = {"amount": v, "atomic_number": Element(k).Z}
-                atomic_numbers.append(Element(k).Z)
-
-            for feature_name in magpie_feature_names:
-                atomic_values = []
-                f = open(data_path + '/' + feature_name + '.table', 'r')
-                # Get Magpie data of relevant atomic numbers for this composition
-                for line, feature_value in enumerate(f.readlines()):
-                    if line+1 in atomic_numbers:
-                        if "Missing" not in feature_value:
-                            if feature_name != "OxidationStates":
-                                atomic_values.append(float(feature_value.strip()))
-                        if "Missing" in feature_value:
-                            atomic_values.append('NaN')
-                magpiedata[feature_name] = atomic_values
-                f.close()
-
-        return magpiedata
-
 class FeatureNormalization(object):
     """This class is used to normalize and unnormalize features in a dataframe.
     """
@@ -212,6 +154,71 @@ class FeatureNormalization(object):
         dataframe_normalized, scaler = self.normalize_features(x_features=x_features, y_feature=y_feature)
         dataframe = DataframeUtilities()._merge_dataframe_columns(dataframe1=self.dataframe, dataframe2=dataframe_normalized)
         return dataframe
+
+# This class is a work in progress, don't use yet
+class MagpieFeatures(object):
+    """Class to generate new features using Magpie data and dataframe containing material compositions. Creates
+     a dataframe and append features to existing feature dataframes
+    """
+    def __init__(self, dataframe):
+        self.dataframe = dataframe
+
+    def generate_magpie_features(self):
+        try:
+            compositions = self.dataframe['Magpie compositions']
+        except KeyError:
+            print('No column called "Magpie compositions" exists in the supplied dataframe.')
+            sys.exit()
+
+        print(compositions)
+        #magpiedata_atomic = self._get_atomic_magpie_features(composition=xxx)
+        #magpiedata_composition = self._get_composition_averaged_magpie_features(composition=xxx)
+        return
+
+
+    def _get_atomic_magpie_features(self, composition):
+        # Get .table files containing feature values for each element, assign file names as feature names
+        data_path = './magpiedata/magpie_elementdata'
+        magpie_feature_names = []
+        for f in os.listdir(data_path):
+            if '.table' in f:
+                magpie_feature_names.append(f[:-6])
+
+        composition = Composition(composition)
+        magpiedata_atomic = {}
+        element_amounts = composition.get_el_amt_dict()
+
+        composition_dict = {}
+        atomic_numbers = []
+        for k, v in element_amounts.items():
+            composition_dict[k] = {"amount": v, "atomic_number": Element(k).Z}
+            atomic_numbers.append(Element(k).Z)
+
+        for feature_name in magpie_feature_names:
+            atomic_values = []
+            f = open(data_path + '/' + feature_name + '.table', 'r')
+            # Get Magpie data of relevant atomic numbers for this composition
+            for line, feature_value in enumerate(f.readlines()):
+                if line+1 in atomic_numbers:
+                    if "Missing" not in feature_value:
+                        if feature_name != "OxidationStates":
+                            atomic_values.append(float(feature_value.strip()))
+                    if "Missing" in feature_value:
+                        atomic_values.append('NaN')
+            magpiedata_atomic[feature_name] = atomic_values
+            f.close()
+
+        return magpiedata_atomic
+
+    def _get_composition_averaged_magpie_features(self, composition):
+        magpiedata_composition = {}
+        magpiedata = self._get_atomic_magpie_features(composition=composition)
+        composition = Composition(composition)
+        for magpiefeature in magpiedata.keys():
+            print(magpiefeature, magpiedata[magpiefeature])
+        for k, v in composition.items():
+            print(k,v)
+        return magpiedata_composition
 
 class DataframeUtilities(object):
     """This class is a collection of basic utilities for dataframe manipulation, and exchanging between dataframes and numpy arrays
