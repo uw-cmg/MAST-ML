@@ -115,7 +115,7 @@ class DataHandler():
         self.set_up_data_from_features()
         return
 
-    def print_data(self, csvname="data.csv"):
+    def print_data(self, csvname="data.csv", addl_cols = list()):
         cols = list()
         if not self.labeling_features is None:
             cols.extend(self.labeling_features)
@@ -129,6 +129,7 @@ class DataHandler():
             cols.append(self.target_error_feature)
         if not self.target_prediction is None:
             cols.append("Prediction")
+        cols.extend(addl_cols)
         self.data.to_csv(csvname,
                         columns=list(cols))
         return cols

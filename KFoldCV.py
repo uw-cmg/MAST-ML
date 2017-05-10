@@ -22,10 +22,6 @@ class KFoldCV(LeaveOutPercentCV):
         testing_dataset, (Should be the same as training_dataset)
         model,
         save_path,
-        input_features,
-        target_feature,
-        target_error_feature,
-        labeling_features, 
         xlabel, 
         ylabel,
         stepsize,
@@ -46,10 +42,6 @@ class KFoldCV(LeaveOutPercentCV):
         testing_dataset=None,
         model=None,
         save_path=None,
-        input_features=None,
-        target_feature=None,
-        target_error_feature=None,
-        labeling_features=None,
         xlabel="Measured",
         ylabel="Predicted",
         stepsize=1,
@@ -71,10 +63,6 @@ class KFoldCV(LeaveOutPercentCV):
             testing_dataset=testing_dataset,
             model=model, 
             save_path = save_path,
-            input_features = input_features, 
-            target_feature = target_feature,
-            target_error_feature = target_error_feature,
-            labeling_features = labeling_features,
             xlabel=xlabel,
             ylabel=ylabel,
             stepsize=stepsize,
@@ -98,9 +86,9 @@ class KFoldCV(LeaveOutPercentCV):
         return
 
     def set_up_cv(self):
-        if self.testing_target_data is None:
+        if self.testing_dataset.target_data is None:
             raise ValueError("Testing target data cannot be none for cross validation.")
-        indices = np.arange(0, len(self.testing_target_data))
+        indices = np.arange(0, len(self.testing_dataset.target_data))
         self.readme_list.append("----- CV setup -----\n")
         self.readme_list.append("%i CV tests,\n" % self.num_cvtests)
         self.readme_list.append("each with %i folds\n" % self.num_folds)
@@ -122,14 +110,14 @@ class KFoldCV(LeaveOutPercentCV):
         for cvtest in self.cvtest_dict.keys():
             fold_rmses = np.zeros(self.num_folds)
             fold_mean_errors = np.zeros(self.num_folds)
-            fold_array = np.zeros(len(self.testing_target_data))
-            prediction_array = np.zeros(len(self.testing_target_data))
+            fold_array = np.zeros(len(self.testing_dataset.target_data))
+            prediction_array = np.zeros(len(self.testing_dataset.target_data))
             for fold in self.cvtest_dict[cvtest].keys():
                 fdict = self.cvtest_dict[cvtest][fold]
-                input_train = self.testing_input_data[fdict['train_index']]
-                target_train = self.testing_target_data[fdict['train_index']]
-                input_test = self.testing_input_data[fdict['test_index']]
-                target_test = self.testing_target_data[fdict['test_index']]
+                input_train = self.testing_dataset.input_data.iloc[fdict['train_index']]
+                target_train = self.testing_dataset.target_data[fdict['train_index']]
+                input_test = self.testing_dataset.input_data.iloc[fdict['test_index']]
+                target_test = self.testing_dataset.target_data[fdict['test_index']]
                 fit = self.model.fit(input_train, target_train)
                 predict_test = self.model.predict(input_test)
                 rmse = np.sqrt(mean_squared_error(predict_test, target_test))
@@ -163,42 +151,27 @@ class KFoldCV(LeaveOutPercentCV):
         self.statistics['fold_avg_rmse_best'] = lowest_rmse
         self.statistics['fold_avg_rmse_worst'] = highest_rmse
         return
-
-    def print_output_csv(self, label="", cvtest_entry=None):
+    
+    def print_best_worst_output_csv(self, label=""):
         """
-            Modify once dataframe is in place
         """
         olabel = "%s_test_data.csv" % label
         ocsvname = os.path.join(self.save_path, olabel)
+        self.testing_dataset.add_feature("Best Prediction", 
+                    self.cvtest_dict[self.best_test_index]['prediction_array'])
+        self.testing_dataset.add_feature("Folds for best", 
+                    self.cvtest_dict[self.best_test_index]['fold_array'])
+        self.testing_dataset.add_feature("Worst Prediction", 
+                    self.cvtest_dict[self.worst_test_index]['prediction_array'])
+        self.testing_dataset.add_feature("Folds for worst", 
+                    self.cvtest_dict[self.worst_test_index]['fold_array'])
+        addl_cols = list()
+        addl_cols.append("Best Prediction")
+        addl_cols.append("Folds for best")
+        addl_cols.append("Worst Prediction")
+        addl_cols.append("Folds for worst")
+        cols = self.testing_dataset.print_data(ocsvname, addl_cols)
         self.readme_list.append("%s file created with columns:\n" % olabel)
-        headerline = ""
-        printarray = None
-        if len(self.labeling_features) > 0:
-            self.readme_list.append("   labeling features: %s\n" % self.labeling_features)
-            print_features = list(self.labeling_features)
-        else:
-            print_features = list()
-        print_features.extend(self.input_features)
-        self.readme_list.append("   input features: %s\n" % self.input_features)
-        if not (self.testing_target_data is None):
-            print_features.append(self.target_feature)
-            self.readme_list.append("   target feature: %s\n" % self.target_feature)
-            if not (self.target_error_feature is None):
-                print_features.append(self.target_error_feature)
-                self.readme_list.append("   target error feature: %s\n" % self.target_error_feature)
-        for feature_name in print_features:
-            headerline = headerline + feature_name + ","
-            feature_vector = np.asarray(self.testing_dataset.get_data(feature_name)).ravel()
-            if printarray is None:
-                printarray = feature_vector
-            else:
-                printarray = np.vstack((printarray, feature_vector))
-        headerline = headerline + "Prediction,"
-        self.readme_list.append("   prediction: Prediction\n")
-        printarray = np.vstack((printarray, cvtest_entry['prediction_array']))
-        headerline = headerline + "Fold"
-        self.readme_list.append("   fold number: Fold\n")
-        printarray = np.vstack((printarray, cvtest_entry['fold_array']))
-        printarray=printarray.transpose()
-        ptools.mixed_array_to_csv(ocsvname, headerline, printarray)
+        for col in cols:
+            self.readme_list.append("    %s\n" % col)
         return

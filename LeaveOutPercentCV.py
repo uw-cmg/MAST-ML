@@ -185,7 +185,7 @@ class LeaveOutPercentCV(SingleFit):
                     self.cvtest_dict[self.best_test_index]['prediction_array'])
         self.testing_dataset.add_feature("Worst Prediction", 
                     self.cvtest_dict[self.worst_test_index]['prediction_array'])
-        cols = self.testing_dataset.print_data(ocsvname)
+        cols = self.testing_dataset.print_data(ocsvname, ["Best Prediction", "Worst Prediction"])
         self.readme_list.append("%s file created with columns:\n" % olabel)
         for col in cols:
             self.readme_list.append("    %s\n" % col)

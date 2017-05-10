@@ -1,4 +1,4 @@
-Mon May  8 16:55:31 2017
+Wed May 10 12:18:33 2017
 ----- CV setup -----
 20 CV tests,
 each with 5 folds
@@ -10,20 +10,18 @@ fold_avg_rmse_worst: 0.1435
 std_fold_avg_mean_errors: 0.0044
 std_fold_avg_rmses: 0.0065
 ----- Output data -----
-best_test_data.csv file created with columns:
-   labeling features: ['str_cat']
-   input features: ['time', 'N_sine_feature', 'N_linear_feature']
-   target feature: y_feature
-   target error feature: N_linear_feature
-   prediction: Prediction
-   fold number: Fold
-worst_test_data.csv file created with columns:
-   labeling features: ['str_cat']
-   input features: ['time', 'N_sine_feature', 'N_linear_feature']
-   target feature: y_feature
-   target error feature: N_linear_feature
-   prediction: Prediction
-   fold number: Fold
+best_and_worst_test_data.csv file created with columns:
+    str_cat
+    num_id
+    time
+    N_sine_feature
+    N_linear_feature
+    y_feature
+    N_linear_feature
+    Best Prediction
+    Folds for best
+    Worst Prediction
+    Folds for worst
 ----- Plotting -----
 Plot best_worst_overlay.png created,
     showing the best and worst of 20 tests.

@@ -1,4 +1,4 @@
-Wed May 10 12:08:54 2017
+Wed May 10 12:18:31 2017
 ----- CV setup -----
 20 CV tests,
 leaving out 50 percent
@@ -18,6 +18,8 @@ best_and_worst_test_data.csv file created with columns:
     N_linear_feature
     y_feature
     N_linear_feature
+    Best Prediction
+    Worst Prediction
 ----- Plotting -----
 Plot best_worst_overlay.png created,
     showing the best and worst of 20 tests.
