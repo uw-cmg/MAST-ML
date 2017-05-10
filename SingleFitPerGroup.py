@@ -24,15 +24,10 @@ class SingleFitPerGroup(SingleFitGrouped):
         testing_dataset,
         model,
         save_path,
-        input_features,
-        target_feature,
-        target_error_feature,
-        labeling_features, 
         xlabel, 
         ylabel,
         stepsize, 
         plot_filter_out, 
-        grouping_feature,
         mark_outlying_groups, see parent class
 
     Returns:
@@ -41,7 +36,7 @@ class SingleFitPerGroup(SingleFitGrouped):
         Plots results in a predicted vs. measured square plot.
 
     Raises:
-        ValueError if grouping_feature is not set
+        ValueError if testing dataset grouping_feature is not set
         ValueError if testing target data is None; has to have at least
                     some testing target data to plot
     """
@@ -50,15 +45,10 @@ class SingleFitPerGroup(SingleFitGrouped):
         testing_dataset=None,
         model=None,
         save_path=None,
-        input_features=None,
-        target_feature=None,
-        target_error_feature=None,
-        labeling_features=None,
         xlabel="Measured",
         ylabel="Predicted",
         stepsize=1,
         plot_filter_out = None,
-        grouping_feature = None,
         mark_outlying_groups = 2,
         *args, **kwargs):
         """
@@ -72,15 +62,10 @@ class SingleFitPerGroup(SingleFitGrouped):
             testing_dataset=testing_dataset,
             model=model, 
             save_path = save_path,
-            input_features = input_features, 
-            target_feature = target_feature,
-            target_error_feature = target_error_feature,
-            labeling_features = labeling_features,
             xlabel=xlabel,
             ylabel=ylabel,
             stepsize=stepsize,
             plot_filter_out = plot_filter_out,
-            grouping_feature = grouping_feature,
             mark_outlying_groups = mark_outlying_groups,
             fit_only_on_matched_groups = 0)
         # Sets later in code
@@ -100,20 +85,22 @@ class SingleFitPerGroup(SingleFitGrouped):
         return
 
     def get_group_predictions(self):
-        for group in self.test_groups:
+        for group in self.testing_dataset.groups:
+            if not group in self.training_dataset.groups:
+                logging.warning("Skipping group %s not in training groups." % group)
+                continue #must have training data to do a fit
+            gfeat = self.testing_dataset.grouping_feature
             group_training_dataset = copy.deepcopy(self.training_dataset)
             group_testing_dataset = copy.deepcopy(self.testing_dataset)
-            group_training_dataset.add_exclusive_filter(self.grouping_feature, "<>", group)
-            group_testing_dataset.add_exclusive_filter(self.grouping_feature, "<>", group)
+            group_training_dataset.data = group_training_dataset.data[group_training_dataset.data[gfeat] == group]
+            group_testing_dataset.data = group_testing_dataset.data[group_testing_dataset.data[gfeat] == group]
+            group_training_dataset.set_up_data_from_features()
+            group_testing_dataset.set_up_data_from_features()
             self.per_group_singlefits[group]=SingleFit(
                     training_dataset = group_training_dataset,
                     testing_dataset = group_testing_dataset,
                     model = self.model,
                     save_path = os.path.join(self.save_path, str(group)),
-                    input_features = list(self.input_features),
-                    target_feature = self.target_feature,
-                    target_error_feature = self.target_error_feature,
-                    labeling_features = list(self.labeling_features),
                     xlabel = self.xlabel,
                     ylabel = self.ylabel,
                     stepsize = self.stepsize,
@@ -130,7 +117,9 @@ class SingleFitPerGroup(SingleFitGrouped):
     def print_statistics(self):
         self.readme_list.append("----- Statistics -----\n")
         self.readme_list.append("RMSEs from individual group fits:\n")
-        for group in self.test_groups:
+        groups = list(self.per_group_statistics.keys())
+        groups.sort()
+        for group in groups:
             skeys = list(self.per_group_statistics[group].keys())
             skeys.sort()
             for skey in skeys:
@@ -146,8 +135,8 @@ class SingleFitPerGroup(SingleFitGrouped):
         group_notelist=list()
         if not(self.plot_filter_out is None):
             group_notelist.append("Data not shown:")
-            for pfstr in self.plot_filter_out:
-                group_notelist.append("  %s" % pfstr.replace(";"," "))
+            for (feature, symbol, threshold) in self.plot_filter_out:
+                group_notelist.append("  %s %s %s" % (feature, symbol, threshold))
         if self.plot_filter_out is None:
             group_notelist.append("RMSEs for individual fits:")
         else:
@@ -161,19 +150,8 @@ class SingleFitPerGroup(SingleFitGrouped):
         self.readme_list.append("    labeling worst-fitting groups and their RMSEs.\n")
         return
     
-    def set_group_info(self):
-        SingleFitGrouped.set_group_info(self)
-        all_groups = np.union1d(self.train_groups, self.test_groups)
-        plot_groups = np.intersect1d(self.train_groups, self.test_groups) #have both training and testing data
-        for group in all_groups:
-            if group not in plot_groups:
-                logging.info("Skipping group %s for futher analysis because training or testing data is missing." % group)
-        self.train_groups = plot_groups #Can only train if have training data
-        self.test_groups = plot_groups #Can only test if have testing data
-        return
-
     def get_per_group_statistics(self):
-        for group in self.test_groups: 
+        for group in self.per_group_singlefits.keys(): 
             self.per_group_statistics[group] = dict(self.per_group_singlefits[group].statistics)
         return
 
@@ -182,19 +160,15 @@ class SingleFitPerGroup(SingleFitGrouped):
         if self.plot_filter_out is None:
             criterion = 'rmse'
         else:
-            criterion = 'rmse_plot_filter_out'
-        for group in self.test_groups:
+            criterion = 'filtered_rmse'
+        for group in self.per_group_singlefits.keys():
             g_singlefit = self.per_group_singlefits[group]
-            if not(g_singlefit.plotting_index is None):
-                plot_index = g_singlefit.plotting_index
-            else:
-                plot_index = np.arange(0, len(g_singlefit.testing_target_prediction))
-            g_ypredict= g_singlefit.testing_target_prediction[plot_index]
-            g_ydata = g_singlefit.testing_target_data[plot_index]
-            if g_singlefit.testing_target_data_error is None:
+            g_ypredict= g_singlefit.testing_dataset.target_prediction
+            g_ydata = g_singlefit.testing_dataset.target_data
+            if g_singlefit.testing_dataset.target_error_data is None:
                 g_ydata_err = np.zeros(len(g_ydata))
             else:
-                g_ydata_err = g_singlefit.testing_target_data_error[plot_index]
+                g_ydata_err = g_singlefit.testing_dataset.target_error_data
             plot_dict[group] = dict()
             plot_dict[group]['xdata'] = g_ydata
             plot_dict[group]['xerrdata'] = g_ydata_err
