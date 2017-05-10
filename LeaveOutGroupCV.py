@@ -12,6 +12,7 @@ from SingleFit import SingleFit
 from LeaveOutPercentCV import LeaveOutPercentCV
 from SingleFit import timeit
 from sklearn.metrics import r2_score
+from sklearn.model_selection import LeaveOneGroupOut
 
 class LeaveOutGroupCV(LeaveOutPercentCV):
     """leave-out-group cross validation
@@ -21,15 +22,10 @@ class LeaveOutGroupCV(LeaveOutPercentCV):
         testing_dataset, (Should be the same as training_dataset)
         model,
         save_path,
-        input_features,
-        target_feature,
-        target_error_feature,
-        labeling_features, 
         xlabel, 
         ylabel,
         stepsize,
         mark_outlying_points (Use only 1 number), see parent class.
-        grouping_feature <str>: Feature name for grouping
  
     Returns:
         Analysis in the save_path folder
@@ -44,24 +40,15 @@ class LeaveOutGroupCV(LeaveOutPercentCV):
         testing_dataset=None,
         model=None,
         save_path=None,
-        input_features=None,
-        target_feature=None,
-        target_error_feature=None,
-        labeling_features=None,
         xlabel="Measured",
         ylabel="Predicted",
         stepsize=1,
         mark_outlying_points=None,
-        grouping_feature=None,
         *args, **kwargs):
         """
         Additional class attributes to parent class:
             Set by keyword:
-            self.grouping_feature <str>: Grouping feature
             Set in code:
-            self.group_data <numpy array>: Grouping data
-            self.group_indices <dict>: Grouping indices
-            self.groups <list>: List of groups
         """
         if not(training_dataset == testing_dataset):
             raise ValueError("Only testing_dataset will be used. Use the same values for training_dataset and testing_dataset")
@@ -70,10 +57,6 @@ class LeaveOutGroupCV(LeaveOutPercentCV):
             testing_dataset=testing_dataset,
             model=model, 
             save_path = save_path,
-            input_features = input_features, 
-            target_feature = target_feature,
-            target_error_feature = target_error_feature,
-            labeling_features = labeling_features,
             xlabel=xlabel,
             ylabel=ylabel,
             stepsize=stepsize,
@@ -82,10 +65,8 @@ class LeaveOutGroupCV(LeaveOutPercentCV):
             num_cvtests = -1, #not using this field; num_cvtests is set by number of groups
             fix_random_for_testing = 0, #no randomization in this test
             )
-        if grouping_feature is None:
+        if self.testing_dataset.grouping_feature is None:
             raise ValueError("grouping feature must be set.")
-        self.grouping_feature = grouping_feature
-        self.group_data = None
         return 
 
     def predict(self):
@@ -123,23 +104,24 @@ class LeaveOutGroupCV(LeaveOutPercentCV):
         return
 
     def set_up_cv(self):
-        if self.testing_target_data is None:
+        if self.testing_dataset.target_data is None:
             raise ValueError("Testing target data cannot be none for cross validation.")
-        indices = np.arange(0, len(self.testing_target_data))
-        self.group_data = np.asarray(self.testing_dataset.get_data(self.grouping_feature)).ravel()
-        self.group_indices = gttd.get_logo_indices(self.group_data)
-        self.groups = list(self.group_indices.keys())
-        self.num_cvtests = len(self.groups)
+        indices = np.arange(0, len(self.testing_dataset.target_data))
+        self.num_cvtests = len(self.testing_dataset.groups)
         self.readme_list.append("----- CV setup -----\n")
         self.readme_list.append("%i CV tests,\n" % self.num_cvtests)
-        self.readme_list.append("leaving out %s groups.\n" % self.grouping_feature)
-        self.cvmodel = self.model
-        for cvtest in range(0, self.num_cvtests):
-            group = self.groups[cvtest]
+        self.readme_list.append("leaving out %s groups.\n" % self.testing_dataset.grouping_feature)
+        self.cvmodel = LeaveOneGroupOut()
+        cvtest=0
+        for train, test in self.cvmodel.split(self.testing_dataset.input_data,
+                        self.testing_dataset.target_data,
+                        self.testing_dataset.group_data):
+            group = self.testing_dataset.groups[cvtest]
             self.cvtest_dict[cvtest] = dict()
-            self.cvtest_dict[cvtest]['train_index'] = self.group_indices[group]['train_index']
-            self.cvtest_dict[cvtest]['test_index'] = self.group_indices[group]['test_index']
+            self.cvtest_dict[cvtest]['train_index'] = train
+            self.cvtest_dict[cvtest]['test_index'] = test
             self.cvtest_dict[cvtest]['group'] = group #keep track of group
+            cvtest=cvtest + 1
         return
 
     def print_statistics(self):
@@ -156,66 +138,16 @@ class LeaveOutGroupCV(LeaveOutPercentCV):
 
     def print_output_csv(self, label="", cvtest_entry=None):
         """
-            Modify once dataframe is in place
         """
         olabel = "%s_test_data.csv" % label
         ocsvname = os.path.join(self.save_path, olabel)
+        self.testing_dataset.add_feature("Group Prediction", 
+                    cvtest_entry['prediction_array'])
+        addl_cols = list()
+        addl_cols.append("Group Prediction")
+        cols = self.testing_dataset.print_data(ocsvname, addl_cols)
         self.readme_list.append("%s file created with columns:\n" % olabel)
-        headerline = ""
-        printarray = None
-        if len(self.labeling_features) > 0:
-            self.readme_list.append("   labeling features: %s\n" % self.labeling_features)
-            print_features = list(self.labeling_features)
-        else:
-            print_features = list()
-        print_features.extend(self.input_features)
-        self.readme_list.append("   input features: %s\n" % self.input_features)
-        if not (self.testing_target_data is None):
-            print_features.append(self.target_feature)
-            self.readme_list.append("   target feature: %s\n" % self.target_feature)
-            if not (self.target_error_feature is None):
-                print_features.append(self.target_error_feature)
-                self.readme_list.append("   target error feature: %s\n" % self.target_error_feature)
-        for feature_name in print_features:
-            headerline = headerline + feature_name + ","
-            feature_vector = np.asarray(self.testing_dataset.get_data(feature_name)).ravel()
-            if printarray is None:
-                printarray = feature_vector
-            else:
-                printarray = np.vstack((printarray, feature_vector))
-        headerline = headerline + "Prediction,"
-        self.readme_list.append("   prediction: Prediction\n")
-        printarray = np.vstack((printarray, cvtest_entry['prediction_array']))
-        printarray=printarray.transpose()
-        ptools.mixed_array_to_csv(ocsvname, headerline, printarray)
+        for col in cols:
+            self.readme_list.append("    %s\n" % col)
         return
-
-    def plot_best_worst_overlay(self, notelist=list()):
-        kwargs2 = dict()
-        kwargs2['xlabel'] = self.xlabel
-        kwargs2['ylabel'] = self.ylabel
-        kwargs2['labellist'] = ["Best test","Worst test"]
-        kwargs2['xdatalist'] = list([self.testing_target_data, 
-                            self.testing_target_data])
-        kwargs2['ydatalist'] = list(
-                [self.cvtest_dict[self.best_test_index]['prediction_array'],
-                self.cvtest_dict[self.worst_test_index]['prediction_array']])
-        kwargs2['xerrlist'] = list([None,None])
-        kwargs2['yerrlist'] = list([None,None])
-        kwargs2['notelist'] = list(notelist)
-        kwargs2['guideline'] = 1
-        kwargs2['plotlabel'] = "best_worst_overlay"
-        kwargs2['save_path'] = self.save_path
-        kwargs2['stepsize'] = self.stepsize
-        if not (self.mark_outlying_points is None):
-            kwargs2['marklargest'] = self.mark_outlying_points
-            if (self.labeling_features is None) or (len(self.labeling_features) == 0):
-                raise ValueError("Must specify some labeling features if you want to mark the largest outlying points")
-            labels = np.asarray(self.testing_dataset.get_data(self.labeling_features[0])).ravel()
-            kwargs2['mlabellist'] = list([labels,labels])
-        plotxy.multiple_overlay(**kwargs2)
-        self.readme_list.append("Plot best_worst_overlay.png created,\n")
-        self.readme_list.append("    showing the best and worst of %i tests.\n" % self.num_cvtests)
-        return
-
 
