@@ -23,10 +23,6 @@ class LeaveOneOutCV(KFoldCV):
         testing_dataset, (Should be the same as training_dataset)
         model,
         save_path,
-        input_features,
-        target_feature,
-        target_error_feature,
-        labeling_features, 
         xlabel, 
         ylabel,
         stepsize,
@@ -44,10 +40,6 @@ class LeaveOneOutCV(KFoldCV):
         testing_dataset=None,
         model=None,
         save_path=None,
-        input_features=None,
-        target_feature=None,
-        target_error_feature=None,
-        labeling_features=None,
         xlabel="Measured",
         ylabel="Predicted",
         stepsize=1,
@@ -66,10 +58,6 @@ class LeaveOneOutCV(KFoldCV):
             testing_dataset=testing_dataset,
             model=model, 
             save_path = save_path,
-            input_features = input_features, 
-            target_feature = target_feature,
-            target_error_feature = target_error_feature,
-            labeling_features = labeling_features,
             xlabel=xlabel,
             ylabel=ylabel,
             stepsize=stepsize,
@@ -82,7 +70,7 @@ class LeaveOneOutCV(KFoldCV):
         return 
 
     def set_up_cv(self):
-        self.num_folds = len(self.testing_target_data) 
+        self.num_folds = len(self.testing_dataset.target_data) 
         KFoldCV.set_up_cv(self)
         self.readme_list.append("Equivalent to %i leave-one-out CV tests\n" % self.num_folds)
         return
@@ -102,6 +90,19 @@ class LeaveOneOutCV(KFoldCV):
         for key in statlist:
             self.readme_list.append("%s: %3.3f\n" % (key,self.cvtest_dict[0][key]))
         return
+    
+    def print_output_csv(self, label="", cvtest_entry=None):
+        """
+        """
+        olabel = "%s_test_data.csv" % label
+        ocsvname = os.path.join(self.save_path, olabel)
+        self.testing_dataset.add_feature("LOO Predictions", 
+                    cvtest_entry['prediction_array'])
+        cols = self.testing_dataset.print_data(ocsvname, ["LOO Predictions"])
+        self.readme_list.append("%s file created with columns:\n" % olabel)
+        for col in cols:
+            self.readme_list.append("    %s\n" % col)
+        return
 
     @timeit
     def plot(self):
@@ -120,10 +121,10 @@ class LeaveOneOutCV(KFoldCV):
         kwargs2['xlabel'] = self.xlabel
         kwargs2['ylabel'] = self.ylabel
         kwargs2['labellist'] = list(["_prediction"]) #underscore prevents label
-        kwargs2['xdatalist'] = list([self.testing_target_data])
+        kwargs2['xdatalist'] = list([self.testing_dataset.target_data])
         kwargs2['ydatalist'] = list(
                 [self.cvtest_dict[0]['prediction_array']]) #only one cvtest, with number of folds equal to number of data points
-        kwargs2['xerrlist'] = list([self.testing_target_data_error])
+        kwargs2['xerrlist'] = list([self.testing_dataset.target_error_data])
         kwargs2['yerrlist'] = list([None])
         kwargs2['notelist'] = list(notelist)
         kwargs2['guideline'] = 1
@@ -132,9 +133,9 @@ class LeaveOneOutCV(KFoldCV):
         kwargs2['stepsize'] = self.stepsize
         if not (self.mark_outlying_points is None):
             kwargs2['marklargest'] = self.mark_outlying_points
-            if (self.labeling_features is None) or (len(self.labeling_features) == 0):
+            if (self.testing_dataset.labeling_features is None):
                 raise ValueError("Must specify some labeling features if you want to mark the largest outlying points")
-            labels = np.asarray(self.testing_dataset.get_data(self.labeling_features[0])).ravel()
+            labels = self.testing_dataset.data[self.testing_dataset.labeling_features[0]]
             kwargs2['mlabellist'] = list([labels])
         plotxy.multiple_overlay(**kwargs2)
         self.readme_list.append("Plot loo_results.png created,\n")
