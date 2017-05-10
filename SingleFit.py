@@ -249,15 +249,18 @@ class SingleFit():
         elif type(plot_filter_out) is str:
             pfo_list = plot_filter_out.split(",")
         for pfo_item in pfo_list:
-            pflist = pfo_item.split(";")
-            feature = pflist[0].strip()
-            symbol = pflist[1].strip()
-            rawvalue = pflist[2].strip()
-            try:
-                value = float(rawvalue)
-            except ValueError:
-                value = rawvalue
-            pf_tuple_list.append((feature, symbol, value))
+            if type(pfo_item) is tuple:
+                pf_tuple_list.append(pfo_item)
+            else:
+                pflist = pfo_item.split(";")
+                feature = pflist[0].strip()
+                symbol = pflist[1].strip()
+                rawvalue = pflist[2].strip()
+                try:
+                    value = float(rawvalue)
+                except ValueError:
+                    value = rawvalue
+                pf_tuple_list.append((feature, symbol, value))
         return pf_tuple_list
         
     def plot_filter_update_statistics(self):
