@@ -64,10 +64,6 @@ class DataHandler():
             self.target_prediction <dataframe>
             self.groups <list>: list of groups from self.grouping_feature
             self.group_data <dataframe>: Grouping data feature
-            self.group_indices <dict>: keys are groups, and each subdictionary
-                                        has 'my_index' for the indices
-                                        of that group, and 'others_index' for
-                                        all other indices
         """
         if data is None:
             raise ValueError("No dataframe.")
@@ -88,7 +84,6 @@ class DataHandler():
         self.target_error_data = None
         self.target_prediction = None
         self.group_data = None
-        self.group_indices = None
         self.groups = None
         #Run upon initialization
         self.set_up_data()
@@ -99,7 +94,6 @@ class DataHandler():
             self.target_error_data = self.data[self.target_error_feature]
         if not (self.grouping_feature is None):
             self.group_data = self.data[self.grouping_feature]
-            self.get_logo_indices()
             self.groups = np.unique(self.group_data)
         return
 
@@ -109,6 +103,7 @@ class DataHandler():
             logo also sorts.
             The resulting dictionary will have indices with the group value.
         """
+        raise NotImplementedError("Removing function.")
         if self.group_data is None:
             logging.warning("get_logo_indices called but self.group_data is None")
             return
