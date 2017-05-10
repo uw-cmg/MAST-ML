@@ -78,9 +78,8 @@ class PredictionVsFeature(SingleFit):
             self.sizes <list of str>: list of sizes for plotting
             
             Set by code:
-            self.testing_dataset_dict <dict of data objects>: testing datasets and their information:
-                dataset
-                SingleFit (SingleFit object)
+            self.sf_dict <dict of SingleFit objects>: dict of SingleFit objects,
+                                    with keys as testing dataset names
         """
         SingleFit.__init__(self, 
             training_dataset=training_dataset, 
@@ -105,18 +104,12 @@ class PredictionVsFeature(SingleFit):
         self.legendloc = legendloc
         self.sizes = sizes
         #Sets in code
-        self.testing_dataset_dict = dict() 
+        self.sf_dict = dict()
         return
    
     @timeit
     def set_up(self):
         SingleFit.set_up(self)
-        tidxs = np.arange(0, len(self.testing_datasets)) 
-        for tidx in tidxs:
-            td_entry = dict()
-            td_entry['dataset'] = copy.deepcopy(self.testing_datasets[tidx])
-            test_data_label = self.data_labels[tidx]
-            self.testing_dataset_dict[test_data_label] = dict(td_entry)
         return
 
     @timeit
@@ -129,18 +122,21 @@ class PredictionVsFeature(SingleFit):
         """
         self.readme_list.append("----- Fitting and prediction -----\n")
         self.readme_list.append("See results per dataset in subfolders\n")
-        for testset in self.testing_dataset_dict.keys():
+        tidxs = np.arange(0, len(self.testing_datasets))
+        for tidx in tidxs:
+            testset = self.data_labels[tidx]
+            testdata = copy.deepcopy(self.testing_datasets[tidx])
             self.readme_list.append("  %s\n" % testset)
-            self.testing_dataset_dict[testset]['SingleFit'] = SingleFit( 
+            self.sf_dict[testset] = SingleFit( 
                 training_dataset = self.training_dataset, 
-                testing_dataset = self.testing_dataset_dict[testset]['dataset'],
+                testing_dataset = testdata,
                 model = self.model, 
                 save_path = os.path.join(self.save_path, str(testset)),
                 xlabel=self.xlabel,
                 ylabel=self.ylabel,
                 stepsize=self.stepsize,
                 plot_filter_out = self.plot_filter_out)
-            self.testing_dataset_dict[testset]['SingleFit'].run()
+            self.sf_dict[testset].run()
         return
 
     @timeit
@@ -152,13 +148,13 @@ class PredictionVsFeature(SingleFit):
             self.readme_list.append("Grouping feature is not set. No group plots to do.\n")
             return
         allgroups=list()
-        for testset in self.testing_dataset_dict.keys():
-            for group in self.testing_dataset_dict[testset]['dataset'].groups:
+        for testset in self.sf_dict.keys():
+            for group in self.sf_dict[testset].testing_dataset.groups:
                 allgroups.append(group)
         allgroups = np.unique(allgroups)
-        for testset in self.testing_dataset_dict.keys():
-            if self.testing_dataset_dict[testset]['SingleFit'].testing_dataset.target_data is None:
-                self.testing_dataset_dict[testset]['SingleFit'].testing_dataset.add_filters(self.plot_filter_out) #filters will not have been added by SingleFit yet
+        for testset in self.sf_dict.keys():
+            if self.sf_dict[testset].testing_dataset.target_data is None:
+                self.sf_dict[testset].testing_dataset.add_filters(self.plot_filter_out) #filters will not have been added by SingleFit yet
         for group in allgroups:
             self.make_series_feature_plot(group=group)
         return
@@ -175,11 +171,10 @@ class PredictionVsFeature(SingleFit):
             group_notelist.append("Data not displayed:")
             for (feature, symbol, threshold) in self.plot_filter_out:
                 group_notelist.append("  %s %s %s" % (feature, symbol, threshold))
-        testsets = list(self.testing_dataset_dict.keys())
+        testsets = list(self.sf_dict.keys())
         testsets.sort()
         for testset in testsets:
-            ts_dict = self.testing_dataset_dict[testset]
-            ts_sf_td = ts_dict['SingleFit'].testing_dataset
+            ts_sf_td = self.sf_dict[testset].testing_dataset
             gfeat = self.training_dataset.grouping_feature
             if group is None:
                 if ts_sf_td.target_data is None:
