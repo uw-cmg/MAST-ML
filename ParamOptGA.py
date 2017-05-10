@@ -299,7 +299,8 @@ class ParamOptGA(SingleFit):
                 elif geneidx == 'gamma':
                     geneval = 10**((float(geneval)*(3))-1.5)
                 genedisp = "%s %s: %3.6f" % (gene, geneidx, geneval)
-        print(genedisp, flush=True)
+                genomestr = genomestr + genedisp + ", "
+        print(genomestr[:-2], flush=True) #remove last comma and space
         return
 
     def set_hp_dict(self):
@@ -393,12 +394,12 @@ class ParamOptGA(SingleFit):
         params = pop[indidx]
         rdict=dict()
         for gene in self.afm_dict.keys():
-            afm_kwargs = dict(self.afm_dict[gene])
+            afm_kwargs = dict(self.afm_dict[gene]['args'])
             cdh = CustomFeatures(self.testing_dataset.data)
             new_feature_data = getattr(cdh, gene)(params[gene], **afm_kwargs)
             fio = FeatureIO(newX_Test)
             newX_Test = fio.add_custom_features(gene, new_feature_data)
-        model = KernelRidge(alpha = 10**(float(params['alpha'])*(-6)), gamma = 10**((float(params['gamma'])*(3))-1.5), kernel = 'rbf')
+        model = KernelRidge(alpha = 10**(float(params['model']['alpha'])*(-6)), gamma = 10**((float(params['model']['gamma'])*(3))-1.5), kernel = 'rbf')
         cv_rms = self.num_runs_cv(model, newX_Test, self.testing_dataset.target_data, num_runs = self.num_cvtests)       
         rdict['cv_rms'] = cv_rms
         if parallel_result_dict is None:
@@ -441,24 +442,25 @@ class ParamOptGA(SingleFit):
             p1 = parents[np.random.randint(0, self.num_parents)]
             p2 = parents[np.random.randint(0, self.num_parents)]
             
-            for gene in self.gene_keys:
-                c = np.random.rand()
-                m = np.random.rand()
-                s = np.random.rand()
+            for gene in pop[ind].keys():
+                for geneidx in pop[ind][gene].keys():
+                    c = np.random.rand()
+                    m = np.random.rand()
+                    s = np.random.rand()
 
-                if c <= crossover_prob:
-                    pop[ind][gene] = p1[gene]
-                else:
-                    pop[ind][gene] = p2[gene]
-                if (s <= shift_prob):
-                    if (pop[ind][gene] >= 0) and (pop[ind][gene] <= 1):
-                        pop[ind][gene] = np.abs( pop[ind][gene] + np.random.randint(-4,5)/100 )   # random shift
-                    if (pop[ind][gene] < 0):    
-                        pop[ind][gene] = 0
-                    if (pop[ind][gene] > 1):    
-                        pop[ind][gene] = 1                 
-                if m <= mutation_prob:
-                    pop[ind][gene] = np.random.randint(0,101)/100   # mutation
+                    if c <= crossover_prob:
+                        pop[ind][gene][geneidx] = p1[gene][geneidx]
+                    else:
+                        pop[ind][gene][geneidx] = p2[gene][geneidx]
+                    if (s <= shift_prob):
+                        if (pop[ind][gene][geneidx] >= 0) and (pop[ind][gene][geneidx] <= 1):
+                            pop[ind][gene][geneidx] = np.abs( pop[ind][gene][geneidx] + np.random.randint(-4,5)/100 )   # random shift
+                        if (pop[ind][gene][geneidx] < 0):    
+                            pop[ind][gene][geneidx] = 0
+                        if (pop[ind][gene][geneidx] > 1):    
+                            pop[ind][gene][geneidx] = 1                 
+                    if m <= mutation_prob:
+                        pop[ind][gene][geneidx] = np.random.randint(0,101)/100   # mutation
 
         return { 'new_population':pop, 'best_parameters':parents, 'best_rms':parentRMS }
 
