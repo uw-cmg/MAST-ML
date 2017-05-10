@@ -155,14 +155,14 @@ class SingleFitGrouped(SingleFit):
     def get_outlying_groups(self):
         self.outlying_groups = list()
         highest_rmses = list()
-        num_mark = min(self.mark_outlying_groups, len(self.testing_dataset.groups))
+        num_mark = min(self.mark_outlying_groups, len(self.per_group_statistics.keys()))
         for oidx in range(0, num_mark):
             highest_rmses.append((0, "nogroup"))
         if self.plot_filter_out is None:
             criterion = 'rmse'
         else:
             criterion = 'filtered_rmse'
-        for group in self.testing_dataset.groups:
+        for group in self.per_group_statistics.keys():
             min_entry = min(highest_rmses)
             min_rmse = min_entry[0]
             if criterion in self.per_group_statistics[group].keys():
