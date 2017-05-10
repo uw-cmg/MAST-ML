@@ -21,10 +21,6 @@ class LeaveOutPercentCV(SingleFit):
         testing_dataset, (Should be the same as training_dataset)
         model,
         save_path,
-        input_features,
-        target_feature,
-        target_error_feature,
-        labeling_features, 
         xlabel, 
         ylabel,
         stepsize, see parent class.
@@ -46,10 +42,6 @@ class LeaveOutPercentCV(SingleFit):
         testing_dataset=None,
         model=None,
         save_path=None,
-        input_features=None,
-        target_feature=None,
-        target_error_feature=None,
-        labeling_features=None,
         xlabel="Measured",
         ylabel="Predicted",
         stepsize=1,
@@ -79,10 +71,6 @@ class LeaveOutPercentCV(SingleFit):
             testing_dataset=testing_dataset,
             model=model, 
             save_path = save_path,
-            input_features = input_features, 
-            target_feature = target_feature,
-            target_error_feature = target_error_feature,
-            labeling_features = labeling_features,
             xlabel=xlabel,
             ylabel=ylabel,
             stepsize=stepsize)
@@ -114,8 +102,9 @@ class LeaveOutPercentCV(SingleFit):
         self.get_statistics()
         self.print_statistics()
         self.readme_list.append("----- Output data -----\n")
-        self.print_output_csv(label="best", cvtest_entry=self.cvtest_dict[self.best_test_index])
-        self.print_output_csv(label="worst", cvtest_entry=self.cvtest_dict[self.worst_test_index])
+        self.print_best_worst_output_csv("best_and_worst")
+        #self.print_output_csv(label="best", cvtest_entry=self.cvtest_dict[self.best_test_index])
+        #self.print_output_csv(label="worst", cvtest_entry=self.cvtest_dict[self.worst_test_index])
         return
 
     @timeit
@@ -131,9 +120,9 @@ class LeaveOutPercentCV(SingleFit):
         return
 
     def set_up_cv(self):
-        if self.testing_target_data is None:
+        if self.testing_dataset.target_data is None:
             raise ValueError("Testing target data cannot be none for cross validation.")
-        indices = np.arange(0, len(self.testing_target_data))
+        indices = np.arange(0, len(self.testing_dataset.target_data))
         self.readme_list.append("----- CV setup -----\n")
         self.readme_list.append("%i CV tests,\n" % self.num_cvtests)
         self.readme_list.append("leaving out %i percent\n" % self.percent_leave_out)
@@ -152,13 +141,13 @@ class LeaveOutPercentCV(SingleFit):
     
     def cv_fit_and_predict(self):
         for cvtest in self.cvtest_dict.keys():
-            prediction_array = np.zeros(len(self.testing_target_data))
+            prediction_array = np.zeros(len(self.testing_dataset.target_data))
             prediction_array[:] = np.nan
             fdict = self.cvtest_dict[cvtest]
-            input_train = self.testing_input_data[fdict['train_index']]
-            target_train = self.testing_target_data[fdict['train_index']]
-            input_test = self.testing_input_data[fdict['test_index']]
-            target_test = self.testing_target_data[fdict['test_index']]
+            input_train=self.testing_dataset.input_data.iloc[fdict['train_index']]
+            target_train = self.testing_dataset.target_data[fdict['train_index']]
+            input_test=self.testing_dataset.input_data.iloc[fdict['test_index']]
+            target_test = self.testing_dataset.target_data[fdict['test_index']]
             fit = self.model.fit(input_train, target_train)
             predict_test = self.model.predict(input_test)
             rmse = np.sqrt(mean_squared_error(predict_test, target_test))
@@ -187,10 +176,26 @@ class LeaveOutPercentCV(SingleFit):
         self.statistics['rmse_worst'] = highest_rmse
         return
 
+    def print_best_worst_output_csv(self, label=""):
+        """
+        """
+        olabel = "%s_test_data.csv" % label
+        ocsvname = os.path.join(self.save_path, olabel)
+        self.testing_dataset.add_feature("Best Prediction", 
+                    self.cvtest_dict[self.best_test_index]['prediction_array'])
+        self.testing_dataset.add_feature("Worst Prediction", 
+                    self.cvtest_dict[self.worst_test_index]['prediction_array'])
+        cols = self.testing_dataset.print_data(ocsvname)
+        self.readme_list.append("%s file created with columns:\n" % olabel)
+        for col in cols:
+            self.readme_list.append("    %s\n" % col)
+        return
+
     def print_output_csv(self, label="", cvtest_entry=None):
         """
             Modify once dataframe is in place
         """
+        raise NotImplementedError("Removing.")
         olabel = "%s_test_data.csv" % label
         ocsvname = os.path.join(self.save_path, olabel)
         self.readme_list.append("%s file created with columns:\n" % olabel)
@@ -228,8 +233,8 @@ class LeaveOutPercentCV(SingleFit):
         kwargs2['xlabel'] = self.xlabel
         kwargs2['ylabel'] = self.ylabel
         kwargs2['labellist'] = ["Best test","Worst test"]
-        kwargs2['xdatalist'] = list([self.testing_target_data, 
-                            self.testing_target_data])
+        kwargs2['xdatalist'] = list([self.testing_dataset.target_data, 
+                            self.testing_dataset.target_data])
         kwargs2['ydatalist'] = list(
                 [self.cvtest_dict[self.best_test_index]['prediction_array'],
                 self.cvtest_dict[self.worst_test_index]['prediction_array']])
@@ -242,9 +247,9 @@ class LeaveOutPercentCV(SingleFit):
         kwargs2['stepsize'] = self.stepsize
         if not (self.mark_outlying_points is None):
             kwargs2['marklargest'] = self.mark_outlying_points
-            if (self.labeling_features is None) or (len(self.labeling_features) == 0):
+            if self.testing_dataset.labeling_features is None:
                 raise ValueError("Must specify some labeling features if you want to mark the largest outlying points")
-            labels = np.asarray(self.testing_dataset.get_data(self.labeling_features[0])).ravel()
+            labels = self.testing_dataset.data[self.testing_dataset.labeling_features[0]]
             kwargs2['mlabellist'] = list([labels,labels])
         plotxy.multiple_overlay(**kwargs2)
         self.readme_list.append("Plot best_worst_overlay.png created,\n")
