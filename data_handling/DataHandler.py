@@ -91,7 +91,8 @@ class DataHandler():
         """
         self.set_up_data() #repeat set up
         self.input_data = self.data[self.input_features]
-        self.target_data = self.data[self.target_feature]
+        if self.target_feature in self.data.columns:
+            self.target_data = self.data[self.target_feature]
         if "Prediction" in self.data.columns:
             self.target_prediction = self.data["Prediction"]
         return
