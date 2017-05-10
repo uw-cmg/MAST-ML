@@ -111,6 +111,10 @@ class MASTMLDriver(object):
                 target_error_feature = self.generalsetup['target_error_feature']
             else:
                 target_error_feature = None
+            if 'grouping_feature' in self.generalsetup.keys():
+                grouping_feature = self.generalsetup['grouping_feature']
+            else:
+                grouping_feature = None
             myXdata, myydata, myx_features, myy_feature, mydataframe = DataParser(configdict=configdict).parse_fromfile(datapath=self.datasetup[data_name]['data_path'], as_array=False)
             data_dict[data_name] = DataHandler(data = mydataframe, 
                                 input_data = myXdata, 
@@ -118,7 +122,8 @@ class MASTMLDriver(object):
                                 input_features = myx_features,
                                 target_feature = myy_feature,
                                 target_error_feature = target_error_feature,
-                                labeling_features = labeling_features) #
+                                labeling_features = labeling_features,
+                                grouping_feature = grouping_feature) #
             #data_dict[data_name] = data_parser.parse(data_path, data_weights)
             #data_dict[data_name].set_x_features(datasetup['X']) #set in test classes, not here, since different tests could have different X and y features
             #data_dict[data_name].set_y_feature(datasetup['y'])
