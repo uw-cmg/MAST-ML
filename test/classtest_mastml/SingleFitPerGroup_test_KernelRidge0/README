@@ -1,22 +1,22 @@
-Mon May  8 13:05:53 2017
+Wed May 10 11:04:26 2017
 ----- Model parameters -----
 kernel_params: None
-coef0: 1
 gamma: 0.518
 kernel: rbf
-degree: 3
+coef0: 1
 alpha: 0.00139
+degree: 3
 ----- Statistics -----
 RMSEs from individual group fits:
+    B: filtered_rmse: 0.060
     B: mean_absolute_error: 0.039
     B: mean_error: 0.000
     B: rmse: 0.056
-    B: rmse_plot_filter_out: 0.060
     B: rsquared: 0.991
+    C: filtered_rmse: 0.055
     C: mean_absolute_error: 0.035
     C: mean_error: 0.000
     C: rmse: 0.051
-    C: rmse_plot_filter_out: 0.055
     C: rsquared: 0.996
 ----- Plotting -----
 Plot in subfolder per_group_fits_overlay created,
