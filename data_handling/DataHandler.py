@@ -163,7 +163,8 @@ class DataHandler():
         if not self.labeling_features is None:
             cols.extend(self.labeling_features)
         if not self.grouping_feature is None:
-            cols.extend(self.grouping_feature)
+            if not (self.grouping_feature in self.labeling_features):
+                cols.extend(self.grouping_feature)
         cols.extend(self.input_features)
         if not self.target_data is None:
             cols.append(self.target_feature)
