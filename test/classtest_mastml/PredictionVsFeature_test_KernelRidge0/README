@@ -1,15 +1,15 @@
-Mon May  8 13:06:05 2017
+Wed May 10 11:29:56 2017
 ----- Model parameters -----
-degree: 3
-kernel_params: None
 kernel: rbf
-alpha: 0.00139
 coef0: 1
 gamma: 0.518
+degree: 3
+kernel_params: None
+alpha: 0.00139
 ----- Fitting and prediction -----
 See results per dataset in subfolders
-  Set2
   Extrapolation test
+  Set2
   Initial repredict
 ----- Plotting -----
 See plots in subfolders:

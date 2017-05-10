@@ -1,16 +1,20 @@
-Mon May  8 13:06:06 2017
+Wed May 10 11:29:56 2017
 ----- Model parameters -----
-degree: 3
-kernel_params: None
 kernel: rbf
-alpha: 0.00139
 coef0: 1
 gamma: 0.518
+degree: 3
+kernel_params: None
+alpha: 0.00139
 ----- Output data -----
 output_data.csv file created with columns:
-   labeling features: ['str_cat', 'num_id']
-   input features: ['time', 'N_sine_feature', 'N_linear_feature']
-   prediction: Prediction
+    str_cat
+    num_id
+    time
+    N_sine_feature
+    N_linear_feature
+    N_linear_feature
+    Prediction
 ----- Statistics -----
 No target data.
 No statistics comparing target data and prediction were collected.
