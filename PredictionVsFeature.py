@@ -23,15 +23,10 @@ class PredictionVsFeature(SingleFit):
         testing_dataset, (Multiple testing datasets are allowed as a list.)
         model,
         save_path,
-        input_features,
-        target_feature,
-        target_error_feature,
-        labeling_features,
         xlabel,
         ylabel,
         stepsize,
         plot_filter_out, see parent class.
-        grouping_feature <str>: feature for grouping (optional)
         feature_plot_xlabel <str>: x-axis label for per-group plots of predicted and
                                 measured y data versus data from field of
                                 numeric_field_name
@@ -53,15 +48,10 @@ class PredictionVsFeature(SingleFit):
         testing_dataset=None,
         model=None,
         save_path=None,
-        input_features=None,
-        target_feature=None,
-        target_error_feature=None,
-        labeling_features=None,
         xlabel="Measured",
         ylabel="Predicted",
         stepsize=1,
         plot_filter_out = "",
-        grouping_feature = None,
         feature_plot_xlabel = "X",
         feature_plot_ylabel = "Prediction",
         feature_plot_feature = None,
@@ -76,7 +66,6 @@ class PredictionVsFeature(SingleFit):
             Additional class attributes not in parent class:
            
             Set by keyword:
-            self.grouping_feature <str>: feature for grouping data (optional)
             self.testing_datasets <list of data objects>: testing datasets
             self.feature_plot_xlabel <str>: x-axis label for feature plots
             self.feature_plot_ylabel <str>: y-axis label for feature plots
@@ -91,8 +80,6 @@ class PredictionVsFeature(SingleFit):
             Set by code:
             self.testing_dataset_dict <dict of data objects>: testing datasets and their information:
                 dataset
-                feature_data
-                group_indices (if self.grouping_feature is set)
                 SingleFit (SingleFit object)
         """
         SingleFit.__init__(self, 
@@ -100,16 +87,11 @@ class PredictionVsFeature(SingleFit):
             testing_dataset=testing_dataset,
             model=model, 
             save_path = save_path,
-            input_features = input_features, 
-            target_feature = target_feature,
-            target_error_feature = target_error_feature,
-            labeling_features = labeling_features,
             xlabel=xlabel,
             ylabel=ylabel,
             stepsize=stepsize,
             plot_filter_out = plot_filter_out)
         #Sets by keyword
-        self.grouping_feature = grouping_feature
         self.testing_datasets = testing_dataset #expect a list of one or more testing datasets
         self.feature_plot_xlabel = feature_plot_xlabel
         self.feature_plot_ylabel = feature_plot_ylabel
@@ -133,10 +115,6 @@ class PredictionVsFeature(SingleFit):
         for tidx in tidxs:
             td_entry = dict()
             td_entry['dataset'] = copy.deepcopy(self.testing_datasets[tidx])
-            td_entry['feature_data'] = np.asarray(td_entry['dataset'].get_data(self.feature_plot_feature)).ravel()
-            if not (self.grouping_feature is None):
-                td_group_data = np.asarray(td_entry['dataset'].get_data(self.grouping_feature)).ravel()
-                td_entry['group_indices'] = gttd.get_logo_indices(td_group_data)
             test_data_label = self.data_labels[tidx]
             self.testing_dataset_dict[test_data_label] = dict(td_entry)
         return
@@ -158,10 +136,6 @@ class PredictionVsFeature(SingleFit):
                 testing_dataset = self.testing_dataset_dict[testset]['dataset'],
                 model = self.model, 
                 save_path = os.path.join(self.save_path, str(testset)),
-                input_features = self.input_features, 
-                target_feature = self.target_feature,
-                target_error_feature = self.target_error_feature,
-                labeling_features = self.labeling_features,
                 xlabel=self.xlabel,
                 ylabel=self.ylabel,
                 stepsize=self.stepsize,
@@ -174,14 +148,17 @@ class PredictionVsFeature(SingleFit):
         self.readme_list.append("----- Plotting -----\n")
         self.readme_list.append("See plots in subfolders:\n")
         self.make_series_feature_plot(group=None)
-        if self.grouping_feature is None:
+        if self.training_dataset.grouping_feature is None:
             self.readme_list.append("Grouping feature is not set. No group plots to do.\n")
             return
         allgroups=list()
         for testset in self.testing_dataset_dict.keys():
-            for group in self.testing_dataset_dict[testset]['group_indices'].keys():
+            for group in self.testing_dataset_dict[testset]['dataset'].groups:
                 allgroups.append(group)
         allgroups = np.unique(allgroups)
+        for testset in self.testing_dataset_dict.keys():
+            if self.testing_dataset_dict[testset]['SingleFit'].testing_dataset.target_data is None:
+                self.testing_dataset_dict[testset]['SingleFit'].testing_dataset.add_filters(self.plot_filter_out) #filters will not have been added by SingleFit yet
         for group in allgroups:
             self.make_series_feature_plot(group=group)
         return
@@ -196,33 +173,28 @@ class PredictionVsFeature(SingleFit):
         group_notelist=list()
         if not(self.plot_filter_out is None):
             group_notelist.append("Data not displayed:")
-            for pfstr in self.plot_filter_out:
-                group_notelist.append(pfstr.replace(";"," "))
+            for (feature, symbol, threshold) in self.plot_filter_out:
+                group_notelist.append("  %s %s %s" % (feature, symbol, threshold))
         testsets = list(self.testing_dataset_dict.keys())
         testsets.sort()
         for testset in testsets:
             ts_dict = self.testing_dataset_dict[testset]
-            ts_sf = ts_dict['SingleFit']
-            if ts_sf.plot_filter_out is None:
-                plotting_index = np.arange(0, len(ts_sf.testing_target_prediction))
-            else:
-                plotting_index = ts_sf.plotting_index
-            if plotting_index is None:
-                print("NO PLOTTING INDEX: set %s, group %s" % (testset, group))
+            ts_sf_td = ts_dict['SingleFit'].testing_dataset
+            gfeat = self.training_dataset.grouping_feature
             if group is None:
-                group_index = np.arange(0, len(ts_sf.testing_target_prediction))
+                if ts_sf_td.target_data is None:
+                    measured = None
+                else:
+                    measured = ts_sf_td.target_data
+                feature_data = ts_sf_td.data[self.feature_plot_feature]
+                predicted = ts_sf_td.target_prediction
             else:
-                if not group in ts_dict['group_indices'].keys():
-                    logging.info("No group %s for test set %s. Skipping." % (group, testset))
-                    continue
-                group_index = ts_dict['group_indices'][group]['test_index']
-            display_index = np.intersect1d(group_index, plotting_index)
-            feature_data = ts_dict['feature_data'][display_index]
-            if ts_sf.testing_target_data is None:
-                measured = None
-            else:
-                measured = ts_sf.testing_target_data[display_index]
-            predicted = ts_sf.testing_target_prediction[display_index]
+                if ts_sf_td.target_data is None:
+                    measured = None
+                else:
+                    measured = ts_sf_td.target_data[ts_sf_td.data[gfeat] == group]
+                feature_data = ts_sf_td.data[self.feature_plot_feature][ts_sf_td.data[gfeat] == group]
+                predicted = ts_sf_td.target_prediction[ts_sf_td.data[gfeat] == group]
             if measured is None:
                 pass
             elif len(measured) == 0:
