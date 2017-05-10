@@ -1,15 +1,15 @@
-Tue May  9 16:10:51 2017
+Wed May 10 09:54:58 2017
 ----- Model parameters -----
-alpha: 0.00139
-gamma: 0.518
-coef0: 1
 kernel_params: None
-kernel: rbf
 degree: 3
+kernel: rbf
+gamma: 0.518
+alpha: 0.00139
+coef0: 1
 ----- Output data -----
 output_data.csv file created with columns:
     str_cat
-    num_cat
+    num_id
     time
     N_sine_feature
     N_linear_feature
@@ -19,7 +19,7 @@ output_data.csv file created with columns:
 ----- Output data -----
 output_data_filtered.csv file created with columns:
     str_cat
-    num_cat
+    num_id
     time
     N_sine_feature
     N_linear_feature
@@ -27,10 +27,10 @@ output_data_filtered.csv file created with columns:
     N_linear_feature
     Prediction
 ----- Statistics -----
+filtered_rmse: 0.0912
 mean_absolute_error: 0.0666
 mean_error: 0.0000
 rmse: 0.0879
-rmse_plot_filter_out: 0.0912
 rsquared: 0.9830
 ----- Plotting -----
 Plot filtering out:
