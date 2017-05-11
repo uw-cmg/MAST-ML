@@ -82,13 +82,14 @@ class FeatureIO(object):
 
     def remove_duplicate_features_by_name(self):
         # Only removes features that have the same name, not features containing the same data vector
-        (self.dataframe).drop_duplicates()
-        return self.dataframe
+        dataframe = self.dataframe.drop_duplicates()
+        return dataframe
 
     def remove_custom_features(self, features_to_remove):
+        dataframe = self.dataframe
         for feature in features_to_remove:
-            del self.dataframe[feature]
-        return self.dataframe
+            del dataframe[feature]
+        return dataframe
 
     def keep_custom_features(self, features_to_keep, y_feature):
         dataframe_dict = {}
@@ -99,9 +100,10 @@ class FeatureIO(object):
         return dataframe
 
     def add_custom_features(self, features_to_add, data_to_add):
+        dataframe = self.dataframe
         for feature in features_to_add:
-            self.dataframe[feature] = pd.Series(data=data_to_add, index=(self.dataframe).index)
-        return self.dataframe
+            dataframe[feature] = pd.Series(data=data_to_add, index=(self.dataframe).index)
+        return dataframe
 
     def custom_feature_filter(self, feature, operator, threshold):
         # Searches values in feature that meet the condition. If it does, that entire row of data is removed from the dataframe
@@ -155,7 +157,6 @@ class FeatureNormalization(object):
         dataframe = DataframeUtilities()._merge_dataframe_columns(dataframe1=self.dataframe, dataframe2=dataframe_normalized)
         return dataframe
 
-# This class is a work in progress, don't use yet
 class MagpieFeatures(object):
     """Class to generate new features using Magpie data and dataframe containing material compositions. Creates
      a dataframe and append features to existing feature dataframes
