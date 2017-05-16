@@ -32,7 +32,7 @@ def print_genome(genome=None, preface=""):
             genedisp = "%s %s: %3.6f" % (gene, geneidx, geneval)
             genomestr = genomestr + genedisp + ", "
     print(genomestr[:-2], flush=True) #remove last comma and space
-    return
+    return genomestr[:-2]
 
 
 class GAIndividual():
@@ -135,8 +135,7 @@ class GAIndividual():
                             args=(Xdata, Ydata, nidx, n_rms_dict))
                 cv_procs.append(cv_proc)
                 cv_proc.start()
-            for cvp in cv_procs:
-                cvp.join()
+                cv_proc.join()
         else:
             n_rms_dict=dict()
             for nidx in range(num_runs):
@@ -198,9 +197,8 @@ class GAGeneration():
         self.population_size = int(population_size)
         self.gene_template = gene_template
         self.afm_dict = afm_dict
-        self.fix_random_for_testing = int(fix_random_for_testing)
-        if self.fix_random_for_testing == 1:
-            self.random_state = np.random.RandomState(0)
+        if fix_random_for_testing > 0:
+            self.random_state = np.random.RandomState(int(fix_random_for_testing))
         else:
             self.random_state = np.random.RandomState()
         self.best_rmse = 100000000
@@ -324,8 +322,11 @@ class ParamOptGA(SingleFit):
     """Search for paramters using GA.
         Allows custom features.
     Args:
-        training_dataset, (Should be the same as the testing set.)
-        testing_dataset, (Should be same as training set.)
+        training_dataset, (Should be the same as first testing set.)
+        testing_dataset, (First should be same as training set. GA is run using
+                        only the first testing dataset. 
+                        Final evaluations are carried out on all sets.
+                        All sets must have target data for evaluation.
         model,
         save_path,
         num_folds <int>: Number of folds for K-fold CV. Keep blank to use LO% CV
@@ -358,6 +359,7 @@ class ParamOptGA(SingleFit):
         num_folds=2,
         percent_leave_out=None,
         num_cvtests=20,
+        num_gas=1,
         population_size=50,
         convergence_generations=30,
         max_generations=200,
@@ -387,6 +389,7 @@ class ParamOptGA(SingleFit):
                         feature methods for fitting.
                         Each string takes the format:
                         methodname;parameter1:value1;parameter2:value2;...
+            self.final_testing_datasets <list>: post-GA testing datasets
             Set by code:
         """
         SingleFit.__init__(self, 
@@ -404,6 +407,7 @@ class ParamOptGA(SingleFit):
         else:
             self.percent_leave_out = int(percent_leave_out)
         self.num_cvtests = int(num_cvtests)
+        self.num_gas = int(num_gas)
         self.population_size = int(population_size)
         self.convergence_generations = int(convergence_generations)
         self.max_generations = int(max_generations)
@@ -418,6 +422,7 @@ class ParamOptGA(SingleFit):
             self.additional_feature_methods = list(additional_feature_methods)
         else:
             self.additional_feature_methods = additional_feature_methods.split(",")
+        self.final_testing_datasets = list(testing_dataset)
         #Sets in code
         self.cv_divisions = None
         self.cv_divisions_final = None
@@ -427,7 +432,7 @@ class ParamOptGA(SingleFit):
         self.gene_dict = dict()
         #
         self.ga_dict = dict()
-        self.gact = 0
+        self.gact = 1
         return
 
     def run_ga(self):
@@ -445,6 +450,10 @@ class ParamOptGA(SingleFit):
 
         while ga_runs_since_best < self.convergence_generations and ga_genct < self.max_generations: 
             print("Generation %i %s" % (ga_genct, time.asctime()), flush=True)
+            if self.fix_random_for_testing == 1:
+                init_gen_random = self.gact
+            else:
+                init_gen_random = 0
             Gen = GAGeneration(testing_dataset = self.testing_dataset,
                 cv_divisions=self.cv_divisions,
                 population=new_population,
@@ -453,7 +462,7 @@ class ParamOptGA(SingleFit):
                 afm_dict=self.afm_dict,
                 population_size=self.population_size,
                 use_multiprocessing=self.use_multiprocessing,
-                fix_random_for_testing=self.fix_random_for_testing)
+                fix_random_for_testing=init_gen_random)
             Gen.run()
             new_population = dict(Gen.new_population)
             self.ga_dict[self.gact]['generations'][ga_genct] = Gen
@@ -481,20 +490,29 @@ class ParamOptGA(SingleFit):
             self.ga_dict[self.gact]['converged']=True
         else:
             self.ga_dict[self.gact]['converged']=False
+        self.gact = self.gact + 1
         return
 
     def print_ga_dict(self):
         gas = list(self.ga_dict.keys())
         gas.sort()
         for ga in gas:
-            print("GA %i" % ga)
-            print("Best RMSE: %3.3f" % self.ga_dict[ga]['best_rmse'])
-            print_genome(self.ga_dict[ga]['best_genome'])
+            self.readme_list.append("GA %i\n" % ga)
+            self.readme_list.append("Converged?: %s\n" % self.ga_dict[ga]['converged'])
+            self.readme_list.append("Best RMSE: %3.3f\n" % self.ga_dict[ga]['best_rmse'])
+            genomestr = print_genome(self.ga_dict[ga]['best_genome'])
+            self.readme_list.append("%s\n" % genomestr)
             gens = list(self.ga_dict[ga]['generations'].keys())
             gens.sort()
             for gen in gens:
                 prefacestr = "Generation : %i, rmse %3.6f" % (gen, self.ga_dict[ga]['generations'][gen].best_rmse)
-                print_genome(self.ga_dict[ga]['generations'][gen].best_genome, preface = prefacestr)
+                genomestr = print_genome(self.ga_dict[ga]['generations'][gen].best_genome, preface = prefacestr)
+                self.readme_list.append("%s\n" % genomestr)
+        for ga in gas:
+            printstr = "GA %i %i-CV RMSEs: " % (ga, self.num_cvtests * 10)
+            for fidx in range(0, len(self.final_testing_datasets)):
+                printstr = printstr + "%3.3f " % self.ga_dict[ga]['final_eval_rmses'][fidx]
+            self.readme_list.append("%s\n" % printstr)
         return
 
     def old_save_for_evaluating_results_of_multiple_GA(self):
@@ -520,8 +538,11 @@ class ParamOptGA(SingleFit):
     @timeit
     def run(self):
         self.set_up()
-        self.run_ga()
+        for ga in range(0, self.num_gas):
+            self.run_ga()
+        self.do_final_evaluations()
         self.print_ga_dict()
+        self.print_readme()
         return
 
     @timeit
@@ -617,3 +638,19 @@ class ParamOptGA(SingleFit):
                 afm_dict[methodname]['params'][pidx] = None
         self.afm_dict=dict(afm_dict)
         return afm_dict
+    def do_final_evaluations(self):
+        self.cv_divisions_final = self.get_cv_divisions(self.num_cvtests * 10)
+        gas = list(self.ga_dict.keys())
+        gas.sort()
+        for ga in gas:
+            best_genome = self.ga_dict[ga]['best_genome']
+            self.ga_dict[ga]['final_eval_rmses'] = dict()
+            for fidx in range(0, len(self.final_testing_datasets)):
+                final_testing_dataset = self.final_testing_datasets[fidx]
+                eval_indiv = GAIndividual(genome = best_genome,
+                                testing_dataset = final_testing_dataset,
+                                cv_divisions = self.cv_divisions_final,
+                                afm_dict = self.afm_dict,
+                                use_multiprocessing = self.use_multiprocessing)
+                self.ga_dict[ga]['final_eval_rmses'][fidx] = eval_indiv.evaluate_individual()
+        return
