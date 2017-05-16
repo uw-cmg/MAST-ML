@@ -659,7 +659,7 @@ class ParamOptGA(SingleFit):
         return
 
     def select_final_best(self):
-        for ga in gas:
+        for ga in self.ga_dict.keys():
             ga_final_rmse_list = list()
             for fidx in range(0, len(self.final_testing_datasets)):
                 ga_final_rmse_list.append(self.ga_dict[ga]['final_eval_rmses'][fidx])
