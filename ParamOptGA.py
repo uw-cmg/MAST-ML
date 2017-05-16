@@ -433,6 +433,8 @@ class ParamOptGA(SingleFit):
         #
         self.ga_dict = dict()
         self.gact = 1
+        self.final_best_rmse = 100000000
+        self.final_best_genome = None
         return
 
     def run_ga(self):
@@ -541,6 +543,7 @@ class ParamOptGA(SingleFit):
         for ga in range(0, self.num_gas):
             self.run_ga()
         self.do_final_evaluations()
+        self.select_final_best()
         self.print_ga_dict()
         self.print_readme()
         return
@@ -653,4 +656,17 @@ class ParamOptGA(SingleFit):
                                 afm_dict = self.afm_dict,
                                 use_multiprocessing = self.use_multiprocessing)
                 self.ga_dict[ga]['final_eval_rmses'][fidx] = eval_indiv.evaluate_individual()
+        return
+
+    def select_final_best(self):
+        for ga in gas:
+            ga_final_rmse_list = list()
+            for fidx in range(0, len(self.final_testing_datasets)):
+                ga_final_rmse_list.append(self.ga_dict[ga]['final_eval_rmses'][fidx])
+            ga_final_rmse = np.mean(ga_final_rmse_list)
+            if ga_final_rmse < self.final_best_rmse:
+                self.final_best_rmse = ga_final_rmse
+                self.final_best_genome = self.ga_dict[ga]['best_genome']
+        printstr = print_genome(self.final_best_genome, preface="Overall best genome")
+        self.readme_list.append("%s\n" % printstr)
         return
