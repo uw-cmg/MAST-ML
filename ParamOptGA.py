@@ -200,7 +200,9 @@ class GAGeneration():
         self.afm_dict = afm_dict
         self.fix_random_for_testing = int(fix_random_for_testing)
         if self.fix_random_for_testing == 1:
-            np.random.seed(0)
+            self.random_state = np.random.RandomState(0)
+        else:
+            self.random_state = np.random.RandomState()
         self.best_rmse = 100000000
         self.best_params = None
         self.best_individual = None
@@ -233,7 +235,7 @@ class GAGeneration():
             for gene in self.gene_template.keys():
                 genome[gene] = dict()
                 for geneidx in self.gene_template[gene].keys():
-                    genome[gene][geneidx] = np.random.randint(0, 101)/100
+                    genome[gene][geneidx] =self.random_state.randint(0, 101)/100
             self.population[pidx] = GAIndividual(genome=genome,
                                 testing_dataset = self.testing_dataset,
                                 cv_divisions = self.cv_divisions,
@@ -286,15 +288,15 @@ class GAGeneration():
         """
         self.new_population=dict()
         for indidx in range(self.population_size):
-            p1idx = np.random.randint(0, self.num_parents)
-            p2idx = np.random.randint(0, self.num_parents) #can have two of same parent?
+            p1idx = self.random_state.randint(0, self.num_parents)
+            p2idx = self.random_state.randint(0, self.num_parents) #can have two of same parent?
             new_genome = dict() 
             for gene in self.population[indidx].genome.keys():
                 new_genome[gene] = dict()
                 for geneidx in self.population[indidx].genome[gene].keys():
-                    c = np.random.rand()
-                    m = np.random.rand()
-                    s = np.random.rand()
+                    c = self.random_state.rand()
+                    m = self.random_state.rand()
+                    s = self.random_state.rand()
                     new_val = None
                     
                     if c <= self.crossover_prob:
@@ -303,13 +305,13 @@ class GAGeneration():
                         new_val = self.population[p2idx].genome[gene][geneidx]
                     if (s <= self.shift_prob):
                         if (new_val >= 0) and (new_val <= 1):
-                            new_val = np.abs( new_val + np.random.randint(-4,5)/100 )   # random shift
+                            new_val = np.abs( new_val + self.random_state.randint(-4,5)/100 )   # random shift
                         if (new_val < 0):    
                             new_val = 0
                         if (new_val > 1):    
                             new_val = 1                 
                     if m <= self.mutation_prob:
-                        new_val = np.random.randint(0,101)/100   # mutation
+                        new_val = self.random_state.randint(0,101)/100   # mutation
                     new_genome[gene][geneidx] = new_val
             self.new_population[indidx] = GAIndividual(genome = new_genome,
                                 testing_dataset = self.testing_dataset,
@@ -408,7 +410,9 @@ class ParamOptGA(SingleFit):
         self.num_parents = int(num_parents)
         self.fix_random_for_testing = int(fix_random_for_testing)
         if self.fix_random_for_testing == 1:
-            np.random.seed(0) 
+            self.random_state = np.random.RandomState(0)
+        else:
+            self.random_state = np.random.RandomState()
         self.use_multiprocessing = int(use_multiprocessing)
         if type(additional_feature_methods) is list:
             self.additional_feature_methods = list(additional_feature_methods)
@@ -549,7 +553,7 @@ class ParamOptGA(SingleFit):
         cv_divisions = list()
         if not(self.num_folds is None):
             for kn in range(num_runs):
-                kf = KFold(n_splits=self.num_folds, shuffle=True)
+                kf = KFold(n_splits=self.num_folds, shuffle=True, random_state = self.random_state)
                 splits = kf.split(range(len(self.testing_dataset.target_data)))
                 sdict=dict()
                 sdict['train_index'] = list()
@@ -563,7 +567,7 @@ class ParamOptGA(SingleFit):
             for kn in range(num_runs):
                 plo = ShuffleSplit(n_splits=1, 
                                 test_size = test_fraction,
-                                random_state = None)
+                                random_state = self.random_state)
                 splits = plo.split(range(len(self.testing_dataset.target_data)))
                 sdict=dict()
                 sdict['train_index'] = list()
@@ -575,9 +579,6 @@ class ParamOptGA(SingleFit):
         else:
             raise ValueError("Neither percent_leave_out nor num_folds appears to be set.")
         return cv_divisions
-
-    
-
 
     def set_hp_dict(self):
         """ #for GKRR, alpha and gamma
@@ -616,61 +617,3 @@ class ParamOptGA(SingleFit):
                 afm_dict[methodname]['params'][pidx] = None
         self.afm_dict=dict(afm_dict)
         return afm_dict
-
-
-    def generation(self, pop, crossover_prob=0.5, mutation_prob=0.1, shift_prob=0.5):
-        rmsList = list()
-        if self.use_multiprocessing > 0:
-            gen_manager=Manager()
-            gen_rms_dict = gen_manager.dict()
-            gen_procs = list()
-            for indidx in range(len(pop)):
-                gen_proc = Process(target=self.evaluate_individual, 
-                            args=(indidx, pop, gen_rms_dict))
-                gen_procs.append(gen_proc)
-                gen_proc.start()
-            for genp in gen_procs:
-                genp.join()
-            for indidx in range(len(pop)):
-                rmsList.append(gen_rms_dict[indidx]['cv_rms'])
-        else:
-            for indidx in range(len(pop)):
-                rmsList.append(self.evaluate_individual(indidx, pop)['cv_rms'])
-        #select parents
-        parents=list()
-        for pidx in range(self.num_parents):
-            parents.append(dict)
-        parentRMS = []
-        for newP in range(self.num_parents):       
-            parents[newP] = dict(pop[np.argmin(rmsList)])
-            parentRMS.append(np.min(rmsList))
-            rmsList[np.argmin(rmsList)] = np.max(rmsList)
-
-        #progenate new population 
-        for ind in range(len(pop)):
-            p1 = parents[np.random.randint(0, self.num_parents)]
-            p2 = parents[np.random.randint(0, self.num_parents)]
-            
-            for gene in pop[ind].keys():
-                for geneidx in pop[ind][gene].keys():
-                    c = np.random.rand()
-                    m = np.random.rand()
-                    s = np.random.rand()
-
-                    if c <= crossover_prob:
-                        pop[ind][gene][geneidx] = p1[gene][geneidx]
-                    else:
-                        pop[ind][gene][geneidx] = p2[gene][geneidx]
-                    if (s <= shift_prob):
-                        if (pop[ind][gene][geneidx] >= 0) and (pop[ind][gene][geneidx] <= 1):
-                            pop[ind][gene][geneidx] = np.abs( pop[ind][gene][geneidx] + np.random.randint(-4,5)/100 )   # random shift
-                        if (pop[ind][gene][geneidx] < 0):    
-                            pop[ind][gene][geneidx] = 0
-                        if (pop[ind][gene][geneidx] > 1):    
-                            pop[ind][gene][geneidx] = 1                 
-                    if m <= mutation_prob:
-                        pop[ind][gene][geneidx] = np.random.randint(0,101)/100   # mutation
-
-        return { 'new_population':pop, 'best_parameters':parents, 'best_rms':parentRMS }
-
-
