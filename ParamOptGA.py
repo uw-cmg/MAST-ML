@@ -94,14 +94,6 @@ class GAIndividual():
         self.input_data_with_afm = newX_Test
         return
 
-    def print_individual(self):
-        print_genome(self.genome)
-        if self.rmse is None:
-            pass
-        else:
-            print("RMSE: %3.3f" % self.rmse)
-        return
-    
     def single_avg_cv(self, Xdata, Ydata, division_index, 
                             parallel_return_dict=None):
         rms_list=list()
@@ -121,7 +113,7 @@ class GAIndividual():
         parallel_return_dict[division_index] = mean_rms
         return parallel_return_dict
 
-    def num_runs_cv(self, X, Y):
+    def num_runs_cv(self, X, Y, verbose=0):
         Xdata = np.asarray(X)
         Ydata = np.asarray(Y)
         n_rms_list = list()
@@ -144,10 +136,11 @@ class GAIndividual():
         for nidx in range(num_runs):
             n_rms_list.append(n_rms_dict[nidx])
         print("CV time: %s" % time.asctime(), flush=True)
-        print_copy = list(n_rms_list)
-        print_copy.sort()
-        print("Sorted RMS list for CV:")
-        print(print_copy, flush=True)
+        if verbose > 0:
+            print_copy = list(n_rms_list)
+            print_copy.sort()
+            print("Sorted RMS list for CV:")
+            print(print_copy, flush=True)
         return (np.mean(n_rms_list))
 
     def evaluate_individual(self):
@@ -242,7 +235,7 @@ class GAGeneration():
                                 use_multiprocessing = self.use_multiprocessing)
         if verbose > 0:
             for pidx in self.population.keys():
-                self.population[pidx].print_individual()
+                print_genome(self.population[pidx].genome)
         return
 
     def evaluate_population(self):
@@ -414,7 +407,7 @@ class ParamOptGA(SingleFit):
         self.max_generations = int(max_generations)
         self.num_parents = int(num_parents)
         if int(fix_random_for_testing) == 1:
-            self.random_state = np.random.RandomState(0)
+            self.random_state = np.random.RandomState(seed=0)
         else:
             self.random_state = np.random.RandomState()
         self.use_multiprocessing = int(use_multiprocessing)
@@ -511,26 +504,6 @@ class ParamOptGA(SingleFit):
             for fidx in range(0, len(self.final_testing_datasets)):
                 printstr = printstr + "%3.3f " % self.ga_dict[ga]['final_eval_rmses'][fidx]
             self.readme_list.append("%s\n" % printstr)
-        return
-
-    def old_save_for_evaluating_results_of_multiple_GA(self):
-        for GA in GAs:
-            bestParamSets.append(bestParams)
-        self.set_divisionsList(self.num_cvtests*10)
-
-# prints best parameter set for each run, and the results of some tests using it.
-        EXTrmsList=[]
-        CVrmsList=[]
-        for bestidx in range(len(bestParamSets)):
-            i_rdict = self.evaluate_individual(bestidx, bestParamSets, 
-                            parallel_result_dict=None, 
-                            do_extrapolation=1)
-            STRrms = "Extrapolation RMS: {0:.4f}".format(i_rdict['e_rms'])+'  '+"Extrapolation R2: {0:.4f}".format(i_rdict['e_r2'])+'  '+"CV RMS: {0:.4f}".format(i_rdict['cv_rms'])
-            EXTrmsList.append(i_rdict['e_rms'])
-            CVrmsList.append(i_rdict['cv_rms'])
-            bestpref = "Results for GA %i" % bestidx
-            self.print_genome(bestParamSets[bestidx],preface=bestpref)
-            print(STRrms)
         return
 
     @timeit
