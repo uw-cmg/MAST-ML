@@ -17,6 +17,285 @@ from sklearn.metrics import r2_score
 from multiprocessing import Process,Pool,TimeoutError,Value,Array,Manager
 import time
 
+
+class GAIndividual():
+    """GA Individual
+    """
+    def __init__(self,
+            genome=None,
+            testing_dataset=None,
+            cv_divisions=None,
+            afm_dict=None,
+            use_multiprocessing=1,
+            *args,**kwargs):
+        """
+        Attributes:
+            #Set by keyword
+            self.genome
+            self.testing_dataset
+            self.cv_divisions
+            self.afm_dict
+            self.use_multiprocessing
+            #Set in code
+            self.model
+            self.rmse
+        """
+        #Set by keyword
+        self.genome=dict(genome)
+        self.testing_dataset=testing_dataset
+        self.cv_divisions=dict(cv_divisions)
+        self.afm_dict=afm_dict
+        self.use_multiprocessing = int(use_multiprocessing)
+        #Sets later in code
+        self.model = None
+        self.rmse=None
+        self.input_data_with_afm=None
+        #Run setup immediately
+        self.set_up()
+        return
+
+    def set_up(self):
+        self.set_up_model()
+        self.set_up_input_data_with_additional_features()
+        return
+    
+    def set_up_model(self):
+        self.model = KernelRidge(alpha = 10**(float(self.genome['model']['alpha'])*(-6)), 
+                gamma = 10**((float(self.genome['model']['gamma'])*(3))-1.5), 
+                kernel = 'rbf')
+        return
+
+    def set_up_input_data_with_additional_features(self):
+        newX_Test = copy.deepcopy(self.testing_dataset.input_data)
+        for gene in self.afm_dict.keys():
+            afm_kwargs = dict(self.afm_dict[gene]['args'])
+            cdh = CustomFeatures(self.testing_dataset.data)
+            new_feature_data = getattr(cdh, gene)(params[gene], **afm_kwargs)
+            fio = FeatureIO(newX_Test)
+            newX_Test = fio.add_custom_features(gene, new_feature_data)
+        self.input_data_with_afm = newX_Test
+        return
+
+    def print_genome(self, preface="Individual"):
+        genomestr = "%s: " % preface
+        genes = list(self.genome.keys())
+        genes.sort()
+        for gene in genes:
+            geneidxs = list(self.genome[gene].keys())
+            for geneidx in geneidxs:
+                geneval = self.genome[gene][geneidx]
+                if geneidx == 'alpha':
+                    geneval = 10**(float(geneval)*(-6))
+                elif geneidx == 'gamma':
+                    geneval = 10**((float(geneval)*(3))-1.5)
+                genedisp = "%s %s: %3.6f" % (gene, geneidx, geneval)
+                genomestr = genomestr + genedisp + ", "
+        print(genomestr[:-2], flush=True) #remove last comma and space
+        return
+
+    def print_individual(self):
+        self.print_genome()
+        if self.rmse is None:
+            pass
+        else:
+            print("RMSE: %3.3f" % self.rmse)
+        return
+    
+    def single_avg_cv(self, Xdata, Ydata, division_index, 
+                            parallel_return_dict=None):
+        rms_list=list()
+        division_dict = self.cv_divisions[division_index]
+        # split into testing and training sets
+        for didx in range(len(division_dict['train_index'])):
+            train_index = division_dict['train_index'][didx]
+            test_index = division_dict['test_index'][didx]
+            X_train, X_test = Xdata[train_index], Xdata[test_index]
+            Y_train, Y_test = Ydata[train_index], Ydata[test_index]
+            # train on training sets
+            self.model.fit(X_train, Y_train)
+            Y_test_Pred = self.model.predict(X_test)
+            my_rms = np.sqrt(mean_squared_error(Y_test, Y_test_Pred))
+            rms_list.append(my_rms)
+        mean_rms = np.mean(rms_list)
+        parallel_return_dict[division_index] = mean_rms
+        return None
+
+    def num_runs_cv(self, model, X, Y):
+        Xdata = np.asarray(X)
+        Ydata = np.asarray(Y)
+        n_rms_list = list()
+        num_runs = len(self.cv_divisions.keys())
+        if self.use_multiprocessing > 0: 
+            cv_manager=Manager()
+            n_rms_dict = cv_manager.dict()
+            cv_procs = list()
+            for nidx in range(num_runs):
+                cv_proc = Process(target=self.single_avg_cv, 
+                            args=(Xdata, Ydata, nidx, n_rms_dict))
+                cv_procs.append(cv_proc)
+                cv_proc.start()
+            for cvp in cv_procs:
+                cvp.join()
+        else:
+            n_rms_dict=dict()
+            for nidx in range(num_runs):
+                self.single_avg_cv(Xdata, Ydata, nidx, n_rms_dict)
+        n_rms_list = list()
+        for nidx in range(num_runs):
+            n_rms_list.append(n_rms_dict[nidx])
+        print("CV time: %s" % time.asctime(), flush=True)
+        print(n_rms_list, flush=True)
+        return (np.mean(n_rms_list))
+
+    def evaluate_individual(self):
+        cv_rmse = self.num_runs_cv(model, self.input_data_with_afm, self.testing_dataset.target_data)       
+        self.rmse = cv_rmse
+        return cv_rmse
+
+
+
+class GAGeneration():
+    """GA Generation
+    Attributes:
+        self.testing_dataset
+        self.cv_divisions <dict>
+        self.population <list of param dicts>
+        self.num_parents <int>
+        self.gene_template <dict>
+        self.population_size <int>
+        self.use_multiprocessing <int>
+        self.best_rmse <float>
+        self.best_params <dict>
+        self.parents <list of param dicts>
+        self.new_population <list of param dicts>
+        # Set in code
+        self.crossover_prob <float>
+        self.mutation_prob <float>
+        self.shift_prob <float>
+        self.population_rmse_list <list of float>
+    """
+    def __init__(self, 
+                model=None,
+                testing_dataset=None,
+                cv_divisions=None,
+                population=None,
+                num_parents=None,
+                gene_template=None,
+                population_size=50,
+                use_multiprocessing=1,
+                *args,**kwargs):
+        self.model = model
+        self.testing_dataset = testing_dataset
+        self.cv_divisions = cv_divisions
+        self.population = population
+        self.num_parents = int(num_parents)
+        self.use_multiprocessing = int(use_multiprocessing)
+        self.population_size = int(population_size)
+        self.gene_template = gene_template
+        self.best_rmse = None
+        self.best_params = None
+        self.parent_indices = list()
+        self.new_population = dict()
+        self.crossover_prob = 0.5
+        self.mutation_prob = 0.1
+        self.shift_prob = 0.5
+        self.population_rmses = dict()
+        return
+    
+    def run(self):
+        self.set_up()
+        self.evaluate_population()
+        self.select_parents()
+        self.create_new_population()
+        return
+
+    def set_up(self):
+        if self.population is None:
+            self.initialize_population()
+        return
+    
+    def initialize_population(self, verbose=1):
+        self.population=dict()
+        for pidx in range(self.population_size):
+            genome = dict()
+            for gene in self.gene_template.keys():
+                genome[gene] = dict()
+                for geneidx in self.gene_template[gene].keys():
+                    genome[gene][geneidx] = np.random.randint(0, 101)/100
+            self.population[pidx] = GAIndividual(genome=genome,
+                                testing_dataset = self.testing_dataset,
+                                cv_divisions = self.cv_divisions,
+                                afm_dict = self.afm_dict,
+                                use_multiprocessing = self.use_multiprocessing)
+        if verbose > 0:
+            for indiv in self.population:
+                indiv.print_individual()
+        return
+    
+
+    def evaluate_population(self):
+        #if self.use_multiprocessing > 0:
+        #    gen_manager=Manager()
+        #    gen_rms_dict = gen_manager.dict()
+        #    gen_procs = list()
+        #    for indidx in range(len(self.population)):
+        #        gen_proc = Process(target=self.evaluate_individual, 
+        #                    args=(indidx, self.population, gen_rms_dict))
+        #        gen_procs.append(gen_proc)
+        #        gen_proc.start()
+        #    for genp in gen_procs:
+        #        genp.join()
+        #    self.population_rmses=dict(gen_rms_dict)
+        #else:
+        #    for indidx in range(len(self.population)):
+        #        self.population_rmses[indidx] = self.evaluate_individual(indidx, self.population)
+        for indidx in range(len(self.population)):
+            self.population_rmses[indidx] = self.population[indidx].evaluate_individual()
+        return
+    
+    def select_parents(self):
+        """Select parents.
+        """
+        self.parent_indices = list()
+        for pidx in range(self.num_parents):       
+            self.parents[pidx] = dict(self.population[np.argmin(temp_rms_list)])
+            rmsList[np.argmin(rmsList)] = np.max(rmsList)
+        self.parents = list(parents)
+        return
+
+    def create_new_population(self):
+        """Progenate new population 
+        """
+        self.new_population=list()
+        for ind in range(len(self.population)):
+            p1 = self.parents[np.random.randint(0, self.num_parents)]
+            p2 = self.parents[np.random.randint(0, self.num_parents)]
+            new_indiv = dict() 
+            for gene in self.population[ind].keys():
+                new_indiv[gene] = dict()
+                for geneidx in self.population[ind][gene].keys():
+                    c = np.random.rand()
+                    m = np.random.rand()
+                    s = np.random.rand()
+                    new_val = None
+                    
+                    if c <= crossover_prob:
+                        new_val = p1[gene][geneidx]
+                    else:
+                        new_val = p2[gene][geneidx]
+                    if (s <= shift_prob):
+                        if (new_val >= 0) and (new_val <= 1):
+                            new_val = np.abs( new_val + np.random.randint(-4,5)/100 )   # random shift
+                        if (new_val < 0):    
+                            new_val = 0
+                        if (new_val > 1):    
+                            new_val = 1                 
+                    if m <= mutation_prob:
+                        new_val = np.random.randint(0,101)/100   # mutation
+                    new_indiv[gene][geneidx] = new_val
+            self.new_population.append(dict(new_indiv))
+        return
+
 class ParamOptGA(SingleFit):
     """Search for paramters using GA.
         Allows custom features.
@@ -120,34 +399,24 @@ class ParamOptGA(SingleFit):
         self.hp_dict = dict()
         self.gene_dict = dict()
         #
+        self.ga_dict = None
         self.gen_dict = None 
         self.overall_best_parameters = None
-        self.overall_best_rmse = None
+        self.overall_best_rmse = 100000000
+        self.runs_since_best = 0
         self.converged = 0
+        self.genct = 0
         return
 
     def run_ga(self):
         self.gen_dict=dict()
-
-        bestRMSs = []
-        bestGens = []
-        bestParamSets = []
-        runsSinceBest = 0
-
+        
         print('running', flush=True)
-        runsSinceBest = 0
-        gens = 1
-        bestRMS = 200
-        bestParams = []
+        self.genct = 0
 
-        while runsSinceBest < self.convergence_generations and gens < self.max_generations: # run until convergence condition is met
-            # run a generation imputting population, number of parameters, number of parents, crossover probablility, mutation probability, random shift probability
-            print("Generation %i %s" % (gens, time.asctime()), flush=True)
-            self.gen_dict[gens] = dict()
-            Gen = self.generation(list(self.population),
-                        crossover_prob = .5, 
-                        mutation_prob = .1, 
-                        shift_prob = .5)
+        while self.runs_since_best < self.convergence_generations and self.genct < self.max_generations: 
+            print("Generation %i %s" % (self.genct, time.asctime()), flush=True)
+            self.gen_dict[gens] = GAGeneration()
             #print(Gen['best_rms'])
             #print(Gen['best_parameters'])
             self.gen_dict[gens].update(Gen)
@@ -232,20 +501,6 @@ class ParamOptGA(SingleFit):
         print(self.gene_dict)
         return
 
-    def initialize_population(self, verbose=1):
-        self.population=list()
-        for pidx in range(self.population_size):
-            self.population.append(dict())
-        #initailize random population
-        for individual in range(len(self.population)):
-            for gene in self.gene_dict.keys():
-                self.population[individual][gene] = dict()
-                for geneidx in self.gene_dict[gene].keys():
-                    self.population[individual][gene][geneidx] = np.random.randint(0, 101)/100
-        if verbose > 0:
-            for indiv in self.population:
-                print(indiv)
-        return
     
     def get_cv_divisions(self, num_runs=0):
         """Preset all CV divisions so that all individuals in all
@@ -286,22 +541,6 @@ class ParamOptGA(SingleFit):
 
     
 
-    def print_genome(self, genome, preface=""):
-        genomestr = "%s: " % preface
-        genes = list(genome.keys())
-        genes.sort()
-        for gene in genes:
-            geneidxs = list(genome[gene].keys())
-            for geneidx in geneidxs:
-                geneval = genome[gene][geneidx]
-                if geneidx == 'alpha':
-                    geneval = 10**(float(geneval)*(-6))
-                elif geneidx == 'gamma':
-                    geneval = 10**((float(geneval)*(3))-1.5)
-                genedisp = "%s %s: %3.6f" % (gene, geneidx, geneval)
-                genomestr = genomestr + genedisp + ", "
-        print(genomestr[:-2], flush=True) #remove last comma and space
-        return
 
     def set_hp_dict(self):
         """ #for GKRR, alpha and gamma
@@ -341,73 +580,6 @@ class ParamOptGA(SingleFit):
         self.afm_dict=dict(afm_dict)
         return afm_dict
 
-    def single_avg_cv(self, model, Xdata, Ydata, division_index, 
-                            parallel_return_dict=None):
-        rms_list = []
-        division_dict = self.cv_divisions[division_index]
-        # split into testing and training sets
-        for didx in range(len(division_dict['train_index'])):
-            train_index = division_dict['train_index'][didx]
-            test_index = division_dict['test_index'][didx]
-            X_train, X_test = Xdata[train_index], Xdata[test_index]
-            Y_train, Y_test = Ydata[train_index], Ydata[test_index]
-            # train on training sets
-            model.fit(X_train, Y_train)
-            Y_test_Pred = model.predict(X_test)
-            my_rms = np.sqrt(mean_squared_error(Y_test, Y_test_Pred))
-            rms_list.append(my_rms)
-        mean_rms = np.mean(rms_list)
-        if parallel_return_dict is None:
-            return mean_rms
-        else:
-            parallel_return_dict[division_index] = mean_rms
-        return None
-
-    def num_runs_cv(self, model, X, Y, num_runs, parallelize=1):
-        Xdata = np.asarray(X)
-        Ydata = np.asarray(Y)
-        n_rms_list = list()
-        
-        if self.use_multiprocessing > 0: 
-            cv_manager=Manager()
-            n_rms_dict = cv_manager.dict()
-            cv_procs = list()
-            for nidx in range(num_runs):
-                cv_proc = Process(target=self.single_avg_cv, 
-                            args=(model, Xdata, Ydata, nidx, n_rms_dict))
-                cv_procs.append(cv_proc)
-                cv_proc.start()
-            for cvp in cv_procs:
-                cvp.join()
-            for nidx in range(num_runs):
-                n_rms_list.append(n_rms_dict[nidx])
-        else:
-            for n in range(num_runs):
-                n_rms_list.append(self.single_avg_cv(model, Xdata, Ydata, n))
-        print("CV time: %s" % time.asctime(), flush=True)
-        print(n_rms_list, flush=True)
-        return (np.mean(n_rms_list))
-
-    def evaluate_individual(self, indidx, pop, parallel_result_dict=None, 
-                                    do_extrapolation=0):
-        newX_Test = copy.deepcopy(self.testing_dataset.input_data)
-        params = pop[indidx]
-        rdict=dict()
-        for gene in self.afm_dict.keys():
-            afm_kwargs = dict(self.afm_dict[gene]['args'])
-            cdh = CustomFeatures(self.testing_dataset.data)
-            new_feature_data = getattr(cdh, gene)(params[gene], **afm_kwargs)
-            fio = FeatureIO(newX_Test)
-            newX_Test = fio.add_custom_features(gene, new_feature_data)
-        model = KernelRidge(alpha = 10**(float(params['model']['alpha'])*(-6)), gamma = 10**((float(params['model']['gamma'])*(3))-1.5), kernel = 'rbf')
-        cv_rms = self.num_runs_cv(model, newX_Test, self.testing_dataset.target_data, num_runs = self.num_cvtests)       
-        rdict['cv_rms'] = cv_rms
-        if parallel_result_dict is None:
-            return rdict
-        else:
-            print("individual %i %s" % (indidx, time.asctime()))
-            parallel_result_dict[indidx]=rdict
-        return 
 
     def generation(self, pop, crossover_prob=0.5, mutation_prob=0.1, shift_prob=0.5):
         rmsList = list()
