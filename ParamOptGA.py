@@ -177,6 +177,7 @@ class GAGeneration():
         self.mutation_prob <float>
         self.shift_prob <float>
         self.population_rmse_list <list of float>
+        self.random_state
     """
     def __init__(self, 
                 testing_dataset=None,
@@ -187,7 +188,7 @@ class GAGeneration():
                 population_size=50,
                 afm_dict=None,
                 use_multiprocessing=1,
-                fix_random_for_testing=0,
+                random_state=None,
                 *args,**kwargs):
         self.testing_dataset = testing_dataset
         self.cv_divisions = cv_divisions
@@ -197,10 +198,10 @@ class GAGeneration():
         self.population_size = int(population_size)
         self.gene_template = gene_template
         self.afm_dict = afm_dict
-        if fix_random_for_testing > 0:
-            self.random_state = np.random.RandomState(int(fix_random_for_testing))
-        else:
+        if random_state is None:
             self.random_state = np.random.RandomState()
+        else:
+            self.random_state = random_state
         self.best_rmse = 100000000
         self.best_params = None
         self.best_individual = None
@@ -412,8 +413,7 @@ class ParamOptGA(SingleFit):
         self.convergence_generations = int(convergence_generations)
         self.max_generations = int(max_generations)
         self.num_parents = int(num_parents)
-        self.fix_random_for_testing = int(fix_random_for_testing)
-        if self.fix_random_for_testing == 1:
+        if int(fix_random_for_testing) == 1:
             self.random_state = np.random.RandomState(0)
         else:
             self.random_state = np.random.RandomState()
@@ -452,10 +452,6 @@ class ParamOptGA(SingleFit):
 
         while ga_runs_since_best < self.convergence_generations and ga_genct < self.max_generations: 
             print("Generation %i %s" % (ga_genct, time.asctime()), flush=True)
-            if self.fix_random_for_testing == 1:
-                init_gen_random = self.gact
-            else:
-                init_gen_random = 0
             Gen = GAGeneration(testing_dataset = self.testing_dataset,
                 cv_divisions=self.cv_divisions,
                 population=new_population,
@@ -464,7 +460,7 @@ class ParamOptGA(SingleFit):
                 afm_dict=self.afm_dict,
                 population_size=self.population_size,
                 use_multiprocessing=self.use_multiprocessing,
-                fix_random_for_testing=init_gen_random)
+                random_state = self.random_state)
             Gen.run()
             new_population = dict(Gen.new_population)
             self.ga_dict[self.gact]['generations'][ga_genct] = Gen
