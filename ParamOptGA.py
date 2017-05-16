@@ -17,6 +17,23 @@ from sklearn.metrics import r2_score
 from multiprocessing import Process,Pool,TimeoutError,Value,Array,Manager
 import time
 
+def print_genome(genome=None, preface=""):
+    genomestr = "%s: " % preface
+    genes = list(genome.keys())
+    genes.sort()
+    for gene in genes:
+        geneidxs = list(genome[gene].keys())
+        for geneidx in geneidxs:
+            geneval = genome[gene][geneidx]
+            if geneidx == 'alpha':
+                geneval = 10**(float(geneval)*(-6))
+            elif geneidx == 'gamma':
+                geneval = 10**((float(geneval)*(3))-1.5)
+            genedisp = "%s %s: %3.6f" % (gene, geneidx, geneval)
+            genomestr = genomestr + genedisp + ", "
+    print(genomestr[:-2], flush=True) #remove last comma and space
+    return
+
 
 class GAIndividual():
     """GA Individual
@@ -76,25 +93,9 @@ class GAIndividual():
         self.input_data_with_afm = newX_Test
         return
 
-    def print_genome(self, preface="Individual"):
-        genomestr = "%s: " % preface
-        genes = list(self.genome.keys())
-        genes.sort()
-        for gene in genes:
-            geneidxs = list(self.genome[gene].keys())
-            for geneidx in geneidxs:
-                geneval = self.genome[gene][geneidx]
-                if geneidx == 'alpha':
-                    geneval = 10**(float(geneval)*(-6))
-                elif geneidx == 'gamma':
-                    geneval = 10**((float(geneval)*(3))-1.5)
-                genedisp = "%s %s: %3.6f" % (gene, geneidx, geneval)
-                genomestr = genomestr + genedisp + ", "
-        print(genomestr[:-2], flush=True) #remove last comma and space
-        return
 
     def print_individual(self):
-        self.print_genome()
+        print_genome(self.genome)
         if self.rmse is None:
             pass
         else:
@@ -120,7 +121,7 @@ class GAIndividual():
         parallel_return_dict[division_index] = mean_rms
         return None
 
-    def num_runs_cv(self, model, X, Y):
+    def num_runs_cv(self, X, Y):
         Xdata = np.asarray(X)
         Ydata = np.asarray(Y)
         n_rms_list = list()
@@ -148,7 +149,7 @@ class GAIndividual():
         return (np.mean(n_rms_list))
 
     def evaluate_individual(self):
-        cv_rmse = self.num_runs_cv(model, self.input_data_with_afm, self.testing_dataset.target_data)       
+        cv_rmse = self.num_runs_cv(self.input_data_with_afm, self.testing_dataset.target_data)       
         self.rmse = cv_rmse
         return cv_rmse
 
@@ -165,7 +166,8 @@ class GAGeneration():
         self.population_size <int>
         self.use_multiprocessing <int>
         self.best_rmse <float>
-        self.best_params <dict>
+        self.best_genome <dict>
+        self.best_individual <int>
         self.parents <list of param dicts>
         self.new_population <list of param dicts>
         # Set in code
@@ -175,16 +177,15 @@ class GAGeneration():
         self.population_rmse_list <list of float>
     """
     def __init__(self, 
-                model=None,
                 testing_dataset=None,
                 cv_divisions=None,
                 population=None,
                 num_parents=None,
                 gene_template=None,
                 population_size=50,
+                afm_dict=None,
                 use_multiprocessing=1,
                 *args,**kwargs):
-        self.model = model
         self.testing_dataset = testing_dataset
         self.cv_divisions = cv_divisions
         self.population = population
@@ -192,14 +193,16 @@ class GAGeneration():
         self.use_multiprocessing = int(use_multiprocessing)
         self.population_size = int(population_size)
         self.gene_template = gene_template
+        self.afm_dict = afm_dict
         self.best_rmse = None
         self.best_params = None
+        self.best_individual = None
         self.parent_indices = list()
         self.new_population = dict()
         self.crossover_prob = 0.5
         self.mutation_prob = 0.1
         self.shift_prob = 0.5
-        self.population_rmses = dict()
+        self.population_rmses = list()
         return
     
     def run(self):
@@ -212,6 +215,8 @@ class GAGeneration():
     def set_up(self):
         if self.population is None:
             self.initialize_population()
+        for pidx in range(self.population_size):
+            self.population_rmses.append(None)
         return
     
     def initialize_population(self, verbose=1):
@@ -231,7 +236,6 @@ class GAGeneration():
             for indiv in self.population:
                 indiv.print_individual()
         return
-    
 
     def evaluate_population(self):
         #if self.use_multiprocessing > 0:
@@ -249,7 +253,7 @@ class GAGeneration():
         #else:
         #    for indidx in range(len(self.population)):
         #        self.population_rmses[indidx] = self.evaluate_individual(indidx, self.population)
-        for indidx in range(len(self.population)):
+        for indidx in range(self.population_size):
             self.population_rmses[indidx] = self.population[indidx].evaluate_individual()
         return
     
@@ -257,32 +261,39 @@ class GAGeneration():
         """Select parents.
         """
         self.parent_indices = list()
-        for pidx in range(self.num_parents):       
-            self.parents[pidx] = dict(self.population[np.argmin(temp_rms_list)])
-            rmsList[np.argmin(rmsList)] = np.max(rmsList)
-        self.parents = list(parents)
+        temp_rmse_list = list(self.population_rmses)
+        lowest_idx=None
+        for pridx in range(self.num_parents):       
+            min_rmse_index = np.argmin(temp_rmse_list)
+            self.parent_indices.append(pridx)
+            min_rmse = temp_rmse_list[min_rmse_index]
+            if min_rmse < self.best_rmse:
+                self.best_rmse = min_rmse
+                self.best_genome = dict(self.population[pridx].genome)
+                self.best_individual = pridx
+            temp_rmse_list[min_rmse_index] = np.max(temp_rmse_list) #so don't find same rmse twice)
         return
 
     def create_new_population(self):
         """Progenate new population 
         """
-        self.new_population=list()
-        for ind in range(len(self.population)):
-            p1 = self.parents[np.random.randint(0, self.num_parents)]
-            p2 = self.parents[np.random.randint(0, self.num_parents)]
-            new_indiv = dict() 
-            for gene in self.population[ind].keys():
-                new_indiv[gene] = dict()
-                for geneidx in self.population[ind][gene].keys():
+        self.new_population=dict()
+        for indidx in range(self.population_size):
+            p1idx = np.random.randint(0, self.num_parents)
+            p2idx = np.random.randint(0, self.num_parents) #can have two of same parent?
+            new_genome = dict() 
+            for gene in self.population[indidx].genome.keys():
+                new_genome[gene] = dict()
+                for geneidx in self.population[indidx].genome[gene].keys():
                     c = np.random.rand()
                     m = np.random.rand()
                     s = np.random.rand()
                     new_val = None
                     
                     if c <= crossover_prob:
-                        new_val = p1[gene][geneidx]
+                        new_val = self.population[p1idx].genome[gene][geneidx]
                     else:
-                        new_val = p2[gene][geneidx]
+                        new_val = self.population[p2idx].genome[gene][geneidx]
                     if (s <= shift_prob):
                         if (new_val >= 0) and (new_val <= 1):
                             new_val = np.abs( new_val + np.random.randint(-4,5)/100 )   # random shift
@@ -292,8 +303,12 @@ class GAGeneration():
                             new_val = 1                 
                     if m <= mutation_prob:
                         new_val = np.random.randint(0,101)/100   # mutation
-                    new_indiv[gene][geneidx] = new_val
-            self.new_population.append(dict(new_indiv))
+                    new_genome[gene][geneidx] = new_val
+            self.new_population[indidx] = GAIndividual(genome = new_genome,
+                                testing_dataset = self.testing_dataset,
+                                cv_divisions = self.cv_divisions,
+                                afm_dict = self.afm_dict,
+                                use_multiprocessing = self.use_multiprocessing)
         return
 
 class ParamOptGA(SingleFit):
@@ -399,60 +414,73 @@ class ParamOptGA(SingleFit):
         self.hp_dict = dict()
         self.gene_dict = dict()
         #
-        self.ga_dict = None
-        self.gen_dict = None 
-        self.overall_best_parameters = None
-        self.overall_best_rmse = 100000000
-        self.runs_since_best = 0
-        self.converged = 0
-        self.genct = 0
+        self.ga_dict = dict()
+        self.gact = 0
         return
 
     def run_ga(self):
-        self.gen_dict=dict()
+        self.ga_dict[self.gact] = dict()
+        self.ga_dict[self.gact]['generations'] = dict()
         
         print('running', flush=True)
-        self.genct = 0
+        ga_genct = 0
+        ga_best_rmse = 10000000
+        ga_best_genome = None
+        ga_converged = 0
+        ga_runs_since_best = 0
 
-        while self.runs_since_best < self.convergence_generations and self.genct < self.max_generations: 
+        new_population=None
+
+        while ga_runs_since_best < self.convergence_generations and ga_genct < self.max_generations: 
             print("Generation %i %s" % (self.genct, time.asctime()), flush=True)
-            self.gen_dict[gens] = GAGeneration()
-            #print(Gen['best_rms'])
-            #print(Gen['best_parameters'])
-            self.gen_dict[gens].update(Gen)
-            self.population = list(Gen['new_population'])
+            Gen = GAGeneration(testing_dataset = self.testing_dataset,
+                cv_divisions=self.cv_divisions,
+                population=new_population,
+                num_parents=self.num_parents,
+                gene_template=self.gene_template,
+                afm_dict=self.afm_dict,
+                population_size=self.population_size,
+                use_multiprocessing=self.use_multiprocessing,
+            new_population = dict(Gen.new_population)
+            self.ga_dict[self.gact]['generations'][ga_genct] = Gen
 
             # updates best parameter set
-            if bestRMS > np.min(Gen['best_rms']) :
-                bestRMS = np.min(Gen['best_rms'])
-                bestParams = Gen['best_parameters'][np.argmin(Gen['best_rms'])]
-                bestRMSs.append(bestRMS)
-                bestGens.append(gens)
-                runsSinceBest = 0
-            self.gen_dict[gens]['GA_best_parameters'] = copy.deepcopy(bestParams)
-            self.gen_dict[gens]['GA_best_rms'] = bestRMS
-
+            if Gen.best_rmse < ga_best_rmse:
+                ga_best_rmse = Gen.best_rmse
+                ga_best_genome = Gen.best_genome
+                ga_runs_since_best = 0
+            
             # prints output for each generation
             print(time.asctime())
             genpref = "Results for generation %i" % gens
-            self.print_genome(bestParams,preface=genpref)
+            Gen.population[Gen.best_individual].print_individual(preface=genpref)
+            print("Best RMSE: %3.3f" % Gen.best_rmse)
             print(bestRMS, flush=True)
             print(gens, runsSinceBest, flush=True)
             
-            gens = gens+1
-            runsSinceBest = runsSinceBest+1
-        self.overall_best_parameters = copy.deepcopy(bestParams)
-        self.overall_best_rmse = bestRMS
-        if gens < self.max_generations:
-            self.converged = 1
+            ga_genct = ga_genct + 1
+            ga_runs_since_best = ga_runs_since_best + 1
+        
+        self.ga_dict[self.gact]['best_rmse'] = ga_best_rmse
+        self.ga_dict[self.gact]['best_genome'] = ga_best_genome
+        if ga_genct < self.max_generations:
+            self.ga_dict[self.gact]['converged']=True
+        else:
+            self.ga_dict[self.gact]['converged']=False
         return
 
-    def print_gen_dict(self):
-        gens = list(self.gen_dict.keys())
-        gens.sort()
-        for gen in gens:
-            prefacestr = "Generation : %i, rmse %3.6f" % (gen, self.gen_dict[gen]['GA_best_rms'])
-            self.print_genome(self.gen_dict[gen]['GA_best_parameters'], preface = prefacestr)
+    def print_ga_dict(self):
+        gas = list(self.ga_dict.keys())
+        gas.sort()
+        for ga in gas:
+            print("GA %i" % ga)
+            print("Best RMSE: %3.3f" % self.ga_dict[ga]['best_rmse'])
+            print_genome(self.ga_dict[ga]['best_genome'])
+            gens = list(self.ga_dict[ga]['generations']
+            gens.sort()
+            for gen in gens:
+                prefacestr = "Generation : %i, rmse %3.6f" % (gen, self.gen_dict[ga]['generations'][gen]['best_rmse'])
+                print_genome(self.ga_dict[ga][gen]['best_genome'], preface = prefacestr)
         return
 
     def old_save_for_evaluating_results_of_multiple_GA(self):
@@ -479,7 +507,7 @@ class ParamOptGA(SingleFit):
     def run(self):
         self.set_up()
         self.run_ga()
-        self.print_gen_dict()
+        self.print_ga_dict()
         return
 
     @timeit
@@ -493,12 +521,12 @@ class ParamOptGA(SingleFit):
         return
 
     def set_gene_info(self):
-        self.gene_dict=dict()
-        self.gene_dict.update(self.hp_dict) #model, with subkeys of hyperparams
+        self.gene_template=dict()
+        self.gene_template.update(self.hp_dict) #model, with subkeys of hyperparams
         for afm_key in self.afm_dict.keys():
-            self.gene_dict[afm_key] = dict()
-            self.gene_dict[afm_key].update(self.afm_dict[afm_key]['params'])
-        print(self.gene_dict)
+            self.gene_template[afm_key] = dict()
+            self.gene_template[afm_key].update(self.afm_dict[afm_key]['params'])
+        print(self.gene_template)
         return
 
     
