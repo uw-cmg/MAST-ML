@@ -1,22 +1,22 @@
-Tue May 16 16:05:24 2017
-Overall best genome: model alpha: 0.054954, model gamma: 0.204174, testing_subtraction 0: 0.260000, testing_subtraction 1: 0.890000
+Tue May 16 16:15:29 2017
+Overall best genome: model gamma: 0.134896, model alpha: 0.023988, testing_subtraction 0: 0.260000, testing_subtraction 1: 0.890000
 GA 1
 Converged?: False
-Best RMSE: 0.118
-: model alpha: 0.054954, model gamma: 0.204174, testing_subtraction 0: 0.260000, testing_subtraction 1: 0.890000
-Generation : 0, rmse 0.118446: model alpha: 0.054954, model gamma: 0.204174, testing_subtraction 0: 0.260000, testing_subtraction 1: 0.890000
-Generation : 1, rmse 0.134634: model alpha: 0.436516, model gamma: 31.622777, testing_subtraction 0: 0.500000, testing_subtraction 1: 0.370000
-Generation : 2, rmse 0.133633: model alpha: 0.000191, model gamma: 0.041687, testing_subtraction 0: 0.580000, testing_subtraction 1: 0.370000
-Generation : 3, rmse 0.125532: model alpha: 0.004571, model gamma: 0.051286, testing_subtraction 0: 0.560000, testing_subtraction 1: 0.410000
-Generation : 4, rmse 0.125363: model alpha: 0.004571, model gamma: 0.051286, testing_subtraction 0: 0.540000, testing_subtraction 1: 0.940000
+Best RMSE: 0.117
+: model gamma: 0.134896, model alpha: 0.023988, testing_subtraction 0: 0.260000, testing_subtraction 1: 0.890000
+Generation : 0, rmse 0.116776: model gamma: 0.134896, model alpha: 0.023988, testing_subtraction 0: 0.260000, testing_subtraction 1: 0.890000
+Generation : 1, rmse 0.186850: model gamma: 0.047863, model alpha: 0.000001, testing_subtraction 0: 0.500000, testing_subtraction 1: 0.370000
+Generation : 2, rmse 0.274334: model gamma: 2.290868, model alpha: 0.575440, testing_subtraction 0: 0.580000, testing_subtraction 1: 0.370000
+Generation : 3, rmse 0.151666: model gamma: 0.467735, model alpha: 0.380189, testing_subtraction 0: 0.560000, testing_subtraction 1: 0.410000
+Generation : 4, rmse 0.150971: model gamma: 0.467735, model alpha: 0.380189, testing_subtraction 0: 0.540000, testing_subtraction 1: 0.940000
 GA 2
 Converged?: False
-Best RMSE: 0.128
-: model alpha: 0.000001, model gamma: 16.982437, testing_subtraction 0: 0.370000, testing_subtraction 1: 0.910000
-Generation : 0, rmse 0.131660: model alpha: 0.005248, model gamma: 6.918310, testing_subtraction 0: 0.800000, testing_subtraction 1: 0.940000
-Generation : 1, rmse 0.127744: model alpha: 0.000001, model gamma: 16.982437, testing_subtraction 0: 0.370000, testing_subtraction 1: 0.910000
-Generation : 2, rmse 0.503191: model alpha: 0.000437, model gamma: 11.220185, testing_subtraction 0: 0.840000, testing_subtraction 1: 0.950000
-Generation : 3, rmse 0.516038: model alpha: 0.000001, model gamma: 16.982437, testing_subtraction 0: 0.370000, testing_subtraction 1: 0.940000
-Generation : 4, rmse 0.521807: model alpha: 0.000001, model gamma: 16.982437, testing_subtraction 0: 0.320000, testing_subtraction 1: 0.880000
-GA 1 200-CV RMSEs: 0.120 0.135 
-GA 2 200-CV RMSEs: 0.530 0.520 
+Best RMSE: 0.161
+: model gamma: 31.622777, model alpha: 0.000003, testing_subtraction 0: 0.370000, testing_subtraction 1: 0.910000
+Generation : 0, rmse 0.174583: model gamma: 0.436516, model alpha: 0.000021, testing_subtraction 0: 0.800000, testing_subtraction 1: 0.940000
+Generation : 1, rmse 0.160767: model gamma: 31.622777, model alpha: 0.000003, testing_subtraction 0: 0.370000, testing_subtraction 1: 0.910000
+Generation : 2, rmse 0.594172: model gamma: 1.513561, model alpha: 0.000008, testing_subtraction 0: 0.840000, testing_subtraction 1: 0.950000
+Generation : 3, rmse 0.586702: model gamma: 31.622777, model alpha: 0.000003, testing_subtraction 0: 0.370000, testing_subtraction 1: 0.940000
+Generation : 4, rmse 0.584618: model gamma: 31.622777, model alpha: 0.000003, testing_subtraction 0: 0.320000, testing_subtraction 1: 0.880000
+GA 1 200-CV RMSEs: 0.118 0.132 
+GA 2 200-CV RMSEs: 0.591 0.578 
