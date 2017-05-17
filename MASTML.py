@@ -62,11 +62,11 @@ class MASTMLDriver(object):
         #print(dataframe)
 
         # Gather models
-        model_list = self._gather_models(mastmlwrapper=mastmlwrapper)
+        (model_list, model_vals) = self._gather_models(mastmlwrapper=mastmlwrapper)
 
         # Gather tests
-        test_list = self._gather_tests(mastmlwrapper=mastmlwrapper, configdict=configdict, data_dict=data_dict,
-                                       model_list=model_list, save_path=save_path)
+        test_list = self._gather_tests(mastmlwrapper=mastmlwrapper, configdict=configdict, data_dict=data_dict, model_list=model_list, save_path=save_path,
+                model_vals = model_vals)
 
         # End MASTML session
         self._move_log_and_input_files(mastmlwrapper=mastmlwrapper)
@@ -136,25 +136,29 @@ class MASTMLDriver(object):
         models_and_tests_setup = mastmlwrapper.process_config_keyword(keyword='Models and Tests to Run')
         model_list = []
         model_val = models_and_tests_setup['models']
+        model_vals = list()
         #print(model_val)
         if type(model_val) is str:
             logging.info('Getting model %s' % model_val)
             ml_model = mastmlwrapper.get_machinelearning_model(model_type=model_val)
             model_list.append(ml_model)
             logging.info('Adding model %s to queue...' % str(model_val))
+            model_vals.append(model_val)
         elif type(model_val) is list:
             for model in model_val:
                 logging.info('Getting model %s' % model)
                 ml_model = mastmlwrapper.get_machinelearning_model(model_type=model)
                 model_list.append(ml_model)
                 logging.info('Adding model %s to queue...' % str(model))
-        return model_list
+                model_vals.append(model_val)
+        return (model_list, model_val)
 
-    def _gather_tests(self, mastmlwrapper, configdict, data_dict, model_list, save_path):
+    def _gather_tests(self, mastmlwrapper, configdict, data_dict, model_list, save_path, model_vals):
         models_and_tests_setup = mastmlwrapper.process_config_keyword(keyword='Models and Tests to Run')
         generalsetup = mastmlwrapper.process_config_keyword(keyword='General Setup')
         # Gather test types
         test_list = self.string_or_list_input_to_list(models_and_tests_setup['test_cases'])
+        param_optimizing_tests = ["ParamOptGA"]
         # Run the specified test cases for every model
         for test_type in test_list:
             logging.info('Looking up parameters for test type %s' % test_type)
@@ -181,8 +185,35 @@ class MASTMLDriver(object):
                                                        model=model, save_path=test_save_path,
                                                        **test_params)
                 logging.info('Ran test %s for your %s model' % (test_type, str(model)))
-
+                test_short = test_type.split("_")[0]
+                if test_short in param_optimizing_tests:
+                    logging.info("UPDATING PARAMETERS from %s" % test_type)
+                    param_dict = self._get_param_dict(os.path.join(test_save_path,"OPTIMIZED_PARAMS"))
+                    print(param_dict)
+                    model_val = model_vals[midx]
+                    mastmlwrapper.configdict["Model Parameters"][model_val].update(param_dict["model"])
+                    print(mastmlwrapper.configdict["Model Parameters"][model_val])
+                    model_list[midx] = mastmlwrapper.get_machinelearning_model(model_type=model_val)
+                    logging.info("Updated model.")
+                    print("PUT PARAMS IN HERE, AND ADD COLUMNS TO DATASET")
         return test_list
+
+    def _get_param_dict(self, fname):
+        pdict=dict()
+        with open(fname,'r') as pfile:
+            flines = pfile.readlines()
+        for fline in flines:
+            fline = fline.strip()
+            [gene, geneidx, genevalstr] = fline.split(";")
+            if not gene in pdict.keys():
+                pdict[gene] = dict()
+            if not (gene == 'model'):
+                geneidx = int(geneidx) #integer key to match ParamOptGA
+            if geneidx in pdict[gene].keys():
+                raise ValueError("Param file at %s returned two of the same paramter" % fname)
+            geneval = float(genevalstr)
+            pdict[gene][geneidx] = geneval
+        return pdict
 
     def _move_log_and_input_files(self, mastmlwrapper):
         cwd = os.getcwd()
