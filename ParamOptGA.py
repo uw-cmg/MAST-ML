@@ -50,7 +50,7 @@ def print_genome_for_code(genome=None):
                 geneval = 10**(float(geneval)*(-6))
             elif geneidx == 'gamma':
                 geneval = 10**((float(geneval)*(3))-1.5)
-            genedisp = "%s_%s_%3.6f\n" % (gene, geneidx, geneval)
+            genedisp = "%s;%s;%3.6f\n" % (gene, geneidx, geneval)
             printlist.append(genedisp)
     return printlist
 
