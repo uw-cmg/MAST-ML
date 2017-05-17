@@ -431,7 +431,7 @@ class ParamOptGA(SingleFit):
         self.gene_dict = dict()
         #
         self.ga_dict = dict()
-        self.gact = 1
+        self.gact = 0
         self.final_best_rmse = 100000000
         self.final_best_genome = None
         return
@@ -491,36 +491,37 @@ class ParamOptGA(SingleFit):
         self.gact = self.gact + 1
         return
 
-    def print_ga_dict(self):
-        gas = list(self.ga_dict.keys())
-        gas.sort()
-        for ga in gas:
-            self.readme_list.append("GA %i\n" % ga)
-            self.readme_list.append("Converged?: %s\n" % self.ga_dict[ga]['converged'])
-            self.readme_list.append("Best RMSE: %3.3f\n" % self.ga_dict[ga]['best_rmse'])
-            genomestr = print_genome(self.ga_dict[ga]['best_genome'])
+    def print_ga(self, ga=""):
+        self.readme_list.append("----- GA %i -----\n" % ga)
+        self.readme_list.append("Converged?: %s\n" % self.ga_dict[ga]['converged'])
+        prefacestr= "Best %i-CV avg RMSE: %3.3f" % (self.num_cvtests, self.ga_dict[ga]['best_rmse'])
+        genomestr = print_genome(self.ga_dict[ga]['best_genome'], preface=prefacestr)
+        self.readme_list.append("%s\n" % genomestr)
+        gens = list(self.ga_dict[ga]['generations'].keys())
+        gens.sort()
+        self.readme_list.append("..... Generations .....\n")
+        for gen in gens:
+            prefacestr = "Generation %i best: avg rmse %3.3f" % (gen, self.ga_dict[ga]['generations'][gen].best_rmse)
+            genomestr = print_genome(self.ga_dict[ga]['generations'][gen].best_genome, preface = prefacestr)
             self.readme_list.append("%s\n" % genomestr)
-            gens = list(self.ga_dict[ga]['generations'].keys())
-            gens.sort()
-            for gen in gens:
-                prefacestr = "Generation : %i, rmse %3.6f" % (gen, self.ga_dict[ga]['generations'][gen].best_rmse)
-                genomestr = print_genome(self.ga_dict[ga]['generations'][gen].best_genome, preface = prefacestr)
-                self.readme_list.append("%s\n" % genomestr)
-        for ga in gas:
-            printstr = "GA %i %i-CV RMSEs: " % (ga, self.num_cvtests * 10)
-            for fidx in range(0, len(self.final_testing_datasets)):
-                printstr = printstr + "%3.3f " % self.ga_dict[ga]['final_eval_rmses'][fidx]
-            self.readme_list.append("%s\n" % printstr)
+        return
+
+    def print_final_eval(self, ga=""):
+        printstr = "GA %i %i-CV avg RMSEs: " % (ga, self.num_cvtests * 10)
+        for fidx in range(0, len(self.final_testing_datasets)):
+            printstr = printstr + "%3.3f " % self.ga_dict[ga]['final_eval_rmses'][fidx]
+        self.readme_list.append("%s\n" % printstr)
         return
 
     @timeit
     def run(self):
         self.set_up()
+        self.readme_list.append("===== GA info =====\n")
         for ga in range(0, self.num_gas):
             self.run_ga()
+            self.print_ga(ga)
         self.do_final_evaluations()
         self.select_final_best()
-        self.print_ga_dict()
         self.print_readme()
         return
 
@@ -618,6 +619,7 @@ class ParamOptGA(SingleFit):
         self.afm_dict=dict(afm_dict)
         return afm_dict
     def do_final_evaluations(self):
+        self.readme_list.append("===== Final evaluations =====\n")
         self.cv_divisions_final = self.get_cv_divisions(self.num_cvtests * 10)
         gas = list(self.ga_dict.keys())
         gas.sort()
@@ -632,6 +634,7 @@ class ParamOptGA(SingleFit):
                                 afm_dict = self.afm_dict,
                                 use_multiprocessing = self.use_multiprocessing)
                 self.ga_dict[ga]['final_eval_rmses'][fidx] = eval_indiv.evaluate_individual()
+            self.print_final_eval(ga)
         return
 
     def select_final_best(self):
@@ -643,6 +646,7 @@ class ParamOptGA(SingleFit):
             if ga_final_rmse < self.final_best_rmse:
                 self.final_best_rmse = ga_final_rmse
                 self.final_best_genome = self.ga_dict[ga]['best_genome']
+        self.readme_list.append("===== Overall info =====\n")
         printstr = print_genome(self.final_best_genome, preface="Overall best genome")
         self.readme_list.append("%s\n" % printstr)
         return
