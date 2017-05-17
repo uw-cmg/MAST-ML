@@ -3,6 +3,7 @@ import data_parser
 import matplotlib
 import matplotlib.pyplot as plt
 import copy
+import sys
 from SingleFit import SingleFit
 from SingleFit import timeit
 from sklearn.model_selection import KFold
@@ -95,8 +96,7 @@ class GAIndividual():
         self.input_data_with_afm = newX_Test
         return
 
-    def single_avg_cv(self, Xdata, Ydata, division_index, 
-                            parallel_return_dict=None):
+    def single_avg_cv(self, Xdata, Ydata, division_index):
         rms_list=list()
         division_dict = self.cv_divisions[division_index]
         # split into testing and training sets
@@ -111,31 +111,15 @@ class GAIndividual():
             my_rms = np.sqrt(mean_squared_error(Y_test, Y_test_Pred))
             rms_list.append(my_rms)
         mean_rms = np.mean(rms_list)
-        parallel_return_dict[division_index] = mean_rms
-        return parallel_return_dict
+        return mean_rms
 
     def num_runs_cv(self, X, Y, verbose=0):
         Xdata = np.asarray(X)
         Ydata = np.asarray(Y)
-        n_rms_list = list()
         num_runs = len(self.cv_divisions)
-        if self.use_multiprocessing > 0: 
-            cv_manager=Manager()
-            n_rms_dict = cv_manager.dict()
-            cv_procs = list()
-            for nidx in range(num_runs):
-                cv_proc = Process(target=self.single_avg_cv, 
-                            args=(Xdata, Ydata, nidx, n_rms_dict))
-                cv_procs.append(cv_proc)
-                cv_proc.start()
-                cv_proc.join()
-        else:
-            n_rms_dict=dict()
-            for nidx in range(num_runs):
-                n_rms_dict = self.single_avg_cv(Xdata, Ydata, nidx, n_rms_dict)
-        n_rms_list = list()
+        n_rms_list = [None] * num_runs
         for nidx in range(num_runs):
-            n_rms_list.append(n_rms_dict[nidx])
+            n_rms_list[nidx] = self.single_avg_cv(Xdata, Ydata, nidx)
         print("CV time: %s" % time.asctime(), flush=True)
         if verbose > 0:
             print_copy = list(n_rms_list)
@@ -148,8 +132,6 @@ class GAIndividual():
         cv_rmse = self.num_runs_cv(self.input_data_with_afm, self.testing_dataset.target_data)       
         self.rmse = cv_rmse
         return cv_rmse
-
-
 
 class GAGeneration():
     """GA Generation
@@ -239,24 +221,25 @@ class GAGeneration():
                 print_genome(self.population[pidx].genome)
         return
 
-    def evaluate_population(self):
-        #if self.use_multiprocessing > 0:
-        #    gen_manager=Manager()
-        #    gen_rms_dict = gen_manager.dict()
-        #    gen_procs = list()
-        #    for indidx in range(len(self.population)):
-        #        gen_proc = Process(target=self.evaluate_individual, 
-        #                    args=(indidx, self.population, gen_rms_dict))
-        #        gen_procs.append(gen_proc)
-        #        gen_proc.start()
-        #    for genp in gen_procs:
-        #        genp.join()
-        #    self.population_rmses=dict(gen_rms_dict)
-        #else:
-        #    for indidx in range(len(self.population)):
-        #        self.population_rmses[indidx] = self.evaluate_individual(indidx, self.population)
+    def evaluate_population_multiprocessing(self, population, rmse_dict):
         for indidx in range(self.population_size):
-            self.population_rmses[indidx] = self.population[indidx].evaluate_individual()
+            rmse_dict[indidx] = population[indidx].evaluate_individual()
+        return
+
+    def evaluate_population(self, verbose=1):
+        if self.use_multiprocessing > 0:
+            gen_manager = Manager()
+            rmse_dict = gen_manager.dict()
+            ind_proc = Process(target=self.evaluate_population_multiprocessing, args=(self.population, rmse_dict))
+            ind_proc.start()
+            ind_proc.join()
+            for indidx in range(self.population_size):
+                self.population_rmses[indidx] = rmse_dict[indidx]
+        else:
+            for indidx in range(self.population_size):
+                self.population_rmses[indidx] = self.population[indidx].evaluate_individual()
+        if (verbose > 0):
+            print(self.population_rmses)
         return
     
     def select_parents(self):
@@ -647,6 +630,7 @@ class ParamOptGA(SingleFit):
                 self.final_best_rmse = ga_final_rmse
                 self.final_best_genome = self.ga_dict[ga]['best_genome']
         self.readme_list.append("===== Overall info =====\n")
+        self.readme_list.append("%s\n" % time.asctime())
         printstr = print_genome(self.final_best_genome, preface="Overall best genome")
         self.readme_list.append("%s\n" % printstr)
         return
