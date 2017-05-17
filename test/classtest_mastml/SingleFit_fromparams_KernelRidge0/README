@@ -1,16 +1,15 @@
-Wed May 17 16:44:51 2017
+Wed May 17 16:51:04 2017
 ----- Model parameters -----
-alpha: 0.00302
 kernel: rbf
 kernel_params: None
 degree: 3
 gamma: 0.083176
+alpha: 0.00302
 coef0: 1
 ----- Output data -----
 output_data.csv file created with columns:
     str_cat
     num_id
-    testing_subtraction
     time
     N_sine_feature
     N_linear_feature

@@ -197,16 +197,15 @@ class MASTMLDriver(object):
                     model_list[midx] = mastmlwrapper.get_machinelearning_model(model_type=model_val)
                     logging.info("Updated model.")
                     afm_dict = self._get_afm_args(os.path.join(test_save_path,"ADDITIONAL_FEATURES"))
-                    print(afm_dict)
                     for dname in data_dict.keys():
                         for afm in afm_dict.keys():
                             afm_kwargs = dict(afm_dict[afm])
                             cdh = CustomFeatures(data_dict[dname].data)
                             new_feature_data = getattr(cdh, afm)(param_dict[afm], **afm_kwargs)
                             data_dict[dname].add_feature(afm, new_feature_data)
-                        data_dict[dname].input_features.append(afm)
-                        data_dict[dname].labeling_features.append(afm)
-                        data_dict[dname].set_up_data_from_features()
+                            data_dict[dname].input_features.append(afm)
+                            data_dict[dname].set_up_data_from_features()
+                            logging.info("Updated dataset %s data and input features with new feature %s" % (dname,afm))
         return test_list
 
     def _get_param_dict(self, fname):
