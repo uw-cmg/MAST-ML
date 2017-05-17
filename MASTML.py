@@ -8,6 +8,7 @@ from DataParser import DataParser, FeatureIO, FeatureNormalization
 import logging
 import shutil
 import time
+from data_handling.CustomFeatures import CustomFeatures
 
 class MASTMLDriver(object):
 
@@ -195,7 +196,17 @@ class MASTMLDriver(object):
                     print(mastmlwrapper.configdict["Model Parameters"][model_val])
                     model_list[midx] = mastmlwrapper.get_machinelearning_model(model_type=model_val)
                     logging.info("Updated model.")
-                    print("PUT PARAMS IN HERE, AND ADD COLUMNS TO DATASET")
+                    afm_dict = self._get_afm_args(os.path.join(test_save_path,"ADDITIONAL_FEATURES"))
+                    print(afm_dict)
+                    for dname in data_dict.keys():
+                        for afm in afm_dict.keys():
+                            afm_kwargs = dict(afm_dict[afm])
+                            cdh = CustomFeatures(data_dict[dname].data)
+                            new_feature_data = getattr(cdh, afm)(param_dict[afm], **afm_kwargs)
+                            data_dict[dname].add_feature(afm, new_feature_data)
+                        data_dict[dname].input_features.append(afm)
+                        data_dict[dname].labeling_features.append(afm)
+                        data_dict[dname].set_up_data_from_features()
         return test_list
 
     def _get_param_dict(self, fname):
@@ -214,6 +225,18 @@ class MASTMLDriver(object):
             geneval = float(genevalstr)
             pdict[gene][geneidx] = geneval
         return pdict
+    
+    def _get_afm_args(self, fname):
+        adict=dict()
+        with open(fname,'r') as afile:
+            alines = afile.readlines()
+        for aline in alines:
+            aline = aline.strip()
+            [af_method, af_arg, af_argval] = aline.split(";")
+            if not af_method in adict.keys():
+                adict[af_method] = dict()
+            adict[af_method][af_arg] = af_argval
+        return adict
 
     def _move_log_and_input_files(self, mastmlwrapper):
         cwd = os.getcwd()

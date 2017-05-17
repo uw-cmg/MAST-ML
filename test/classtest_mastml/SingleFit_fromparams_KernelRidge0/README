@@ -1,26 +1,28 @@
-Wed May 17 16:11:57 2017
+Wed May 17 16:44:51 2017
 ----- Model parameters -----
-degree: 3
-coef0: 1
-gamma: 0.083176
 alpha: 0.00302
-kernel_params: None
 kernel: rbf
+kernel_params: None
+degree: 3
+gamma: 0.083176
+coef0: 1
 ----- Output data -----
 output_data.csv file created with columns:
     str_cat
     num_id
+    testing_subtraction
     time
     N_sine_feature
     N_linear_feature
+    testing_subtraction
     y_feature
     N_linear_feature
     Prediction
 ----- Statistics -----
-mean_absolute_error: 0.0727
+mean_absolute_error: 0.0721
 mean_error: 0.0000
-rmse: 0.0966
-rsquared: 0.9794
+rmse: 0.0956
+rsquared: 0.9798
 ----- Plotting -----
 Plot single_fit.png created.
     Plotted data is in the data_... csv file.

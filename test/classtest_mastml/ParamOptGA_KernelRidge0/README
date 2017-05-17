@@ -1,4 +1,4 @@
-Wed May 17 16:11:53 2017
+Wed May 17 16:44:47 2017
 ===== GA info =====
 ----- GA 0 -----
 Converged?: False
@@ -22,5 +22,5 @@ Generation 4 best: avg rmse 0.240: model alpha: 0.109648, model gamma: 0.038905,
 GA 0 200-CV avg RMSEs: 0.125 0.137 
 GA 1 200-CV avg RMSEs: 0.324 0.334 
 ===== Overall info =====
-Wed May 17 16:11:57 2017
+Wed May 17 16:44:51 2017
 Overall best genome: model alpha: 0.003020, model gamma: 0.083176, testing_subtraction 0: 0.830000, testing_subtraction 1: 0.640000
