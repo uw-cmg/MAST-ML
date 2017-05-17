@@ -113,13 +113,31 @@ class GAIndividual():
         mean_rms = np.mean(rms_list)
         return mean_rms
 
+    def num_runs_cv_multiprocessing(self, X, Y, nidx, result_dict):
+        result_dict[nidx] = self.single_avg_cv(X, Y, nidx)
+        return
+
     def num_runs_cv(self, X, Y, verbose=0):
         Xdata = np.asarray(X)
         Ydata = np.asarray(Y)
         num_runs = len(self.cv_divisions)
         n_rms_list = [None] * num_runs
-        for nidx in range(num_runs):
-            n_rms_list[nidx] = self.single_avg_cv(Xdata, Ydata, nidx)
+        if self.use_multiprocessing > 0:
+            cv_manager = Manager()
+            cv_dict = cv_manager.dict()
+            cv_procs = list()
+            for nidx in range(num_runs):
+                cv_proc = Process(target=self.num_runs_cv_multiprocessing,
+                    args=(np.asarray(X), np.asarray(Y), nidx, cv_dict))
+                cv_proc.start()
+                cv_procs.append(cv_proc)
+            for cv_proc in cv_procs:
+                cv_proc.join()
+            for nidx in range(num_runs):
+                n_rms_list[nidx] = cv_dict[nidx]
+        else:
+            for nidx in range(num_runs):
+                n_rms_list[nidx] = self.single_avg_cv(Xdata, Ydata, nidx)
         print("CV time: %s" % time.asctime(), flush=True)
         if verbose > 0:
             print_copy = list(n_rms_list)
