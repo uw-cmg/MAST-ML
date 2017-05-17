@@ -1,4 +1,4 @@
-model_alpha_0.003020
-model_gamma_0.083176
-testing_subtraction_0_0.830000
-testing_subtraction_1_0.640000
+model;alpha;0.003020
+model;gamma;0.083176
+testing_subtraction;0;0.830000
+testing_subtraction;1;0.640000
