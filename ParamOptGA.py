@@ -181,7 +181,6 @@ class GAGeneration():
                 population_size=50,
                 afm_dict=None,
                 use_multiprocessing=1,
-                random_state=None,
                 *args,**kwargs):
         self.testing_dataset = testing_dataset
         self.cv_divisions = cv_divisions
@@ -191,10 +190,7 @@ class GAGeneration():
         self.population_size = int(population_size)
         self.gene_template = gene_template
         self.afm_dict = afm_dict
-        if random_state is None:
-            self.random_state = np.random.RandomState()
-        else:
-            self.random_state = random_state
+        self.random_state = np.random.RandomState()
         self.best_rmse = 100000000
         self.best_params = None
         self.best_individual = None
@@ -207,10 +203,12 @@ class GAGeneration():
         return
     
     def run(self):
+        print("RANDOM GEN BF:", self.random_state.rand())
         self.set_up()
         self.evaluate_population()
         self.select_parents()
         self.create_new_population()
+        print("RANDOM GEN AFTER:", self.random_state.rand())
         return
 
     def set_up(self):
@@ -224,9 +222,13 @@ class GAGeneration():
         self.population=dict()
         for pidx in range(self.population_size):
             genome = dict()
-            for gene in self.gene_template.keys():
+            genes = list(self.gene_template.keys())
+            genes.sort()
+            for gene in genes:
                 genome[gene] = dict()
-                for geneidx in self.gene_template[gene].keys():
+                geneidxs = list(self.gene_template[gene].keys())
+                geneidxs.sort()
+                for geneidx in geneidxs:
                     genome[gene][geneidx] =self.random_state.randint(0, 101)/100
             self.population[pidx] = GAIndividual(genome=genome,
                                 testing_dataset = self.testing_dataset,
@@ -236,6 +238,7 @@ class GAGeneration():
         if verbose > 0:
             for pidx in self.population.keys():
                 print_genome(self.population[pidx].genome)
+        print("RAND in init", self.random_state.rand())
         return
 
     def evaluate_population(self):
@@ -283,9 +286,13 @@ class GAGeneration():
             p1idx = self.random_state.randint(0, self.num_parents)
             p2idx = self.random_state.randint(0, self.num_parents) #can have two of same parent?
             new_genome = dict() 
-            for gene in self.population[indidx].genome.keys():
+            genes = list(self.population[indidx].genome.keys())
+            genes.sort()
+            for gene in genes:
                 new_genome[gene] = dict()
-                for geneidx in self.population[indidx].genome[gene].keys():
+                geneidxs = list(self.population[indidx].genome[gene].keys())
+                geneidxs.sort()
+                for geneidx in geneidxs:
                     c = self.random_state.rand()
                     m = self.random_state.rand()
                     s = self.random_state.rand()
@@ -310,6 +317,7 @@ class GAGeneration():
                                 cv_divisions = self.cv_divisions,
                                 afm_dict = self.afm_dict,
                                 use_multiprocessing = self.use_multiprocessing)
+        print("RAND after create", self.random_state.rand())
         return
 
 class ParamOptGA(SingleFit):
@@ -406,8 +414,9 @@ class ParamOptGA(SingleFit):
         self.convergence_generations = int(convergence_generations)
         self.max_generations = int(max_generations)
         self.num_parents = int(num_parents)
-        if int(fix_random_for_testing) == 1:
-            self.random_state = np.random.RandomState(seed=0)
+        self.fix_random_for_testing = int(fix_random_for_testing)
+        if self.fix_random_for_testing == 1:
+            self.random_state = np.random.RandomState(0)
         else:
             self.random_state = np.random.RandomState()
         self.use_multiprocessing = int(use_multiprocessing)
@@ -452,8 +461,9 @@ class ParamOptGA(SingleFit):
                 gene_template=self.gene_template,
                 afm_dict=self.afm_dict,
                 population_size=self.population_size,
-                use_multiprocessing=self.use_multiprocessing,
-                random_state = self.random_state)
+                use_multiprocessing=self.use_multiprocessing)
+            if self.fix_random_for_testing == 1:
+                Gen.random_state.seed(self.gact)
             Gen.run()
             new_population = dict(Gen.new_population)
             self.ga_dict[self.gact]['generations'][ga_genct] = Gen
