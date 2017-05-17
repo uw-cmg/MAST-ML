@@ -1,22 +1,19 @@
-Tue May 16 16:25:57 2017
-Overall best genome: model alpha: 0.054954, model gamma: 0.204174, testing_subtraction 0: 0.260000, testing_subtraction 1: 0.890000
-GA 1
+Wed May 17 10:44:20 2017
+===== GA info =====
+----- GA 0 -----
 Converged?: False
-Best RMSE: 0.118
-: model alpha: 0.054954, model gamma: 0.204174, testing_subtraction 0: 0.260000, testing_subtraction 1: 0.890000
-Generation : 0, rmse 0.118446: model alpha: 0.054954, model gamma: 0.204174, testing_subtraction 0: 0.260000, testing_subtraction 1: 0.890000
-Generation : 1, rmse 0.134634: model alpha: 0.436516, model gamma: 31.622777, testing_subtraction 0: 0.500000, testing_subtraction 1: 0.370000
-Generation : 2, rmse 0.133633: model alpha: 0.000191, model gamma: 0.041687, testing_subtraction 0: 0.580000, testing_subtraction 1: 0.370000
-Generation : 3, rmse 0.125532: model alpha: 0.004571, model gamma: 0.051286, testing_subtraction 0: 0.560000, testing_subtraction 1: 0.410000
-Generation : 4, rmse 0.125363: model alpha: 0.004571, model gamma: 0.051286, testing_subtraction 0: 0.540000, testing_subtraction 1: 0.940000
-GA 2
+Best 2-CV avg RMSE: 0.139: model alpha: 0.002291, model gamma: 0.812831, testing_subtraction 0: 0.640000, testing_subtraction 1: 0.670000
+..... Generations .....
+Generation 0 best: avg rmse 0.139: model alpha: 0.002291, model gamma: 0.812831, testing_subtraction 0: 0.640000, testing_subtraction 1: 0.670000
+Generation 1 best: avg rmse 0.139: model alpha: 0.002291, model gamma: 0.812831, testing_subtraction 0: 0.640000, testing_subtraction 1: 0.670000
+----- GA 1 -----
 Converged?: False
-Best RMSE: 0.128
-: model alpha: 0.000001, model gamma: 16.982437, testing_subtraction 0: 0.370000, testing_subtraction 1: 0.910000
-Generation : 0, rmse 0.131660: model alpha: 0.005248, model gamma: 6.918310, testing_subtraction 0: 0.800000, testing_subtraction 1: 0.940000
-Generation : 1, rmse 0.127744: model alpha: 0.000001, model gamma: 16.982437, testing_subtraction 0: 0.370000, testing_subtraction 1: 0.910000
-Generation : 2, rmse 0.503191: model alpha: 0.000437, model gamma: 11.220185, testing_subtraction 0: 0.840000, testing_subtraction 1: 0.950000
-Generation : 3, rmse 0.516038: model alpha: 0.000001, model gamma: 16.982437, testing_subtraction 0: 0.370000, testing_subtraction 1: 0.940000
-Generation : 4, rmse 0.521807: model alpha: 0.000001, model gamma: 16.982437, testing_subtraction 0: 0.320000, testing_subtraction 1: 0.880000
-GA 1 200-CV RMSEs: 0.120 0.135 
-GA 2 200-CV RMSEs: 0.530 0.520 
+Best 2-CV avg RMSE: 0.112: model alpha: 0.006026, model gamma: 0.072444, testing_subtraction 0: 0.720000, testing_subtraction 1: 0.090000
+..... Generations .....
+Generation 0 best: avg rmse 0.112: model alpha: 0.006026, model gamma: 0.072444, testing_subtraction 0: 0.720000, testing_subtraction 1: 0.090000
+Generation 1 best: avg rmse 0.114: model alpha: 0.000042, model gamma: 0.063096, testing_subtraction 0: 0.680000, testing_subtraction 1: 0.090000
+===== Final evaluations =====
+GA 0 20-CV avg RMSEs: 0.224 0.249 
+GA 1 20-CV avg RMSEs: 0.124 0.133 
+===== Overall info =====
+Overall best genome: model alpha: 0.006026, model gamma: 0.072444, testing_subtraction 0: 0.720000, testing_subtraction 1: 0.090000
