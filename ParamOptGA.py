@@ -4,6 +4,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import copy
 import sys
+import os
 from SingleFit import SingleFit
 from SingleFit import timeit
 from sklearn.model_selection import KFold
@@ -35,6 +36,23 @@ def print_genome(genome=None, preface=""):
             genomestr = genomestr + genedisp + ", "
     print(genomestr[:-2], flush=True) #remove last comma and space
     return genomestr[:-2]
+
+def print_genome_for_code(genome=None):
+    printlist=list()
+    genes = list(genome.keys())
+    genes.sort()
+    for gene in genes:
+        geneidxs = list(genome[gene].keys())
+        geneidxs.sort()
+        for geneidx in geneidxs:
+            geneval = genome[gene][geneidx]
+            if geneidx == 'alpha':
+                geneval = 10**(float(geneval)*(-6))
+            elif geneidx == 'gamma':
+                geneval = 10**((float(geneval)*(3))-1.5)
+            genedisp = "%s_%s_%3.6f\n" % (gene, geneidx, geneval)
+            printlist.append(genedisp)
+    return printlist
 
 
 class GAIndividual():
@@ -527,6 +545,7 @@ class ParamOptGA(SingleFit):
         self.do_final_evaluations()
         self.select_final_best()
         self.print_readme()
+        self.print_final_best_for_code()
         return
 
     @timeit
@@ -654,4 +673,10 @@ class ParamOptGA(SingleFit):
         self.readme_list.append("%s\n" % time.asctime())
         printstr = print_genome(self.final_best_genome, preface="Overall best genome")
         self.readme_list.append("%s\n" % printstr)
+        return
+
+    def print_final_best_for_code(self):
+        printlist = print_genome_for_code(self.final_best_genome)
+        with open(os.path.join(self.save_path,"OPTIMIZED_PARAMS"),'w') as pfile:
+            pfile.writelines(printlist)
         return
