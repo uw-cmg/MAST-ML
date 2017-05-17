@@ -23,6 +23,7 @@ def print_genome(genome=None, preface=""):
     genes.sort()
     for gene in genes:
         geneidxs = list(genome[gene].keys())
+        geneidxs.sort()
         for geneidx in geneidxs:
             geneval = genome[gene][geneidx]
             if geneidx == 'alpha':
@@ -203,12 +204,10 @@ class GAGeneration():
         return
     
     def run(self):
-        print("RANDOM GEN BF:", self.random_state.rand())
         self.set_up()
         self.evaluate_population()
         self.select_parents()
         self.create_new_population()
-        print("RANDOM GEN AFTER:", self.random_state.rand())
         return
 
     def set_up(self):
@@ -238,7 +237,6 @@ class GAGeneration():
         if verbose > 0:
             for pidx in self.population.keys():
                 print_genome(self.population[pidx].genome)
-        print("RAND in init", self.random_state.rand())
         return
 
     def evaluate_population(self):
@@ -317,7 +315,6 @@ class GAGeneration():
                                 cv_divisions = self.cv_divisions,
                                 afm_dict = self.afm_dict,
                                 use_multiprocessing = self.use_multiprocessing)
-        print("RAND after create", self.random_state.rand())
         return
 
 class ParamOptGA(SingleFit):
