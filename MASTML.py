@@ -170,19 +170,6 @@ class MASTMLDriver(object):
             for dname in testing_dataset_name_list:
                 testing_dataset_list.append(data_dict[dname])
             test_params['testing_dataset'] = testing_dataset_list
-            # Get default features if not set
-            # TTM move this functionality into data handler
-            #if not ('input_features' in test_params.keys()):
-            #    test_params['input_features'] = self.string_or_list_input_to_list(generalsetup['input_features'])
-            #else:
-            #    test_params['input_features'] = self.string_or_list_input_to_list(test_params['input_features'])
-            #if not ('target_feature' in test_params.keys()):
-            #    test_params['target_feature'] = generalsetup['target_feature']
-            #if not ('target_error_feature' in test_params.keys()):
-            #    if 'target_error_feature' in generalsetup.keys():
-            #        test_params['target_error_feature'] = generalsetup['target_error_feature']
-            #if 'labeling_features' in test_params.keys():
-            #    test_params['labeling_features'] = self.string_or_list_input_to_list(test_params['labeling_features'])
             # Run the test case for every model
             for midx, model in enumerate(model_list):
                 # Set save path, allowing for multiple tests and models and potentially multiple of the same model (KernelRidge rbf kernel, KernelRidge linear kernel, etc.)
