@@ -546,6 +546,7 @@ class ParamOptGA(SingleFit):
         self.select_final_best()
         self.print_readme()
         self.print_final_best_for_code()
+        self.print_afm_dict_for_code()
         return
 
     @timeit
@@ -679,4 +680,15 @@ class ParamOptGA(SingleFit):
         printlist = print_genome_for_code(self.final_best_genome)
         with open(os.path.join(self.save_path,"OPTIMIZED_PARAMS"),'w') as pfile:
             pfile.writelines(printlist)
+        return
+
+    def print_afm_dict_for_code(self):
+        afmlist=list()
+        for afm_method in self.afm_dict.keys():
+            for afm_arg in self.afm_dict[afm_method]['args'].keys():
+                afm_str = "%s;%s;%s" % (afm_method, afm_arg, self.afm_dict[afm_method]['args'][afm_arg])
+                afmlist.append("%s\n" % afm_str)
+        afmlist.sort()
+        with open(os.path.join(self.save_path,"ADDITIONAL_FEATURES"),'w') as afile:
+            afile.writelines(afmlist)
         return
