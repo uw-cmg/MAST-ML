@@ -239,18 +239,21 @@ class GAGeneration():
                 print_genome(self.population[pidx].genome)
         return
 
-    def evaluate_population_multiprocessing(self, population, rmse_dict):
-        for indidx in range(self.population_size):
-            rmse_dict[indidx] = population[indidx].evaluate_individual()
+    def evaluate_population_multiprocessing(self, indidx, rmse_dict):
+        rmse_dict[indidx] = self.population[indidx].evaluate_individual()
         return
 
     def evaluate_population(self, verbose=1):
         if self.use_multiprocessing > 0:
             gen_manager = Manager()
             rmse_dict = gen_manager.dict()
-            ind_proc = Process(target=self.evaluate_population_multiprocessing, args=(self.population, rmse_dict))
-            ind_proc.start()
-            ind_proc.join()
+            ind_procs = list()
+            for indidx in range(self.population_size):
+                ind_proc = Process(target=self.evaluate_population_multiprocessing, args=(indidx, rmse_dict))
+                ind_procs.append(ind_proc)
+                ind_proc.start()
+            for ind_proc in ind_procs:
+                ind_proc.join()
             for indidx in range(self.population_size):
                 self.population_rmses[indidx] = rmse_dict[indidx]
         else:
