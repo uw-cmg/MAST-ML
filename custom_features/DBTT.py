@@ -46,8 +46,8 @@ class DBTT():
         new_df = fio.add_custom_features(["EFl"],EFl)
         fnorm = FeatureNormalization(new_df)
         N_EFl = fnorm.minmax_scale_single_feature("EFl", 
-                                            smin = scale_min,
-                                            smax = scale_max)
+                                            smin = np.log10(scale_min),
+                                            smax = np.log10(scale_max))
 
         return N_EFl
 

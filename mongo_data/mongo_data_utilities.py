@@ -11,8 +11,7 @@ import sys
 import subprocess 
 import time
 from bson.objectid import ObjectId
-import data_handling.data_transformations as dtf
-import data_handling.alloy_property_utilities as apu
+import mongo_data.DBTT.DBTT_data_transformations as dtf
 
 def get_simplesearch_records(db, cname, fieldstring, comparestring, value):
     results = db[cname].find({fieldstring:{comparestring:value}})

@@ -13,7 +13,7 @@
 import pymongo
 import os
 import sys
-import data_handling.DBTT.alloy_property_utilities as apu
+import mongo_data.DBTT.alloy_property_utilities as apu
 from bson.objectid import ObjectId
 
 def standardize_alloy_names(db, newcname, verbose=0):

@@ -20,14 +20,14 @@ import traceback
 import subprocess
 import mongo_data.mongo_data_cleaning as mclean
 import mongo_data.DBTT.DBTT_mongo_data_cleaning as dclean
-import mongo_data.mongo_data_utilites as cas
-import mongo_data.mongo_data_utilites as mcas
+import mongo_data.mongo_data_utilities as cas
+import mongo_data.DBTT.DBTT_mongo_data_utilities as mcas
 import mongo_data.DBTT.data_verification as dver
 import mongo_data.DBTT.alloy_property_utilities as apu
 import time
 from pymongo import MongoClient
 from bson.objectid import ObjectId
-import data_handling.mongo_utilities as mongoutil
+import mongo_data.mongo_utilities as mongoutil
 
 def import_initial_collections(db, importpath):
     """Import initial collections for use in creating specialized collections.
@@ -69,10 +69,13 @@ def add_standard_fields(db, cname, verbose=0):
 
 def add_normalized_fields(db, cname, clist=list(), verbose=0):
     cas.add_minmax_normalization_of_a_field(db, cname, "log(fluence_n_cm2)",
-            verbose=verbose, collectionlist = clist)
+            setmin=17, setmax=25, 
+            verbose=verbose, collectionlist = clist) #fluences 1e17 to 1e25
     cas.add_minmax_normalization_of_a_field(db, cname, "log(flux_n_cm2_sec)",
-            verbose=verbose, collectionlist = clist)
+            setmin=10, setmax=15,
+            verbose=verbose, collectionlist = clist) #fluxes 7e10 to 2.3e14
     cas.add_minmax_normalization_of_a_field(db, cname, "temperature_C",
+            setmin=270,setmax=320,
             verbose=verbose, collectionlist = clist)
     #TTM ParamOptGA will now normalize the eff fluence fields as needed
     #for pval in np.arange(0.0,1.01,0.01):
@@ -190,10 +193,13 @@ def create_standard_conditions(db, cname, ref_flux=3e10, temp=290, min_sec=3e6, 
     #            "log(eff fl 100p=%s)" % pvalstr,
     #            verbose=verbose, collectionlist = clist)
     cas.add_minmax_normalization_of_a_field(db, cname, "temperature_C",
+            setmin=270,setmax=290,
             verbose=verbose, collectionlist = clist)
     cas.add_minmax_normalization_of_a_field(db, cname, "log(fluence_n_cm2)",
+            setmin=17, setmax=25,
             verbose=verbose, collectionlist = clist)
     cas.add_minmax_normalization_of_a_field(db, cname, "log(flux_n_cm2_sec)",
+            setmin=10, setmax=15,
             verbose=verbose, collectionlist = clist)
     return
 
@@ -244,7 +250,7 @@ def main(importpath):
     cas.rename_field(db,"expt_atr2","alloy name", "Alloy")
     dclean.standardize_alloy_names(db,"expt_atr2")
     cas.add_basic_field(db, "expt_atr2", "dataset", "ATR2")
-    cas.add_time_field(db, "expt_atr2")
+    mcas.add_time_field(db, "expt_atr2")
     #cas.transfer_nonignore_records(db, "expt_ivar","expt_atr2")
     add_standard_fields(db, "expt_atr2")
     #Normalization
@@ -279,7 +285,7 @@ def main(importpath):
     return exportpath
 
 if __name__ == "__main__":
-    importpath = "../../../data/DBTT_mongo/imports_201704"
+    importpath = "../../../../data/DBTT_mongo/imports_201704"
     importpath = os.path.abspath(importpath)
     exportpath = main(importpath)
     print("Files in %s" % exportpath)

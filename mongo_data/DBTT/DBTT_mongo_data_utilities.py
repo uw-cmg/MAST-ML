@@ -13,7 +13,7 @@ import time
 from bson.objectid import ObjectId
 import mongo_data.DBTT.DBTT_data_transformations as dtf
 import mongo_data.DBTT.alloy_property_utilities as apu
-import mongo_data.mongo_data_utilites as mdu
+import mongo_data.mongo_data_utilities as mdu
 
 def add_time_field(db, newcname, verbose=0):
     myfunc = getattr(dtf,"get_time_from_flux_and_fluence")
