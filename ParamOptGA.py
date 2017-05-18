@@ -104,16 +104,17 @@ class GAIndividual():
         return
 
     def set_up_input_data_with_additional_features(self):
-        newX_Test = copy.deepcopy(self.testing_dataset.input_data)
+        all_data = copy.deepcopy(self.testing_dataset.data)
+        input_data = copy.deepcopy(self.testing_dataset.input_data)
         for gene in self.afm_dict.keys():
             afm_kwargs = dict(self.afm_dict[gene]['args'])
             (feature_name,feature_data)=cf_help.get_custom_feature_data(gene,
-                        starting_dataframe = newX_Test,
+                        starting_dataframe = all_data,
                         param_dict=dict(self.genome[gene]),
                         addl_feature_method_kwargs = dict(afm_kwargs))
-            fio = FeatureIO(newX_Test)
-            newX_Test = fio.add_custom_features(gene, feature_data)
-        self.input_data_with_afm = newX_Test
+            fio = FeatureIO(input_data)
+            input_data = fio.add_custom_features(gene, feature_data)
+        self.input_data_with_afm = input_data
         return
 
     def single_avg_cv(self, Xdata, Ydata, division_index):
