@@ -18,6 +18,7 @@ from sklearn.kernel_ridge import KernelRidge
 from sklearn.metrics import r2_score
 from multiprocessing import Process,Pool,TimeoutError,Value,Array,Manager
 import time
+from custom_features import cf_help
 
 def print_genome(genome=None, preface=""):
     genomestr = "%s: " % preface
@@ -106,15 +107,12 @@ class GAIndividual():
         newX_Test = copy.deepcopy(self.testing_dataset.input_data)
         for gene in self.afm_dict.keys():
             afm_kwargs = dict(self.afm_dict[gene]['args'])
-            class_name = gene.split(".")[0]
-            module_name = "custom_features.%s" % class_name
-            feature_name = gene.split(".")[1]
-            custom_module=importlib.import_module(module_name)
-            custom_class = getattr(custom_module, class_name)
-            custom_class_instance = custom_class(newX_Test)
-            new_feature_data = getattr(custom_class_instance, feature_name)(self.genome[gene], **afm_kwargs)
+            (feature_name,feature_data)=cf_help.get_custom_feature_data(gene,
+                        starting_dataframe = newX_Test,
+                        param_dict=dict(self.genome[gene]),
+                        addl_feature_method_kwargs = dict(afm_kwargs))
             fio = FeatureIO(newX_Test)
-            newX_Test = fio.add_custom_features(gene, new_feature_data)
+            newX_Test = fio.add_custom_features(gene, feature_data)
         self.input_data_with_afm = newX_Test
         return
 
