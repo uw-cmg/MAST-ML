@@ -104,7 +104,7 @@ def clean_cd1_ivar(db, cname, verbose=1):
 
 def clean_lwr(db, cname, verbose=1):
     dclean.standardize_alloy_names(db, cname)
-    [id_list, reason_list] = dclean.get_alloy_removal_ids(db, cname,[41])
+    [id_list, reason_list] = dclean.get_alloy_removal_ids(db, cname,[1,2,8,41])
     mclean.flag_for_ignore(db, cname, id_list, reason_list)
     print(len(id_list))
     
