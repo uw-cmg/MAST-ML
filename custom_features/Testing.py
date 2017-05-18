@@ -18,7 +18,7 @@ from DataParser import FeatureNormalization
 from DataParser import FeatureIO
 __author__ = "Tam Mayeshiba"
 
-class CustomFeatures():
+class Testing():
     """Class for creating custom feature columns.
         New methods may be added.
 
@@ -64,7 +64,7 @@ class CustomFeatures():
 
         return N_EFl
 
-    def testing_subtraction(self, params=dict(), col1="",col2=""):
+    def subtraction(self, params=dict(), col1="",col2=""):
         """Testing function.
             params[0]: first parameter
             params[1]: second parameter

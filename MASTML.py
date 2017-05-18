@@ -8,7 +8,7 @@ from DataParser import DataParser, FeatureIO, FeatureNormalization
 import logging
 import shutil
 import time
-from data_handling.CustomFeatures import CustomFeatures
+import importlib
 
 class MASTMLDriver(object):
 
@@ -200,10 +200,15 @@ class MASTMLDriver(object):
                     for dname in data_dict.keys():
                         for afm in afm_dict.keys():
                             afm_kwargs = dict(afm_dict[afm])
-                            cdh = CustomFeatures(data_dict[dname].data)
-                            new_feature_data = getattr(cdh, afm)(param_dict[afm], **afm_kwargs)
-                            data_dict[dname].add_feature(afm, new_feature_data)
-                            data_dict[dname].input_features.append(afm)
+                            class_name = afm.split(".")[0]
+                            module_name = "custom_features.%s" % class_name
+                            feature_name = afm.split(".")[1]
+                            custom_module=importlib.import_module(module_name)
+                            custom_class = getattr(custom_module, class_name)
+                            custom_class_instance = custom_class(data_dict[dname].data)
+                            new_feature_data = getattr(custom_class_instance, feature_name)(param_dict[afm], **afm_kwargs)
+                            data_dict[dname].add_feature(feature_name, new_feature_data)
+                            data_dict[dname].input_features.append(feature_name)
                             data_dict[dname].set_up_data_from_features()
                             logging.info("Updated dataset %s data and input features with new feature %s" % (dname,afm))
         return test_list

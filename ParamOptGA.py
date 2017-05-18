@@ -5,12 +5,12 @@ import matplotlib.pyplot as plt
 import copy
 import sys
 import os
+import importlib
 from SingleFit import SingleFit
 from SingleFit import timeit
 from sklearn.model_selection import KFold
 from sklearn.model_selection import ShuffleSplit
 from sklearn.metrics import mean_squared_error
-from data_handling.CustomFeatures import CustomFeatures
 from DataParser import FeatureNormalization
 from DataParser import FeatureIO
 #from evolutionary_search import EvolutionaryAlgorithmSearchCV
@@ -106,9 +106,13 @@ class GAIndividual():
         newX_Test = copy.deepcopy(self.testing_dataset.input_data)
         for gene in self.afm_dict.keys():
             afm_kwargs = dict(self.afm_dict[gene]['args'])
-            cdh = CustomFeatures(self.testing_dataset.data)
-            new_feature_data = getattr(cdh, gene)(self.genome[gene], 
-                                                    **afm_kwargs)
+            class_name = gene.split(".")[0]
+            module_name = "custom_features.%s" % class_name
+            feature_name = gene.split(".")[1]
+            custom_module=importlib.import_module(module_name)
+            custom_class = getattr(custom_module, class_name)
+            custom_class_instance = custom_class(newX_Test)
+            new_feature_data = getattr(custom_class_instance, feature_name)(self.genome[gene], **afm_kwargs)
             fio = FeatureIO(newX_Test)
             newX_Test = fio.add_custom_features(gene, new_feature_data)
         self.input_data_with_afm = newX_Test
