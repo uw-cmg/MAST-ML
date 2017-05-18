@@ -26,7 +26,9 @@ class MASTMLDriver(object):
         self.model_vals = list() #list of model names, like "gkrr_model"
         self.param_optimizing_tests = ["ParamOptGA"]
         self.readme_html = list()
+        self.readme_html_tests = list()
         self.start_time = None
+        self.favorites_dict=dict()
         return
 
     # This will later be removed as the parsed input file should have values all containing correct datatype
@@ -43,6 +45,7 @@ class MASTMLDriver(object):
         # Begin MASTML session
         self._initialize_mastml_session()
         self._initialize_html()
+        self.set_favorites_dict()
 
         # Parse MASTML input file
         self.mastmlwrapper, self.configdict, errors_present = self._generate_mastml_wrapper()
@@ -74,23 +77,31 @@ class MASTMLDriver(object):
 
     def _initialize_mastml_session(self):
         logging.basicConfig(filename='MASTMLlog.log', level='INFO')
-        self.start_time = time.strftime('%Y'+'-'+'%m'+'-'+'%d'+', '+'%H'+' hours, '+'%M'+' minutes, '+'and '+'%S'+' seconds')
-        logging.info('Initiated new MASTML session at: %s' % self.start_time)
+        current_time = time.strftime('%Y'+'-'+'%m'+'-'+'%d'+', '+'%H'+' hours, '+'%M'+' minutes, '+'and '+'%S'+' seconds')
+        logging.info('Initiated new MASTML session at: %s' % current_time)
+        self.start_time = time.strftime("%Y-%m-%d, %H:%M:%S")
         return
 
     def _initialize_html(self):
         self.readme_html.append("<HTML>\n")
         self.readme_html.append("<TITLE>MASTML</TITLE>\n")
         self.readme_html.append("<BODY>\n")
+        self.readme_html.append("<H1>%s</H1>\n" % "MAST Machine Learning Output")
         self.readme_html.append("%s<BR>\n" % self.start_time)
+        self.readme_html.append("<HR>\n")
         return
     
     def _end_html(self):
-        self.readme_html.append('<A HREF="%s">Log file</A>\n' % os.path.join(self.save_path, "MASTMLlog.log"))
+        self.readme_html.append("<HR>\n")
+        self.readme_html.append("<H2>Setup</H2>\n")
+        self.readme_html.append('<A HREF="%s">Log file</A><BR>\n' % os.path.join(self.save_path, "MASTMLlog.log"))
+        self.readme_html.append('<A HREF="%s">Config file</A><BR>\n' % os.path.join(self.save_path, str(self.configfile)))
+        self.readme_html.append("<HR>\n")
         self.readme_html.append("</BODY>\n")
         self.readme_html.append("</HTML>\n")
         with open(os.path.join(self.save_path, "index.html"),"w") as hfile:
             hfile.writelines(self.readme_html)
+            hfile.writelines(self.readme_html_tests)
         return
 
     def _generate_mastml_wrapper(self):
@@ -162,6 +173,8 @@ class MASTMLDriver(object):
 
     def _gather_tests(self, mastmlwrapper, configdict, data_dict, model_list, save_path, model_vals):
         # Gather test types
+        self.readme_html_tests.append("<H2>Tests</H2>\n")
+        self.readme_html.append("<H2>Favorites</H2>\n")
         test_list = self.string_or_list_input_to_list(self.models_and_tests_setup['test_cases'])
         # Run the specified test cases for every model
         for test_type in test_list:
@@ -189,6 +202,8 @@ class MASTMLDriver(object):
                         model=model, save_path=test_save_path, **test_params)
                 logging.info('Ran test %s for your %s model' % (test_type, str(model)))
                 self._update_models_and_data(test_type, test_save_path, midx)
+                self.readme_html.extend(self.make_links_for_favorites(test_type, test_save_path))
+                self.readme_html_tests.append('<A HREF="%s">%s</A><BR>\n' % (test_save_path, test_type))
         return test_list
 
     def _update_models_and_data(self, test_type, test_save_path,
@@ -265,6 +280,35 @@ class MASTMLDriver(object):
             copyconfig = os.path.join(cwd, str(self.configfile))
             shutil.copy(copyconfig, self.save_path)
         return
+
+    def set_favorites_dict(self):
+        fdict = dict()
+        fdict["SingleFit"] = ["single_fit.png"]
+        fdict["SingleFitGrouped"] = ["per_group_info/per_group_info.png"]
+        fdict["SingleFitPerGroup"] = ["per_group_fits_overlay/per_group_fits_overlay.png"]
+        fdict["KFoldCV"] = ["best_worst_overlay.png"]
+        fdict["LeaveOneOutCV"] = ["loo_results.png"]
+        fdict["LeaveOutPercentCV"] = ["best_worst_overlay.png"]
+        fdict["LeaveOutGroupCV"] = ["leave_out_group.png"]
+        fdict["ParamOptGA"] = ["OPTIMIZED_PARAMS"]
+        fdict["PredictionVsFeature"] = [] #not sure 
+        self.favorites_dict=dict(fdict)
+        return
+
+    def make_links_for_favorites(self, test_type, test_save_path):
+        linklist=list()
+        linkloc  = ""
+        linktext = ""
+        linkline = ""
+        test_short = test_type.split("_")[0]
+        if test_short in self.favorites_dict.keys():
+            flist = self.favorites_dict[test_short]
+            for fval in flist:
+                linkloc = os.path.join(test_save_path, fval)
+                linkline = '<A HREF="%s">%s</A> from test <A HREF="%s">%s</A><BR>\n' % (linkloc, fval, test_save_path, test_type)
+                linklist.append(linkline) 
+        return linklist
+
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
