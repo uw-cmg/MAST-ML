@@ -22,7 +22,7 @@ import data_handling.mongo_data_cleaning as mclean
 import data_handling.DBTT.DBTT_mongo_data_cleaning as dclean
 import data_handling.create_analysis_spreadsheets as cas
 import data_handling.data_verification as dver
-import data_handling.alloy_property_utilities as apu
+import data_handling.DBTT.alloy_property_utilities as apu
 import time
 from pymongo import MongoClient
 from bson.objectid import ObjectId

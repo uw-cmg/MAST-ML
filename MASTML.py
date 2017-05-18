@@ -8,7 +8,7 @@ import logging
 import shutil
 import time
 from custom_features import cf_help
-from data_handling.DataHandler import DataHandler
+from DataHandler import DataHandler
 
 class MASTMLDriver(object):
 

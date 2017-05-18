@@ -13,9 +13,7 @@
 import pymongo
 import os
 import sys
-import data_handling.alloy_property_utilities as apu
-import data_handling.data_transformations as dtr
-
+import data_handling.DBTT.alloy_property_utilities as apu
 from bson.objectid import ObjectId
 
 def standardize_alloy_names(db, newcname, verbose=0):
@@ -212,24 +210,6 @@ def get_short_time_removal_ids(db, cname, minimum_sec = 30e6, verbose=1):
             print("%s: %s" % (id_list[iidx], reason_list[iidx]))
     return [id_list, reason_list]
 
-def get_field_condition_to_remove(db, cname, fieldname, fieldval, verbose=1):
-    """Removal of certain field condition
-        Args:
-            db <mongo DB>: Mongo client object (database)
-            cname <str>: collection name
-            fieldname <str>: field name
-            fieldval <usually float>: field value
-    """
-    id_list = list()
-    reason_list=list()
-    records = db[cname].find({fieldname: fieldval})
-    for record in records:
-        id_list.append(record['_id'])
-        reason_list.append("Not considering %s value %s" % (fieldname,fieldval))
-    if verbose > 0:
-        for iidx in range(0, len(id_list)):
-            print("%s: %s" % (id_list[iidx], reason_list[iidx]))
-    return [id_list, reason_list]
 
 
 def get_empty_flux_or_fluence_removal_ids(db, cname, verbose=1):
@@ -247,21 +227,6 @@ def get_empty_flux_or_fluence_removal_ids(db, cname, verbose=1):
             print("%s: %s" % (id_list[iidx], reason_list[iidx]))
     return [id_list, reason_list]
 
-def flag_for_ignore(db, cname, id_list, reason_list, verbose=1):
-    for fidx in range(0, len(id_list)):
-        flagid = id_list[fidx]
-        db[cname].update_one(
-            {"_id":ObjectId(flagid)},
-            {
-                "$set":{
-                    "ignore":1,
-                    "ignore_reason":reason_list[fidx]
-                }
-            }
-        )
-        if verbose > 0:
-            print("Updated record %s" % flagid)
-    return
 
 
 
