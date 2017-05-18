@@ -25,6 +25,8 @@ class MASTMLDriver(object):
         self.model_list = list() #list of actual models
         self.model_vals = list() #list of model names, like "gkrr_model"
         self.param_optimizing_tests = ["ParamOptGA"]
+        self.readme_html = list()
+        self.start_time = None
         return
 
     # This will later be removed as the parsed input file should have values all containing correct datatype
@@ -40,6 +42,7 @@ class MASTMLDriver(object):
     def run_MASTML(self):
         # Begin MASTML session
         self._initialize_mastml_session()
+        self._initialize_html()
 
         # Parse MASTML input file
         self.mastmlwrapper, self.configdict, errors_present = self._generate_mastml_wrapper()
@@ -65,13 +68,29 @@ class MASTMLDriver(object):
 
         # End MASTML session
         self._move_log_and_input_files()
+        self._end_html()
 
         return
 
     def _initialize_mastml_session(self):
         logging.basicConfig(filename='MASTMLlog.log', level='INFO')
-        current_time = time.strftime('%Y'+'-'+'%m'+'-'+'%d'+', '+'%H'+' hours, '+'%M'+' minutes, '+'and '+'%S'+' seconds')
-        logging.info('Initiated new MASTML session at: %s' % current_time)
+        self.start_time = time.strftime('%Y'+'-'+'%m'+'-'+'%d'+', '+'%H'+' hours, '+'%M'+' minutes, '+'and '+'%S'+' seconds')
+        logging.info('Initiated new MASTML session at: %s' % self.start_time)
+        return
+
+    def _initialize_html(self):
+        self.readme_html.append("<HTML>\n")
+        self.readme_html.append("<TITLE>MASTML</TITLE>\n")
+        self.readme_html.append("<BODY>\n")
+        self.readme_html.append("%s<BR>\n" % self.start_time)
+        return
+    
+    def _end_html(self):
+        self.readme_html.append('<A HREF="%s">Log file</A>\n' % os.path.join(self.save_path, "MASTMLlog.log"))
+        self.readme_html.append("</BODY>\n")
+        self.readme_html.append("</HTML>\n")
+        with open(os.path.join(self.save_path, "index.html"),"w") as hfile:
+            hfile.writelines(self.readme_html)
         return
 
     def _generate_mastml_wrapper(self):
