@@ -3,39 +3,30 @@ MAST machine learning incubator - for direct scientific use - not intended for p
 
 * NOTE: Use Python 3
 
-4/12/17 code pulled from:
+For usage on existing csv files, see for example test/classtest_mastml/test.conf::
+    
+    python /path/to/MASTML.py test.conf
 
-DBTT Skunkworks project: codification for manuscript.
-
-For usage on existing csv files, see for example
-tests/FullFit/default.conf
-
-Run as
-
-python /path/to/AllTests.py
-
-in the same folder as default.conf,
-for example,
-python ../../AllTests.py
-
-
+Original code 4/12/17 pulled from the DBTT Skunkworks project.
 DBTT Skunkworks group and machine learning (alphabetical order):
-Ben Anderson
-Josh Cordell
-Fenil Doshi
-Jerit George
-Aren Lorenson
-Matthew Parker
-Josh Perry
-Liam Witteman
-Haotian (Will) Wu
-Jinyu Xia
-Hao Yuan
+*Ben Anderson
+*Josh Cordell
+*Fenil Doshi
+*Jerit George
+*Aren Lorenson
+*Matthew Parker
+*Josh Perry
+*Liam Witteman
+*Haotian (Will) Wu
+*Jinyu Xia
+*Hao Yuan
 
-Postdocs:
-Tam Mayeshiba
-Henry Wu
+CMG group members:
+*Ben Afflerbach
+*Ryan Jacobs
+*Tam Mayeshiba
+*Henry Wu
 
 Advisor:
-Professor Dane Morgan
+*Professor Dane Morgan
 
