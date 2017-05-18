@@ -18,12 +18,14 @@ class MASTMLDriver(object):
         #Set in code
         self.general_setup = None
         self.data_setup = None
+        self.models_and_tests_setup = None
         self.configdict = None
         self.mastmlwrapper = None
         self.save_path = None #top-level save path
         self.data_dict = dict() #Data dictionary
         self.model_list = list() #list of actual models
         self.model_vals = list() #list of model names, like "gkrr_model"
+        self.param_optimizing_tests = ["ParamOptGA"]
         return
 
     # This will later be removed as the parsed input file should have values all containing correct datatype
@@ -123,9 +125,9 @@ class MASTMLDriver(object):
         return Xdata, ydata, x_features, y_feature, dataframe, data_dict
 
     def _gather_models(self):
-        models_and_tests_setup = self.mastmlwrapper.process_config_keyword(keyword='Models and Tests to Run')
+        self.models_and_tests_setup = self.mastmlwrapper.process_config_keyword(keyword='Models and Tests to Run')
         model_list = []
-        model_val = models_and_tests_setup['models']
+        model_val = self.models_and_tests_setup['models']
         model_vals = list()
         #print(model_val)
         if type(model_val) is str:
@@ -144,60 +146,69 @@ class MASTMLDriver(object):
         return (model_list, model_val)
 
     def _gather_tests(self, mastmlwrapper, configdict, data_dict, model_list, save_path, model_vals):
-        models_and_tests_setup = mastmlwrapper.process_config_keyword(keyword='Models and Tests to Run')
-        general_setup = mastmlwrapper.process_config_keyword(keyword='General Setup')
         # Gather test types
-        test_list = self.string_or_list_input_to_list(models_and_tests_setup['test_cases'])
-        param_optimizing_tests = ["ParamOptGA"]
+        test_list = self.string_or_list_input_to_list(self.models_and_tests_setup['test_cases'])
         # Run the specified test cases for every model
         for test_type in test_list:
             logging.info('Looking up parameters for test type %s' % test_type)
-            test_params = configdict["Test Parameters"][test_type]
+            test_params = self.configdict["Test Parameters"][test_type]
             # Set data lists
             training_dataset_name_list = self.string_or_list_input_to_list(test_params['training_dataset'])
             training_dataset_list = list()
             for dname in training_dataset_name_list:
-                training_dataset_list.append(data_dict[dname])
+                training_dataset_list.append(self.data_dict[dname])
             test_params['training_dataset'] = training_dataset_list
             testing_dataset_name_list = self.string_or_list_input_to_list(test_params['testing_dataset'])
             testing_dataset_list = list()
             for dname in testing_dataset_name_list:
-                testing_dataset_list.append(data_dict[dname])
+                testing_dataset_list.append(self.data_dict[dname])
             test_params['testing_dataset'] = testing_dataset_list
             # Run the test case for every model
-            for midx, model in enumerate(model_list):
+            for midx, model in enumerate(self.model_list):
                 # Set save path, allowing for multiple tests and models and potentially multiple of the same model (KernelRidge rbf kernel, KernelRidge linear kernel, etc.)
                 test_folder = "%s_%s%i" % (test_type, model.__class__.__name__, midx)
-                test_save_path = os.path.join(save_path, test_folder)
+                test_save_path = os.path.join(self.save_path, test_folder)
                 if not os.path.isdir(test_save_path):
                     os.mkdir(test_save_path)
-                mastmlwrapper.get_machinelearning_test(test_type=test_type,
-                                                       model=model, save_path=test_save_path,
-                                                       **test_params)
+                self.mastmlwrapper.get_machinelearning_test(test_type=test_type,
+                        model=model, save_path=test_save_path, **test_params)
                 logging.info('Ran test %s for your %s model' % (test_type, str(model)))
-                test_short = test_type.split("_")[0]
-                if test_short in param_optimizing_tests:
-                    logging.info("UPDATING PARAMETERS from %s" % test_type)
-                    param_dict = self._get_param_dict(os.path.join(test_save_path,"OPTIMIZED_PARAMS"))
-                    print(param_dict)
-                    model_val = model_vals[midx]
-                    mastmlwrapper.configdict["Model Parameters"][model_val].update(param_dict["model"])
-                    print(mastmlwrapper.configdict["Model Parameters"][model_val])
-                    model_list[midx] = mastmlwrapper.get_machinelearning_model(model_type=model_val)
-                    logging.info("Updated model.")
-                    afm_dict = self._get_afm_args(os.path.join(test_save_path,"ADDITIONAL_FEATURES"))
-                    for dname in data_dict.keys():
-                        for afm in afm_dict.keys():
-                            afm_kwargs = dict(afm_dict[afm])
-                            (feature_name, feature_data) = cf_help.get_custom_feature_data(class_method_str = afm,
-                            starting_dataframe = data_dict[dname].data,
-                            param_dict = dict(param_dict[afm]),
-                            addl_feature_method_kwargs = dict(afm_kwargs))
-                            data_dict[dname].add_feature(feature_name, feature_data)
-                            data_dict[dname].input_features.append(feature_name)
-                            data_dict[dname].set_up_data_from_features()
-                            logging.info("Updated dataset %s data and input features with new feature %s" % (dname,afm))
+                self._update_models_and_data(test_type, test_save_path, midx)
         return test_list
+
+    def _update_models_and_data(self, test_type, test_save_path,
+                                    model_index=None):
+        test_short = test_type.split("_")[0]
+        if not (test_short in self.param_optimizing_tests): #no need
+            logging.info("No parameter or data updates necessary.")
+            return 
+        logging.info("UPDATING PARAMETERS from %s" % test_type)
+        param_dict = self._get_param_dict(os.path.join(test_save_path,"OPTIMIZED_PARAMS"))
+        model_val = self.model_vals[model_index]
+        self.mastmlwrapper.configdict["Model Parameters"][model_val].update(param_dict["model"])
+        logging.info("New %s params: %s" % (model_val, self.mastmlwrapper.configdict["Model Parameters"][model_val]))
+        self.model_list[model_index] = self.mastmlwrapper.get_machinelearning_model(model_type=model_val) #update model list IN PLACE
+        logging.info("Updated model.")
+        afm_dict = self._get_afm_args(os.path.join(test_save_path,"ADDITIONAL_FEATURES"))
+        self._update_data_dict(afm_dict, param_dict)
+        return
+
+    def _update_data_dict(self, afm_dict=dict(), param_dict=dict()):
+        if len(afm_dict.keys()) == 0:
+            logging.info("No data updates necessary.")
+            return
+        for dname in self.data_dict.keys():
+            for afm in afm_dict.keys():
+                afm_kwargs = dict(afm_dict[afm])
+                (feature_name, feature_data) = cf_help.get_custom_feature_data(class_method_str = afm,
+                    starting_dataframe = self.data_dict[dname].data,
+                    param_dict = dict(param_dict[afm]),
+                    addl_feature_method_kwargs = dict(afm_kwargs))
+                self.data_dict[dname].add_feature(feature_name, feature_data)
+                self.data_dict[dname].input_features.append(feature_name)
+                self.data_dict[dname].set_up_data_from_features()
+                logging.info("Updated dataset %s data and input features with new feature %s" % (dname,afm))
+        return
 
     def _get_param_dict(self, fname):
         pdict=dict()
