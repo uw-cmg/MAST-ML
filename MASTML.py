@@ -9,6 +9,7 @@ import logging
 import shutil
 import time
 from custom_features import cf_help
+from data_handling.DataHandler import DataHandler
 
 class MASTMLDriver(object):
 
@@ -19,6 +20,11 @@ class MASTMLDriver(object):
         self.data_setup = None
         self.configdict = None
         self.mastmlwrapper = None
+        self.save_path = None #top-level save path
+        self.data_dict = dict() #Data dictionary
+        self.model_list = list() #list of actual models
+        self.model_vals = list() #list of model names, like "gkrr_model"
+        return
 
     # This will later be removed as the parsed input file should have values all containing correct datatype
     def string_or_list_input_to_list(self, unknown_input_val):
@@ -35,44 +41,29 @@ class MASTMLDriver(object):
         self._initialize_mastml_session()
 
         # Parse MASTML input file
-        mastmlwrapper, configdict, errors_present = self._generate_mastml_wrapper()
-        data_setup = mastmlwrapper.process_config_keyword(keyword='Data Setup')
+        self.mastmlwrapper, self.configdict, errors_present = self._generate_mastml_wrapper()
+        self.data_setup = self.mastmlwrapper.process_config_keyword(keyword='Data Setup')
 
         # General setup
-        save_path = self._perform_general_setup(mastmlwrapper=mastmlwrapper)
+        self._perform_general_setup()
 
         # Parse input data files
-        Xdata, ydata, x_features, y_feature, dataframe, data_dict = self._parse_input_data(mastmlwrapper=mastmlwrapper, configdict=configdict)
+        Xdata, ydata, x_features, y_feature, dataframe, self.data_dict = self._parse_input_data()
 
         print(x_features)
         print(y_feature)
         fn = FeatureNormalization(dataframe=dataframe)
         dataframe = fn.normalize_features(x_features=x_features, y_feature=y_feature)
 
-        #x_to_remove = ['x2', 'x3']
-        #fio = FeatureIO(dataframe=dataframe)
-        #dataframe = ff.remove_custom_features(features_to_remove=x_to_remove)
-        #features_to_add = ['x4']
-        #data_to_add = dataframe['x1']
-        #dataframe = fio.add_custom_features(features_to_add=features_to_add, data_to_add=data_to_add)
-        #print(dataframe)
-        #Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=configdict).parse_fromdataframe(dataframe=dataframe, target_feature='sin(x)', as_array=False)
-        #print(x_features)
-        #print(y_feature)
-        #dataframe = ff.remove_duplicate_features()
-        #print(dataframe)
-        #dataframe = fio.remove_duplicate_features_by_values(x_features=x_features, y_feature=y_feature)
-        #print(dataframe)
-
         # Gather models
-        (model_list, model_vals) = self._gather_models(mastmlwrapper=mastmlwrapper)
+        (self.model_list, self.model_vals) = self._gather_models()
 
         # Gather tests
-        test_list = self._gather_tests(mastmlwrapper=mastmlwrapper, configdict=configdict, data_dict=data_dict, model_list=model_list, save_path=save_path,
-                model_vals = model_vals)
+        test_list = self._gather_tests(mastmlwrapper=self.mastmlwrapper, configdict=self.configdict, data_dict=self.data_dict, model_list=self.model_list, save_path=self.save_path,
+                model_vals = self.model_vals)
 
         # End MASTML session
-        self._move_log_and_input_files(mastmlwrapper=mastmlwrapper)
+        self._move_log_and_input_files()
 
         return
 
@@ -88,18 +79,17 @@ class MASTMLDriver(object):
         logging.info('Successfully read in and parsed your MASTML input file, %s' % str(self.configfile))
         return mastmlwrapper, configdict, errors_present
 
-    def _perform_general_setup(self, mastmlwrapper):
-        self.general_setup = mastmlwrapper.process_config_keyword(keyword='General Setup')
-        save_path = os.path.abspath(self.general_setup['save_path'])
-        if not os.path.isdir(save_path):
-            os.mkdir(save_path)
-        return save_path
+    def _perform_general_setup(self):
+        self.general_setup = self.mastmlwrapper.process_config_keyword(keyword='General Setup')
+        self.save_path = os.path.abspath(self.general_setup['save_path'])
+        if not os.path.isdir(self.save_path):
+            os.mkdir(self.save_path)
+        return self.save_path
 
-    def _parse_input_data(self, mastmlwrapper, configdict):
-        self.data_setup = mastmlwrapper.process_config_keyword(keyword='Data Setup')
-        Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=configdict).parse_fromfile(datapath=self.data_setup['Initial']['data_path'], as_array=False)
+    def _parse_input_data(self):
+        self.data_setup = self.mastmlwrapper.process_config_keyword(keyword='Data Setup')
+        Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=self.configdict).parse_fromfile(datapath=self.data_setup['Initial']['data_path'], as_array=False)
         # Tam's code is here
-        from data_handling.DataHandler import DataHandler
         data_dict=dict()
         for data_name in self.data_setup.keys():
             data_path = self.data_setup[data_name]['data_path']
@@ -118,7 +108,7 @@ class MASTMLDriver(object):
                 grouping_feature = self.general_setup['grouping_feature']
             else:
                 grouping_feature = None
-            myXdata, myydata, myx_features, myy_feature, mydataframe = DataParser(configdict=configdict).parse_fromfile(datapath=self.data_setup[data_name]['data_path'], as_array=False)
+            myXdata, myydata, myx_features, myy_feature, mydataframe = DataParser(configdict=self.configdict).parse_fromfile(datapath=self.data_setup[data_name]['data_path'], as_array=False)
             data_dict[data_name] = DataHandler(data = mydataframe, 
                                 input_data = myXdata, 
                                 target_data = myydata, 
@@ -131,26 +121,24 @@ class MASTMLDriver(object):
             #data_dict[data_name].set_x_features(data_setup['X']) #set in test classes, not here, since different tests could have different X and y features
             #data_dict[data_name].set_y_feature(data_setup['y'])
             logging.info('Parsed the input data located under %s' % data_path)
-
-
         return Xdata, ydata, x_features, y_feature, dataframe, data_dict
 
-    def _gather_models(self, mastmlwrapper):
-        models_and_tests_setup = mastmlwrapper.process_config_keyword(keyword='Models and Tests to Run')
+    def _gather_models(self):
+        models_and_tests_setup = self.mastmlwrapper.process_config_keyword(keyword='Models and Tests to Run')
         model_list = []
         model_val = models_and_tests_setup['models']
         model_vals = list()
         #print(model_val)
         if type(model_val) is str:
             logging.info('Getting model %s' % model_val)
-            ml_model = mastmlwrapper.get_machinelearning_model(model_type=model_val)
+            ml_model = self.mastmlwrapper.get_machinelearning_model(model_type=model_val)
             model_list.append(ml_model)
             logging.info('Adding model %s to queue...' % str(model_val))
             model_vals.append(model_val)
         elif type(model_val) is list:
             for model in model_val:
                 logging.info('Getting model %s' % model)
-                ml_model = mastmlwrapper.get_machinelearning_model(model_type=model)
+                ml_model = self.mastmlwrapper.get_machinelearning_model(model_type=model)
                 model_list.append(ml_model)
                 logging.info('Adding model %s to queue...' % str(model))
                 model_vals.append(model_val)
@@ -241,9 +229,9 @@ class MASTMLDriver(object):
             adict[af_method][af_arg] = af_argval
         return adict
 
-    def _move_log_and_input_files(self, mastmlwrapper):
+    def _move_log_and_input_files(self):
         cwd = os.getcwd()
-        general_setup = mastmlwrapper.process_config_keyword(keyword='General Setup')
+        general_setup = self.mastmlwrapper.process_config_keyword(keyword='General Setup')
         if not(os.path.abspath(general_setup['save_path']) == cwd):
             if os.path.exists(general_setup['save_path']+"/"+'MASTMLlog.log'):
                 os.remove(general_setup['save_path']+"/"+'MASTMLlog.log')
