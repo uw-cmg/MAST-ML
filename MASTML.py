@@ -87,7 +87,6 @@ class MASTMLDriver(object):
         return self.save_path
 
     def _parse_input_data(self):
-        self.data_setup = self.mastmlwrapper.process_config_keyword(keyword='Data Setup')
         Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=self.configdict).parse_fromfile(datapath=self.data_setup['Initial']['data_path'], as_array=False)
         # Tam's code is here
         data_dict=dict()
