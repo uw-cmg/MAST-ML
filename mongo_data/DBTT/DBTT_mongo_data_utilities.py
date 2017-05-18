@@ -11,8 +11,9 @@ import sys
 import subprocess 
 import time
 from bson.objectid import ObjectId
-import data_handling.data_transformations as dtf
-import data_handling.alloy_property_utilities as apu
+import mongo_data.DBTT.DBTT_data_transformations as dtf
+import mongo_data.DBTT.alloy_property_utilities as apu
+import mongo_data.mongo_data_utilites as mdu
 
 def add_time_field(db, newcname, verbose=0):
     myfunc = getattr(dtf,"get_time_from_flux_and_fluence")
@@ -64,7 +65,7 @@ def add_atomic_percent_field(db, newcname, verbose=0):
         if verbose > 0:
             print("Updated record %s with %s." % (record["_id"],outdict))
     for elem in elemlist:
-        add_minmax_normalization_of_a_field(db, newcname, "at_percent_%s" % elem, 0.0, 1.717)
+        mdu.add_minmax_normalization_of_a_field(db, newcname, "at_percent_%s" % elem, 0.0, 1.717)
     return
 
 def add_effective_fluence_field(db, newcname, verbose=0):
@@ -115,7 +116,7 @@ def add_generic_effective_fluence_field(db, newcname, ref_flux=3e10, pvalue=0.26
             )
         if verbose > 0:
             print("Updated record %s with %s %3.2e n/cm2." % (record["_id"],newfield,fieldval))
-    add_log10_of_a_field(db, newcname, newfield)
+    mdu.add_log10_of_a_field(db, newcname, newfield)
     #add_minmax_normalization_of_a_field(db, newcname, "log(%s)" % newfield)
     return
 

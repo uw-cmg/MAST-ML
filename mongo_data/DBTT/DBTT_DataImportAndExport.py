@@ -21,6 +21,7 @@ import subprocess
 import mongo_data.mongo_data_cleaning as mclean
 import mongo_data.DBTT.DBTT_mongo_data_cleaning as dclean
 import mongo_data.mongo_data_utilites as cas
+import mongo_data.mongo_data_utilites as mcas
 import mongo_data.DBTT.data_verification as dver
 import mongo_data.DBTT.alloy_property_utilities as apu
 import time
@@ -56,13 +57,14 @@ def clean_expt_ivar(db, cname, verbose=1):
 def add_standard_fields(db, cname, verbose=0):
     """Add fields that are standard to most analysis
     """
-    cas.add_alloy_number_field(db, cname, verbose=0)
-    cas.add_atomic_percent_field(db, cname, verbose=0)
+    mcas.add_alloy_number_field(db, cname, verbose=0)
+    mcas.add_atomic_percent_field(db, cname, verbose=0)
     cas.add_log10_of_a_field(db, cname,"fluence_n_cm2")
     cas.add_log10_of_a_field(db, cname,"flux_n_cm2_sec")
-    for pval in np.arange(0.0,1.01,0.01):
-        pvalstr = "%i" % (100*pval)
-        cas.add_generic_effective_fluence_field(db, cname, 3e10, pval)
+    #TTM ParamOptGA can now add the appropriate effective fluence field 20170518
+    #for pval in np.arange(0.0,1.01,0.01):
+    #    pvalstr = "%i" % (100*pval)
+    #    cas.add_generic_effective_fluence_field(db, cname, 3e10, pval)
     return
 
 def add_normalized_fields(db, cname, clist=list(), verbose=0):
@@ -72,11 +74,12 @@ def add_normalized_fields(db, cname, clist=list(), verbose=0):
             verbose=verbose, collectionlist = clist)
     cas.add_minmax_normalization_of_a_field(db, cname, "temperature_C",
             verbose=verbose, collectionlist = clist)
-    for pval in np.arange(0.0,1.01,0.01):
-        pvalstr = "%i" % (100*pval)
-        cas.add_minmax_normalization_of_a_field(db, cname, 
-                "log(eff fl 100p=%s)" % pvalstr,
-                verbose=verbose, collectionlist = clist)
+    #TTM ParamOptGA will now normalize the eff fluence fields as needed
+    #for pval in np.arange(0.0,1.01,0.01):
+    #    pvalstr = "%i" % (100*pval)
+    #    cas.add_minmax_normalization_of_a_field(db, cname, 
+    #            "log(eff fl 100p=%s)" % pvalstr,
+    #            verbose=verbose, collectionlist = clist)
     #cas.add_stddev_normalization_of_a_field(db, cname, "delta_sigma_y_MPa",
     #        verbose = verbose, collectionlist = clist)
     return
@@ -175,16 +178,17 @@ def create_standard_conditions(db, cname, ref_flux=3e10, temp=290, min_sec=3e6, 
                                 "fluence_n_cm2": fluence,
                                 "flux_n_cm2_sec": ref_flux})
     cas.add_basic_field(db, cname, "temperature_C", temp)
-    cas.add_alloy_number_field(db, cname, verbose=0)
-    cas.add_atomic_percent_field(db, cname, verbose=0)
+    mcas.add_alloy_number_field(db, cname, verbose=0)
+    mcas.add_atomic_percent_field(db, cname, verbose=0)
     cas.add_log10_of_a_field(db, cname,"fluence_n_cm2")
     cas.add_log10_of_a_field(db, cname,"flux_n_cm2_sec")
-    for pval in np.arange(0.0,1.01,0.01):
-        pvalstr = "%i" % (100*pval)
-        cas.add_generic_effective_fluence_field(db, cname, 3e10, pval)
-        cas.add_minmax_normalization_of_a_field(db, cname, 
-                "log(eff fl 100p=%s)" % pvalstr,
-                verbose=verbose, collectionlist = clist)
+    #TTM ParamOptGA will now add field
+    #for pval in np.arange(0.0,1.01,0.01):
+    #    pvalstr = "%i" % (100*pval)
+    #    mcas.add_generic_effective_fluence_field(db, cname, 3e10, pval)
+    #    cas.add_minmax_normalization_of_a_field(db, cname, 
+    #            "log(eff fl 100p=%s)" % pvalstr,
+    #            verbose=verbose, collectionlist = clist)
     cas.add_minmax_normalization_of_a_field(db, cname, "temperature_C",
             verbose=verbose, collectionlist = clist)
     cas.add_minmax_normalization_of_a_field(db, cname, "log(fluence_n_cm2)",
