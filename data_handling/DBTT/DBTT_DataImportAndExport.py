@@ -18,7 +18,8 @@ import os
 import sys
 import traceback
 import subprocess
-import data_handling.data_cleaning as dclean
+import data_handling.mongo_data_cleaning as mclean
+import data_handling.DBTT.DBTT_mongo_data_cleaning as dclean
 import data_handling.create_analysis_spreadsheets as cas
 import data_handling.data_verification as dver
 import data_handling.alloy_property_utilities as apu
@@ -44,10 +45,10 @@ def import_initial_collections(db, importpath):
 
 def clean_expt_ivar(db, cname, verbose=1):
     [id_list, reason_list] = dclean.get_alloy_removal_ids(db, cname, [41])
-    dclean.flag_for_ignore(db, cname, id_list, reason_list)
+    mclean.flag_for_ignore(db, cname, id_list, reason_list)
     print(len(id_list))
     [id_list, reason_list] = dclean.get_duplicate_ids_to_remove(db, cname)
-    dclean.flag_for_ignore(db, cname, id_list, reason_list)
+    mclean.flag_for_ignore(db, cname, id_list, reason_list)
     print(len(id_list))
     dclean.update_experimental_temperatures(db, cname)
     return
@@ -84,13 +85,13 @@ def add_normalized_fields(db, cname, clist=list(), verbose=0):
 def clean_cd1_ivar(db, cname, verbose=1):
     [id_list, reason_list] = dclean.get_alloy_removal_ids(db, cname, 
                                 [41,1,2,8,14,29])
-    dclean.flag_for_ignore(db, cname, id_list, reason_list)
+    mclean.flag_for_ignore(db, cname, id_list, reason_list)
     print(len(id_list))
     [id_list, reason_list] = dclean.get_duplicate_ids_to_remove(db, cname)
-    dclean.flag_for_ignore(db, cname, id_list, reason_list)
+    mclean.flag_for_ignore(db, cname, id_list, reason_list)
     print(len(id_list))
     [id_list, reason_list] = dclean.flag_bad_cd1_points(db, cname)
-    dclean.flag_for_ignore(db, cname, id_list, reason_list)
+    mclean.flag_for_ignore(db, cname, id_list, reason_list)
     print(len(id_list))
     return
 
@@ -98,35 +99,27 @@ def clean_cd1_ivar(db, cname, verbose=1):
 def clean_lwr(db, cname, verbose=1):
     dclean.standardize_alloy_names(db, cname)
     [id_list, reason_list] = dclean.get_alloy_removal_ids(db, cname,[41])
-    dclean.flag_for_ignore(db, cname, id_list, reason_list)
+    mclean.flag_for_ignore(db, cname, id_list, reason_list)
     print(len(id_list))
     
     [id_list, reason_list] = dclean.get_empty_flux_or_fluence_removal_ids(db, cname)
-    dclean.flag_for_ignore(db, cname, id_list, reason_list)
+    mclean.flag_for_ignore(db, cname, id_list, reason_list)
     print(len(id_list))
     
     [id_list, reason_list] = dclean.get_short_time_removal_ids(db,cname, 3e6)
-    dclean.flag_for_ignore(db, cname, id_list, reason_list)
+    mclean.flag_for_ignore(db, cname, id_list, reason_list)
     print(len(id_list))
     
-    [id_list, reason_list] = dclean.get_field_condition_to_remove(db,cname,
+    [id_list, reason_list] = mclean.get_field_condition_to_remove(db,cname,
                                 "CD_delta_sigma_y_MPa","")
-    dclean.flag_for_ignore(db, cname, id_list, reason_list)
+    mclean.flag_for_ignore(db, cname, id_list, reason_list)
     print(len(id_list))
     return
 
 def clean_cd1_lwr(db, cname):
     [id_list, reason_list] = dclean.get_alloy_removal_ids(db, cname,[14,29])
-    dclean.flag_for_ignore(db, cname, id_list, reason_list)
+    mclean.flag_for_ignore(db, cname, id_list, reason_list)
     print(len(id_list))
-    #[id_list, reason_list] = dclean.get_field_condition_to_remove(db,cname,
-    #                            "temperature_C",270)
-    #dclean.flag_for_ignore(db, cname, id_list, reason_list)
-    #print(len(id_list))
-    #[id_list, reason_list] = dclean.get_field_condition_to_remove(db,cname,
-    #                            "temperature_C",310)
-    #dclean.flag_for_ignore(db, cname, id_list, reason_list)
-    #print(len(id_list))
     return
 
 def create_lwr(db, cname, fromcname, exportpath, verbose=1):
