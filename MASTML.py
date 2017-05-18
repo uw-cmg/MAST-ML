@@ -17,6 +17,8 @@ class MASTMLDriver(object):
         #Set in code
         self.general_setup = None
         self.data_setup = None
+        self.configdict = None
+        self.mastmlwrapper = None
 
     # This will later be removed as the parsed input file should have values all containing correct datatype
     def string_or_list_input_to_list(self, unknown_input_val):
@@ -30,7 +32,7 @@ class MASTMLDriver(object):
 
     def run_MASTML(self):
         # Begin MASTML session
-        self._initalize_mastml_session()
+        self._initialize_mastml_session()
 
         # Parse MASTML input file
         mastmlwrapper, configdict, errors_present = self._generate_mastml_wrapper()
@@ -74,7 +76,7 @@ class MASTMLDriver(object):
 
         return
 
-    def _initalize_mastml_session(self):
+    def _initialize_mastml_session(self):
         logging.basicConfig(filename='MASTMLlog.log', level='INFO')
         current_time = time.strftime('%Y'+'-'+'%m'+'-'+'%d'+', '+'%H'+' hours, '+'%M'+' minutes, '+'and '+'%S'+' seconds')
         logging.info('Initiated new MASTML session at: %s' % current_time)
