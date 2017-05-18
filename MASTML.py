@@ -230,12 +230,14 @@ class MASTMLDriver(object):
 
     def _move_log_and_input_files(self):
         cwd = os.getcwd()
-        general_setup = self.mastmlwrapper.process_config_keyword(keyword='General Setup')
-        if not(os.path.abspath(general_setup['save_path']) == cwd):
-            if os.path.exists(general_setup['save_path']+"/"+'MASTMLlog.log'):
-                os.remove(general_setup['save_path']+"/"+'MASTMLlog.log')
-            shutil.move(cwd+"/"+'MASTMLlog.log', general_setup['save_path'])
-            shutil.copy(cwd+"/"+str(self.configfile), general_setup['save_path'])
+        if not(self.save_path == cwd):
+            oldlog = os.path.join(self.save_path, "MASTMLlog.log")
+            copylog = os.path.join(cwd, "MASTMLlog.log")
+            if os.path.exists(oldlog):
+                os.remove(oldlog)
+            shutil.move(copylog, self.save_path)
+            copyconfig = os.path.join(cwd, str(self.configfile))
+            shutil.copy(copyconfig, self.save_path)
         return
 
 if __name__ == '__main__':
