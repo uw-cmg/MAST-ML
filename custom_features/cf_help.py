@@ -1,21 +1,3 @@
-import numpy as np
-import data_parser
-import matplotlib
-import matplotlib.pyplot as plt
-import copy
-from SingleFit import SingleFit
-from SingleFit import timeit
-from sklearn.model_selection import KFold
-from sklearn.model_selection import ShuffleSplit
-from sklearn.metrics import mean_squared_error
-#from evolutionary_search import EvolutionaryAlgorithmSearchCV
-from sklearn.kernel_ridge import KernelRidge
-from sklearn.metrics import r2_score
-from multiprocessing import Process,Pool,TimeoutError,Value,Array,Manager
-import time
-import copy
-from DataParser import FeatureNormalization
-from DataParser import FeatureIO
 import importlib
 __author__ = "Tam Mayeshiba"
 
