@@ -15,8 +15,8 @@ class MASTMLDriver(object):
     def __init__(self, configfile):
         self.configfile = configfile
         #Set in code
-        self.generalsetup = None
-        self.datasetup = None
+        self.general_setup = None
+        self.data_setup = None
 
     # This will later be removed as the parsed input file should have values all containing correct datatype
     def string_or_list_input_to_list(self, unknown_input_val):
@@ -34,7 +34,7 @@ class MASTMLDriver(object):
 
         # Parse MASTML input file
         mastmlwrapper, configdict, errors_present = self._generate_mastml_wrapper()
-        datasetup = mastmlwrapper.process_config_keyword(keyword='Data Setup')
+        data_setup = mastmlwrapper.process_config_keyword(keyword='Data Setup')
 
         # General setup
         save_path = self._perform_general_setup(mastmlwrapper=mastmlwrapper)
@@ -87,36 +87,36 @@ class MASTMLDriver(object):
         return mastmlwrapper, configdict, errors_present
 
     def _perform_general_setup(self, mastmlwrapper):
-        self.generalsetup = mastmlwrapper.process_config_keyword(keyword='General Setup')
-        save_path = os.path.abspath(self.generalsetup['save_path'])
+        self.general_setup = mastmlwrapper.process_config_keyword(keyword='General Setup')
+        save_path = os.path.abspath(self.general_setup['save_path'])
         if not os.path.isdir(save_path):
             os.mkdir(save_path)
         return save_path
 
     def _parse_input_data(self, mastmlwrapper, configdict):
-        self.datasetup = mastmlwrapper.process_config_keyword(keyword='Data Setup')
-        Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=configdict).parse_fromfile(datapath=self.datasetup['Initial']['data_path'], as_array=False)
+        self.data_setup = mastmlwrapper.process_config_keyword(keyword='Data Setup')
+        Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=configdict).parse_fromfile(datapath=self.data_setup['Initial']['data_path'], as_array=False)
         # Tam's code is here
         from data_handling.DataHandler import DataHandler
         data_dict=dict()
-        for data_name in self.datasetup.keys():
-            data_path = self.datasetup[data_name]['data_path']
-            data_weights = self.datasetup[data_name]['weights']
+        for data_name in self.data_setup.keys():
+            data_path = self.data_setup[data_name]['data_path']
+            data_weights = self.data_setup[data_name]['weights']
             if not(os.path.isfile(data_path)):
                 raise OSError("No file found at %s" % data_path)
-            if 'labeling_features' in self.generalsetup.keys():
-                labeling_features = self.string_or_list_input_to_list(self.generalsetup['labeling_features'])
+            if 'labeling_features' in self.general_setup.keys():
+                labeling_features = self.string_or_list_input_to_list(self.general_setup['labeling_features'])
             else:
                 labeling_features = None
-            if 'target_error_feature' in self.generalsetup.keys():
-                target_error_feature = self.generalsetup['target_error_feature']
+            if 'target_error_feature' in self.general_setup.keys():
+                target_error_feature = self.general_setup['target_error_feature']
             else:
                 target_error_feature = None
-            if 'grouping_feature' in self.generalsetup.keys():
-                grouping_feature = self.generalsetup['grouping_feature']
+            if 'grouping_feature' in self.general_setup.keys():
+                grouping_feature = self.general_setup['grouping_feature']
             else:
                 grouping_feature = None
-            myXdata, myydata, myx_features, myy_feature, mydataframe = DataParser(configdict=configdict).parse_fromfile(datapath=self.datasetup[data_name]['data_path'], as_array=False)
+            myXdata, myydata, myx_features, myy_feature, mydataframe = DataParser(configdict=configdict).parse_fromfile(datapath=self.data_setup[data_name]['data_path'], as_array=False)
             data_dict[data_name] = DataHandler(data = mydataframe, 
                                 input_data = myXdata, 
                                 target_data = myydata, 
@@ -126,8 +126,8 @@ class MASTMLDriver(object):
                                 labeling_features = labeling_features,
                                 grouping_feature = grouping_feature) #
             #data_dict[data_name] = data_parser.parse(data_path, data_weights)
-            #data_dict[data_name].set_x_features(datasetup['X']) #set in test classes, not here, since different tests could have different X and y features
-            #data_dict[data_name].set_y_feature(datasetup['y'])
+            #data_dict[data_name].set_x_features(data_setup['X']) #set in test classes, not here, since different tests could have different X and y features
+            #data_dict[data_name].set_y_feature(data_setup['y'])
             logging.info('Parsed the input data located under %s' % data_path)
 
 
@@ -156,7 +156,7 @@ class MASTMLDriver(object):
 
     def _gather_tests(self, mastmlwrapper, configdict, data_dict, model_list, save_path, model_vals):
         models_and_tests_setup = mastmlwrapper.process_config_keyword(keyword='Models and Tests to Run')
-        generalsetup = mastmlwrapper.process_config_keyword(keyword='General Setup')
+        general_setup = mastmlwrapper.process_config_keyword(keyword='General Setup')
         # Gather test types
         test_list = self.string_or_list_input_to_list(models_and_tests_setup['test_cases'])
         param_optimizing_tests = ["ParamOptGA"]
@@ -241,12 +241,12 @@ class MASTMLDriver(object):
 
     def _move_log_and_input_files(self, mastmlwrapper):
         cwd = os.getcwd()
-        generalsetup = mastmlwrapper.process_config_keyword(keyword='General Setup')
-        if not(os.path.abspath(generalsetup['save_path']) == cwd):
-            if os.path.exists(generalsetup['save_path']+"/"+'MASTMLlog.log'):
-                os.remove(generalsetup['save_path']+"/"+'MASTMLlog.log')
-            shutil.move(cwd+"/"+'MASTMLlog.log', generalsetup['save_path'])
-            shutil.copy(cwd+"/"+str(self.configfile), generalsetup['save_path'])
+        general_setup = mastmlwrapper.process_config_keyword(keyword='General Setup')
+        if not(os.path.abspath(general_setup['save_path']) == cwd):
+            if os.path.exists(general_setup['save_path']+"/"+'MASTMLlog.log'):
+                os.remove(general_setup['save_path']+"/"+'MASTMLlog.log')
+            shutil.move(cwd+"/"+'MASTMLlog.log', general_setup['save_path'])
+            shutil.copy(cwd+"/"+str(self.configfile), general_setup['save_path'])
         return
 
 if __name__ == '__main__':
