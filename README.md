@@ -8,7 +8,8 @@ For usage on existing csv files, see for example `test/classtest_mastml/test.con
     python /path/to/MASTML.py test.conf
 
 Original code 4/12/17 pulled from the DBTT Skunkworks project.
-DBTT Skunkworks group and machine learning (alphabetical order):
+
+DBTT Skunkworks undergraduates (~2015-2017, alphabetical order):
 *   Ben Anderson
 *   Josh Cordell
 *   Fenil Doshi
