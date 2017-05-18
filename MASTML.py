@@ -1,6 +1,5 @@
 __author__ = 'Ryan Jacobs, Tam Mayeshiba'
 
-import data_parser
 import sys
 import os
 from MASTMLInitializer import MASTMLWrapper, ConfigFileValidator
@@ -118,9 +117,6 @@ class MASTMLDriver(object):
                                 target_error_feature = target_error_feature,
                                 labeling_features = labeling_features,
                                 grouping_feature = grouping_feature) #
-            #data_dict[data_name] = data_parser.parse(data_path, data_weights)
-            #data_dict[data_name].set_x_features(data_setup['X']) #set in test classes, not here, since different tests could have different X and y features
-            #data_dict[data_name].set_y_feature(data_setup['y'])
             logging.info('Parsed the input data located under %s' % data_path)
         return Xdata, ydata, x_features, y_feature, dataframe, data_dict
 
