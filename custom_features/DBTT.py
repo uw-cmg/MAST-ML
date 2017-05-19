@@ -51,11 +51,12 @@ class DBTT():
 
         return N_EFl
 
-    def E900(self, wtP="P",
+    def E900(self, params=dict(),
+                    wtP="P",
                     wtNi="Ni",
                     wtMn="Mn",
                     wtCu="Cu",
-                    fluence="fluence_n_cm2",
+                    fluencestr="fluence_n_cm2",
                     tempC="temperature_C",
                     prod_ID="Product ID",
                         ):
@@ -63,9 +64,10 @@ class DBTT():
             CC conversion of TTS to delta sigma Y is from ORNL/TM-2006/530
             equation 6-3 and 6-4.
         Args: 
+            params <dict>: Unused.
             wtP <str>: feature name for weight percentage of P
             similarly, wtNi, wtMn, wtCu
-            fluence <str>: feature name for fluence in n/cm2
+            fluencestr <str>: feature name for fluence in n/cm2
             tempC <str>: feature name for temperature in C
             prod_ID <str>: feature name for product ID (plate, weld,
                             forging, etc.)
@@ -82,19 +84,24 @@ class DBTT():
 
         fluence_n_m2 = flu * 100.0 * 100.0
 
+        plates = np.array(prod == "P")
+        forgings = np.array(prod == "F")
+        srm_plates = np.array(prod=="SRM")
+        weldings = np.array(prod == "W")
+
         Acol = np.empty(numvals)
         Acol.fill(1.080) #plates as default
-        Acol[prod == "P"] = 1.080 #plate
-        Acol[prod == "F"] = 1.011 #forging
-        Acol[prod == "SRM"] = 1.080 #SRM plate
-        Acol[prod == "W"] = 0.919 #weld
+        Acol[plates] = 1.080 #plate
+        Acol[forgings] = 1.011 #forging
+        Acol[srm_plates] = 1.080 #standard reference material plate
+        Acol[weldings] = 0.919 #weld
         
         Bcol = np.empty(numvals)
         Bcol.fill(0.819) #plates as default
-        Bcol[prod == "P"] = 0.819 #plate
-        Bcol[prod == "F"] =  0.738 #forging
-        Bcol[prod == "SRM"] = 0.819 #SRM plate
-        Bcol[prod == "W"] = 0.968 #weld
+        Bcol[plates] = 0.819 #plate
+        Bcol[forgings] =  0.738 #forging
+        Bcol[srm_plates] = 0.819 #SRM plate
+        Bcol[weldings] = 0.968 #weld
 
         tts1 = Acol * (5./9.) * 1.8943 * np.power(10.,-12.) * np.power(fluence_n_m2,0.5695) * np.power(((1.8 * tempc + 32.0)/550.0),-5.47) * np.power((0.09 + p/0.012),0.216) * np.power((1.66 + (np.power(ni,8.54))/0.63),0.39) * np.power((mn/1.36),0.3)
         
@@ -105,9 +112,10 @@ class DBTT():
         tts = tts1 + tts2
 
         cc = np.empty(numvals)
-        cc[prod == "W"] = 0.55 + (1.2e-3) * tts - 1.33e-6 * np.power(tts,2.0)
-        cc[prod == "P"] = 0.45 + (1.945e03) * tts - 5.496e-6 * np.power(tts,2.0) + 8.473e-9 * np.power(tts,3.0)
-        cc[~self.df[prod].isin("P","W")] = 0.45 + (1.945e03) * tts - 5.496e-6 * np.power(tts,2.0) + 8.473e-9 * np.power(tts,3.0)
+        cc[weldings] = 0.55 + (1.2e-3) * tts[weldings] - 1.33e-6 * np.power(tts[weldings],2.0)
+        cc[plates] = 0.45 + (1.945e03) * tts[plates] - 5.496e-6 * np.power(tts[plates],2.0) + 8.473e-9 * np.power(tts[plates],3.0)
+        others = ~np.any([weldings, plates],axis=0)
+        cc[others] = 0.45 + (1.945e03) * tts[others] - 5.496e-6 * np.power(tts[others],2.0) + 8.473e-9 * np.power(tts[others],3.0)
         
         ds = tts / cc
         return ds

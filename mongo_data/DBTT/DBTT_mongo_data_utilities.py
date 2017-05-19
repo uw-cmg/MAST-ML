@@ -41,6 +41,45 @@ def add_alloy_number_field(db, newcname, verbose=0):
             print("Updated record %s with alloy number %i." % (record["_id"],fieldval))
     return
 
+def add_weight_percent_field(db, newcname, verbose=0):
+    """
+    """
+    elemlist=["Cu","Ni","Mn","P","Si","C"]
+    records = db[newcname].find()
+    for record in records:
+        alloy = record["Alloy"]
+        outdict = apu.get_weight_percents(db, alloy, verbose)
+        db[newcname].update(
+            {'_id':record["_id"]},
+            {"$set":
+                {"wt_percent_Cu":outdict["Cu"],
+                "wt_percent_Ni":outdict["Ni"],
+                "wt_percent_Mn":outdict["Mn"],
+                "wt_percent_P":outdict["P"],
+                "wt_percent_Si":outdict["Si"],
+                "wt_percent_C":outdict["C"]}
+                }
+            )
+        if verbose > 0:
+            print("Updated record %s with %s." % (record["_id"],outdict))
+    return
+
+def add_product_id_field(db, newcname, verbose=0):
+    """
+    """
+    records = db[newcname].find()
+    for record in records:
+        alloy = record["Alloy"]
+        product_id = apu.get_product_id(db, alloy, verbose)
+        db[newcname].update(
+            {'_id':record["_id"]},
+            {"$set":
+                {"product_id":product_id}
+                }
+            )
+        if verbose > 0:
+            print("Updated record %s with %s." % (record["_id"],outdict))
+    return
 
 def add_atomic_percent_field(db, newcname, verbose=0):
     """Ignores percentages from Mo and Cr.

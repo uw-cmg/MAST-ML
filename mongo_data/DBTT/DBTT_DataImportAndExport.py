@@ -28,6 +28,8 @@ import time
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 import mongo_data.mongo_utilities as mongoutil
+from custom_features import cf_help
+from DataParser import DataParser, FeatureIO, FeatureNormalization
 
 def import_initial_collections(db, importpath):
     """Import initial collections for use in creating specialized collections.
@@ -58,6 +60,8 @@ def add_standard_fields(db, cname, verbose=0):
     """Add fields that are standard to most analysis
     """
     mcas.add_alloy_number_field(db, cname, verbose=0)
+    mcas.add_product_id_field(db, cname, verbose=0)
+    mcas.add_weight_percent_field(db, cname, verbose=0)
     mcas.add_atomic_percent_field(db, cname, verbose=0)
     cas.add_log10_of_a_field(db, cname,"fluence_n_cm2")
     cas.add_log10_of_a_field(db, cname,"flux_n_cm2_sec")
@@ -182,6 +186,8 @@ def create_standard_conditions(db, cname, ref_flux=3e10, temp=290, min_sec=3e6, 
                                 "flux_n_cm2_sec": ref_flux})
     cas.add_basic_field(db, cname, "temperature_C", temp)
     mcas.add_alloy_number_field(db, cname, verbose=0)
+    mcas.add_product_id_field(db, cname, verbose=0)
+    mcas.add_weight_percent_field(db, cname, verbose=0)
     mcas.add_atomic_percent_field(db, cname, verbose=0)
     cas.add_log10_of_a_field(db, cname,"fluence_n_cm2")
     cas.add_log10_of_a_field(db, cname,"flux_n_cm2_sec")
@@ -193,7 +199,7 @@ def create_standard_conditions(db, cname, ref_flux=3e10, temp=290, min_sec=3e6, 
     #            "log(eff fl 100p=%s)" % pvalstr,
     #            verbose=verbose, collectionlist = clist)
     cas.add_minmax_normalization_of_a_field(db, cname, "temperature_C",
-            setmin=270,setmax=290,
+            setmin=270,setmax=320,
             verbose=verbose, collectionlist = clist)
     cas.add_minmax_normalization_of_a_field(db, cname, "log(fluence_n_cm2)",
             setmin=17, setmax=25,
@@ -201,6 +207,31 @@ def create_standard_conditions(db, cname, ref_flux=3e10, temp=290, min_sec=3e6, 
     cas.add_minmax_normalization_of_a_field(db, cname, "log(flux_n_cm2_sec)",
             setmin=10, setmax=15,
             verbose=verbose, collectionlist = clist)
+    return
+
+def csv_add_features(exportpath, csvsrc, csvdest):
+    afm_dict=dict()
+    param_dict=dict()
+    #E900 column
+    e900_dict = dict()
+    for elem in ['P','Ni','Cu','Mn']: #Si, C not used in e900
+        e900_dict['wt%s' % elem] = 'wt_percent_%s' % elem
+    e900_dict['fluencestr'] = 'fluence_n_cm2'
+    e900_dict['tempC'] = 'temperature_C'
+    e900_dict['prod_ID'] = 'product_id'
+    afm_dict['DBTT.E900'] = dict(e900_dict)
+    param_dict['DBTT.E900'] = dict()
+    #get_dataframe
+    csv_dataparser = DataParser()
+    csv_dataframe = csv_dataparser.import_data("%s.csv" % os.path.join(exportpath, csvsrc))
+    for afm in afm_dict.keys():
+        (feature_name, feature_data) = cf_help.get_custom_feature_data(class_method_str = afm,
+            starting_dataframe = csv_dataframe,
+            param_dict = dict(param_dict[afm]),
+            addl_feature_method_kwargs = dict(afm_dict[afm]))
+        fio = FeatureIO(csv_dataframe)
+        csv_dataframe = fio.add_custom_features([feature_name],feature_data)
+    csv_dataframe.to_csv("%s.csv" % os.path.join(exportpath, csvdest))
     return
 
 def main(importpath):
@@ -279,8 +310,12 @@ def main(importpath):
     #verify data
     #clist=["expt_ivar","cd1_ivar","cd2_ivar","cd1_lwr","cd2_lwr","expt_atr2"]
     clist=["expt_ivar","cd2_ivar","cd2_lwr","expt_atr2"]
-    dver.make_per_alloy_plots(db, clist, "%s/verification_plots" % exportpath) 
-    #Additional to-do
+    #dver.make_per_alloy_plots(db, clist, "%s/verification_plots" % exportpath) 
+    #Additional to-do: works with CSV files now
+    csv_add_features(exportpath,"cd2_ivar", "cd2_ivar_with_models")
+    csv_add_features(exportpath,"cd2_lwr", "cd2_lwr_with_models")
+    csv_add_features(exportpath,"lwr_std_cd2","lwr_std_cd2_with_models")
+    csv_add_features(exportpath,"expt_ivar", "expt_ivar_with_models")
     ##
     return exportpath
 

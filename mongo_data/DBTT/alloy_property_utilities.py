@@ -67,6 +67,37 @@ def get_atomic_percents(db, alloy, verbose=0):
     raise ValueError("Could not get composition for alloy %s" % alloy)
     return
 
+def get_weight_percents(db, alloy, verbose=0):
+    """
+        Args:
+            alloy <str>: Alloy name
+    """
+    elemlist=["Cu","Ni","Mn","P","Si","C"]
+    results = db[cname_alloy].find({"Alloy":alloy})
+    for result in results:
+        if verbose > 0:
+            print("Found alloy %s" % alloy)
+        compdict=dict()
+        for elem in elemlist:
+            try:
+                wt = float(result['wt_percent_%s' % elem])
+            except (ValueError,TypeError):
+                wt = 0.0
+            compdict[elem] = wt
+        return compdict
+    raise ValueError("Could not get composition for alloy %s" % alloy)
+    return
+
+def get_product_id(db, alloy, verbose=0):
+    """
+        Args:
+            alloy <str>: Alloy name
+    """
+    results = db[cname_alloy].find({"Alloy":alloy})
+    for result in results:
+        product_id = result['product_id']
+    return product_id
+
 def look_up_name_or_number(db, ival="",itype="name", verbose=0):
     """Look up alloy name or number.
         Args:
