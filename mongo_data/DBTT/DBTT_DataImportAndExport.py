@@ -63,8 +63,8 @@ def add_standard_fields(db, cname, verbose=0):
     mcas.add_product_id_field(db, cname, verbose=0)
     mcas.add_weight_percent_field(db, cname, verbose=0)
     mcas.add_atomic_percent_field(db, cname, verbose=0)
-    cas.add_log10_of_a_field(db, cname,"fluence_n_cm2")
-    cas.add_log10_of_a_field(db, cname,"flux_n_cm2_sec")
+    #cas.add_log10_of_a_field(db, cname,"fluence_n_cm2")
+    #cas.add_log10_of_a_field(db, cname,"flux_n_cm2_sec")
     #TTM ParamOptGA can now add the appropriate effective fluence field 20170518
     #for pval in np.arange(0.0,1.01,0.01):
     #    pvalstr = "%i" % (100*pval)
@@ -189,24 +189,24 @@ def create_standard_conditions(db, cname, ref_flux=3e10, temp=290, min_sec=3e6, 
     mcas.add_product_id_field(db, cname, verbose=0)
     mcas.add_weight_percent_field(db, cname, verbose=0)
     mcas.add_atomic_percent_field(db, cname, verbose=0)
-    cas.add_log10_of_a_field(db, cname,"fluence_n_cm2")
-    cas.add_log10_of_a_field(db, cname,"flux_n_cm2_sec")
-    #TTM ParamOptGA will now add field
-    #for pval in np.arange(0.0,1.01,0.01):
-    #    pvalstr = "%i" % (100*pval)
-    #    mcas.add_generic_effective_fluence_field(db, cname, 3e10, pval)
-    #    cas.add_minmax_normalization_of_a_field(db, cname, 
-    #            "log(eff fl 100p=%s)" % pvalstr,
-    #            verbose=verbose, collectionlist = clist)
-    cas.add_minmax_normalization_of_a_field(db, cname, "temperature_C",
-            setmin=270,setmax=320,
-            verbose=verbose, collectionlist = clist)
-    cas.add_minmax_normalization_of_a_field(db, cname, "log(fluence_n_cm2)",
-            setmin=17, setmax=25,
-            verbose=verbose, collectionlist = clist)
-    cas.add_minmax_normalization_of_a_field(db, cname, "log(flux_n_cm2_sec)",
-            setmin=10, setmax=15,
-            verbose=verbose, collectionlist = clist)
+    #cas.add_log10_of_a_field(db, cname,"fluence_n_cm2")
+    #cas.add_log10_of_a_field(db, cname,"flux_n_cm2_sec")
+    ##TTM ParamOptGA will now add field
+    ##for pval in np.arange(0.0,1.01,0.01):
+    ##    pvalstr = "%i" % (100*pval)
+    ##    mcas.add_generic_effective_fluence_field(db, cname, 3e10, pval)
+    ##    cas.add_minmax_normalization_of_a_field(db, cname, 
+    ##            "log(eff fl 100p=%s)" % pvalstr,
+    ##            verbose=verbose, collectionlist = clist)
+    #cas.add_minmax_normalization_of_a_field(db, cname, "temperature_C",
+    #        setmin=270,setmax=320,
+    #        verbose=verbose, collectionlist = clist)
+    #cas.add_minmax_normalization_of_a_field(db, cname, "log(fluence_n_cm2)",
+    #        setmin=17, setmax=25,
+    #        verbose=verbose, collectionlist = clist)
+    #cas.add_minmax_normalization_of_a_field(db, cname, "log(flux_n_cm2_sec)",
+    #        setmin=10, setmax=15,
+    #        verbose=verbose, collectionlist = clist)
     return
 
 def csv_add_features(exportpath, csvsrc, csvdest):
@@ -224,6 +224,7 @@ def csv_add_features(exportpath, csvsrc, csvdest):
     #get_dataframe
     csv_dataparser = DataParser()
     csv_dataframe = csv_dataparser.import_data("%s.csv" % os.path.join(exportpath, csvsrc))
+    #add features
     for afm in afm_dict.keys():
         (feature_name, feature_data) = cf_help.get_custom_feature_data(class_method_str = afm,
             starting_dataframe = csv_dataframe,
@@ -231,7 +232,51 @@ def csv_add_features(exportpath, csvsrc, csvdest):
             addl_feature_method_kwargs = dict(afm_dict[afm]))
         fio = FeatureIO(csv_dataframe)
         csv_dataframe = fio.add_custom_features([feature_name],feature_data)
+    #add log10 features
+    log10_dict=dict()
+    log10_dict['fluence_n_cm2'] = dict()
+    log10_dict['flux_n_cm2_sec'] = dict()
+    for lkey in log10_dict.keys():
+        orig_data = csv_dataframe[lkey]
+        log10_data = np.log10(orig_data)
+        fio = FeatureIO(csv_dataframe)
+        csv_dataframe = fio.add_custom_features(["log(%s)" % lkey], log10_data)
+    #add normalizations
+    norm_dict = dict()
+    norm_dict['log(fluence_n_cm2)']=dict()
+    norm_dict['log(fluence_n_cm2)']['smin'] = 17
+    norm_dict['log(fluence_n_cm2)']['smax'] = 25
+    norm_dict['log(flux_n_cm2_sec)']=dict()
+    norm_dict['log(flux_n_cm2_sec)']['smin'] = 10
+    norm_dict['log(flux_n_cm2_sec)']['smax'] = 15
+    norm_dict['temperature_C']=dict()
+    norm_dict['temperature_C']['smin'] = 270
+    norm_dict['temperature_C']['smax'] = 320
+    for elem in ["P","C","Cu","Ni","Mn","Si"]:
+        norm_dict["at_percent_%s" % elem] = dict()
+        norm_dict["at_percent_%s" % elem]['smin'] = 0.0
+        norm_dict["at_percent_%s" % elem]['smax'] = 1.717 #max Mn atomic percent
+    for nkey in norm_dict.keys():
+        fnorm = FeatureNormalization(csv_dataframe)
+        scaled_feature = fnorm.minmax_scale_single_feature(nkey,
+                            smin=norm_dict[nkey]['smin'], 
+                            smax=norm_dict[nkey]['smax'])
+        fio = FeatureIO(csv_dataframe)
+        csv_dataframe = fio.add_custom_features(["N(%s)" % nkey],scaled_feature)
     csv_dataframe.to_csv("%s.csv" % os.path.join(exportpath, csvdest))
+    return
+
+def add_normalized_fields(db, cname, clist=list(), verbose=0):
+    raise NotImplementedError()
+    cas.add_minmax_normalization_of_a_field(db, cname, "log(fluence_n_cm2)",
+            setmin=17, setmax=25, 
+            verbose=verbose, collectionlist = clist) #fluences 1e17 to 1e25
+    cas.add_minmax_normalization_of_a_field(db, cname, "log(flux_n_cm2_sec)",
+            setmin=10, setmax=15,
+            verbose=verbose, collectionlist = clist) #fluxes 7e10 to 2.3e14
+    cas.add_minmax_normalization_of_a_field(db, cname, "temperature_C",
+            setmin=270,setmax=320,
+            verbose=verbose, collectionlist = clist)
     return
 
 def main(importpath):
@@ -285,12 +330,12 @@ def main(importpath):
     #cas.transfer_nonignore_records(db, "expt_ivar","expt_atr2")
     add_standard_fields(db, "expt_atr2")
     #Normalization
-    add_normalized_fields(db, "expt_ivar", ["expt_ivar","expt_atr2","cd2_lwr"])
-    #add_normalized_fields(db, "cd1_ivar", ["cd1_ivar","cd1_lwr"])
-    #add_normalized_fields(db, "cd1_lwr", ["cd1_ivar","cd1_lwr"])
-    add_normalized_fields(db, "cd2_ivar", ["cd2_ivar","cd2_lwr"])
-    add_normalized_fields(db, "cd2_lwr", ["cd2_ivar","cd2_lwr"])
-    add_normalized_fields(db, "expt_atr2", ["expt_ivar","expt_atr2","cd2_lwr"])
+    #add_normalized_fields(db, "expt_ivar", ["expt_ivar","expt_atr2","cd2_lwr"])
+    ##add_normalized_fields(db, "cd1_ivar", ["cd1_ivar","cd1_lwr"])
+    ##add_normalized_fields(db, "cd1_lwr", ["cd1_ivar","cd1_lwr"])
+    #add_normalized_fields(db, "cd2_ivar", ["cd2_ivar","cd2_lwr"])
+    #add_normalized_fields(db, "cd2_lwr", ["cd2_ivar","cd2_lwr"])
+    #add_normalized_fields(db, "expt_atr2", ["expt_ivar","expt_atr2","cd2_lwr"])
     #
     create_standard_conditions(db, "lwr_std_expt",3e10,290,3e6,5e9,["expt_ivar","expt_atr2","cd1_lwr"])
     create_standard_conditions(db, "atr2_std_expt",3.64e12,291,3e5,1.5e8,["expt_ivar","expt_atr2","cd1_lwr"])
@@ -312,10 +357,10 @@ def main(importpath):
     clist=["expt_ivar","cd2_ivar","cd2_lwr","expt_atr2"]
     #dver.make_per_alloy_plots(db, clist, "%s/verification_plots" % exportpath) 
     #Additional to-do: works with CSV files now
-    csv_add_features(exportpath,"cd2_ivar", "cd2_ivar_with_models")
-    csv_add_features(exportpath,"cd2_lwr", "cd2_lwr_with_models")
-    csv_add_features(exportpath,"lwr_std_cd2","lwr_std_cd2_with_models")
-    csv_add_features(exportpath,"expt_ivar", "expt_ivar_with_models")
+    csv_add_features(exportpath,"cd2_ivar", "cd2_ivar_with_models_and_scaled")
+    csv_add_features(exportpath,"cd2_lwr", "cd2_lwr_with_models_and_scaled")
+    csv_add_features(exportpath,"lwr_std_cd2","lwr_std_cd2_with_models_and_scaled")
+    csv_add_features(exportpath,"expt_ivar", "expt_ivar_with_models_and_scaled")
     ##
     return exportpath
 
