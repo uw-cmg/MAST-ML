@@ -337,10 +337,8 @@ def main(importpath):
     #add_normalized_fields(db, "cd2_lwr", ["cd2_ivar","cd2_lwr"])
     #add_normalized_fields(db, "expt_atr2", ["expt_ivar","expt_atr2","cd2_lwr"])
     #
-    create_standard_conditions(db, "lwr_std_expt",3e10,290,3e6,5e9,["expt_ivar","expt_atr2","cd1_lwr"])
-    create_standard_conditions(db, "atr2_std_expt",3.64e12,291,3e5,1.5e8,["expt_ivar","expt_atr2","cd1_lwr"])
-    #create_standard_conditions(db, "lwr_std_cd1",3e10,290,3e6,5e9,["cd1_ivar","cd1_lwr"])
-    create_standard_conditions(db, "lwr_std_cd2",3e10,290,3e6,5e9,["cd2_ivar","cd2_lwr"])
+    create_standard_conditions(db, "standard_lwr",
+                    ref_flux=3e10, temp=290, min_sec=3e6, max_sec=5e9)
     #
     cas.export_spreadsheet(db, "expt_ivar", exportpath)
     #cas.export_spreadsheet(db, "cd1_ivar", exportpath)
@@ -348,10 +346,7 @@ def main(importpath):
     #cas.export_spreadsheet(db, "cd1_lwr", exportpath)
     cas.export_spreadsheet(db, "cd2_lwr", exportpath)
     cas.export_spreadsheet(db, "expt_atr2", exportpath)
-    cas.export_spreadsheet(db, "lwr_std_expt", exportpath)
-    #cas.export_spreadsheet(db, "lwr_std_cd1", exportpath)
-    cas.export_spreadsheet(db, "lwr_std_cd2", exportpath)
-    cas.export_spreadsheet(db, "atr2_std_expt", exportpath)
+    cas.export_spreadsheet(db, "standard_lwr", exportpath)
     #verify data
     #clist=["expt_ivar","cd1_ivar","cd2_ivar","cd1_lwr","cd2_lwr","expt_atr2"]
     clist=["expt_ivar","cd2_ivar","cd2_lwr","expt_atr2"]
@@ -359,8 +354,9 @@ def main(importpath):
     #Additional to-do: works with CSV files now
     csv_add_features(exportpath,"cd2_ivar", "cd2_ivar_with_models_and_scaled")
     csv_add_features(exportpath,"cd2_lwr", "cd2_lwr_with_models_and_scaled")
-    csv_add_features(exportpath,"lwr_std_cd2","lwr_std_cd2_with_models_and_scaled")
+    csv_add_features(exportpath,"standard_lwr","standard_lwr_with_models_and_scaled")
     csv_add_features(exportpath,"expt_ivar", "expt_ivar_with_models_and_scaled")
+    csv_add_features(exportpath,"expt_atr2", "expt_atr2_with_models_and_scaled")
     ##
     return exportpath
 

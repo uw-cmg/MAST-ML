@@ -103,8 +103,8 @@ def add_atomic_percent_field(db, newcname, verbose=0):
             )
         if verbose > 0:
             print("Updated record %s with %s." % (record["_id"],outdict))
-    for elem in elemlist:
-        mdu.add_minmax_normalization_of_a_field(db, newcname, "at_percent_%s" % elem, 0.0, 1.717)
+    #for elem in elemlist:
+    #    mdu.add_minmax_normalization_of_a_field(db, newcname, "at_percent_%s" % elem, 0.0, 1.717)
     return
 
 def add_effective_fluence_field(db, newcname, verbose=0):
