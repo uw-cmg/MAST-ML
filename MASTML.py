@@ -8,6 +8,10 @@ import logging
 import shutil
 import time
 from custom_features import cf_help
+import matplotlib
+env_display = os.getenv("DISPLAY")
+if env_display is None:
+    matplotlib.use("agg")
 from DataHandler import DataHandler
 
 class MASTMLDriver(object):
