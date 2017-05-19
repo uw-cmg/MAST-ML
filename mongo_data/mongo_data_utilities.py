@@ -93,6 +93,7 @@ def list_all_fields(db, cname, verbose=0):
     return fieldlist
 
 def export_spreadsheet(db, newcname="", prepath="", fieldlist=list()):
+    print("Trying to export collection %s" % newcname)
     if len(fieldlist) == 0:
         fieldlist=list_all_fields(db, newcname)
     fieldstr=""

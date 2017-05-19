@@ -285,7 +285,7 @@ def main(importpath):
     db_base="dbtt"
     client = mongoutil.get_mongo_client()
     dbname = mongoutil.get_unique_name(client, db_base)
-    exportfolder = "data_exports_%s_%s" %(dbname,time.strftime("%Y%m%d_%H%M%S"))
+    exportfolder = "exports_%s_%s" %(time.strftime("%Y%m%d_%H%M%S"),dbname)
     exportpath = os.path.join(dirpath, exportfolder)
     db = client[dbname]
     #import initial collections
