@@ -85,6 +85,20 @@ class PlotNoAnalysis(SingleFit):
         self.set_up()
         self.plot()
         self.print_readme()
+        self.print_output_csv()
+        return
+    
+    @timeit
+    def print_output_csv(self):
+        self.readme_list.append("----- Output data -----\n")
+        for tidx in range(0, len(self.data_labels)):
+            csvname = "output_%s.csv" % self.data_labels[tidx]
+            testing_dataset = self.testing_datasets[tidx]
+            ocsvname = os.path.join(self.save_path, csvname)
+            cols_printed = testing_dataset.print_data(ocsvname)
+            self.readme_list.append("%s file created with columns:\n" % csvname)
+            for col in cols_printed:
+                self.readme_list.append("    %s\n" % col)
         return
 
     @timeit
