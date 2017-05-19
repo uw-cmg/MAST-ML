@@ -6,91 +6,98 @@ import data_analysis.printout_tools as ptools
 import plot_data.plot_xy as plotxy
 import os
 import portion_data.get_test_train_data as gttd
+from SingleFit import SingleFit
+from SingleFit import timeit
 ###########
 # Just plotting, no analysis
 # Tam Mayeshiba 2017-03-24
 ###########
-def execute(model, data, savepath, 
-        plottype="scatter",
-        group_field_name=None,
-        label_field_name=None,
-        flipaxes=0,
-        do_fft=0,
-        timex="",
-        *args, **kwargs):
-    """Simple plot
-        Args:
-            plottype <str>: "line" or "scatter"
-            group_field_name <str>: Field name for numeric field for grouping 
-                                    plots.
-                                    If None, all data will be plotted.
-            label_field_name <str>: Field name for string label field that
-                                    goes with group field name. Leave as
-                                    None if group field name is None. 
-            flipaxes <int>: 0, plot y features against multiple X features
-                                (default)
-                           1, plot each given "X" feature as the y against
-                                a single "y" feature as the x
-            do_fft <int>: 0, no fast Fourier transform (default)
-                        1, fast Fourier transform as well
-            timex <str>: formatter conversion if x-axis is a time axis; leave
-                            blank for no conversion. Ex: "%m/%d/%y %H:%M"
+
+class PlotNoAnalysis(SingleFit):
+    """Plotting without analysis
+    Args:
+        training_dataset, (same as testing_dataset; only testing_dataset used)
+        testing_dataset, (same as training_dataset; only testing_dataset used)
+        model, (not used)
+        save_path,
+        xlabel,
+        ylabel,
+        plot_filter_out, see parent class.
+        feature_plot_feature <str>: Feature to plot on x-axis, against target feature
+        timex <str>: Time format string, if x-axis is a time
+    Returns:
+        Plots target data against feature data, by group if a grouping feature
+            is set
+    Raises:
+        ValueError if feature_plot_feature is None or there is no testing
+            target data
     """
-    flipaxes = int(flipaxes)
-    do_fft = int(do_fft)
-    
-    Xdata = np.asarray(data.get_x_data())
-    Ydata = np.asarray(data.get_y_data()).ravel()
-    xfeatures = data.x_features
-    yfeature = data.y_feature
+    def __init__(self,
+            training_dataset=None,
+            testing_dataset=None,
+            model=None,
+            save_path=None,
+            xlabel="X",
+            ylabel="Y",
+            plot_filter_out=None,
+            feature_plot_feature=None,
+            timex=None):
+        """
+        Additional attributes to parent class:
+            self.feature_plot_feature <str>: Feature to plot on x-axis
+            self.timex <str>: Time format string, if x-axis is a time
+        """
+        SingleFit.__init__(self,
+                training_dataset = training_dataset,
+                testing_dataset = testing_dataset,
+                model = model,
+                save_path = save_path,
+                xlabel = xlabel,
+                ylabel = ylabel,
+                plot_filter_out = plot_filter_out)
+        if feature_plot_feature is None:
+            raise ValueError("feature_plot_feature is not set")
+        if self.testing_dataset.target_data is None:
+            raise ValueError("No testing target data.")
+        self.feature_plot_feature = feature_plot_feature
+        self.timex = timex
+        return
 
-    xshape = Xdata.shape
-    if len(xshape) > 1:
-        numplots = xshape[1]
-    else:
-        numplots = 1
+    @timeit
+    def run(self):
+        self.testing_dataset.add_filters(self.plot_filter_out)
+        if not(self.plot_filter_out is None):
+            self.readme_list.append("Plot filtering out:\n")
+            for (feature, symbol, threshold) in self.plot_filter_out:
+                self.readme_list.append("  %s %s %s\n" % (feature, symbol, threshold))
+        self.plot_single(group=None)
+        if self.testing_dataset.grouping_feature is None:
+            return
+        for group in self.testing_dataset.groups:
+            self.plot_single(group=group)
+        return
 
-    if not (group_field_name == None):    
-        group_indices = gttd.get_field_logo_indices(data, group_field_name)
-        if not (label_field_name == None):
-            labeldata = np.asarray(data.get_data(label_field_name)).ravel()
-        groups = list(group_indices.keys())
-    else:
-        groups = list([0])
-        group_indices=dict()
-        group_indices[0]=dict()
-        group_indices[0]["test_index"] = range(0, len(Ydata))
-
-    for numplot in range(0, numplots):
-        for group in groups:
-            xdata = Xdata[group_indices[group]["test_index"],numplot]
-            ydata = Ydata[group_indices[group]["test_index"]]
-            kwargs=dict()
-            groupstr = "%i".zfill(3) % group
-            if group_field_name == None:
-                grouppath = savepath
-            else:
-                if not (label_field_name == None):
-                    label = labeldata[group_indices[group]["test_index"][0]]
-                    groupstr = groupstr + "_%s" % label
-                grouppath = os.path.join(savepath, groupstr)
-            if not os.path.isdir(grouppath):
-                os.mkdir(grouppath)
-            kwargs['savepath'] = grouppath
-            kwargs['plottype'] = plottype
-            kwargs['timex'] = timex
-            if flipaxes == 0:
-                kwargs['xlabel'] = xfeatures[numplot]
-                kwargs['ylabel'] = yfeature
-                plotxy.single(xdata, ydata, **kwargs)
-                if do_fft == 1:
-                    kwargs['ylabel'] = yfeature + "_fft"
-                    plotxy.single(xdata, fft(ydata), **kwargs)
-            else:
-                kwargs['xlabel'] = yfeature
-                kwargs['ylabel'] = xfeatures[numplot]
-                plotxy.single(ydata, xdata, **kwargs)
-                if do_fft == 1:
-                    kwargs['ylabel'] = xfeatures[numplot] + "_fft"
-                    plotxy.single(ydata, fft(xdata), **kwargs)
-    return
+    def plot_single(self, group=None):
+        xdata = self.testing_dataset.data[self.feature_plot_feature]
+        ydata = self.testing_dataset.target_data
+        kwargs=dict()
+        if group is None:
+            kwargs['plotlabel'] = "all"
+        if not (group is None):
+            xdata = xdata[self.testing_dataset.group_data == group]
+            ydata = ydata[self.testing_dataset.group_data == group]
+            kwargs['plotlabel'] = group
+        kwargs['save_path'] = self.save_path
+        kwargs['timex'] = self.timex
+        kwargs['xlabel'] = self.xlabel
+        kwargs['ylabel'] = self.ylabel
+        notelist=list()
+        if not(self.plot_filter_out is None):
+            notelist.append("Data not shown:")
+            for (feature, symbol, threshold) in self.plot_filter_out:
+                notelist.append("  %s %s %s" % (feature, symbol, threshold))
+        kwargs['notelist'] = notelist
+        plotxy.single(xdata, ydata, **kwargs)
+        #if do_fft == 1:
+        #    plotxy.single(xdata, fft(ydata), **kwargs)
+        return
