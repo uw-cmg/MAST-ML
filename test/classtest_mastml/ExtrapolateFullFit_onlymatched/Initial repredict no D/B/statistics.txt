@@ -1,6 +1,0 @@
-Statistics
-Thu May  4 10:04:20 2017
-mean_error:0.0000
-rmse:0.0558
-mean_absolute_error:0.0391
-rsquared:0.9914

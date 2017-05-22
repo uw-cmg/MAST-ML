@@ -1,27 +1,40 @@
-Fri May  5 11:45:35 2017
+Wed May 10 11:29:54 2017
 ----- Model parameters -----
-kernel_params: None
+kernel: rbf
+coef0: 1
 gamma: 0.518
 degree: 3
-coef0: 1
-kernel: rbf
+kernel_params: None
 alpha: 0.00139
 ----- Output data -----
 output_data.csv file created with columns:
-   labeling features: ['str_cat', 'num_id']
-   input features: ['time', 'N_sine_feature', 'N_linear_feature']
-   target feature: y_feature
-   target error feature: N_linear_feature
-   prediction: Prediction
+    str_cat
+    num_id
+    time
+    N_sine_feature
+    N_linear_feature
+    y_feature
+    N_linear_feature
+    Prediction
+----- Output data -----
+output_data_filtered.csv file created with columns:
+    str_cat
+    num_id
+    time
+    N_sine_feature
+    N_linear_feature
+    y_feature
+    N_linear_feature
+    Prediction
 ----- Statistics -----
+filtered_rmse: 0.0597
 mean_absolute_error: 0.0391
 mean_error: 0.0000
 rmse: 0.0558
-rmse_plot_filter_out: 0.0597
 rsquared: 0.9914
 ----- Plotting -----
 Plot filtering out:
-  time_>_7.5
+  time > 7.5
 Plot single_fit.png created.
     Plotted data is in the data_... csv file.
-    All zeros for error columns indicate no error.
+    Error column of all zeros indicates no error.

@@ -8,82 +8,146 @@ import portion_data.get_test_train_data as gttd
 import data_analysis.printout_tools as ptools
 import plot_data.plot_rmse as plotrmse
 import os
+from SingleFit import SingleFit
+from LeaveOutPercentCV import LeaveOutPercentCV
+from SingleFit import timeit
+from sklearn.metrics import r2_score
+from sklearn.model_selection import LeaveOneGroupOut
 
-def execute(model, data, savepath, 
-            group_field_name=None,
-            label_field_name=None,
-            xlabel="Group number",
-            ylabel="RMSE",
-            title="",
-            *args, **kwargs):
+class LeaveOutGroupCV(LeaveOutPercentCV):
+    """leave-out-group cross validation
+   
+    Args:
+        training_dataset, (Should be the same as testing_dataset)
+        testing_dataset, (Should be the same as training_dataset)
+        model,
+        save_path,
+        xlabel, 
+        ylabel,
+        stepsize,
+        mark_outlying_points (Use only 1 number), see parent class.
+ 
+    Returns:
+        Analysis in the save_path folder
+        Plots results in a predicted vs. measured square plot.
+    Raises:
+        ValueError if grouping feature is None
+        ValueError if testing target data is None; CV must have
+                testing target data
     """
-        model, data, savepath = see AllTests.py
-        group_field_name <str>: field name of field over which to group
-                                    for the successive left-out groups
-        label_field_name <str>: field name of a label field which corresponds
-                                    to the grouping field
-        xlabel <str>: x-axis label for the rmse-vs- left-out group plot
-        ylabel <str>: y-axis label
-        title <str>: plot title (optional)
-    """
-    if group_field_name == None:
-        raise ValueError("No group field name set.")
+    def __init__(self, 
+        training_dataset=None,
+        testing_dataset=None,
+        model=None,
+        save_path=None,
+        xlabel="Measured",
+        ylabel="Predicted",
+        stepsize=1,
+        mark_outlying_points=None,
+        *args, **kwargs):
+        """
+        Additional class attributes to parent class:
+            Set by keyword:
+            Set in code:
+        """
+        if not(training_dataset == testing_dataset):
+            raise ValueError("Only testing_dataset will be used. Use the same values for training_dataset and testing_dataset")
+        LeaveOutPercentCV.__init__(self, 
+            training_dataset=training_dataset, #only testing_dataset is used
+            testing_dataset=testing_dataset,
+            model=model, 
+            save_path = save_path,
+            xlabel=xlabel,
+            ylabel=ylabel,
+            stepsize=stepsize,
+            mark_outlying_points = mark_outlying_points,
+            percent_leave_out = -1, #not using this field
+            num_cvtests = -1, #not using this field; num_cvtests is set by number of groups
+            fix_random_for_testing = 0, #no randomization in this test
+            )
+        if self.testing_dataset.grouping_feature is None:
+            raise ValueError("grouping feature must be set.")
+        return 
 
-    rms_list = list()
-    group_value_list = list()
-    group_label_list=list()
-    me_list = list()
-    group_list = list()
+    def predict(self):
+        #Predictions themselves are covered in self.fit()
+        self.get_statistics()
+        self.print_statistics()
+        self.readme_list.append("----- Output data -----\n")
+        for cvtest in self.cvtest_dict.keys():
+            self.print_output_csv(label=self.cvtest_dict[cvtest]['group'], cvtest_entry=self.cvtest_dict[cvtest])
+        return
 
-    Xdata = np.asarray(data.get_x_data())
-    ydata = np.asarray(data.get_y_data()).ravel()
-    groupdata = np.asarray(data.get_data(group_field_name)).ravel()
-    if label_field_name == None:
-        label_field_name = group_field_name
-    
-    labeldata = np.asarray(data.get_data(label_field_name)).ravel()
+    @timeit
+    def plot(self):
+        self.readme_list.append("----- Plotting -----\n")
+        notelist=list()
+        notelist.append("Mean RMSE: {:.2f}".format(self.statistics['avg_rmse']))
+        kwargs=dict()
+        kwargs['xlabel'] = self.xlabel
+        kwargs['ylabel'] = self.ylabel
+        kwargs['notelist'] = notelist
+        kwargs['save_path'] = self.save_path
+        kwargs['marklargest'] = self.mark_outlying_points
+        group_label_list=list()
+        rms_list=list()
+        group_rms_list=list()
+        for cvtest in self.cvtest_dict.keys():
+            group_rms_list.append((self.cvtest_dict[cvtest]['group'],
+                                    self.cvtest_dict[cvtest]['rmse']))
+        group_rms_list.sort() #sorts by group
+        group_rms_array = np.array(group_rms_list)
+        kwargs['rms_list'] = np.array(group_rms_array[:,1],'float')
+        kwargs['group_list'] = group_rms_array[:,0]
+        plotrmse.vs_leftoutgroup(**kwargs)
+        self.readme_list.append("Plot leave_out_group.png created.\n")
+        return
 
-    indices = gttd.get_field_logo_indices(data, group_field_name)
-    
-    groups = list(indices.keys())
-    groups.sort()
-    for group in groups:
-        train_index = indices[group]["train_index"]
-        test_index = indices[group]["test_index"]
-        test_group_val = groupdata[test_index[0]] #left-out group value
-        test_group_label = labeldata[test_index[0]]
-        model.fit(Xdata[train_index], ydata[train_index])
-        Ypredict = model.predict(Xdata[test_index])
+    def set_up_cv(self):
+        if self.testing_dataset.target_data is None:
+            raise ValueError("Testing target data cannot be none for cross validation.")
+        indices = np.arange(0, len(self.testing_dataset.target_data))
+        self.num_cvtests = len(self.testing_dataset.groups)
+        self.readme_list.append("----- CV setup -----\n")
+        self.readme_list.append("%i CV tests,\n" % self.num_cvtests)
+        self.readme_list.append("leaving out %s groups.\n" % self.testing_dataset.grouping_feature)
+        self.cvmodel = LeaveOneGroupOut()
+        cvtest=0
+        for train, test in self.cvmodel.split(self.testing_dataset.input_data,
+                        self.testing_dataset.target_data,
+                        self.testing_dataset.group_data):
+            group = self.testing_dataset.groups[cvtest]
+            self.cvtest_dict[cvtest] = dict()
+            self.cvtest_dict[cvtest]['train_index'] = train
+            self.cvtest_dict[cvtest]['test_index'] = test
+            self.cvtest_dict[cvtest]['group'] = group #keep track of group
+            cvtest=cvtest + 1
+        return
 
-        rms = np.sqrt(mean_squared_error(Ypredict, ydata[test_index]))
-        me = mean_error(Ypredict, ydata[test_index])
-        rms_list.append(rms)
-        group_value_list.append(test_group_val)
-        group_label_list.append(test_group_label)
-        me_list.append(me)
-        group_list.append(group) #should be able to just use groups
+    def print_statistics(self):
+        LeaveOutPercentCV.print_statistics(self)
+        self.readme_list.append("Statistics by group:\n")
+        statlist=list()
+        for cvtest in range(0, self.num_cvtests):
+            for key in ['rmse','mean_error']:
+                statlist.append("  %s: %s: %3.3f\n" % (self.cvtest_dict[cvtest]['group'], key, self.cvtest_dict[cvtest][key]))
+        statlist.sort() #sorts by group
+        for stat in statlist:
+            self.readme_list.append(stat)
+        return
 
-    print('Mean RMSE: ', np.mean(rms_list))
-    print('Mean Mean Error: ', np.mean(me_list))
+    def print_output_csv(self, label="", cvtest_entry=None):
+        """
+        """
+        olabel = "%s_test_data.csv" % label
+        ocsvname = os.path.join(self.save_path, olabel)
+        self.testing_dataset.add_feature("Group Prediction", 
+                    cvtest_entry['prediction_array'])
+        addl_cols = list()
+        addl_cols.append("Group Prediction")
+        cols = self.testing_dataset.print_data(ocsvname, addl_cols)
+        self.readme_list.append("%s file created with columns:\n" % olabel)
+        for col in cols:
+            self.readme_list.append("    %s\n" % col)
+        return
 
-    notelist=list()
-    notelist.append("Mean RMSE: {:.2f}".format(np.mean(rms_list)))
-    
-    kwargs=dict()
-    kwargs['xlabel'] = xlabel
-    kwargs['ylabel'] = ylabel
-    kwargs['title'] = title
-    kwargs['notelist'] = notelist
-    kwargs['savepath'] = savepath
-    if label_field_name == None:
-        kwargs['group_label_list'] = None
-    else:
-        kwargs['group_label_list'] = group_label_list
-
-    plotrmse.vs_leftoutgroup(group_value_list, rms_list, **kwargs)
-
-    csvname = os.path.join(savepath, "leavegroupout.csv")
-    headerline = "Group,%s,%s,RMSE,Mean error" % (group_field_name, label_field_name)
-    save_array = np.asarray([group_list, group_value_list, group_label_list, rms_list, me_list]).transpose()
-    ptools.mixed_array_to_csv(csvname, headerline, save_array) 
-    return

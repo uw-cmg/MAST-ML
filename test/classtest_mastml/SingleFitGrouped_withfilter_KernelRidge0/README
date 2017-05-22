@@ -1,38 +1,51 @@
-Fri May  5 11:36:43 2017
+Wed May 10 11:29:52 2017
 ----- Model parameters -----
-kernel_params: None
-gamma: 0.518
 kernel: rbf
-alpha: 0.00139
-degree: 3
 coef0: 1
+gamma: 0.518
+degree: 3
+kernel_params: None
+alpha: 0.00139
 ----- Output data -----
 output_data.csv file created with columns:
-   labeling features: ['str_cat', 'num_id']
-   input features: ['time', 'N_sine_feature', 'N_linear_feature']
-   target feature: y_feature
-   target error feature: N_linear_feature
-   prediction: Prediction
+    str_cat
+    num_id
+    time
+    N_sine_feature
+    N_linear_feature
+    y_feature
+    N_linear_feature
+    Prediction
+----- Output data -----
+output_data_filtered.csv file created with columns:
+    str_cat
+    num_id
+    time
+    N_sine_feature
+    N_linear_feature
+    y_feature
+    N_linear_feature
+    Prediction
 ----- Statistics -----
+filtered_rmse: 0.0926
 mean_absolute_error: 0.0666
 mean_error: 0.0000
 rmse: 0.0879
-rmse_plot_filter_out: 0.0926
 rsquared: 0.9830
 Per-group RMSEs from overall fit:
-    B: rmse: 0.108
-    B: rmse_plot_filter_out: 0.110
-    D: rmse: 0.080
-    D: rmse_plot_filter_out: 0.071
+    A: filtered_rmse: 0.094
     A: rmse: 0.097
-    A: rmse_plot_filter_out: 0.094
+    B: filtered_rmse: 0.110
+    B: rmse: 0.108
     C: rmse: 0.070
+    D: filtered_rmse: 0.071
+    D: rmse: 0.080
 ----- Plotting -----
 Plot filtering out:
-  str_cat_=_C
-  time_>_8.0
+  str_cat = C
+  time > 8.0
 Plot single_fit.png created.
     Plotted data is in the data_... csv file.
-    All zeros for error columns indicate no error.
+    Error column of all zeros indicates no error.
 Plot in subfolder per_group_info created
     labeling outlying groups and their RMSEs.

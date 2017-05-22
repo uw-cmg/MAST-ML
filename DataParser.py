@@ -7,6 +7,10 @@ import os
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from pymatgen import Element, Composition
+from sklearn.preprocessing import minmax_scale
+#TTM install error - commenting out for now
+#from matminer.descriptors.composition_features import get_magpie_descriptor
+
 
 class DataParser(object):
     """Class to parse input csv file and create pandas dataframe, and extract features
@@ -67,7 +71,11 @@ class DataParser(object):
 
     def get_data(self, dataframe, x_features, y_feature):
         Xdata = dataframe.loc[:, x_features]
-        ydata = dataframe.loc[:, y_feature]
+        if not(y_feature in dataframe.columns):
+            logging.warning("%s not in columns" % y_feature)
+            ydata = None
+        else:
+            ydata = dataframe.loc[:, y_feature]
         return Xdata, ydata
 
 class FeatureIO(object):
@@ -109,20 +117,28 @@ class FeatureIO(object):
         # Searches values in feature that meet the condition. If it does, that entire row of data is removed from the dataframe
         rows_to_remove = []
         for i in range(len(self.dataframe[feature])):
+            fdata = self.dataframe[feature].iloc[i]
+            try:
+                fdata = float(fdata)
+            except ValueError:
+                fdata = fdata
             if operator == '<':
-                if float(self.dataframe[feature].iloc[i]) < threshold:
+                if fdata < threshold:
                     rows_to_remove.append(i)
             if operator == '>':
-                if float(self.dataframe[feature].iloc[i]) > threshold:
+                if fdata > threshold:
                     rows_to_remove.append(i)
             if operator == '=':
-                if float(self.dataframe[feature].iloc[i]) == threshold:
+                if fdata == threshold:
                     rows_to_remove.append(i)
             if operator == '<=':
-                if float(self.dataframe[feature].iloc[i]) <= threshold:
+                if fdata <= threshold:
                     rows_to_remove.append(i)
             if operator == '>=':
-                if float(self.dataframe[feature].iloc[i]) >= threshold:
+                if fdata >= threshold:
+                    rows_to_remove.append(i)
+            if operator == '<>':
+                if not(fdata == threshold):
                     rows_to_remove.append(i)
         dataframe = self.dataframe.drop(self.dataframe.index[rows_to_remove])
         return dataframe
@@ -144,6 +160,15 @@ class FeatureNormalization(object):
         dataframe_normalized = DataframeUtilities()._array_to_dataframe(array=array_normalized)
         dataframe_normalized = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe_normalized, x_features=x_features, y_feature=y_feature, remove_first_row=False)
         return dataframe_normalized, scaler
+
+    def minmax_scale_single_feature(self, featurename, smin=None, smax=None):
+        feature = self.dataframe[featurename]
+        if smin is None:
+            smin = np.min(feature)
+        if smax is None:
+            smax = np.max(feature)
+        scaled_feature = (feature - smin) / (smax - smin)
+        return scaled_feature
 
     def unnormalize_features(self, x_features, y_feature, scaler):
         array_unnormalized = scaler.inverse_transform(X=self.dataframe[x_features])

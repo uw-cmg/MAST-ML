@@ -191,6 +191,7 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
         outlines="#8B0000,#00008B,#004400,#542788,#b35806,#252525",
         faces="red,blue,green,#6a51a3,orange,#bdbdbd",
         sizes="15,10,8,8,8,8",
+        legendloc=None,
         *args, **kwargs):
     """Plot multiple xy overlay with same x axis
     """
@@ -346,7 +347,12 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
                     fontsize=smallfont)
         notey = notey - notestep
     #ANNOTATIONS FOR LARGEST
-    marklargest = np.array(marklargest.split(","),'int')
+    if type(marklargest) is str:
+        marklargest = np.array(marklargest.split(","),'int')
+    elif type(marklargest) is list:
+        marklargest = np.array(marklargest,'int')
+    else:
+        raise ValueError("marklargest %s could not be identified." % marklargest)
     for nidx in range(0, numlines):
         marknum = marklargest[nidx]
         if marknum == 0: #no marking
@@ -406,6 +412,8 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
             loc1 = "lower right"
         else:
             loc1 = "best"
+        if not(legendloc is None):
+            loc1 = legendloc
         lgd1=ax1.legend(loc = loc1, 
                     fontsize=smallfont, 
                     numpoints=1,

@@ -1,6 +1,5 @@
 __author__ = 'Ryan Jacobs, Tam Mayeshiba'
 
-import data_parser
 import sys
 import os
 from MASTMLInitializer import MASTMLWrapper, ConfigFileValidator
@@ -8,11 +7,33 @@ from DataParser import DataParser, FeatureIO, FeatureNormalization, DataframeUti
 import logging
 import shutil
 import time
+from custom_features import cf_help
+import matplotlib
+env_display = os.getenv("DISPLAY")
+if env_display is None:
+    matplotlib.use("agg")
+from DataHandler import DataHandler
 
 class MASTMLDriver(object):
 
     def __init__(self, configfile):
         self.configfile = configfile
+        #Set in code
+        self.general_setup = None
+        self.data_setup = None
+        self.models_and_tests_setup = None
+        self.configdict = None
+        self.mastmlwrapper = None
+        self.save_path = None #top-level save path
+        self.data_dict = dict() #Data dictionary
+        self.model_list = list() #list of actual models
+        self.model_vals = list() #list of model names, like "gkrr_model"
+        self.param_optimizing_tests = ["ParamOptGA"]
+        self.readme_html = list()
+        self.readme_html_tests = list()
+        self.start_time = None
+        self.favorites_dict=dict()
+        return
 
     # This will later be removed as the parsed input file should have values all containing correct datatype
     def string_or_list_input_to_list(self, unknown_input_val):
@@ -26,92 +47,65 @@ class MASTMLDriver(object):
 
     def run_MASTML(self):
         # Begin MASTML session
-        self._initalize_mastml_session()
+        self._initialize_mastml_session()
+        self._initialize_html()
+        self.set_favorites_dict()
 
         # Parse MASTML input file
-        mastmlwrapper, configdict, errors_present = self._generate_mastml_wrapper()
-        datasetup = mastmlwrapper.process_config_keyword(keyword='Data Setup')
+        self.mastmlwrapper, self.configdict, errors_present = self._generate_mastml_wrapper()
+        self.data_setup = self.mastmlwrapper.process_config_keyword(keyword='Data Setup')
 
         # General setup
-        save_path = self._perform_general_setup(mastmlwrapper=mastmlwrapper)
+        self._perform_general_setup()
 
         # Parse input data files
-        Xdata, ydata, x_features, y_feature, dataframe, data_dict = self._parse_input_data(mastmlwrapper=mastmlwrapper, configdict=configdict)
+        Xdata, ydata, x_features, y_feature, dataframe, self.data_dict = self._parse_input_data()
 
-        print('Features:')
         print(x_features)
         print(y_feature)
-        print('\n'+'Original:')
-        print(dataframe)
-
-        fio = FeatureIO(dataframe=dataframe)
-        dataframe_magpie = fio.remove_custom_features(features_to_remove=['num_id', 'num_cat', 'str_cat'])
-        fio = FeatureIO(dataframe=dataframe)
-        #dataframe2 = fio.remove_custom_features(features_to_remove=['num_id', 'num_cat', 'str_cat', 'Magpie compositions'])
-        #print('\n'+'Filtered:')
-        #print(dataframe2)
-        print('\n'+'Magpie:')
-        print(dataframe_magpie)
-
-        #dps = DataParser()
-        #Xdata, ydata, x_features, y_feature, dataframe_parse = dps.parse_fromdataframe(dataframe=dataframe2, target_feature=y_feature)
-        #fn = FeatureNormalization(dataframe=dataframe2)
-        #dataframe3, scaler = fn.normalize_features(x_features=x_features, y_feature=y_feature)
-        #print('\n' + 'Normalized:')
-        #print(dataframe3)
-        #fn = FeatureNormalization(dataframe=dataframe3)
-        #dataframe4, scaler = fn.unnormalize_features(x_features=x_features, y_feature=y_feature, scaler=scaler)
-        #print('\n' + 'Unnormalized:')
-        #print(dataframe4)
-
-        mpf = MagpieFeatures(dataframe=dataframe_magpie)
-        magpiedata = mpf.generate_magpie_features()
-        #print(magpiedata)
-
-        #dataframe = DataframeUtilities()._merge_dataframe_rows(dataframe1=dataframe, dataframe2=dataframe2)
-        #print(dataframe)
-        """
-        dataframe = fn.normalize_and_merge_with_original_dataframe(x_features=x_features, y_feature=y_feature)
-        print('\n'+ 'Normalized and merged with original:')
-        print(dataframe)
         fn = FeatureNormalization(dataframe=dataframe)
-        dataframe, scaler = fn.unnormalize_features(x_features=x_features, y_feature=y_feature, scaler=scaler)
-        print('\n' + 'UnNormalized:')
-        print(dataframe)
-        """
-        #x_to_remove = ['x2', 'x3']
-        #fio = FeatureIO(dataframe=dataframe)
-        #dataframe = ff.remove_custom_features(features_to_remove=x_to_remove)
-        #features_to_add = ['x4']
-        #data_to_add = dataframe['x1']
-        #dataframe = fio.add_custom_features(features_to_add=features_to_add, data_to_add=data_to_add)
-        #print(dataframe)
-        #Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=configdict).parse_fromdataframe(dataframe=dataframe, target_feature='sin(x)', as_array=False)
-        #print(x_features)
-        #print(y_feature)
-        #dataframe = ff.remove_duplicate_features()
-        #print(dataframe)
-        #dataframe = fio.remove_duplicate_features_by_values(x_features=x_features, y_feature=y_feature)
-        #print(dataframe)
+        dataframe = fn.normalize_features(x_features=x_features, y_feature=y_feature)
 
-        """
         # Gather models
-        model_list = self._gather_models(mastmlwrapper=mastmlwrapper)
+        (self.model_list, self.model_vals) = self._gather_models()
 
         # Gather tests
-        test_list = self._gather_tests(mastmlwrapper=mastmlwrapper, configdict=configdict, data_dict=data_dict,
-                                       model_list=model_list, save_path=save_path)
+        test_list = self._gather_tests(mastmlwrapper=self.mastmlwrapper, configdict=self.configdict, data_dict=self.data_dict, model_list=self.model_list, save_path=self.save_path,
+                model_vals = self.model_vals)
 
         # End MASTML session
-        self._move_log_and_input_files(mastmlwrapper=mastmlwrapper)
-        """
+        self._move_log_and_input_files()
+        self._end_html()
 
         return
 
-    def _initalize_mastml_session(self):
+    def _initialize_mastml_session(self):
         logging.basicConfig(filename='MASTMLlog.log', level='INFO')
         current_time = time.strftime('%Y'+'-'+'%m'+'-'+'%d'+', '+'%H'+' hours, '+'%M'+' minutes, '+'and '+'%S'+' seconds')
         logging.info('Initiated new MASTML session at: %s' % current_time)
+        self.start_time = time.strftime("%Y-%m-%d, %H:%M:%S")
+        return
+
+    def _initialize_html(self):
+        self.readme_html.append("<HTML>\n")
+        self.readme_html.append("<TITLE>MASTML</TITLE>\n")
+        self.readme_html.append("<BODY>\n")
+        self.readme_html.append("<H1>%s</H1>\n" % "MAST Machine Learning Output")
+        self.readme_html.append("%s<BR>\n" % self.start_time)
+        self.readme_html.append("<HR>\n")
+        return
+
+    def _end_html(self):
+        self.readme_html.append("<HR>\n")
+        self.readme_html.append("<H2>Setup</H2>\n")
+        self.readme_html.append('<A HREF="%s">Log file</A><BR>\n' % os.path.join(self.save_path, "MASTMLlog.log"))
+        self.readme_html.append('<A HREF="%s">Config file</A><BR>\n' % os.path.join(self.save_path, str(self.configfile)))
+        self.readme_html.append("<HR>\n")
+        self.readme_html.append("</BODY>\n")
+        self.readme_html.append("</HTML>\n")
+        with open(os.path.join(self.save_path, "index.html"),"w") as hfile:
+            hfile.writelines(self.readme_html)
+            hfile.writelines(self.readme_html_tests)
         return
 
     def _generate_mastml_wrapper(self):
@@ -120,105 +114,206 @@ class MASTMLDriver(object):
         logging.info('Successfully read in and parsed your MASTML input file, %s' % str(self.configfile))
         return mastmlwrapper, configdict, errors_present
 
-    def _perform_general_setup(self, mastmlwrapper):
-        generalsetup = mastmlwrapper.process_config_keyword(keyword='General Setup')
-        save_path = os.path.abspath(generalsetup['save_path'])
-        if not os.path.isdir(save_path):
-            os.mkdir(save_path)
-        return save_path
+    def _perform_general_setup(self):
+        self.general_setup = self.mastmlwrapper.process_config_keyword(keyword='General Setup')
+        self.save_path = os.path.abspath(self.general_setup['save_path'])
+        if not os.path.isdir(self.save_path):
+            os.mkdir(self.save_path)
+        return self.save_path
 
-    def _parse_input_data(self, mastmlwrapper, configdict):
-        datasetup = mastmlwrapper.process_config_keyword(keyword='Data Setup')
-        Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=configdict).parse_fromfile(datapath=datasetup['Initial']['data_path'], as_array=False)
-
+    def _parse_input_data(self):
+        Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=self.configdict).parse_fromfile(datapath=self.data_setup['Initial']['data_path'], as_array=False)
         # Tam's code is here
         data_dict=dict()
-        datasetup = mastmlwrapper.process_config_keyword(keyword='Data Setup')
-        for data_name in datasetup.keys():
-            data_path = datasetup[data_name]['data_path']
-            data_weights = datasetup[data_name]['weights']
+        for data_name in self.data_setup.keys():
+            data_path = self.data_setup[data_name]['data_path']
+            data_weights = self.data_setup[data_name]['weights']
             if not(os.path.isfile(data_path)):
                 raise OSError("No file found at %s" % data_path)
-            data_dict[data_name] = data_parser.parse(data_path, data_weights)
-            #data_dict[data_name].set_x_features(datasetup['X']) #set in test classes, not here, since different tests could have different X and y features
-            #data_dict[data_name].set_y_feature(datasetup['y'])
+            if 'labeling_features' in self.general_setup.keys():
+                labeling_features = self.string_or_list_input_to_list(self.general_setup['labeling_features'])
+            else:
+                labeling_features = None
+            if 'target_error_feature' in self.general_setup.keys():
+                target_error_feature = self.general_setup['target_error_feature']
+            else:
+                target_error_feature = None
+            if 'grouping_feature' in self.general_setup.keys():
+                grouping_feature = self.general_setup['grouping_feature']
+            else:
+                grouping_feature = None
+            myXdata, myydata, myx_features, myy_feature, mydataframe = DataParser(configdict=self.configdict).parse_fromfile(datapath=self.data_setup[data_name]['data_path'], as_array=False)
+            data_dict[data_name] = DataHandler(data = mydataframe,
+                                input_data = myXdata,
+                                target_data = myydata,
+                                input_features = myx_features,
+                                target_feature = myy_feature,
+                                target_error_feature = target_error_feature,
+                                labeling_features = labeling_features,
+                                grouping_feature = grouping_feature) #
             logging.info('Parsed the input data located under %s' % data_path)
 
         return Xdata, ydata, x_features, y_feature, dataframe, data_dict
 
-    def _gather_models(self, mastmlwrapper):
-        models_and_tests_setup = mastmlwrapper.process_config_keyword(keyword='Models and Tests to Run')
+    def _gather_models(self):
+        self.models_and_tests_setup = self.mastmlwrapper.process_config_keyword(keyword='Models and Tests to Run')
         model_list = []
-        model_val = models_and_tests_setup['models']
+        model_val = self.models_and_tests_setup['models']
+        model_vals = list()
         #print(model_val)
         if type(model_val) is str:
             logging.info('Getting model %s' % model_val)
-            ml_model = mastmlwrapper.get_machinelearning_model(model_type=model_val)
+            ml_model = self.mastmlwrapper.get_machinelearning_model(model_type=model_val)
             model_list.append(ml_model)
             logging.info('Adding model %s to queue...' % str(model_val))
+            model_vals.append(model_val)
         elif type(model_val) is list:
             for model in model_val:
                 logging.info('Getting model %s' % model)
-                ml_model = mastmlwrapper.get_machinelearning_model(model_type=model)
+                ml_model = self.mastmlwrapper.get_machinelearning_model(model_type=model)
                 model_list.append(ml_model)
                 logging.info('Adding model %s to queue...' % str(model))
-        return model_list
+                model_vals.append(model_val)
+        return (model_list, model_val)
 
-    def _gather_tests(self, mastmlwrapper, configdict, data_dict, model_list, save_path):
-        models_and_tests_setup = mastmlwrapper.process_config_keyword(keyword='Models and Tests to Run')
-        generalsetup = mastmlwrapper.process_config_keyword(keyword='General Setup')
+    def _gather_tests(self, mastmlwrapper, configdict, data_dict, model_list, save_path, model_vals):
         # Gather test types
-        test_list = self.string_or_list_input_to_list(models_and_tests_setup['test_cases'])
+        self.readme_html_tests.append("<H2>Tests</H2>\n")
+        self.readme_html.append("<H2>Favorites</H2>\n")
+        test_list = self.string_or_list_input_to_list(self.models_and_tests_setup['test_cases'])
         # Run the specified test cases for every model
         for test_type in test_list:
             logging.info('Looking up parameters for test type %s' % test_type)
-            test_params = configdict["Test Parameters"][test_type]
+            test_params = self.configdict["Test Parameters"][test_type]
             # Set data lists
             training_dataset_name_list = self.string_or_list_input_to_list(test_params['training_dataset'])
             training_dataset_list = list()
             for dname in training_dataset_name_list:
-                training_dataset_list.append(data_dict[dname])
+                training_dataset_list.append(self.data_dict[dname])
             test_params['training_dataset'] = training_dataset_list
             testing_dataset_name_list = self.string_or_list_input_to_list(test_params['testing_dataset'])
             testing_dataset_list = list()
             for dname in testing_dataset_name_list:
-                testing_dataset_list.append(data_dict[dname])
+                testing_dataset_list.append(self.data_dict[dname])
             test_params['testing_dataset'] = testing_dataset_list
-            # Get default features if not set
-            if not ('input_features' in test_params.keys()):
-                test_params['input_features'] = self.string_or_list_input_to_list(generalsetup['input_features'])
-            else:
-                test_params['input_features'] = self.string_or_list_input_to_list(test_params['input_features'])
-            if not ('target_feature' in test_params.keys()):
-                test_params['target_feature'] = generalsetup['target_feature']
-            if not ('target_error_feature' in test_params.keys()):
-                if 'target_error_feature' in generalsetup.keys():
-                    test_params['target_error_feature'] = generalsetup['target_error_feature']
-            if 'labeling_features' in test_params.keys():
-                test_params['labeling_features'] = self.string_or_list_input_to_list(test_params['labeling_features'])
             # Run the test case for every model
-            for midx, model in enumerate(model_list):
+            for midx, model in enumerate(self.model_list):
                 # Set save path, allowing for multiple tests and models and potentially multiple of the same model (KernelRidge rbf kernel, KernelRidge linear kernel, etc.)
                 test_folder = "%s_%s%i" % (test_type, model.__class__.__name__, midx)
-                test_save_path = os.path.join(save_path, test_folder)
+                test_save_path = os.path.join(self.save_path, test_folder)
                 if not os.path.isdir(test_save_path):
                     os.mkdir(test_save_path)
-                mastmlwrapper.get_machinelearning_test(test_type=test_type,
-                                                       model=model, save_path=test_save_path,
-                                                       **test_params)
+                self.mastmlwrapper.get_machinelearning_test(test_type=test_type,
+                        model=model, save_path=test_save_path, **test_params)
                 logging.info('Ran test %s for your %s model' % (test_type, str(model)))
-
+                self._update_models_and_data(test_type, test_save_path, midx)
+                self.readme_html.extend(self.make_links_for_favorites(test_type, test_save_path))
+                self.readme_html_tests.append('<A HREF="%s">%s</A><BR>\n' % (test_save_path, test_type))
         return test_list
 
-    def _move_log_and_input_files(self, mastmlwrapper):
-        cwd = os.getcwd()
-        generalsetup = mastmlwrapper.process_config_keyword(keyword='General Setup')
-        if not(os.path.abspath(generalsetup['save_path']) == cwd):
-            if os.path.exists(generalsetup['save_path']+"/"+'MASTMLlog.log'):
-                os.remove(generalsetup['save_path']+"/"+'MASTMLlog.log')
-            shutil.move(cwd+"/"+'MASTMLlog.log', generalsetup['save_path'])
-            shutil.copy(cwd+"/"+str(self.configfile), generalsetup['save_path'])
+    def _update_models_and_data(self, test_type, test_save_path,
+                                    model_index=None):
+        test_short = test_type.split("_")[0]
+        if not (test_short in self.param_optimizing_tests): #no need
+            logging.info("No parameter or data updates necessary.")
+            return
+        logging.info("UPDATING PARAMETERS from %s" % test_type)
+        param_dict = self._get_param_dict(os.path.join(test_save_path,"OPTIMIZED_PARAMS"))
+        model_val = self.model_vals[model_index]
+        self.mastmlwrapper.configdict["Model Parameters"][model_val].update(param_dict["model"])
+        logging.info("New %s params: %s" % (model_val, self.mastmlwrapper.configdict["Model Parameters"][model_val]))
+        self.model_list[model_index] = self.mastmlwrapper.get_machinelearning_model(model_type=model_val) #update model list IN PLACE
+        logging.info("Updated model.")
+        afm_dict = self._get_afm_args(os.path.join(test_save_path,"ADDITIONAL_FEATURES"))
+        self._update_data_dict(afm_dict, param_dict)
         return
+
+    def _update_data_dict(self, afm_dict=dict(), param_dict=dict()):
+        if len(afm_dict.keys()) == 0:
+            logging.info("No data updates necessary.")
+            return
+        for dname in self.data_dict.keys():
+            for afm in afm_dict.keys():
+                afm_kwargs = dict(afm_dict[afm])
+                (feature_name, feature_data) = cf_help.get_custom_feature_data(class_method_str = afm,
+                    starting_dataframe = self.data_dict[dname].data,
+                    param_dict = dict(param_dict[afm]),
+                    addl_feature_method_kwargs = dict(afm_kwargs))
+                self.data_dict[dname].add_feature(feature_name, feature_data)
+                self.data_dict[dname].input_features.append(feature_name)
+                self.data_dict[dname].set_up_data_from_features()
+                logging.info("Updated dataset %s data and input features with new feature %s" % (dname,afm))
+        return
+
+    def _get_param_dict(self, fname):
+        pdict=dict()
+        with open(fname,'r') as pfile:
+            flines = pfile.readlines()
+        for fline in flines:
+            fline = fline.strip()
+            [gene, geneidx, genevalstr] = fline.split(";")
+            if not gene in pdict.keys():
+                pdict[gene] = dict()
+            if not (gene == 'model'):
+                geneidx = int(geneidx) #integer key to match ParamOptGA
+            if geneidx in pdict[gene].keys():
+                raise ValueError("Param file at %s returned two of the same paramter" % fname)
+            geneval = float(genevalstr)
+            pdict[gene][geneidx] = geneval
+        return pdict
+
+    def _get_afm_args(self, fname):
+        adict=dict()
+        with open(fname,'r') as afile:
+            alines = afile.readlines()
+        for aline in alines:
+            aline = aline.strip()
+            [af_method, af_arg, af_argval] = aline.split(";")
+            if not af_method in adict.keys():
+                adict[af_method] = dict()
+            adict[af_method][af_arg] = af_argval
+        return adict
+
+    def _move_log_and_input_files(self):
+        cwd = os.getcwd()
+        if not(self.save_path == cwd):
+            oldlog = os.path.join(self.save_path, "MASTMLlog.log")
+            copylog = os.path.join(cwd, "MASTMLlog.log")
+            if os.path.exists(oldlog):
+                os.remove(oldlog)
+            shutil.move(copylog, self.save_path)
+            copyconfig = os.path.join(cwd, str(self.configfile))
+            shutil.copy(copyconfig, self.save_path)
+        return
+
+    def set_favorites_dict(self):
+        fdict = dict()
+        fdict["SingleFit"] = ["single_fit.png"]
+        fdict["SingleFitGrouped"] = ["per_group_info/per_group_info.png"]
+        fdict["SingleFitPerGroup"] = ["per_group_fits_overlay/per_group_fits_overlay.png"]
+        fdict["KFoldCV"] = ["best_worst_overlay.png"]
+        fdict["LeaveOneOutCV"] = ["loo_results.png"]
+        fdict["LeaveOutPercentCV"] = ["best_worst_overlay.png"]
+        fdict["LeaveOutGroupCV"] = ["leave_out_group.png"]
+        fdict["ParamOptGA"] = ["OPTIMIZED_PARAMS"]
+        fdict["PredictionVsFeature"] = [] #not sure
+        self.favorites_dict=dict(fdict)
+        return
+
+    def make_links_for_favorites(self, test_type, test_save_path):
+        linklist=list()
+        linkloc  = ""
+        linktext = ""
+        linkline = ""
+        test_short = test_type.split("_")[0]
+        if test_short in self.favorites_dict.keys():
+            flist = self.favorites_dict[test_short]
+            for fval in flist:
+                linkloc = os.path.join(test_save_path, fval)
+                linkline = '<A HREF="%s">%s</A> from test <A HREF="%s">%s</A><BR>\n' % (linkloc, fval, test_save_path, test_type)
+                linklist.append(linkline)
+        return linklist
+
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
