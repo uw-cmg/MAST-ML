@@ -4,7 +4,7 @@ import data_parser
 import sys
 import os
 from MASTMLInitializer import MASTMLWrapper, ConfigFileValidator
-from DataParser import DataParser, FeatureIO, FeatureNormalization, DataframeUtilities
+from DataParser import DataParser, FeatureIO, FeatureNormalization, DataframeUtilities, MagpieFeatures
 import logging
 import shutil
 import time
@@ -45,24 +45,28 @@ class MASTMLDriver(object):
         print(dataframe)
 
         fio = FeatureIO(dataframe=dataframe)
-        dataframe2 = fio.remove_custom_features(features_to_remove=['num_id', 'num_cat', 'str_cat'])
-        print('\n'+'Filtered:')
-        print(dataframe2)
+        dataframe_magpie = fio.remove_custom_features(features_to_remove=['num_id', 'num_cat', 'str_cat'])
+        fio = FeatureIO(dataframe=dataframe)
+        #dataframe2 = fio.remove_custom_features(features_to_remove=['num_id', 'num_cat', 'str_cat', 'Magpie compositions'])
+        #print('\n'+'Filtered:')
+        #print(dataframe2)
+        print('\n'+'Magpie:')
+        print(dataframe_magpie)
 
-        dps = DataParser()
-        Xdata, ydata, x_features, y_feature, dataframe_parse = dps.parse_fromdataframe(dataframe=dataframe2, target_feature=y_feature)
-        fn = FeatureNormalization(dataframe=dataframe2)
-        dataframe3, scaler = fn.normalize_features(x_features=x_features, y_feature=y_feature)
-        print('\n' + 'Normalized:')
-        print(dataframe3)
-        fn = FeatureNormalization(dataframe=dataframe3)
-        dataframe4, scaler = fn.unnormalize_features(x_features=x_features, y_feature=y_feature, scaler=scaler)
-        print('\n' + 'Unnormalized:')
-        print(dataframe4)
+        #dps = DataParser()
+        #Xdata, ydata, x_features, y_feature, dataframe_parse = dps.parse_fromdataframe(dataframe=dataframe2, target_feature=y_feature)
+        #fn = FeatureNormalization(dataframe=dataframe2)
+        #dataframe3, scaler = fn.normalize_features(x_features=x_features, y_feature=y_feature)
+        #print('\n' + 'Normalized:')
+        #print(dataframe3)
+        #fn = FeatureNormalization(dataframe=dataframe3)
+        #dataframe4, scaler = fn.unnormalize_features(x_features=x_features, y_feature=y_feature, scaler=scaler)
+        #print('\n' + 'Unnormalized:')
+        #print(dataframe4)
 
-        fio = FeatureIO(dataframe=dataframe4)
-        magpiedata = fio.generate_atomic_magpie_features(composition_list=['LiCoO2'])
-        print(magpiedata)
+        mpf = MagpieFeatures(dataframe=dataframe_magpie)
+        magpiedata = mpf.generate_magpie_features()
+        #print(magpiedata)
 
         #dataframe = DataframeUtilities()._merge_dataframe_rows(dataframe1=dataframe, dataframe2=dataframe2)
         #print(dataframe)
