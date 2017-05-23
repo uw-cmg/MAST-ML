@@ -200,21 +200,26 @@ class MagpieFeatures(object):
             print('No column called "Magpie compositions" exists in the supplied dataframe.')
             sys.exit()
 
-        magpiedata_dict = {}
+        magpiedata_dict_composition_average = {}
+        magpiedata_dict_arithmetic_average = {}
         for composition in compositions:
-            magpiedata_composition = self._get_composition_average_magpie_features(composition=composition)
-            magpiedata_dict[composition] = magpiedata_composition
+            magpiedata_composition_average, magpiedata_arithmetic_average = self._get_computed_magpie_features(composition=composition)
+            magpiedata_dict_composition_average[composition] = magpiedata_composition_average
+            magpiedata_dict_arithmetic_average[composition] = magpiedata_arithmetic_average
 
-        dataframe_magpie = pd.DataFrame.from_dict(data=magpiedata_dict, orient='index')
-        # Need to reorder compositions in new dataframe to match input dataframe
-        dataframe_magpie = dataframe_magpie.reindex(self.dataframe['Magpie compositions'].tolist())
-        # Need to make compositions the first column, instead of the row names
-        dataframe_magpie.index.name = 'Magpie compositions'
-        dataframe_magpie.reset_index(inplace=True)
-        # Need to delete duplicate column before merging dataframes
-        del dataframe_magpie['Magpie compositions']
-        # Merge magpie feature dataframe with originally supplied dataframe
-        dataframe = DataframeUtilities()._merge_dataframe_columns(dataframe1=self.dataframe, dataframe2=dataframe_magpie)
+        magpiedata_dict_list = [magpiedata_dict_composition_average, magpiedata_dict_arithmetic_average]
+        dataframe = self.dataframe
+        for magpiedata_dict in magpiedata_dict_list:
+            dataframe_magpie = pd.DataFrame.from_dict(data=magpiedata_dict, orient='index')
+            # Need to reorder compositions in new dataframe to match input dataframe
+            dataframe_magpie = dataframe_magpie.reindex(self.dataframe['Magpie compositions'].tolist())
+            # Need to make compositions the first column, instead of the row names
+            dataframe_magpie.index.name = 'Magpie compositions'
+            dataframe_magpie.reset_index(inplace=True)
+            # Need to delete duplicate column before merging dataframes
+            del dataframe_magpie['Magpie compositions']
+            # Merge magpie feature dataframe with originally supplied dataframe
+            dataframe = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_magpie)
         if save_to_csv == bool(True):
             dataframe.to_csv('input_with_magpie_features.csv', index=False)
         return dataframe
@@ -254,32 +259,53 @@ class MagpieFeatures(object):
 
         return magpiedata_atomic
 
-    def _get_composition_average_magpie_features(self, composition):
-        magpiedata_composition = {}
+    def _get_computed_magpie_features(self, composition):
+        magpiedata_composition_average = {}
+        magpiedata_arithmetic_average = {}
+        magpiedata_max = {}
+        magpiedata_min = {}
         magpiedata_atomic = self._get_atomic_magpie_features(composition=composition)
         composition = Composition(composition)
         element_list, atoms_per_formula_unit = self._get_element_list(composition=composition)
 
         # Initialize feature values to all be 0, because need to dynamically update them with weighted values in next loop.
         for magpie_feature in magpiedata_atomic[element_list[0]].keys():
-            magpiedata_composition[magpie_feature] = 0
+            magpiedata_composition_average[magpie_feature] = 0
+            magpiedata_arithmetic_average[magpie_feature] = 0
+            magpiedata_max[magpie_feature] = 0
+            magpiedata_min[magpie_feature] = 0
 
         for element in magpiedata_atomic.keys():
             for magpie_feature, feature_value in magpiedata_atomic[element].items():
                 if feature_value is not 'NaN':
-                    magpiedata_composition[magpie_feature] += feature_value*float(composition[element])
-                    # Add lists of max, min, and arithmetic average here
-                    ###
+                    # Composition average features
+                    magpiedata_composition_average[magpie_feature] += feature_value*float(composition[element])/atoms_per_formula_unit
+                    # Arithmetic average features
+                    magpiedata_arithmetic_average[magpie_feature] += feature_value/len(element_list)
+                    # Max features
+                    if magpiedata_max[magpie_feature] > 0:
+                        if feature_value > magpiedata_max[magpie_feature]:
+                            magpiedata_max[magpie_feature] = feature_value
+                    elif magpiedata_max[magpie_feature] == 0:
+                        magpiedata_max[magpie_feature] = feature_value
+                    # Min features
+                    if magpiedata_min[magpie_feature] > 0:
+                        if feature_value < magpiedata_min[magpie_feature]:
+                            magpiedata_min[magpie_feature] = feature_value
+                    elif magpiedata_min[magpie_feature] == 0:
+                        magpiedata_min[magpie_feature] = feature_value
                 if feature_value is 'NaN':
-                    magpiedata_composition[magpie_feature] = 'NaN'
+                    magpiedata_composition_average[magpie_feature] = 'NaN'
 
-        # Normalize weighted feature values by number of atoms in formula unit. This gives composition weighted values
-        magpiedata_composition_normalized = {}
-        for magpie_feature, feature_value in magpiedata_composition.items():
-            if feature_value is not 'NaN':
-                magpiedata_composition_normalized[magpie_feature] = feature_value/atoms_per_formula_unit
+        # Change names of features to reflect each computed type of magpie feature (max, min, etc.)
+        magpiedata_composition_average_renamed = {}
+        magpiedata_arithmetic_average_renamed = {}
+        for key in magpiedata_composition_average.keys():
+            magpiedata_composition_average_renamed[key+"_composition_average"] = magpiedata_composition_average[key]
+        for key in magpiedata_arithmetic_average.keys():
+            magpiedata_arithmetic_average_renamed[key+"_arithmetic_average"] = magpiedata_arithmetic_average[key]
 
-        return magpiedata_composition_normalized
+        return magpiedata_composition_average_renamed, magpiedata_arithmetic_average_renamed
 
     def _get_element_list(self, composition):
         element_amounts = composition.get_el_amt_dict()
