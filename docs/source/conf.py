@@ -24,9 +24,12 @@ autodoc_mock_imports=['numpy','scipy',
                         'sklearn.metrics',
                         'sklearn.model_selection',
                         'sklearn.kernel_ridge',
+                        'sklearn.feature_selection',
+                        'sklearn.preprocessing',
                         'matplotlib',
                         'matplotlib.pyplot',
                         'matplotlib.dates',
+                        'pandas',
                         ]
 
 # -- General configuration ------------------------------------------------
