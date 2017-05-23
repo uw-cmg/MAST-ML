@@ -1,12 +1,5 @@
-import os
-import matplotlib
 import numpy as np
-import data_parser
-import matplotlib.pyplot as plt
-from mean_error import mean_error
 from sklearn.metrics import mean_squared_error
-import data_analysis.printout_tools as ptools
-import time
 import plot_data.plot_xy as plotxy
 
 def plot_group_splits_with_outliers(group_dict=None, outlying_groups=list(), label="group_splits", group_notelist=list(), addl_kwargs=dict(),
