@@ -105,19 +105,23 @@ class GAIndividual():
                         param_dict=dict(self.genome[gene]),
                         addl_feature_method_kwargs = dict(afm_kwargs))
             fio = FeatureIO(input_data)
-            input_data = fio.add_custom_features(gene, feature_data)
+            input_data = fio.add_custom_features([gene], feature_data)
         self.input_data_with_afm = input_data
         return
 
-    def single_avg_cv(self, Xdata, Ydata, division_index):
+    def single_avg_cv(self, division_index):
         rms_list=list()
         division_dict = self.cv_divisions[division_index]
         # split into testing and training sets
         for didx in range(len(division_dict['train_index'])):
             train_index = division_dict['train_index'][didx]
             test_index = division_dict['test_index'][didx]
-            X_train, X_test = Xdata[train_index], Xdata[test_index]
-            Y_train, Y_test = Ydata[train_index], Ydata[test_index]
+            print(self.input_data_with_afm)
+            print(train_index)
+            X_train = self.input_data_with_afm[train_index]
+            X_test = self.input_data_with_afm[test_index]
+            Y_train = self.testing_dataset.target_data[train_index]
+            Y_test = self.testing_dataset.target_data[test_index]
             # train on training sets
             self.model.fit(X_train, Y_train)
             Y_test_Pred = self.model.predict(X_test)
@@ -126,31 +130,15 @@ class GAIndividual():
         mean_rms = np.mean(rms_list)
         return mean_rms
 
-    def num_runs_cv_multiprocessing(self, X, Y, nidx, result_dict):
-        result_dict[nidx] = self.single_avg_cv(X, Y, nidx)
-        return
-
-    def num_runs_cv(self, X, Y, verbose=0):
-        Xdata = np.asarray(X)
-        Ydata = np.asarray(Y)
+    def num_runs_cv(self, verbose=0):
         num_runs = len(self.cv_divisions)
         n_rms_list = [None] * num_runs
         if self.use_multiprocessing > 0:
-            cv_manager = Manager()
-            cv_dict = cv_manager.dict()
-            cv_procs = list()
-            for nidx in range(num_runs):
-                cv_proc = Process(target=self.num_runs_cv_multiprocessing,
-                    args=(np.asarray(X), np.asarray(Y), nidx, cv_dict))
-                cv_proc.start()
-                cv_procs.append(cv_proc)
-            for cv_proc in cv_procs:
-                cv_proc.join()
-            for nidx in range(num_runs):
-                n_rms_list[nidx] = cv_dict[nidx]
+            cv_pool = Pool(processes = self.use_multiprocessing)
+            n_rms_list = cv_pool.map(self.single_avg_cv, range(num_runs))
         else:
             for nidx in range(num_runs):
-                n_rms_list[nidx] = self.single_avg_cv(Xdata, Ydata, nidx)
+                n_rms_list[nidx] = self.single_avg_cv(nidx)
         print("CV time: %s" % time.asctime(), flush=True)
         if verbose > 0:
             print_copy = list(n_rms_list)
@@ -160,7 +148,7 @@ class GAIndividual():
         return (np.mean(n_rms_list))
 
     def evaluate_individual(self):
-        cv_rmse = self.num_runs_cv(self.input_data_with_afm, self.testing_dataset.target_data)       
+        cv_rmse = self.num_runs_cv()
         self.rmse = cv_rmse
         return cv_rmse
 
@@ -252,23 +240,15 @@ class GAGeneration():
                 print_genome(self.population[pidx].genome)
         return
 
-    def evaluate_population_multiprocessing(self, indidx, rmse_dict):
-        rmse_dict[indidx] = self.population[indidx].evaluate_individual()
-        return
+    def evaluate_population_multiprocessing(self, indidx):
+        return self.population[indidx].evaluate_individual()
 
     def evaluate_population(self, verbose=1):
         if self.use_multiprocessing > 0:
-            gen_manager = Manager()
-            rmse_dict = gen_manager.dict()
-            ind_procs = list()
+            pool = Pool(processes = self.use_multiprocessing)
+            rmses = pool.map(self.evaluate_population_multiprocessing, range(self.population_size))
             for indidx in range(self.population_size):
-                ind_proc = Process(target=self.evaluate_population_multiprocessing, args=(indidx, rmse_dict))
-                ind_procs.append(ind_proc)
-                ind_proc.start()
-            for ind_proc in ind_procs:
-                ind_proc.join()
-            for indidx in range(self.population_size):
-                self.population_rmses[indidx] = rmse_dict[indidx]
+                self.population_rmses[indidx] = rmses[indidx]
         else:
             for indidx in range(self.population_size):
                 self.population_rmses[indidx] = self.population[indidx].evaluate_individual()
