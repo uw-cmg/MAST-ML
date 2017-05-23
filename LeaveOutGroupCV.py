@@ -1,17 +1,8 @@
-import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.metrics import mean_squared_error
-from mean_error import mean_error
-import csv
-import matplotlib
-import portion_data.get_test_train_data as gttd
-import data_analysis.printout_tools as ptools
 import plot_data.plot_rmse as plotrmse
 import os
-from SingleFit import SingleFit
 from LeaveOutPercentCV import LeaveOutPercentCV
 from SingleFit import timeit
-from sklearn.metrics import r2_score
 from sklearn.model_selection import LeaveOneGroupOut
 
 class LeaveOutGroupCV(LeaveOutPercentCV):
