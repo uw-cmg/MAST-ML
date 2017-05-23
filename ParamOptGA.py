@@ -133,6 +133,8 @@ class GAIndividual():
         if self.use_multiprocessing > 0:
             cv_pool = Pool(processes = self.use_multiprocessing)
             n_rms_list = cv_pool.map(self.single_avg_cv, range(num_runs))
+            cv_pool.close()
+            cv_pool.join()
         else:
             n_rms_list = list()
             for nidx in range(num_runs):
@@ -240,11 +242,9 @@ class GAGeneration():
         return self.population[indidx].evaluate_individual()
 
     def evaluate_population(self, verbose=1):
-        if self.use_multiprocessing > 0:
+        if self.use_multiprocessing > 1000:
             pool = Pool(processes = self.use_multiprocessing)
-            rmses = pool.map(self.evaluate_population_multiprocessing, range(self.population_size))
-            for indidx in range(self.population_size):
-                self.population_rmses[indidx] = rmses[indidx]
+            self.population_rmses = pool.map(self.evaluate_population_multiprocessing, range(self.population_size))
         else:
             for indidx in range(self.population_size):
                 self.population_rmses.append(self.population[indidx].evaluate_individual())
