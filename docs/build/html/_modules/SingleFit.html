@@ -1,0 +1,400 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>SingleFit &mdash; MAST-ml 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="MAST-ml 1.0 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for SingleFit</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">mean_squared_error</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">mean_absolute_error</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">r2_score</span>
+<span class="kn">import</span> <span class="nn">plot_data.plot_xy</span> <span class="kn">as</span> <span class="nn">plotxy</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">timeit</span><span class="p">(</span><span class="n">method</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Timing function for logger.</span>
+<span class="sd">        Taken from http://stackoverflow.com/questions/38314993/standard-logging-for-every-method-in-a-class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">timed</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">method</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+        <span class="n">te</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="n">te</span> <span class="o">-</span> <span class="n">ts</span>
+
+        <span class="n">hours</span><span class="p">,</span> <span class="n">remainder</span> <span class="o">=</span> <span class="nb">divmod</span><span class="p">(</span><span class="n">delta</span><span class="p">,</span> <span class="mi">3600</span><span class="p">)</span>
+        <span class="n">minutes</span><span class="p">,</span> <span class="n">seconds</span> <span class="o">=</span> <span class="nb">divmod</span><span class="p">(</span><span class="n">remainder</span><span class="p">,</span> <span class="mi">60</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">.</span><span class="si">%s</span><span class="s1"> took </span><span class="si">%02d</span><span class="s1">:</span><span class="si">%02d</span><span class="s1">:</span><span class="si">%02.6f</span><span class="s1">&#39;</span><span class="p">,</span>
+                     <span class="n">method</span><span class="o">.</span><span class="n">__module__</span><span class="p">,</span>
+                     <span class="n">method</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span>
+                     <span class="nb">int</span><span class="p">(</span><span class="n">hours</span><span class="p">),</span>
+                     <span class="nb">int</span><span class="p">(</span><span class="n">minutes</span><span class="p">),</span>
+                     <span class="n">seconds</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="k">return</span> <span class="n">timed</span>
+
+<div class="viewcode-block" id="SingleFit"><a class="viewcode-back" href="../tests.html#SingleFit.SingleFit">[docs]</a><span class="k">class</span> <span class="nc">SingleFit</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;This is the basic analysis class.</span>
+
+<span class="sd">    This class provides a template for other classes. Combine many classes </span>
+<span class="sd">    to do meta-analysis.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        training_dataset &lt;DataHandler object&gt;: Training dataset handler</span>
+<span class="sd">        testing_dataset &lt;DataHandler object&gt;: Testing dataset handler</span>
+<span class="sd">        model &lt;sklearn model&gt;: Machine-learning model</span>
+<span class="sd">        save_path &lt;str&gt;: Save path</span>
+<span class="sd">        xlabel &lt;str&gt;: Label for full-fit x-axis (default &quot;Measured&quot;)</span>
+<span class="sd">        ylabel &lt;str&gt;: Label for full-fit y-axis (default &quot;Predicted&quot;)</span>
+<span class="sd">        stepsize &lt;float&gt;: Step size for plot grid (default None)</span>
+<span class="sd">        plot_filter_out &lt;list&gt;: List of semicolon-delimited strings with</span>
+<span class="sd">                            feature;operator;value for filtering out</span>
+<span class="sd">                            values for plotting.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        Analysis in the path marked by save_path</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError if the following are not set:</span>
+<span class="sd">                    training_dataset, testing_dataset,</span>
+<span class="sd">                    input_features, target_feature,</span>
+<span class="sd">                    model</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+        <span class="n">training_dataset</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+        <span class="n">testing_dataset</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+        <span class="n">model</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+        <span class="n">save_path</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+        <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Measured&quot;</span><span class="p">,</span>
+        <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Predicted&quot;</span><span class="p">,</span>
+        <span class="n">stepsize</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+        <span class="n">plot_filter_out</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize class.</span>
+<span class="sd">            Attributes that can be set through keywords:</span>
+<span class="sd">                self.training_dataset</span>
+<span class="sd">                self.testing_dataset</span>
+<span class="sd">                self.model</span>
+<span class="sd">                self.save_path</span>
+<span class="sd">                self.xlabel</span>
+<span class="sd">                self.ylabel</span>
+<span class="sd">                self.stepsize</span>
+<span class="sd">                self.plot_filter_out</span>
+<span class="sd">            Other attributes:</span>
+<span class="sd">                self.analysis_name &lt;str&gt;</span>
+<span class="sd">                self.trained_model &lt;sklearn model&gt;: trained model</span>
+<span class="sd">                self.statistics &lt;dict of float&gt;: statistics dictionary</span>
+<span class="sd">                self.readme_list &lt;dict of str&gt;: stores lines for readme</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Keyword-set attributes</span>
+        <span class="c1"># training csv</span>
+        <span class="k">if</span> <span class="n">training_dataset</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;training_dataset is not set&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">training_dataset</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span> <span class="c1">#allow inheriting classes to get multiple datasets; MASTML will pass list of data objects</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">training_dataset</span><span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">training_dataset</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="c1">#first item</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">training_dataset</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">training_dataset</span><span class="p">)</span>
+        <span class="c1"># testing csv</span>
+        <span class="k">if</span> <span class="n">testing_dataset</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;testing_dataset is not set&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">testing_dataset</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">testing_dataset</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">testing_dataset</span><span class="p">)</span>
+        <span class="c1"># model</span>
+        <span class="k">if</span> <span class="n">model</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No model.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">=</span><span class="n">model</span>
+        <span class="c1"># paths</span>
+        <span class="k">if</span> <span class="n">save_path</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">save_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+        <span class="n">save_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_path</span> <span class="o">=</span> <span class="n">save_path</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_path</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_path</span><span class="p">)</span>
+        <span class="c1"># plot customization</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xlabel</span> <span class="o">=</span> <span class="n">xlabel</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ylabel</span> <span class="o">=</span> <span class="n">ylabel</span>
+        <span class="k">if</span> <span class="n">stepsize</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stepsize</span> <span class="o">=</span> <span class="n">stepsize</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stepsize</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">stepsize</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot_filter_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_plot_filter</span><span class="p">(</span><span class="n">plot_filter_out</span><span class="p">)</span>
+        <span class="c1"># Self-set attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">analysis_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trained_model</span><span class="o">=</span><span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="o">=</span><span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">=</span><span class="nb">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset_filtered</span><span class="o">=</span><span class="bp">None</span>
+        <span class="c1">#</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;-------- </span><span class="si">%s</span><span class="s2"> --------&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">analysis_name</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Starting analysis at </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">time</span><span class="o">.</span><span class="n">asctime</span><span class="p">())</span>
+        <span class="k">return</span>
+   
+    <span class="nd">@timeit</span>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_up</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print_readme</span><span class="p">()</span>
+        <span class="k">return</span>
+
+    <span class="nd">@timeit</span>
+    <span class="k">def</span> <span class="nf">set_up</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">time</span><span class="o">.</span><span class="n">asctime</span><span class="p">())</span>
+        <span class="k">return</span>
+
+    <span class="nd">@timeit</span>
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_trained_model</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print_model</span><span class="p">()</span>
+        <span class="k">return</span>
+   
+    <span class="nd">@timeit</span>
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_prediction</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print_output_csv</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_statistics</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print_statistics</span><span class="p">()</span>
+        <span class="k">return</span>
+
+    <span class="nd">@timeit</span>
+    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot_results</span><span class="p">()</span>
+        <span class="k">return</span>
+
+
+
+    <span class="k">def</span> <span class="nf">get_trained_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">trained_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training_dataset</span><span class="o">.</span><span class="n">input_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_dataset</span><span class="o">.</span><span class="n">target_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trained_model</span> <span class="o">=</span> <span class="n">trained_model</span>
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">print_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;----- Model parameters -----</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">param</span><span class="p">,</span> <span class="n">paramval</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">trained_model</span><span class="o">.</span><span class="n">get_params</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">paramval</span><span class="p">))</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">get_prediction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">target_prediction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trained_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">input_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">add_prediction</span><span class="p">(</span><span class="n">target_prediction</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">get_rmse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_prediction</span><span class="p">))</span>        
+        <span class="k">return</span> <span class="n">rmse</span>
+    
+    <span class="k">def</span> <span class="nf">get_mean_error</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">pred_minus_true</span> <span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_prediction</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_data</span>
+        <span class="n">mean_error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">pred_minus_true</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">mean_error</span>
+
+    <span class="k">def</span> <span class="nf">get_mean_absolute_error</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">mean_abs_err</span> <span class="o">=</span> <span class="n">mean_absolute_error</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_prediction</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">mean_abs_err</span>
+
+    <span class="k">def</span> <span class="nf">get_rsquared</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">rsquared</span> <span class="o">=</span> <span class="n">r2_score</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_prediction</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">rsquared</span>
+    
+    <span class="k">def</span> <span class="nf">get_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_data</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No testing target data. Statistics will not be collected.&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;rmse&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_rmse</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;mean_error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_mean_error</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;mean_absolute_error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_mean_absolute_error</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;rsquared&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_rsquared</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot_filter_update_statistics</span><span class="p">()</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">print_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;----- Statistics -----</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;No target data.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;No statistics comparing target data and prediction were collected.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">skeys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+            <span class="n">skeys</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">skey</span> <span class="ow">in</span> <span class="n">skeys</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">: </span><span class="si">%3.4f</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">skey</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="n">skey</span><span class="p">]))</span>
+        <span class="k">return</span>
+
+<div class="viewcode-block" id="SingleFit.print_output_csv"><a class="viewcode-back" href="../tests.html#SingleFit.SingleFit.print_output_csv">[docs]</a>    <span class="k">def</span> <span class="nf">print_output_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">csvname</span><span class="o">=</span><span class="s2">&quot;output_data.csv&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Modify once dataframe is in place</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;----- Output data -----</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">ocsvname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_path</span><span class="p">,</span> <span class="n">csvname</span><span class="p">)</span>
+        <span class="n">cols_printed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">print_data</span><span class="p">(</span><span class="n">ocsvname</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> file created with columns:</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">csvname</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">cols_printed</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;    </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">col</span><span class="p">)</span>
+        <span class="k">return</span></div>
+
+    <span class="k">def</span> <span class="nf">get_plot_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plot_filter_out</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">plot_filter_out</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">plot_filter_out</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="k">return</span>
+        <span class="n">pf_tuple_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">plot_filter_out</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
+            <span class="n">pfo_list</span> <span class="o">=</span> <span class="n">plot_filter_out</span>
+        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">plot_filter_out</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="n">pfo_list</span> <span class="o">=</span> <span class="n">plot_filter_out</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">pfo_item</span> <span class="ow">in</span> <span class="n">pfo_list</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">pfo_item</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">tuple</span><span class="p">:</span>
+                <span class="n">pf_tuple_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pfo_item</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">pflist</span> <span class="o">=</span> <span class="n">pfo_item</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;;&quot;</span><span class="p">)</span>
+                <span class="n">feature</span> <span class="o">=</span> <span class="n">pflist</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="n">symbol</span> <span class="o">=</span> <span class="n">pflist</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="n">rawvalue</span> <span class="o">=</span> <span class="n">pflist</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">rawvalue</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">rawvalue</span>
+                <span class="n">pf_tuple_list</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">feature</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">pf_tuple_list</span>
+        
+    <span class="k">def</span> <span class="nf">plot_filter_update_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_filter_out</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_data</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">add_filters</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plot_filter_out</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print_output_csv</span><span class="p">(</span><span class="s2">&quot;output_data_filtered.csv&quot;</span><span class="p">)</span>
+        <span class="n">rmse_pfo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_prediction</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_data</span><span class="p">))</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;filtered_rmse&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rmse_pfo</span>
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">plot_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addl_plot_kwargs</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;----- Plotting -----</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_data</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No testing target data. Predicted vs. measured plot will not be plotted.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;No target data.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;No plot comparing predicted vs. measured data was made.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">plot_kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">()</span>
+        <span class="n">plot_kwargs</span><span class="p">[</span><span class="s1">&#39;xlabel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlabel</span>
+        <span class="n">plot_kwargs</span><span class="p">[</span><span class="s1">&#39;ylabel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ylabel</span>
+        <span class="n">plot_kwargs</span><span class="p">[</span><span class="s1">&#39;plotlabel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;single_fit&quot;</span>
+        <span class="n">plot_kwargs</span><span class="p">[</span><span class="s1">&#39;stepsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stepsize</span>
+        <span class="n">plot_kwargs</span><span class="p">[</span><span class="s1">&#39;guideline&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">notelist</span><span class="o">=</span><span class="nb">list</span><span class="p">()</span>
+        <span class="n">notelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;RMSE: </span><span class="si">%3.3f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;rmse&#39;</span><span class="p">])</span>
+        <span class="n">notelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;R-squared: </span><span class="si">%3.3f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;rsquared&#39;</span><span class="p">])</span>
+        <span class="n">plot_kwargs</span><span class="p">[</span><span class="s1">&#39;notelist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">notelist</span>
+        <span class="n">plot_kwargs</span><span class="p">[</span><span class="s1">&#39;save_path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_path</span>
+        <span class="n">plot_kwargs</span><span class="p">[</span><span class="s1">&#39;xerr&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_error_data</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">addl_plot_kwargs</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">addl_plot_kwarg</span> <span class="ow">in</span> <span class="n">addl_plot_kwargs</span><span class="p">:</span>
+                <span class="n">plot_kwargs</span><span class="p">[</span><span class="n">addl_plot_kwarg</span><span class="p">]</span> <span class="o">=</span> <span class="n">addl_plot_kwargs</span><span class="p">[</span><span class="n">addl_plot_kwarg</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plot_filter_out</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Plot filtering out:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">feature</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_filter_out</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;  </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">feature</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">threshold</span><span class="p">))</span>
+            <span class="n">notelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Shown-only RMSE: </span><span class="si">%3.3f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;filtered_rmse&#39;</span><span class="p">])</span>
+            <span class="n">notelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Data not shown:&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">feature</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_filter_out</span><span class="p">:</span>
+                <span class="n">notelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;  </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">feature</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">threshold</span><span class="p">))</span>
+        <span class="c1">#Data should already have been filtered by now</span>
+        <span class="n">plotxy</span><span class="o">.</span><span class="n">single</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_data</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_prediction</span><span class="p">,</span>
+                    <span class="o">**</span><span class="n">plot_kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Plot single_fit.png created.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;    Plotted data is in the data_... csv file.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;    Error column of all zeros indicates no error.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="nd">@timeit</span>
+    <span class="k">def</span> <span class="nf">print_readme</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_path</span><span class="p">,</span><span class="s2">&quot;README&quot;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">rfile</span><span class="p">:</span>
+            <span class="n">rfile</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="p">)</span>
+        <span class="k">return</span></div>
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, UW-Madison Computational Materials Group.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

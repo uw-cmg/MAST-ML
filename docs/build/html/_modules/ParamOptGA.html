@@ -1,0 +1,776 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ParamOptGA &#8212; MAST-ml 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for ParamOptGA</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">SingleFit</span> <span class="k">import</span> <span class="n">SingleFit</span>
+<span class="kn">from</span> <span class="nn">SingleFit</span> <span class="k">import</span> <span class="n">timeit</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <span class="n">KFold</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <span class="n">ShuffleSplit</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="k">import</span> <span class="n">mean_squared_error</span>
+<span class="kn">from</span> <span class="nn">DataParser</span> <span class="k">import</span> <span class="n">FeatureIO</span>
+<span class="kn">from</span> <span class="nn">sklearn.kernel_ridge</span> <span class="k">import</span> <span class="n">KernelRidge</span>
+<span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="k">import</span> <span class="n">Process</span><span class="p">,</span><span class="n">Pool</span><span class="p">,</span><span class="ne">TimeoutError</span><span class="p">,</span><span class="n">Value</span><span class="p">,</span><span class="n">Array</span><span class="p">,</span><span class="n">Manager</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">custom_features</span> <span class="k">import</span> <span class="n">cf_help</span>
+
+<span class="k">def</span> <span class="nf">print_genome</span><span class="p">(</span><span class="n">genome</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">preface</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+    <span class="n">genomestr</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">: &quot;</span> <span class="o">%</span> <span class="n">preface</span>
+    <span class="n">genes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">genome</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="n">genes</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">genes</span><span class="p">:</span>
+        <span class="n">geneidxs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">genome</span><span class="p">[</span><span class="n">gene</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">geneidxs</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">geneidx</span> <span class="ow">in</span> <span class="n">geneidxs</span><span class="p">:</span>
+            <span class="n">geneval</span> <span class="o">=</span> <span class="n">genome</span><span class="p">[</span><span class="n">gene</span><span class="p">][</span><span class="n">geneidx</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">geneidx</span> <span class="o">==</span> <span class="s1">&#39;alpha&#39;</span><span class="p">:</span>
+                <span class="n">geneval</span> <span class="o">=</span> <span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">geneval</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="o">-</span><span class="mi">6</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="n">geneidx</span> <span class="o">==</span> <span class="s1">&#39;gamma&#39;</span><span class="p">:</span>
+                <span class="n">geneval</span> <span class="o">=</span> <span class="mi">10</span><span class="o">**</span><span class="p">((</span><span class="nb">float</span><span class="p">(</span><span class="n">geneval</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span><span class="o">-</span><span class="mf">1.5</span><span class="p">)</span>
+            <span class="n">genedisp</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">: </span><span class="si">%3.6f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">gene</span><span class="p">,</span> <span class="n">geneidx</span><span class="p">,</span> <span class="n">geneval</span><span class="p">)</span>
+            <span class="n">genomestr</span> <span class="o">=</span> <span class="n">genomestr</span> <span class="o">+</span> <span class="n">genedisp</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">genomestr</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1">#remove last comma and space</span>
+    <span class="k">return</span> <span class="n">genomestr</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">print_genome_for_code</span><span class="p">(</span><span class="n">genome</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">printlist</span><span class="o">=</span><span class="nb">list</span><span class="p">()</span>
+    <span class="n">genes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">genome</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="n">genes</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">genes</span><span class="p">:</span>
+        <span class="n">geneidxs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">genome</span><span class="p">[</span><span class="n">gene</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">geneidxs</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">geneidx</span> <span class="ow">in</span> <span class="n">geneidxs</span><span class="p">:</span>
+            <span class="n">geneval</span> <span class="o">=</span> <span class="n">genome</span><span class="p">[</span><span class="n">gene</span><span class="p">][</span><span class="n">geneidx</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">geneidx</span> <span class="o">==</span> <span class="s1">&#39;alpha&#39;</span><span class="p">:</span>
+                <span class="n">geneval</span> <span class="o">=</span> <span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">geneval</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="o">-</span><span class="mi">6</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="n">geneidx</span> <span class="o">==</span> <span class="s1">&#39;gamma&#39;</span><span class="p">:</span>
+                <span class="n">geneval</span> <span class="o">=</span> <span class="mi">10</span><span class="o">**</span><span class="p">((</span><span class="nb">float</span><span class="p">(</span><span class="n">geneval</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span><span class="o">-</span><span class="mf">1.5</span><span class="p">)</span>
+            <span class="n">genedisp</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">;</span><span class="si">%s</span><span class="s2">;</span><span class="si">%3.6f</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">gene</span><span class="p">,</span> <span class="n">geneidx</span><span class="p">,</span> <span class="n">geneval</span><span class="p">)</span>
+            <span class="n">printlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">genedisp</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">printlist</span>
+
+
+<span class="k">class</span> <span class="nc">GAIndividual</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;GA Individual</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+            <span class="n">genome</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">testing_dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">cv_divisions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">afm_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">use_multiprocessing</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Attributes:</span>
+<span class="sd">            #Set by keyword</span>
+<span class="sd">            self.genome</span>
+<span class="sd">            self.testing_dataset</span>
+<span class="sd">            self.cv_divisions</span>
+<span class="sd">            self.afm_dict</span>
+<span class="sd">            self.use_multiprocessing</span>
+<span class="sd">            #Set in code</span>
+<span class="sd">            self.model</span>
+<span class="sd">            self.rmse</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">#Set by keyword</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">genome</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">genome</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">=</span><span class="n">testing_dataset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cv_divisions</span><span class="o">=</span><span class="n">cv_divisions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">afm_dict</span><span class="o">=</span><span class="n">afm_dict</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_multiprocessing</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">use_multiprocessing</span><span class="p">)</span>
+        <span class="c1">#Sets later in code</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rmse</span><span class="o">=</span><span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_data_with_afm</span><span class="o">=</span><span class="kc">None</span>
+        <span class="c1">#Run setup immediately</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_up</span><span class="p">()</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">set_up</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_up_model</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_up_input_data_with_additional_features</span><span class="p">()</span>
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">set_up_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">KernelRidge</span><span class="p">(</span><span class="n">alpha</span> <span class="o">=</span> <span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">genome</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">][</span><span class="s1">&#39;alpha&#39;</span><span class="p">])</span><span class="o">*</span><span class="p">(</span><span class="o">-</span><span class="mi">6</span><span class="p">)),</span> 
+                <span class="n">gamma</span> <span class="o">=</span> <span class="mi">10</span><span class="o">**</span><span class="p">((</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">genome</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">][</span><span class="s1">&#39;gamma&#39;</span><span class="p">])</span><span class="o">*</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span><span class="o">-</span><span class="mf">1.5</span><span class="p">),</span> 
+                <span class="n">kernel</span> <span class="o">=</span> <span class="s1">&#39;rbf&#39;</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">set_up_input_data_with_additional_features</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">all_data</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">input_data</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">input_data</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">gene</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">afm_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">afm_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">afm_dict</span><span class="p">[</span><span class="n">gene</span><span class="p">][</span><span class="s1">&#39;args&#39;</span><span class="p">])</span>
+            <span class="p">(</span><span class="n">feature_name</span><span class="p">,</span><span class="n">feature_data</span><span class="p">)</span><span class="o">=</span><span class="n">cf_help</span><span class="o">.</span><span class="n">get_custom_feature_data</span><span class="p">(</span><span class="n">gene</span><span class="p">,</span>
+                        <span class="n">starting_dataframe</span> <span class="o">=</span> <span class="n">all_data</span><span class="p">,</span>
+                        <span class="n">param_dict</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">genome</span><span class="p">[</span><span class="n">gene</span><span class="p">]),</span>
+                        <span class="n">addl_feature_method_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">afm_kwargs</span><span class="p">))</span>
+            <span class="n">fio</span> <span class="o">=</span> <span class="n">FeatureIO</span><span class="p">(</span><span class="n">input_data</span><span class="p">)</span>
+            <span class="n">input_data</span> <span class="o">=</span> <span class="n">fio</span><span class="o">.</span><span class="n">add_custom_features</span><span class="p">(</span><span class="n">gene</span><span class="p">,</span> <span class="n">feature_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_data_with_afm</span> <span class="o">=</span> <span class="n">input_data</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">single_avg_cv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Xdata</span><span class="p">,</span> <span class="n">Ydata</span><span class="p">,</span> <span class="n">division_index</span><span class="p">):</span>
+        <span class="n">rms_list</span><span class="o">=</span><span class="nb">list</span><span class="p">()</span>
+        <span class="n">division_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cv_divisions</span><span class="p">[</span><span class="n">division_index</span><span class="p">]</span>
+        <span class="c1"># split into testing and training sets</span>
+        <span class="k">for</span> <span class="n">didx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">division_dict</span><span class="p">[</span><span class="s1">&#39;train_index&#39;</span><span class="p">])):</span>
+            <span class="n">train_index</span> <span class="o">=</span> <span class="n">division_dict</span><span class="p">[</span><span class="s1">&#39;train_index&#39;</span><span class="p">][</span><span class="n">didx</span><span class="p">]</span>
+            <span class="n">test_index</span> <span class="o">=</span> <span class="n">division_dict</span><span class="p">[</span><span class="s1">&#39;test_index&#39;</span><span class="p">][</span><span class="n">didx</span><span class="p">]</span>
+            <span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span> <span class="o">=</span> <span class="n">Xdata</span><span class="p">[</span><span class="n">train_index</span><span class="p">],</span> <span class="n">Xdata</span><span class="p">[</span><span class="n">test_index</span><span class="p">]</span>
+            <span class="n">Y_train</span><span class="p">,</span> <span class="n">Y_test</span> <span class="o">=</span> <span class="n">Ydata</span><span class="p">[</span><span class="n">train_index</span><span class="p">],</span> <span class="n">Ydata</span><span class="p">[</span><span class="n">test_index</span><span class="p">]</span>
+            <span class="c1"># train on training sets</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">Y_train</span><span class="p">)</span>
+            <span class="n">Y_test_Pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+            <span class="n">my_rms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">Y_test</span><span class="p">,</span> <span class="n">Y_test_Pred</span><span class="p">))</span>
+            <span class="n">rms_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">my_rms</span><span class="p">)</span>
+        <span class="n">mean_rms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">rms_list</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">mean_rms</span>
+
+    <span class="k">def</span> <span class="nf">num_runs_cv_multiprocessing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">nidx</span><span class="p">,</span> <span class="n">result_dict</span><span class="p">):</span>
+        <span class="n">result_dict</span><span class="p">[</span><span class="n">nidx</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">single_avg_cv</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">nidx</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">num_runs_cv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="n">Xdata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">Ydata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
+        <span class="n">num_runs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cv_divisions</span><span class="p">)</span>
+        <span class="n">n_rms_list</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">num_runs</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_multiprocessing</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">cv_manager</span> <span class="o">=</span> <span class="n">Manager</span><span class="p">()</span>
+            <span class="n">cv_dict</span> <span class="o">=</span> <span class="n">cv_manager</span><span class="o">.</span><span class="n">dict</span><span class="p">()</span>
+            <span class="n">cv_procs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">nidx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_runs</span><span class="p">):</span>
+                <span class="n">cv_proc</span> <span class="o">=</span> <span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_runs_cv_multiprocessing</span><span class="p">,</span>
+                    <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">Y</span><span class="p">),</span> <span class="n">nidx</span><span class="p">,</span> <span class="n">cv_dict</span><span class="p">))</span>
+                <span class="n">cv_proc</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+                <span class="n">cv_procs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cv_proc</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">cv_proc</span> <span class="ow">in</span> <span class="n">cv_procs</span><span class="p">:</span>
+                <span class="n">cv_proc</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">nidx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_runs</span><span class="p">):</span>
+                <span class="n">n_rms_list</span><span class="p">[</span><span class="n">nidx</span><span class="p">]</span> <span class="o">=</span> <span class="n">cv_dict</span><span class="p">[</span><span class="n">nidx</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">nidx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_runs</span><span class="p">):</span>
+                <span class="n">n_rms_list</span><span class="p">[</span><span class="n">nidx</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">single_avg_cv</span><span class="p">(</span><span class="n">Xdata</span><span class="p">,</span> <span class="n">Ydata</span><span class="p">,</span> <span class="n">nidx</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;CV time: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">time</span><span class="o">.</span><span class="n">asctime</span><span class="p">(),</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">print_copy</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">n_rms_list</span><span class="p">)</span>
+            <span class="n">print_copy</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Sorted RMS list for CV:&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">print_copy</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">n_rms_list</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">evaluate_individual</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cv_rmse</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_runs_cv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_data_with_afm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_data</span><span class="p">)</span>       
+        <span class="bp">self</span><span class="o">.</span><span class="n">rmse</span> <span class="o">=</span> <span class="n">cv_rmse</span>
+        <span class="k">return</span> <span class="n">cv_rmse</span>
+
+<span class="k">class</span> <span class="nc">GAGeneration</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;GA Generation</span>
+<span class="sd">    Attributes:</span>
+<span class="sd">        self.testing_dataset</span>
+<span class="sd">        self.cv_divisions &lt;dict&gt;</span>
+<span class="sd">        self.population &lt;list of param dicts&gt;</span>
+<span class="sd">        self.num_parents &lt;int&gt;</span>
+<span class="sd">        self.gene_template &lt;dict&gt;</span>
+<span class="sd">        self.population_size &lt;int&gt;</span>
+<span class="sd">        self.use_multiprocessing &lt;int&gt;</span>
+<span class="sd">        self.best_rmse &lt;float&gt;</span>
+<span class="sd">        self.best_genome &lt;dict&gt;</span>
+<span class="sd">        self.best_individual &lt;int&gt;</span>
+<span class="sd">        self.parents &lt;list of param dicts&gt;</span>
+<span class="sd">        self.new_population &lt;list of param dicts&gt;</span>
+<span class="sd">        # Set in code</span>
+<span class="sd">        self.crossover_prob &lt;float&gt;</span>
+<span class="sd">        self.mutation_prob &lt;float&gt;</span>
+<span class="sd">        self.shift_prob &lt;float&gt;</span>
+<span class="sd">        self.population_rmse_list &lt;list of float&gt;</span>
+<span class="sd">        self.random_state</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                <span class="n">testing_dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">cv_divisions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">population</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">num_parents</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">gene_template</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">population_size</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+                <span class="n">afm_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">use_multiprocessing</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span> <span class="o">=</span> <span class="n">testing_dataset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cv_divisions</span> <span class="o">=</span> <span class="n">cv_divisions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">population</span> <span class="o">=</span> <span class="n">population</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_parents</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">num_parents</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_multiprocessing</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">use_multiprocessing</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">population_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">population_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gene_template</span> <span class="o">=</span> <span class="n">gene_template</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">afm_dict</span> <span class="o">=</span> <span class="n">afm_dict</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">best_rmse</span> <span class="o">=</span> <span class="mi">100000000</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">best_params</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">best_individual</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent_indices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_population</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">crossover_prob</span> <span class="o">=</span> <span class="mf">0.5</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mutation_prob</span> <span class="o">=</span> <span class="mf">0.1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shift_prob</span> <span class="o">=</span> <span class="mf">0.5</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">population_rmses</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_up</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_population</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">select_parents</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_new_population</span><span class="p">()</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">set_up</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">population</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">initialize_population</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">pidx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">population_size</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">population_rmses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">initialize_population</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="o">=</span><span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">pidx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">population_size</span><span class="p">):</span>
+            <span class="n">genome</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="n">genes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gene_template</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+            <span class="n">genes</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">genes</span><span class="p">:</span>
+                <span class="n">genome</span><span class="p">[</span><span class="n">gene</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+                <span class="n">geneidxs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gene_template</span><span class="p">[</span><span class="n">gene</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+                <span class="n">geneidxs</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">geneidx</span> <span class="ow">in</span> <span class="n">geneidxs</span><span class="p">:</span>
+                    <span class="n">genome</span><span class="p">[</span><span class="n">gene</span><span class="p">][</span><span class="n">geneidx</span><span class="p">]</span> <span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">101</span><span class="p">)</span><span class="o">/</span><span class="mi">100</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="p">[</span><span class="n">pidx</span><span class="p">]</span> <span class="o">=</span> <span class="n">GAIndividual</span><span class="p">(</span><span class="n">genome</span><span class="o">=</span><span class="n">genome</span><span class="p">,</span>
+                                <span class="n">testing_dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="p">,</span>
+                                <span class="n">cv_divisions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cv_divisions</span><span class="p">,</span>
+                                <span class="n">afm_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">afm_dict</span><span class="p">,</span>
+                                <span class="n">use_multiprocessing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_multiprocessing</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">pidx</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">print_genome</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="p">[</span><span class="n">pidx</span><span class="p">]</span><span class="o">.</span><span class="n">genome</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">evaluate_population_multiprocessing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indidx</span><span class="p">,</span> <span class="n">rmse_dict</span><span class="p">):</span>
+        <span class="n">rmse_dict</span><span class="p">[</span><span class="n">indidx</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="p">[</span><span class="n">indidx</span><span class="p">]</span><span class="o">.</span><span class="n">evaluate_individual</span><span class="p">()</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">evaluate_population</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_multiprocessing</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">gen_manager</span> <span class="o">=</span> <span class="n">Manager</span><span class="p">()</span>
+            <span class="n">rmse_dict</span> <span class="o">=</span> <span class="n">gen_manager</span><span class="o">.</span><span class="n">dict</span><span class="p">()</span>
+            <span class="n">ind_procs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">indidx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">population_size</span><span class="p">):</span>
+                <span class="n">ind_proc</span> <span class="o">=</span> <span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">evaluate_population_multiprocessing</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">indidx</span><span class="p">,</span> <span class="n">rmse_dict</span><span class="p">))</span>
+                <span class="n">ind_procs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ind_proc</span><span class="p">)</span>
+                <span class="n">ind_proc</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">ind_proc</span> <span class="ow">in</span> <span class="n">ind_procs</span><span class="p">:</span>
+                <span class="n">ind_proc</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">indidx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">population_size</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">population_rmses</span><span class="p">[</span><span class="n">indidx</span><span class="p">]</span> <span class="o">=</span> <span class="n">rmse_dict</span><span class="p">[</span><span class="n">indidx</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">indidx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">population_size</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">population_rmses</span><span class="p">[</span><span class="n">indidx</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="p">[</span><span class="n">indidx</span><span class="p">]</span><span class="o">.</span><span class="n">evaluate_individual</span><span class="p">()</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">population_rmses</span><span class="p">)</span>
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">select_parents</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Select parents.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent_indices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">temp_rmse_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">population_rmses</span><span class="p">)</span>
+        <span class="n">lowest_idx</span><span class="o">=</span><span class="kc">None</span>
+        <span class="k">for</span> <span class="n">pridx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_parents</span><span class="p">):</span>       
+            <span class="n">min_rmse_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">temp_rmse_list</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parent_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pridx</span><span class="p">)</span>
+            <span class="n">min_rmse</span> <span class="o">=</span> <span class="n">temp_rmse_list</span><span class="p">[</span><span class="n">min_rmse_index</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">min_rmse</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">best_rmse</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">best_rmse</span> <span class="o">=</span> <span class="n">min_rmse</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">best_genome</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="p">[</span><span class="n">pridx</span><span class="p">]</span><span class="o">.</span><span class="n">genome</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">best_individual</span> <span class="o">=</span> <span class="n">pridx</span>
+            <span class="n">temp_rmse_list</span><span class="p">[</span><span class="n">min_rmse_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">temp_rmse_list</span><span class="p">)</span> <span class="c1">#so don&#39;t find same rmse twice)</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">create_new_population</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Progenate new population </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_population</span><span class="o">=</span><span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">indidx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">population_size</span><span class="p">):</span>
+            <span class="n">p1idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_parents</span><span class="p">)</span>
+            <span class="n">p2idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_parents</span><span class="p">)</span> <span class="c1">#can have two of same parent?</span>
+            <span class="n">new_genome</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span> 
+            <span class="n">genes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="p">[</span><span class="n">indidx</span><span class="p">]</span><span class="o">.</span><span class="n">genome</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+            <span class="n">genes</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">genes</span><span class="p">:</span>
+                <span class="n">new_genome</span><span class="p">[</span><span class="n">gene</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+                <span class="n">geneidxs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="p">[</span><span class="n">indidx</span><span class="p">]</span><span class="o">.</span><span class="n">genome</span><span class="p">[</span><span class="n">gene</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+                <span class="n">geneidxs</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">geneidx</span> <span class="ow">in</span> <span class="n">geneidxs</span><span class="p">:</span>
+                    <span class="n">c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span>
+                    <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span>
+                    <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span>
+                    <span class="n">new_val</span> <span class="o">=</span> <span class="kc">None</span>
+                    
+                    <span class="k">if</span> <span class="n">c</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">crossover_prob</span><span class="p">:</span>
+                        <span class="n">new_val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="p">[</span><span class="n">p1idx</span><span class="p">]</span><span class="o">.</span><span class="n">genome</span><span class="p">[</span><span class="n">gene</span><span class="p">][</span><span class="n">geneidx</span><span class="p">]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">new_val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="p">[</span><span class="n">p2idx</span><span class="p">]</span><span class="o">.</span><span class="n">genome</span><span class="p">[</span><span class="n">gene</span><span class="p">][</span><span class="n">geneidx</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">s</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shift_prob</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="p">(</span><span class="n">new_val</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">new_val</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">):</span>
+                            <span class="n">new_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span> <span class="n">new_val</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span><span class="o">/</span><span class="mi">100</span> <span class="p">)</span>   <span class="c1"># random shift</span>
+                        <span class="k">if</span> <span class="p">(</span><span class="n">new_val</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">):</span>    
+                            <span class="n">new_val</span> <span class="o">=</span> <span class="mi">0</span>
+                        <span class="k">if</span> <span class="p">(</span><span class="n">new_val</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">):</span>    
+                            <span class="n">new_val</span> <span class="o">=</span> <span class="mi">1</span>                 
+                    <span class="k">if</span> <span class="n">m</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mutation_prob</span><span class="p">:</span>
+                        <span class="n">new_val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">101</span><span class="p">)</span><span class="o">/</span><span class="mi">100</span>   <span class="c1"># mutation</span>
+                    <span class="n">new_genome</span><span class="p">[</span><span class="n">gene</span><span class="p">][</span><span class="n">geneidx</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_val</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">new_population</span><span class="p">[</span><span class="n">indidx</span><span class="p">]</span> <span class="o">=</span> <span class="n">GAIndividual</span><span class="p">(</span><span class="n">genome</span> <span class="o">=</span> <span class="n">new_genome</span><span class="p">,</span>
+                                <span class="n">testing_dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="p">,</span>
+                                <span class="n">cv_divisions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cv_divisions</span><span class="p">,</span>
+                                <span class="n">afm_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">afm_dict</span><span class="p">,</span>
+                                <span class="n">use_multiprocessing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_multiprocessing</span><span class="p">)</span>
+        <span class="k">return</span>
+
+<div class="viewcode-block" id="ParamOptGA"><a class="viewcode-back" href="../tests.html#ParamOptGA.ParamOptGA">[docs]</a><span class="k">class</span> <span class="nc">ParamOptGA</span><span class="p">(</span><span class="n">SingleFit</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Search for paramters using GA.</span>
+<span class="sd">        Allows custom features.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        training_dataset, (Should be the same as first testing set.)</span>
+<span class="sd">        testing_dataset, (First should be same as training set. GA is run using</span>
+<span class="sd">                        only the first testing dataset. </span>
+<span class="sd">                        Final evaluations are carried out on all sets.</span>
+<span class="sd">                        All sets must have target data for evaluation.</span>
+<span class="sd">        model,</span>
+<span class="sd">        save_path,</span>
+<span class="sd">        num_folds &lt;int&gt;: Number of folds for K-fold CV. Keep blank to use LO% CV</span>
+<span class="sd">        percent_leave_out &lt;int&gt;: Percent to leave out for LO%. Keep blank to use                                 K-fold CV.</span>
+<span class="sd">        num_cvtests &lt;int&gt;: Number of CV tests for each individual</span>
+<span class="sd">        population_size &lt;int&gt;: Number of individuals in each generation&#39;s</span>
+<span class="sd">                                population</span>
+<span class="sd">        convergence_generations &lt;int&gt;: Number of generations where the</span>
+<span class="sd">                                        genome must stay constant in order to</span>
+<span class="sd">                                        establish convergence</span>
+<span class="sd">        max_generations &lt;int&gt;: Maximum number of generations</span>
+<span class="sd">        num_parents &lt;int&gt;: Number of best individuals to pull out of each</span>
+<span class="sd">                        generation to use as parents in next generation</span>
+<span class="sd">        fix_random_for_testing &lt;int&gt;: 1 - Fix random seed for testing</span>
+<span class="sd">                                      0 - Randomize (default)</span>
+<span class="sd">        use_multiprocessing &lt;int&gt;: 1 - use multiprocessing</span>
+<span class="sd">                                   0 - do not use multiprocessing</span>
+<span class="sd">        additional_feature_methods &lt;str or list&gt;: comma-delimited string, or</span>
+<span class="sd">                        a list, of semicolon-delimited pieces, formatted like:</span>
+<span class="sd">                        methodname;number_of_genes;parameter1:value1;parameter2:value2;...</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        Analysis in save_path folder</span>
+<span class="sd">    Raises:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+        <span class="n">training_dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">testing_dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">save_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">num_folds</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">percent_leave_out</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">num_cvtests</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+        <span class="n">num_gas</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">population_size</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+        <span class="n">convergence_generations</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+        <span class="n">max_generations</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+        <span class="n">num_parents</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+        <span class="n">fix_random_for_testing</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">use_multiprocessing</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">additional_feature_methods</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Additional class attributes not in parent class:</span>
+<span class="sd">           </span>
+<span class="sd">            Set by keyword:</span>
+<span class="sd">            self.num_folds &lt;int&gt;: Number of folds, if using KFold CV</span>
+<span class="sd">            self.percent_leave_out &lt;int&gt;: Percent to leave out of training set,</span>
+<span class="sd">                                            if using KFold CV</span>
+<span class="sd">            self.num_cvtests &lt;int&gt;: Number of CV tests per individual</span>
+<span class="sd">            self.population_size &lt;int&gt;: Number of individuals in a generation</span>
+<span class="sd">            self.convergence_generations &lt;int&gt;: Number of generations where</span>
+<span class="sd">                                the genome stays the same, to be considered</span>
+<span class="sd">                                converged</span>
+<span class="sd">            self.max_generations &lt;int&gt;: Maximum number of generations</span>
+<span class="sd">            self.num_parents &lt;int&gt;: Number of best individuals to pull out of</span>
+<span class="sd">                                  each generation as parents</span>
+<span class="sd">            self.use_multiprocessing &lt;int&gt;: 1 to use multiprocessing;</span>
+<span class="sd">                                            0 otherwise</span>
+<span class="sd">            self.additional_feature_methods &lt;list of str&gt;: List of additional</span>
+<span class="sd">                        feature methods for fitting.</span>
+<span class="sd">                        Each string takes the format:</span>
+<span class="sd">                        methodname;parameter1:value1;parameter2:value2;...</span>
+<span class="sd">            self.final_testing_datasets &lt;list&gt;: post-GA testing datasets</span>
+<span class="sd">            Set by code:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">SingleFit</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+            <span class="n">training_dataset</span><span class="o">=</span><span class="n">training_dataset</span><span class="p">,</span> 
+            <span class="n">testing_dataset</span><span class="o">=</span><span class="n">testing_dataset</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> 
+            <span class="n">save_path</span> <span class="o">=</span> <span class="n">save_path</span><span class="p">)</span>
+        <span class="c1">#Sets by keyword</span>
+        <span class="k">if</span> <span class="n">num_folds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">num_folds</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">num_folds</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">num_folds</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">percent_leave_out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">percent_leave_out</span> <span class="o">=</span> <span class="kc">None</span>  
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">percent_leave_out</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">percent_leave_out</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_cvtests</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">num_cvtests</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_gas</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">num_gas</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">population_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">population_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">convergence_generations</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">convergence_generations</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_generations</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_generations</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_parents</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">num_parents</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fix_random_for_testing</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">fix_random_for_testing</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fix_random_for_testing</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_multiprocessing</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">use_multiprocessing</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">additional_feature_methods</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">additional_feature_methods</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">additional_feature_methods</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">additional_feature_methods</span> <span class="o">=</span> <span class="n">additional_feature_methods</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">final_testing_datasets</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">testing_dataset</span><span class="p">)</span>
+        <span class="c1">#Sets in code</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cv_divisions</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cv_divisions_final</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">population</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span> <span class="c1">#list of dict</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">afm_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hp_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gene_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="c1">#</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ga_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gact</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">final_best_rmse</span> <span class="o">=</span> <span class="mi">100000000</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">final_best_genome</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">run_ga</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ga_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">gact</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ga_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">gact</span><span class="p">][</span><span class="s1">&#39;generations&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;running&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">ga_genct</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">ga_best_rmse</span> <span class="o">=</span> <span class="mi">10000000</span>
+        <span class="n">ga_best_genome</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">ga_converged</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">ga_runs_since_best</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">new_population</span><span class="o">=</span><span class="kc">None</span>
+
+        <span class="k">while</span> <span class="n">ga_runs_since_best</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">convergence_generations</span> <span class="ow">and</span> <span class="n">ga_genct</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_generations</span><span class="p">:</span> 
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Generation </span><span class="si">%i</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ga_genct</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">asctime</span><span class="p">()),</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">Gen</span> <span class="o">=</span> <span class="n">GAGeneration</span><span class="p">(</span><span class="n">testing_dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="p">,</span>
+                <span class="n">cv_divisions</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cv_divisions</span><span class="p">,</span>
+                <span class="n">population</span><span class="o">=</span><span class="n">new_population</span><span class="p">,</span>
+                <span class="n">num_parents</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_parents</span><span class="p">,</span>
+                <span class="n">gene_template</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gene_template</span><span class="p">,</span>
+                <span class="n">afm_dict</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">afm_dict</span><span class="p">,</span>
+                <span class="n">population_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">population_size</span><span class="p">,</span>
+                <span class="n">use_multiprocessing</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">use_multiprocessing</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fix_random_for_testing</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">Gen</span><span class="o">.</span><span class="n">random_state</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gact</span><span class="p">)</span>
+            <span class="n">Gen</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+            <span class="n">new_population</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">Gen</span><span class="o">.</span><span class="n">new_population</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ga_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">gact</span><span class="p">][</span><span class="s1">&#39;generations&#39;</span><span class="p">][</span><span class="n">ga_genct</span><span class="p">]</span> <span class="o">=</span> <span class="n">Gen</span>
+
+            <span class="c1"># updates best parameter set</span>
+            <span class="k">if</span> <span class="n">Gen</span><span class="o">.</span><span class="n">best_rmse</span> <span class="o">&lt;</span> <span class="n">ga_best_rmse</span><span class="p">:</span>
+                <span class="n">ga_best_rmse</span> <span class="o">=</span> <span class="n">Gen</span><span class="o">.</span><span class="n">best_rmse</span>
+                <span class="n">ga_best_genome</span> <span class="o">=</span> <span class="n">Gen</span><span class="o">.</span><span class="n">best_genome</span>
+                <span class="n">ga_runs_since_best</span> <span class="o">=</span> <span class="mi">0</span>
+            
+            <span class="c1"># prints output for each generation</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">asctime</span><span class="p">())</span>
+            <span class="n">genpref</span> <span class="o">=</span> <span class="s2">&quot;Results for generation </span><span class="si">%i</span><span class="s2">, rmse </span><span class="si">%3.3f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ga_genct</span><span class="p">,</span> <span class="n">Gen</span><span class="o">.</span><span class="n">best_rmse</span><span class="p">)</span>
+            <span class="n">print_genome</span><span class="p">(</span><span class="n">Gen</span><span class="o">.</span><span class="n">best_genome</span><span class="p">,</span> <span class="n">preface</span><span class="o">=</span><span class="n">genpref</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">ga_genct</span><span class="p">,</span> <span class="n">ga_runs_since_best</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            
+            <span class="n">ga_genct</span> <span class="o">=</span> <span class="n">ga_genct</span> <span class="o">+</span> <span class="mi">1</span>
+
+            <span class="k">if</span> <span class="n">Gen</span><span class="o">.</span><span class="n">best_genome</span> <span class="o">==</span> <span class="n">ga_best_genome</span><span class="p">:</span>
+                <span class="n">ga_runs_since_best</span> <span class="o">=</span> <span class="n">ga_runs_since_best</span> <span class="o">+</span> <span class="mi">1</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">ga_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">gact</span><span class="p">][</span><span class="s1">&#39;best_rmse&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ga_best_rmse</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ga_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">gact</span><span class="p">][</span><span class="s1">&#39;best_genome&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ga_best_genome</span>
+        <span class="k">if</span> <span class="n">ga_genct</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_generations</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ga_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">gact</span><span class="p">][</span><span class="s1">&#39;converged&#39;</span><span class="p">]</span><span class="o">=</span><span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ga_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">gact</span><span class="p">][</span><span class="s1">&#39;converged&#39;</span><span class="p">]</span><span class="o">=</span><span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gact</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gact</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">print_ga</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ga</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;----- GA </span><span class="si">%i</span><span class="s2"> -----</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ga</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Converged?: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">ga_dict</span><span class="p">[</span><span class="n">ga</span><span class="p">][</span><span class="s1">&#39;converged&#39;</span><span class="p">])</span>
+        <span class="n">prefacestr</span><span class="o">=</span> <span class="s2">&quot;Best </span><span class="si">%i</span><span class="s2">-CV avg RMSE: </span><span class="si">%3.3f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_cvtests</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ga_dict</span><span class="p">[</span><span class="n">ga</span><span class="p">][</span><span class="s1">&#39;best_rmse&#39;</span><span class="p">])</span>
+        <span class="n">genomestr</span> <span class="o">=</span> <span class="n">print_genome</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ga_dict</span><span class="p">[</span><span class="n">ga</span><span class="p">][</span><span class="s1">&#39;best_genome&#39;</span><span class="p">],</span> <span class="n">preface</span><span class="o">=</span><span class="n">prefacestr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">genomestr</span><span class="p">)</span>
+        <span class="n">gens</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ga_dict</span><span class="p">[</span><span class="n">ga</span><span class="p">][</span><span class="s1">&#39;generations&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">gens</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;..... Generations .....</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">gen</span> <span class="ow">in</span> <span class="n">gens</span><span class="p">:</span>
+            <span class="n">prefacestr</span> <span class="o">=</span> <span class="s2">&quot;Generation </span><span class="si">%i</span><span class="s2"> best: avg rmse </span><span class="si">%3.3f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">gen</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ga_dict</span><span class="p">[</span><span class="n">ga</span><span class="p">][</span><span class="s1">&#39;generations&#39;</span><span class="p">][</span><span class="n">gen</span><span class="p">]</span><span class="o">.</span><span class="n">best_rmse</span><span class="p">)</span>
+            <span class="n">genomestr</span> <span class="o">=</span> <span class="n">print_genome</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ga_dict</span><span class="p">[</span><span class="n">ga</span><span class="p">][</span><span class="s1">&#39;generations&#39;</span><span class="p">][</span><span class="n">gen</span><span class="p">]</span><span class="o">.</span><span class="n">best_genome</span><span class="p">,</span> <span class="n">preface</span> <span class="o">=</span> <span class="n">prefacestr</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">genomestr</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">print_final_eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ga</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+        <span class="n">printstr</span> <span class="o">=</span> <span class="s2">&quot;GA </span><span class="si">%i</span><span class="s2"> </span><span class="si">%i</span><span class="s2">-CV avg RMSEs: &quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ga</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_cvtests</span> <span class="o">*</span> <span class="mi">10</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">fidx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">final_testing_datasets</span><span class="p">)):</span>
+            <span class="n">printstr</span> <span class="o">=</span> <span class="n">printstr</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="si">%3.3f</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">ga_dict</span><span class="p">[</span><span class="n">ga</span><span class="p">][</span><span class="s1">&#39;final_eval_rmses&#39;</span><span class="p">][</span><span class="n">fidx</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">printstr</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="nd">@timeit</span>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_up</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;===== GA info =====</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">ga</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_gas</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">run_ga</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">print_ga</span><span class="p">(</span><span class="n">ga</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">do_final_evaluations</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">select_final_best</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print_readme</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print_final_best_for_code</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print_afm_dict_for_code</span><span class="p">()</span>
+        <span class="k">return</span>
+
+    <span class="nd">@timeit</span>
+    <span class="k">def</span> <span class="nf">set_up</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">SingleFit</span><span class="o">.</span><span class="n">set_up</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cv_divisions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cv_divisions</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_cvtests</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_hp_dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_afm_dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_gene_info</span><span class="p">()</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">set_gene_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gene_template</span><span class="o">=</span><span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gene_template</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hp_dict</span><span class="p">)</span> <span class="c1">#model, with subkeys of hyperparams</span>
+        <span class="k">for</span> <span class="n">afm_key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">afm_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gene_template</span><span class="p">[</span><span class="n">afm_key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gene_template</span><span class="p">[</span><span class="n">afm_key</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">afm_dict</span><span class="p">[</span><span class="n">afm_key</span><span class="p">][</span><span class="s1">&#39;params&#39;</span><span class="p">])</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gene_template</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    
+<div class="viewcode-block" id="ParamOptGA.get_cv_divisions"><a class="viewcode-back" href="../tests.html#ParamOptGA.ParamOptGA.get_cv_divisions">[docs]</a>    <span class="k">def</span> <span class="nf">get_cv_divisions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_runs</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Preset all CV divisions so that all individuals in all</span>
+<span class="sd">            generations have the same CV divisions.</span>
+
+<span class="sd">            Presetting division ensures that comparisons are consistent,</span>
+<span class="sd">            with only the genome changing between individual evaluations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cv_divisions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_folds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">kn</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_runs</span><span class="p">):</span>
+                <span class="n">kf</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_folds</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">)</span>
+                <span class="n">splits</span> <span class="o">=</span> <span class="n">kf</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_data</span><span class="p">)))</span>
+                <span class="n">sdict</span><span class="o">=</span><span class="nb">dict</span><span class="p">()</span>
+                <span class="n">sdict</span><span class="p">[</span><span class="s1">&#39;train_index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+                <span class="n">sdict</span><span class="p">[</span><span class="s1">&#39;test_index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">train</span><span class="p">,</span> <span class="n">test</span> <span class="ow">in</span> <span class="n">splits</span><span class="p">:</span>
+                    <span class="n">sdict</span><span class="p">[</span><span class="s1">&#39;train_index&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">train</span><span class="p">)</span>
+                    <span class="n">sdict</span><span class="p">[</span><span class="s1">&#39;test_index&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">test</span><span class="p">)</span>
+                <span class="n">cv_divisions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">sdict</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="ow">not</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">percent_leave_out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">test_fraction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">percent_leave_out</span> <span class="o">/</span> <span class="mf">100.0</span>
+            <span class="k">for</span> <span class="n">kn</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_runs</span><span class="p">):</span>
+                <span class="n">plo</span> <span class="o">=</span> <span class="n">ShuffleSplit</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> 
+                                <span class="n">test_size</span> <span class="o">=</span> <span class="n">test_fraction</span><span class="p">,</span>
+                                <span class="n">random_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">)</span>
+                <span class="n">splits</span> <span class="o">=</span> <span class="n">plo</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_data</span><span class="p">)))</span>
+                <span class="n">sdict</span><span class="o">=</span><span class="nb">dict</span><span class="p">()</span>
+                <span class="n">sdict</span><span class="p">[</span><span class="s1">&#39;train_index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+                <span class="n">sdict</span><span class="p">[</span><span class="s1">&#39;test_index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">train</span><span class="p">,</span> <span class="n">test</span> <span class="ow">in</span> <span class="n">splits</span><span class="p">:</span>
+                    <span class="n">sdict</span><span class="p">[</span><span class="s1">&#39;train_index&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">train</span><span class="p">)</span>
+                    <span class="n">sdict</span><span class="p">[</span><span class="s1">&#39;test_index&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">test</span><span class="p">)</span>
+                <span class="n">cv_divisions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">sdict</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Neither percent_leave_out nor num_folds appears to be set.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cv_divisions</span></div>
+
+<div class="viewcode-block" id="ParamOptGA.set_hp_dict"><a class="viewcode-back" href="../tests.html#ParamOptGA.ParamOptGA.set_hp_dict">[docs]</a>    <span class="k">def</span> <span class="nf">set_hp_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; #for GKRR, alpha and gamma</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">hp_dict</span><span class="o">=</span><span class="nb">dict</span><span class="p">()</span>
+        <span class="n">hp_dict</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;KernelRidge&quot;</span><span class="p">:</span>
+            <span class="n">hp_dict</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">][</span><span class="s1">&#39;alpha&#39;</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span>
+            <span class="n">hp_dict</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">][</span><span class="s1">&#39;gamma&#39;</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Only Kernel Ridge with alpha and gamma optimization supported so far.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hp_dict</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">hp_dict</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">hp_dict</span></div>
+
+<div class="viewcode-block" id="ParamOptGA.set_afm_dict"><a class="viewcode-back" href="../tests.html#ParamOptGA.ParamOptGA.set_afm_dict">[docs]</a>    <span class="k">def</span> <span class="nf">set_afm_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">additional_feature_methods</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">afm_dict</span><span class="o">=</span><span class="nb">dict</span><span class="p">()</span>
+            <span class="k">return</span>
+        <span class="n">afm_dict</span><span class="o">=</span><span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">afm_item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">additional_feature_methods</span><span class="p">:</span>
+            <span class="n">isplit</span> <span class="o">=</span> <span class="n">afm_item</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;;&quot;</span><span class="p">)</span>
+            <span class="n">methodname</span> <span class="o">=</span> <span class="n">isplit</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">num_params</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">isplit</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">methodargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">argidx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">isplit</span><span class="p">)):</span>
+                <span class="n">argitem</span> <span class="o">=</span> <span class="n">isplit</span><span class="p">[</span><span class="n">argidx</span><span class="p">]</span>
+                <span class="n">argname</span><span class="o">=</span><span class="n">argitem</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">argval</span> <span class="o">=</span> <span class="n">argitem</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">methodargs</span><span class="p">[</span><span class="n">argname</span><span class="p">]</span> <span class="o">=</span> <span class="n">argval</span>
+            <span class="n">afm_dict</span><span class="p">[</span><span class="n">methodname</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="n">afm_dict</span><span class="p">[</span><span class="n">methodname</span><span class="p">][</span><span class="s1">&#39;args&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">methodargs</span><span class="p">)</span>
+            <span class="n">afm_dict</span><span class="p">[</span><span class="n">methodname</span><span class="p">][</span><span class="s1">&#39;params&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">pidx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_params</span><span class="p">):</span>
+                <span class="n">afm_dict</span><span class="p">[</span><span class="n">methodname</span><span class="p">][</span><span class="s1">&#39;params&#39;</span><span class="p">][</span><span class="n">pidx</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">afm_dict</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">afm_dict</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">afm_dict</span></div>
+    <span class="k">def</span> <span class="nf">do_final_evaluations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;===== Final evaluations =====</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cv_divisions_final</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cv_divisions</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_cvtests</span> <span class="o">*</span> <span class="mi">10</span><span class="p">)</span>
+        <span class="n">gas</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ga_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">gas</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">ga</span> <span class="ow">in</span> <span class="n">gas</span><span class="p">:</span>
+            <span class="n">best_genome</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ga_dict</span><span class="p">[</span><span class="n">ga</span><span class="p">][</span><span class="s1">&#39;best_genome&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ga_dict</span><span class="p">[</span><span class="n">ga</span><span class="p">][</span><span class="s1">&#39;final_eval_rmses&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">fidx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">final_testing_datasets</span><span class="p">)):</span>
+                <span class="n">final_testing_dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">final_testing_datasets</span><span class="p">[</span><span class="n">fidx</span><span class="p">]</span>
+                <span class="n">eval_indiv</span> <span class="o">=</span> <span class="n">GAIndividual</span><span class="p">(</span><span class="n">genome</span> <span class="o">=</span> <span class="n">best_genome</span><span class="p">,</span>
+                                <span class="n">testing_dataset</span> <span class="o">=</span> <span class="n">final_testing_dataset</span><span class="p">,</span>
+                                <span class="n">cv_divisions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cv_divisions_final</span><span class="p">,</span>
+                                <span class="n">afm_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">afm_dict</span><span class="p">,</span>
+                                <span class="n">use_multiprocessing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_multiprocessing</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ga_dict</span><span class="p">[</span><span class="n">ga</span><span class="p">][</span><span class="s1">&#39;final_eval_rmses&#39;</span><span class="p">][</span><span class="n">fidx</span><span class="p">]</span> <span class="o">=</span> <span class="n">eval_indiv</span><span class="o">.</span><span class="n">evaluate_individual</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">print_final_eval</span><span class="p">(</span><span class="n">ga</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">select_final_best</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">ga</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ga_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">ga_final_rmse_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">fidx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">final_testing_datasets</span><span class="p">)):</span>
+                <span class="n">ga_final_rmse_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ga_dict</span><span class="p">[</span><span class="n">ga</span><span class="p">][</span><span class="s1">&#39;final_eval_rmses&#39;</span><span class="p">][</span><span class="n">fidx</span><span class="p">])</span>
+            <span class="n">ga_final_rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">ga_final_rmse_list</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ga_final_rmse</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">final_best_rmse</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">final_best_rmse</span> <span class="o">=</span> <span class="n">ga_final_rmse</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">final_best_genome</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ga_dict</span><span class="p">[</span><span class="n">ga</span><span class="p">][</span><span class="s1">&#39;best_genome&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;===== Overall info =====</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">time</span><span class="o">.</span><span class="n">asctime</span><span class="p">())</span>
+        <span class="n">printstr</span> <span class="o">=</span> <span class="n">print_genome</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">final_best_genome</span><span class="p">,</span> <span class="n">preface</span><span class="o">=</span><span class="s2">&quot;Overall best genome&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">printstr</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">print_final_best_for_code</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">printlist</span> <span class="o">=</span> <span class="n">print_genome_for_code</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">final_best_genome</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_path</span><span class="p">,</span><span class="s2">&quot;OPTIMIZED_PARAMS&quot;</span><span class="p">),</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">pfile</span><span class="p">:</span>
+            <span class="n">pfile</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="n">printlist</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">print_afm_dict_for_code</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">afmlist</span><span class="o">=</span><span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">afm_method</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">afm_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">afm_arg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">afm_dict</span><span class="p">[</span><span class="n">afm_method</span><span class="p">][</span><span class="s1">&#39;args&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">afm_str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">;</span><span class="si">%s</span><span class="s2">;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">afm_method</span><span class="p">,</span> <span class="n">afm_arg</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">afm_dict</span><span class="p">[</span><span class="n">afm_method</span><span class="p">][</span><span class="s1">&#39;args&#39;</span><span class="p">][</span><span class="n">afm_arg</span><span class="p">])</span>
+                <span class="n">afmlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">afm_str</span><span class="p">)</span>
+        <span class="n">afmlist</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_path</span><span class="p">,</span><span class="s2">&quot;ADDITIONAL_FEATURES&quot;</span><span class="p">),</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">afile</span><span class="p">:</span>
+            <span class="n">afile</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="n">afmlist</span><span class="p">)</span>
+        <span class="k">return</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, UW-Madison Computational Materials Group.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
