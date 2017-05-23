@@ -3,7 +3,7 @@ __author__ = 'Ryan Jacobs, Tam Mayeshiba'
 import sys
 import os
 from MASTMLInitializer import MASTMLWrapper, ConfigFileValidator
-from DataParser import DataParser, FeatureIO, FeatureNormalization
+from DataParser import DataParser, FeatureIO, FeatureNormalization, DataframeUtilities, MagpieFeatures
 import logging
 import shutil
 import time
@@ -100,7 +100,7 @@ class MASTMLDriver(object):
         self.readme_html.append("%s<BR>\n" % self.start_time)
         self.readme_html.append("<HR>\n")
         return
-    
+
     def _end_html(self):
         self.readme_html.append("<HR>\n")
         self.readme_html.append("<H2>Setup</H2>\n")
@@ -161,15 +161,16 @@ class MASTMLDriver(object):
             else:
                 grouping_feature = None
             myXdata, myydata, myx_features, myy_feature, mydataframe = DataParser(configdict=self.configdict).parse_fromfile(datapath=self.data_setup[data_name]['data_path'], as_array=False)
-            data_dict[data_name] = DataHandler(data = mydataframe, 
-                                input_data = myXdata, 
-                                target_data = myydata, 
+            data_dict[data_name] = DataHandler(data = mydataframe,
+                                input_data = myXdata,
+                                target_data = myydata,
                                 input_features = myx_features,
                                 target_feature = myy_feature,
                                 target_error_feature = target_error_feature,
                                 labeling_features = labeling_features,
                                 grouping_feature = grouping_feature) #
             logging.info('Parsed the input data located under %s' % data_path)
+
         return Xdata, ydata, x_features, y_feature, dataframe, data_dict
 
     def _gather_models(self):
@@ -233,7 +234,7 @@ class MASTMLDriver(object):
         test_short = test_type.split("_")[0]
         if not (test_short in self.param_optimizing_tests): #no need
             logging.info("No parameter or data updates necessary.")
-            return 
+            return
         logging.info("UPDATING PARAMETERS from %s" % test_type)
         param_dict = self._get_param_dict(os.path.join(test_save_path,"OPTIMIZED_PARAMS"))
         model_val = self.model_vals[model_index]
@@ -278,7 +279,7 @@ class MASTMLDriver(object):
             geneval = float(genevalstr)
             pdict[gene][geneidx] = geneval
         return pdict
-    
+
     def _get_afm_args(self, fname):
         adict=dict()
         with open(fname,'r') as afile:
@@ -313,7 +314,7 @@ class MASTMLDriver(object):
         fdict["LeaveOutPercentCV"] = ["best_worst_overlay.png"]
         fdict["LeaveOutGroupCV"] = ["leave_out_group.png"]
         fdict["ParamOptGA"] = ["OPTIMIZED_PARAMS"]
-        fdict["PredictionVsFeature"] = [] #not sure 
+        fdict["PredictionVsFeature"] = [] #not sure
         self.favorites_dict=dict(fdict)
         return
 
@@ -328,7 +329,7 @@ class MASTMLDriver(object):
             for fval in flist:
                 linkloc = os.path.join(test_save_path, fval)
                 linkline = '<A HREF="%s">%s</A> from test <A HREF="%s">%s</A><BR>\n' % (linkloc, fval, test_save_path, test_type)
-                linklist.append(linkline) 
+                linklist.append(linkline)
         return linklist
 
 
