@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 #TTM make random data for testing
 import numpy as np
-import data_analysis.printout_tools as ptools
-from sklearn.preprocessing import normalize
 import pandas as pd
 import os
 from DataParser import DataParser, FeatureIO, FeatureNormalization
