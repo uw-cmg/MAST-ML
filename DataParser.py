@@ -205,14 +205,16 @@ class MagpieFeatures(object):
         magpiedata_dict_arithmetic_average = {}
         magpiedata_dict_max = {}
         magpiedata_dict_min = {}
+        magpiedata_dict_difference = {}
         for composition in compositions:
-            magpiedata_composition_average, magpiedata_arithmetic_average, magpiedata_max, magpiedata_min = self._get_computed_magpie_features(composition=composition)
+            magpiedata_composition_average, magpiedata_arithmetic_average, magpiedata_max, magpiedata_min, magpiedata_difference = self._get_computed_magpie_features(composition=composition)
             magpiedata_dict_composition_average[composition] = magpiedata_composition_average
             magpiedata_dict_arithmetic_average[composition] = magpiedata_arithmetic_average
             magpiedata_dict_max[composition] = magpiedata_max
             magpiedata_dict_min[composition] = magpiedata_min
+            magpiedata_dict_difference[composition] = magpiedata_difference
 
-        magpiedata_dict_list = [magpiedata_dict_composition_average, magpiedata_dict_arithmetic_average, magpiedata_dict_max, magpiedata_dict_min]
+        magpiedata_dict_list = [magpiedata_dict_composition_average, magpiedata_dict_arithmetic_average, magpiedata_dict_max, magpiedata_dict_min, magpiedata_dict_difference]
         dataframe = self.dataframe
         for magpiedata_dict in magpiedata_dict_list:
             dataframe_magpie = pd.DataFrame.from_dict(data=magpiedata_dict, orient='index')
@@ -269,6 +271,7 @@ class MagpieFeatures(object):
         magpiedata_arithmetic_average = {}
         magpiedata_max = {}
         magpiedata_min = {}
+        magpiedata_difference = {}
         magpiedata_atomic = self._get_atomic_magpie_features(composition=composition)
         composition = Composition(composition)
         element_list, atoms_per_formula_unit = self._get_element_list(composition=composition)
@@ -279,6 +282,7 @@ class MagpieFeatures(object):
             magpiedata_arithmetic_average[magpie_feature] = 0
             magpiedata_max[magpie_feature] = 0
             magpiedata_min[magpie_feature] = 0
+            magpiedata_difference[magpie_feature] = 0
 
         for element in magpiedata_atomic.keys():
             for magpie_feature, feature_value in magpiedata_atomic[element].items():
@@ -299,14 +303,17 @@ class MagpieFeatures(object):
                             magpiedata_min[magpie_feature] = feature_value
                     elif magpiedata_min[magpie_feature] == 0:
                         magpiedata_min[magpie_feature] = feature_value
-                if feature_value is 'NaN':
-                    magpiedata_composition_average[magpie_feature] = 'NaN'
+                    # Difference features (max - min)
+                    magpiedata_difference[magpie_feature] = magpiedata_max[magpie_feature] - magpiedata_min[magpie_feature]
+                #if feature_value is 'NaN':
+                #    magpiedata_composition_average[magpie_feature] = 'NaN'
 
         # Change names of features to reflect each computed type of magpie feature (max, min, etc.)
         magpiedata_composition_average_renamed = {}
         magpiedata_arithmetic_average_renamed = {}
         magpiedata_max_renamed = {}
         magpiedata_min_renamed = {}
+        magpiedata_difference_renamed = {}
         for key in magpiedata_composition_average.keys():
             magpiedata_composition_average_renamed[key+"_composition_average"] = magpiedata_composition_average[key]
         for key in magpiedata_arithmetic_average.keys():
@@ -315,8 +322,10 @@ class MagpieFeatures(object):
             magpiedata_max_renamed[key+"_max_value"] = magpiedata_max[key]
         for key in magpiedata_min.keys():
             magpiedata_min_renamed[key+"_min_value"] = magpiedata_min[key]
+        for key in magpiedata_difference.keys():
+            magpiedata_difference_renamed[key+"_difference"] = magpiedata_difference[key]
 
-        return (magpiedata_composition_average_renamed, magpiedata_arithmetic_average_renamed, magpiedata_max_renamed, magpiedata_min_renamed)
+        return (magpiedata_composition_average_renamed, magpiedata_arithmetic_average_renamed, magpiedata_max_renamed, magpiedata_min_renamed, magpiedata_difference_renamed)
 
     def _get_element_list(self, composition):
         element_amounts = composition.get_el_amt_dict()
