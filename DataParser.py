@@ -202,7 +202,7 @@ class MagpieFeatures(object):
 
         magpiedata_dict = {}
         for composition in compositions:
-            magpiedata_composition = self._get_composition_averaged_magpie_features(composition=composition)
+            magpiedata_composition = self._get_composition_average_magpie_features(composition=composition)
             magpiedata_dict[composition] = magpiedata_composition
 
         dataframe_magpie = pd.DataFrame.from_dict(data=magpiedata_dict, orient='index')
@@ -215,7 +215,7 @@ class MagpieFeatures(object):
         del dataframe_magpie['Magpie compositions']
         # Merge magpie feature dataframe with originally supplied dataframe
         dataframe = DataframeUtilities()._merge_dataframe_columns(dataframe1=self.dataframe, dataframe2=dataframe_magpie)
-        if save_to_csv == True:
+        if save_to_csv == bool(True):
             dataframe.to_csv('input_with_magpie_features.csv', index=False)
         return dataframe
 
@@ -228,13 +228,7 @@ class MagpieFeatures(object):
                 magpie_feature_names.append(f[:-6])
 
         composition = Composition(composition)
-        element_amounts = composition.get_el_amt_dict()
-
-        # Get list of unique elements present
-        element_list = []
-        for k in element_amounts.keys():
-            if k not in element_list:
-                element_list.append(k)
+        element_list, atoms_per_formula_unit = self._get_element_list(composition=composition)
 
         element_dict = {}
         for element in element_list:
@@ -260,11 +254,34 @@ class MagpieFeatures(object):
 
         return magpiedata_atomic
 
-    def _get_composition_averaged_magpie_features(self, composition):
+    def _get_composition_average_magpie_features(self, composition):
         magpiedata_composition = {}
         magpiedata_atomic = self._get_atomic_magpie_features(composition=composition)
-
         composition = Composition(composition)
+        element_list, atoms_per_formula_unit = self._get_element_list(composition=composition)
+
+        # Initialize feature values to all be 0, because need to dynamically update them with weighted values in next loop.
+        for magpie_feature in magpiedata_atomic[element_list[0]].keys():
+            magpiedata_composition[magpie_feature] = 0
+
+        for element in magpiedata_atomic.keys():
+            for magpie_feature, feature_value in magpiedata_atomic[element].items():
+                if feature_value is not 'NaN':
+                    magpiedata_composition[magpie_feature] += feature_value*float(composition[element])
+                    # Add lists of max, min, and arithmetic average here
+                    ###
+                if feature_value is 'NaN':
+                    magpiedata_composition[magpie_feature] = 'NaN'
+
+        # Normalize weighted feature values by number of atoms in formula unit. This gives composition weighted values
+        magpiedata_composition_normalized = {}
+        for magpie_feature, feature_value in magpiedata_composition.items():
+            if feature_value is not 'NaN':
+                magpiedata_composition_normalized[magpie_feature] = feature_value/atoms_per_formula_unit
+
+        return magpiedata_composition_normalized
+
+    def _get_element_list(self, composition):
         element_amounts = composition.get_el_amt_dict()
         atoms_per_formula_unit = 0
         for v in element_amounts.values():
@@ -276,24 +293,7 @@ class MagpieFeatures(object):
             if k not in element_list:
                 element_list.append(k)
 
-        # Initialize feature values to all be 0, because need to dynamically update them with weighted values in next loop.
-        for magpie_feature in magpiedata_atomic[element_list[0]].keys():
-            magpiedata_composition[magpie_feature] = 0
-
-        for element in magpiedata_atomic.keys():
-            for magpie_feature, feature_value in magpiedata_atomic[element].items():
-                if feature_value is not 'NaN':
-                    magpiedata_composition[magpie_feature] += feature_value*float(composition[element])
-                if feature_value is 'NaN':
-                    magpiedata_composition[magpie_feature] = 'NaN'
-
-        # Normalize weighted feature values by number of atoms in formula unit. This gives composition weighted values
-        magpiedata_composition_normalized = {}
-        for magpie_feature, feature_value in magpiedata_composition.items():
-            if feature_value is not 'NaN':
-                magpiedata_composition_normalized[magpie_feature] = feature_value/atoms_per_formula_unit
-
-        return magpiedata_composition_normalized
+        return element_list, atoms_per_formula_unit
 
 class DataframeUtilities(object):
     """This class is a collection of basic utilities for dataframe manipulation, and exchanging between dataframes and numpy arrays
