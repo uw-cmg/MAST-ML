@@ -40,7 +40,7 @@ class PlotNoAnalysis(SingleFit):
             plot_filter_out=None,
             feature_plot_feature=None,
             data_labels=None,
-            timex=None):
+            timex=""):
         """
         Additional attributes to parent class:
             self.testing_datasets <list>: List of testing datasets which
@@ -128,13 +128,14 @@ class PlotNoAnalysis(SingleFit):
             if not (group is None):
                 xdata = xdata[testing_dataset.group_data == group]
                 ydata = ydata[testing_dataset.group_data == group]
-                yerrdata = yerrdata[testing_dataset.group_data == group]
                 if len(xdata) == 0:
                     xdata = list()
                 if len(ydata) == 0:
                     ydata = list()
-                if len(yerrdata) == 0:
-                    yerrdata = None
+                if not (yerrdata is None):
+                    yerrdata = yerrdata[testing_dataset.group_data == group]
+                    if len(yerrdata) == 0:
+                        yerrdata = None
             xdatalist.append(xdata)
             xerrlist.append(xerrdata)
             ydatalist.append(ydata)
