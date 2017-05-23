@@ -1,7 +1,8 @@
 import numpy as np
 
 def mean_error(prediction,actual):
-    mean_error = 0;
-    for i ,j in zip(np.asarray(prediction).ravel(),np.asarray(actual).ravel()):
-        mean_error += i-j
-    return mean_error/len(prediction.ravel())
+    pred_len = len(prediction)
+    errors = prediction - actual
+    sum_errors = np.sum(errors)
+    mean_error = sum_errors / pred_len
+    return mean_error
