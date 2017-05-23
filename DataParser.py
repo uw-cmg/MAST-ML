@@ -200,14 +200,19 @@ class MagpieFeatures(object):
             print('No column called "Magpie compositions" exists in the supplied dataframe.')
             sys.exit()
 
+        # Assign each magpiedata feature set to appropriate composition name
         magpiedata_dict_composition_average = {}
         magpiedata_dict_arithmetic_average = {}
+        magpiedata_dict_max = {}
+        magpiedata_dict_min = {}
         for composition in compositions:
-            magpiedata_composition_average, magpiedata_arithmetic_average = self._get_computed_magpie_features(composition=composition)
+            magpiedata_composition_average, magpiedata_arithmetic_average, magpiedata_max, magpiedata_min = self._get_computed_magpie_features(composition=composition)
             magpiedata_dict_composition_average[composition] = magpiedata_composition_average
             magpiedata_dict_arithmetic_average[composition] = magpiedata_arithmetic_average
+            magpiedata_dict_max[composition] = magpiedata_max
+            magpiedata_dict_min[composition] = magpiedata_min
 
-        magpiedata_dict_list = [magpiedata_dict_composition_average, magpiedata_dict_arithmetic_average]
+        magpiedata_dict_list = [magpiedata_dict_composition_average, magpiedata_dict_arithmetic_average, magpiedata_dict_max, magpiedata_dict_min]
         dataframe = self.dataframe
         for magpiedata_dict in magpiedata_dict_list:
             dataframe_magpie = pd.DataFrame.from_dict(data=magpiedata_dict, orient='index')
@@ -300,12 +305,18 @@ class MagpieFeatures(object):
         # Change names of features to reflect each computed type of magpie feature (max, min, etc.)
         magpiedata_composition_average_renamed = {}
         magpiedata_arithmetic_average_renamed = {}
+        magpiedata_max_renamed = {}
+        magpiedata_min_renamed = {}
         for key in magpiedata_composition_average.keys():
             magpiedata_composition_average_renamed[key+"_composition_average"] = magpiedata_composition_average[key]
         for key in magpiedata_arithmetic_average.keys():
             magpiedata_arithmetic_average_renamed[key+"_arithmetic_average"] = magpiedata_arithmetic_average[key]
+        for key in magpiedata_max.keys():
+            magpiedata_max_renamed[key+"_max_value"] = magpiedata_max[key]
+        for key in magpiedata_min.keys():
+            magpiedata_min_renamed[key+"_min_value"] = magpiedata_min[key]
 
-        return magpiedata_composition_average_renamed, magpiedata_arithmetic_average_renamed
+        return (magpiedata_composition_average_renamed, magpiedata_arithmetic_average_renamed, magpiedata_max_renamed, magpiedata_min_renamed)
 
     def _get_element_list(self, composition):
         element_amounts = composition.get_el_amt_dict()
