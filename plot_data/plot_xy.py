@@ -3,6 +3,7 @@ import matplotlib
 import numpy as np
 import matplotlib.pyplot as plt
 import data_analysis.printout_tools as ptools
+import pandas as pd
 import time
 import heapq
 
@@ -429,18 +430,12 @@ def multiple_overlay(xdatalist=list(), ydatalist=list(), labellist=list(),
         label = labellist[nidx]
         nospace_label = label.replace(" ","_")
         savecsv = os.path.join(save_path,"data_%s.csv" % nospace_label)
-        headerstr="%s," % xlabel
-        myarrlist = list()
-        myarrlist.append(xdatalist[nidx])
+        dataframe = pd.DataFrame(index = np.arange(0, len(xdatalist[nidx])))
+        dataframe[xlabel] = xdatalist[nidx]
         if not(xerr is None):
-            headerstr = headerstr + "xerr,"
-            myarrlist.append(xerrlist[nidx])
-        headerstr = headerstr + "%s," % label
-        myarrlist.append(ydatalist[nidx])
+            dataframe['xerr'] = xerrlist[nidx]
+        dataframe[ylabel] = ydatalist[nidx]
         if not (yerr is None):
-            headerstr = headerstr + "yerr,"
-            myarrlist.append(yerrlist[nidx])
-        headerstr=headerstr[:-1] #remove last comma
-        myarray = np.asarray(myarrlist).transpose()
-        ptools.mixed_array_to_csv(savecsv, headerstr, myarray)
+            dataframe['yerr'] = yerrlist[nidx]
+        dataframe.to_csv(savecsv)
     return
