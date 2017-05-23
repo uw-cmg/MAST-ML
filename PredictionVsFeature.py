@@ -1,18 +1,9 @@
-import matplotlib.pyplot as plt
-import matplotlib
-import data_parser
 import numpy as np
 import os
-from sklearn.kernel_ridge import KernelRidge
-from sklearn.metrics import mean_squared_error
-import data_analysis.printout_tools as ptools
-import portion_data.get_test_train_data as gttd
 from SingleFit import timeit
 from SingleFit import SingleFit
-import plot_data.plot_xy as plotxy
 import plot_data.plot_from_dict as plotdict
 import copy
-import time
 import logging
 
 class PredictionVsFeature(SingleFit):
