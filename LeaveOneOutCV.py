@@ -1,19 +1,9 @@
 import os
-import matplotlib
 import numpy as np
-import data_parser
-import matplotlib.pyplot as plt
-from mean_error import mean_error
 from sklearn.model_selection import LeaveOneOut
-from sklearn.metrics import mean_squared_error
-import data_analysis.printout_tools as ptools
-import plot_data.plot_predicted_vs_measured as plotpm
 import plot_data.plot_xy as plotxy
-from SingleFit import SingleFit
 from KFoldCV import KFoldCV
-from LeaveOutPercentCV import LeaveOutPercentCV
 from SingleFit import timeit
-from sklearn.metrics import r2_score
 
 class LeaveOneOutCV(KFoldCV):
     """leave-one-out cross validation

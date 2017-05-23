@@ -1,0 +1,25 @@
+Tue May 23 13:25:41 2017
+----- CV setup -----
+20 CV tests,
+leaving out 50 percent
+----- Statistics -----
+avg_mean_error: 0.0002
+avg_rmse: 0.1381
+rmse_best: 0.1134
+rmse_worst: 0.1659
+std_mean_error: 0.0248
+std_rmse: 0.0128
+----- Output data -----
+best_and_worst_test_data.csv file created with columns:
+    str_cat
+    num_id
+    time
+    N_sine_feature
+    N_linear_feature
+    y_feature
+    N_linear_feature
+    Best Prediction
+    Worst Prediction
+----- Plotting -----
+Plot best_worst_overlay.png created,
+    showing the best and worst of 20 tests.

@@ -1,17 +1,10 @@
 import os
-import matplotlib
 import numpy as np
-import data_parser
-import matplotlib.pyplot as plt
-from mean_error import mean_error
 from sklearn.model_selection import ShuffleSplit
 from sklearn.metrics import mean_squared_error
-import data_analysis.printout_tools as ptools
-import plot_data.plot_predicted_vs_measured as plotpm
 import plot_data.plot_xy as plotxy
 from SingleFit import SingleFit
 from SingleFit import timeit
-from sklearn.metrics import r2_score
 
 class LeaveOutPercentCV(SingleFit):
     """Leave out percent cross validation
@@ -103,8 +96,6 @@ class LeaveOutPercentCV(SingleFit):
         self.print_statistics()
         self.readme_list.append("----- Output data -----\n")
         self.print_best_worst_output_csv("best_and_worst")
-        #self.print_output_csv(label="best", cvtest_entry=self.cvtest_dict[self.best_test_index])
-        #self.print_output_csv(label="worst", cvtest_entry=self.cvtest_dict[self.worst_test_index])
         return
 
     @timeit
@@ -151,7 +142,7 @@ class LeaveOutPercentCV(SingleFit):
             fit = self.model.fit(input_train, target_train)
             predict_test = self.model.predict(input_test)
             rmse = np.sqrt(mean_squared_error(predict_test, target_test))
-            merr = mean_error(predict_test, target_test)
+            merr = np.mean(predict_test - target_test)
             prediction_array[fdict['test_index']] = predict_test
             self.cvtest_dict[cvtest]["rmse"] = rmse
             self.cvtest_dict[cvtest]["mean_error"] = merr
@@ -191,42 +182,6 @@ class LeaveOutPercentCV(SingleFit):
             self.readme_list.append("    %s\n" % col)
         return
 
-    def print_output_csv(self, label="", cvtest_entry=None):
-        """
-            Modify once dataframe is in place
-        """
-        raise NotImplementedError("Removing.")
-        olabel = "%s_test_data.csv" % label
-        ocsvname = os.path.join(self.save_path, olabel)
-        self.readme_list.append("%s file created with columns:\n" % olabel)
-        headerline = ""
-        printarray = None
-        if len(self.labeling_features) > 0:
-            self.readme_list.append("   labeling features: %s\n" % self.labeling_features)
-            print_features = list(self.labeling_features)
-        else:
-            print_features = list()
-        print_features.extend(self.input_features)
-        self.readme_list.append("   input features: %s\n" % self.input_features)
-        if not (self.testing_target_data is None):
-            print_features.append(self.target_feature)
-            self.readme_list.append("   target feature: %s\n" % self.target_feature)
-            if not (self.target_error_feature is None):
-                print_features.append(self.target_error_feature)
-                self.readme_list.append("   target error feature: %s\n" % self.target_error_feature)
-        for feature_name in print_features:
-            headerline = headerline + feature_name + ","
-            feature_vector = np.asarray(self.testing_dataset.get_data(feature_name)).ravel()
-            if printarray is None:
-                printarray = feature_vector
-            else:
-                printarray = np.vstack((printarray, feature_vector))
-        headerline = headerline + "Prediction,"
-        self.readme_list.append("   prediction: Prediction\n")
-        printarray = np.vstack((printarray, cvtest_entry['prediction_array']))
-        printarray=printarray.transpose()
-        ptools.mixed_array_to_csv(ocsvname, headerline, printarray)
-        return
 
     def plot_best_worst_overlay(self, notelist=list()):
         kwargs2 = dict()

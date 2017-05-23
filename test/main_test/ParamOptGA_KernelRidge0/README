@@ -1,0 +1,26 @@
+Tue May 23 13:25:44 2017
+===== GA info =====
+----- GA 0 -----
+Converged?: False
+Best 20-CV avg RMSE: 0.142: Testing.subtraction 0: 0.670000, Testing.subtraction 1: 0.050000, model alpha: 0.000012, model gamma: 0.134896
+..... Generations .....
+Generation 0 best: avg rmse 0.307: Testing.subtraction 0: 0.440000, Testing.subtraction 1: 0.470000, model alpha: 0.000145, model gamma: 3.235937
+Generation 1 best: avg rmse 0.142: Testing.subtraction 0: 0.670000, Testing.subtraction 1: 0.050000, model alpha: 0.000012, model gamma: 0.134896
+Generation 2 best: avg rmse 0.226: Testing.subtraction 0: 0.420000, Testing.subtraction 1: 0.140000, model alpha: 0.000010, model gamma: 2.630268
+Generation 3 best: avg rmse 0.280: Testing.subtraction 0: 0.790000, Testing.subtraction 1: 0.090000, model alpha: 0.000018, model gamma: 0.134896
+Generation 4 best: avg rmse 0.224: Testing.subtraction 0: 0.790000, Testing.subtraction 1: 0.180000, model alpha: 0.000032, model gamma: 2.630268
+----- GA 1 -----
+Converged?: False
+Best 20-CV avg RMSE: 0.121: Testing.subtraction 0: 0.370000, Testing.subtraction 1: 0.120000, model alpha: 0.000048, model gamma: 0.058884
+..... Generations .....
+Generation 0 best: avg rmse 0.121: Testing.subtraction 0: 0.370000, Testing.subtraction 1: 0.120000, model alpha: 0.000048, model gamma: 0.058884
+Generation 1 best: avg rmse 0.139: Testing.subtraction 0: 0.160000, Testing.subtraction 1: 0.050000, model alpha: 0.000028, model gamma: 3.981072
+Generation 2 best: avg rmse 0.375: Testing.subtraction 0: 0.160000, Testing.subtraction 1: 0.030000, model alpha: 0.000028, model gamma: 2.290868
+Generation 3 best: avg rmse 0.388: Testing.subtraction 0: 0.160000, Testing.subtraction 1: 0.040000, model alpha: 0.000028, model gamma: 3.715352
+Generation 4 best: avg rmse 0.388: Testing.subtraction 0: 0.160000, Testing.subtraction 1: 0.030000, model alpha: 0.000028, model gamma: 3.715352
+===== Final evaluations =====
+GA 0 200-CV avg RMSEs: 0.321 0.335 
+GA 1 200-CV avg RMSEs: 0.142 0.151 
+===== Overall info =====
+Tue May 23 13:25:49 2017
+Overall best genome: Testing.subtraction 0: 0.370000, Testing.subtraction 1: 0.120000, model alpha: 0.000048, model gamma: 0.058884

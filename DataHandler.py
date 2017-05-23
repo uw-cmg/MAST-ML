@@ -1,7 +1,5 @@
 import numpy as np
 import copy
-from SingleFit import timeit
-from DataParser import FeatureNormalization
 from DataParser import FeatureIO
 __author__ = "Tam Mayeshiba"
 

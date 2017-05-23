@@ -13,6 +13,7 @@ env_display = os.getenv("DISPLAY")
 if env_display is None:
     matplotlib.use("agg")
 from DataHandler import DataHandler
+import importlib
 
 class MASTMLDriver(object):
 
@@ -20,6 +21,7 @@ class MASTMLDriver(object):
         self.configfile = configfile
         #Set in code
         self.general_setup = None
+        self.csv_setup = None
         self.data_setup = None
         self.models_and_tests_setup = None
         self.configdict = None
@@ -57,6 +59,10 @@ class MASTMLDriver(object):
 
         # General setup
         self._perform_general_setup()
+
+        # Perform CSV setup (optional)
+        if "CSV Setup" in self.configdict.keys():
+            self._perform_csv_setup()
 
         # Parse input data files
         Xdata, ydata, x_features, y_feature, dataframe, self.data_dict = self._parse_input_data()
@@ -120,6 +126,18 @@ class MASTMLDriver(object):
         if not os.path.isdir(self.save_path):
             os.mkdir(self.save_path)
         return self.save_path
+
+    def _perform_csv_setup(self):
+        self.csv_setup = self.mastmlwrapper.process_config_keyword(keyword = "CSV Setup")
+        setup_class = self.csv_setup.pop("setup_class") #also remove from dict
+        class_name = setup_class.split(".")[-1]
+        test_module = importlib.import_module('%s' % (setup_class))
+        test_class_def = getattr(test_module, class_name)
+        logging.debug("Parameters passed by keyword:")
+        logging.debug(self.csv_setup)
+        test_class = test_class_def(**self.csv_setup)
+        test_class.run() 
+        return
 
     def _parse_input_data(self):
         Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=self.configdict).parse_fromfile(datapath=self.data_setup['Initial']['data_path'], as_array=False)

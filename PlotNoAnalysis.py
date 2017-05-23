@@ -1,11 +1,6 @@
-import matplotlib
-import matplotlib.pyplot as plt
-import data_parser
 import numpy as np
-import data_analysis.printout_tools as ptools
 import plot_data.plot_xy as plotxy
 import os
-import portion_data.get_test_train_data as gttd
 from SingleFit import SingleFit
 from SingleFit import timeit
 ###########
