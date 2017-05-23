@@ -1,14 +1,4 @@
-import matplotlib
-import matplotlib.pyplot as plt
-import data_parser
 import numpy as np
-from sklearn.kernel_ridge import KernelRidge
-from sklearn.metrics import mean_squared_error
-import data_analysis.printout_tools as ptools
-import plot_data.plot_predicted_vs_measured as plotpm
-import plot_data.plot_xy as plotxy
-import plot_data.plot_from_dict as plotdict
-import portion_data.get_test_train_data as gttd
 import os
 from SingleFit import SingleFit
 from SingleFitGrouped import SingleFitGrouped
