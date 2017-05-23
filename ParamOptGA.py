@@ -116,12 +116,10 @@ class GAIndividual():
         for didx in range(len(division_dict['train_index'])):
             train_index = division_dict['train_index'][didx]
             test_index = division_dict['test_index'][didx]
-            print(self.input_data_with_afm)
-            print(train_index)
-            X_train = self.input_data_with_afm[train_index]
-            X_test = self.input_data_with_afm[test_index]
-            Y_train = self.testing_dataset.target_data[train_index]
-            Y_test = self.testing_dataset.target_data[test_index]
+            X_train = self.input_data_with_afm.iloc[train_index,:]
+            X_test = self.input_data_with_afm.iloc[test_index,:]
+            Y_train = self.testing_dataset.target_data.iloc[train_index]
+            Y_test = self.testing_dataset.target_data.iloc[test_index]
             # train on training sets
             self.model.fit(X_train, Y_train)
             Y_test_Pred = self.model.predict(X_test)
@@ -132,13 +130,13 @@ class GAIndividual():
 
     def num_runs_cv(self, verbose=0):
         num_runs = len(self.cv_divisions)
-        n_rms_list = [None] * num_runs
         if self.use_multiprocessing > 0:
             cv_pool = Pool(processes = self.use_multiprocessing)
             n_rms_list = cv_pool.map(self.single_avg_cv, range(num_runs))
         else:
+            n_rms_list = list()
             for nidx in range(num_runs):
-                n_rms_list[nidx] = self.single_avg_cv(nidx)
+                n_rms_list.append(self.single_avg_cv(nidx))
         print("CV time: %s" % time.asctime(), flush=True)
         if verbose > 0:
             print_copy = list(n_rms_list)
@@ -214,8 +212,6 @@ class GAGeneration():
     def set_up(self):
         if self.population is None:
             self.initialize_population()
-        for pidx in range(self.population_size):
-            self.population_rmses.append(None)
         return
     
     def initialize_population(self, verbose=1):
@@ -251,7 +247,7 @@ class GAGeneration():
                 self.population_rmses[indidx] = rmses[indidx]
         else:
             for indidx in range(self.population_size):
-                self.population_rmses[indidx] = self.population[indidx].evaluate_individual()
+                self.population_rmses.append(self.population[indidx].evaluate_individual())
         if (verbose > 0):
             print(self.population_rmses)
         return
