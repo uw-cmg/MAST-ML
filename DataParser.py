@@ -7,10 +7,6 @@ import os
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from pymatgen import Element, Composition
-from sklearn.preprocessing import minmax_scale
-#TTM install error - commenting out for now
-#from matminer.descriptors.composition_features import get_magpie_descriptor
-
 
 class DataParser(object):
     """Class to parse input csv file and create pandas dataframe, and extract features
@@ -182,7 +178,7 @@ class FeatureNormalization(object):
         dataframe = DataframeUtilities()._merge_dataframe_columns(dataframe1=self.dataframe, dataframe2=dataframe_normalized)
         return dataframe
 
-class MagpieFeatures(object):
+class MagpieFeatureGeneration(object):
     """Class to generate new features using Magpie data and dataframe containing material compositions. Creates
      a dataframe and append features to existing feature dataframes
     """
@@ -195,9 +191,9 @@ class MagpieFeatures(object):
 
     def generate_magpie_features(self, save_to_csv=True):
         try:
-            compositions = self.dataframe['Magpie compositions']
+            compositions = self.dataframe['Material compositions']
         except KeyError:
-            print('No column called "Magpie compositions" exists in the supplied dataframe.')
+            print('No column called "Material compositions" exists in the supplied dataframe.')
             sys.exit()
 
         # Assign each magpiedata feature set to appropriate composition name
@@ -219,12 +215,12 @@ class MagpieFeatures(object):
         for magpiedata_dict in magpiedata_dict_list:
             dataframe_magpie = pd.DataFrame.from_dict(data=magpiedata_dict, orient='index')
             # Need to reorder compositions in new dataframe to match input dataframe
-            dataframe_magpie = dataframe_magpie.reindex(self.dataframe['Magpie compositions'].tolist())
+            dataframe_magpie = dataframe_magpie.reindex(self.dataframe['Material compositions'].tolist())
             # Need to make compositions the first column, instead of the row names
-            dataframe_magpie.index.name = 'Magpie compositions'
+            dataframe_magpie.index.name = 'Material compositions'
             dataframe_magpie.reset_index(inplace=True)
             # Need to delete duplicate column before merging dataframes
-            del dataframe_magpie['Magpie compositions']
+            del dataframe_magpie['Material compositions']
             # Merge magpie feature dataframe with originally supplied dataframe
             dataframe = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_magpie)
         if save_to_csv == bool(True):
@@ -340,6 +336,13 @@ class MagpieFeatures(object):
                 element_list.append(k)
 
         return element_list, atoms_per_formula_unit
+
+class MaterialsProjectFeatureGeneration(object):
+    """Class to generate new features using the Materials Project and dataframe containing material compositions. Creates
+     a dataframe and append features to existing feature dataframes
+    """
+    def __init__(self, dataframe):
+        self.dataframe = dataframe
 
 class DataframeUtilities(object):
     """This class is a collection of basic utilities for dataframe manipulation, and exchanging between dataframes and numpy arrays
