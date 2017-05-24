@@ -7,6 +7,7 @@ import os
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from pymatgen import Element, Composition
+from pymatgen.matproj.rest import MPRester
 
 class DataParser(object):
     """Class to parse input csv file and create pandas dataframe, and extract features
@@ -341,8 +342,42 @@ class MaterialsProjectFeatureGeneration(object):
     """Class to generate new features using the Materials Project and dataframe containing material compositions. Creates
      a dataframe and append features to existing feature dataframes
     """
-    def __init__(self, dataframe):
+    def __init__(self, dataframe, mapi_key):
         self.dataframe = dataframe
+        self.mapi_key = mapi_key
+
+    def _get_data_from_materials_project(self, composition):
+        mprester = MPRester(self.mapi_key)
+        structure_data_list = mprester.get_data(chemsys_formula_id=composition)
+        # Sort structures by stability (i.e. E above hull), and only return most stable compound data
+        structure_data_list = sorted(structure_data_list, key= lambda e_above: e_above['e_above_hull'])
+        structure_data_most_stable = structure_data_list[0]
+
+        # Trim down the full Materials Project data dict to include only quantities relevant to make features
+        structure_data_dict_condensed = {}
+        structure_data_dict_condensed["G_Voigt_Reuss_Hill"]=structure_data_most_stable["elasticity"]["G_Voigt_Reuss_Hill"]
+        structure_data_dict_condensed["G_Reuss"] = structure_data_most_stable["elasticity"]["G_Reuss"]
+        structure_data_dict_condensed["K_Voigt_Reuss_Hill"]=structure_data_most_stable["elasticity"]["K_Voigt_Reuss_Hill"]
+        structure_data_dict_condensed["K_Reuss"] = structure_data_most_stable["elasticity"]["K_Reuss"]
+        structure_data_dict_condensed["K_Voigt"] = structure_data_most_stable["elasticity"]["K_Voigt"]
+        structure_data_dict_condensed["G_Voigt"] = structure_data_most_stable["elasticity"]["G_Voigt"]
+        structure_data_dict_condensed["G_VRH"] = structure_data_most_stable["elasticity"]["G_VRH"]
+        structure_data_dict_condensed["Homogeneous_Poisson"] = structure_data_most_stable["elasticity"]["homogeneous_poisson"]
+        structure_data_dict_condensed["Poisson_Ratio"] = structure_data_most_stable["elasticity"]["poisson_ratio"]
+        structure_data_dict_condensed["Universal_Anisotropy"] = structure_data_most_stable["elasticity"]["universal_anisotropy"]
+        structure_data_dict_condensed["K_VRH"] = structure_data_most_stable["elasticity"]["K_VRH"]
+        structure_data_dict_condensed["Elastic_Anisotropy"] = structure_data_most_stable["elasticity"]["elastic_anisotropy"]
+        structure_data_dict_condensed["Bandgap"] = structure_data_most_stable["band_gap"]
+        structure_data_dict_condensed["E_Above_Hull"]=structure_data_most_stable["e_above_hull"]
+        structure_data_dict_condensed["Formation_Energy_per_atom"] = structure_data_most_stable["formation_energy_per_atom"]
+        structure_data_dict_condensed["Number_of_Elements"] = structure_data_most_stable["nelements"]
+        structure_data_dict_condensed["DFT_energy_per_atom"] = structure_data_most_stable["energy_per_atom"]
+        structure_data_dict_condensed["Volume"] = structure_data_most_stable["volume"]
+        structure_data_dict_condensed["Density"] = structure_data_most_stable["density"]
+        structure_data_dict_condensed["Total_Magnetization"] = structure_data_most_stable["total_magnetization"]
+        structure_data_dict_condensed["Spacegroup_Number"]=structure_data_most_stable["spacegroup"]["number"]
+
+        return structure_data_dict_condensed
 
 class DataframeUtilities(object):
     """This class is a collection of basic utilities for dataframe manipulation, and exchanging between dataframes and numpy arrays
