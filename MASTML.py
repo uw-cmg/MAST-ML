@@ -35,6 +35,7 @@ class MASTMLDriver(object):
         self.readme_html_tests = list()
         self.start_time = None
         self.favorites_dict=dict()
+        self.test_save_paths=list()
         return
 
     # This will later be removed as the parsed input file should have values all containing correct datatype
@@ -219,6 +220,7 @@ class MASTMLDriver(object):
                 # Set save path, allowing for multiple tests and models and potentially multiple of the same model (KernelRidge rbf kernel, KernelRidge linear kernel, etc.)
                 test_folder = "%s_%s%i" % (test_type, model.__class__.__name__, midx)
                 test_save_path = os.path.join(self.save_path, test_folder)
+                self.test_save_paths.append(test_save_path)
                 if not os.path.isdir(test_save_path):
                     os.mkdir(test_save_path)
                 self.mastmlwrapper.get_machinelearning_test(test_type=test_type,
