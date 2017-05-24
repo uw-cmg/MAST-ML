@@ -418,6 +418,20 @@ class MaterialsProjectFeatureGeneration(object):
 
         return structure_data_dict_condensed
 
+class CitrineFeatureGeneration(object):
+    """Class to generate new features using the Citrination client and dataframe containing material compositions. Creates
+     a dataframe and append features to existing feature dataframes
+    """
+    def __init__(self, dataframe, api_key):
+        self.dataframe = dataframe
+        self.api_key = api_key
+
+    def generate_citrine_features(self, save_to_csv=True):
+        pass
+
+    def _get_data_from_citrine(self, composition):
+        pass
+
 class DataframeUtilities(object):
     """This class is a collection of basic utilities for dataframe manipulation, and exchanging between dataframes and numpy arrays
     """
