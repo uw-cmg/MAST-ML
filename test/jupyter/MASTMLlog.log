@@ -1,0 +1,109 @@
+INFO:root:Initiated new MASTML session at: 2017-05-24, 15 hours, 09 minutes, and 57 seconds
+INFO:root:MASTML is checking that the section names of your input file are valid...
+INFO:root:MASTML is converting the datatypes of values in your input file...
+INFO:root:MASTML is checking that the subsection names and values in your input file are valid...
+INFO:root:The Models and Tests to Run : test_cases section of your input file has an unknown input parameter SingleFit_fromparams. Trying base name in front of underscores.
+INFO:root:Successfully read in and parsed your MASTML input file, test.conf
+INFO:root:Parsed the input data located under ../random_data/random_set2_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+WARNING:root:y_feature not in columns
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+WARNING:root:y_feature not in columns
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noA.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type ParamOptGA
+INFO:root:-------- ParamOptGA_KernelRidge0 --------
+INFO:root:Starting analysis at Wed May 24 15:09:58 2017
+INFO:root:SingleFit.set_up took 00:00:0.000011
+INFO:root:ParamOptGA.set_up took 00:00:0.004104
+INFO:root:SingleFit.print_readme took 00:00:0.000601
+INFO:root:ParamOptGA.run took 00:00:10.481160
+INFO:root:Ran test ParamOptGA for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:UPDATING PARAMETERS from ParamOptGA
+INFO:root:New gkrr_model params: {'alpha': 4.8e-05, 'coef0': 1, 'degree': 3, 'gamma': 0.058884, 'kernel': 'rbf'}
+INFO:root:Updated model.
+INFO:root:Updated dataset InitialNoD data and input features with new feature Testing.subtraction
+INFO:root:Updated dataset Extrapolation data and input features with new feature Testing.subtraction
+INFO:root:Updated dataset ExtrapolationNoD data and input features with new feature Testing.subtraction
+INFO:root:Updated dataset InitialNoA data and input features with new feature Testing.subtraction
+INFO:root:Updated dataset Initial data and input features with new feature Testing.subtraction
+INFO:root:Updated dataset Set2 data and input features with new feature Testing.subtraction
+INFO:root:Looking up parameters for test type SingleFit_fromparams
+INFO:root:-------- SingleFit_fromparams_KernelRidge0 --------
+INFO:root:Starting analysis at Wed May 24 15:10:08 2017
+INFO:root:SingleFit.set_up took 00:00:0.000007
+INFO:root:SingleFit.fit took 00:00:0.038595
+INFO:root:SingleFit.predict took 00:00:0.006282
+INFO:root:SingleFit.plot took 00:00:0.613122
+INFO:root:SingleFit.print_readme took 00:00:0.000248
+INFO:root:SingleFit.run took 00:00:0.658815
+INFO:root:Ran test SingleFit_fromparams for your KernelRidge(alpha=4.8e-05, coef0=1, degree=3, gamma=0.058884, kernel='rbf',
+      kernel_params=None) model
+INFO:root:No parameter or data updates necessary.
+INFO:root:Initiated new MASTML session at: 2017-05-24, 15 hours, 15 minutes, and 28 seconds
+INFO:root:Initiated new MASTML session at: 2017-05-24, 15 hours, 15 minutes, and 51 seconds
+INFO:root:Initiated new MASTML session at: 2017-05-24, 15 hours, 19 minutes, and 00 seconds
+INFO:root:Initiated new MASTML session at: 2017-05-24, 15 hours, 19 minutes, and 15 seconds
+INFO:root:Initiated new MASTML session at: 2017-05-24, 15 hours, 23 minutes, and 22 seconds
+INFO:root:Initiated new MASTML session at: 2017-05-24, 17 hours, 15 minutes, and 41 seconds
+INFO:root:MASTML is checking that the section names of your input file are valid...
+INFO:root:MASTML is converting the datatypes of values in your input file...
+INFO:root:MASTML is checking that the subsection names and values in your input file are valid...
+INFO:root:The Models and Tests to Run : test_cases section of your input file has an unknown input parameter KFoldCV_5fold. Trying base name in front of underscores.
+INFO:root:Successfully read in and parsed your MASTML input file, test.conf
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+WARNING:root:y_feature not in columns
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy_noD.csv
+WARNING:root:y_feature not in columns
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Parsed the input data located under ../random_data/random_set2_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noA.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type KFoldCV_5fold
+INFO:root:-------- KFoldCV_5fold_KernelRidge0 --------
+INFO:root:Starting analysis at Wed May 24 17:15:43 2017
+INFO:root:SingleFit.set_up took 00:00:0.000010
+INFO:root:LeaveOutPercentCV.set_up took 00:00:0.025264
+INFO:root:LeaveOutPercentCV.fit took 00:00:0.997511
+INFO:root:LeaveOutPercentCV.predict took 00:00:0.061024
+INFO:root:KFoldCV.plot took 00:00:1.746892
+INFO:root:SingleFit.print_readme took 00:00:0.000261
+INFO:root:SingleFit.run took 00:00:2.831866
+INFO:root:Ran test KFoldCV_5fold for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:No parameter or data updates necessary.
+INFO:root:Initiated new MASTML session at: 2017-05-24, 17 hours, 16 minutes, and 07 seconds
+INFO:root:MASTML is checking that the section names of your input file are valid...
+INFO:root:MASTML is converting the datatypes of values in your input file...
+INFO:root:MASTML is checking that the subsection names and values in your input file are valid...
+INFO:root:The Models and Tests to Run : test_cases section of your input file has an unknown input parameter KFoldCV_5fold. Trying base name in front of underscores.
+INFO:root:Successfully read in and parsed your MASTML input file, test.conf
+INFO:root:Parsed the input data located under ../random_data/random_test_data.csv
+WARNING:root:y_feature not in columns
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy_noD.csv
+WARNING:root:y_feature not in columns
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noy.csv
+INFO:root:Parsed the input data located under ../random_data/random_set2_data.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noD.csv
+INFO:root:Parsed the input data located under ../random_data/random_test_data_noA.csv
+INFO:root:Getting model gkrr_model
+INFO:root:Adding model gkrr_model to queue...
+INFO:root:Looking up parameters for test type KFoldCV_5fold
+INFO:root:-------- KFoldCV_5fold_KernelRidge0 --------
+INFO:root:Starting analysis at Wed May 24 17:16:08 2017
+INFO:root:SingleFit.set_up took 00:00:0.000007
+INFO:root:LeaveOutPercentCV.set_up took 00:00:0.004032
+INFO:root:LeaveOutPercentCV.fit took 00:00:0.450364
+INFO:root:LeaveOutPercentCV.predict took 00:00:0.005821
+INFO:root:KFoldCV.plot took 00:00:0.654170
+INFO:root:SingleFit.print_readme took 00:00:0.000164
+INFO:root:SingleFit.run took 00:00:1.115163
+INFO:root:Ran test KFoldCV_5fold for your KernelRidge(alpha=0.00139, coef0=1, degree=3, gamma=0.518, kernel='rbf',
+      kernel_params=None) model
+INFO:root:No parameter or data updates necessary.
