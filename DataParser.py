@@ -375,9 +375,8 @@ class MaterialsProjectFeatureGeneration(object):
 
     def _get_data_from_materials_project(self, composition):
         mprester = MPRester(self.mapi_key)
-        print(composition)
         structure_data_list = mprester.get_data(chemsys_formula_id=composition)
-        #print(structure_data_list, len(structure_data_list))
+
         # Sort structures by stability (i.e. E above hull), and only return most stable compound data
         if len(structure_data_list) > 0:
             structure_data_list = sorted(structure_data_list, key= lambda e_above: e_above['e_above_hull'])
