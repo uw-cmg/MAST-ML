@@ -312,6 +312,12 @@ class GAGeneration():
                                 use_multiprocessing = 0) #Parallelize in evaluate_population, not in CV
         return
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        return None
+
 class ParamOptGA(SingleFit):
     """Search for paramters using GA.
         Allows custom features.
@@ -446,35 +452,40 @@ class ParamOptGA(SingleFit):
 
         while ga_runs_since_best < self.convergence_generations and ga_genct < self.max_generations: 
             print("Generation %i %s" % (ga_genct, time.asctime()), flush=True)
-            Gen = GAGeneration(testing_dataset_for_init = self.testing_dataset,
+            with GAGeneration(testing_dataset_for_init = self.testing_dataset,
                 cv_divisions=self.cv_divisions,
                 population=new_population,
                 num_parents=self.num_parents,
                 gene_template=self.gene_template,
                 afm_dict=self.afm_dict,
                 population_size=self.population_size,
-                use_multiprocessing=self.use_multiprocessing)
-            if self.fix_random_for_testing == 1:
-                Gen.random_state.seed(self.gact)
-            Gen.run()
-            new_population = dict(Gen.new_population)
-            self.ga_dict[self.gact]['generations'][ga_genct] = Gen
+                use_multiprocessing=self.use_multiprocessing) as Gen:
+                if self.fix_random_for_testing == 1:
+                    Gen.random_state.seed(self.gact)
+                Gen.run()
+                gen_best_genome = dict(Gen.best_genome)
+                gen_best_rmse = Gen.best_rmse
+                new_population = dict(Gen.new_population)
+            self.ga_dict[self.gact]['generations'][ga_genct] = dict()
+            self.ga_dict[self.gact]['generations'][ga_genct]['best_rmse'] = gen_best_rmse
+            self.ga_dict[self.gact]['generations'][ga_genct]['best_genome'] = gen_best_genome
+            
 
             # updates best parameter set
-            if Gen.best_rmse < ga_best_rmse:
-                ga_best_rmse = Gen.best_rmse
-                ga_best_genome = Gen.best_genome
+            if gen_best_rmse < ga_best_rmse:
+                ga_best_rmse = gen_best_rmse
+                ga_best_genome = gen_best_genome
                 ga_runs_since_best = 0
             
             # prints output for each generation
             print(time.asctime())
-            genpref = "Results for generation %i, rmse %3.3f" % (ga_genct, Gen.best_rmse)
-            print_genome(Gen.best_genome, preface=genpref)
+            genpref = "Results for generation %i, rmse %3.3f" % (ga_genct, gen_best_rmse)
+            print_genome(gen_best_genome, preface=genpref)
             print(ga_genct, ga_runs_since_best, flush=True)
             
             ga_genct = ga_genct + 1
 
-            if Gen.best_genome == ga_best_genome:
+            if gen_best_genome == ga_best_genome:
                 ga_runs_since_best = ga_runs_since_best + 1
         
         self.ga_dict[self.gact]['best_rmse'] = ga_best_rmse
@@ -496,8 +507,8 @@ class ParamOptGA(SingleFit):
         gens.sort()
         self.readme_list.append("..... Generations .....\n")
         for gen in gens:
-            prefacestr = "Generation %i best: avg rmse %3.3f" % (gen, self.ga_dict[ga]['generations'][gen].best_rmse)
-            genomestr = print_genome(self.ga_dict[ga]['generations'][gen].best_genome, preface = prefacestr)
+            prefacestr = "Generation %i best: avg rmse %3.3f" % (gen, self.ga_dict[ga]['generations'][gen]['best_rmse'])
+            genomestr = print_genome(self.ga_dict[ga]['generations'][gen]['best_genome'], preface = prefacestr)
             self.readme_list.append("%s\n" % genomestr)
         return
 
