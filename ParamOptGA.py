@@ -11,6 +11,7 @@ from sklearn.kernel_ridge import KernelRidge
 from multiprocessing import Process,Pool,TimeoutError,Value,Array,Manager
 import time
 from custom_features import cf_help
+import resource
 
 def print_genome(genome=None, preface=""):
     genomestr = "%s: " % preface
@@ -150,6 +151,7 @@ class GAIndividual():
     def evaluate_individual(self):
         cv_rmse = self.num_runs_cv()
         self.rmse = cv_rmse
+        print('Indiv eval Memory usage: %s (kb Linux, bytes Mac)' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
         return cv_rmse
 
 class GAGeneration():
@@ -205,10 +207,12 @@ class GAGeneration():
         return
     
     def run(self):
+        print('Gen begin Memory usage: %s (kb Linux, bytes Mac)' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
         self.set_up()
         self.evaluate_population()
         self.select_parents()
         self.create_new_population()
+        print('Gen end Memory usage: %s (kb Linux, bytes Mac)' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
         return
 
     def set_up(self):
@@ -438,6 +442,7 @@ class ParamOptGA(SingleFit):
         return
 
     def run_ga(self):
+        print('GA start Memory usage: %s (kb Linux, bytes Mac)' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
         self.ga_dict[self.gact] = dict()
         self.ga_dict[self.gact]['generations'] = dict()
         
@@ -495,6 +500,7 @@ class ParamOptGA(SingleFit):
         else:
             self.ga_dict[self.gact]['converged']=False
         self.gact = self.gact + 1
+        print('GA end Memory usage: %s (kb linux, bytes Mac)' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
         return
 
     def print_ga(self, ga=""):
@@ -521,6 +527,7 @@ class ParamOptGA(SingleFit):
 
     @timeit
     def run(self):
+        print('Run start Memory usage: %s (kb linux, bytes Mac)' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
         self.set_up()
         self.readme_list.append("===== GA info =====\n")
         for ga in range(0, self.num_gas):
@@ -531,6 +538,7 @@ class ParamOptGA(SingleFit):
         self.print_readme()
         self.print_final_best_for_code()
         self.print_afm_dict_for_code()
+        print('Run end Memory usage: %s (kb linux, bytes Mac)' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
         return
 
     @timeit
