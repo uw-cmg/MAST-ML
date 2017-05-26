@@ -263,6 +263,9 @@ class MASTMLDriver(object):
                 self.data_dict[dname].input_features.append(feature_name)
                 self.data_dict[dname].set_up_data_from_features()
                 logging.info("Updated dataset %s data and input features with new feature %s" % (dname,afm))
+            newcsv = os.path.join(self.save_path, "updated_%s.csv" % dname)
+            self.data_dict[dname].data.to_csv(newcsv)
+            logging.info("Updated dataset printed to %s" % newcsv)
         return
 
     def _get_param_dict(self, fname):
