@@ -6,6 +6,7 @@ import os
 from pymatgen import Element, Composition
 from pymatgen.matproj.rest import MPRester
 from citrination_client import *
+from DataOperations import DataframeUtilities
 
 class MagpieFeatureGeneration(object):
     """Class to generate new features using Magpie data and dataframe containing material compositions. Creates
