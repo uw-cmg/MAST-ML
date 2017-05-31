@@ -4,8 +4,8 @@ from sklearn.decomposition import PCA
 from DataOperations import DataframeUtilities
 from FeatureOperations import FeatureIO
 from sklearn.feature_selection import SelectKBest, f_classif, f_regression
+from sklearn.svm import SVR
 from sklearn.feature_selection import RFE
-from sklearn.feature_selection import VarianceThreshold
 
 
 class DimensionalReduction(object):
@@ -44,15 +44,10 @@ class ClassificationFeatureSelection(object):
     def get_original_dataframe(self):
         return self.dataframe
 
-    def univariate_feature_selection(self, features_to_keep):
-        selector = SelectKBest(score_func=f_classif, k=features_to_keep)
+    def univariate_feature_selection(self, number_features_to_keep):
+        selector = SelectKBest(score_func=f_classif, k=number_features_to_keep)
         Xnew = selector.fit_transform(X=self.dataframe[self.x_features], y=self.dataframe[self.y_feature])
-        feature_indices_selected = selector.get_support(indices=True)
-        # Get the names of the features based on their indices, for features selected from feature selection
-        feature_names_selected = []
-        for i in range(len(self.x_features)):
-            if i in feature_indices_selected:
-                feature_names_selected.append(self.x_features[i])
+        feature_names_selected = MiscOperations().get_selector_feature_names(selector=selector, x_features=self.x_features)
         dataframe = DataframeUtilities()._array_to_dataframe(array=Xnew)
         dataframe = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe, x_features=feature_names_selected, y_feature=self.y_feature, remove_first_row=False)
         # Add y_feature back into the dataframe
@@ -74,17 +69,35 @@ class RegressionFeatureSelection(object):
     def get_original_dataframe(self):
         return self.dataframe
 
-    def univariate_feature_selection(self, features_to_keep):
-        selector = SelectKBest(score_func=f_regression, k=features_to_keep)
+    def univariate_feature_selection(self, number_features_to_keep):
+        selector = SelectKBest(score_func=f_regression, k=number_features_to_keep)
         Xnew = selector.fit_transform(X=self.dataframe[self.x_features], y=self.dataframe[self.y_feature])
-        feature_indices_selected = selector.get_support(indices=True)
-        # Get the names of the features based on their indices, for features selected from feature selection
-        feature_names_selected = []
-        for i in range(len(self.x_features)):
-            if i in feature_indices_selected:
-                feature_names_selected.append(self.x_features[i])
+        feature_names_selected = MiscOperations().get_selector_feature_names(selector=selector, x_features=self.x_features)
         dataframe = DataframeUtilities()._array_to_dataframe(array=Xnew)
         dataframe = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe, x_features=feature_names_selected, y_feature=self.y_feature, remove_first_row=False)
         # Add y_feature back into the dataframe
         dataframe = FeatureIO(dataframe=dataframe).add_custom_features(features_to_add=[self.y_feature],data_to_add=self.dataframe[self.y_feature])
         return dataframe
+
+    def recursive_feature_elimination(self, number_features_to_keep):
+        estimator = SVR(kernel='linear')
+        selector = RFE(estimator=estimator, n_features_to_select=number_features_to_keep)
+        Xnew = selector.fit_transform(X=self.dataframe[self.x_features], y=self.dataframe[self.y_feature])
+        feature_names_selected = MiscOperations().get_selector_feature_names(selector=selector, x_features=self.x_features)
+        dataframe = DataframeUtilities()._array_to_dataframe(array=Xnew)
+        dataframe = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe, x_features=feature_names_selected, y_feature=self.y_feature, remove_first_row=False)
+        # Add y_feature back into the dataframe
+        dataframe = FeatureIO(dataframe=dataframe).add_custom_features(features_to_add=[self.y_feature],data_to_add=self.dataframe[self.y_feature])
+        return dataframe
+
+class MiscOperations():
+
+    @classmethod
+    def get_selector_feature_names(cls, selector, x_features):
+        feature_indices_selected = selector.get_support(indices=True)
+        # Get the names of the features based on their indices, for features selected from feature selection
+        feature_names_selected = []
+        for i in range(len(x_features)):
+            if i in feature_indices_selected:
+                feature_names_selected.append(x_features[i])
+        return feature_names_selected
