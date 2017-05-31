@@ -213,6 +213,7 @@ class PredictionVsFeature(SingleFit):
         addl_kwargs['linestyles'] = self.linestyles
         addl_kwargs['legendloc'] = self.legendloc
         addl_kwargs['sizes'] = self.sizes
+        addl_kwargs['stepsize'] = self.stepsize
         faces = list()
         for fidx in range(0, len(self.markers)):
             faces.append("None")
