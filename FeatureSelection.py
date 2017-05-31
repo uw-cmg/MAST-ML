@@ -6,8 +6,9 @@ from FeatureOperations import FeatureIO
 from sklearn.feature_selection import RFE
 from sklearn.feature_selection import VarianceThreshold
 
-class FeatureSelection(object):
-    """Class to conduct feature selection to reduce size of feature space
+class PrincipalComponentAnalysis(object):
+    """Class to conduct PCA for dimensional reduction of features. Mind that PCA produces linear combinations of features,
+    and thus the resulting new features don't have physical meaning.
     """
     def __init__(self, dataframe):
         self.dataframe = dataframe
@@ -23,6 +24,25 @@ class FeatureSelection(object):
         dataframe = FeatureIO(dataframe=dataframe).add_custom_features(features_to_add=[y_feature], data_to_add=self.dataframe[y_feature])
         return dataframe
 
+class ClassificationFeatureSelection(object):
+    """Class to conduct feature selection routines to reduce the number of input features for a classification problem.
+    """
+    def __init__(self, dataframe):
+        self.dataframe = dataframe
+
+    @property
+    def get_original_dataframe(self):
+        return self.dataframe
+
     def recursive_feature_selection(self):
         pass
 
+class RegressionFeatureSelection(object):
+    """Class to conduct feature selection routines to reduce the number of input features for a regression problem.
+    """
+    def __init__(self, dataframe):
+        self.dataframe = dataframe
+
+    @property
+    def get_original_dataframe(self):
+        return self.dataframe
