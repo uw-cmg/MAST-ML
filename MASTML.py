@@ -3,7 +3,10 @@ __author__ = 'Ryan Jacobs, Tam Mayeshiba'
 import sys
 import os
 from MASTMLInitializer import MASTMLWrapper, ConfigFileValidator
-from DataParser import DataParser, FeatureIO, FeatureNormalization, DataframeUtilities, MagpieFeatures
+from DataOperations import DataParser, DataframeUtilities
+from FeatureGeneration import MagpieFeatureGeneration, MaterialsProjectFeatureGeneration
+from FeatureOperations import FeatureIO, FeatureNormalization
+from FeatureSelection import FeatureSelection, DimensionalReduction
 import logging
 import shutil
 import time
