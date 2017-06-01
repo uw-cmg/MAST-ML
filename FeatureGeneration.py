@@ -199,7 +199,7 @@ class MaterialsProjectFeatureGeneration(object):
         # Merge magpie feature dataframe with originally supplied dataframe
         dataframe = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_mp)
         if save_to_csv == bool(True):
-            dataframe.to_csv('input_with_magpie_features.csv', index=False)
+            dataframe.to_csv('input_with_materialsproject_features.csv', index=False)
         return dataframe
 
     def _get_data_from_materials_project(self, composition):
