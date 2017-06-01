@@ -5,8 +5,8 @@ import os
 from MASTMLInitializer import MASTMLWrapper, ConfigFileValidator
 from DataOperations import DataParser
 from FeatureGeneration import MagpieFeatureGeneration, MaterialsProjectFeatureGeneration, CitrineFeatureGeneration
-from FeatureOperations import FeatureNormalization
-from FeatureSelection import FeatureSelection, DimensionalReduction
+from FeatureOperations import FeatureNormalization, FeatureIO
+from FeatureSelection import FeatureSelection, DimensionalReduction, MiscOperations
 import logging
 import shutil
 import time
@@ -74,10 +74,15 @@ class MASTMLDriver(object):
         # Generate additional descriptors, as specified in input file (optional)
         if "Feature Generation" in self.configdict.keys():
             dataframe = self._perform_feature_generation(dataframe=dataframe)
+            Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe,
+                                                                                    target_feature='target_feature')
 
         # Perform feature selection and dimensional reduction, as specified in the input file (optional)
         if "Feature Selection" in self.configdict.keys():
-            dataframe = self._perform_feature_selection(dataframe=dataframe)
+            # First remove features containing strings before doing feature selection
+            x_features, dataframe = MiscOperations().remove_features_containing_strings(dataframe=dataframe, x_features=x_features)
+            dataframe = self._perform_feature_selection(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
+            x_features, y_feature = DataParser(configdict=self.configdict).get_features(dataframe=dataframe, target_feature=y_feature)
 
         # Normalize features
         fn = FeatureNormalization(dataframe=dataframe)
@@ -188,11 +193,11 @@ class MASTMLDriver(object):
         for k, v in self.configdict['Feature Generation'].items():
             # TODO: Here, True/False are strings. Change them with validator to be bools
             if k == 'add_magpie_features' and v == 'True':
-                logging.info('Adding Magpie features to your feature list')
+                logging.info('FEATURE GENERATION: Adding Magpie features to your feature list')
                 mfg = MagpieFeatureGeneration(dataframe=dataframe)
                 dataframe = mfg.generate_magpie_features(save_to_csv=True)
             if k == 'add_materialsproject_features' and v == 'True':
-                logging.info('Adding Materials Project features to your feature list')
+                logging.info('FEATURE GENERATION: Adding Materials Project features to your feature list')
                 mpfg = MaterialsProjectFeatureGeneration(dataframe=dataframe, mapi_key=self.configdict['Feature Generation']['materialsproject_apikey'])
                 dataframe = mpfg.generate_materialsproject_features(save_to_csv=True)
             #if k == 'add_citrine_features' and v is True:
@@ -200,8 +205,25 @@ class MASTMLDriver(object):
             #    dataframe = cfg.generate_citrine_features()
         return dataframe
 
-    def _perform_feature_selection(self, dataframe):
-        pass
+    def _perform_feature_selection(self, dataframe, x_features, y_feature):
+        for k, v in self.configdict['Feature Selection'].items():
+            # TODO: Here, True/False are strings. Change them with validator to be bools
+            if k == 'remove_constant_features' and v == 'True':
+                logging.info('FEATURE SELECTION: Removing constant features from your feature list')
+                dr = DimensionalReduction(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
+                dataframe = dr.remove_constant_features()
+                x_features, y_feature = DataParser(configdict=self.configdict).get_features(dataframe=dataframe, target_feature=y_feature)
+
+            if k == 'feature_selection_algorithm':
+                logging.info('FEATURE SELECTION: Selecting features using a %s algorithm' % v)
+                fs = FeatureSelection(dataframe=dataframe, x_features=x_features, y_feature=y_feature, selection_type=self.configdict['Feature Selection']['selection_type'])
+                if v == 'RFE':
+                    dataframe = fs.recursive_feature_elimination(number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']), save_to_csv=True)
+                if v == 'univariate':
+                    dataframe = fs.univariate_feature_selection(number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']), save_to_csv=True)
+                if v == 'stability':
+                    dataframe = fs.stability_selection(number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']), save_to_csv=True)
+        return dataframe
 
     def _gather_models(self):
         self.models_and_tests_setup = self.mastmlwrapper.process_config_keyword(keyword='Models and Tests to Run')
