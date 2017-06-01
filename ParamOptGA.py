@@ -105,19 +105,21 @@ class GAIndividual():
                         param_dict=dict(self.genome[gene]),
                         addl_feature_method_kwargs = dict(afm_kwargs))
             fio = FeatureIO(input_data)
-            input_data = fio.add_custom_features(gene, feature_data)
+            input_data = fio.add_custom_features([gene], feature_data)
         self.input_data_with_afm = input_data
         return
 
-    def single_avg_cv(self, Xdata, Ydata, division_index):
+    def single_avg_cv(self, division_index):
         rms_list=list()
         division_dict = self.cv_divisions[division_index]
         # split into testing and training sets
         for didx in range(len(division_dict['train_index'])):
             train_index = division_dict['train_index'][didx]
             test_index = division_dict['test_index'][didx]
-            X_train, X_test = Xdata[train_index], Xdata[test_index]
-            Y_train, Y_test = Ydata[train_index], Ydata[test_index]
+            X_train = self.input_data_with_afm.iloc[train_index,:]
+            X_test = self.input_data_with_afm.iloc[test_index,:]
+            Y_train = self.testing_dataset.target_data.iloc[train_index]
+            Y_test = self.testing_dataset.target_data.iloc[test_index]
             # train on training sets
             self.model.fit(X_train, Y_train)
             Y_test_Pred = self.model.predict(X_test)
@@ -126,31 +128,17 @@ class GAIndividual():
         mean_rms = np.mean(rms_list)
         return mean_rms
 
-    def num_runs_cv_multiprocessing(self, X, Y, nidx, result_dict):
-        result_dict[nidx] = self.single_avg_cv(X, Y, nidx)
-        return
-
-    def num_runs_cv(self, X, Y, verbose=0):
-        Xdata = np.asarray(X)
-        Ydata = np.asarray(Y)
+    def num_runs_cv(self, verbose=0):
         num_runs = len(self.cv_divisions)
-        n_rms_list = [None] * num_runs
         if self.use_multiprocessing > 0:
-            cv_manager = Manager()
-            cv_dict = cv_manager.dict()
-            cv_procs = list()
-            for nidx in range(num_runs):
-                cv_proc = Process(target=self.num_runs_cv_multiprocessing,
-                    args=(np.asarray(X), np.asarray(Y), nidx, cv_dict))
-                cv_proc.start()
-                cv_procs.append(cv_proc)
-            for cv_proc in cv_procs:
-                cv_proc.join()
-            for nidx in range(num_runs):
-                n_rms_list[nidx] = cv_dict[nidx]
+            cv_pool = Pool(processes = self.use_multiprocessing)
+            n_rms_list = cv_pool.map(self.single_avg_cv, range(num_runs))
+            cv_pool.close()
+            cv_pool.join()
         else:
+            n_rms_list = list()
             for nidx in range(num_runs):
-                n_rms_list[nidx] = self.single_avg_cv(Xdata, Ydata, nidx)
+                n_rms_list.append(self.single_avg_cv(nidx))
         print("CV time: %s" % time.asctime(), flush=True)
         if verbose > 0:
             print_copy = list(n_rms_list)
@@ -160,14 +148,14 @@ class GAIndividual():
         return (np.mean(n_rms_list))
 
     def evaluate_individual(self):
-        cv_rmse = self.num_runs_cv(self.input_data_with_afm, self.testing_dataset.target_data)       
+        cv_rmse = self.num_runs_cv()
         self.rmse = cv_rmse
         return cv_rmse
 
 class GAGeneration():
     """GA Generation
     Attributes:
-        self.testing_dataset
+        self.testing_dataset_for_init
         self.cv_divisions <dict>
         self.population <list of param dicts>
         self.num_parents <int>
@@ -187,7 +175,7 @@ class GAGeneration():
         self.random_state
     """
     def __init__(self, 
-                testing_dataset=None,
+                testing_dataset_for_init=None,
                 cv_divisions=None,
                 population=None,
                 num_parents=None,
@@ -196,7 +184,7 @@ class GAGeneration():
                 afm_dict=None,
                 use_multiprocessing=1,
                 *args,**kwargs):
-        self.testing_dataset = testing_dataset
+        self.testing_dataset_for_init = testing_dataset_for_init
         self.cv_divisions = cv_divisions
         self.population = population
         self.num_parents = int(num_parents)
@@ -226,8 +214,6 @@ class GAGeneration():
     def set_up(self):
         if self.population is None:
             self.initialize_population()
-        for pidx in range(self.population_size):
-            self.population_rmses.append(None)
         return
     
     def initialize_population(self, verbose=1):
@@ -243,35 +229,27 @@ class GAGeneration():
                 for geneidx in geneidxs:
                     genome[gene][geneidx] =self.random_state.randint(0, 101)/100
             self.population[pidx] = GAIndividual(genome=genome,
-                                testing_dataset = self.testing_dataset,
+                                testing_dataset = self.testing_dataset_for_init,
                                 cv_divisions = self.cv_divisions,
                                 afm_dict = self.afm_dict,
-                                use_multiprocessing = self.use_multiprocessing)
+                                use_multiprocessing = 0) #Parallelize in evaluate_population, not in CV
         if verbose > 0:
             for pidx in self.population.keys():
                 print_genome(self.population[pidx].genome)
         return
 
-    def evaluate_population_multiprocessing(self, indidx, rmse_dict):
-        rmse_dict[indidx] = self.population[indidx].evaluate_individual()
-        return
+    def evaluate_population_multiprocessing(self, indidx):
+        return self.population[indidx].evaluate_individual()
 
     def evaluate_population(self, verbose=1):
         if self.use_multiprocessing > 0:
-            gen_manager = Manager()
-            rmse_dict = gen_manager.dict()
-            ind_procs = list()
-            for indidx in range(self.population_size):
-                ind_proc = Process(target=self.evaluate_population_multiprocessing, args=(indidx, rmse_dict))
-                ind_procs.append(ind_proc)
-                ind_proc.start()
-            for ind_proc in ind_procs:
-                ind_proc.join()
-            for indidx in range(self.population_size):
-                self.population_rmses[indidx] = rmse_dict[indidx]
+            ep_pool = Pool(processes = self.use_multiprocessing)
+            self.population_rmses = ep_pool.map(self.evaluate_population_multiprocessing, range(self.population_size))
+            ep_pool.close()
+            ep_pool.join()
         else:
             for indidx in range(self.population_size):
-                self.population_rmses[indidx] = self.population[indidx].evaluate_individual()
+                self.population_rmses.append(self.population[indidx].evaluate_individual())
         if (verbose > 0):
             print(self.population_rmses)
         return
@@ -328,11 +306,17 @@ class GAGeneration():
                         new_val = self.random_state.randint(0,101)/100   # mutation
                     new_genome[gene][geneidx] = new_val
             self.new_population[indidx] = GAIndividual(genome = new_genome,
-                                testing_dataset = self.testing_dataset,
+                                testing_dataset = self.testing_dataset_for_init,
                                 cv_divisions = self.cv_divisions,
                                 afm_dict = self.afm_dict,
-                                use_multiprocessing = self.use_multiprocessing)
+                                use_multiprocessing = 0) #Parallelize in evaluate_population, not in CV
         return
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        return None
 
 class ParamOptGA(SingleFit):
     """Search for paramters using GA.
@@ -468,35 +452,40 @@ class ParamOptGA(SingleFit):
 
         while ga_runs_since_best < self.convergence_generations and ga_genct < self.max_generations: 
             print("Generation %i %s" % (ga_genct, time.asctime()), flush=True)
-            Gen = GAGeneration(testing_dataset = self.testing_dataset,
+            with GAGeneration(testing_dataset_for_init = self.testing_dataset,
                 cv_divisions=self.cv_divisions,
                 population=new_population,
                 num_parents=self.num_parents,
                 gene_template=self.gene_template,
                 afm_dict=self.afm_dict,
                 population_size=self.population_size,
-                use_multiprocessing=self.use_multiprocessing)
-            if self.fix_random_for_testing == 1:
-                Gen.random_state.seed(self.gact)
-            Gen.run()
-            new_population = dict(Gen.new_population)
-            self.ga_dict[self.gact]['generations'][ga_genct] = Gen
+                use_multiprocessing=self.use_multiprocessing) as Gen:
+                if self.fix_random_for_testing == 1:
+                    Gen.random_state.seed(self.gact)
+                Gen.run()
+                gen_best_genome = dict(Gen.best_genome)
+                gen_best_rmse = Gen.best_rmse
+                new_population = dict(Gen.new_population)
+            self.ga_dict[self.gact]['generations'][ga_genct] = dict()
+            self.ga_dict[self.gact]['generations'][ga_genct]['best_rmse'] = gen_best_rmse
+            self.ga_dict[self.gact]['generations'][ga_genct]['best_genome'] = gen_best_genome
+            
 
             # updates best parameter set
-            if Gen.best_rmse < ga_best_rmse:
-                ga_best_rmse = Gen.best_rmse
-                ga_best_genome = Gen.best_genome
+            if gen_best_rmse < ga_best_rmse:
+                ga_best_rmse = gen_best_rmse
+                ga_best_genome = gen_best_genome
                 ga_runs_since_best = 0
             
             # prints output for each generation
             print(time.asctime())
-            genpref = "Results for generation %i, rmse %3.3f" % (ga_genct, Gen.best_rmse)
-            print_genome(Gen.best_genome, preface=genpref)
+            genpref = "Results for generation %i, rmse %3.3f" % (ga_genct, gen_best_rmse)
+            print_genome(gen_best_genome, preface=genpref)
             print(ga_genct, ga_runs_since_best, flush=True)
             
             ga_genct = ga_genct + 1
 
-            if Gen.best_genome == ga_best_genome:
+            if gen_best_genome == ga_best_genome:
                 ga_runs_since_best = ga_runs_since_best + 1
         
         self.ga_dict[self.gact]['best_rmse'] = ga_best_rmse
@@ -518,8 +507,8 @@ class ParamOptGA(SingleFit):
         gens.sort()
         self.readme_list.append("..... Generations .....\n")
         for gen in gens:
-            prefacestr = "Generation %i best: avg rmse %3.3f" % (gen, self.ga_dict[ga]['generations'][gen].best_rmse)
-            genomestr = print_genome(self.ga_dict[ga]['generations'][gen].best_genome, preface = prefacestr)
+            prefacestr = "Generation %i best: avg rmse %3.3f" % (gen, self.ga_dict[ga]['generations'][gen]['best_rmse'])
+            genomestr = print_genome(self.ga_dict[ga]['generations'][gen]['best_genome'], preface = prefacestr)
             self.readme_list.append("%s\n" % genomestr)
         return
 
@@ -644,15 +633,28 @@ class ParamOptGA(SingleFit):
         gas.sort()
         for ga in gas:
             best_genome = self.ga_dict[ga]['best_genome']
-            self.ga_dict[ga]['final_eval_rmses'] = dict()
+            self.ga_dict[ga]['final_eval_rmses'] = list()
+            eval_popl = dict()
             for fidx in range(0, len(self.final_testing_datasets)):
                 final_testing_dataset = self.final_testing_datasets[fidx]
                 eval_indiv = GAIndividual(genome = best_genome,
                                 testing_dataset = final_testing_dataset,
                                 cv_divisions = self.cv_divisions_final,
                                 afm_dict = self.afm_dict,
-                                use_multiprocessing = self.use_multiprocessing)
-                self.ga_dict[ga]['final_eval_rmses'][fidx] = eval_indiv.evaluate_individual()
+                                use_multiprocessing = 0) #Parallelize as a generation
+                eval_popl[fidx] = eval_indiv
+            Gen = GAGeneration(testing_dataset_for_init = self.testing_dataset,
+                cv_divisions=self.cv_divisions_final,
+                population=eval_popl,
+                num_parents=1,
+                gene_template=self.gene_template,
+                afm_dict=self.afm_dict,
+                population_size=len(self.final_testing_datasets),
+                use_multiprocessing=self.use_multiprocessing)
+            if self.fix_random_for_testing == 1:
+                Gen.random_state.seed(self.gact)
+            Gen.evaluate_population()
+            self.ga_dict[ga]['final_eval_rmses'] = Gen.population_rmses
             self.print_final_eval(ga)
         return
 

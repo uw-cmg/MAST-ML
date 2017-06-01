@@ -1,0 +1,254 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>SingleFitPerGroup &mdash; MAST-ml 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="MAST-ml 1.0 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for SingleFitPerGroup</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">SingleFit</span> <span class="kn">import</span> <span class="n">SingleFit</span>
+<span class="kn">from</span> <span class="nn">SingleFitGrouped</span> <span class="kn">import</span> <span class="n">SingleFitGrouped</span>
+<span class="kn">from</span> <span class="nn">SingleFit</span> <span class="kn">import</span> <span class="n">timeit</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+
+<div class="viewcode-block" id="SingleFitPerGroup"><a class="viewcode-back" href="../tests.html#SingleFitPerGroup.SingleFitPerGroup">[docs]</a><span class="k">class</span> <span class="nc">SingleFitPerGroup</span><span class="p">(</span><span class="n">SingleFitGrouped</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Split out the data by groups and then do single fits on each group.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        training_dataset,</span>
+<span class="sd">        testing_dataset,</span>
+<span class="sd">        model,</span>
+<span class="sd">        save_path,</span>
+<span class="sd">        xlabel, </span>
+<span class="sd">        ylabel,</span>
+<span class="sd">        stepsize, </span>
+<span class="sd">        plot_filter_out, </span>
+<span class="sd">        mark_outlying_groups, see parent class</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Analysis in the save_path folder</span>
+<span class="sd">        Single fits for each group in group name folders</span>
+<span class="sd">        Plots results in a predicted vs. measured square plot.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError if testing dataset grouping_feature is not set</span>
+<span class="sd">        ValueError if testing target data is None; has to have at least</span>
+<span class="sd">                    some testing target data to plot</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+        <span class="n">training_dataset</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+        <span class="n">testing_dataset</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+        <span class="n">model</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+        <span class="n">save_path</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+        <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Measured&quot;</span><span class="p">,</span>
+        <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Predicted&quot;</span><span class="p">,</span>
+        <span class="n">stepsize</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">plot_filter_out</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span>
+        <span class="n">mark_outlying_groups</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Additional class attributes to parent class:</span>
+<span class="sd">        self.all_groups = list()</span>
+<span class="sd">        self.plot_groups = list()</span>
+<span class="sd">        self.per_group_singlefits = dict()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">SingleFitGrouped</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+            <span class="n">training_dataset</span><span class="o">=</span><span class="n">training_dataset</span><span class="p">,</span> 
+            <span class="n">testing_dataset</span><span class="o">=</span><span class="n">testing_dataset</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> 
+            <span class="n">save_path</span> <span class="o">=</span> <span class="n">save_path</span><span class="p">,</span>
+            <span class="n">xlabel</span><span class="o">=</span><span class="n">xlabel</span><span class="p">,</span>
+            <span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span>
+            <span class="n">stepsize</span><span class="o">=</span><span class="n">stepsize</span><span class="p">,</span>
+            <span class="n">plot_filter_out</span> <span class="o">=</span> <span class="n">plot_filter_out</span><span class="p">,</span>
+            <span class="n">mark_outlying_groups</span> <span class="o">=</span> <span class="n">mark_outlying_groups</span><span class="p">,</span>
+            <span class="n">fit_only_on_matched_groups</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># Sets later in code</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">per_group_singlefits</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">return</span>
+    
+    <span class="nd">@timeit</span>
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_group_predictions</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_statistics</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print_statistics</span><span class="p">()</span>
+        <span class="k">return</span>
+
+    <span class="nd">@timeit</span>
+    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot_results</span><span class="p">()</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">get_group_predictions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">groups</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_dataset</span><span class="o">.</span><span class="n">groups</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Skipping group </span><span class="si">%s</span><span class="s2"> not in training groups.&quot;</span> <span class="o">%</span> <span class="n">group</span><span class="p">)</span>
+                <span class="k">continue</span> <span class="c1">#must have training data to do a fit</span>
+            <span class="n">gfeat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">grouping_feature</span>
+            <span class="n">group_training_dataset</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training_dataset</span><span class="p">)</span>
+            <span class="n">group_testing_dataset</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="p">)</span>
+            <span class="n">group_training_dataset</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">group_training_dataset</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">group_training_dataset</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">gfeat</span><span class="p">]</span> <span class="o">==</span> <span class="n">group</span><span class="p">]</span>
+            <span class="n">group_testing_dataset</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">group_testing_dataset</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">group_testing_dataset</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">gfeat</span><span class="p">]</span> <span class="o">==</span> <span class="n">group</span><span class="p">]</span>
+            <span class="n">group_training_dataset</span><span class="o">.</span><span class="n">set_up_data_from_features</span><span class="p">()</span>
+            <span class="n">group_testing_dataset</span><span class="o">.</span><span class="n">set_up_data_from_features</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">per_group_singlefits</span><span class="p">[</span><span class="n">group</span><span class="p">]</span><span class="o">=</span><span class="n">SingleFit</span><span class="p">(</span>
+                    <span class="n">training_dataset</span> <span class="o">=</span> <span class="n">group_training_dataset</span><span class="p">,</span>
+                    <span class="n">testing_dataset</span> <span class="o">=</span> <span class="n">group_testing_dataset</span><span class="p">,</span>
+                    <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+                    <span class="n">save_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_path</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">group</span><span class="p">)),</span>
+                    <span class="n">xlabel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlabel</span><span class="p">,</span>
+                    <span class="n">ylabel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ylabel</span><span class="p">,</span>
+                    <span class="n">stepsize</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stepsize</span><span class="p">,</span>
+                    <span class="n">plot_filter_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_filter_out</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">per_group_singlefits</span><span class="p">[</span><span class="n">group</span><span class="p">]</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+        <span class="k">return</span>
+
+
+    <span class="k">def</span> <span class="nf">get_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_per_group_statistics</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_outlying_groups</span><span class="p">()</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">print_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;----- Statistics -----</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;RMSEs from individual group fits:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">groups</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">per_group_statistics</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">groups</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">:</span>
+            <span class="n">skeys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">per_group_statistics</span><span class="p">[</span><span class="n">group</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+            <span class="n">skeys</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">skey</span> <span class="ow">in</span> <span class="n">skeys</span><span class="p">:</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">per_group_statistics</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="n">skey</span><span class="p">]</span>
+                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;    </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">: None</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">skey</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;    </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">: </span><span class="si">%3.3f</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">skey</span><span class="p">,</span> <span class="n">val</span><span class="p">))</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">plot_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_plotting_dict</span><span class="p">()</span>
+        <span class="n">group_notelist</span><span class="o">=</span><span class="nb">list</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plot_filter_out</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">):</span>
+            <span class="n">group_notelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Data not shown:&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">feature</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_filter_out</span><span class="p">:</span>
+                <span class="n">group_notelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;  </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">feature</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">threshold</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_filter_out</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">group_notelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;RMSEs for individual fits:&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">group_notelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Shown-data RMSEs for individual fits:&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot_group_splits_with_outliers</span><span class="p">(</span><span class="n">group_dict</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plotting_dict</span><span class="p">),</span> 
+                <span class="n">outlying_groups</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outlying_groups</span><span class="p">),</span> 
+                <span class="n">label</span><span class="o">=</span><span class="s2">&quot;per_group_fits_overlay&quot;</span><span class="p">,</span> 
+                <span class="n">group_notelist</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">group_notelist</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;----- Plotting -----</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Plot in subfolder per_group_fits_overlay created,</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;    labeling worst-fitting groups and their RMSEs.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">get_per_group_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">per_group_singlefits</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">per_group_statistics</span><span class="p">[</span><span class="n">group</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">per_group_singlefits</span><span class="p">[</span><span class="n">group</span><span class="p">]</span><span class="o">.</span><span class="n">statistics</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">get_plotting_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">plot_dict</span><span class="o">=</span><span class="nb">dict</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_filter_out</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">criterion</span> <span class="o">=</span> <span class="s1">&#39;rmse&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">criterion</span> <span class="o">=</span> <span class="s1">&#39;filtered_rmse&#39;</span>
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">per_group_singlefits</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">g_singlefit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">per_group_singlefits</span><span class="p">[</span><span class="n">group</span><span class="p">]</span>
+            <span class="n">g_ypredict</span><span class="o">=</span> <span class="n">g_singlefit</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_prediction</span>
+            <span class="n">g_ydata</span> <span class="o">=</span> <span class="n">g_singlefit</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_data</span>
+            <span class="k">if</span> <span class="n">g_singlefit</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_error_data</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">g_ydata_err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">g_ydata</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">g_ydata_err</span> <span class="o">=</span> <span class="n">g_singlefit</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_error_data</span>
+            <span class="n">plot_dict</span><span class="p">[</span><span class="n">group</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="n">plot_dict</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="s1">&#39;xdata&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">g_ydata</span>
+            <span class="n">plot_dict</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="s1">&#39;xerrdata&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">g_ydata_err</span>
+            <span class="n">plot_dict</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="s1">&#39;ydata&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">g_ypredict</span>
+            <span class="n">plot_dict</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="s1">&#39;rmse&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">g_singlefit</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="n">criterion</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plotting_dict</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">plot_dict</span><span class="p">)</span>
+        <span class="k">return</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, UW-Madison Computational Materials Group.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

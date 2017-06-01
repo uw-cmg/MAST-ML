@@ -107,6 +107,8 @@ class DataHandler():
         return
 
     def add_filters(self, filter_list):
+        if filter_list is None:
+            return
         for (feature, operator, threshold) in filter_list:
             fio = FeatureIO(self.data)
             self.data= fio.custom_feature_filter(feature,operator,threshold)

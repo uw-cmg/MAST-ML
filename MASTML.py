@@ -35,6 +35,7 @@ class MASTMLDriver(object):
         self.readme_html_tests = list()
         self.start_time = None
         self.favorites_dict=dict()
+        self.test_save_paths=list()
         return
 
     # This will later be removed as the parsed input file should have values all containing correct datatype
@@ -219,23 +220,24 @@ class MASTMLDriver(object):
                 # Set save path, allowing for multiple tests and models and potentially multiple of the same model (KernelRidge rbf kernel, KernelRidge linear kernel, etc.)
                 test_folder = "%s_%s%i" % (test_type, model.__class__.__name__, midx)
                 test_save_path = os.path.join(self.save_path, test_folder)
+                self.test_save_paths.append(test_save_path)
                 if not os.path.isdir(test_save_path):
                     os.mkdir(test_save_path)
                 self.mastmlwrapper.get_machinelearning_test(test_type=test_type,
                         model=model, save_path=test_save_path, **test_params)
                 logging.info('Ran test %s for your %s model' % (test_type, str(model)))
-                self._update_models_and_data(test_type, test_save_path, midx)
-                self.readme_html.extend(self.make_links_for_favorites(test_type, test_save_path))
+                self._update_models_and_data(test_folder, test_save_path, midx)
+                self.readme_html.extend(self.make_links_for_favorites(test_folder, test_save_path))
                 self.readme_html_tests.append('<A HREF="%s">%s</A><BR>\n' % (test_save_path, test_type))
         return test_list
 
-    def _update_models_and_data(self, test_type, test_save_path,
+    def _update_models_and_data(self, test_folder, test_save_path,
                                     model_index=None):
-        test_short = test_type.split("_")[0]
+        test_short = test_folder.split("_")[0]
         if not (test_short in self.param_optimizing_tests): #no need
             logging.info("No parameter or data updates necessary.")
             return
-        logging.info("UPDATING PARAMETERS from %s" % test_type)
+        logging.info("UPDATING PARAMETERS from %s" % test_folder)
         param_dict = self._get_param_dict(os.path.join(test_save_path,"OPTIMIZED_PARAMS"))
         model_val = self.model_vals[model_index]
         self.mastmlwrapper.configdict["Model Parameters"][model_val].update(param_dict["model"])
@@ -261,6 +263,9 @@ class MASTMLDriver(object):
                 self.data_dict[dname].input_features.append(feature_name)
                 self.data_dict[dname].set_up_data_from_features()
                 logging.info("Updated dataset %s data and input features with new feature %s" % (dname,afm))
+            newcsv = os.path.join(self.save_path, "updated_%s.csv" % dname)
+            self.data_dict[dname].data.to_csv(newcsv)
+            logging.info("Updated dataset printed to %s" % newcsv)
         return
 
     def _get_param_dict(self, fname):
@@ -318,18 +323,25 @@ class MASTMLDriver(object):
         self.favorites_dict=dict(fdict)
         return
 
-    def make_links_for_favorites(self, test_type, test_save_path):
+    def make_links_for_favorites(self, test_folder, test_save_path):
         linklist=list()
         linkloc  = ""
         linktext = ""
         linkline = ""
-        test_short = test_type.split("_")[0]
+        test_short = test_folder.split("_")[0]
         if test_short in self.favorites_dict.keys():
             flist = self.favorites_dict[test_short]
             for fval in flist:
                 linkloc = os.path.join(test_save_path, fval)
-                linkline = '<A HREF="%s">%s</A> from test <A HREF="%s">%s</A><BR>\n' % (linkloc, fval, test_save_path, test_type)
+                linkline = '<A HREF="%s">%s</A> from test <A HREF="%s">%s</A><BR><BR>\n' % (linkloc, fval, test_save_path, test_folder)
                 linklist.append(linkline)
+                if '.png' in fval:
+                    imline = '<A HREF="%s"><IMG SRC="%s" height=300 width=400></A><BR>\n' % (linkloc, linkloc)
+                    linklist.append(imline)
+                else:
+                    txtline = '<EMBED SRC="%s" width=75%%><BR>\n' % (linkloc)
+                    linklist.append(txtline)
+                linklist.append("<BR>\n") 
         return linklist
 
 
