@@ -1,6 +1,6 @@
 import numpy as np
 import copy
-from DataParser import FeatureIO
+from FeatureOperations import FeatureIO
 __author__ = "Tam Mayeshiba"
 
 class DataHandler():
