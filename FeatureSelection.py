@@ -51,7 +51,7 @@ class FeatureSelection(object):
     def get_original_dataframe(self):
         return self.dataframe
 
-    def univariate_feature_selection(self, number_features_to_keep):
+    def univariate_feature_selection(self, number_features_to_keep, save_to_csv=True):
         if self.selection_type == 'Regression' or self.selection_type == 'regression':
             selector = SelectKBest(score_func=f_regression, k=number_features_to_keep)
         if self.selection_type == 'Classification' or self.selection_type == 'classification':
@@ -62,9 +62,11 @@ class FeatureSelection(object):
         dataframe = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe, x_features=feature_names_selected, y_feature=self.y_feature, remove_first_row=False)
         # Add y_feature back into the dataframe
         dataframe = FeatureIO(dataframe=dataframe).add_custom_features(features_to_add=[self.y_feature],data_to_add=self.dataframe[self.y_feature])
+        if save_to_csv == bool(True):
+            dataframe.to_csv('input_with_univariate_feature_selection.csv', index=False)
         return dataframe
 
-    def recursive_feature_elimination(self, number_features_to_keep):
+    def recursive_feature_elimination(self, number_features_to_keep, save_to_csv=True):
         if self.selection_type == 'Regression' or self.selection_type == 'regression':
             estimator = SVR(kernel='linear')
         if self.selection_type == 'Classification' or self.selection_type == 'classification':
@@ -77,9 +79,11 @@ class FeatureSelection(object):
         dataframe = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe, x_features=feature_names_selected, y_feature=self.y_feature, remove_first_row=False)
         # Add y_feature back into the dataframe
         dataframe = FeatureIO(dataframe=dataframe).add_custom_features(features_to_add=[self.y_feature],data_to_add=self.dataframe[self.y_feature])
+        if save_to_csv == bool(True):
+            dataframe.to_csv('input_with_RFE_feature_selection.csv', index=False)
         return dataframe
 
-    def stability_selection(self, number_features_to_keep):
+    def stability_selection(self, number_features_to_keep, save_to_csv=True):
         if self.selection_type == 'Regression' or self.selection_type == 'regression':
             selector = RandomizedLasso()
             selector.fit(X=self.dataframe[self.x_features], y=self.dataframe[self.y_feature])
@@ -88,6 +92,8 @@ class FeatureSelection(object):
         if self.selection_type == 'Classification' or self.selection_type == 'classification':
             print('Stability selection is currently only configured for regression tasks')
             sys.exit()
+        if save_to_csv == bool(True):
+            dataframe.to_csv('input_with_stability_feature_selection.csv', index=False)
         return dataframe
 
 class MiscOperations():
