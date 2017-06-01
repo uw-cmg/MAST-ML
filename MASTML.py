@@ -4,7 +4,7 @@ import sys
 import os
 from MASTMLInitializer import MASTMLWrapper, ConfigFileValidator
 from DataOperations import DataParser
-from FeatureGeneration import MagpieFeatureGeneration, MaterialsProjectFeatureGeneration
+from FeatureGeneration import MagpieFeatureGeneration, MaterialsProjectFeatureGeneration, CitrineFeatureGeneration
 from FeatureOperations import FeatureNormalization
 from FeatureSelection import FeatureSelection, DimensionalReduction
 import logging
@@ -75,9 +75,13 @@ class MASTMLDriver(object):
         if "Feature Generation" in self.configdict.keys():
             dataframe = self._perform_feature_generation(dataframe=dataframe)
 
+        # Perform feature selection and dimensional reduction, as specified in the input file (optional)
+        if "Feature Selection" in self.configdict.keys():
+            dataframe = self._perform_feature_selection(dataframe=dataframe)
+
         # Normalize features
         fn = FeatureNormalization(dataframe=dataframe)
-        dataframe = fn.normalize_features(x_features=x_features, y_feature=y_feature)
+        dataframe, scaler = fn.normalize_features(x_features=x_features, y_feature=y_feature)
 
         # Gather models
         (self.model_list, self.model_vals) = self._gather_models()
@@ -181,12 +185,23 @@ class MASTMLDriver(object):
         return Xdata, ydata, x_features, y_feature, dataframe, data_dict
 
     def _perform_feature_generation(self, dataframe):
-        for k, v in self.configdict['Feature Generation']:
-            print(k, v)
-
-            #mfg = MagpieFeatureGeneration(dataframe=dataframe)
-            #dataframe = mfg.generate_magpie_features(save_to_csv=True)
+        for k, v in self.configdict['Feature Generation'].items():
+            # TODO: Here, True/False are strings. Change them with validator to be bools
+            if k == 'add_magpie_features' and v == 'True':
+                logging.info('Adding Magpie features to your feature list')
+                mfg = MagpieFeatureGeneration(dataframe=dataframe)
+                dataframe = mfg.generate_magpie_features(save_to_csv=True)
+            if k == 'add_materialsproject_features' and v == 'True':
+                logging.info('Adding Materials Project features to your feature list')
+                mpfg = MaterialsProjectFeatureGeneration(dataframe=dataframe, mapi_key=self.configdict['Feature Generation']['materialsproject_apikey'])
+                dataframe = mpfg.generate_materialsproject_features(save_to_csv=True)
+            #if k == 'add_citrine_features' and v is True:
+            #    cfg = CitrineFeatureGeneration(dataframe=dataframe, api_key=self.configdict['Feature Generation']['citrine_apikey'])
+            #    dataframe = cfg.generate_citrine_features()
         return dataframe
+
+    def _perform_feature_selection(self, dataframe):
+        pass
 
     def _gather_models(self):
         self.models_and_tests_setup = self.mastmlwrapper.process_config_keyword(keyword='Models and Tests to Run')
