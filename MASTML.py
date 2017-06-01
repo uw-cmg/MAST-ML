@@ -3,9 +3,9 @@ __author__ = 'Ryan Jacobs, Tam Mayeshiba'
 import sys
 import os
 from MASTMLInitializer import MASTMLWrapper, ConfigFileValidator
-from DataOperations import DataParser, DataframeUtilities
+from DataOperations import DataParser
 from FeatureGeneration import MagpieFeatureGeneration, MaterialsProjectFeatureGeneration
-from FeatureOperations import FeatureIO, FeatureNormalization
+from FeatureOperations import FeatureNormalization
 from FeatureSelection import FeatureSelection, DimensionalReduction
 import logging
 import shutil
@@ -71,8 +71,6 @@ class MASTMLDriver(object):
         # Parse input data files
         Xdata, ydata, x_features, y_feature, dataframe, self.data_dict = self._parse_input_data()
 
-        print(x_features)
-        print(y_feature)
         fn = FeatureNormalization(dataframe=dataframe)
         dataframe = fn.normalize_features(x_features=x_features, y_feature=y_feature)
 
@@ -234,8 +232,7 @@ class MASTMLDriver(object):
                 self.readme_html_tests.append('<A HREF="%s">%s</A><BR>\n' % (test_save_path, test_type))
         return test_list
 
-    def _update_models_and_data(self, test_folder, test_save_path,
-                                    model_index=None):
+    def _update_models_and_data(self, test_folder, test_save_path, model_index=None):
         test_short = test_folder.split("_")[0]
         if not (test_short in self.param_optimizing_tests): #no need
             logging.info("No parameter or data updates necessary.")
@@ -346,7 +343,6 @@ class MASTMLDriver(object):
                     linklist.append(txtline)
                 linklist.append("<BR>\n") 
         return linklist
-
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
