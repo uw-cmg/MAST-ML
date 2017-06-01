@@ -71,6 +71,11 @@ class MASTMLDriver(object):
         # Parse input data files
         Xdata, ydata, x_features, y_feature, dataframe, self.data_dict = self._parse_input_data()
 
+        # Generate additional descriptors, as specified in input file (optional)
+        if "Feature Generation" in self.configdict.keys():
+            dataframe = self._perform_feature_generation(dataframe=dataframe)
+
+        # Normalize features
         fn = FeatureNormalization(dataframe=dataframe)
         dataframe = fn.normalize_features(x_features=x_features, y_feature=y_feature)
 
@@ -174,6 +179,14 @@ class MASTMLDriver(object):
             logging.info('Parsed the input data located under %s' % data_path)
 
         return Xdata, ydata, x_features, y_feature, dataframe, data_dict
+
+    def _perform_feature_generation(self, dataframe):
+        for k, v in self.configdict['Feature Generation']:
+            print(k, v)
+
+            #mfg = MagpieFeatureGeneration(dataframe=dataframe)
+            #dataframe = mfg.generate_magpie_features(save_to_csv=True)
+        return dataframe
 
     def _gather_models(self):
         self.models_and_tests_setup = self.mastmlwrapper.process_config_keyword(keyword='Models and Tests to Run')
