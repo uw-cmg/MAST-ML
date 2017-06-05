@@ -448,11 +448,11 @@ class ParamOptGA(SingleFit):
         ga_best_rmse = 10000000
         ga_best_genome = None
         ga_converged = 0
-        ga_runs_since_best = 0
+        ga_repetitions_of_best = 0
 
         new_population=None
 
-        while ga_runs_since_best < self.convergence_generations and ga_genct < self.max_generations: 
+        while ga_repetitions_of_best < self.convergence_generations and ga_genct < self.max_generations: 
             print("Generation %i %s" % (ga_genct, time.asctime()), flush=True)
             with GAGeneration(testing_dataset_for_init = self.testing_dataset,
                 cv_divisions=self.cv_divisions,
@@ -477,19 +477,18 @@ class ParamOptGA(SingleFit):
             if gen_best_rmse < ga_best_rmse:
                 ga_best_rmse = gen_best_rmse
                 ga_best_genome = gen_best_genome
-                ga_runs_since_best = 0
+                ga_repetitions_of_best = 0
+            else:
+                if gen_best_genome == ga_best_genome:
+                    ga_repetitions_of_best = ga_repetitions_of_best + 1
+                else:
+                    ga_repetitions_of_best = 0
             
             # prints output for each generation
             print(time.asctime())
-            genpref = "Results for generation %i, rmse %3.3f" % (ga_genct, gen_best_rmse)
+            genpref = "Results gen %i (%i/%i convergence), rmse %3.3f" % (ga_genct, ga_repetitions_of_best, self.convergence_generations, gen_best_rmse)
             print_genome(gen_best_genome, preface=genpref)
-            print(ga_genct, ga_runs_since_best, flush=True)
-            
             ga_genct = ga_genct + 1
-
-            if gen_best_genome == ga_best_genome:
-                ga_runs_since_best = ga_runs_since_best + 1
-        
         self.ga_dict[self.gact]['best_rmse'] = ga_best_rmse
         self.ga_dict[self.gact]['best_genome'] = ga_best_genome
         if ga_genct < self.max_generations:
