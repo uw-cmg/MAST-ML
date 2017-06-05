@@ -420,8 +420,10 @@ class ParamOptGA(SingleFit):
         self.use_multiprocessing = int(use_multiprocessing)
         if type(additional_feature_methods) is list:
             self.additional_feature_methods = list(additional_feature_methods)
-        else:
+        elif type(additional_feature_methods) is str:
             self.additional_feature_methods = additional_feature_methods.split(",")
+        else:
+            self.additional_feature_methods = self.additional_feature_methods
         self.final_testing_datasets = list(testing_dataset)
         #Sets in code
         self.cv_divisions = None
