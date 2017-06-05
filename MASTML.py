@@ -7,6 +7,7 @@ from DataParser import DataParser, FeatureIO, FeatureNormalization, DataframeUti
 import logging
 import shutil
 import time
+import pandas as pd
 from custom_features import cf_help
 import matplotlib
 env_display = os.getenv("DISPLAY")
@@ -147,6 +148,10 @@ class MASTMLDriver(object):
         for data_name in self.data_setup.keys():
             data_path = self.data_setup[data_name]['data_path']
             data_weights = self.data_setup[data_name]['weights']
+            if "normalize" in self.data_setup[data_name].keys():
+                data_normalize = self.data_setup[data_name]['normalize']
+            else:
+                data_normalize = False
             if not(os.path.isfile(data_path)):
                 raise OSError("No file found at %s" % data_path)
             if 'labeling_features' in self.general_setup.keys():
@@ -171,7 +176,14 @@ class MASTMLDriver(object):
                                 labeling_features = labeling_features,
                                 grouping_feature = grouping_feature) #
             logging.info('Parsed the input data located under %s' % data_path)
-
+            if data_normalize in ['TRUE','True','true',True]:
+                my_fn = FeatureNormalization(dataframe=mydataframe)
+                (norm_df, scaler) = my_fn.normalize_features(x_features=myx_features, y_feature=myy_feature)
+                for feature in myx_features:
+                    data_dict[data_name].data[feature] = pd.Series(norm_df[feature], index=data_dict[data_name].data.index)
+                data_dict[data_name].set_up_data_from_features()
+                data_dict[data_name].print_data()
+                logging.info("Normalized input features for %s" % data_name)
         return Xdata, ydata, x_features, y_feature, dataframe, data_dict
 
     def _gather_models(self):
