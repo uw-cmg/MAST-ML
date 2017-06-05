@@ -260,14 +260,14 @@ class GAGeneration():
         self.parent_indices = list()
         temp_rmse_list = list(self.population_rmses)
         lowest_idx=None
-        for pridx in range(self.num_parents):       
+        for pct in range(self.num_parents):       
             min_rmse_index = np.argmin(temp_rmse_list)
-            self.parent_indices.append(pridx)
+            self.parent_indices.append(min_rmse_index)
             min_rmse = temp_rmse_list[min_rmse_index]
             if min_rmse < self.best_rmse:
                 self.best_rmse = min_rmse
-                self.best_genome = dict(self.population[pridx].genome)
-                self.best_individual = pridx
+                self.best_genome = dict(self.population[min_rmse_index].genome)
+                self.best_individual = min_rmse_index
             temp_rmse_list[min_rmse_index] = np.max(temp_rmse_list) #so don't find same rmse twice)
         return
 
@@ -276,8 +276,10 @@ class GAGeneration():
         """
         self.new_population=dict()
         for indidx in range(self.population_size):
-            p1idx = self.random_state.randint(0, self.num_parents)
-            p2idx = self.random_state.randint(0, self.num_parents) #can have two of same parent?
+            p1rand = self.random_state.randint(0, self.num_parents)
+            p2rand = self.random_state.randint(0, self.num_parents) #can have two of same parent?
+            p1idx = self.parent_indices[p1rand]
+            p2idx = self.parent_indices[p2rand]
             new_genome = dict() 
             genes = list(self.population[indidx].genome.keys())
             genes.sort()
