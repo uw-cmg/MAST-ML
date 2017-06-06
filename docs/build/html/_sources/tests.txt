@@ -4,18 +4,10 @@ Tests
 -----------------------------------
 Single fits
 -----------------------------------
+:ref:`singlefit`
 
-.. autoclass:: SingleFit.SingleFit
-   :members:
-
-.. autoclass:: SingleFitGrouped.SingleFitGrouped
-   :members:
-
-.. autoclass:: SingleFitPerGroup.SingleFitPerGroup
-   :members:
-
-.. autoclass:: PredictionVsFeature.PredictionVsFeature
-   :members:
+.. .. autoclass:: SingleFit.SingleFit
+..   :members:
 
 -----------------------------------
 Cross validation

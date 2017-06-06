@@ -11,12 +11,4 @@ Contents:
 
    support_classes.rst
 
-   template.rst
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
+   autodoc.rst
