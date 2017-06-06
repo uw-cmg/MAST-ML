@@ -177,10 +177,17 @@ class MASTMLDriver(object):
                                 grouping_feature = grouping_feature) #
             logging.info('Parsed the input data located under %s' % data_path)
             if data_normalize in ['TRUE','True','true',True]:
-                my_fn = FeatureNormalization(dataframe=mydataframe)
+                print(mydataframe[0:3])
+                cols = list(myx_features)
+                cols.append(myy_feature)
+                my_fn = FeatureNormalization(dataframe=mydataframe[cols])
                 (norm_df, scaler) = my_fn.normalize_features(x_features=myx_features, y_feature=myy_feature)
+                norm_df = norm_df.reindex(data_dict[data_name].data.index) #reindex since normalization returns 1 as first index, not zero
+                print(norm_df[0:3])
                 for feature in myx_features:
-                    data_dict[data_name].data[feature] = pd.Series(norm_df[feature], index=data_dict[data_name].data.index)
+                    print("FEATURE:",feature)
+                    #data_dict[data_name].data[feature] = pd.Series(norm_df[feature], index=data_dict[data_name].data.index)
+                    data_dict[data_name].data[feature] = pd.Series(norm_df[feature])
                 data_dict[data_name].set_up_data_from_features()
                 data_dict[data_name].print_data()
                 logging.info("Normalized input features for %s" % data_name)

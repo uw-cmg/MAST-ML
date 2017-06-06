@@ -11,6 +11,8 @@ Contents:
 
    support_classes.rst
 
+   template.rst
+
 Indices and tables
 ==================
 
