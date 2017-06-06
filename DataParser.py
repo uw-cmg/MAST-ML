@@ -319,7 +319,7 @@ class DataframeUtilities(object):
 
     @classmethod
     def _array_to_dataframe(cls, array):
-        dataframe = pd.DataFrame(data=array, index=range(1, len(array)+1))
+        dataframe = pd.DataFrame(data=array, index=range(0, len(array)))
         return dataframe
 
     @classmethod
