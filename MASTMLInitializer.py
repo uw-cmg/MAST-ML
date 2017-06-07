@@ -210,7 +210,8 @@ class MASTMLWrapper(object):
                                           min_samples_split=int(self.configdict['Model Parameters']['randomforest_model']['min_samples_split']),
                                           min_samples_leaf=int(self.configdict['Model Parameters']['randomforest_model']['min_samples_leaf']),
                                           max_leaf_nodes=int(self.configdict['Model Parameters']['randomforest_model']['max_leaf_nodes']),
-                                          n_jobs=int(self.configdict['Model Parameters']['randomforest_model']['jobs']))
+                                          n_jobs=int(self.configdict['Model Parameters']['randomforest_model']['jobs']),
+                                          warm_start=int(self.configdict['Model Parameters']['randomforest_model']['warm_start']))
             return model
         if model_type == 'nn_model_neurolab':
             model = nl.net.newff(minmax=int(self.configdict['Model Parameters']['nn_model_neurolab']['minmax']),
