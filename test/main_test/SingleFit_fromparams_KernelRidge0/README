@@ -1,10 +1,10 @@
-Mon Jun  5 13:22:25 2017
+Mon Jun 12 09:55:51 2017
 ----- Model parameters -----
-kernel: rbf
-gamma: 0.058884
-kernel_params: None
 coef0: 1
 alpha: 0.001
+gamma: 0.058884
+kernel: rbf
+kernel_params: None
 degree: 3
 ----- Output data -----
 output_data.csv file created with columns:
