@@ -77,16 +77,16 @@ class MASTMLDriver(object):
             Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe,
                                                                                     target_feature='target_feature')
 
-        # Perform feature selection and dimensional reduction, as specified in the input file (optional)
-        if "Feature Selection" in self.configdict.keys():
-            # First remove features containing strings before doing feature selection
-            x_features, dataframe = MiscOperations().remove_features_containing_strings(dataframe=dataframe, x_features=x_features)
-            dataframe = self._perform_feature_selection(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
-            x_features, y_feature = DataParser(configdict=self.configdict).get_features(dataframe=dataframe, target_feature=y_feature)
-
         # Normalize features
         fn = FeatureNormalization(dataframe=dataframe)
         dataframe, scaler = fn.normalize_features(x_features=x_features, y_feature=y_feature)
+        x_features, y_feature = DataParser(configdict=self.configdict).get_features(dataframe=dataframe, target_feature=y_feature)
+
+        # Perform feature selection and dimensional reduction, as specified in the input file (optional)
+        if "Feature Selection" in self.configdict.keys():
+            dataframe = self._perform_feature_selection(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
+            x_features, y_feature = DataParser(configdict=self.configdict).get_features(dataframe=dataframe, target_feature=y_feature)
+            print(x_features, y_feature)
 
         # Gather models
         (self.model_list, self.model_vals) = self._gather_models()
@@ -157,7 +157,9 @@ class MASTMLDriver(object):
 
     def _parse_input_data(self):
         Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=self.configdict).parse_fromfile(datapath=self.data_setup['Initial']['data_path'], as_array=False)
-        # Tam's code is here
+        # Remove dataframe entries that contain 'NaN'
+        dataframe = dataframe.dropna()
+
         data_dict=dict()
         for data_name in self.data_setup.keys():
             data_path = self.data_setup[data_name]['data_path']

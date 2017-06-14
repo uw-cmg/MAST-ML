@@ -80,12 +80,17 @@ class FeatureNormalization(object):
     def get_original_dataframe(self):
         return self.dataframe
 
-    def normalize_features(self, x_features, y_feature):
-        scaler = StandardScaler().fit(X=self.dataframe[x_features])
-        array_normalized = scaler.fit_transform(X=self.dataframe[x_features], y=self.dataframe[y_feature])
+    def normalize_features(self, x_features, y_feature, to_csv=True):
+        # First remove features containing strings before doing feature normalization
+        x_features, dataframe = MiscOperations().remove_features_containing_strings(dataframe=self.dataframe,
+                                                                                    x_features=x_features)
+        scaler = StandardScaler().fit(X=dataframe[x_features])
+        array_normalized = scaler.fit_transform(X=dataframe[x_features], y=self.dataframe[y_feature])
         array_normalized = DataframeUtilities()._concatenate_arrays(X_array=array_normalized, y_array=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
         dataframe_normalized = DataframeUtilities()._array_to_dataframe(array=array_normalized)
         dataframe_normalized = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe_normalized, x_features=x_features, y_feature=y_feature, remove_first_row=False)
+        if to_csv == True:
+            dataframe_normalized.to_csv('input_data_normalized.csv')
         return dataframe_normalized, scaler
 
     def minmax_scale_single_feature(self, featurename, smin=None, smax=None):
@@ -108,3 +113,25 @@ class FeatureNormalization(object):
         dataframe_normalized, scaler = self.normalize_features(x_features=x_features, y_feature=y_feature)
         dataframe = DataframeUtilities()._merge_dataframe_columns(dataframe1=self.dataframe, dataframe2=dataframe_normalized)
         return dataframe
+
+class MiscOperations():
+
+    @classmethod
+    def remove_features_containing_strings(cls, dataframe, x_features):
+        x_features_pruned = []
+        x_features_to_remove = []
+        for x_feature in x_features:
+            is_str = False
+            for entry in dataframe[x_feature]:
+                if type(entry) is str:
+                    #print('found a string')
+                    is_str = True
+            if is_str == True:
+                x_features_to_remove.append(x_feature)
+
+        for x_feature in x_features:
+            if x_feature not in x_features_to_remove:
+                x_features_pruned.append(x_feature)
+
+        dataframe = FeatureIO(dataframe=dataframe).remove_custom_features(features_to_remove=x_features_to_remove)
+        return x_features_pruned, dataframe
