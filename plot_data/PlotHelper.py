@@ -5,42 +5,47 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import time
 import heapq
-
+import nbformat as nbf
 class PlotHelper():
     """Plotting class
-        Expects **kwargs dictionary with the following keys:
-        (This list may be subject to change.)
-        xdatalist=list(),
-        ydatalist=list(), 
-        labellist=list(),
-        xlabel="X",
-        ylabel="Y",
-        xerrlist=list(),
-        yerrlist=list(),
-        stepsize=None,
-        save_path="",
-        plotlabel="multiple_overlay",
-        guideline=0,
-        timex="",
-        startx=None,
-        endx=None,
-        whichyaxis="",
-        notelist=list(), 
-        marklargest="0,0,0,0,0,0",
-        mlabellist=None,
-        markers="o,o,s,d,^,v",
-        linestyles="None,None,None,None,None,None",
-        outlines="#8B0000,#00008B,#004400,#542788,#b35806,#252525",
-        faces="red,blue,green,#6a51a3,orange,#bdbdbd",
-        sizes="15,10,8,8,8,8",
-        legendloc=None,
+        Expects **kwargs dictionary.
+        See __init__method for attributes.
     """
     def __init__(self, *args, **kwargs):
+        #Attributes may be set by **kwargs
+        self.xdatalist=list()
+        self.xerrlist=list()
+        self.ydatalist=list() 
+        self.yerrlist=list()
+        self.labellist=list()
+        self.xlabel="X"
+        self.ylabel="Y"
+        self.stepsize=None
+        self.save_path=""
+        self.plotlabel="multiple_overlay"
+        self.guideline=0
+        self.timex=""
+        self.startx=None
+        self.endx=None
+        self.whichyaxis=""
+        self.notelist=list() 
+        self.marklargest="0,0,0,0,0,0"
+        self.mlabellist=None
+        self.markers="o,o,s,d,^,v"
+        self.linestyles="None,None,None,None,None,None"
+        self.outlines="#8B0000,#00008B,#004400,#542788,#b35806,#252525"
+        self.faces="red,blue,green,#6a51a3,orange,#bdbdbd"
+        self.sizes="15,10,8,8,8,8"
+        self.legendloc=None
+        self.fontsize=18
         for dictionary in args:
             for key in dictionary:
                 setattr(self, key, dictionary[key])
         for key in kwargs:
             setattr(self, key, kwargs[key])
+        #Attributes below are set in code.
+        self.smallfont = 0.85*self.fontsize
+        matplotlib.rcParams.update({'font.size': self.fontsize})
         return
     
     def sort_series(self, xvals, yvals, xerr, yerr, verbose=0):
@@ -87,42 +92,28 @@ class PlotHelper():
             yerrsorted = sortedarr[3,:]
         return [xsorted, ysorted, xerrsorted, yerrsorted]
 
-def get_converted_epoch_xticks(xticks):
-    """Matplotlib needs epoch days
-    """
-    tzseconds = time.timezone
-    isdaylight = time.localtime().tm_isdst
-    secadj_xticks = xticks - tzseconds
-    if isdaylight:
-        secadj_xticks = secadj_xticks + 3600.0
-    numticks = len(secadj_xticks)
-    adjusted_xticks = np.zeros(numticks)
-    for xidx in range(0, numticks):
-        epochday = matplotlib.dates.epoch2num(secadj_xticks[xidx])
-        adjusted_xticks[xidx] = epochday        
-    return adjusted_xticks
 
-def single(xvals, yvals, 
-            plottype="scatter",
-            xerr=None,
-            yerr=None,
-            xlabel="X",
-            ylabel="Y",
-            title="",
-            plotlabel="",
-            save_path="",
-            guideline=0,
-            timex="",
-            startx=None,
-            endx=None,
-            stepsize=None,
-            divide_x = None,
-            divide_y = None,
-            notelist=list(),
-            marklargest=0,
-            *args, **kwargs):
-    matplotlib.rcParams.update({'font.size': 18})
-    smallfont = 0.85*matplotlib.rcParams['font.size']
+    def write_notebook(self):
+        nb = nbf.v4.new_notebook()
+        code = """\
+        %pylab inline
+        import matplotlib
+        import matplotlib.pyplot as plt
+        plt.figure()
+        plt.plot([1,2,3],[2,3,4],'b-')
+        plt.show()
+        plt.savefig("figure.fig")
+        """
+        nb['cells'] = [nbf.v4.new_code_cell(code)]
+        fname = 'test.ipynb'
+        with open(fname, 'w') as f:
+            nbf.write(nb, f)
+        return
+
+    def plot_single(self):
+
+        return
+def plot_single(xvals, yvals):
     #fig, ax = plt.subplots(figsize=(10, 4))
     if xerr is None or (len(xerr) == 0):
         xerr = np.zeros(len(xvals))
