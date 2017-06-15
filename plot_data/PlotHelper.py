@@ -96,13 +96,12 @@ class PlotHelper():
     def write_notebook(self):
         nb = nbf.v4.new_notebook()
         code = """\
-        %pylab inline
         import matplotlib
         import matplotlib.pyplot as plt
         plt.figure()
         plt.plot([1,2,3],[2,3,4],'b-')
         plt.show()
-        plt.savefig("figure.fig")
+        plt.savefig("figure.png")
         """
         nb['cells'] = [nbf.v4.new_code_cell(code)]
         fname = 'test.ipynb'
