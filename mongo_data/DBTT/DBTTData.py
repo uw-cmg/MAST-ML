@@ -157,7 +157,8 @@ class DBTTData():
 
     def clean_cd_ivar(self, cname, verbose=1):
         [id_list, reason_list] = dclean.get_alloy_removal_ids(self.db, cname, 
-                                    [41,1,2,8,14,29])
+                                    [1,2,8,41])
+        #                            [41,1,2,8,14,29])
         mclean.flag_for_ignore(self.db, cname, id_list, reason_list)
         print(len(id_list))
         [id_list, reason_list] = dclean.get_duplicate_ids_to_remove(self.db, cname)
@@ -171,7 +172,8 @@ class DBTTData():
 
     def clean_lwr(self, cname, verbose=1):
         dclean.standardize_alloy_names(self.db, cname)
-        [id_list, reason_list] = dclean.get_alloy_removal_ids(self.db, cname,[1,2,8,41])
+        [id_list, reason_list] = dclean.get_alloy_removal_ids(self.db, cname,
+                    [1,2,8,41])
         mclean.flag_for_ignore(self.db, cname, id_list, reason_list)
         print(len(id_list))
         [id_list, reason_list] = dclean.get_empty_flux_or_fluence_removal_ids(self.db, cname)
