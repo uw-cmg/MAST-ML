@@ -9,7 +9,6 @@ from sklearn.neural_network import MLPRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
 import sklearn.tree as tree
-import neurolab as nl
 import importlib
 import logging
 
@@ -212,24 +211,18 @@ class MASTMLWrapper(object):
                                           max_leaf_nodes=int(self.configdict['Model Parameters']['randomforest_model']['max_leaf_nodes']),
                                           n_jobs=int(self.configdict['Model Parameters']['randomforest_model']['jobs']))
             return model
-        if model_type == 'nn_model_neurolab':
-            model = nl.net.newff(minmax=int(self.configdict['Model Parameters']['nn_model_neurolab']['minmax']),
-                                 size=int(self.configdict['Model Parameters']['nn_model_neurolab']['size']),
-                                 transf=str(self.configdict['Model Parameters']['nn_model_neurolab']['transfer_function']))
-            train = str(self.configdict['Model Parameters']['nn_model_neurolab']['training_method'])
-            epochs = int(self.configdict['Model Parameters']['nn_model_neurolab']['epochs'])
-            show = bool(self.configdict['Model Parameters']['nn_model_neurolab']['show'])
-            goal = float(self.configdict['Model Parameters']['nn_model_neurolab']['goal'])
-            return (model, train, epochs, show, goal)
-        if model_type == 'nn_model_sklearn':
-            pass
-        if model_type == 'nn_model_tensorflow':
-            pass
+        if model_type == 'nn_model':
+            model = MLPRegressor(hidden_layer_sizes=int(self.configdict['Model Parameters']['nn_model']['hidden_layer_sizes']),
+                                 activation=str(self.configdict['Model Parameters']['nn_model']['activation']),
+                                 solver=str(self.configdict['Model Parameters']['nn_model']['solver']),
+                                 alpha=float(self.configdict['Model Parameters']['nn_model']['alpha']),
+                                 batch_size='auto',
+                                 learning_rate='constant',
+                                 max_iter=int(self.configdict['Model Parameters']['nn_model']['max_iterations']),
+                                 tol=float(self.configdict['Model Parameters']['nn_model']['tolerance']))
+            return model
         else:
             raise TypeError('You have specified an invalid model_type name in your input file')
-
-        # Add generic file import for non-sklearn models
-
 
     # This method will call the different classes corresponding to each test type, which are being organized by Tam
     def get_machinelearning_test(self, test_type, model, save_path, *args, **kwargs):
