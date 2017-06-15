@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from DataOperations import DataframeUtilities
+from collections import OrderedDict
 
 class FeatureIO(object):
     """Class to selectively filter (add/remove) features from a dataframe
@@ -16,14 +17,16 @@ class FeatureIO(object):
         return self.dataframe
 
     def remove_duplicate_features_by_name(self, keep=None):
+        # Warning: not sure if this really removes redundant columns. The remove_duplicate_columns method should work, though
         # Only removes features that have the same name, not features containing the same data vector
         dataframe = self.dataframe.drop_duplicates(keep=keep)
         return dataframe
 
     def remove_duplicate_columns(self):
-        column_names = self.dataframe.columns.values.tolist()
-        print(column_names)
-        return
+        # Transferring from dataframe to dict removes redundant columns (i.e. keys of the dict)
+        dataframe_asdict = self.dataframe.to_dict()
+        dataframe = pd.DataFrame(dataframe_asdict)
+        return dataframe
 
     def remove_duplicate_features_by_values(self):
         dataframe = self.dataframe.T.drop_duplicates().T
@@ -35,11 +38,12 @@ class FeatureIO(object):
             del dataframe[feature]
         return dataframe
 
-    def keep_custom_features(self, features_to_keep, y_feature):
+    def keep_custom_features(self, features_to_keep, y_feature=None):
         dataframe_dict = {}
         for feature in features_to_keep:
             dataframe_dict[feature] = self.dataframe[feature]
-        dataframe_dict[y_feature] = self.dataframe[y_feature]
+        if y_feature is not None:
+            dataframe_dict[y_feature] = self.dataframe[y_feature]
         dataframe = pd.DataFrame(dataframe_dict)
         return dataframe
 
