@@ -20,6 +20,11 @@ class FeatureIO(object):
         dataframe = self.dataframe.drop_duplicates(keep=keep)
         return dataframe
 
+    def remove_duplicate_columns(self):
+        column_names = self.dataframe.columns.values.tolist()
+        print(column_names)
+        return
+
     def remove_duplicate_features_by_values(self):
         dataframe = self.dataframe.T.drop_duplicates().T
         return dataframe
@@ -130,9 +135,11 @@ class MiscFeatureOperations(object):
                     #print('found a string')
                     is_str = True
             if is_str == True:
-                if x_feature not in self.configdict['General Setup']['grouping_feature']:
+                if 'grouping_feature' in self.configdict['General Setup'].keys():
+                    if x_feature not in self.configdict['General Setup']['grouping_feature']:
+                        x_features_to_remove.append(x_feature)
+                else:
                     x_features_to_remove.append(x_feature)
-
         for x_feature in x_features:
             if x_feature not in x_features_to_remove:
                 x_features_pruned.append(x_feature)
