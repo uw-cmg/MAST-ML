@@ -209,7 +209,8 @@ class MASTMLWrapper(object):
                                           min_samples_split=int(self.configdict['Model Parameters']['randomforest_model']['min_samples_split']),
                                           min_samples_leaf=int(self.configdict['Model Parameters']['randomforest_model']['min_samples_leaf']),
                                           max_leaf_nodes=int(self.configdict['Model Parameters']['randomforest_model']['max_leaf_nodes']),
-                                          n_jobs=int(self.configdict['Model Parameters']['randomforest_model']['jobs']))
+                                          n_jobs=int(self.configdict['Model Parameters']['randomforest_model']['jobs']),
+                                          warm_start=bool(self.configdict['Model Parameters']['randomforest_model']['warm_start']))
             return model
         if model_type == 'nn_model':
             model = MLPRegressor(hidden_layer_sizes=int(self.configdict['Model Parameters']['nn_model']['hidden_layer_sizes']),
