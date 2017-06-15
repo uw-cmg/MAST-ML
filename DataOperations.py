@@ -49,17 +49,24 @@ class DataParser(object):
         if from_input_file == bool(True):
             y_feature = self.configdict['General Setup']['target_feature']
             if self.configdict['General Setup']['input_features'] == ['Auto']:
-                x_and_y_features = dataframe.loc[0, :].tolist()
+                x_and_y_features = dataframe.columns.values.tolist()
                 x_features = []
                 for feature in x_and_y_features:
                     if feature != y_feature:
-                        x_features.append(feature)
+                        if 'grouping_feature' in self.configdict['General Setup'].keys():
+                            if feature not in self.configdict['General Setup']['grouping_feature']:
+                                x_features.append(feature)
+                        else:
+                            x_features.append(feature)
+
             else:
                 x_features = [feature for feature in self.configdict['General Setup']['input_features']]
         elif from_input_file == bool(False):
             y_feature = target_feature
-            x_features = [feature for feature in dataframe.columns.values if feature != y_feature]
-
+            if 'grouping_feature' in self.configdict['General Setup'].keys():
+                x_features = [feature for feature in dataframe.columns.values if feature not in [y_feature, self.configdict['General Setup']['grouping_feature']]]
+            else:
+                x_features = [feature for feature in dataframe.columns.values if feature not in y_feature]
         return x_features, y_feature
 
     def get_data(self, dataframe, x_features, y_feature):
@@ -76,7 +83,7 @@ class DataframeUtilities(object):
     """
     @classmethod
     def _merge_dataframe_columns(cls, dataframe1, dataframe2):
-        dataframe = pd.concat([dataframe1, dataframe2], axis=1)
+        dataframe = pd.concat([dataframe1, dataframe2], axis=1, join='outer')
         return dataframe
 
     @classmethod
