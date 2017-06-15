@@ -71,6 +71,9 @@ class MASTMLDriver(object):
         # Parse input data files
         Xdata, ydata, x_features, y_feature, dataframe = self._parse_input_data()
 
+        print("original:")
+        print(x_features, y_feature)
+
         # Generate additional descriptors, as specified in input file (optional)
         if "Feature Generation" in self.configdict.keys():
             dataframe = self._perform_feature_generation(dataframe=dataframe)
@@ -90,6 +93,9 @@ class MASTMLDriver(object):
         if "Feature Selection" in self.configdict.keys():
             dataframe = self._perform_feature_selection(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
             x_features, y_feature = DataParser(configdict=self.configdict).get_features(dataframe=dataframe, target_feature=y_feature)
+
+        print("feature selection:")
+        print(x_features, y_feature)
 
         self.data_dict = self._create_data_dict(dataframe=dataframe)
 
@@ -190,28 +196,41 @@ class MASTMLDriver(object):
             # First, need to generate dataframe that only has the grouped and labeled features
             grouping_and_labeling_features = []
             duplicate_features = []
-            for feature in grouping_feature:
-                grouping_and_labeling_features.append(feature)
-            for feature in labeling_features:
-                grouping_and_labeling_features.append(feature)
-                if feature in myx_features:
-                    if feature not in duplicate_features:
-                        duplicate_features.append(feature)
+            if 'grouping_feature' in self.configdict['General Setup'].keys():
+                for feature in grouping_feature:
+                    grouping_and_labeling_features.append(feature)
+            if 'labeling_features' in self.configdict['General Setup'].keys():
+                for feature in labeling_features:
+                    grouping_and_labeling_features.append(feature)
+                    if feature in myx_features:
+                        if feature not in duplicate_features:
+                            duplicate_features.append(feature)
 
             print('grouping and labeling')
             print(grouping_and_labeling_features)
-            dataframe_labeled = FeatureIO(dataframe=dataframe_original).keep_custom_features(features_to_keep=labeling_features, y_feature=myy_feature)
-            dataframe_labeled, scaler = FeatureNormalization(dataframe=dataframe_labeled).normalize_features(x_features=labeling_features, y_feature=myy_feature)
-            dataframe_grouped = FeatureIO(dataframe=dataframe_original).keep_custom_features(features_to_keep=grouping_feature, y_feature=myy_feature)
-            mydataframe = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_labeled)
-            mydataframe = DataframeUtilities()._merge_dataframe_columns(dataframe1=mydataframe, dataframe2=dataframe_grouped)
+            if 'labeling_features' in self.configdict['General Setup'].keys():
+                dataframe_labeled = FeatureIO(dataframe=dataframe_original).keep_custom_features(features_to_keep=labeling_features, y_feature=myy_feature)
+                if self.configdict['General Setup']['normalize_features'] == bool(True):
+                    dataframe_labeled, scaler = FeatureNormalization(dataframe=dataframe_labeled).normalize_features(x_features=labeling_features, y_feature=myy_feature)
+                dataframe_labeled = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_labeled)
+            if 'grouping_feature' in self.configdict['General Setup'].keys():
+                dataframe_grouped = FeatureIO(dataframe=dataframe_original).keep_custom_features(features_to_keep=grouping_feature, y_feature=myy_feature)
+                dataframe_grouped = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_grouped)
+
+            dataframe_merged = dataframe
+            if 'labeling_features' in self.configdict['General Setup'].keys():
+                dataframe_merged = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe_merged, dataframe2=dataframe_labeled)
+            if 'grouping_feature' in self.configdict['General Setup'].keys():
+                dataframe_merged = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe_merged, dataframe2=dataframe_grouped)
 
             print('merged')
-            print(mydataframe)
+            print(dataframe_merged)
+
             # Need to remove duplicate features after merging. For some reason drop_duplicates doesn't work
             #mydataframe_filtered = FeatureIO(dataframe=mydataframe).remove_duplicate_features_by_name()
+
             myXdata, myydata, myx_features, myy_feature, dataframe_original = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe, target_feature=myy_feature)
-            data_dict[data_name] = DataHandler(data = mydataframe,
+            data_dict[data_name] = DataHandler(data = dataframe_merged,
                                 input_data = myXdata,
                                 target_data = myydata,
                                 input_features = myx_features,
