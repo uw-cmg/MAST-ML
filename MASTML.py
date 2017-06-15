@@ -17,6 +17,7 @@ if env_display is None:
     matplotlib.use("agg")
 from DataHandler import DataHandler
 import importlib
+import pandas as pd
 
 class MASTMLDriver(object):
 
@@ -83,6 +84,9 @@ class MASTMLDriver(object):
         # First remove features containing strings before doing feature normalization or other operations, but don't remove grouping features
         x_features, dataframe = MiscFeatureOperations(configdict=self.configdict).remove_features_containing_strings(dataframe=dataframe, x_features=x_features)
 
+        print('removing strings:')
+        print(dataframe)
+
         # Normalize features (optional)
         if self.configdict['General Setup']['normalize_features'] == bool(True):
             fn = FeatureNormalization(dataframe=dataframe)
@@ -91,6 +95,13 @@ class MASTMLDriver(object):
 
         # Perform feature selection and dimensional reduction, as specified in the input file (optional)
         if "Feature Selection" in self.configdict.keys():
+            # Remove any additional columns that are not x_features using to be fit to data
+            features = dataframe.columns.values.tolist()
+            features_to_remove = []
+            for feature in features:
+                if feature not in x_features and feature not in y_feature:
+                    features_to_remove.append(feature)
+            dataframe = FeatureIO(dataframe=dataframe).remove_custom_features(features_to_remove=features_to_remove)
             dataframe = self._perform_feature_selection(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
             x_features, y_feature = DataParser(configdict=self.configdict).get_features(dataframe=dataframe, target_feature=y_feature)
 
@@ -206,28 +217,22 @@ class MASTMLDriver(object):
                         if feature not in duplicate_features:
                             duplicate_features.append(feature)
 
-            print('grouping and labeling')
-            print(grouping_and_labeling_features)
+            dataframe_labeled = pd.DataFrame()
+            dataframe_grouped = pd.DataFrame()
             if 'labeling_features' in self.configdict['General Setup'].keys():
                 dataframe_labeled = FeatureIO(dataframe=dataframe_original).keep_custom_features(features_to_keep=labeling_features, y_feature=myy_feature)
                 if self.configdict['General Setup']['normalize_features'] == bool(True):
                     dataframe_labeled, scaler = FeatureNormalization(dataframe=dataframe_labeled).normalize_features(x_features=labeling_features, y_feature=myy_feature)
-                dataframe_labeled = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_labeled)
             if 'grouping_feature' in self.configdict['General Setup'].keys():
                 dataframe_grouped = FeatureIO(dataframe=dataframe_original).keep_custom_features(features_to_keep=grouping_feature, y_feature=myy_feature)
-                dataframe_grouped = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_grouped)
 
-            dataframe_merged = dataframe
-            if 'labeling_features' in self.configdict['General Setup'].keys():
-                dataframe_merged = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe_merged, dataframe2=dataframe_labeled)
-            if 'grouping_feature' in self.configdict['General Setup'].keys():
-                dataframe_merged = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe_merged, dataframe2=dataframe_grouped)
-
-            print('merged')
-            print(dataframe_merged)
+            # Now merge dataframes
+            dataframe_labeled_grouped = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe_labeled, dataframe2=dataframe_grouped)
+            dataframe_merged = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_labeled_grouped)
 
             # Need to remove duplicate features after merging. For some reason drop_duplicates doesn't work
             #mydataframe_filtered = FeatureIO(dataframe=mydataframe).remove_duplicate_features_by_name()
+            FeatureIO(dataframe=dataframe_merged).remove_duplicate_columns()
 
             myXdata, myydata, myx_features, myy_feature, dataframe_original = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe, target_feature=myy_feature)
             data_dict[data_name] = DataHandler(data = dataframe_merged,
