@@ -100,8 +100,8 @@ class PlotHelper():
         import matplotlib.pyplot as plt
         plt.figure()
         plt.plot([1,2,3],[2,3,4],'b-')
-        plt.show()
         plt.savefig("figure.png")
+        plt.show()
         """
         nb['cells'] = [nbf.v4.new_code_cell(code)]
         fname = 'test.ipynb'
