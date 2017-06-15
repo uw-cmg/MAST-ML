@@ -15,9 +15,13 @@ class FeatureIO(object):
     def get_original_dataframe(self):
         return self.dataframe
 
-    def remove_duplicate_features_by_name(self):
+    def remove_duplicate_features_by_name(self, keep=None):
         # Only removes features that have the same name, not features containing the same data vector
-        dataframe = self.dataframe.drop_duplicates()
+        dataframe = self.dataframe.drop_duplicates(keep=keep)
+        return dataframe
+
+    def remove_duplicate_features_by_values(self):
+        dataframe = self.dataframe.T.drop_duplicates().T
         return dataframe
 
     def remove_custom_features(self, features_to_remove):
@@ -81,11 +85,8 @@ class FeatureNormalization(object):
         return self.dataframe
 
     def normalize_features(self, x_features, y_feature, to_csv=True):
-        # First remove features containing strings before doing feature normalization
-        x_features, dataframe = MiscOperations().remove_features_containing_strings(dataframe=self.dataframe,
-                                                                                    x_features=x_features)
-        scaler = StandardScaler().fit(X=dataframe[x_features])
-        array_normalized = scaler.fit_transform(X=dataframe[x_features], y=self.dataframe[y_feature])
+        scaler = StandardScaler().fit(X=self.dataframe[x_features])
+        array_normalized = scaler.fit_transform(X=self.dataframe[x_features], y=self.dataframe[y_feature])
         array_normalized = DataframeUtilities()._concatenate_arrays(X_array=array_normalized, y_array=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
         dataframe_normalized = DataframeUtilities()._array_to_dataframe(array=array_normalized)
         dataframe_normalized = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe_normalized, x_features=x_features, y_feature=y_feature, remove_first_row=False)
@@ -114,10 +115,12 @@ class FeatureNormalization(object):
         dataframe = DataframeUtilities()._merge_dataframe_columns(dataframe1=self.dataframe, dataframe2=dataframe_normalized)
         return dataframe
 
-class MiscOperations():
+class MiscFeatureOperations(object):
 
-    @classmethod
-    def remove_features_containing_strings(cls, dataframe, x_features):
+    def __init__(self, configdict):
+        self.configdict = configdict
+
+    def remove_features_containing_strings(self, dataframe, x_features):
         x_features_pruned = []
         x_features_to_remove = []
         for x_feature in x_features:
@@ -127,7 +130,8 @@ class MiscOperations():
                     #print('found a string')
                     is_str = True
             if is_str == True:
-                x_features_to_remove.append(x_feature)
+                if x_feature not in self.configdict['General Setup']['grouping_feature']:
+                    x_features_to_remove.append(x_feature)
 
         for x_feature in x_features:
             if x_feature not in x_features_to_remove:
