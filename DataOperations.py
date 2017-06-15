@@ -58,7 +58,6 @@ class DataParser(object):
                                 x_features.append(feature)
                         else:
                             x_features.append(feature)
-
             else:
                 x_features = [feature for feature in self.configdict['General Setup']['input_features']]
         elif from_input_file == bool(False):
