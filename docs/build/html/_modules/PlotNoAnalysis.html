@@ -80,7 +80,7 @@
             <span class="n">plot_filter_out</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
             <span class="n">feature_plot_feature</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
             <span class="n">data_labels</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-            <span class="n">timex</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+            <span class="n">timex</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Additional attributes to parent class:</span>
 <span class="sd">            self.testing_datasets &lt;list&gt;: List of testing datasets which</span>
@@ -168,13 +168,14 @@
             <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">group</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">):</span>
                 <span class="n">xdata</span> <span class="o">=</span> <span class="n">xdata</span><span class="p">[</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">group_data</span> <span class="o">==</span> <span class="n">group</span><span class="p">]</span>
                 <span class="n">ydata</span> <span class="o">=</span> <span class="n">ydata</span><span class="p">[</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">group_data</span> <span class="o">==</span> <span class="n">group</span><span class="p">]</span>
-                <span class="n">yerrdata</span> <span class="o">=</span> <span class="n">yerrdata</span><span class="p">[</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">group_data</span> <span class="o">==</span> <span class="n">group</span><span class="p">]</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">xdata</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="n">xdata</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ydata</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="n">ydata</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">yerrdata</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">yerrdata</span> <span class="o">=</span> <span class="bp">None</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">yerrdata</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">):</span>
+                    <span class="n">yerrdata</span> <span class="o">=</span> <span class="n">yerrdata</span><span class="p">[</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">group_data</span> <span class="o">==</span> <span class="n">group</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">yerrdata</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">yerrdata</span> <span class="o">=</span> <span class="bp">None</span>
             <span class="n">xdatalist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xdata</span><span class="p">)</span>
             <span class="n">xerrlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xerrdata</span><span class="p">)</span>
             <span class="n">ydatalist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ydata</span><span class="p">)</span>

@@ -46,7 +46,7 @@
 <span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 
-<div class="viewcode-block" id="PredictionVsFeature"><a class="viewcode-back" href="../tests.html#PredictionVsFeature.PredictionVsFeature">[docs]</a><span class="k">class</span> <span class="nc">PredictionVsFeature</span><span class="p">(</span><span class="n">SingleFit</span><span class="p">):</span>
+<div class="viewcode-block" id="PredictionVsFeature"><a class="viewcode-back" href="../autodoc_tests.html#PredictionVsFeature.PredictionVsFeature">[docs]</a><span class="k">class</span> <span class="nc">PredictionVsFeature</span><span class="p">(</span><span class="n">SingleFit</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Make prediction vs. feature plots from a single fit.</span>
 
 <span class="sd">    Args:</span>
@@ -148,7 +148,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">get_singlefits</span><span class="p">()</span>
         <span class="k">return</span>
 
-<div class="viewcode-block" id="PredictionVsFeature.get_singlefits"><a class="viewcode-back" href="../tests.html#PredictionVsFeature.PredictionVsFeature.get_singlefits">[docs]</a>    <span class="k">def</span> <span class="nf">get_singlefits</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="PredictionVsFeature.get_singlefits"><a class="viewcode-back" href="../autodoc_tests.html#PredictionVsFeature.PredictionVsFeature.get_singlefits">[docs]</a>    <span class="k">def</span> <span class="nf">get_singlefits</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get SingleFit for each testing dataset.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;----- Fitting and prediction -----</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -253,6 +253,7 @@
         <span class="n">addl_kwargs</span><span class="p">[</span><span class="s1">&#39;linestyles&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">linestyles</span>
         <span class="n">addl_kwargs</span><span class="p">[</span><span class="s1">&#39;legendloc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">legendloc</span>
         <span class="n">addl_kwargs</span><span class="p">[</span><span class="s1">&#39;sizes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sizes</span>
+        <span class="n">addl_kwargs</span><span class="p">[</span><span class="s1">&#39;stepsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stepsize</span>
         <span class="n">faces</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">fidx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">markers</span><span class="p">)):</span>
             <span class="n">faces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;None&quot;</span><span class="p">)</span>

@@ -142,8 +142,12 @@ class MASTMLDriver(object):
     def _end_html(self):
         self.readme_html.append("<HR>\n")
         self.readme_html.append("<H2>Setup</H2>\n")
-        self.readme_html.append('<A HREF="%s">Log file</A><BR>\n' % os.path.join(self.save_path, "MASTMLlog.log"))
-        self.readme_html.append('<A HREF="%s">Config file</A><BR>\n' % os.path.join(self.save_path, str(self.configfile)))
+        logpath = os.path.join(self.save_path, "MASTMLlog.log")
+        logpath = os.path.relpath(logpath, self.save_path)
+        self.readme_html.append('<A HREF="%s">Log file</A><BR>\n' % logpath)
+        confpath = os.path.join(self.save_path, str(self.configfile))
+        confpath = os.path.relpath(confpath, self.save_path)
+        self.readme_html.append('<A HREF="%s">Config file</A><BR>\n' % confpath)
         self.readme_html.append("<HR>\n")
         self.readme_html.append("</BODY>\n")
         self.readme_html.append("</HTML>\n")
@@ -188,6 +192,10 @@ class MASTMLDriver(object):
         for data_name in self.data_setup.keys():
             data_path = self.data_setup[data_name]['data_path']
             data_weights = self.data_setup[data_name]['weights']
+            if "normalize" in self.data_setup[data_name].keys():
+                data_normalize = self.data_setup[data_name]['normalize']
+            else:
+                data_normalize = False
             if not(os.path.isfile(data_path)):
                 raise OSError("No file found at %s" % data_path)
             if 'labeling_features' in self.general_setup.keys():
@@ -347,7 +355,8 @@ class MASTMLDriver(object):
                 logging.info('Ran test %s for your %s model' % (test_type, str(model)))
                 self._update_models_and_data(test_folder, test_save_path, midx)
                 self.readme_html.extend(self.make_links_for_favorites(test_folder, test_save_path))
-                self.readme_html_tests.append('<A HREF="%s">%s</A><BR>\n' % (test_save_path, test_type))
+                testrelpath = os.path.relpath(test_save_path, self.save_path)
+                self.readme_html_tests.append('<A HREF="%s">%s</A><BR>\n' % (testrelpath, test_type))
         return test_list
 
     def _update_models_and_data(self, test_folder, test_save_path, model_index=None):
@@ -451,7 +460,9 @@ class MASTMLDriver(object):
             flist = self.favorites_dict[test_short]
             for fval in flist:
                 linkloc = os.path.join(test_save_path, fval)
-                linkline = '<A HREF="%s">%s</A> from test <A HREF="%s">%s</A><BR><BR>\n' % (linkloc, fval, test_save_path, test_folder)
+                linkloc = os.path.relpath(linkloc, self.save_path)
+                testrelpath = os.path.relpath(test_save_path, self.save_path)
+                linkline = '<A HREF="%s">%s</A> from test <A HREF="%s">%s</A><BR><BR>\n' % (linkloc, fval, testrelpath, test_folder)
                 linklist.append(linkline)
                 if '.png' in fval:
                     imline = '<A HREF="%s"><IMG SRC="%s" height=300 width=400></A><BR>\n' % (linkloc, linkloc)

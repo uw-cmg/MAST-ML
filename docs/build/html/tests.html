@@ -42,149 +42,7 @@
 <h1>Tests<a class="headerlink" href="#tests" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="single-fits">
 <h2>Single fits<a class="headerlink" href="#single-fits" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="SingleFit.SingleFit">
-<em class="property">class </em><code class="descclassname">SingleFit.</code><code class="descname">SingleFit</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='Measured'</em>, <em>ylabel='Predicted'</em>, <em>stepsize=None</em>, <em>plot_filter_out=None</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SingleFit.html#SingleFit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#SingleFit.SingleFit" title="Permalink to this definition">¶</a></dt>
-<dd><p>This is the basic analysis class.</p>
-<p>This class provides a template for other classes. Combine many classes 
-to do meta-analysis.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><p class="first">training_dataset &lt;DataHandler object&gt;: Training dataset handler
-testing_dataset &lt;DataHandler object&gt;: Testing dataset handler
-model &lt;sklearn model&gt;: Machine-learning model
-save_path &lt;str&gt;: Save path
-xlabel &lt;str&gt;: Label for full-fit x-axis (default &#8220;Measured&#8221;)
-ylabel &lt;str&gt;: Label for full-fit y-axis (default &#8220;Predicted&#8221;)
-stepsize &lt;float&gt;: Step size for plot grid (default None)
-plot_filter_out &lt;list&gt;: List of semicolon-delimited strings with</p>
-<blockquote class="last">
-<div>feature;operator;value for filtering out
-values for plotting.</div></blockquote>
-</dd>
-<dt>Returns:</dt>
-<dd>Analysis in the path marked by save_path</dd>
-<dt>Raises:</dt>
-<dd><dl class="first last docutils">
-<dt>ValueError if the following are not set:</dt>
-<dd>training_dataset, testing_dataset,
-input_features, target_feature,
-model</dd>
-</dl>
-</dd>
-</dl>
-<dl class="method">
-<dt id="SingleFit.SingleFit.print_output_csv">
-<code class="descname">print_output_csv</code><span class="sig-paren">(</span><em>csvname='output_data.csv'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SingleFit.html#SingleFit.print_output_csv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#SingleFit.SingleFit.print_output_csv" title="Permalink to this definition">¶</a></dt>
-<dd><p>Modify once dataframe is in place</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="SingleFitGrouped.SingleFitGrouped">
-<em class="property">class </em><code class="descclassname">SingleFitGrouped.</code><code class="descname">SingleFitGrouped</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='Measured'</em>, <em>ylabel='Predicted'</em>, <em>stepsize=1</em>, <em>plot_filter_out=None</em>, <em>mark_outlying_groups=2</em>, <em>fit_only_on_matched_groups=0</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SingleFitGrouped.html#SingleFitGrouped"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#SingleFitGrouped.SingleFitGrouped" title="Permalink to this definition">¶</a></dt>
-<dd><p>Do a single full fit and split out group contributions to RMSE.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><p class="first">training_dataset,
-testing_dataset,
-model,
-save_path,
-xlabel, 
-ylabel,
-stepsize, 
-plot_filter_out, see parent class
-mark_outlying_groups &lt;int&gt;: Number of outlying groups to mark
-fit_only_on_matched_groups &lt;int&gt;: 0 - fit on all data in the training</p>
-<blockquote class="last">
-<div><blockquote>
-<div>dataset (default)</div></blockquote>
-<dl class="docutils">
-<dt>1 - fit only on groups in the training</dt>
-<dd>dataset that are also in the
-testing dataset</dd>
-</dl>
-</div></blockquote>
-</dd>
-<dt>Returns:</dt>
-<dd>Analysis in the save_path folder
-Plots results in a predicted vs. measured square plot.</dd>
-<dt>Raises:</dt>
-<dd><p class="first">ValueError if grouping_feature is not set in testing dataset
-ValueError if testing target data is None; has to have at least</p>
-<blockquote class="last">
-<div>some testing target data to plot</div></blockquote>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="class">
-<dt id="SingleFitPerGroup.SingleFitPerGroup">
-<em class="property">class </em><code class="descclassname">SingleFitPerGroup.</code><code class="descname">SingleFitPerGroup</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='Measured'</em>, <em>ylabel='Predicted'</em>, <em>stepsize=1</em>, <em>plot_filter_out=None</em>, <em>mark_outlying_groups=2</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SingleFitPerGroup.html#SingleFitPerGroup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#SingleFitPerGroup.SingleFitPerGroup" title="Permalink to this definition">¶</a></dt>
-<dd><p>Split out the data by groups and then do single fits on each group.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>training_dataset,
-testing_dataset,
-model,
-save_path,
-xlabel, 
-ylabel,
-stepsize, 
-plot_filter_out, 
-mark_outlying_groups, see parent class</dd>
-<dt>Returns:</dt>
-<dd>Analysis in the save_path folder
-Single fits for each group in group name folders
-Plots results in a predicted vs. measured square plot.</dd>
-<dt>Raises:</dt>
-<dd><p class="first">ValueError if testing dataset grouping_feature is not set
-ValueError if testing target data is None; has to have at least</p>
-<blockquote class="last">
-<div>some testing target data to plot</div></blockquote>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="class">
-<dt id="PredictionVsFeature.PredictionVsFeature">
-<em class="property">class </em><code class="descclassname">PredictionVsFeature.</code><code class="descname">PredictionVsFeature</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='Measured'</em>, <em>ylabel='Predicted'</em>, <em>stepsize=1</em>, <em>plot_filter_out=''</em>, <em>feature_plot_xlabel='X'</em>, <em>feature_plot_ylabel='Prediction'</em>, <em>feature_plot_feature=None</em>, <em>markers=''</em>, <em>outlines=''</em>, <em>data_labels=''</em>, <em>linestyles=''</em>, <em>legendloc=None</em>, <em>sizes=''</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PredictionVsFeature.html#PredictionVsFeature"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PredictionVsFeature.PredictionVsFeature" title="Permalink to this definition">¶</a></dt>
-<dd><p>Make prediction vs. feature plots from a single fit.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><p class="first">training_dataset,
-testing_dataset, (Multiple testing datasets are allowed as a list.)
-model,
-save_path,
-xlabel,
-ylabel,
-stepsize,
-plot_filter_out, see parent class.
-feature_plot_xlabel &lt;str&gt;: x-axis label for per-group plots of predicted and</p>
-<blockquote>
-<div>measured y data versus data from field of
-numeric_field_name</div></blockquote>
-<p class="last">feature_plot_ylabel &lt;str&gt;: y-axis label for per-group plots
-feature_plot_feature &lt;str&gt;: feature for per-group feature plots
-markers &lt;str&gt;: comma-delimited marker list for split plots
-outlines &lt;str&gt;: comma-delimited color list for split plots
-linestyles &lt;str&gt;: comma-delimited list of line styles for split plots
-data_labels &lt;str&gt;: comma-delimited list of testing dataset labels for split plots</p>
-</dd>
-<dt>Returns:</dt>
-<dd>Analysis in save_path folder</dd>
-<dt>Raises:</dt>
-<dd>ValueError if feature_plot_feature is not set</dd>
-</dl>
-<dl class="method">
-<dt id="PredictionVsFeature.PredictionVsFeature.get_singlefits">
-<code class="descname">get_singlefits</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/PredictionVsFeature.html#PredictionVsFeature.get_singlefits"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PredictionVsFeature.PredictionVsFeature.get_singlefits" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get SingleFit for each testing dataset.</p>
-</dd></dl>
-
-</dd></dl>
-
+<p><a class="reference internal" href="singlefit.html#singlefit"><span>SingleFit</span></a></p>
 </div>
 <div class="section" id="cross-validation">
 <h2>Cross validation<a class="headerlink" href="#cross-validation" title="Permalink to this headline">¶</a></h2>
@@ -329,7 +187,7 @@ ValueError if testing target data is None; CV must have</p>
 <h2>Other<a class="headerlink" href="#other" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="PlotNoAnalysis.PlotNoAnalysis">
-<em class="property">class </em><code class="descclassname">PlotNoAnalysis.</code><code class="descname">PlotNoAnalysis</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='X'</em>, <em>ylabel='Y'</em>, <em>plot_filter_out=None</em>, <em>feature_plot_feature=None</em>, <em>data_labels=None</em>, <em>timex=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PlotNoAnalysis.html#PlotNoAnalysis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PlotNoAnalysis.PlotNoAnalysis" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">PlotNoAnalysis.</code><code class="descname">PlotNoAnalysis</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='X'</em>, <em>ylabel='Y'</em>, <em>plot_filter_out=None</em>, <em>feature_plot_feature=None</em>, <em>data_labels=None</em>, <em>timex=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PlotNoAnalysis.html#PlotNoAnalysis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PlotNoAnalysis.PlotNoAnalysis" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plotting without analysis
 Args:</p>
 <blockquote>

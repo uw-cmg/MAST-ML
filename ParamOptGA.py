@@ -260,14 +260,14 @@ class GAGeneration():
         self.parent_indices = list()
         temp_rmse_list = list(self.population_rmses)
         lowest_idx=None
-        for pridx in range(self.num_parents):       
+        for pct in range(self.num_parents):       
             min_rmse_index = np.argmin(temp_rmse_list)
-            self.parent_indices.append(pridx)
+            self.parent_indices.append(min_rmse_index)
             min_rmse = temp_rmse_list[min_rmse_index]
             if min_rmse < self.best_rmse:
                 self.best_rmse = min_rmse
-                self.best_genome = dict(self.population[pridx].genome)
-                self.best_individual = pridx
+                self.best_genome = dict(self.population[min_rmse_index].genome)
+                self.best_individual = min_rmse_index
             temp_rmse_list[min_rmse_index] = np.max(temp_rmse_list) #so don't find same rmse twice)
         return
 
@@ -276,8 +276,10 @@ class GAGeneration():
         """
         self.new_population=dict()
         for indidx in range(self.population_size):
-            p1idx = self.random_state.randint(0, self.num_parents)
-            p2idx = self.random_state.randint(0, self.num_parents) #can have two of same parent?
+            p1rand = self.random_state.randint(0, self.num_parents)
+            p2rand = self.random_state.randint(0, self.num_parents) #can have two of same parent?
+            p1idx = self.parent_indices[p1rand]
+            p2idx = self.parent_indices[p2rand]
             new_genome = dict() 
             genes = list(self.population[indidx].genome.keys())
             genes.sort()
@@ -420,8 +422,10 @@ class ParamOptGA(SingleFit):
         self.use_multiprocessing = int(use_multiprocessing)
         if type(additional_feature_methods) is list:
             self.additional_feature_methods = list(additional_feature_methods)
-        else:
+        elif type(additional_feature_methods) is str:
             self.additional_feature_methods = additional_feature_methods.split(",")
+        else:
+            self.additional_feature_methods = additional_feature_methods
         self.final_testing_datasets = list(testing_dataset)
         #Sets in code
         self.cv_divisions = None
@@ -446,11 +450,11 @@ class ParamOptGA(SingleFit):
         ga_best_rmse = 10000000
         ga_best_genome = None
         ga_converged = 0
-        ga_runs_since_best = 0
+        ga_repetitions_of_best = 0
 
         new_population=None
 
-        while ga_runs_since_best < self.convergence_generations and ga_genct < self.max_generations: 
+        while ga_repetitions_of_best < self.convergence_generations and ga_genct < self.max_generations: 
             print("Generation %i %s" % (ga_genct, time.asctime()), flush=True)
             with GAGeneration(testing_dataset_for_init = self.testing_dataset,
                 cv_divisions=self.cv_divisions,
@@ -475,19 +479,18 @@ class ParamOptGA(SingleFit):
             if gen_best_rmse < ga_best_rmse:
                 ga_best_rmse = gen_best_rmse
                 ga_best_genome = gen_best_genome
-                ga_runs_since_best = 0
+                ga_repetitions_of_best = 0
+            else:
+                if gen_best_genome == ga_best_genome:
+                    ga_repetitions_of_best = ga_repetitions_of_best + 1
+                else:
+                    ga_repetitions_of_best = 0
             
             # prints output for each generation
             print(time.asctime())
-            genpref = "Results for generation %i, rmse %3.3f" % (ga_genct, gen_best_rmse)
+            genpref = "Results gen %i (%i/%i convergence), rmse %3.3f" % (ga_genct, ga_repetitions_of_best, self.convergence_generations, gen_best_rmse)
             print_genome(gen_best_genome, preface=genpref)
-            print(ga_genct, ga_runs_since_best, flush=True)
-            
             ga_genct = ga_genct + 1
-
-            if gen_best_genome == ga_best_genome:
-                ga_runs_since_best = ga_runs_since_best + 1
-        
         self.ga_dict[self.gact]['best_rmse'] = ga_best_rmse
         self.ga_dict[self.gact]['best_genome'] = ga_best_genome
         if ga_genct < self.max_generations:
