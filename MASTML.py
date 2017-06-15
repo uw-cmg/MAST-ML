@@ -3,10 +3,10 @@ __author__ = 'Ryan Jacobs, Tam Mayeshiba'
 import sys
 import os
 from MASTMLInitializer import MASTMLWrapper, ConfigFileValidator
-from DataOperations import DataParser
+from DataOperations import DataParser, DataframeUtilities
 from FeatureGeneration import MagpieFeatureGeneration, MaterialsProjectFeatureGeneration, CitrineFeatureGeneration
-from FeatureOperations import FeatureNormalization, FeatureIO
-from FeatureSelection import FeatureSelection, DimensionalReduction, MiscOperations
+from FeatureOperations import FeatureNormalization, FeatureIO, MiscFeatureOperations
+from FeatureSelection import FeatureSelection, DimensionalReduction, MiscFeatureSelectionOperations
 import logging
 import shutil
 import time
@@ -69,24 +69,29 @@ class MASTMLDriver(object):
             self._perform_csv_setup()
 
         # Parse input data files
-        Xdata, ydata, x_features, y_feature, dataframe, self.data_dict = self._parse_input_data()
+        Xdata, ydata, x_features, y_feature, dataframe = self._parse_input_data()
 
         # Generate additional descriptors, as specified in input file (optional)
         if "Feature Generation" in self.configdict.keys():
             dataframe = self._perform_feature_generation(dataframe=dataframe)
-            Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe,
+            Xdata, ydata, x_features_NOUSE, y_feature, dataframe = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe,
                                                                                     target_feature='target_feature')
 
-        # Normalize features
-        fn = FeatureNormalization(dataframe=dataframe)
-        dataframe, scaler = fn.normalize_features(x_features=x_features, y_feature=y_feature)
-        x_features, y_feature = DataParser(configdict=self.configdict).get_features(dataframe=dataframe, target_feature=y_feature)
+        # First remove features containing strings before doing feature normalization or other operations, but don't remove grouping features
+        x_features, dataframe = MiscFeatureOperations(configdict=self.configdict).remove_features_containing_strings(dataframe=dataframe, x_features=x_features)
+
+        # Normalize features (optional)
+        if self.configdict['General Setup']['normalize_features'] == bool(True):
+            fn = FeatureNormalization(dataframe=dataframe)
+            dataframe, scaler = fn.normalize_features(x_features=x_features, y_feature=y_feature)
+            x_features, y_feature = DataParser(configdict=self.configdict).get_features(dataframe=dataframe, target_feature=y_feature)
 
         # Perform feature selection and dimensional reduction, as specified in the input file (optional)
         if "Feature Selection" in self.configdict.keys():
             dataframe = self._perform_feature_selection(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
             x_features, y_feature = DataParser(configdict=self.configdict).get_features(dataframe=dataframe, target_feature=y_feature)
-            print(x_features, y_feature)
+
+        self.data_dict = self._create_data_dict(dataframe=dataframe)
 
         # Gather models
         (self.model_list, self.model_vals) = self._gather_models()
@@ -159,7 +164,9 @@ class MASTMLDriver(object):
         Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=self.configdict).parse_fromfile(datapath=self.data_setup['Initial']['data_path'], as_array=False)
         # Remove dataframe entries that contain 'NaN'
         dataframe = dataframe.dropna()
+        return Xdata, ydata, x_features, y_feature, dataframe
 
+    def _create_data_dict(self, dataframe):
         data_dict=dict()
         for data_name in self.data_setup.keys():
             data_path = self.data_setup[data_name]['data_path']
@@ -178,7 +185,32 @@ class MASTMLDriver(object):
                 grouping_feature = self.general_setup['grouping_feature']
             else:
                 grouping_feature = None
-            myXdata, myydata, myx_features, myy_feature, mydataframe = DataParser(configdict=self.configdict).parse_fromfile(datapath=self.data_setup[data_name]['data_path'], as_array=False)
+            myXdata, myydata, myx_features, myy_feature, dataframe_original = DataParser(configdict=self.configdict).parse_fromfile(datapath=self.data_setup[data_name]['data_path'], as_array=False)
+            # Combine the input dataframe, which has undergone feature generation and normalization, with the grouped and labeled features of original dataframe
+            # First, need to generate dataframe that only has the grouped and labeled features
+            grouping_and_labeling_features = []
+            duplicate_features = []
+            for feature in grouping_feature:
+                grouping_and_labeling_features.append(feature)
+            for feature in labeling_features:
+                grouping_and_labeling_features.append(feature)
+                if feature in myx_features:
+                    if feature not in duplicate_features:
+                        duplicate_features.append(feature)
+
+            print('grouping and labeling')
+            print(grouping_and_labeling_features)
+            dataframe_labeled = FeatureIO(dataframe=dataframe_original).keep_custom_features(features_to_keep=labeling_features, y_feature=myy_feature)
+            dataframe_labeled, scaler = FeatureNormalization(dataframe=dataframe_labeled).normalize_features(x_features=labeling_features, y_feature=myy_feature)
+            dataframe_grouped = FeatureIO(dataframe=dataframe_original).keep_custom_features(features_to_keep=grouping_feature, y_feature=myy_feature)
+            mydataframe = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_labeled)
+            mydataframe = DataframeUtilities()._merge_dataframe_columns(dataframe1=mydataframe, dataframe2=dataframe_grouped)
+
+            print('merged')
+            print(mydataframe)
+            # Need to remove duplicate features after merging. For some reason drop_duplicates doesn't work
+            #mydataframe_filtered = FeatureIO(dataframe=mydataframe).remove_duplicate_features_by_name()
+            myXdata, myydata, myx_features, myy_feature, dataframe_original = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe, target_feature=myy_feature)
             data_dict[data_name] = DataHandler(data = mydataframe,
                                 input_data = myXdata,
                                 target_data = myydata,
@@ -188,8 +220,7 @@ class MASTMLDriver(object):
                                 labeling_features = labeling_features,
                                 grouping_feature = grouping_feature) #
             logging.info('Parsed the input data located under %s' % data_path)
-
-        return Xdata, ydata, x_features, y_feature, dataframe, data_dict
+        return data_dict
 
     def _perform_feature_generation(self, dataframe):
         for k, v in self.configdict['Feature Generation'].items():
