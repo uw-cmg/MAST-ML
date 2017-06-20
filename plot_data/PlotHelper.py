@@ -96,12 +96,12 @@ class PlotHelper():
         return [xsorted, ysorted, xerrsorted, yerrsorted]
 
     def test_all(self):
-        self.plot_single()
+        self.plot_single_test()
         self.write_notebook()
         return
 
-    def get_member_info(self):
-        fig_handle = pickle.load(open('figure.pickle','rb'))
+    def get_member_info(self, fname="figure.pickle"):
+        fig_handle = pickle.load(open(fname,'rb'))
         [xdata, ydata] = fig_handle.axes[0].lines[0].get_data()
         print("Axes members")
         axes_members = inspect.getmembers(fig_handle.axes[0])
@@ -129,8 +129,8 @@ class PlotHelper():
         """ % (label, parsed_array)
         return section
 
-    def write_notebook(self):
-        fig_handle = pickle.load(open('figure.pickle','rb'))
+    def write_notebook(self, fname="figure.pickle"):
+        fig_handle = pickle.load(open(fname,'rb'))
         [xdata, ydata] = fig_handle.axes[0].lines[0].get_data()
         codelist=list()
         codelist.append("""\
@@ -155,11 +155,23 @@ class PlotHelper():
             nbf.write(nb, f)
         return
 
-    def plot_single(self):
+    def plot_single_test(self):
         fig_handle = plt.figure()
-        xvals = np.arange(-10,10,0.5)
+        xvals = np.arange(-10,10.5,0.5)
         yvals = np.sin(xvals)
         plt.plot(xvals, yvals, 'b-')
+        xvals2 = np.arange(-5,5,1)
+        yvals2 = np.cos(xvals2)
+        yerr2 = np.arange(-0.5,0.5,0.1)
+        plt.errorbar(xvals2, yvals2, yerr=yerr2,
+                        color='r',
+                        linestyle=':',
+                        linewidth=3,
+                        marker='s',
+                        markeredgewidth=2,
+                        markersize=15,
+                        markeredgecolor='darkgreen',
+                        markerfacecolor='green',)
         plt.savefig("figure.png")
         with open('figure.pickle','wb') as pfile:
             pickle.dump(fig_handle, pfile) 
