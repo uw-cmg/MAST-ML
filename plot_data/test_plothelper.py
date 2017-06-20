@@ -2,7 +2,4 @@
 
 from plot_data.PlotHelper import PlotHelper
 
-
-
 myph = PlotHelper()
-myph.write_notebook()

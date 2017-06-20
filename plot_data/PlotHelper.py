@@ -6,6 +6,8 @@ import pandas as pd
 import time
 import heapq
 import nbformat as nbf
+import pickle
+import inspect
 class PlotHelper():
     """Plotting class
         Expects **kwargs dictionary.
@@ -46,8 +48,9 @@ class PlotHelper():
         #Attributes below are set in code.
         self.smallfont = 0.85*self.fontsize
         matplotlib.rcParams.update({'font.size': self.fontsize})
+        self.test_all()
         return
-    
+
     def sort_series(self, xvals, yvals, xerr, yerr, verbose=0):
         """Sort x and y according to x. 
         """
@@ -92,17 +95,60 @@ class PlotHelper():
             yerrsorted = sortedarr[3,:]
         return [xsorted, ysorted, xerrsorted, yerrsorted]
 
+    def test_all(self):
+        self.plot_single()
+        self.write_notebook()
+        return
+
+    def get_member_info(self):
+        fig_handle = pickle.load(open('figure.pickle','rb'))
+        [xdata, ydata] = fig_handle.axes[0].lines[0].get_data()
+        print("Axes members")
+        axes_members = inspect.getmembers(fig_handle.axes[0])
+        for amemb in axes_members:
+            print(amemb)
+        print("Line members")
+        line_members = inspect.getmembers(fig_handle.axes[0].lines[0])
+        for lmemb in line_members:
+            print(lmemb)
+        return
+
+    def write_data_section(self, single_array, label="array"):
+        parsed_array="["
+        bct=0
+        maxb=5
+        for floatval in single_array:
+            parsed_array = parsed_array + "% 3.6f," % floatval
+            bct = bct + 1
+            if bct == maxb:
+                parsed_array = parsed_array + "\n" + "                "
+                bct=0
+        parsed_array = parsed_array + "]"
+        section="""\
+        %s = %s
+        """ % (label, parsed_array)
+        return section
 
     def write_notebook(self):
-        nb = nbf.v4.new_notebook()
-        code = """\
+        fig_handle = pickle.load(open('figure.pickle','rb'))
+        [xdata, ydata] = fig_handle.axes[0].lines[0].get_data()
+        codelist=list()
+        codelist.append("""\
         import matplotlib
         import matplotlib.pyplot as plt
         plt.figure()
-        plt.plot([1,2,3],[2,3,4],'b-')
+        """)
+        codelist.append(self.write_data_section(xdata, "label1_x"))
+        codelist.append(self.write_data_section(ydata, "label1_y"))
+        codelist.append("""\
+        plt.plot(label1_x, label1_y, 'b-', label="label1")
         plt.savefig("figure.png")
         plt.show()
-        """
+        """) 
+        code=""
+        for codeitem in codelist:
+            code = code + codeitem + "\n"
+        nb = nbf.v4.new_notebook()
         nb['cells'] = [nbf.v4.new_code_cell(code)]
         fname = 'test.ipynb'
         with open(fname, 'w') as f:
@@ -110,8 +156,16 @@ class PlotHelper():
         return
 
     def plot_single(self):
-
+        fig_handle = plt.figure()
+        xvals = np.arange(-10,10,0.5)
+        yvals = np.sin(xvals)
+        plt.plot(xvals, yvals, 'b-')
+        plt.savefig("figure.png")
+        with open('figure.pickle','wb') as pfile:
+            pickle.dump(fig_handle, pfile) 
         return
+
+
 def plot_single(xvals, yvals):
     #fig, ax = plt.subplots(figsize=(10, 4))
     if xerr is None or (len(xerr) == 0):
