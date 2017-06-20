@@ -247,7 +247,12 @@ class PlotHelper():
             label = labels[sidx]
             codelist.append(self.write_series_section(seriesobj, label))
         codelist.append("""\
-        plt.legend()
+        lgd = plt.legend(loc='lower left', #location
+                        ncol=2, #number of columns
+                        numpoints=1, #number of points
+                        bbox_to_anchor=(0,1), #anchor of location in 'loc', against the figure axes; example pins lower left corner to x=0 and y=1
+                        )
+        lgd.get_frame().set_alpha(0.5) #translucent legend
         """)
         codelist.append("""\
         plt.savefig("%s")
