@@ -48,7 +48,6 @@ class PlotHelper():
         #Attributes below are set in code.
         self.smallfont = 0.85*self.fontsize
         matplotlib.rcParams.update({'font.size': self.fontsize})
-        self.test_all()
         return
 
     def sort_series(self, xvals, yvals, xerr, yerr, verbose=0):
@@ -229,6 +228,29 @@ class PlotHelper():
         """ % (xsection, ysection, errdatasection, mainsection, errsection, customsection)
         return section
 
+    def write_axis_section(self, axisobj):
+        axistext=""
+        section="""\
+        plt.xlabel('%s')
+        plt.ylabel('%s')
+        y_formatter = matplotlib.ticker.ScalarFormatter()
+        y_formatter.set_useOffset(False)
+        y_formatter.set_scientific(False)
+        ax = plt.gca()
+        ax.yaxis.set_major_formatter(y_formatter)
+        #ax.set_xscale('log', nonposx='clip')
+        #ax.set_yscale('log', nonposy='clip')
+        ax.set_xticks(%s)
+        ax.set_yticks(%s)
+        #ax.set_xticks(np.array([0,1,2]),["A","B","C"],minor=True)
+        #ax.set_xticks(np.array([0]),minor=True)
+        #ax.xaxis.grid(which='minor', linestyle='-')
+        #ax.margins(0.05,0.05)
+        """ % (axisobj.get_xlabel(), axisobj.get_ylabel(),
+            axisobj.get_xticks().tolist(),
+            axisobj.get_yticks().tolist())
+        return section
+
     def write_notebook(self, fname="figure.pickle", savename="notebook_figure.png"):
         fig_handle = pickle.load(open(fname,'rb'))
         codelist=list()
@@ -246,6 +268,8 @@ class PlotHelper():
             seriesobj = series[sidx]
             label = labels[sidx]
             codelist.append(self.write_series_section(seriesobj, label))
+        axisobj = fig_handle.axes[0]
+        codelist.append(self.write_axis_section(axisobj))
         codelist.append("""\
         lgd = plt.legend(loc='lower left', #location
                         ncol=2, #number of columns
@@ -293,6 +317,8 @@ class PlotHelper():
                         markeredgecolor='darkgreen',
                         markerfacecolor='green',
                         label="cosine")
+        plt.xlabel('Number')
+        plt.ylabel('Function value')
         plt.legend()
         plt.savefig("figure.png")
         with open('figure.pickle','wb') as pfile:
