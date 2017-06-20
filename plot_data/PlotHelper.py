@@ -241,8 +241,8 @@ class PlotHelper():
         #ax.set_xscale('log', nonposx='clip')
         #ax.set_yscale('log', nonposy='clip')
         ax.set_xticks(%s)
+        #ax.set_xticklabels(["a","b","c","d","e"],rotation=90)
         ax.set_yticks(%s)
-        #ax.set_xticks(np.array([0,1,2]),["A","B","C"],minor=True)
         #ax.set_xticks(np.array([0]),minor=True)
         #ax.xaxis.grid(which='minor', linestyle='-')
         #ax.margins(0.05,0.05)
@@ -260,6 +260,9 @@ class PlotHelper():
         codelist.append("""\
         import matplotlib
         import matplotlib.pyplot as plt
+        import numpy as np
+        matplotlib.rcParams.update({'font.size': 18})
+        smallfont = 0.85*matplotlib.rcParams['font.size']
         plt.figure()
         """)
         [series, labels] = fig_handle.axes[0].get_legend_handles_labels()
@@ -275,6 +278,7 @@ class PlotHelper():
                         ncol=2, #number of columns
                         numpoints=1, #number of points
                         bbox_to_anchor=(0,1), #anchor of location in 'loc', against the figure axes; example pins lower left corner to x=0 and y=1
+                        fontsize=smallfont,
                         )
         lgd.get_frame().set_alpha(0.5) #translucent legend
         """)
