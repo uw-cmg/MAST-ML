@@ -96,6 +96,7 @@ class PlotHelper():
         return [xsorted, ysorted, xerrsorted, yerrsorted]
 
     def test_all(self):
+        self.get_member_info()
         self.plot_single_test()
         self.write_notebook()
         return
@@ -107,10 +108,11 @@ class PlotHelper():
         axes_members = inspect.getmembers(fig_handle.axes[0])
         for amemb in axes_members:
             print(amemb)
-        print("Line members")
-        line_members = inspect.getmembers(fig_handle.axes[0].lines[0])
-        for lmemb in line_members:
-            print(lmemb)
+        for lidx in range(0, len(fig_handle.axes[0].lines)):
+            print("Line members line %i" % lidx)
+            line_members = inspect.getmembers(fig_handle.axes[0].lines[lidx])
+            for lmemb in line_members:
+                print(lmemb)
         return
 
     def write_data_section(self, single_array, label="array"):
@@ -125,23 +127,48 @@ class PlotHelper():
                 bct=0
         parsed_array = parsed_array + "]"
         section="""\
-        %s = %s
+        \n
+        %s = %s\n
         """ % (label, parsed_array)
+        return section
+    
+    def write_line_section(self, lineobj):
+        """
+        Args:
+            lineobj <Matplotlib line object>: Line object, e.g. from
+                fig_handle.axes[0].lines[<index number>]
+        """
+        [xdata, ydata] = lineobj.get_data()
+        label = lineobj.get_label()
+        xdata_label = "%s_x" % label
+        ydata_label = "%s_y" % label
+        xsection = self.write_data_section(xdata, xdata_label)
+        ysection = self.write_data_section(ydata, ydata_label)
+        section="""\
+        %s
+        %s
+        plt.plot(%s, %s, 'b-', label='%s')
+        """ % (xsection, ysection, xdata_label, ydata_label, label)
         return section
 
     def write_notebook(self, fname="figure.pickle"):
         fig_handle = pickle.load(open(fname,'rb'))
-        [xdata, ydata] = fig_handle.axes[0].lines[0].get_data()
         codelist=list()
+        codelist.append("""\
+        #Loaded from %s
+        """ % fname)
         codelist.append("""\
         import matplotlib
         import matplotlib.pyplot as plt
         plt.figure()
         """)
-        codelist.append(self.write_data_section(xdata, "label1_x"))
-        codelist.append(self.write_data_section(ydata, "label1_y"))
+        #linect = len(fig_handle.axes[0].lines)
+        #for lidx in range(0, linect):
+        #    lineobj = fig_handle.axes[0].lines[lidx]
+        lines = fig_handle.axes[0].get_lines()
+        for lineobj in lines:
+            codelist.append(self.write_line_section(lineobj))
         codelist.append("""\
-        plt.plot(label1_x, label1_y, 'b-', label="label1")
         plt.savefig("figure.png")
         plt.show()
         """) 
@@ -156,10 +183,15 @@ class PlotHelper():
         return
 
     def plot_single_test(self):
+        """Testing single plot
+            2 data lines, one with error bar
+            Markers and symbols
+            Legend
+        """
         fig_handle = plt.figure()
         xvals = np.arange(-10,10.5,0.5)
         yvals = np.sin(xvals)
-        plt.plot(xvals, yvals, 'b-')
+        plt.plot(xvals, yvals, 'b-',label="sine")
         xvals2 = np.arange(-5,5,1)
         yvals2 = np.cos(xvals2)
         yerr2 = np.arange(-0.5,0.5,0.1)
@@ -171,7 +203,9 @@ class PlotHelper():
                         markeredgewidth=2,
                         markersize=15,
                         markeredgecolor='darkgreen',
-                        markerfacecolor='green',)
+                        markerfacecolor='green',
+                        label="cosine")
+        plt.legend()
         plt.savefig("figure.png")
         with open('figure.pickle','wb') as pfile:
             pickle.dump(fig_handle, pfile) 
