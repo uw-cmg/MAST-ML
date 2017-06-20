@@ -233,19 +233,23 @@ class PlotHelper():
         section="""\
         plt.xlabel('%s')
         plt.ylabel('%s')
-        y_formatter = matplotlib.ticker.ScalarFormatter()
-        y_formatter.set_useOffset(False)
-        y_formatter.set_scientific(False)
         ax = plt.gca()
-        ax.yaxis.set_major_formatter(y_formatter)
-        #ax.set_xscale('log', nonposx='clip')
-        #ax.set_yscale('log', nonposy='clip')
+        #ax.margins(0.5,0.5) #set margins so points are not cut off
+        #ax.set_xscale('log', nonposx='clip') #set log scale
         ax.set_xticks(%s)
-        #ax.set_xticklabels(["a","b","c","d","e"],rotation=90)
+        #ax.set_xticklabels(["a","b","c","d","e"],rotation=90) #set tick labels
         ax.set_yticks(%s)
+        #
+        ### Set additional dashed gridline at x=0
         #ax.set_xticks(np.array([0]),minor=True)
-        #ax.xaxis.grid(which='minor', linestyle='-')
-        #ax.margins(0.05,0.05)
+        #ax.xaxis.grid(which='minor', linestyle='--')
+        #
+        ### Do not use scientific ticks with an automatic multiplier
+        #y_formatter = matplotlib.ticker.ScalarFormatter()
+        #y_formatter.set_useOffset(False)
+        #y_formatter.set_scientific(False)
+        #ax.yaxis.set_major_formatter(y_formatter)
+        #
         """ % (axisobj.get_xlabel(), axisobj.get_ylabel(),
             axisobj.get_xticks().tolist(),
             axisobj.get_yticks().tolist())
