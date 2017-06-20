@@ -96,8 +96,8 @@ class PlotHelper():
         return [xsorted, ysorted, xerrsorted, yerrsorted]
 
     def test_all(self):
-        self.get_member_info()
         self.plot_single_test()
+        #self.get_member_info()
         self.write_notebook()
         return
 
@@ -108,11 +108,12 @@ class PlotHelper():
         axes_members = inspect.getmembers(fig_handle.axes[0])
         for amemb in axes_members:
             print(amemb)
-        for lidx in range(0, len(fig_handle.axes[0].lines)):
-            print("Line members line %i" % lidx)
-            line_members = inspect.getmembers(fig_handle.axes[0].lines[lidx])
-            for lmemb in line_members:
-                print(lmemb)
+        [series, labels] = fig_handle.axes[0].get_legend_handles_labels()
+        for sidx in range(0, len(series)):
+            print("Series members series %i" % sidx)
+            series_members = inspect.getmembers(series[sidx])
+            for smemb in series_members:
+                print(smemb)
         return
 
     def write_data_section(self, single_array, label="array"):
@@ -132,14 +133,25 @@ class PlotHelper():
         """ % (label, parsed_array)
         return section
     
-    def write_line_section(self, lineobj):
+    def write_series_section(self, seriesobj, label="Line"):
         """
         Args:
-            lineobj <Matplotlib line object>: Line object, e.g. from
+            seriesobj <Matplotlib Line2D object or ErrorbarContainer object>: 
+                Line object or container object, e.g. from
                 fig_handle.axes[0].lines[<index number>]
+                or from get_legend_handles_labels
+            label <str>: Series label
         """
+        if type(seriesobj) == matplotlib.lines.Line2D:
+            return self.write_line_section(seriesobj, label)
+        elif type(seriesobj) == matplotlib.container.ErrorbarContainer:
+            return self.write_errorbar_section(seriesobj, label)
+        else:
+            raise ValueError("No implemented matching object type for %s" % type(seriesobj))
+        return
+
+    def write_line_section(self, lineobj, label="Line"):
         [xdata, ydata] = lineobj.get_data()
-        label = lineobj.get_label()
         xdata_label = "%s_x" % label
         ydata_label = "%s_y" % label
         xsection = self.write_data_section(xdata, xdata_label)
@@ -147,11 +159,77 @@ class PlotHelper():
         section="""\
         %s
         %s
-        plt.plot(%s, %s, 'b-', label='%s')
-        """ % (xsection, ysection, xdata_label, ydata_label, label)
+        plt.plot(%s, %s, label='%s',
+                color='%s', linestyle='%s', linewidth='%s',
+                marker='%s', markersize='%s', markeredgewidth='%s',
+                markeredgecolor='%s', markerfacecolor='%s')
+        """ % (xsection, ysection, xdata_label, ydata_label, label,
+        lineobj.get_color(), lineobj.get_linestyle(), lineobj.get_linewidth(),
+        lineobj.get_marker(), lineobj.get_markersize(), lineobj.get_markeredgewidth(),
+        lineobj.get_markeredgecolor(), lineobj.get_markerfacecolor())
+        return section
+    
+    def write_errorbar_section(self, container, label="Line"):
+        """
+        """
+        children = container.get_children()
+        lineobj = children[0]
+        [xdata, ydata] = lineobj.get_data()
+        xdata_label = "%s_x" % label
+        ydata_label = "%s_y" % label
+        xsection = self.write_data_section(xdata, xdata_label)
+        ysection = self.write_data_section(ydata, ydata_label)
+        ect = 1
+        if container.has_xerr:
+            xerrnegobj = children[ect]
+            [xerrnegdata, ydummy]=xerrnegobj.get_data()
+            ect = ect + 1
+            xerrposobj = children[ect]
+            [xerrposdata, ydummy]=xerrposobj.get_data()
+            ect = ect + 1
+            xerrneg = xdata - xerrnegdata
+            xerrpos = xerrposdata - xdata
+            xerrnegsection = self.write_data_section(xerrneg, "%s_neg_err" % xdata_label)
+            xerrpossection = self.write_data_section(xerrpos, "%s_pos_err" % xdata_label)
+        if container.has_yerr:
+            yerrnegobj = children[ect]
+            [xdummy, yerrnegdata]=yerrnegobj.get_data()
+            ect = ect + 1
+            yerrposobj = children[ect]
+            [xdummy, yerrposdata]=yerrposobj.get_data()
+            ect = ect + 1
+            yerrneg = ydata - yerrnegdata
+            yerrpos = yerrposdata - ydata
+            yerrnegsection = self.write_data_section(yerrneg, "%s_neg_err" % ydata_label)
+            yerrpossection = self.write_data_section(yerrpos, "%s_pos_err" % ydata_label)
+        mainsection="plt.errorbar(%s, %s, label='%s'," % (xdata_label, ydata_label, label)
+        errdatasection=""
+        errsection=""
+        if container.has_xerr:
+            errdatasection = errdatasection + xerrnegsection + xerrpossection
+            errsection = errsection + "xerr=(%s_neg_err,%s_pos_err)," % (xdata_label, xdata_label)
+        if container.has_yerr:
+            errdatasection = errdatasection + yerrnegsection + yerrpossection
+            errsection = errsection + "yerr=(%s_neg_err,%s_pos_err)," % (ydata_label, ydata_label)
+
+        customsection="""\
+                color='%s', linestyle='%s', linewidth='%s',
+                marker='%s', markersize='%s', markeredgewidth='%s',
+                markeredgecolor='%s', markerfacecolor='%s')
+        """ % (lineobj.get_color(), lineobj.get_linestyle(), lineobj.get_linewidth(),
+        lineobj.get_marker(), lineobj.get_markersize(), lineobj.get_markeredgewidth(),
+        lineobj.get_markeredgecolor(), lineobj.get_markerfacecolor())
+        section="""\
+        %s
+        %s
+        %s
+        %s
+        %s
+        %s
+        """ % (xsection, ysection, errdatasection, mainsection, errsection, customsection)
         return section
 
-    def write_notebook(self, fname="figure.pickle"):
+    def write_notebook(self, fname="figure.pickle", savename="notebook_figure.png"):
         fig_handle = pickle.load(open(fname,'rb'))
         codelist=list()
         codelist.append("""\
@@ -162,16 +240,19 @@ class PlotHelper():
         import matplotlib.pyplot as plt
         plt.figure()
         """)
-        #linect = len(fig_handle.axes[0].lines)
-        #for lidx in range(0, linect):
-        #    lineobj = fig_handle.axes[0].lines[lidx]
-        lines = fig_handle.axes[0].get_lines()
-        for lineobj in lines:
-            codelist.append(self.write_line_section(lineobj))
+        [series, labels] = fig_handle.axes[0].get_legend_handles_labels()
+        #([<matplotlib.lines.Line2D object at 0x10ea187f0>, <Container object of 3 artists>], ['sine', 'cosine'])
+        for sidx in range(0, len(series)):
+            seriesobj = series[sidx]
+            label = labels[sidx]
+            codelist.append(self.write_series_section(seriesobj, label))
         codelist.append("""\
-        plt.savefig("figure.png")
+        plt.legend()
+        """)
+        codelist.append("""\
+        plt.savefig("%s")
         plt.show()
-        """) 
+        """ % savename)
         code=""
         for codeitem in codelist:
             code = code + codeitem + "\n"
@@ -195,7 +276,9 @@ class PlotHelper():
         xvals2 = np.arange(-5,5,1)
         yvals2 = np.cos(xvals2)
         yerr2 = np.arange(-0.5,0.5,0.1)
-        plt.errorbar(xvals2, yvals2, yerr=yerr2,
+        xerrneg = 1.2*np.ones(10)
+        xerrpos = np.zeros(10)
+        plt.errorbar(xvals2, yvals2, yerr=yerr2, xerr=(xerrneg,xerrpos),
                         color='r',
                         linestyle=':',
                         linewidth=3,
