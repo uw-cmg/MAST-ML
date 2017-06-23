@@ -278,6 +278,9 @@ class PlotHelper():
         #ax.set_xticks(np.array([0]),minor=True)
         #ax.xaxis.grid(which='minor', linestyle='--')
         #
+        ### Add diagonal guideline
+        #plt.plot([-10,10],[-10,10],'--', color='gray')
+        #
         ### Do not use scientific ticks with an automatic multiplier
         #y_formatter = matplotlib.ticker.ScalarFormatter()
         #y_formatter.set_useOffset(False)
@@ -330,7 +333,7 @@ class PlotHelper():
         codelist=list()
         codelist.append("""\
         #Loaded from %s
-        """ % fname)
+        """ % picklename)
         codelist.append("""\
         import matplotlib
         import matplotlib.pyplot as plt
@@ -429,14 +432,14 @@ class PlotHelper():
         plt.savefig("figure.png")
         with open('figure.pickle','wb') as pfile:
             pickle.dump(fig_handle, pfile) 
+        plt.close()
         return
 
     def multiple_overlay(self):
         """Plot multiple xy overlay
         """
-        #PLOTTING
-        plt.figure()
-        fig, ax1 = plt.subplots()
+        fig_handle = plt.figure()
+        ax1 = plt.gca()
         for nidx in range(0, self.numlines):
             label = self.labellist[nidx]
             xdata = self.xdatalist[nidx]
@@ -460,7 +463,7 @@ class PlotHelper():
         ax1.set_ylabel(self.ylabel)
         plt.xlabel(self.xlabel)
         #X and Y-AXIS RANGES FOR SQUARE PLOT
-        if guideline == 1: #square the axes according to stepsize and draw line
+        if self.guideline == 1: #square the axes according to stepsize and draw line
             [minx,maxx] = ax1.get_xlim()
             [miny,maxy] = ax1.get_ylim()
             gmax = max(maxx, maxy)
@@ -473,16 +476,16 @@ class PlotHelper():
         #ANNOTATIONS
         notey = 0.88
         notestep = 0.07
-        for note in notelist:
+        for note in self.notelist:
             plt.annotate(note, xy=(0.05, notey), xycoords="axes fraction",
                         fontsize=self.smallfont)
             notey = notey - notestep
         #ANNOTATIONS FOR LARGEST
-        for nidx in range(0, numlines):
+        for nidx in range(0, self.numlines):
             marknum = self.marklargest[nidx]
             if marknum == 0: #no marking
                 continue
-            if int(guideline) == 0: #just rank on y
+            if int(self.guideline) == 0: #just rank on y
                 torank = self.ydatalist[nidx]
             else: #rank on distance from x-y guideline
                 torank = np.abs(self.ydatalist[nidx] - self.xdatalist[nidx])
@@ -505,7 +508,7 @@ class PlotHelper():
                         verticalalignment = "bottom",
                         fontsize=self.smallfont)
         #LEGEND
-        if guideline:
+        if self.guideline:
             loc1 = "lower right"
         else:
             loc1 = "best"
@@ -522,33 +525,29 @@ class PlotHelper():
         plt.tight_layout()
         if not os.path.isdir(self.save_path):
             os.mkdir(self.save_path)
-        plt.savefig(os.path.join(self.save_path, "%s" % self.plotlabel), 
-                    dpi=200, bbox_inches='tight')
-        plt.close()
+        plt.savefig(os.path.join(self.save_path, "%s" % self.plotlabel),
+                    bbox_inches='tight')
         self.print_data() #print csv for every plot
-        pname = self.dump_pickle(picklename)
+        pname = os.path.join(self.save_path, "%s.pickle" % self.plotlabel)
+        with open(pname,'wb') as pfile:
+            pickle.dump(fig_handle, pfile) 
+        plt.close()
         self.write_notebook(picklename=pname, 
             nbfigname = "%s_nb" % self.plotlabel,
             nbname = os.path.join(self.save_path, "%s.ipynb" % self.plotlabel))
         return
 
-    def dump_pickle(self, picklename="figure.pickle"):
-        pname=os.path.join(self.save_path, "%s.pickle" % self.plotlabel)
-        with open(pname,'wb') as pfile:
-            pickle.dump(fig_handle, pfile) 
-        return pname
-
     def print_data(self):
         for nidx in range(0, self.numlines):
             label = self.labellist[nidx]
-            nospace_label = self.label.replace(" ","_")
+            nospace_label = label.replace(" ","_")
             savecsv = os.path.join(self.save_path,"%s_data_%s.csv" % (self.plotlabel, nospace_label))
             dataframe = pd.DataFrame(index = np.arange(0, len(self.xdatalist[nidx])))
             dataframe[self.xlabel] = self.xdatalist[nidx]
-            if not(xerr is None):
+            if not(self.xerrlist[nidx] is None):
                 dataframe['xerr'] = self.xerrlist[nidx]
             dataframe[self.ylabel] = self.ydatalist[nidx]
-            if not (yerr is None):
+            if not (self.yerrlist[nidx] is None):
                 dataframe['yerr'] = self.yerrlist[nidx]
             dataframe.to_csv(savecsv)
         return
