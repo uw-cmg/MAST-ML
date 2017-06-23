@@ -354,12 +354,20 @@ class PlotHelper():
         plt.figure(figsize=(8,6)) #size in inches
         """)
         [series, labels] = fig_handle.axes[0].get_legend_handles_labels()
-        print(series, labels)
         #([<matplotlib.lines.Line2D object at 0x10ea187f0>, <Container object of 3 artists>], ['sine', 'cosine'])
         for sidx in range(0, len(series)):
             seriesobj = series[sidx]
             label = labels[sidx]
             codelist.append(self.write_series_section(seriesobj, label))
+        all_lines =fig_handle.axes[0].get_lines()
+        for lineobj in all_lines:
+            label = lineobj.get_label()
+            if not(label[0] == "_"): #Labeled line, handled with legend above.
+                pass
+            elif label == "_nolegend_": #probably Container, handled above.
+                pass
+            else:
+                codelist.append(self.write_series_section(lineobj, label))
         axisobj = fig_handle.axes[0]
         codelist.append(self.write_axis_section(axisobj))
         codelist.append(self.write_annotation_section(axisobj))
@@ -400,6 +408,7 @@ class PlotHelper():
         yvals = np.sin(xvals)
         plt.plot(xvals, yvals, 'b-',label="sine")
         plt.plot([-10,10],[-1,1], linestyle='--', color='gray') #guideline
+        plt.plot([-10,10],[0,0], linestyle=':', color='black', label="_zeroline") #guideline
         xvals2 = np.arange(-5,5,1)
         yvals2 = np.cos(xvals2)
         yerr2 = np.arange(-0.5,0.5,0.1)

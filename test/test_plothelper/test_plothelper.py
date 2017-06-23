@@ -25,7 +25,8 @@ kwargs['plotlabel'] = "sine_cos_overlay"
 kwargs['save_path'] = os.path.join(os.getcwd(),"save_testing")
 kwargs['notelist'] = ["Test plot"]
 myph = PlotHelper(**kwargs)
-myph.multiple_overlay()
-#myph.test_all()
+#myph.multiple_overlay()
+myph2 = PlotHelper()
+myph2.test_all()
 
 
