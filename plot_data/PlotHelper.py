@@ -340,6 +340,7 @@ class PlotHelper():
         import matplotlib.pyplot as plt
         import numpy as np
         from numpy import array
+        from numpy import nan
         matplotlib.rcParams.update({'font.size': 18})
         smallfont = 0.85*matplotlib.rcParams['font.size']
         plt.figure(figsize=(8,6)) #size in inches
