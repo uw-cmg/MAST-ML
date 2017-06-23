@@ -80,12 +80,10 @@ class PlotHelper():
             raise ValueError("marklargest %s could not be identified." % self.marklargest)
         if self.mlabellist is None:
             self.mlabellist = np.copy(self.xdatalist)
-        elif type(self.mlabellist) is str:
-            self.mlabellist = self.mlabellist.split(",")
         elif type(self.mlabellist) is list:
             pass
         else:
-            raise ValueError("mlabellist %s could not be identified." % self.mlabellist)
+            raise ValueError("mlabellist %s could not be identified. Should be None or a nested list to match each data series and point." % self.mlabellist)
         return
 
     def sort_series(self, xvals, yvals, xerr, yerr, verbose=0):
