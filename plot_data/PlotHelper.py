@@ -263,7 +263,17 @@ class PlotHelper():
         return section
 
     def write_annotation_section(self, axisobj):
-
+        annotations=""
+        for child in axisobj.get_children():
+            if isinstance(child, matplotlib.text.Annotation):
+                annotations=annotations+"""\
+                \n        plt.annotate("%s", 
+                    xy=%s, xycoords='%s',
+                    fontsize=smallfont)\n
+                """ % (child.get_text(), child.get_position(), child.xycoords)
+        section="""\
+        \n%s
+        """ % annotations 
         return section
 
     def write_notebook(self, fname="figure.pickle", savename="notebook_figure.png"):
@@ -278,7 +288,7 @@ class PlotHelper():
         import numpy as np
         matplotlib.rcParams.update({'font.size': 18})
         smallfont = 0.85*matplotlib.rcParams['font.size']
-        plt.figure()
+        plt.figure(figsize=(8,6)) #size in inches
         """)
         [series, labels] = fig_handle.axes[0].get_legend_handles_labels()
         #([<matplotlib.lines.Line2D object at 0x10ea187f0>, <Container object of 3 artists>], ['sine', 'cosine'])
@@ -288,17 +298,18 @@ class PlotHelper():
             codelist.append(self.write_series_section(seriesobj, label))
         axisobj = fig_handle.axes[0]
         codelist.append(self.write_axis_section(axisobj))
+        codelist.append(self.write_annotation_section(axisobj))
         codelist.append("""\
-        lgd = plt.legend(loc='lower left', #location
+        lgd = plt.legend(loc='lower center', #location
                         ncol=2, #number of columns
                         numpoints=1, #number of points
-                        bbox_to_anchor=(0,1), #anchor of location in 'loc', against the figure axes; example pins lower left corner to x=0 and y=1
+                        bbox_to_anchor=(0.5,1), #anchor against the figure axes; this anchor pins the lower center point to x=half axis and y=full axis
                         fontsize=smallfont,
                         )
         lgd.get_frame().set_alpha(0.5) #translucent legend
         """)
         codelist.append("""\
-        plt.savefig("%s")
+        plt.savefig("%s", bbox_inches="tight")
         plt.show()
         """ % savename)
         code=""
@@ -339,7 +350,7 @@ class PlotHelper():
                         label="cosine")
         plt.errorbar(xvals2-3.0, yvals2+0.5, 
                         yerr=(0.2*np.ones(10), 0.5*np.ones(10)), 
-                        color='brown',
+                        color='gray',
                         linestyle='--',
                         linewidth=2,
                         marker='o',
