@@ -1,5 +1,5 @@
 import numpy as np
-import plot_data.plot_xy as plotxy
+from plot_data.PlotHelper import PlotHelper
 import os
 from SingleFit import SingleFit
 from SingleFit import timeit
@@ -19,7 +19,6 @@ class PlotNoAnalysis(SingleFit):
         ylabel,
         plot_filter_out, see parent class.
         feature_plot_feature <str>: Feature to plot on x-axis, against target feature
-        timex <str>: Time format string, if x-axis is a time
         data_labels <list of str>: Dataset labels
     Returns:
         Plots target data against feature data, by group if a grouping feature
@@ -39,14 +38,12 @@ class PlotNoAnalysis(SingleFit):
             ylabel="Y",
             plot_filter_out=None,
             feature_plot_feature=None,
-            data_labels=None,
-            timex=""):
+            data_labels=None):
         """
         Additional attributes to parent class:
             self.testing_datasets <list>: List of testing datasets which
                         will be plotted simultaneously
             self.feature_plot_feature <str>: Feature to plot on x-axis
-            self.timex <str>: Time format string, if x-axis is a time
             self.data_labels <list of str>: Labels for datasets
         """
         SingleFit.__init__(self,
@@ -65,7 +62,6 @@ class PlotNoAnalysis(SingleFit):
             if testing_dataset.target_data is None:
                 raise ValueError("No testing target data for dataset %i" % tidx)
         self.feature_plot_feature = feature_plot_feature
-        self.timex = timex
         if data_labels is None:
             raise ValueError("data_labels is not set")
         self.data_labels = None
@@ -152,7 +148,6 @@ class PlotNoAnalysis(SingleFit):
         kwargs['labellist'] = self.data_labels
         #kwargs['faces'] = ["None"] * len(self.data_labels)
         kwargs['save_path'] = self.save_path
-        kwargs['timex'] = self.timex
         kwargs['xlabel'] = self.xlabel
         kwargs['ylabel'] = self.ylabel
         notelist=list()
@@ -161,7 +156,8 @@ class PlotNoAnalysis(SingleFit):
         #    for (feature, symbol, threshold) in self.plot_filter_out:
         #        notelist.append("  %s %s %s" % (feature, symbol, threshold))
         kwargs['notelist'] = notelist
-        plotxy.multiple_overlay(**kwargs)
+        myph = PlotHelper(**kwargs)
+        myph.multiple_overlay()
         #if do_fft == 1:
         #    plotxy.single(xdata, fft(ydata), **kwargs)
         return

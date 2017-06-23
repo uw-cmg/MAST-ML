@@ -15,7 +15,6 @@ class KFoldCV(LeaveOutPercentCV):
         save_path,
         xlabel, 
         ylabel,
-        stepsize,
         mark_outlying_points,
         num_cvtests,
         fix_random_for_testing, see parent class.
@@ -35,7 +34,6 @@ class KFoldCV(LeaveOutPercentCV):
         save_path=None,
         xlabel="Measured",
         ylabel="Predicted",
-        stepsize=1,
         mark_outlying_points=None,
         num_cvtests=10,
         fix_random_for_testing=0,
@@ -56,7 +54,6 @@ class KFoldCV(LeaveOutPercentCV):
             save_path = save_path,
             xlabel=xlabel,
             ylabel=ylabel,
-            stepsize=stepsize,
             mark_outlying_points = mark_outlying_points,
             percent_leave_out = -1, #not using this field
             num_cvtests = num_cvtests,

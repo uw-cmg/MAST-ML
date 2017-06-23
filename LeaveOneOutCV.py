@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from sklearn.model_selection import LeaveOneOut
-import plot_data.plot_xy as plotxy
+from plot_data.PlotHelper import PlotHelper
 from KFoldCV import KFoldCV
 from SingleFit import timeit
 
@@ -15,7 +15,6 @@ class LeaveOneOutCV(KFoldCV):
         save_path,
         xlabel, 
         ylabel,
-        stepsize,
         mark_outlying_points (Use only 1 number), see parent class.
  
     Returns:
@@ -32,7 +31,6 @@ class LeaveOneOutCV(KFoldCV):
         save_path=None,
         xlabel="Measured",
         ylabel="Predicted",
-        stepsize=1,
         mark_outlying_points=None,
         *args, **kwargs):
         """
@@ -50,7 +48,6 @@ class LeaveOneOutCV(KFoldCV):
             save_path = save_path,
             xlabel=xlabel,
             ylabel=ylabel,
-            stepsize=stepsize,
             mark_outlying_points = mark_outlying_points,
             num_cvtests=1, #single test
             num_folds = -1, #set in code
@@ -120,14 +117,14 @@ class LeaveOneOutCV(KFoldCV):
         kwargs2['guideline'] = 1
         kwargs2['plotlabel'] = "loo_results"
         kwargs2['save_path'] = self.save_path
-        kwargs2['stepsize'] = self.stepsize
         if not (self.mark_outlying_points is None):
             kwargs2['marklargest'] = self.mark_outlying_points
             if (self.testing_dataset.labeling_features is None):
                 raise ValueError("Must specify some labeling features if you want to mark the largest outlying points")
             labels = self.testing_dataset.data[self.testing_dataset.labeling_features[0]]
             kwargs2['mlabellist'] = list([labels])
-        plotxy.multiple_overlay(**kwargs2)
+        myph = PlotHelper(**kwargs2)
+        myph.multiple_overlay()
         self.readme_list.append("Plot loo_results.png created,\n")
         self.readme_list.append("    showing results of all LOO tests.\n")
         return

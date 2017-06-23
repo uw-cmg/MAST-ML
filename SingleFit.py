@@ -45,7 +45,6 @@ class SingleFit():
         save_path <str>: Save path
         xlabel <str>: Label for full-fit x-axis (default "Measured")
         ylabel <str>: Label for full-fit y-axis (default "Predicted")
-        stepsize <float>: Step size for plot grid (default None)
         plot_filter_out <list>: List of semicolon-delimited strings with
                             feature;operator;value for filtering out
                             values for plotting.
@@ -65,7 +64,6 @@ class SingleFit():
         save_path=None,
         xlabel="Measured",
         ylabel="Predicted",
-        stepsize=None,
         plot_filter_out=None,
         *args, **kwargs):
         """Initialize class.
@@ -76,7 +74,6 @@ class SingleFit():
                 self.save_path
                 self.xlabel
                 self.ylabel
-                self.stepsize
                 self.plot_filter_out
             Other attributes:
                 self.analysis_name <str>
@@ -113,10 +110,6 @@ class SingleFit():
         # plot customization
         self.xlabel = xlabel
         self.ylabel = ylabel
-        if stepsize is None:
-            self.stepsize = stepsize
-        else:
-            self.stepsize = float(stepsize)
         self.plot_filter_out = self.get_plot_filter(plot_filter_out)
         # Self-set attributes
         self.analysis_name = os.path.basename(self.save_path)
@@ -278,7 +271,6 @@ class SingleFit():
         plot_kwargs['xlabel'] = self.xlabel
         plot_kwargs['ylabel'] = self.ylabel
         plot_kwargs['plotlabel'] = "single_fit"
-        plot_kwargs['stepsize'] = self.stepsize
         plot_kwargs['guideline'] = 1
         notelist=list()
         notelist.append("RMSE: %3.3f" % self.statistics['rmse'])

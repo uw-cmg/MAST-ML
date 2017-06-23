@@ -2,7 +2,7 @@ import os
 import numpy as np
 from sklearn.model_selection import ShuffleSplit
 from sklearn.metrics import mean_squared_error
-import plot_data.plot_xy as plotxy
+from plot_data.PlotHelper import PlotHelper
 from SingleFit import SingleFit
 from SingleFit import timeit
 
@@ -15,8 +15,7 @@ class LeaveOutPercentCV(SingleFit):
         model,
         save_path,
         xlabel, 
-        ylabel,
-        stepsize, see parent class.
+        ylabel, see parent class.
         mark_outlying_points <list of int>: Number of outlying points to mark in best and worst tests, e.g. [0,3]
         percent_leave_out <int>: Percent to leave out
         num_cvtests <int>: Number of CV tests (K folds in a KFoldCV is 1 test)
@@ -37,7 +36,6 @@ class LeaveOutPercentCV(SingleFit):
         save_path=None,
         xlabel="Measured",
         ylabel="Predicted",
-        stepsize=1,
         mark_outlying_points=None,
         percent_leave_out=20,
         num_cvtests=10,
@@ -65,8 +63,7 @@ class LeaveOutPercentCV(SingleFit):
             model=model, 
             save_path = save_path,
             xlabel=xlabel,
-            ylabel=ylabel,
-            stepsize=stepsize)
+            ylabel=ylabel)
         self.mark_outlying_points = mark_outlying_points
         self.percent_leave_out = int(percent_leave_out)
         self.num_cvtests = int(num_cvtests)
@@ -199,14 +196,14 @@ class LeaveOutPercentCV(SingleFit):
         kwargs2['guideline'] = 1
         kwargs2['plotlabel'] = "best_worst_overlay"
         kwargs2['save_path'] = self.save_path
-        kwargs2['stepsize'] = self.stepsize
         if not (self.mark_outlying_points is None):
             kwargs2['marklargest'] = self.mark_outlying_points
             if self.testing_dataset.labeling_features is None:
                 raise ValueError("Must specify some labeling features if you want to mark the largest outlying points")
             labels = self.testing_dataset.data[self.testing_dataset.labeling_features[0]]
             kwargs2['mlabellist'] = list([labels,labels])
-        plotxy.multiple_overlay(**kwargs2)
+        myph = PlotHelper(**kwargs2)
+        myph.multiple_overlay()
         self.readme_list.append("Plot best_worst_overlay.png created,\n")
         self.readme_list.append("    showing the best and worst of %i tests.\n" % self.num_cvtests)
         return
