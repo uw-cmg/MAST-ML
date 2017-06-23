@@ -22,14 +22,9 @@ class PlotHelper():
         self.labellist=list()
         self.xlabel="X"
         self.ylabel="Y"
-        self.stepsize=None
         self.save_path=""
         self.plotlabel="multiple_overlay"
         self.guideline=0
-        self.timex=""
-        self.startx=None
-        self.endx=None
-        self.whichyaxis=""
         self.notelist=list() 
         self.marklargest="0,0,0,0,0,0"
         self.mlabellist=None
@@ -46,8 +41,51 @@ class PlotHelper():
         for key in kwargs:
             setattr(self, key, kwargs[key])
         #Attributes below are set in code.
+        self.numlines=0 #will be set in self.verify()
         self.smallfont = 0.85*self.fontsize
         matplotlib.rcParams.update({'font.size': self.fontsize})
+        self.verify()
+        return
+
+    def verify(self):
+        self.guideline=int(self.guideline)
+        self.numlines=len(self.xdatalist)
+        if self.numlines > 6:
+            raise ValueError("Only 6 lines supported.")
+        if not(len(self.ydatalist) == self.numlines):
+            raise ValueError("Number of y series does not match number of x series.")
+        if not(len(self.labellist) == self.numlines):
+            raise ValueError("Number of labels does not match number of x series.")
+        if not(len(self.xerrlist) == self.numlines):
+            raise ValueError("Number of x error data series does not match number of x series. Use python None as series entry for no error.")
+        if not(len(self.yerrlist) == self.numlines):
+            raise ValueError("Not enough y error data series does not match number of x series. Use python None as series entry for no error.")
+        if not(type(self.faces) is list):
+            self.faces = self.faces.split(",")
+        if not(type(self.outlines) is list):
+            self.outlines = self.outlines.split(",")
+        if not(type(self.linestyles) is list):
+            self.linestyles = self.linestyles.split(",")
+        if not(type(self.markers) is list):
+            self.markers = self.markers.split(",")
+        if not(type(self.sizes) is list):
+            self.sizes=np.array(self.sizes.split(","),'float')
+        else:
+            self.sizes = np.array(self.sizes, 'float') #make sure they are floats
+        if type(self.marklargest) is str:
+            self.marklargest = np.array(self.marklargest.split(","),'int')
+        elif type(self.marklargest) is list:
+            self.marklargest = np.array(self.marklargest,'int')
+        else:
+            raise ValueError("marklargest %s could not be identified." % self.marklargest)
+        if self.mlabellist is None:
+            self.mlabellist = np.copy(self.xdatalist)
+        elif type(self.mlabellist) is str:
+            self.mlabellist = self.mlabellist.split(",")
+        elif type(self.mlabellist) is list:
+            pass
+        else:
+            raise ValueError("mlabellist %s could not be identified." % self.mlabellist)
         return
 
     def sort_series(self, xvals, yvals, xerr, yerr, verbose=0):
@@ -396,85 +434,34 @@ class PlotHelper():
             pickle.dump(fig_handle, pfile) 
         return
 
-    def multiple_overlay(self, xdatalist=list(), ydatalist=list(), labellist=list(),
-            xlabel="X",
-            ylabel="Y",
-            xerrlist=list(),
-            yerrlist=list(),
-            save_path="",
-            plotlabel="multiple_overlay",
-            guideline=0,
-            notelist=list(), 
-            marklargest="0,0,0,0,0,0",
-            mlabellist=None,
-            markers="o,o,s,d,^,v",
-            linestyles="None,None,None,None,None,None",
-            outlines="#8B0000,#00008B,#004400,#542788,#b35806,#252525",
-            faces="red,blue,green,#6a51a3,orange,#bdbdbd",
-            sizes="15,10,8,8,8,8",
-            legendloc=None,
-            *args, **kwargs):
-        """Plot multiple xy overlay with same x axis
+    def multiple_overlay(self):
+        """Plot multiple xy overlay
         """
-        guideline = int(guideline)
-        #VERIFICATION
-        numlines=len(xdatalist)
-        if numlines > 6:
-            print("Only 6 lines supported.")
-            print("Exiting.")
-            return
-        if not(len(ydatalist) == numlines):
-            print("Not enough y data. Exiting.")
-            return
-        if not(len(labellist) == numlines):
-            print("Not enough labels. Exiting.")
-            return
-        if not(len(xerrlist) == numlines):
-            print("Not enough x error data. Use python None for no error.")
-            return
-        if not(len(yerrlist) == numlines):
-            print("Not enough y error data. Use python None for no error.")
-            return
         #PLOTTING
-        matplotlib.rcParams.update({'font.size': 18})
-        smallfont = 0.85*matplotlib.rcParams['font.size']
-        notestep = 0.07
         plt.figure()
-        if not(type(faces) is list):
-            faces = faces.split(",")
-        if not(type(outlines) is list):
-            outlines = outlines.split(",")
-        if not(type(linestyles) is list):
-            linestyles = linestyles.split(",")
-        if not(type(markers) is list):
-            markers = markers.split(",")
-        if not(type(sizes) is list):
-            sizes=np.array(sizes.split(","),'float')
-        else:
-            sizes = np.array(sizes, 'float') #make sure they are floats
         fig, ax1 = plt.subplots()
-        for nidx in range(0, numlines):
-            label = labellist[nidx]
-            xdata = xdatalist[nidx]
-            ydata = ydatalist[nidx]
-            xerr = xerrlist[nidx]
-            yerr = yerrlist[nidx]
+        for nidx in range(0, self.numlines):
+            label = self.labellist[nidx]
+            xdata = self.xdatalist[nidx]
+            ydata = self.ydatalist[nidx]
+            xerr = self.xerrlist[nidx]
+            yerr = self.yerrlist[nidx]
             [xdata,ydata,xerr,yerr] = self.sort_series(xdata,ydata,xerr,yerr)
             (_, caps, _) = ax1.errorbar(xdata, ydata,
                 xerr=xerr,
                 yerr=yerr,
                 label=label,
                 linewidth=2,
-                linestyle = linestyles[nidx], color=outlines[nidx],
-                markeredgewidth=2, markeredgecolor=outlines[nidx],
-                markerfacecolor=faces[nidx] , marker=markers[nidx],
-                markersize=sizes[nidx])
+                linestyle = self.linestyles[nidx], color=self.outlines[nidx],
+                markeredgewidth=2, markeredgecolor=self.outlines[nidx],
+                markerfacecolor=self.faces[nidx] , marker=self.markers[nidx],
+                markersize=self.sizes[nidx])
             for cap in caps:
-                cap.set_color(outlines[nidx])
+                cap.set_color(self.outlines[nidx])
                 cap.set_markeredgewidth(2)
         #AXIS LABELS
-        ax1.set_ylabel(ylabel)
-        plt.xlabel(xlabel)
+        ax1.set_ylabel(self.ylabel)
+        plt.xlabel(self.xlabel)
         #X and Y-AXIS RANGES FOR SQUARE PLOT
         if guideline == 1: #square the axes according to stepsize and draw line
             [minx,maxx] = ax1.get_xlim()
@@ -488,53 +475,47 @@ class PlotHelper():
         plt.margins(0.05)
         #ANNOTATIONS
         notey = 0.88
+        notestep = 0.07
         for note in notelist:
             plt.annotate(note, xy=(0.05, notey), xycoords="axes fraction",
-                        fontsize=smallfont)
+                        fontsize=self.smallfont)
             notey = notey - notestep
         #ANNOTATIONS FOR LARGEST
-        if type(marklargest) is str:
-            marklargest = np.array(marklargest.split(","),'int')
-        elif type(marklargest) is list:
-            marklargest = np.array(marklargest,'int')
-        else:
-            raise ValueError("marklargest %s could not be identified." % marklargest)
         for nidx in range(0, numlines):
-            marknum = marklargest[nidx]
+            marknum = self.marklargest[nidx]
             if marknum == 0: #no marking
                 continue
             if int(guideline) == 0: #just rank on y
-                torank = ydatalist[nidx]
+                torank = self.ydatalist[nidx]
             else: #rank on distance from x-y guideline
-                torank = np.abs(ydatalist[nidx] - xdatalist[nidx])
+                torank = np.abs(self.ydatalist[nidx] - self.xdatalist[nidx])
             meantorank = np.nanmean(torank) #get rid of NaN's, esp. on CV test
             mynans = np.isnan(torank)
             torank[mynans] = meantorank #NaN's become means, so not high or low
             maxidxlist = heapq.nlargest(marknum, range(len(torank)), 
                             key=lambda x: torank[x])
             print(maxidxlist)
-            if mlabellist is None:
-                mlabellist = np.copy(xdatalist)
             for midx in maxidxlist:
-                mxval = mlabellist[nidx][midx]
+                mxval = self.mlabellist[nidx][midx]
                 try:
                     mxval = "%3.0f" % mxval
                 except TypeError:
                     pass
                 plt.annotate("%s" % mxval, 
-                        xy=(xdatalist[nidx][midx],ydatalist[nidx][midx]),
+                        xy=(self.xdatalist[nidx][midx],
+                        self.ydatalist[nidx][midx]),
                         horizontalalignment = "left",
                         verticalalignment = "bottom",
-                        fontsize=smallfont)
+                        fontsize=self.smallfont)
         #LEGEND
         if guideline:
             loc1 = "lower right"
         else:
             loc1 = "best"
-        if not(legendloc is None):
-            loc1 = legendloc
+        if not(self.legendloc is None):
+            loc1 = self.legendloc
         lgd1=ax1.legend(loc = loc1, 
-                    fontsize=smallfont, 
+                    fontsize=self.smallfont, 
                     numpoints=1,
                     fancybox=True) 
         try:
@@ -542,9 +523,10 @@ class PlotHelper():
         except AttributeError: # no labeled lines
             pass
         plt.tight_layout()
-        if not os.path.isdir(save_path):
-            os.mkdir(save_path)
-        plt.savefig(os.path.join(save_path, "%s" % plotlabel), dpi=200, bbox_inches='tight')
+        if not os.path.isdir(self.save_path):
+            os.mkdir(self.save_path)
+        plt.savefig(os.path.join(self.save_path, "%s" % self.plotlabel), 
+                    dpi=200, bbox_inches='tight')
         plt.close()
         #PRINT DATA
         for nidx in range(0, numlines):
