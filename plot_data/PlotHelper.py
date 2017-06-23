@@ -201,16 +201,16 @@ class PlotHelper():
             yerrpos = yerrposdata - ydata
             yerrnegsection = self.write_data_section(yerrneg, "%s_neg_err" % ydata_label)
             yerrpossection = self.write_data_section(yerrpos, "%s_pos_err" % ydata_label)
-        mainsection="plt.errorbar(%s, %s, label='%s'," % (xdata_label, ydata_label, label)
+        mainsection="(_, caps, _)=plt.errorbar(%s, %s, label='%s'," % (xdata_label, ydata_label, label)
         errdatasection=""
-        errsection=""
+        xerrline="#"
+        yerrline="#"
         if container.has_xerr:
             errdatasection = errdatasection + xerrnegsection + xerrpossection
-            errsection = errsection + "xerr=(%s_neg_err,%s_pos_err)," % (xdata_label, xdata_label)
+            xerrline =  "        xerr=(%s_neg_err,%s_pos_err)," % (xdata_label, xdata_label)
         if container.has_yerr:
             errdatasection = errdatasection + yerrnegsection + yerrpossection
-            errsection = errsection + "yerr=(%s_neg_err,%s_pos_err)," % (ydata_label, ydata_label)
-
+            yerrline = "        yerr=(%s_neg_err,%s_pos_err)," % (ydata_label, ydata_label)
         customsection="""\
                 color='%s', linestyle='%s', linewidth='%s',
                 marker='%s', markersize='%s', markeredgewidth='%s',
@@ -218,6 +218,11 @@ class PlotHelper():
         """ % (lineobj.get_color(), lineobj.get_linestyle(), lineobj.get_linewidth(),
         lineobj.get_marker(), lineobj.get_markersize(), lineobj.get_markeredgewidth(),
         lineobj.get_markeredgecolor(), lineobj.get_markerfacecolor())
+        capssection="""\n
+        for cap in caps:
+            cap.set_color('%s')
+            cap.set_markeredgewidth('%s')
+        """ % (lineobj.get_color(), lineobj.get_markeredgewidth())
         section="""\
         %s
         %s
@@ -225,7 +230,9 @@ class PlotHelper():
         %s
         %s
         %s
-        """ % (xsection, ysection, errdatasection, mainsection, errsection, customsection)
+        %s
+        %s
+        """ % (xsection, ysection, errdatasection, mainsection, xerrline, yerrline, customsection, capssection)
         return section
 
     def write_axis_section(self, axisobj):
@@ -253,6 +260,10 @@ class PlotHelper():
         """ % (axisobj.get_xlabel(), axisobj.get_ylabel(),
             axisobj.get_xticks().tolist(),
             axisobj.get_yticks().tolist())
+        return section
+
+    def write_annotation_section(self, axisobj):
+
         return section
 
     def write_notebook(self, fname="figure.pickle", savename="notebook_figure.png"):
@@ -306,6 +317,7 @@ class PlotHelper():
             Markers and symbols
             Legend
         """
+        smallfont = 0.85*matplotlib.rcParams['font.size']
         fig_handle = plt.figure()
         xvals = np.arange(-10,10.5,0.5)
         yvals = np.sin(xvals)
@@ -325,8 +337,34 @@ class PlotHelper():
                         markeredgecolor='darkgreen',
                         markerfacecolor='green',
                         label="cosine")
+        plt.errorbar(xvals2-3.0, yvals2+0.5, 
+                        yerr=(0.2*np.ones(10), 0.5*np.ones(10)), 
+                        color='brown',
+                        linestyle='--',
+                        linewidth=2,
+                        marker='o',
+                        markeredgewidth=1,
+                        markersize=10,
+                        markeredgecolor='black',
+                        markerfacecolor='blue',
+                        label="cosine_series2")
         plt.xlabel('Number')
         plt.ylabel('Function value')
+        notelist=list()
+        notelist.append("Annotations:")
+        notelist.append("  sine-type curves")
+        notey = 0.88
+        notestep=0.07
+        for note in notelist:
+            plt.annotate(note, xy=(0.05, notey), xycoords="axes fraction",
+                    fontsize=smallfont)
+            notey = notey - notestep
+        for midx in [7,8,9]:
+            plt.annotate("%3.3f" % yvals2[midx], 
+                    xy=(xvals2[midx], yvals2[midx]),
+                    horizontalalignment = "left",
+                    verticalalignment = "bottom",
+                    fontsize=smallfont)
         plt.legend()
         plt.savefig("figure.png")
         with open('figure.pickle','wb') as pfile:
