@@ -343,7 +343,7 @@ class PlotHelper():
         codelist=list()
         codelist.append("""\
         #Loaded from %s
-        """ % picklename)
+        """ % os.path.basename(picklename))
         codelist.append("""\
         import matplotlib
         import matplotlib.pyplot as plt
@@ -371,7 +371,8 @@ class PlotHelper():
                         bbox_to_anchor=(0.5,1), #anchor against the figure axes; this anchor pins the lower center point to x=half axis and y=full axis
                         fontsize=smallfont,
                         )
-        lgd.get_frame().set_alpha(0.5) #translucent legend
+        if not (lgd is None): #lgd is None if there are no labeled lines
+            lgd.get_frame().set_alpha(0.5) #translucent legend
         """)
         codelist.append("""\
         plt.savefig("%s", bbox_inches="tight")

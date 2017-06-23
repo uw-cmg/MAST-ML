@@ -2,7 +2,7 @@ import numpy as np
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import r2_score
-import plot_data.plot_xy as plotxy
+from plot_data.PlotHelper import PlotHelper
 import os
 import time
 import logging
@@ -298,9 +298,13 @@ class SingleFit():
             for (feature, symbol, threshold) in self.plot_filter_out:
                 notelist.append("  %s %s %s" % (feature, symbol, threshold))
         #Data should already have been filtered by now
-        plotxy.single(self.testing_dataset.target_data,
-                    self.testing_dataset.target_prediction,
-                    **plot_kwargs)
+        plot_kwargs['xdatalist'] = [self.testing_dataset.target_data]
+        plot_kwargs['ydatalist'] = [self.testing_dataset.target_prediction]
+        plot_kwargs['xerrlist']=[None]
+        plot_kwargs['yerrlist']=[None]
+        plot_kwargs['labellist'] = ["_prediction_vs_data"]
+        myph = PlotHelper(**plot_kwargs)
+        myph.multiple_overlay()
         self.readme_list.append("Plot single_fit.png created.\n")
         self.readme_list.append("    Plotted data is in the data_... csv file.\n")
         self.readme_list.append("    Error column of all zeros indicates no error.\n")
