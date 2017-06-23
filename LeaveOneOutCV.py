@@ -107,7 +107,7 @@ class LeaveOneOutCV(KFoldCV):
         kwargs2 = dict()
         kwargs2['xlabel'] = self.xlabel
         kwargs2['ylabel'] = self.ylabel
-        kwargs2['labellist'] = list(["_prediction"]) #underscore prevents label
+        kwargs2['labellist'] = list(["loo_prediction"]) 
         kwargs2['xdatalist'] = list([self.testing_dataset.target_data])
         kwargs2['ydatalist'] = list(
                 [self.cvtest_dict[0]['prediction_array']]) #only one cvtest, with number of folds equal to number of data points
