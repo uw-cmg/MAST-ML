@@ -267,6 +267,12 @@ class PlotHelper():
         #    adjusted_xticks.append(mytick)
         #    ax.set_xticklabels(adjusted_xticks, rotation=90.0)
         #
+        ### Use a second y axis with the same x axis
+        #ax2 = ax.twinx()
+        #ax2.plot(...) #line on second axis
+        #ax2.errorbar(...) #line with errorbar on second axis
+        #ax2.legend(...) #legend for entries on second axis. You may use
+        #                   # ax.legend(...) for the first axis.
         """ % (axisobj.get_xlabel(), axisobj.get_ylabel(),
             axisobj.get_xticks().tolist(),
             axisobj.get_yticks().tolist())
@@ -287,6 +293,9 @@ class PlotHelper():
         return section
 
     def write_notebook(self, fname="figure.pickle", savename="notebook_figure.png"):
+        """Write a notebook for a single set of axes.
+            Includes some help text for twinning a second y axis.
+        """
         fig_handle = pickle.load(open(fname,'rb'))
         codelist=list()
         codelist.append("""\
@@ -397,14 +406,9 @@ class PlotHelper():
             ylabel="Y",
             xerrlist=list(),
             yerrlist=list(),
-            stepsize=None,
             save_path="",
             plotlabel="multiple_overlay",
             guideline=0,
-            timex="",
-            startx=None,
-            endx=None,
-            whichyaxis="",
             notelist=list(), 
             marklargest="0,0,0,0,0,0",
             mlabellist=None,
@@ -436,23 +440,6 @@ class PlotHelper():
         if not(len(yerrlist) == numlines):
             print("Not enough y error data. Use python None for no error.")
             return
-        if len(whichyaxis) == 0:
-            whichyaxis = np.ones(numlines)
-        else:
-            whichyaxis = whichyaxis.split(",")
-        if not (len(whichyaxis) == numlines):
-            print("Not enough axis choice data. whichyaxis should be a list of 1's and 2's.")
-            return
-        whichyaxis = np.array(whichyaxis, 'float')
-        if sum(whichyaxis) > numlines: #has some 2's
-            doubley = True
-        else:
-            doubley = False
-        if doubley:
-            ylabels = ylabel.split(",")
-            if not (len(ylabels) == numlines):
-                print("Not enough y label data.")
-                return
         #PLOTTING
         matplotlib.rcParams.update({'font.size': 18})
         smallfont = 0.85*matplotlib.rcParams['font.size']
@@ -471,8 +458,6 @@ class PlotHelper():
         else:
             sizes = np.array(sizes, 'float') #make sure they are floats
         fig, ax1 = plt.subplots()
-        if doubley:
-            ax2 = ax1.twinx()
         for nidx in range(0, numlines):
             label = labellist[nidx]
             xdata = xdatalist[nidx]
@@ -480,87 +465,31 @@ class PlotHelper():
             xerr = xerrlist[nidx]
             yerr = yerrlist[nidx]
             [xdata,ydata,xerr,yerr] = self.sort_series(xdata,ydata,xerr,yerr)
-            whichy = whichyaxis[nidx]
-            if whichy == 1:
-                (_, caps, _) = ax1.errorbar(xdata, ydata,
-                    xerr=xerr,
-                    yerr=yerr,
-                    label=label,
-                    linewidth=2,
-                    linestyle = linestyles[nidx], color=outlines[nidx],
-                    markeredgewidth=2, markeredgecolor=outlines[nidx],
-                    markerfacecolor=faces[nidx] , marker=markers[nidx],
-                    markersize=sizes[nidx])
-            else:
-                (_, caps, _) = ax2.errorbar(xdata, ydata,
-                    xerr=xerr,
-                    yerr=yerr,
-                    label=label,
-                    linewidth=2,
-                    linestyle = linestyles[nidx], color=outlines[nidx],
-                    markeredgewidth=2, markeredgecolor=outlines[nidx],
-                    markerfacecolor=faces[nidx] , marker=markers[nidx],
-                    markersize=sizes[nidx])
+            (_, caps, _) = ax1.errorbar(xdata, ydata,
+                xerr=xerr,
+                yerr=yerr,
+                label=label,
+                linewidth=2,
+                linestyle = linestyles[nidx], color=outlines[nidx],
+                markeredgewidth=2, markeredgecolor=outlines[nidx],
+                markerfacecolor=faces[nidx] , marker=markers[nidx],
+                markersize=sizes[nidx])
             for cap in caps:
                 cap.set_color(outlines[nidx])
                 cap.set_markeredgewidth(2)
         #AXIS LABELS
-        if doubley:
-            ylabel1 = ""
-            ylabel2 = ""
-            for nidx in range(0, numlines):
-                if whichyaxis[nidx] == 1:
-                    ylabel1 = ylabel1 + ylabels[nidx] + "; "
-                else:
-                    ylabel2 = ylabel2 + ylabels[nidx] + "; "
-            ylabel1 = ylabel1[:-2] #remove trailing semicolon
-            ylabel2 = ylabel2[:-2] #remove trailing semicolon
-            ax1.set_ylabel(ylabel1)
-            ax2.set_ylabel(ylabel2)
-        else:
-            ax1.set_ylabel(ylabel)
+        ax1.set_ylabel(ylabel)
         plt.xlabel(xlabel)
-        #X-AXIS RANGE
-        if not(startx == None):
-            if type(startx) == str:
-                if len(timex) > 0:
-                    startx = time.mktime(time.strptime(startx, timex))
-                else:
-                    startx = float(startx)
-            if endx == None:
-                raise ValueError("startx must be paired with endx")
-            if type(endx) == str:
-                if len(timex) > 0:
-                    endx = time.mktime(time.strptime(endx, timex))
-                else:
-                    endx = float(endx)
-            ax1.set_xlim([startx,endx])
-            if doubley:
-                ax2.set_xlim([startx,endx])
         #X and Y-AXIS RANGES FOR SQUARE PLOT
-        [minx,maxx] = ax1.get_xlim() #should always be the same for x2
         if guideline == 1: #square the axes according to stepsize and draw line
-            if doubley:
-                raise ValueError("Cannot plot multiple y and also square axes.")
+            [minx,maxx] = ax1.get_xlim()
             [miny,maxy] = ax1.get_ylim()
             gmax = max(maxx, maxy)
             gmin = min(minx, miny)
             ax1.set_xlim([gmin,gmax]) #set both X and Y limits
             ax1.set_ylim([gmin,gmax])
             plt.plot((gmin, gmax), (gmin, gmax), ls="--", c=".3")
-        else:
-            gmax = maxx
-            gmin = minx
-        #XTICKS AND POSSIBLY YTICKS
-        if not (stepsize == None):
-            stepsize = float(stepsize)
-            steplist = np.arange(gmin, gmax + (0.5*stepsize), stepsize)
-            if len(steplist < 1000): #don't allow too many ticks
-                ax1.set_xticks(steplist)
-                if doubley:
-                    ax2.set_xticks(steplist)
-                if guideline == 1:
-                    ax1.set_yticks(steplist) 
+        #MARGINS
         plt.margins(0.05)
         #ANNOTATIONS
         notey = 0.88
@@ -602,44 +531,17 @@ class PlotHelper():
                         horizontalalignment = "left",
                         verticalalignment = "bottom",
                         fontsize=smallfont)
-        #X-AXIS RELABELING
-        if len(timex) > 0:
-            my_xticks = ax1.get_xticks()
-            adjusted_xticks = list()
-            for tidx in range(0, len(my_xticks)):
-                mytick = time.strftime(timex, time.localtime(my_xticks[tidx]))
-                adjusted_xticks.append(mytick)
-            ax1.set_xticklabels(adjusted_xticks, rotation=90.0)
-            if doubley:
-                ax2.set_xticklabels(adjusted_xticks, rotation=90.0)
         #LEGEND
-        if doubley:
-            lgd2=ax2.legend(loc = "lower right",
-                            bbox_to_anchor=(1.0,1.0),
-                            fontsize=smallfont, 
-                            numpoints=1,
-                            fancybox=True) 
-            try:
-                lgd2.get_frame().set_alpha(0.5) #translucent legend!
-            except AttributeError: # no labeled lines
-                pass
-            ax2.set_ylabel(ylabel2)
-            lgd1=ax1.legend(loc = "lower left",
-                        bbox_to_anchor=(0.0,1.0),
-                        fontsize=smallfont, 
-                        numpoints=1,
-                        fancybox=True) 
+        if guideline:
+            loc1 = "lower right"
         else:
-            if guideline:
-                loc1 = "lower right"
-            else:
-                loc1 = "best"
-            if not(legendloc is None):
-                loc1 = legendloc
-            lgd1=ax1.legend(loc = loc1, 
-                        fontsize=smallfont, 
-                        numpoints=1,
-                        fancybox=True) 
+            loc1 = "best"
+        if not(legendloc is None):
+            loc1 = legendloc
+        lgd1=ax1.legend(loc = loc1, 
+                    fontsize=smallfont, 
+                    numpoints=1,
+                    fancybox=True) 
         try:
             lgd1.get_frame().set_alpha(0.5) #translucent legend!
         except AttributeError: # no labeled lines
