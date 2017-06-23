@@ -260,6 +260,7 @@ class PlotHelper():
         #
         ### Use a second y axis with the same x axis
         #ax2 = ax.twinx()
+        #ax2.set_ylabel("second label")
         #ax2.plot(...) #line on second axis, for example, cut a plt.plot section
         #              #from above and paste it here, making it ax2.plot
         #ax2.errorbar(...) #line with errorbar on second axis, for example, cut
