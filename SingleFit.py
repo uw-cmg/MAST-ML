@@ -302,7 +302,7 @@ class SingleFit():
         plot_kwargs['ydatalist'] = [self.testing_dataset.target_prediction]
         plot_kwargs['xerrlist']=[None]
         plot_kwargs['yerrlist']=[None]
-        plot_kwargs['labellist'] = ["_prediction_vs_data"]
+        plot_kwargs['labellist'] = ["predicted_vs_measured"]
         myph = PlotHelper(**plot_kwargs)
         myph.multiple_overlay()
         self.readme_list.append("Plot single_fit.png created.\n")

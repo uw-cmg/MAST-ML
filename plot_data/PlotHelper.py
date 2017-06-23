@@ -325,15 +325,6 @@ class PlotHelper():
         """ % annotations 
         return section
 
-    def write_guideline_section(self, axisobj):
-        [xmin,xmax] = axisobj.get_xlim()
-        [ymin, ymax] = axisobj.get_ylim()
-        gmax = max(xmax, ymax)
-        gmin = min(xmin, ymin)
-        section="""\
-        plt.plot([%s,%s],[%s,%s],linestyle='--', color='gray')
-        """ % (gmin, gmax, gmin, gmax)
-        return section
 
     def write_notebook(self, picklename="figure.pickle", nbfigname="notebook_figure.png", nbname="test.ipynb"):
         """Write a notebook for a single set of axes.
@@ -371,8 +362,6 @@ class PlotHelper():
         axisobj = fig_handle.axes[0]
         codelist.append(self.write_axis_section(axisobj))
         codelist.append(self.write_annotation_section(axisobj))
-        if self.guideline == 1:
-            codelist.append(self.write_guideline_section(axisobj)) #could be more generic
         codelist.append("""\
         lgd = ax.legend(loc='lower center', #location
                         ncol=2, #number of columns
@@ -546,6 +535,8 @@ class PlotHelper():
             lgd1.get_frame().set_alpha(0.5) #translucent legend!
         except AttributeError: # no labeled lines
             pass
+        if len(self.xdatalist) == 1:
+            lgd1.set_visible(False) #do not show legend for single line
         plt.tight_layout()
         if not os.path.isdir(self.save_path):
             os.mkdir(self.save_path)
