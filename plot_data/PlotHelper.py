@@ -325,6 +325,16 @@ class PlotHelper():
         """ % annotations 
         return section
 
+    def write_guideline_section(self, axisobj):
+        [xmin,xmax] = axisobj.get_xlim()
+        [ymin, ymax] = axisobj.get_ylim()
+        gmax = max(xmax, ymax)
+        gmin = min(xmin, ymin)
+        section="""\
+        plt.plot([%s,%s],[%s,%s],linestyle='--', color='gray')
+        """ % (gmin, gmax, gmin, gmax)
+        return section
+
     def write_notebook(self, picklename="figure.pickle", nbfigname="notebook_figure.png", nbname="test.ipynb"):
         """Write a notebook for a single set of axes.
             Includes some help text for twinning a second y axis.
@@ -352,6 +362,8 @@ class PlotHelper():
         axisobj = fig_handle.axes[0]
         codelist.append(self.write_axis_section(axisobj))
         codelist.append(self.write_annotation_section(axisobj))
+        if self.guideline == 1:
+            codelist.append(self.write_guideline_section(axisobj)) #could be more generic
         codelist.append("""\
         lgd = ax.legend(loc='lower center', #location
                         ncol=2, #number of columns
