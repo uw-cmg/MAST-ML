@@ -1,0 +1,18 @@
+Autodocumentation
+======================
+
+======================
+:doc:`autodoc_tests`
+======================
+
+===============================
+:doc:`autodoc_support_classes`
+===============================
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+

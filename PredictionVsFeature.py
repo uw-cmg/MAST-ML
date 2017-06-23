@@ -16,7 +16,6 @@ class PredictionVsFeature(SingleFit):
         save_path,
         xlabel,
         ylabel,
-        stepsize,
         plot_filter_out, see parent class.
         feature_plot_xlabel <str>: x-axis label for per-group plots of predicted and
                                 measured y data versus data from field of
@@ -41,7 +40,6 @@ class PredictionVsFeature(SingleFit):
         save_path=None,
         xlabel="Measured",
         ylabel="Predicted",
-        stepsize=1,
         plot_filter_out = "",
         feature_plot_xlabel = "X",
         feature_plot_ylabel = "Prediction",
@@ -79,7 +77,6 @@ class PredictionVsFeature(SingleFit):
             save_path = save_path,
             xlabel=xlabel,
             ylabel=ylabel,
-            stepsize=stepsize,
             plot_filter_out = plot_filter_out)
         #Sets by keyword
         self.testing_datasets = testing_dataset #expect a list of one or more testing datasets
@@ -125,7 +122,6 @@ class PredictionVsFeature(SingleFit):
                 save_path = os.path.join(self.save_path, str(testset)),
                 xlabel=self.xlabel,
                 ylabel=self.ylabel,
-                stepsize=self.stepsize,
                 plot_filter_out = self.plot_filter_out)
             self.sf_dict[testset].run()
         return
@@ -213,7 +209,6 @@ class PredictionVsFeature(SingleFit):
         addl_kwargs['linestyles'] = self.linestyles
         addl_kwargs['legendloc'] = self.legendloc
         addl_kwargs['sizes'] = self.sizes
-        addl_kwargs['stepsize'] = self.stepsize
         faces = list()
         for fidx in range(0, len(self.markers)):
             faces.append("None")
