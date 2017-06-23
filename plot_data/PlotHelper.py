@@ -263,16 +263,18 @@ class PlotHelper():
         #my_xticks = ax.get_xticks()
         #adjusted_xticks = list()
         #for tidx in range(0, len(my_xticks)):
-        #    mytick = time.strftime(timex, time.localtime(my_xticks[tidx]))
+        #    mytick = time.strftime("%H:%M:%S", time.localtime(my_xticks[tidx]))
         #    adjusted_xticks.append(mytick)
         #    ax.set_xticklabels(adjusted_xticks, rotation=90.0)
         #
         ### Use a second y axis with the same x axis
         #ax2 = ax.twinx()
-        #ax2.plot(...) #line on second axis
-        #ax2.errorbar(...) #line with errorbar on second axis
-        #ax2.legend(...) #legend for entries on second axis. You may use
-        #                   # ax.legend(...) for the first axis.
+        #ax2.plot(...) #line on second axis, for example, cut a plt.plot section
+        #              #from above and paste it here, making it ax2.plot
+        #ax2.errorbar(...) #line with errorbar on second axis, for example, cut
+        #                  # a plt.errorbar section from above, making it
+        #                  # (_, caps, _)=ax2.errorbar(...)
+        #ax2.legend() #legend for entries on second axis. 
         """ % (axisobj.get_xlabel(), axisobj.get_ylabel(),
             axisobj.get_xticks().tolist(),
             axisobj.get_yticks().tolist())
@@ -319,7 +321,7 @@ class PlotHelper():
         codelist.append(self.write_axis_section(axisobj))
         codelist.append(self.write_annotation_section(axisobj))
         codelist.append("""\
-        lgd = plt.legend(loc='lower center', #location
+        lgd = ax.legend(loc='lower center', #location
                         ncol=2, #number of columns
                         numpoints=1, #number of points
                         bbox_to_anchor=(0.5,1), #anchor against the figure axes; this anchor pins the lower center point to x=half axis and y=full axis
