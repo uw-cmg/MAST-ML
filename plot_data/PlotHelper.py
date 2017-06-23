@@ -324,11 +324,11 @@ class PlotHelper():
         """ % annotations 
         return section
 
-    def write_notebook(self, fname="figure.pickle", savename="notebook_figure.png"):
+    def write_notebook(self, picklename="figure.pickle", nbfigname="notebook_figure.png", nbname="test.ipynb"):
         """Write a notebook for a single set of axes.
             Includes some help text for twinning a second y axis.
         """
-        fig_handle = pickle.load(open(fname,'rb'))
+        fig_handle = pickle.load(open(picklename,'rb'))
         codelist=list()
         codelist.append("""\
         #Loaded from %s
@@ -363,14 +363,13 @@ class PlotHelper():
         codelist.append("""\
         plt.savefig("%s", bbox_inches="tight")
         plt.show()
-        """ % savename)
+        """ % nbfigname)
         code=""
         for codeitem in codelist:
             code = code + codeitem + "\n"
         nb = nbf.v4.new_notebook()
         nb['cells'] = [nbf.v4.new_code_cell(code)]
-        fname = 'test.ipynb'
-        with open(fname, 'w') as f:
+        with open(nbname, 'w') as f:
             nbf.write(nb, f)
         return
 
@@ -528,17 +527,30 @@ class PlotHelper():
         plt.savefig(os.path.join(self.save_path, "%s" % self.plotlabel), 
                     dpi=200, bbox_inches='tight')
         plt.close()
-        #PRINT DATA
-        for nidx in range(0, numlines):
-            label = labellist[nidx]
-            nospace_label = label.replace(" ","_")
-            savecsv = os.path.join(save_path,"data_%s.csv" % nospace_label)
-            dataframe = pd.DataFrame(index = np.arange(0, len(xdatalist[nidx])))
-            dataframe[xlabel] = xdatalist[nidx]
+        self.print_data() #print csv for every plot
+        pname = self.dump_pickle(picklename)
+        self.write_notebook(picklename=pname, 
+            nbfigname = "%s_nb" % self.plotlabel,
+            nbname = os.path.join(self.save_path, "%s.ipynb" % self.plotlabel))
+        return
+
+    def dump_pickle(self, picklename="figure.pickle"):
+        pname=os.path.join(self.save_path, "%s.pickle" % self.plotlabel)
+        with open(pname,'wb') as pfile:
+            pickle.dump(fig_handle, pfile) 
+        return pname
+
+    def print_data(self):
+        for nidx in range(0, self.numlines):
+            label = self.labellist[nidx]
+            nospace_label = self.label.replace(" ","_")
+            savecsv = os.path.join(self.save_path,"%s_data_%s.csv" % (self.plotlabel, nospace_label))
+            dataframe = pd.DataFrame(index = np.arange(0, len(self.xdatalist[nidx])))
+            dataframe[self.xlabel] = self.xdatalist[nidx]
             if not(xerr is None):
-                dataframe['xerr'] = xerrlist[nidx]
-            dataframe[ylabel] = ydatalist[nidx]
+                dataframe['xerr'] = self.xerrlist[nidx]
+            dataframe[self.ylabel] = self.ydatalist[nidx]
             if not (yerr is None):
-                dataframe['yerr'] = yerrlist[nidx]
+                dataframe['yerr'] = self.yerrlist[nidx]
             dataframe.to_csv(savecsv)
         return
