@@ -177,8 +177,8 @@ class PlotHelper():
 
     def write_line_section(self, lineobj, label="Line"):
         [xdata, ydata] = lineobj.get_data()
-        xdata_label = "%s_x" % label
-        ydata_label = "%s_y" % label
+        xdata_label = "%s_x" % label.replace(" ","_")
+        ydata_label = "%s_y" % label.replace(" ","_")
         xsection = self.write_data_section(xdata, xdata_label)
         ysection = self.write_data_section(ydata, ydata_label)
         section="""\
@@ -200,8 +200,8 @@ class PlotHelper():
         children = container.get_children()
         lineobj = children[0]
         [xdata, ydata] = lineobj.get_data()
-        xdata_label = "%s_x" % label
-        ydata_label = "%s_y" % label
+        xdata_label = "%s_x" % label.replace(" ","_")
+        ydata_label = "%s_y" % label.replace(" ","_")
         xsection = self.write_data_section(xdata, xdata_label)
         ysection = self.write_data_section(ydata, ydata_label)
         ect = 1
@@ -536,7 +536,8 @@ class PlotHelper():
         except AttributeError: # no labeled lines
             pass
         if len(self.xdatalist) == 1:
-            lgd1.set_visible(False) #do not show legend for single line
+            if not (lgd1 is None):
+                lgd1.set_visible(False) #do not show legend for single line
         plt.tight_layout()
         if not os.path.isdir(self.save_path):
             os.mkdir(self.save_path)
