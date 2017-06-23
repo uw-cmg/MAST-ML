@@ -243,6 +243,7 @@ class PlotHelper():
         ax = plt.gca()
         #ax.margins(0.5,0.5) #set margins so points are not cut off
         #ax.set_xscale('log', nonposx='clip') #set log scale
+        #ax.set_xlim([-10.0, 10.0]) #set limits on x axis. Similar for y axis.
         ax.set_xticks(%s)
         #ax.set_xticklabels(["a","b","c","d","e"],rotation=90) #set tick labels
         ax.set_yticks(%s)
