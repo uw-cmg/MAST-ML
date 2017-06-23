@@ -116,20 +116,10 @@ class PlotHelper():
         return
 
     def write_data_section(self, single_array, label="array"):
-        parsed_array="["
-        bct=0
-        maxb=5
-        for floatval in single_array:
-            parsed_array = parsed_array + "% 3.6f," % floatval
-            bct = bct + 1
-            if bct == maxb:
-                parsed_array = parsed_array + "\n" + "                "
-                bct=0
-        parsed_array = parsed_array + "]"
         section="""\
         \n
         %s = %s\n
-        """ % (label, parsed_array)
+        """ % (label, repr(single_array))
         return section
     
     def write_series_section(self, seriesobj, label="Line"):
@@ -263,7 +253,8 @@ class PlotHelper():
         #my_xticks = ax.get_xticks()
         #adjusted_xticks = list()
         #for tidx in range(0, len(my_xticks)):
-        #    mytick = time.strftime("%H:%M:%S", time.localtime(my_xticks[tidx]))
+        #    mytick = time.strftime("format string", time.localtime(my_xticks[tidx]))
+        #               #see time.strftime for format strings to use
         #    adjusted_xticks.append(mytick)
         #    ax.set_xticklabels(adjusted_xticks, rotation=90.0)
         #
@@ -307,6 +298,7 @@ class PlotHelper():
         import matplotlib
         import matplotlib.pyplot as plt
         import numpy as np
+        from numpy import array
         matplotlib.rcParams.update({'font.size': 18})
         smallfont = 0.85*matplotlib.rcParams['font.size']
         plt.figure(figsize=(8,6)) #size in inches
