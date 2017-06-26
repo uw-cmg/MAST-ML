@@ -190,7 +190,7 @@ class MASTMLWrapper(object):
                                 kernel_params=None)
             return model
         if model_type == 'decision_tree_model':
-            model = tree.DecisionTreeRegressor(criterion=str(self.configdict['Model Parameters']['decision_tree_model']['split_criterion']),
+            model = tree.DecisionTreeRegressor(criterion=str(self.configdict['Model Parameters']['decision_tree_model']['criterion']),
                                                splitter=str(self.configdict['Model Parameters']['decision_tree_model']['splitter']),
                                                max_depth=int(self.configdict['Model Parameters']['decision_tree_model']['max_depth']),
                                                min_samples_leaf=int(self.configdict['Model Parameters']['decision_tree_model']['min_samples_leaf']),
