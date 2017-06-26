@@ -1,0 +1,33 @@
+Mon Jun 26 14:10:55 2017
+----- Model parameters -----
+min_samples_split: 2
+splitter: best
+criterion: mse
+max_depth: 63
+max_features: None
+random_state: None
+min_weight_fraction_leaf: 0.0
+presort: False
+min_samples_leaf: 1
+min_impurity_split: 1e-07
+max_leaf_nodes: None
+----- Output data -----
+output_data.csv file created with columns:
+    str_cat
+    num_id
+    time
+    N_sine_feature
+    N_linear_feature
+    subtraction
+    y_feature
+    N_linear_feature
+    Prediction
+----- Statistics -----
+mean_absolute_error: 0.0000
+mean_error: 0.0000
+rmse: 0.0000
+rsquared: 1.0000
+----- Plotting -----
+Plot single_fit.png created.
+    Plotted data is in the data_... csv file.
+    Error column of all zeros indicates no error.
