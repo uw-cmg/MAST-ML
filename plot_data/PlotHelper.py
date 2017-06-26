@@ -8,6 +8,7 @@ import heapq
 import nbformat as nbf
 import pickle
 import inspect
+from sklearn.metrics import mean_squared_error
 class PlotHelper():
     """Plotting class
         Expects **kwargs dictionary.
@@ -35,6 +36,10 @@ class PlotHelper():
         self.sizes="15,10,8,8,8,8"
         self.legendloc=None
         self.fontsize=18
+        #for grouping plots
+        self.group_dict=None #data per group
+        self.outlying_groups=list() #list of outlying groups to mark
+        #end grouping plots
         for dictionary in args:
             for key in dictionary:
                 setattr(self, key, dictionary[key])
@@ -568,3 +573,46 @@ class PlotHelper():
                 dataframe['yerr'] = self.yerrlist[nidx]
             dataframe.to_csv(savecsv)
         return
+
+    def plot_group_splits_with_outliers(self):
+        """
+        """
+        self.xdatalist=list()
+        self.ydatalist=list()
+        self.labellist=list()
+        self.xerrlist=list()
+        self.yerrlist=list()
+        otherxdata=list()
+        otherxerrdata=list()
+        otherydata=list()
+        groups = list(self.group_dict.keys())
+        groups.sort()
+        show_rmse = 0
+        for group in groups:
+            if group in self.outlying_groups:
+                self.xdatalist.append(self.group_dict[group]['xdata'])
+                self.xerrlist.append(self.group_dict[group]['xerrdata'])
+                self.ydatalist.append(self.group_dict[group]['ydata'])
+                self.yerrlist.append(None)
+                self.labellist.append(group)
+                if 'rmse' in self.group_dict[group].keys():
+                    show_rmse = 1 # if any RMSE shown, do RMSE for remaining
+                    rmse = self.group_dict[group]['rmse']
+                    self.notelist.append('{:<1}: {:.2f}'.format(group, rmse))
+            else:
+                otherxdata.extend(self.group_dict[group]['xdata'])
+                otherxerrdata.extend(self.group_dict[group]['xerrdata'])
+                otherydata.extend(self.group_dict[group]['ydata'])
+        if len(otherxdata) > 0:
+            self.xdatalist.insert(0,otherxdata) #prepend
+            self.xerrlist.insert(0,otherxerrdata)
+            self.ydatalist.insert(0,otherydata)
+            self.yerrlist.insert(0,None)
+            self.labellist.insert(0,"All others")
+            if show_rmse == 1:
+                all_other_rmse = np.sqrt(mean_squared_error(otherydata, otherxdata))
+                self.notelist.append('{:<1}: {:.2f}'.format("All others", all_other_rmse))
+        self.multiple_overlay() 
+        return
+
+        
