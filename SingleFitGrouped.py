@@ -1,6 +1,6 @@
 import numpy as np
 from sklearn.metrics import mean_squared_error
-import plot_data.plot_from_dict as plotdict
+from plot_data.PlotHelper import PlotHelper
 import os
 from SingleFit import SingleFit
 from SingleFit import timeit
@@ -197,12 +197,12 @@ class SingleFitGrouped(SingleFit):
         addl_kwargs['xlabel'] = self.xlabel
         addl_kwargs['ylabel'] = self.ylabel
         addl_kwargs['save_path'] = os.path.join(self.save_path, label)
-        addl_kwargs['stepsize'] = self.stepsize
         addl_kwargs['guideline'] = 1
-        plotdict.plot_group_splits_with_outliers(group_dict = dict(group_dict),
-            outlying_groups = list(outlying_groups),
-            label=label, 
-            group_notelist=list(group_notelist),
-            addl_kwargs = dict(addl_kwargs))
+        addl_kwargs['group_dict'] = group_dict
+        addl_kwargs['outlying_groups'] = list(outlying_groups)
+        addl_kwargs['plotlabel'] = label
+        addl_kwargs['notelist'] = list(group_notelist)
+        myph = PlotHelper(**addl_kwargs)
+        myph.plot_group_splits_with_outliers()
         return
     
