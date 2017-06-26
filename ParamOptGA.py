@@ -8,6 +8,7 @@ from sklearn.model_selection import ShuffleSplit
 from sklearn.metrics import mean_squared_error
 from DataParser import FeatureIO
 from sklearn.kernel_ridge import KernelRidge
+from sklearn.tree import DecisionTreeRegressor
 from multiprocessing import Process,Pool,TimeoutError,Value,Array,Manager
 import time
 from custom_features import cf_help
@@ -27,6 +28,9 @@ def print_genome(genome=None, preface="", model=None):
                     geneval = 10**(float(geneval)*(-6))
                 elif geneidx == 'gamma':
                     geneval = 10**((float(geneval)*(3))-1.5)
+            if isinstance(model, DecisionTreeRegressor):
+                if geneidx in ['max_depth', 'min_samples_split', 'min_samples_leaf']:
+                    geneval = 100*(float(geneval)) #whole numbers
             else:
                 raise ValueError("Model type %s not supported" % model)
             genedisp = "%s %s: %3.6f" % (gene, geneidx, geneval)
@@ -85,6 +89,12 @@ class GAIndividual():
                 kernel = self.model.kernel,
                 coef0 = self.model.coef0,
                 degree = self.model.degree)
+        if isinstance(self.model, DecisionTreeRegressor):
+            self.model = DecisionTreeRegressor(max_depth = 100*float(self.genome['model']['max_depth']),
+                min_samples_split = 100*float(self.genome['model']['min_samples_split']),
+                min_samples_leaf = 100*float(self.genome['model']['min_samples_leaf']),
+                criterion = self.model.criterion,
+                splitter = self.model.splitter)
         else:
             raise ValueError("Model type %s not supported" % self.model)
         return
@@ -602,6 +612,10 @@ class ParamOptGA(SingleFit):
         if isinstance(self.model, KernelRidge):
             hp_dict['model']['alpha']=None
             hp_dict['model']['gamma']=None
+        elif isinstance(self.model, DecisionTreeRegressor):
+            hp_dict['model']['max_depth']=None
+            hp_dict['model']['min_samples_split']=None
+            hp_dict['model']['min_samples_leaf']=None
         else:
             raise ValueError("Model type %s not supported." % self.model)
         self.hp_dict=dict(hp_dict)
