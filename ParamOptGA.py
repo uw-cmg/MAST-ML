@@ -12,25 +12,8 @@ from multiprocessing import Process,Pool,TimeoutError,Value,Array,Manager
 import time
 from custom_features import cf_help
 
-def print_genome(genome=None, preface=""):
+def print_genome(genome=None, preface="", model=None):
     genomestr = "%s: " % preface
-    genes = list(genome.keys())
-    genes.sort()
-    for gene in genes:
-        geneidxs = list(genome[gene].keys())
-        geneidxs.sort()
-        for geneidx in geneidxs:
-            geneval = genome[gene][geneidx]
-            if geneidx == 'alpha':
-                geneval = 10**(float(geneval)*(-6))
-            elif geneidx == 'gamma':
-                geneval = 10**((float(geneval)*(3))-1.5)
-            genedisp = "%s %s: %3.6f" % (gene, geneidx, geneval)
-            genomestr = genomestr + genedisp + ", "
-    print(genomestr[:-2], flush=True) #remove last comma and space
-    return genomestr[:-2]
-
-def print_genome_for_code(genome=None):
     printlist=list()
     genes = list(genome.keys())
     genes.sort()
@@ -39,14 +22,19 @@ def print_genome_for_code(genome=None):
         geneidxs.sort()
         for geneidx in geneidxs:
             geneval = genome[gene][geneidx]
-            if geneidx == 'alpha':
-                geneval = 10**(float(geneval)*(-6))
-            elif geneidx == 'gamma':
-                geneval = 10**((float(geneval)*(3))-1.5)
-            genedisp = "%s;%s;%3.6f\n" % (gene, geneidx, geneval)
-            printlist.append(genedisp)
-    return printlist
-
+            if isinstance(model, KernelRidge):
+                if geneidx == 'alpha':
+                    geneval = 10**(float(geneval)*(-6))
+                elif geneidx == 'gamma':
+                    geneval = 10**((float(geneval)*(3))-1.5)
+            else:
+                raise ValueError("Model type %s not supported" % model)
+            genedisp = "%s %s: %3.6f" % (gene, geneidx, geneval)
+            genomestr = genomestr + genedisp + ", "
+            codedisp = "%s;%s;%3.6f\n" % (gene, geneidx, geneval)
+            printlist.append(codedisp)
+    print(genomestr[:-2], flush=True) #remove last comma and space
+    return [genomestr[:-2], printlist]
 
 class GAIndividual():
     """GA Individual
@@ -57,6 +45,7 @@ class GAIndividual():
             cv_divisions=None,
             afm_dict=None,
             use_multiprocessing=1,
+            model=None,
             *args,**kwargs):
         """
         Attributes:
@@ -76,8 +65,8 @@ class GAIndividual():
         self.cv_divisions=cv_divisions
         self.afm_dict=afm_dict
         self.use_multiprocessing = int(use_multiprocessing)
+        self.model = model #also sets later in code, to particular fitted model
         #Sets later in code
-        self.model = None
         self.rmse=None
         self.input_data_with_afm=None
         #Run setup immediately
@@ -90,9 +79,12 @@ class GAIndividual():
         return
     
     def set_up_model(self):
-        self.model = KernelRidge(alpha = 10**(float(self.genome['model']['alpha'])*(-6)), 
+        if isinstance(self.model, KernelRidge):
+            self.model = KernelRidge(alpha = 10**(float(self.genome['model']['alpha'])*(-6)), 
                 gamma = 10**((float(self.genome['model']['gamma'])*(3))-1.5), 
                 kernel = 'rbf')
+        else:
+            raise ValueError("Model type %s not supported" % self.model)
         return
 
     def set_up_input_data_with_additional_features(self):
@@ -167,6 +159,7 @@ class GAGeneration():
         self.best_individual <int>
         self.parents <list of param dicts>
         self.new_population <list of param dicts>
+        self.model <sklearn model, for model typing>
         # Set in code
         self.crossover_prob <float>
         self.mutation_prob <float>
@@ -183,12 +176,14 @@ class GAGeneration():
                 population_size=50,
                 afm_dict=None,
                 use_multiprocessing=1,
+                model=None,
                 *args,**kwargs):
         self.testing_dataset_for_init = testing_dataset_for_init
         self.cv_divisions = cv_divisions
         self.population = population
         self.num_parents = int(num_parents)
         self.use_multiprocessing = int(use_multiprocessing)
+        self.model = model
         self.population_size = int(population_size)
         self.gene_template = gene_template
         self.afm_dict = afm_dict
@@ -232,10 +227,11 @@ class GAGeneration():
                                 testing_dataset = self.testing_dataset_for_init,
                                 cv_divisions = self.cv_divisions,
                                 afm_dict = self.afm_dict,
-                                use_multiprocessing = 0) #Parallelize in evaluate_population, not in CV
+                                use_multiprocessing = 0,
+                                model = self.model) #Parallelize in evaluate_population, not in CV
         if verbose > 0:
             for pidx in self.population.keys():
-                print_genome(self.population[pidx].genome)
+                print_genome(self.population[pidx].genome, preface="", model=self.model)
         return
 
     def evaluate_population_multiprocessing(self, indidx):
@@ -311,7 +307,8 @@ class GAGeneration():
                                 testing_dataset = self.testing_dataset_for_init,
                                 cv_divisions = self.cv_divisions,
                                 afm_dict = self.afm_dict,
-                                use_multiprocessing = 0) #Parallelize in evaluate_population, not in CV
+                                use_multiprocessing = 0,
+                                model=self.model) #Parallelize in evaluate_population, not in CV
         return
 
     def __enter__(self):
@@ -349,6 +346,7 @@ class ParamOptGA(SingleFit):
         additional_feature_methods <str or list>: comma-delimited string, or
                         a list, of semicolon-delimited pieces, formatted like:
                         methodname;number_of_genes;parameter1:value1;parameter2:value2;...
+
     Returns:
         Analysis in save_path folder
     Raises:
@@ -392,6 +390,7 @@ class ParamOptGA(SingleFit):
                         Each string takes the format:
                         methodname;parameter1:value1;parameter2:value2;...
             self.final_testing_datasets <list>: post-GA testing datasets
+            self.model <sklearn model>
             Set by code:
         """
         SingleFit.__init__(self, 
@@ -463,7 +462,8 @@ class ParamOptGA(SingleFit):
                 gene_template=self.gene_template,
                 afm_dict=self.afm_dict,
                 population_size=self.population_size,
-                use_multiprocessing=self.use_multiprocessing) as Gen:
+                use_multiprocessing=self.use_multiprocessing,
+                model = self.model) as Gen:
                 if self.fix_random_for_testing == 1:
                     Gen.random_state.seed(self.gact)
                 Gen.run()
@@ -489,7 +489,7 @@ class ParamOptGA(SingleFit):
             # prints output for each generation
             print(time.asctime())
             genpref = "Results gen %i (%i/%i convergence), rmse %3.3f" % (ga_genct, ga_repetitions_of_best, self.convergence_generations, gen_best_rmse)
-            print_genome(gen_best_genome, preface=genpref)
+            print_genome(gen_best_genome, preface=genpref, model = self.model)
             ga_genct = ga_genct + 1
         self.ga_dict[self.gact]['best_rmse'] = ga_best_rmse
         self.ga_dict[self.gact]['best_genome'] = ga_best_genome
@@ -504,14 +504,14 @@ class ParamOptGA(SingleFit):
         self.readme_list.append("----- GA %i -----\n" % ga)
         self.readme_list.append("Converged?: %s\n" % self.ga_dict[ga]['converged'])
         prefacestr= "Best %i-CV avg RMSE: %3.3f" % (self.num_cvtests, self.ga_dict[ga]['best_rmse'])
-        genomestr = print_genome(self.ga_dict[ga]['best_genome'], preface=prefacestr)
+        [genomestr, printlist] = print_genome(self.ga_dict[ga]['best_genome'], preface=prefacestr, model = self.model)
         self.readme_list.append("%s\n" % genomestr)
         gens = list(self.ga_dict[ga]['generations'].keys())
         gens.sort()
         self.readme_list.append("..... Generations .....\n")
         for gen in gens:
             prefacestr = "Generation %i best: avg rmse %3.3f" % (gen, self.ga_dict[ga]['generations'][gen]['best_rmse'])
-            genomestr = print_genome(self.ga_dict[ga]['generations'][gen]['best_genome'], preface = prefacestr)
+            [genomestr, printlist] = print_genome(self.ga_dict[ga]['generations'][gen]['best_genome'], preface = prefacestr, model = self.model)
             self.readme_list.append("%s\n" % genomestr)
         return
 
@@ -597,11 +597,11 @@ class ParamOptGA(SingleFit):
         """
         hp_dict=dict()
         hp_dict['model'] = dict()
-        if self.model.__class__.__name__ == "KernelRidge":
+        if isinstance(self.model, KernelRidge):
             hp_dict['model']['alpha']=None
             hp_dict['model']['gamma']=None
         else:
-            raise ValueError("Only Kernel Ridge with alpha and gamma optimization supported so far.")
+            raise ValueError("Model type %s not supported." % self.model)
         self.hp_dict=dict(hp_dict)
         return hp_dict
 
@@ -644,7 +644,8 @@ class ParamOptGA(SingleFit):
                                 testing_dataset = final_testing_dataset,
                                 cv_divisions = self.cv_divisions_final,
                                 afm_dict = self.afm_dict,
-                                use_multiprocessing = 0) #Parallelize as a generation
+                                use_multiprocessing = 0,
+                                model=self.model) #Parallelize as a generation
                 eval_popl[fidx] = eval_indiv
             Gen = GAGeneration(testing_dataset_for_init = self.testing_dataset,
                 cv_divisions=self.cv_divisions_final,
@@ -653,7 +654,8 @@ class ParamOptGA(SingleFit):
                 gene_template=self.gene_template,
                 afm_dict=self.afm_dict,
                 population_size=len(self.final_testing_datasets),
-                use_multiprocessing=self.use_multiprocessing)
+                use_multiprocessing=self.use_multiprocessing,
+                model = self.model)
             if self.fix_random_for_testing == 1:
                 Gen.random_state.seed(self.gact)
             Gen.evaluate_population()
@@ -672,12 +674,12 @@ class ParamOptGA(SingleFit):
                 self.final_best_genome = self.ga_dict[ga]['best_genome']
         self.readme_list.append("===== Overall info =====\n")
         self.readme_list.append("%s\n" % time.asctime())
-        printstr = print_genome(self.final_best_genome, preface="Overall best genome")
+        [printstr, printlist] = print_genome(self.final_best_genome, preface="Overall best genome", model = self.model)
         self.readme_list.append("%s\n" % printstr)
         return
 
     def print_final_best_for_code(self):
-        printlist = print_genome_for_code(self.final_best_genome)
+        [printstr, printlist] = print_genome(self.final_best_genome, preface="", model = self.model)
         with open(os.path.join(self.save_path,"OPTIMIZED_PARAMS"),'w') as pfile:
             pfile.writelines(printlist)
         return
