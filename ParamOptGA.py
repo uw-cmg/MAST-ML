@@ -99,8 +99,8 @@ class GAIndividual():
                 degree = self.model.degree)
         elif isinstance(self.model, DecisionTreeRegressor):
             self.model = DecisionTreeRegressor(max_depth = int(100*float(self.genome['model']['max_depth'])),
-                min_samples_split = int(100*float(self.genome['model']['min_samples_split'])),
-                min_samples_leaf = int(100*float(self.genome['model']['min_samples_leaf'])),
+                min_samples_split = max(2, int(100*float(self.genome['model']['min_samples_split']))), #has to be at least 2
+                min_samples_leaf = max(1, int(100*float(self.genome['model']['min_samples_leaf']))), #has to be at least 1
                 criterion = self.model.criterion,
                 splitter = self.model.splitter)
         else:
