@@ -9,6 +9,7 @@ from sklearn.metrics import mean_squared_error
 from DataParser import FeatureIO
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import RandomForestRegressor
 from multiprocessing import Process,Pool,TimeoutError,Value,Array,Manager
 import time
 from custom_features import cf_help
@@ -30,6 +31,9 @@ def print_genome(genome=None, preface="", model=None):
                     geneval = 10**((float(geneval)*(3))-1.5)
             elif isinstance(model, DecisionTreeRegressor):
                 if geneidx in ['max_depth', 'min_samples_split', 'min_samples_leaf']:
+                    geneval = int(100*(float(geneval))) #whole numbers
+            elif isinstance(model, RandomForestRegressor):
+                if geneidx in ['n_estimators', 'max_depth', 'min_samples_split', 'min_samples_leaf', 'max_leaf_nodes', 'n_jobs']:
                     geneval = int(100*(float(geneval))) #whole numbers
             else:
                 raise ValueError("Model type %s not supported" % model)
@@ -110,6 +114,22 @@ class GAIndividual():
                 min_samples_leaf = int(100*float(self.genome['model']['min_samples_leaf'])),
                 criterion = self.model.criterion,
                 splitter = self.model.splitter)
+        elif isinstance(self.model, RandomForestRegressor):
+            #will multiply values by 100
+            if self.genome['model']['max_depth'] < 0.01:
+                self.genome['model']['max_depth'] = 0.01 #has to be at least 1
+            if self.genome['model']['min_samples_split'] < 0.02:
+                self.genome['model']['min_samples_split'] = 0.02 #has to be at least 2
+            if self.genome['model']['min_samples_leaf'] < 0.01:
+                self.genome['model']['min_samples_leaf'] = 0.01 #has to be at least 1
+            self.model = RandomForestRegressor(
+                n_estimators = int(100*float(self.genome['model']['n_estimators'])),
+                max_depth = int(100*float(self.genome['model']['max_depth'])),
+                min_samples_split = int(100*float(self.genome['model']['min_samples_split'])),
+                min_samples_leaf = int(100*float(self.genome['model']['min_samples_leaf'])),
+                max_leaf_nodes = int(100*float(self.genome['model']['max_leaf_nodes'])),
+                n_jobs = int(100*float(self.genome['model']['n_jobs'])),
+                criterion = self.model.criterion)
         else:
             raise ValueError("Model type %s not supported" % self.model)
         return
@@ -631,6 +651,13 @@ class ParamOptGA(SingleFit):
             hp_dict['model']['max_depth']=None
             hp_dict['model']['min_samples_split']=None
             hp_dict['model']['min_samples_leaf']=None
+        elif isinstance(self.model, RandomForestRegressor):
+            hp_dict['model']['n_estimators']=None
+            hp_dict['model']['max_depth']=None
+            hp_dict['model']['min_samples_split']=None
+            hp_dict['model']['min_samples_leaf']=None
+            hp_dict['model']['max_leaf_nodes']=None
+            hp_dict['model']['n_jobs']=None
         else:
             raise ValueError("Model type %s not supported." % self.model)
         self.hp_dict=dict(hp_dict)

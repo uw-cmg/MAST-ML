@@ -1,0 +1,32 @@
+Mon Jun 26 14:28:24 2017
+===== GA info =====
+----- GA 0 -----
+Converged?: False
+Best 20-CV avg RMSE: 0.681: Testing.subtraction 0: 0.800000, Testing.subtraction 1: 0.900000, model max_depth: 69, model max_leaf_nodes: 85, model min_samples_leaf: 79, model min_samples_split: 12, model n_estimators: 57, model n_jobs: 25
+..... Generations .....
+Generation 0 best: avg rmse 0.682: Testing.subtraction 0: 0.360000, Testing.subtraction 1: 0.870000, model max_depth: 70, model max_leaf_nodes: 88, model min_samples_leaf: 88, model min_samples_split: 12, model n_estimators: 57, model n_jobs: 65
+Generation 1 best: avg rmse 0.682: Testing.subtraction 0: 0.360000, Testing.subtraction 1: 0.870000, model max_depth: 71, model max_leaf_nodes: 88, model min_samples_leaf: 64, model min_samples_split: 12, model n_estimators: 57, model n_jobs: 21
+Generation 2 best: avg rmse 0.682: Testing.subtraction 0: 0.390000, Testing.subtraction 1: 0.880000, model max_depth: 71, model max_leaf_nodes: 85, model min_samples_leaf: 79, model min_samples_split: 37, model n_estimators: 57, model n_jobs: 21
+Generation 3 best: avg rmse 0.681: Testing.subtraction 0: 0.800000, Testing.subtraction 1: 0.900000, model max_depth: 69, model max_leaf_nodes: 85, model min_samples_leaf: 79, model min_samples_split: 12, model n_estimators: 57, model n_jobs: 25
+Generation 4 best: avg rmse 0.682: Testing.subtraction 0: 0.360000, Testing.subtraction 1: 0.960000, model max_depth: 71, model max_leaf_nodes: 82, model min_samples_leaf: 69, model min_samples_split: 12, model n_estimators: 57, model n_jobs: 21
+Generation 5 best: avg rmse 0.682: Testing.subtraction 0: 0.360000, Testing.subtraction 1: 1, model max_depth: 69, model max_leaf_nodes: 82, model min_samples_leaf: 69, model min_samples_split: 37, model n_estimators: 57, model n_jobs: 17
+Generation 6 best: avg rmse 0.682: Testing.subtraction 0: 0.800000, Testing.subtraction 1: 0.990000, model max_depth: 71, model max_leaf_nodes: 78, model min_samples_leaf: 69, model min_samples_split: 12, model n_estimators: 57, model n_jobs: 12
+Generation 7 best: avg rmse 0.682: Testing.subtraction 0: 0.360000, Testing.subtraction 1: 1, model max_depth: 69, model max_leaf_nodes: 78, model min_samples_leaf: 69, model min_samples_split: 12, model n_estimators: 57, model n_jobs: 8
+----- GA 1 -----
+Converged?: False
+Best 20-CV avg RMSE: 0.276: Testing.subtraction 0: 0.420000, Testing.subtraction 1: 0.530000, model max_depth: 51, model max_leaf_nodes: 72, model min_samples_leaf: 1, model min_samples_split: 2, model n_estimators: 89, model n_jobs: 14
+..... Generations .....
+Generation 0 best: avg rmse 0.277: Testing.subtraction 0: 0.630000, Testing.subtraction 1: 0.610000, model max_depth: 22, model max_leaf_nodes: 56, model min_samples_leaf: 1, model min_samples_split: 2, model n_estimators: 60, model n_jobs: 81
+Generation 1 best: avg rmse 0.277: Testing.subtraction 0: 0.630000, Testing.subtraction 1: 0.610000, model max_depth: 22, model max_leaf_nodes: 64, model min_samples_leaf: 1, model min_samples_split: 2, model n_estimators: 61, model n_jobs: 81
+Generation 2 best: avg rmse 0.279: Testing.subtraction 0: 0.440000, Testing.subtraction 1: 0.530000, model max_depth: 47, model max_leaf_nodes: 70, model min_samples_leaf: 1, model min_samples_split: 2, model n_estimators: 65, model n_jobs: 76
+Generation 3 best: avg rmse 0.277: Testing.subtraction 0: 0.430000, Testing.subtraction 1: 0.530000, model max_depth: 49, model max_leaf_nodes: 71, model min_samples_leaf: 1, model min_samples_split: 2, model n_estimators: 89, model n_jobs: 14
+Generation 4 best: avg rmse 0.276: Testing.subtraction 0: 0.420000, Testing.subtraction 1: 0.530000, model max_depth: 51, model max_leaf_nodes: 72, model min_samples_leaf: 1, model min_samples_split: 2, model n_estimators: 89, model n_jobs: 14
+Generation 5 best: avg rmse 0.277: Testing.subtraction 0: 0.410000, Testing.subtraction 1: 0.530000, model max_depth: 53, model max_leaf_nodes: 73, model min_samples_leaf: 1, model min_samples_split: 2, model n_estimators: 89, model n_jobs: 14
+Generation 6 best: avg rmse 0.277: Testing.subtraction 0: 0.400000, Testing.subtraction 1: 0.530000, model max_depth: 55, model max_leaf_nodes: 74, model min_samples_leaf: 1, model min_samples_split: 2, model n_estimators: 89, model n_jobs: 14
+Generation 7 best: avg rmse 0.277: Testing.subtraction 0: 0.390000, Testing.subtraction 1: 0.530000, model max_depth: 57, model max_leaf_nodes: 75, model min_samples_leaf: 1, model min_samples_split: 2, model n_estimators: 89, model n_jobs: 14
+===== Final evaluations =====
+GA 0 200-CV avg RMSEs: 0.681 0.681 
+GA 1 200-CV avg RMSEs: 0.279 0.296 
+===== Overall info =====
+Mon Jun 26 14:41:54 2017
+Overall best genome: Testing.subtraction 0: 0.420000, Testing.subtraction 1: 0.530000, model max_depth: 51, model max_leaf_nodes: 72, model min_samples_leaf: 1, model min_samples_split: 2, model n_estimators: 89, model n_jobs: 14
