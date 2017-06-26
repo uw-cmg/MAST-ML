@@ -205,7 +205,7 @@ class MASTMLWrapper(object):
             return model
         if model_type == 'randomforest_model':
             model = RandomForestRegressor(criterion=str(self.configdict['Model Parameters']['randomforest_model']['criterion']),
-                                          n_estimators=int(self.configdict['Model Parameters']['randomforest_model']['estimators']),
+                                          n_estimators=int(self.configdict['Model Parameters']['randomforest_model']['n_estimators']),
                                           max_depth=int(self.configdict['Model Parameters']['randomforest_model']['max_depth']),
                                           min_samples_split=int(self.configdict['Model Parameters']['randomforest_model']['min_samples_split']),
                                           min_samples_leaf=int(self.configdict['Model Parameters']['randomforest_model']['min_samples_leaf']),
