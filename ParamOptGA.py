@@ -28,14 +28,22 @@ def print_genome(genome=None, preface="", model=None):
                     geneval = 10**(float(geneval)*(-6))
                 elif geneidx == 'gamma':
                     geneval = 10**((float(geneval)*(3))-1.5)
-            if isinstance(model, DecisionTreeRegressor):
+            elif isinstance(model, DecisionTreeRegressor):
                 if geneidx in ['max_depth', 'min_samples_split', 'min_samples_leaf']:
-                    geneval = 100*(float(geneval)) #whole numbers
+                    geneval = int(100*(float(geneval))) #whole numbers
             else:
                 raise ValueError("Model type %s not supported" % model)
-            genedisp = "%s %s: %3.6f" % (gene, geneidx, geneval)
+            genedisp=""
+            codedisp=""
+            if type(geneval) in [float, np.float64]:
+                genedisp = "%s %s: %3.6f" % (gene, geneidx, geneval)
+                codedisp = "%s;%s;%3.6f\n" % (gene, geneidx, geneval)
+            elif type(geneval) is int:
+                genedisp = "%s %s: %i" % (gene, geneidx, geneval)
+                codedisp = "%s;%s;%i\n" % (gene, geneidx, geneval)
+            else:
+                raise TypeError("Gene value type %s unknown." % type(geneval))
             genomestr = genomestr + genedisp + ", "
-            codedisp = "%s;%s;%3.6f\n" % (gene, geneidx, geneval)
             printlist.append(codedisp)
     print(genomestr[:-2], flush=True) #remove last comma and space
     return [genomestr[:-2], printlist]
@@ -89,10 +97,10 @@ class GAIndividual():
                 kernel = self.model.kernel,
                 coef0 = self.model.coef0,
                 degree = self.model.degree)
-        if isinstance(self.model, DecisionTreeRegressor):
-            self.model = DecisionTreeRegressor(max_depth = 100*float(self.genome['model']['max_depth']),
-                min_samples_split = 100*float(self.genome['model']['min_samples_split']),
-                min_samples_leaf = 100*float(self.genome['model']['min_samples_leaf']),
+        elif isinstance(self.model, DecisionTreeRegressor):
+            self.model = DecisionTreeRegressor(max_depth = int(100*float(self.genome['model']['max_depth'])),
+                min_samples_split = int(100*float(self.genome['model']['min_samples_split'])),
+                min_samples_leaf = int(100*float(self.genome['model']['min_samples_leaf'])),
                 criterion = self.model.criterion,
                 splitter = self.model.splitter)
         else:
