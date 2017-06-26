@@ -73,17 +73,17 @@ class PlotHelper():
             self.linestyles = self.linestyles.split(",")
         if not(type(self.markers) is list):
             self.markers = self.markers.split(",")
-        if not(type(self.sizes) is list):
+        if not(isinstance(self.sizes, list) or isinstance(self.sizes, np.ndarray)):
             self.sizes=np.array(self.sizes.split(","),'float')
         else:
             self.sizes = np.array(self.sizes, 'float') #make sure they are floats
         if type(self.marklargest) is str:
             self.marklargest = np.array(self.marklargest.split(","),'int')
-        elif type(self.marklargest) is list:
+        elif (isinstance(self.marklargest, list) or isinstance(self.marklargest, np.ndarray)):
             self.marklargest = np.array(self.marklargest,'int')
         else:
             raise ValueError("marklargest %s could not be identified." % self.marklargest)
-        if self.mlabellist is None:
+        if (self.mlabellist is None) or (len(self.mlabellist) == 0):
             self.mlabellist = np.copy(self.xdatalist)
         elif type(self.mlabellist) is list:
             pass
@@ -612,6 +612,7 @@ class PlotHelper():
             if show_rmse == 1:
                 all_other_rmse = np.sqrt(mean_squared_error(otherydata, otherxdata))
                 self.notelist.append('{:<1}: {:.2f}'.format("All others", all_other_rmse))
+        self.verify()
         self.multiple_overlay() 
         return
 
