@@ -71,9 +71,8 @@ class MASTMLDriver(object):
 
         # Parse input data files
         Xdata, ydata, x_features, y_feature, dataframe = self._parse_input_data()
-
-        #print("original:")
-        #print(x_features, y_feature)
+        # Remove any missing rows from dataframe
+        dataframe = dataframe.dropna()
 
         # Generate additional descriptors, as specified in input file (optional)
         if "Feature Generation" in self.configdict.keys():
@@ -84,8 +83,6 @@ class MASTMLDriver(object):
         # First remove features containing strings before doing feature normalization or other operations, but don't remove grouping features
         x_features, dataframe = MiscFeatureOperations(configdict=self.configdict).remove_features_containing_strings(dataframe=dataframe, x_features=x_features)
 
-        #print('removing strings:')
-        #print(dataframe)
 
         # Normalize features (optional)
         if self.configdict['General Setup']['normalize_features'] == bool(True):
@@ -104,9 +101,6 @@ class MASTMLDriver(object):
             dataframe = FeatureIO(dataframe=dataframe).remove_custom_features(features_to_remove=features_to_remove)
             dataframe = self._perform_feature_selection(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
             x_features, y_feature = DataParser(configdict=self.configdict).get_features(dataframe=dataframe, target_feature=y_feature)
-
-        #print("feature selection:")
-        #print(x_features, y_feature)
 
         self.data_dict = self._create_data_dict(dataframe=dataframe)
 
@@ -281,6 +275,12 @@ class MASTMLDriver(object):
             if k == 'feature_selection_algorithm':
                 logging.info('FEATURE SELECTION: Selecting features using a %s algorithm' % v)
                 fs = FeatureSelection(dataframe=dataframe, x_features=x_features, y_feature=y_feature, selection_type=self.configdict['Feature Selection']['selection_type'])
+                if v == 'forward':
+                    if int(self.configdict['Feature Selection']['number_of_features_to_keep']) <= len(x_features):
+                        dataframe = fs.forward_selection(number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']), save_to_csv=True)
+                    else:
+                        logging.info('Warning: you have specified to keep more features than the total number of features in your dataset. Defaulting to keep all features in feature selection')
+                        dataframe = fs.forward_selection(number_features_to_keep=int(len(x_features)), save_to_csv=True)
                 if v == 'RFE':
                     if int(self.configdict['Feature Selection']['number_of_features_to_keep']) <= len(x_features):
                         dataframe = fs.recursive_feature_elimination(number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']), save_to_csv=True)
