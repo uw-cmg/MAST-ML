@@ -1,5 +1,5 @@
 import numpy as np
-import plot_data.plot_rmse as plotrmse
+from plot_data.PlotHelper import PlotHelper
 import os
 from LeaveOutPercentCV import LeaveOutPercentCV
 from SingleFit import timeit
@@ -88,9 +88,14 @@ class LeaveOutGroupCV(LeaveOutPercentCV):
                                     self.cvtest_dict[cvtest]['rmse']))
         group_rms_list.sort() #sorts by group
         group_rms_array = np.array(group_rms_list)
-        kwargs['rms_list'] = np.array(group_rms_array[:,1],'float')
-        kwargs['group_list'] = group_rms_array[:,0]
-        plotrmse.vs_leftoutgroup(**kwargs)
+        kwargs['xdatalist'] = [group_rms_array[:,0]]
+        kwargs['ydatalist'] = [np.array(group_rms_array[:,1],'float')]
+        kwargs['xerrlist'] = [None]
+        kwargs['yerrlist'] = [None]
+        kwargs['labellist'] = ['predicted_rmse']
+        kwargs['plotlabel'] = "leave_out_group"
+        myph = PlotHelper(**kwargs)
+        myph.plot_rmse_vs_text()
         self.readme_list.append("Plot leave_out_group.png created.\n")
         return
 

@@ -268,6 +268,10 @@ class PlotHelper():
 
     def write_axis_section(self, axisobj):
         axistext=""
+        xticklabels=list()
+        xtlabels = axisobj.get_xticklabels()
+        for xtlabel in xtlabels:
+            xticklabels.append(xtlabel.get_text())
         section="""\
         plt.xlabel('%s')
         plt.ylabel('%s')
@@ -276,7 +280,7 @@ class PlotHelper():
         #ax.set_xscale('log', nonposx='clip') #set log scale
         #ax.set_xlim([-10.0, 10.0]) #set limits on x axis. Similar for y axis.
         ax.set_xticks(%s)
-        #ax.set_xticklabels(["a","b","c","d","e"],rotation=90) #set tick labels
+        ax.set_xticklabels(%s, rotation=0.0)
         ax.set_yticks(%s)
         #
         ### Set additional dashed gridline at x=0
@@ -312,7 +316,7 @@ class PlotHelper():
         #                  # (_, caps, _)=ax2.errorbar(...)
         #ax2.legend() #legend for entries on second axis. 
         """ % (axisobj.get_xlabel(), axisobj.get_ylabel(),
-            axisobj.get_xticks().tolist(),
+            axisobj.get_xticks().tolist(), xticklabels,
             axisobj.get_yticks().tolist())
         return section
 
@@ -614,6 +618,76 @@ class PlotHelper():
                 self.notelist.append('{:<1}: {:.2f}'.format("All others", all_other_rmse))
         self.verify()
         self.multiple_overlay() 
+        return
+    def plot_rmse_vs_text(self):
+        """Plot RMSE vs. text
+            Takes single list entry in each of xdatalist and ydatalist.
+        """
+        fig_handle = plt.figure()
+        ax1 = plt.gca()
+        rms_list = np.array(self.ydatalist[0],'float') #verify type
+        # graph rmse vs left-out group
+        group_list = self.xdatalist[0]
+        numeric_list = np.arange(0, len(group_list))
+        skipticks = np.ceil(len(numeric_list)/8)
+        xticks = np.arange(0, max(numeric_list) + 1, skipticks, dtype='int')
+        xticklabels = list()
+        for xtick in xticks:
+            xticklabels.append(group_list[xtick])
+        ax1.plot(numeric_list, rms_list, 
+                        linestyle='None',
+                        marker='o', markersize=5,
+                        markeredgecolor='blue',
+                        markerfacecolor='blue',
+                        markeredgewidth=3,
+                        label=self.labellist[0])
+        #plot zero line
+        ax1.plot((0, max(numeric_list)+1), (0, 0), ls="--", c=".3") 
+        plt.xticks(xticks, xticklabels)
+        ax1.set_xlabel(self.xlabel)
+        ax1.set_ylabel(self.ylabel)
+        notey = 0.88
+        notestep = 0.07
+        for note in self.notelist:
+            plt.annotate(note, xy=(0.05, notey), xycoords="axes fraction",
+                        fontsize=self.smallfont)
+            notey = notey - notestep
+        if self.marklargest is None:
+            pass
+        else:
+            for largerms_index in np.argsort(rms_list)[-1*self.marklargest[0]:]:
+                alabel = group_list[largerms_index]
+                ax1.annotate(s = alabel,
+                            xy = (numeric_list[largerms_index], 
+                                    rms_list[largerms_index]),
+                            fontsize=self.smallfont)
+        loc1 = 'best'
+        if not(self.legendloc is None):
+            loc1 = self.legendloc
+        lgd1=ax1.legend(loc = loc1, 
+                    fontsize=self.smallfont, 
+                    numpoints=1,
+                    fancybox=True) 
+        try:
+            lgd1.get_frame().set_alpha(0.5) #translucent legend!
+        except AttributeError: # no labeled lines
+            pass
+        if len(self.xdatalist) == 1:
+            if not (lgd1 is None):
+                lgd1.set_visible(False) #do not show legend for single line
+        plt.tight_layout()
+        if not os.path.isdir(self.save_path):
+            os.mkdir(self.save_path)
+        plt.savefig(os.path.join(self.save_path, "%s" % self.plotlabel),
+                    bbox_inches='tight')
+        self.print_data() #print csv for every plot
+        pname = os.path.join(self.save_path, "%s.pickle" % self.plotlabel)
+        with open(pname,'wb') as pfile:
+            pickle.dump(fig_handle, pfile) 
+        plt.close()
+        self.write_notebook(picklename=pname, 
+            nbfigname = "%s_nb" % self.plotlabel,
+            nbname = os.path.join(self.save_path, "%s.ipynb" % self.plotlabel))
         return
 
         
