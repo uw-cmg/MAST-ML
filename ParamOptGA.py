@@ -82,7 +82,9 @@ class GAIndividual():
         if isinstance(self.model, KernelRidge):
             self.model = KernelRidge(alpha = 10**(float(self.genome['model']['alpha'])*(-6)), 
                 gamma = 10**((float(self.genome['model']['gamma'])*(3))-1.5), 
-                kernel = 'rbf')
+                kernel = self.model.kernel,
+                coef0 = self.model.coef0,
+                degree = self.model.degree)
         else:
             raise ValueError("Model type %s not supported" % self.model)
         return
