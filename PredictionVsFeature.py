@@ -2,7 +2,7 @@ import numpy as np
 import os
 from SingleFit import timeit
 from SingleFit import SingleFit
-import plot_data.plot_from_dict as plotdict
+from plot_data.PlotHelper import PlotHelper
 import copy
 import logging
 
@@ -213,10 +213,11 @@ class PredictionVsFeature(SingleFit):
         for fidx in range(0, len(self.markers)):
             faces.append("None")
         addl_kwargs['faces'] = faces
-        plotdict.plot_group_splits_with_outliers(group_dict=pdict,
-            outlying_groups = series_list,
-            label=plabel,
-            group_notelist = list(group_notelist),
-            addl_kwargs = dict(addl_kwargs))
+        addl_kwargs['group_dict'] = pdict
+        addl_kwargs['plotlabel'] = plabel
+        addl_kwargs['outlying_groups'] = series_list
+        addl_kwargs['notelist'] = list(group_notelist)
+        myph = PlotHelper(**addl_kwargs)
+        myph.plot_group_splits_with_outliers()
         return
 
