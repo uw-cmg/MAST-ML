@@ -189,27 +189,27 @@ class MASTMLWrapper(object):
                                 kernel_params=None)
             return model
         if model_type == 'decision_tree_model':
-            model = tree.DecisionTreeRegressor(criterion=str(self.configdict['Model Parameters']['decision_tree_model']['split_criterion']),
+            model = tree.DecisionTreeRegressor(criterion=str(self.configdict['Model Parameters']['decision_tree_model']['criterion']),
                                                splitter=str(self.configdict['Model Parameters']['decision_tree_model']['splitter']),
                                                max_depth=int(self.configdict['Model Parameters']['decision_tree_model']['max_depth']),
                                                min_samples_leaf=int(self.configdict['Model Parameters']['decision_tree_model']['min_samples_leaf']),
                                                min_samples_split=int(self.configdict['Model Parameters']['decision_tree_model']['min_samples_split']))
             return model
         if model_type == 'extra_tree_model':
-            model = tree.ExtraTreeRegressor(criterion=str(self.configdict['Model Parameters']['extra_tree_model']['split_criterion']),
+            model = tree.ExtraTreeRegressor(criterion=str(self.configdict['Model Parameters']['extra_tree_model']['criterion']),
                                                splitter=str(self.configdict['Model Parameters']['extra_tree_model']['splitter']),
                                                max_depth=int(self.configdict['Model Parameters']['extra_tree_model']['max_depth']),
                                                min_samples_leaf=int(self.configdict['Model Parameters']['extra_tree_model']['min_samples_leaf']),
                                                min_samples_split=int(self.configdict['Model Parameters']['extra_tree_model']['min_samples_split']))
             return model
         if model_type == 'randomforest_model':
-            model = RandomForestRegressor(criterion=str(self.configdict['Model Parameters']['randomforest_model']['split_criterion']),
-                                          n_estimators=int(self.configdict['Model Parameters']['randomforest_model']['estimators']),
+            model = RandomForestRegressor(criterion=str(self.configdict['Model Parameters']['randomforest_model']['criterion']),
+                                          n_estimators=int(self.configdict['Model Parameters']['randomforest_model']['n_estimators']),
                                           max_depth=int(self.configdict['Model Parameters']['randomforest_model']['max_depth']),
                                           min_samples_split=int(self.configdict['Model Parameters']['randomforest_model']['min_samples_split']),
                                           min_samples_leaf=int(self.configdict['Model Parameters']['randomforest_model']['min_samples_leaf']),
                                           max_leaf_nodes=int(self.configdict['Model Parameters']['randomforest_model']['max_leaf_nodes']),
-                                          n_jobs=int(self.configdict['Model Parameters']['randomforest_model']['jobs']),
+                                          n_jobs=int(self.configdict['Model Parameters']['randomforest_model']['n_jobs']),
                                           warm_start=bool(self.configdict['Model Parameters']['randomforest_model']['warm_start']))
             return model
         if model_type == 'nn_model':
