@@ -43,7 +43,8 @@ class FeatureIO(object):
         for feature in features_to_keep:
             dataframe_dict[feature] = self.dataframe[feature]
         if y_feature is not None:
-            dataframe_dict[y_feature] = self.dataframe[y_feature]
+            if y_feature in self.dataframe.columns:
+                dataframe_dict[y_feature] = self.dataframe[y_feature]
         dataframe = pd.DataFrame(dataframe_dict)
         return dataframe
 
