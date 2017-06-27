@@ -186,10 +186,6 @@ class MASTMLDriver(object):
         for data_name in self.data_setup.keys():
             data_path = self.data_setup[data_name]['data_path']
             data_weights = self.data_setup[data_name]['weights']
-            if "normalize" in self.data_setup[data_name].keys():
-                data_normalize = self.data_setup[data_name]['normalize']
-            else:
-                data_normalize = False
             if not(os.path.isfile(data_path)):
                 raise OSError("No file found at %s" % data_path)
             if 'labeling_features' in self.general_setup.keys():
