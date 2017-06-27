@@ -167,71 +167,95 @@ class MASTMLDriver(object):
                 grouping_feature = self.general_setup['grouping_feature']
             else:
                 grouping_feature = None
+            if 'Feature Generation' in self.configdict.keys():
+                generate_features = True
+            else:
+                generate_features = False
+            if self.configdict['General Setup']['normalize_features'] is True:
+                normalize_features = True
+            else:
+                normalize_features = False
+            if 'Feature Selection' in self.configdict.keys():
+                select_features = True
+            else:
+                select_features = False
+            logging.info("Feature Generation: %s" % generate_features)
+            logging.info("Feature Normalization: %s" % normalize_features)
+            logging.info("Feature Selection: %s" % select_features)
             # Parse input data file
             Xdata, ydata, x_features, y_feature, dataframe = self._parse_input_data(data_path)
+            logging.info("DEBUG x features: %s" % x_features)
+            original_x_features = list(x_features)
+            original_columns = list(dataframe.columns)
             # Remove any missing rows from dataframe
             dataframe = dataframe.dropna()
 
             # Generate additional descriptors, as specified in input file (optional)
-            if "Feature Generation" in self.configdict.keys():
-                if y_feature in dataframe.columns:
-                    dataframe = self._perform_feature_generation(dataframe=dataframe)
-                    Xdata, ydata, x_features_NOUSE, y_feature, dataframe = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe, target_feature=y_feature)
+            if generate_features:
+                dataframe = self._perform_feature_generation(dataframe=dataframe)
+                Xdata, ydata, x_features_NOUSE, y_feature, dataframe = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe, target_feature=y_feature)
+            
+            # First remove features containing strings before doing feature normalization or other operations, but don't remove grouping features
+            x_features, dataframe_nostrings = MiscFeatureOperations(configdict=self.configdict).remove_features_containing_strings(dataframe=dataframe, x_features=x_features)
+            logging.info("DEBUG x features: %s" % x_features)
 
             # Normalize features (optional)
-            if self.configdict['General Setup']['normalize_features'] == bool(True):
-                # First remove features containing strings before doing feature normalization or other operations, but don't remove grouping features
-                x_features, dataframe = MiscFeatureOperations(configdict=self.configdict).remove_features_containing_strings(dataframe=dataframe, x_features=x_features)
-                fn = FeatureNormalization(dataframe=dataframe)
-                dataframe, scaler = fn.normalize_features(x_features=x_features, y_feature=y_feature)
-                x_features, y_feature = DataParser(configdict=self.configdict).get_features(dataframe=dataframe, target_feature=y_feature)
+            if normalize_features:
+                fn = FeatureNormalization(dataframe=dataframe_nostrings)
+                dataframe_nostrings, scaler = fn.normalize_features(x_features=x_features, y_feature=y_feature)
+                x_features, y_feature = DataParser(configdict=self.configdict).get_features(dataframe=dataframe_nostrings, target_feature=y_feature)
 
             # Perform feature selection and dimensional reduction, as specified in the input file (optional)
-            if "Feature Selection" in self.configdict.keys():
+            if (select_features) and (y_feature in dataframe_nostrings.columns):
                 # Remove any additional columns that are not x_features using to be fit to data
-                features = dataframe.columns.values.tolist()
+                features = dataframe_nostrings.columns.values.tolist()
                 features_to_remove = []
                 for feature in features:
                     if feature not in x_features and feature not in y_feature:
                         features_to_remove.append(feature)
-                dataframe = FeatureIO(dataframe=dataframe).remove_custom_features(features_to_remove=features_to_remove)
-                dataframe = self._perform_feature_selection(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
-                x_features, y_feature = DataParser(configdict=self.configdict).get_features(dataframe=dataframe, target_feature=y_feature)
-            if ("Feature Generation" in self.configdict.keys()) or ("Feature Selection" in self.configdict.keys()) or (self.configdict['General Setup']['normalize_features'] == bool(True)):
-                # Combine the input dataframe, which has undergone feature generation and normalization, with the grouped and labeled features of original dataframe
-                # First, need to generate dataframe that only has the grouped and labeled features
-                grouping_and_labeling_features = []
-                duplicate_features = []
-                if 'grouping_feature' in self.configdict['General Setup'].keys():
-                    grouping_and_labeling_features.append(grouping_feature)
-                if 'labeling_features' in self.configdict['General Setup'].keys():
-                    for feature in labeling_features:
-                        grouping_and_labeling_features.append(feature)
-                        if feature in x_features:
-                            if feature not in duplicate_features:
-                                duplicate_features.append(feature)
+                dataframe_nostrings = FeatureIO(dataframe=dataframe_nostrings).remove_custom_features(features_to_remove=features_to_remove)
+                dataframe_nostrings = self._perform_feature_selection(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
+                x_features, y_feature = DataParser(configdict=self.configdict).get_features(dataframe=dataframe_nostrings, target_feature=y_feature)
+            # Combine the input dataframe, which has undergone feature generation and normalization, with the grouped and labeled features of original dataframe
+            # First, need to generate dataframe that only has the grouped and labeled features
+            grouping_and_labeling_features = []
+            duplicate_features = []
+            if 'grouping_feature' in self.configdict['General Setup'].keys():
+                grouping_and_labeling_features.append(grouping_feature)
+            if 'labeling_features' in self.configdict['General Setup'].keys():
+                for feature in labeling_features:
+                    grouping_and_labeling_features.append(feature)
+                    if feature in x_features:
+                        if feature not in duplicate_features:
+                            duplicate_features.append(feature)
 
-                dataframe_labeled = pd.DataFrame()
-                dataframe_grouped = pd.DataFrame()
-                if 'labeling_features' in self.configdict['General Setup'].keys():
-                    dataframe_labeled = FeatureIO(dataframe=dataframe).keep_custom_features(features_to_keep=labeling_features, y_feature=y_feature)
-                    if self.configdict['General Setup']['normalize_features'] == bool(True):
-                        dataframe_labeled, scaler = FeatureNormalization(dataframe=dataframe_labeled).normalize_features(x_features=labeling_features, y_feature=y_feature)
-                if 'grouping_feature' in self.configdict['General Setup'].keys():
-                    dataframe_grouped = FeatureIO(dataframe=dataframe).keep_custom_features(features_to_keep=[grouping_feature], y_feature=y_feature)
+            dataframe_labeled = pd.DataFrame()
+            dataframe_grouped = pd.DataFrame()
+            if not (labeling_features is None):
+                dataframe_labeled = FeatureIO(dataframe=dataframe).keep_custom_features(features_to_keep=labeling_features, y_feature=y_feature)
+                if normalize_features:
+                    dataframe_labeled, scaler = FeatureNormalization(dataframe=dataframe_labeled).normalize_features(x_features=labeling_features, y_feature=y_feature)
+            if not (grouping_feature is None):
+                dataframe_grouped = FeatureIO(dataframe=dataframe).keep_custom_features(features_to_keep=[grouping_feature], y_feature=y_feature)
 
-                # Now merge dataframes
-                dataframe_labeled_grouped = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe_labeled, dataframe2=dataframe_grouped)
-                dataframe_merged = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_labeled_grouped)
+            # Now merge dataframes
+            dataframe_labeled_grouped = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe_labeled, dataframe2=dataframe_grouped)
+            dataframe_merged = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe_nostrings, dataframe2=dataframe_labeled_grouped)
 
-                # Need to remove duplicate features after merging.
-                dataframe = FeatureIO(dataframe=dataframe_merged).remove_duplicate_columns()
+            # Need to remove duplicate features after merging.
+            dataframe_rem = FeatureIO(dataframe=dataframe_merged).remove_duplicate_columns()
 
-            myXdata, myydata, myx_features, myy_feature, dataframe = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe, target_feature=y_feature)
-            data_dict[data_name] = DataHandler(data = dataframe,
+            myXdata, myydata, myx_features, myy_feature, dataframe_final = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe_rem, target_feature=y_feature)
+            logging.info("DEBUG x features to be used: %s" % myx_features)
+            combined_x_features = list()
+            for feature in myx_features:
+                if (feature in original_x_features) or not(feature in original_columns): #originally designated, or created from feature selection
+                    combined_x_features.append(feature)
+            logging.info("DEBUG x features to be used: %s" % combined_x_features)
+            data_dict[data_name] = DataHandler(data = dataframe_final,
                                 input_data = myXdata,
                                 target_data = myydata,
-                                input_features = myx_features,
+                                input_features = combined_x_features,
                                 target_feature = myy_feature,
                                 target_error_feature = target_error_feature,
                                 labeling_features = labeling_features,
