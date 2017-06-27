@@ -3,7 +3,8 @@
 import numpy as np
 import pandas as pd
 import os
-from DataParser import DataParser, FeatureIO, FeatureNormalization
+from DataOperations import DataParser
+from FeatureOperations import FeatureIO, FeatureNormalization
 
 class MakeRandomData():
     def __init__(self, 

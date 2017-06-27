@@ -49,6 +49,8 @@ setup(
                 "pymongo>=3.4.0",
                 "pymatgen>=4.6.0",
                 "PeakUtils>=1.0.3",
+                "citrination-client",
+                "mlxtend",
                 ],
         author="MAST Development Team, University of Wisconsin-Madison Computational Materials Group",
         author_email="ddmorgan@wisc.edu",

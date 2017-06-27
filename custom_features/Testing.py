@@ -1,7 +1,6 @@
 import numpy as np
 import copy
-from DataParser import FeatureNormalization
-from DataParser import FeatureIO
+from FeatureOperations import FeatureNormalization, FeatureIO
 __author__ = "Tam Mayeshiba"
 
 class Testing():
