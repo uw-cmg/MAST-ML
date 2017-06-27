@@ -210,7 +210,7 @@ class MASTMLDriver(object):
             grouping_and_labeling_features = []
             duplicate_features = []
             if 'grouping_feature' in self.configdict['General Setup'].keys():
-                grouping_and_labeling_features.append(feature)
+                grouping_and_labeling_features.append(grouping_feature)
             if 'labeling_features' in self.configdict['General Setup'].keys():
                 for feature in labeling_features:
                     grouping_and_labeling_features.append(feature)
