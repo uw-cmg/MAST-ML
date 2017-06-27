@@ -225,7 +225,7 @@ class MASTMLDriver(object):
                 if self.configdict['General Setup']['normalize_features'] == bool(True):
                     dataframe_labeled, scaler = FeatureNormalization(dataframe=dataframe_labeled).normalize_features(x_features=labeling_features, y_feature=myy_feature)
             if 'grouping_feature' in self.configdict['General Setup'].keys():
-                dataframe_grouped = FeatureIO(dataframe=dataframe_original).keep_custom_features(features_to_keep=grouping_feature, y_feature=myy_feature)
+                dataframe_grouped = FeatureIO(dataframe=dataframe_original).keep_custom_features(features_to_keep=[grouping_feature], y_feature=myy_feature)
 
             # Now merge dataframes
             dataframe_labeled_grouped = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe_labeled, dataframe2=dataframe_grouped)
