@@ -185,6 +185,9 @@ class MASTMLDriver(object):
             # Parse input data file
             Xdata, ydata, x_features, y_feature, dataframe = self._parse_input_data(data_path)
             logging.info("DEBUG x features: %s" % x_features)
+            import numpy as np
+            logging.info("N_sine_feature sum: %s" % np.sum(dataframe['N_sine_feature']))
+            logging.info("Dataframe size: %s" % dataframe.size)
             original_x_features = list(x_features)
             original_columns = list(dataframe.columns)
             # Remove any missing rows from dataframe
@@ -252,8 +255,10 @@ class MASTMLDriver(object):
                 if (feature in original_x_features) or not(feature in original_columns): #originally designated, or created from feature selection
                     combined_x_features.append(feature)
             logging.info("DEBUG x features to be used: %s" % combined_x_features)
+            logging.info("N_sine_feature sum: %s" % np.sum(dataframe_final['N_sine_feature']))
+            logging.info("Dataframe size: %s" % dataframe_final.size)
             data_dict[data_name] = DataHandler(data = dataframe_final,
-                                input_data = myXdata,
+                                input_data = dataframe_final[combined_x_features],
                                 target_data = myydata,
                                 input_features = combined_x_features,
                                 target_feature = myy_feature,
