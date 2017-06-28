@@ -184,10 +184,6 @@ class MASTMLDriver(object):
             logging.info("Feature Selection: %s" % select_features)
             # Parse input data file
             Xdata, ydata, x_features, y_feature, dataframe = self._parse_input_data(data_path)
-            logging.info("DEBUG x features: %s" % x_features)
-            import numpy as np
-            logging.info("N_sine_feature sum: %s" % np.sum(dataframe['N_sine_feature']))
-            logging.info("Dataframe size: %s" % dataframe.size)
             original_x_features = list(x_features)
             original_columns = list(dataframe.columns)
             # Remove any missing rows from dataframe
@@ -200,7 +196,6 @@ class MASTMLDriver(object):
             
             # First remove features containing strings before doing feature normalization or other operations, but don't remove grouping features
             x_features, dataframe_nostrings = MiscFeatureOperations(configdict=self.configdict).remove_features_containing_strings(dataframe=dataframe, x_features=x_features)
-            logging.info("DEBUG x features: %s" % x_features)
 
             # Normalize features (optional)
             if normalize_features:
@@ -249,14 +244,10 @@ class MASTMLDriver(object):
             dataframe_rem = FeatureIO(dataframe=dataframe_merged).remove_duplicate_columns()
 
             myXdata, myydata, myx_features, myy_feature, dataframe_final = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe_rem, target_feature=y_feature)
-            logging.info("DEBUG x features to be used: %s" % myx_features)
             combined_x_features = list()
             for feature in myx_features:
                 if (feature in original_x_features) or not(feature in original_columns): #originally designated, or created from feature selection
                     combined_x_features.append(feature)
-            logging.info("DEBUG x features to be used: %s" % combined_x_features)
-            logging.info("N_sine_feature sum: %s" % np.sum(dataframe_final['N_sine_feature']))
-            logging.info("Dataframe size: %s" % dataframe_final.size)
             data_dict[data_name] = DataHandler(data = dataframe_final,
                                 input_data = dataframe_final[combined_x_features],
                                 target_data = myydata,
