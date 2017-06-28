@@ -275,6 +275,8 @@ class SingleFit():
         notelist=list()
         notelist.append("RMSE: %3.3f" % self.statistics['rmse'])
         notelist.append("R-squared: %3.3f" % self.statistics['rsquared'])
+        notelist.append("Mean error: %3.3f" % self.statistics['mean_error'])
+        notelist.append("Mean abs error: %3.3f" % self.statistics['mean_absolute_error'])
         plot_kwargs['notelist'] = notelist
         plot_kwargs['save_path'] = self.save_path
         plot_kwargs['xerr'] = self.testing_dataset.target_error_data
