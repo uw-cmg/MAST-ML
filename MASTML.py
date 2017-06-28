@@ -188,6 +188,16 @@ class MASTMLDriver(object):
             original_columns = list(dataframe.columns)
             # Remove any missing rows from dataframe
             dataframe = dataframe.dropna()
+            
+            # Save off label and grouping data
+            dataframe_labeled = pd.DataFrame()
+            dataframe_grouped = pd.DataFrame()
+            if not (labeling_features is None):
+                dataframe_labeled = FeatureIO(dataframe=dataframe).keep_custom_features(features_to_keep=labeling_features, y_feature=y_feature)
+                if normalize_features:
+                    dataframe_labeled, scaler = FeatureNormalization(dataframe=dataframe_labeled).normalize_features(x_features=labeling_features, y_feature=y_feature)
+            if not (grouping_feature is None):
+                dataframe_grouped = FeatureIO(dataframe=dataframe).keep_custom_features(features_to_keep=[grouping_feature], y_feature=y_feature)
 
             # Generate additional descriptors, as specified in input file (optional)
             if generate_features:
@@ -196,6 +206,7 @@ class MASTMLDriver(object):
             
             # First remove features containing strings before doing feature normalization or other operations, but don't remove grouping features
             x_features, dataframe_nostrings = MiscFeatureOperations(configdict=self.configdict).remove_features_containing_strings(dataframe=dataframe, x_features=x_features)
+            logging.debug("pre-changes:%s" % dataframe_nostrings.columns)
 
             # Normalize features (optional)
             if normalize_features:
@@ -212,8 +223,9 @@ class MASTMLDriver(object):
                     if feature not in x_features and feature not in y_feature:
                         features_to_remove.append(feature)
                 dataframe_nostrings = FeatureIO(dataframe=dataframe_nostrings).remove_custom_features(features_to_remove=features_to_remove)
-                dataframe_nostrings = self._perform_feature_selection(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
+                dataframe_nostrings = self._perform_feature_selection(dataframe=dataframe_nostrings, x_features=x_features, y_feature=y_feature)
                 x_features, y_feature = DataParser(configdict=self.configdict).get_features(dataframe=dataframe_nostrings, target_feature=y_feature)
+            logging.debug("post-removal:%s" % dataframe_nostrings.columns)
             # Combine the input dataframe, which has undergone feature generation and normalization, with the grouped and labeled features of original dataframe
             # First, need to generate dataframe that only has the grouped and labeled features
             grouping_and_labeling_features = []
@@ -227,27 +239,22 @@ class MASTMLDriver(object):
                         if feature not in duplicate_features:
                             duplicate_features.append(feature)
 
-            dataframe_labeled = pd.DataFrame()
-            dataframe_grouped = pd.DataFrame()
-            if not (labeling_features is None):
-                dataframe_labeled = FeatureIO(dataframe=dataframe).keep_custom_features(features_to_keep=labeling_features, y_feature=y_feature)
-                if normalize_features:
-                    dataframe_labeled, scaler = FeatureNormalization(dataframe=dataframe_labeled).normalize_features(x_features=labeling_features, y_feature=y_feature)
-            if not (grouping_feature is None):
-                dataframe_grouped = FeatureIO(dataframe=dataframe).keep_custom_features(features_to_keep=[grouping_feature], y_feature=y_feature)
 
             # Now merge dataframes
             dataframe_labeled_grouped = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe_labeled, dataframe2=dataframe_grouped)
             dataframe_merged = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe_nostrings, dataframe2=dataframe_labeled_grouped)
 
             # Need to remove duplicate features after merging.
+            logging.debug("merged:%s" % dataframe_merged.columns)
             dataframe_rem = FeatureIO(dataframe=dataframe_merged).remove_duplicate_columns()
 
             myXdata, myydata, myx_features, myy_feature, dataframe_final = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe_rem, target_feature=y_feature)
             combined_x_features = list()
+            logging.debug("total features:%s" % myx_features)
             for feature in myx_features:
-                if (feature in original_x_features) or not(feature in original_columns): #originally designated, or created from feature selection
+                if (feature in original_x_features) or not(feature in original_columns): #originally designated, or created from feature generation
                     combined_x_features.append(feature)
+            logging.debug("combined x features:%s" % combined_x_features)
             data_dict[data_name] = DataHandler(data = dataframe_final,
                                 input_data = dataframe_final[combined_x_features],
                                 target_data = myydata,
