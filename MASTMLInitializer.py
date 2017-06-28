@@ -219,8 +219,8 @@ class MASTMLWrapper(object):
                                  alpha=float(self.configdict['Model Parameters']['nn_model']['alpha']),
                                  batch_size='auto',
                                  learning_rate='constant',
-                                 max_iter=int(self.configdict['Model Parameters']['nn_model']['max_iterations']),
-                                 tol=float(self.configdict['Model Parameters']['nn_model']['tolerance']))
+                                 max_iter=int(self.configdict['Model Parameters']['nn_model']['max_iter']),
+                                 tol=float(self.configdict['Model Parameters']['nn_model']['tol']))
             return model
         else:
             raise TypeError('You have specified an invalid model_type name in your input file')

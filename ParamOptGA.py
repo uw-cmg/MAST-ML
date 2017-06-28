@@ -10,6 +10,7 @@ from FeatureOperations import FeatureIO
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.neural_network import MLPRegressor
 from multiprocessing import Process,Pool,TimeoutError,Value,Array,Manager
 import time
 from custom_features import cf_help
@@ -35,6 +36,13 @@ def print_genome(genome=None, preface="", model=None):
             elif isinstance(model, RandomForestRegressor):
                 if geneidx in ['n_estimators', 'max_depth', 'min_samples_split', 'min_samples_leaf', 'max_leaf_nodes', 'n_jobs']:
                     geneval = int(100*(float(geneval))) #whole numbers
+            elif isinstance(model, MLPRegressor):
+                if geneidx in ['hidden_layer_sizes']:
+                    geneval = int(100*(float(geneval))) #whole numbers
+                elif geneidx in ['alpha']:
+                    geneval = 10**(float(geneval)*(-6))
+                elif geneidx in ['max_iter']:
+                    geneval = int(1000*(float(geneval))) #whole numbers 10-1000
             else:
                 raise ValueError("Model type %s not supported" % model)
             genedisp=""
@@ -130,6 +138,17 @@ class GAIndividual():
                 max_leaf_nodes = int(100*float(self.genome['model']['max_leaf_nodes'])),
                 n_jobs = int(100*float(self.genome['model']['n_jobs'])),
                 criterion = self.model.criterion)
+        elif isinstance(self.model, MLPRegressor):
+            if self.genome['model']['max_iter'] < 0.01:
+                self.genome['model']['max_iter'] = 0.01 #has to be at least 10 (will be multiplied by 1000)
+            if self.genome['model']['hidden_layer_sizes'] < 0.01:
+                self.genome['model']['hidden_layer_sizes'] = 0.01 #has to be at least 1
+            self.model = MLPRegressor(
+                hidden_layer_sizes = int(100*(float(self.genome['model']['hidden_layer_sizes']))),
+                max_iter = int(1000*(float(self.genome['model']['max_iter']))),
+                alpha = 10**(float(self.genome['model']['alpha'])*(-6)), 
+                activation = self.model.activation,
+                solver = self.model.solver)
         else:
             raise ValueError("Model type %s not supported" % self.model)
         return
@@ -658,6 +677,10 @@ class ParamOptGA(SingleFit):
             hp_dict['model']['min_samples_leaf']=None
             hp_dict['model']['max_leaf_nodes']=None
             hp_dict['model']['n_jobs']=None
+        elif isinstance(self.model, MLPRegressor):
+            hp_dict['model']['max_iter']=None
+            hp_dict['model']['alpha']=None
+            hp_dict['model']['hidden_layer_sizes']=None
         else:
             raise ValueError("Model type %s not supported." % self.model)
         self.hp_dict=dict(hp_dict)
