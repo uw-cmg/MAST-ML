@@ -44,7 +44,7 @@ setup(
                 "matplotlib>=1.5.3",
                 "configobj>=5.0.6",
                 #"validator",
-                "matminer>=0.0.9",
+                #"matminer>=0.0.9",
                 "scikit-learn>=0.18.1",
                 "pymongo>=3.4.0",
                 "pymatgen>=4.6.0",
