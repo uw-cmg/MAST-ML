@@ -39,7 +39,7 @@
             
   <h1>Source code for LeaveOutGroupCV</h1><div class="highlight"><pre>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">plot_data.plot_rmse</span> <span class="kn">as</span> <span class="nn">plotrmse</span>
+<span class="kn">from</span> <span class="nn">plot_data.PlotHelper</span> <span class="kn">import</span> <span class="n">PlotHelper</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">LeaveOutPercentCV</span> <span class="kn">import</span> <span class="n">LeaveOutPercentCV</span>
 <span class="kn">from</span> <span class="nn">SingleFit</span> <span class="kn">import</span> <span class="n">timeit</span>
@@ -128,9 +128,14 @@
                                     <span class="bp">self</span><span class="o">.</span><span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s1">&#39;rmse&#39;</span><span class="p">]))</span>
         <span class="n">group_rms_list</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span> <span class="c1">#sorts by group</span>
         <span class="n">group_rms_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">group_rms_list</span><span class="p">)</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;rms_list&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">group_rms_array</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;group_list&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">group_rms_array</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">plotrmse</span><span class="o">.</span><span class="n">vs_leftoutgroup</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;xdatalist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">group_rms_array</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;ydatalist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">group_rms_array</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span><span class="s1">&#39;float&#39;</span><span class="p">)]</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;xerrlist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="bp">None</span><span class="p">]</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;yerrlist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="bp">None</span><span class="p">]</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;labellist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;predicted_rmse&#39;</span><span class="p">]</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;plotlabel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;leave_out_group&quot;</span>
+        <span class="n">myph</span> <span class="o">=</span> <span class="n">PlotHelper</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">myph</span><span class="o">.</span><span class="n">plot_rmse_vs_text</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Plot leave_out_group.png created.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span>
 

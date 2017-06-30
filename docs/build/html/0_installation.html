@@ -1,0 +1,219 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installing MASTML &mdash; MAST-ml 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="MAST-ml 1.0 documentation" href="index.html" />
+    <link rel="next" title="Troubleshooting" href="1_troubleshooting.html" />
+    <link rel="prev" title="MASTML Documentation" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="installing-mastml">
+<h1>Installing MASTML<a class="headerlink" href="#installing-mastml" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="hardware">
+<h3>Hardware<a class="headerlink" href="#hardware" title="Permalink to this headline">¶</a></h3>
+<p>Computer capable of running python 3.</p>
+</div>
+<div class="section" id="data">
+<h3>Data<a class="headerlink" href="#data" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Numeric data in a CSV file. There must be at least some target feature data, so that models can be fit.</li>
+<li>(Advanced: Data in a database with an associated python class that can extract the data to a CSV file.)</li>
+</ul>
+</div>
+</div>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="install-python3">
+<h3>Install Python3<a class="headerlink" href="#install-python3" title="Permalink to this headline">¶</a></h3>
+<p>Install Python 3: for easier installation of numpy and scipy dependencies, use either:</p>
+<ul class="simple">
+<li>anaconda <a class="reference external" href="https://www.continuum.io/downloads">https://www.continuum.io/downloads</a> OR</li>
+<li>conda lite <a class="reference external" href="https://conda.io/miniconda.html">https://conda.io/miniconda.html</a></li>
+</ul>
+<p>Create a conda environment:</p>
+<p>Anaconda:</p>
+<div class="highlight-python"><div class="highlight"><pre>conda create --name TEST_ML numpy scipy matplotlib pandas sphinx nose
+</pre></div>
+</div>
+<p>Miniconda:</p>
+<div class="highlight-python"><div class="highlight"><pre>conda create --name TEST_ML
+</pre></div>
+</div>
+<p>Activate the environment:</p>
+<div class="highlight-python"><div class="highlight"><pre>source activate TEST_ML
+(For Windows: activate TEST_ML)
+</pre></div>
+</div>
+</div>
+<div class="section" id="install-the-mast-ml-private-package">
+<h3>Install the MAST-ml-private package<a class="headerlink" href="#install-the-mast-ml-private-package" title="Permalink to this headline">¶</a></h3>
+<p>Git clone the repository  (github.com/uw-cmg/MAST-ml-private)
+Clone from “master”
+Ask for access if you cannot find this code.</p>
+<p>Check status.github.com for issues if you believe github may be malfunctioning</p>
+<p><code class="docutils literal"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">install</span></code> (inside the MAST-ml-private folder) (might not work)
+If “SyntaxError: Invalid syntax” occurs at lines 16, 17, or 34 try wrapping prints in () for windows [e.g. print (&#8220;Python Version %d.%d.%d found&#8221; % (sys.version_info[0], sys.version_info[1], sys.version_info[2])) ]</p>
+<p>If setup.py didn’t work, dependencies you need are:</p>
+<p>numpy&gt;=1.11.2
+scipy&gt;=0.18.1
+pandas&gt;=0.19.2
+matplotlib&gt;=1.5.3
+configobj&gt;=5.0.6
+validator
+scikit-learn&gt;=0.18.1
+pymongo&gt;=3.4.0
+pymatgen&gt;=4.6.0
+PeakUtils&gt;=1.0.3</p>
+<div class="section" id="imports-that-dont-work">
+<h4>imports that don’t work<a class="headerlink" href="#imports-that-dont-work" title="Permalink to this headline">¶</a></h4>
+<p>First try anaconda install, and if that gives errors try pip install
+Example: conda install numpy , or pip install numpy
+Put MAST-ml-private’s folder in your PYTHONPATH if it isn’t already
+Adding to PYTHONPATH and getting it to stay there
+If you get a missing import error, go ahead and install any other missing packages and submit a github ticket.</p>
+</div>
+</div>
+</div>
+<div class="section" id="startup">
+<h2>Startup<a class="headerlink" href="#startup" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="set-up-a-folder">
+<h3>Set up a folder<a class="headerlink" href="#set-up-a-folder" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li>Make a folder (let’s call it my_test)</li>
+<li>Copy basic_test_data.csv into this folder.</li>
+<li>Copy the mastmlvalidation*.conf files (both of them) into this folder. In the General Setup section, these mastmlvalidation*.conf files should read save_path = string (etc; keyword and then type)</li>
+<li>Copy basicinput.conf into this folder</li>
+<li>Change directories to be in this folder (cd my_test)</li>
+</ol>
+</div>
+<div class="section" id="run-the-mastml-command">
+<h3>Run the MASTML command<a class="headerlink" href="#run-the-mastml-command" title="Permalink to this headline">¶</a></h3>
+<p>Format is <code class="docutils literal"><span class="pre">python</span> <span class="pre">&lt;path</span> <span class="pre">to</span> <span class="pre">MASTML&gt;/MASTML.py</span> <span class="pre">&lt;config</span> <span class="pre">file</span> <span class="pre">name&gt;</span></code></p>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre>python MAST-ml-private/MASTML.py basicinput.conf
+</pre></div>
+</div>
+<p>This is a terminal command. If using Anaconda GUI, try using Anaconda’s Python Shell</p>
+</div>
+<div class="section" id="check-output">
+<h3>Check output<a class="headerlink" href="#check-output" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal"><span class="pre">index.html</span></code> should be created, linking to certain representative plots for each test. (see test/main_test/index.html for an example)</p>
+<p>Output will be located in subfolders in your test folder (e.g. “my_test/SingleFit…”) and should also be available as links in index.html</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Installing MASTML</a><ul>
+<li><a class="reference internal" href="#requirements">Requirements</a><ul>
+<li><a class="reference internal" href="#hardware">Hardware</a></li>
+<li><a class="reference internal" href="#data">Data</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#installation">Installation</a><ul>
+<li><a class="reference internal" href="#install-python3">Install Python3</a></li>
+<li><a class="reference internal" href="#install-the-mast-ml-private-package">Install the MAST-ml-private package</a><ul>
+<li><a class="reference internal" href="#imports-that-dont-work">imports that don’t work</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#startup">Startup</a><ul>
+<li><a class="reference internal" href="#set-up-a-folder">Set up a folder</a></li>
+<li><a class="reference internal" href="#run-the-mastml-command">Run the MASTML command</a></li>
+<li><a class="reference internal" href="#check-output">Check output</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">MASTML Documentation</a></li>
+      <li>Next: <a href="1_troubleshooting.html" title="next chapter">Troubleshooting</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/0_installation.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, UW-Madison Computational Materials Group.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+      |
+      <a href="_sources/0_installation.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

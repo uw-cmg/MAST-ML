@@ -42,7 +42,7 @@
 <h2>Single fits<a class="headerlink" href="#single-fits" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="SingleFit.SingleFit">
-<em class="property">class </em><code class="descclassname">SingleFit.</code><code class="descname">SingleFit</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='Measured'</em>, <em>ylabel='Predicted'</em>, <em>stepsize=None</em>, <em>plot_filter_out=None</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SingleFit.html#SingleFit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#SingleFit.SingleFit" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">SingleFit.</code><code class="descname">SingleFit</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='Measured'</em>, <em>ylabel='Predicted'</em>, <em>plot_filter_out=None</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SingleFit.html#SingleFit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#SingleFit.SingleFit" title="Permalink to this definition">¶</a></dt>
 <dd><p>This is the basic analysis class.</p>
 <p>This class provides a template for other classes. Combine many classes 
 to do meta-analysis.</p>
@@ -54,7 +54,6 @@ model &lt;sklearn model&gt;: Machine-learning model
 save_path &lt;str&gt;: Save path
 xlabel &lt;str&gt;: Label for full-fit x-axis (default &#8220;Measured&#8221;)
 ylabel &lt;str&gt;: Label for full-fit y-axis (default &#8220;Predicted&#8221;)
-stepsize &lt;float&gt;: Step size for plot grid (default None)
 plot_filter_out &lt;list&gt;: List of semicolon-delimited strings with</p>
 <blockquote class="last">
 <div>feature;operator;value for filtering out
@@ -150,7 +149,7 @@ ValueError if testing target data is None; has to have at least</p>
 <h2>Cross validation<a class="headerlink" href="#cross-validation" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="KFoldCV.KFoldCV">
-<em class="property">class </em><code class="descclassname">KFoldCV.</code><code class="descname">KFoldCV</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='Measured'</em>, <em>ylabel='Predicted'</em>, <em>stepsize=1</em>, <em>mark_outlying_points=None</em>, <em>num_cvtests=10</em>, <em>fix_random_for_testing=0</em>, <em>num_folds=2</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/KFoldCV.html#KFoldCV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#KFoldCV.KFoldCV" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">KFoldCV.</code><code class="descname">KFoldCV</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='Measured'</em>, <em>ylabel='Predicted'</em>, <em>mark_outlying_points=None</em>, <em>num_cvtests=10</em>, <em>fix_random_for_testing=0</em>, <em>num_folds=2</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/KFoldCV.html#KFoldCV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#KFoldCV.KFoldCV" title="Permalink to this definition">¶</a></dt>
 <dd><p>KFold cross validation</p>
 <dl class="docutils">
 <dt>Args:</dt>
@@ -160,7 +159,6 @@ model,
 save_path,
 xlabel, 
 ylabel,
-stepsize,
 mark_outlying_points,
 num_cvtests,
 fix_random_for_testing, see parent class.
@@ -184,7 +182,7 @@ Plots results in a predicted vs. measured square plot.</dd>
 
 <dl class="class">
 <dt id="LeaveOneOutCV.LeaveOneOutCV">
-<em class="property">class </em><code class="descclassname">LeaveOneOutCV.</code><code class="descname">LeaveOneOutCV</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='Measured'</em>, <em>ylabel='Predicted'</em>, <em>stepsize=1</em>, <em>mark_outlying_points=None</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LeaveOneOutCV.html#LeaveOneOutCV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LeaveOneOutCV.LeaveOneOutCV" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">LeaveOneOutCV.</code><code class="descname">LeaveOneOutCV</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='Measured'</em>, <em>ylabel='Predicted'</em>, <em>mark_outlying_points=None</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LeaveOneOutCV.html#LeaveOneOutCV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LeaveOneOutCV.LeaveOneOutCV" title="Permalink to this definition">¶</a></dt>
 <dd><p>leave-one-out cross validation</p>
 <dl class="docutils">
 <dt>Args:</dt>
@@ -194,7 +192,6 @@ model,
 save_path,
 xlabel, 
 ylabel,
-stepsize,
 mark_outlying_points (Use only 1 number), see parent class.</dd>
 <dt>Returns:</dt>
 <dd>Analysis in the save_path folder
@@ -215,7 +212,7 @@ Plots results in a predicted vs. measured square plot.</dd>
 
 <dl class="class">
 <dt id="LeaveOutPercentCV.LeaveOutPercentCV">
-<em class="property">class </em><code class="descclassname">LeaveOutPercentCV.</code><code class="descname">LeaveOutPercentCV</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='Measured'</em>, <em>ylabel='Predicted'</em>, <em>stepsize=1</em>, <em>mark_outlying_points=None</em>, <em>percent_leave_out=20</em>, <em>num_cvtests=10</em>, <em>fix_random_for_testing=0</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LeaveOutPercentCV.html#LeaveOutPercentCV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LeaveOutPercentCV.LeaveOutPercentCV" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">LeaveOutPercentCV.</code><code class="descname">LeaveOutPercentCV</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='Measured'</em>, <em>ylabel='Predicted'</em>, <em>mark_outlying_points=None</em>, <em>percent_leave_out=20</em>, <em>num_cvtests=10</em>, <em>fix_random_for_testing=0</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LeaveOutPercentCV.html#LeaveOutPercentCV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LeaveOutPercentCV.LeaveOutPercentCV" title="Permalink to this definition">¶</a></dt>
 <dd><p>Leave out percent cross validation</p>
 <dl class="docutils">
 <dt>Args:</dt>
@@ -224,8 +221,7 @@ testing_dataset, (Should be the same as training_dataset)
 model,
 save_path,
 xlabel, 
-ylabel,
-stepsize, see parent class.
+ylabel, see parent class.
 mark_outlying_points &lt;list of int&gt;: Number of outlying points to mark in best and worst tests, e.g. [0,3]
 percent_leave_out &lt;int&gt;: Percent to leave out
 num_cvtests &lt;int&gt;: Number of CV tests (K folds in a KFoldCV is 1 test)
@@ -289,7 +285,7 @@ ValueError if testing target data is None; CV must have</p>
 <h2>Other<a class="headerlink" href="#other" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="PlotNoAnalysis.PlotNoAnalysis">
-<em class="property">class </em><code class="descclassname">PlotNoAnalysis.</code><code class="descname">PlotNoAnalysis</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='X'</em>, <em>ylabel='Y'</em>, <em>plot_filter_out=None</em>, <em>feature_plot_feature=None</em>, <em>data_labels=None</em>, <em>timex=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PlotNoAnalysis.html#PlotNoAnalysis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PlotNoAnalysis.PlotNoAnalysis" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">PlotNoAnalysis.</code><code class="descname">PlotNoAnalysis</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='X'</em>, <em>ylabel='Y'</em>, <em>plot_filter_out=None</em>, <em>feature_plot_feature=None</em>, <em>data_labels=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PlotNoAnalysis.html#PlotNoAnalysis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PlotNoAnalysis.PlotNoAnalysis" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plotting without analysis
 Args:</p>
 <blockquote>
@@ -301,7 +297,6 @@ xlabel,
 ylabel,
 plot_filter_out, see parent class.
 feature_plot_feature &lt;str&gt;: Feature to plot on x-axis, against target feature
-timex &lt;str&gt;: Time format string, if x-axis is a time
 data_labels &lt;list of str&gt;: Dataset labels</div></blockquote>
 <dl class="docutils">
 <dt>Returns:</dt>
@@ -323,7 +318,7 @@ data_labels is None</dd>
 
 <dl class="class">
 <dt id="PredictionVsFeature.PredictionVsFeature">
-<em class="property">class </em><code class="descclassname">PredictionVsFeature.</code><code class="descname">PredictionVsFeature</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='Measured'</em>, <em>ylabel='Predicted'</em>, <em>stepsize=1</em>, <em>plot_filter_out=''</em>, <em>feature_plot_xlabel='X'</em>, <em>feature_plot_ylabel='Prediction'</em>, <em>feature_plot_feature=None</em>, <em>markers=''</em>, <em>outlines=''</em>, <em>data_labels=''</em>, <em>linestyles=''</em>, <em>legendloc=None</em>, <em>sizes=''</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PredictionVsFeature.html#PredictionVsFeature"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PredictionVsFeature.PredictionVsFeature" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">PredictionVsFeature.</code><code class="descname">PredictionVsFeature</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='Measured'</em>, <em>ylabel='Predicted'</em>, <em>plot_filter_out=''</em>, <em>feature_plot_xlabel='X'</em>, <em>feature_plot_ylabel='Prediction'</em>, <em>feature_plot_feature=None</em>, <em>markers=''</em>, <em>outlines=''</em>, <em>data_labels=''</em>, <em>linestyles=''</em>, <em>legendloc=None</em>, <em>sizes=''</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PredictionVsFeature.html#PredictionVsFeature"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PredictionVsFeature.PredictionVsFeature" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make prediction vs. feature plots from a single fit.</p>
 <dl class="docutils">
 <dt>Args:</dt>
@@ -333,7 +328,6 @@ model,
 save_path,
 xlabel,
 ylabel,
-stepsize,
 plot_filter_out, see parent class.
 feature_plot_xlabel &lt;str&gt;: x-axis label for per-group plots of predicted and</p>
 <blockquote>

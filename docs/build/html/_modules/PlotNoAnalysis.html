@@ -39,7 +39,7 @@
             
   <h1>Source code for PlotNoAnalysis</h1><div class="highlight"><pre>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">plot_data.plot_xy</span> <span class="kn">as</span> <span class="nn">plotxy</span>
+<span class="kn">from</span> <span class="nn">plot_data.PlotHelper</span> <span class="kn">import</span> <span class="n">PlotHelper</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">SingleFit</span> <span class="kn">import</span> <span class="n">SingleFit</span>
 <span class="kn">from</span> <span class="nn">SingleFit</span> <span class="kn">import</span> <span class="n">timeit</span>
@@ -59,7 +59,6 @@
 <span class="sd">        ylabel,</span>
 <span class="sd">        plot_filter_out, see parent class.</span>
 <span class="sd">        feature_plot_feature &lt;str&gt;: Feature to plot on x-axis, against target feature</span>
-<span class="sd">        timex &lt;str&gt;: Time format string, if x-axis is a time</span>
 <span class="sd">        data_labels &lt;list of str&gt;: Dataset labels</span>
 <span class="sd">    Returns:</span>
 <span class="sd">        Plots target data against feature data, by group if a grouping feature</span>
@@ -79,14 +78,12 @@
             <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span>
             <span class="n">plot_filter_out</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
             <span class="n">feature_plot_feature</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-            <span class="n">data_labels</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-            <span class="n">timex</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+            <span class="n">data_labels</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Additional attributes to parent class:</span>
 <span class="sd">            self.testing_datasets &lt;list&gt;: List of testing datasets which</span>
 <span class="sd">                        will be plotted simultaneously</span>
 <span class="sd">            self.feature_plot_feature &lt;str&gt;: Feature to plot on x-axis</span>
-<span class="sd">            self.timex &lt;str&gt;: Time format string, if x-axis is a time</span>
 <span class="sd">            self.data_labels &lt;list of str&gt;: Labels for datasets</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">SingleFit</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -105,7 +102,6 @@
             <span class="k">if</span> <span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_data</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No testing target data for dataset </span><span class="si">%i</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">tidx</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">feature_plot_feature</span> <span class="o">=</span> <span class="n">feature_plot_feature</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">timex</span> <span class="o">=</span> <span class="n">timex</span>
         <span class="k">if</span> <span class="n">data_labels</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;data_labels is not set&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_labels</span> <span class="o">=</span> <span class="bp">None</span>
@@ -192,7 +188,6 @@
         <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;labellist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_labels</span>
         <span class="c1">#kwargs[&#39;faces&#39;] = [&quot;None&quot;] * len(self.data_labels)</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;save_path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_path</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;timex&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">timex</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;xlabel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlabel</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;ylabel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ylabel</span>
         <span class="n">notelist</span><span class="o">=</span><span class="nb">list</span><span class="p">()</span>
@@ -201,7 +196,8 @@
         <span class="c1">#    for (feature, symbol, threshold) in self.plot_filter_out:</span>
         <span class="c1">#        notelist.append(&quot;  %s %s %s&quot; % (feature, symbol, threshold))</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;notelist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">notelist</span>
-        <span class="n">plotxy</span><span class="o">.</span><span class="n">multiple_overlay</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">myph</span> <span class="o">=</span> <span class="n">PlotHelper</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">myph</span><span class="o">.</span><span class="n">multiple_overlay</span><span class="p">()</span>
         <span class="c1">#if do_fft == 1:</span>
         <span class="c1">#    plotxy.single(xdata, fft(ydata), **kwargs)</span>
         <span class="k">return</span></div>

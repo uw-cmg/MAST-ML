@@ -42,7 +42,7 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">SingleFit</span> <span class="kn">import</span> <span class="n">timeit</span>
 <span class="kn">from</span> <span class="nn">SingleFit</span> <span class="kn">import</span> <span class="n">SingleFit</span>
-<span class="kn">import</span> <span class="nn">plot_data.plot_from_dict</span> <span class="kn">as</span> <span class="nn">plotdict</span>
+<span class="kn">from</span> <span class="nn">plot_data.PlotHelper</span> <span class="kn">import</span> <span class="n">PlotHelper</span>
 <span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 
@@ -56,7 +56,6 @@
 <span class="sd">        save_path,</span>
 <span class="sd">        xlabel,</span>
 <span class="sd">        ylabel,</span>
-<span class="sd">        stepsize,</span>
 <span class="sd">        plot_filter_out, see parent class.</span>
 <span class="sd">        feature_plot_xlabel &lt;str&gt;: x-axis label for per-group plots of predicted and</span>
 <span class="sd">                                measured y data versus data from field of</span>
@@ -81,7 +80,6 @@
         <span class="n">save_path</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
         <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Measured&quot;</span><span class="p">,</span>
         <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Predicted&quot;</span><span class="p">,</span>
-        <span class="n">stepsize</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
         <span class="n">plot_filter_out</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="n">feature_plot_xlabel</span> <span class="o">=</span> <span class="s2">&quot;X&quot;</span><span class="p">,</span>
         <span class="n">feature_plot_ylabel</span> <span class="o">=</span> <span class="s2">&quot;Prediction&quot;</span><span class="p">,</span>
@@ -119,7 +117,6 @@
             <span class="n">save_path</span> <span class="o">=</span> <span class="n">save_path</span><span class="p">,</span>
             <span class="n">xlabel</span><span class="o">=</span><span class="n">xlabel</span><span class="p">,</span>
             <span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span>
-            <span class="n">stepsize</span><span class="o">=</span><span class="n">stepsize</span><span class="p">,</span>
             <span class="n">plot_filter_out</span> <span class="o">=</span> <span class="n">plot_filter_out</span><span class="p">)</span>
         <span class="c1">#Sets by keyword</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">testing_datasets</span> <span class="o">=</span> <span class="n">testing_dataset</span> <span class="c1">#expect a list of one or more testing datasets</span>
@@ -165,7 +162,6 @@
                 <span class="n">save_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_path</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">testset</span><span class="p">)),</span>
                 <span class="n">xlabel</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">xlabel</span><span class="p">,</span>
                 <span class="n">ylabel</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ylabel</span><span class="p">,</span>
-                <span class="n">stepsize</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stepsize</span><span class="p">,</span>
                 <span class="n">plot_filter_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_filter_out</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sf_dict</span><span class="p">[</span><span class="n">testset</span><span class="p">]</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
         <span class="k">return</span></div>
@@ -253,16 +249,16 @@
         <span class="n">addl_kwargs</span><span class="p">[</span><span class="s1">&#39;linestyles&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">linestyles</span>
         <span class="n">addl_kwargs</span><span class="p">[</span><span class="s1">&#39;legendloc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">legendloc</span>
         <span class="n">addl_kwargs</span><span class="p">[</span><span class="s1">&#39;sizes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sizes</span>
-        <span class="n">addl_kwargs</span><span class="p">[</span><span class="s1">&#39;stepsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stepsize</span>
         <span class="n">faces</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">fidx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">markers</span><span class="p">)):</span>
             <span class="n">faces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;None&quot;</span><span class="p">)</span>
         <span class="n">addl_kwargs</span><span class="p">[</span><span class="s1">&#39;faces&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">faces</span>
-        <span class="n">plotdict</span><span class="o">.</span><span class="n">plot_group_splits_with_outliers</span><span class="p">(</span><span class="n">group_dict</span><span class="o">=</span><span class="n">pdict</span><span class="p">,</span>
-            <span class="n">outlying_groups</span> <span class="o">=</span> <span class="n">series_list</span><span class="p">,</span>
-            <span class="n">label</span><span class="o">=</span><span class="n">plabel</span><span class="p">,</span>
-            <span class="n">group_notelist</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">group_notelist</span><span class="p">),</span>
-            <span class="n">addl_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">addl_kwargs</span><span class="p">))</span>
+        <span class="n">addl_kwargs</span><span class="p">[</span><span class="s1">&#39;group_dict&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pdict</span>
+        <span class="n">addl_kwargs</span><span class="p">[</span><span class="s1">&#39;plotlabel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">plabel</span>
+        <span class="n">addl_kwargs</span><span class="p">[</span><span class="s1">&#39;outlying_groups&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">series_list</span>
+        <span class="n">addl_kwargs</span><span class="p">[</span><span class="s1">&#39;notelist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">group_notelist</span><span class="p">)</span>
+        <span class="n">myph</span> <span class="o">=</span> <span class="n">PlotHelper</span><span class="p">(</span><span class="o">**</span><span class="n">addl_kwargs</span><span class="p">)</span>
+        <span class="n">myph</span><span class="o">.</span><span class="n">plot_group_splits_with_outliers</span><span class="p">()</span>
         <span class="k">return</span></div>
 
 </pre></div>

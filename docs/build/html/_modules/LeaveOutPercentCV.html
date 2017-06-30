@@ -42,7 +42,7 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">ShuffleSplit</span>
 <span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">mean_squared_error</span>
-<span class="kn">import</span> <span class="nn">plot_data.plot_xy</span> <span class="kn">as</span> <span class="nn">plotxy</span>
+<span class="kn">from</span> <span class="nn">plot_data.PlotHelper</span> <span class="kn">import</span> <span class="n">PlotHelper</span>
 <span class="kn">from</span> <span class="nn">SingleFit</span> <span class="kn">import</span> <span class="n">SingleFit</span>
 <span class="kn">from</span> <span class="nn">SingleFit</span> <span class="kn">import</span> <span class="n">timeit</span>
 
@@ -55,8 +55,7 @@
 <span class="sd">        model,</span>
 <span class="sd">        save_path,</span>
 <span class="sd">        xlabel, </span>
-<span class="sd">        ylabel,</span>
-<span class="sd">        stepsize, see parent class.</span>
+<span class="sd">        ylabel, see parent class.</span>
 <span class="sd">        mark_outlying_points &lt;list of int&gt;: Number of outlying points to mark in best and worst tests, e.g. [0,3]</span>
 <span class="sd">        percent_leave_out &lt;int&gt;: Percent to leave out</span>
 <span class="sd">        num_cvtests &lt;int&gt;: Number of CV tests (K folds in a KFoldCV is 1 test)</span>
@@ -77,7 +76,6 @@
         <span class="n">save_path</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
         <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Measured&quot;</span><span class="p">,</span>
         <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Predicted&quot;</span><span class="p">,</span>
-        <span class="n">stepsize</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
         <span class="n">mark_outlying_points</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
         <span class="n">percent_leave_out</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
         <span class="n">num_cvtests</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
@@ -105,8 +103,7 @@
             <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> 
             <span class="n">save_path</span> <span class="o">=</span> <span class="n">save_path</span><span class="p">,</span>
             <span class="n">xlabel</span><span class="o">=</span><span class="n">xlabel</span><span class="p">,</span>
-            <span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span>
-            <span class="n">stepsize</span><span class="o">=</span><span class="n">stepsize</span><span class="p">)</span>
+            <span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mark_outlying_points</span> <span class="o">=</span> <span class="n">mark_outlying_points</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">percent_leave_out</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">percent_leave_out</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_cvtests</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">num_cvtests</span><span class="p">)</span>
@@ -239,14 +236,14 @@
         <span class="n">kwargs2</span><span class="p">[</span><span class="s1">&#39;guideline&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="n">kwargs2</span><span class="p">[</span><span class="s1">&#39;plotlabel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;best_worst_overlay&quot;</span>
         <span class="n">kwargs2</span><span class="p">[</span><span class="s1">&#39;save_path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_path</span>
-        <span class="n">kwargs2</span><span class="p">[</span><span class="s1">&#39;stepsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stepsize</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mark_outlying_points</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">):</span>
             <span class="n">kwargs2</span><span class="p">[</span><span class="s1">&#39;marklargest&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mark_outlying_points</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">labeling_features</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Must specify some labeling features if you want to mark the largest outlying points&quot;</span><span class="p">)</span>
             <span class="n">labels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">labeling_features</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
             <span class="n">kwargs2</span><span class="p">[</span><span class="s1">&#39;mlabellist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">([</span><span class="n">labels</span><span class="p">,</span><span class="n">labels</span><span class="p">])</span>
-        <span class="n">plotxy</span><span class="o">.</span><span class="n">multiple_overlay</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs2</span><span class="p">)</span>
+        <span class="n">myph</span> <span class="o">=</span> <span class="n">PlotHelper</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs2</span><span class="p">)</span>
+        <span class="n">myph</span><span class="o">.</span><span class="n">multiple_overlay</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Plot best_worst_overlay.png created,</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;    showing the best and worst of </span><span class="si">%i</span><span class="s2"> tests.</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_cvtests</span><span class="p">)</span>
         <span class="k">return</span></div>

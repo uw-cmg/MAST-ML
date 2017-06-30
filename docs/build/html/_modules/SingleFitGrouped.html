@@ -40,7 +40,7 @@
   <h1>Source code for SingleFitGrouped</h1><div class="highlight"><pre>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">mean_squared_error</span>
-<span class="kn">import</span> <span class="nn">plot_data.plot_from_dict</span> <span class="kn">as</span> <span class="nn">plotdict</span>
+<span class="kn">from</span> <span class="nn">plot_data.PlotHelper</span> <span class="kn">import</span> <span class="n">PlotHelper</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">SingleFit</span> <span class="kn">import</span> <span class="n">SingleFit</span>
 <span class="kn">from</span> <span class="nn">SingleFit</span> <span class="kn">import</span> <span class="n">timeit</span>
@@ -237,13 +237,13 @@
         <span class="n">addl_kwargs</span><span class="p">[</span><span class="s1">&#39;xlabel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlabel</span>
         <span class="n">addl_kwargs</span><span class="p">[</span><span class="s1">&#39;ylabel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ylabel</span>
         <span class="n">addl_kwargs</span><span class="p">[</span><span class="s1">&#39;save_path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_path</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
-        <span class="n">addl_kwargs</span><span class="p">[</span><span class="s1">&#39;stepsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stepsize</span>
         <span class="n">addl_kwargs</span><span class="p">[</span><span class="s1">&#39;guideline&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="n">plotdict</span><span class="o">.</span><span class="n">plot_group_splits_with_outliers</span><span class="p">(</span><span class="n">group_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">group_dict</span><span class="p">),</span>
-            <span class="n">outlying_groups</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">outlying_groups</span><span class="p">),</span>
-            <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> 
-            <span class="n">group_notelist</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">group_notelist</span><span class="p">),</span>
-            <span class="n">addl_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">addl_kwargs</span><span class="p">))</span>
+        <span class="n">addl_kwargs</span><span class="p">[</span><span class="s1">&#39;group_dict&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">group_dict</span>
+        <span class="n">addl_kwargs</span><span class="p">[</span><span class="s1">&#39;outlying_groups&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">outlying_groups</span><span class="p">)</span>
+        <span class="n">addl_kwargs</span><span class="p">[</span><span class="s1">&#39;plotlabel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">label</span>
+        <span class="n">addl_kwargs</span><span class="p">[</span><span class="s1">&#39;notelist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">group_notelist</span><span class="p">)</span>
+        <span class="n">myph</span> <span class="o">=</span> <span class="n">PlotHelper</span><span class="p">(</span><span class="o">**</span><span class="n">addl_kwargs</span><span class="p">)</span>
+        <span class="n">myph</span><span class="o">.</span><span class="n">plot_group_splits_with_outliers</span><span class="p">()</span>
         <span class="k">return</span></div>
     
 </pre></div>

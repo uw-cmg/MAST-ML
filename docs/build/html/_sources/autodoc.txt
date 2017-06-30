@@ -2,12 +2,12 @@ Autodocumentation
 ======================
 
 ======================
-:doc:`autodoc_tests`
+:doc:`Tests </autodoc_tests>`
 ======================
 
-===============================
-:doc:`autodoc_support_classes`
-===============================
+========================================================================
+:doc:`Autodocumentation of  Support Classes </autodoc_support_classes>`
+========================================================================
 
 Indices and tables
 ==================

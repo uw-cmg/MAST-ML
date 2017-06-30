@@ -41,7 +41,7 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">LeaveOneOut</span>
-<span class="kn">import</span> <span class="nn">plot_data.plot_xy</span> <span class="kn">as</span> <span class="nn">plotxy</span>
+<span class="kn">from</span> <span class="nn">plot_data.PlotHelper</span> <span class="kn">import</span> <span class="n">PlotHelper</span>
 <span class="kn">from</span> <span class="nn">KFoldCV</span> <span class="kn">import</span> <span class="n">KFoldCV</span>
 <span class="kn">from</span> <span class="nn">SingleFit</span> <span class="kn">import</span> <span class="n">timeit</span>
 
@@ -55,7 +55,6 @@
 <span class="sd">        save_path,</span>
 <span class="sd">        xlabel, </span>
 <span class="sd">        ylabel,</span>
-<span class="sd">        stepsize,</span>
 <span class="sd">        mark_outlying_points (Use only 1 number), see parent class.</span>
 <span class="sd"> </span>
 <span class="sd">    Returns:</span>
@@ -72,7 +71,6 @@
         <span class="n">save_path</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
         <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Measured&quot;</span><span class="p">,</span>
         <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Predicted&quot;</span><span class="p">,</span>
-        <span class="n">stepsize</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
         <span class="n">mark_outlying_points</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
         <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -90,7 +88,6 @@
             <span class="n">save_path</span> <span class="o">=</span> <span class="n">save_path</span><span class="p">,</span>
             <span class="n">xlabel</span><span class="o">=</span><span class="n">xlabel</span><span class="p">,</span>
             <span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span>
-            <span class="n">stepsize</span><span class="o">=</span><span class="n">stepsize</span><span class="p">,</span>
             <span class="n">mark_outlying_points</span> <span class="o">=</span> <span class="n">mark_outlying_points</span><span class="p">,</span>
             <span class="n">num_cvtests</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="c1">#single test</span>
             <span class="n">num_folds</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="c1">#set in code</span>
@@ -150,7 +147,7 @@
         <span class="n">kwargs2</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="n">kwargs2</span><span class="p">[</span><span class="s1">&#39;xlabel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlabel</span>
         <span class="n">kwargs2</span><span class="p">[</span><span class="s1">&#39;ylabel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ylabel</span>
-        <span class="n">kwargs2</span><span class="p">[</span><span class="s1">&#39;labellist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">([</span><span class="s2">&quot;_prediction&quot;</span><span class="p">])</span> <span class="c1">#underscore prevents label</span>
+        <span class="n">kwargs2</span><span class="p">[</span><span class="s1">&#39;labellist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">([</span><span class="s2">&quot;loo_prediction&quot;</span><span class="p">])</span> 
         <span class="n">kwargs2</span><span class="p">[</span><span class="s1">&#39;xdatalist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_data</span><span class="p">])</span>
         <span class="n">kwargs2</span><span class="p">[</span><span class="s1">&#39;ydatalist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
                 <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">cvtest_dict</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;prediction_array&#39;</span><span class="p">]])</span> <span class="c1">#only one cvtest, with number of folds equal to number of data points</span>
@@ -160,14 +157,14 @@
         <span class="n">kwargs2</span><span class="p">[</span><span class="s1">&#39;guideline&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="n">kwargs2</span><span class="p">[</span><span class="s1">&#39;plotlabel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;loo_results&quot;</span>
         <span class="n">kwargs2</span><span class="p">[</span><span class="s1">&#39;save_path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_path</span>
-        <span class="n">kwargs2</span><span class="p">[</span><span class="s1">&#39;stepsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stepsize</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mark_outlying_points</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">):</span>
             <span class="n">kwargs2</span><span class="p">[</span><span class="s1">&#39;marklargest&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mark_outlying_points</span>
             <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">labeling_features</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Must specify some labeling features if you want to mark the largest outlying points&quot;</span><span class="p">)</span>
             <span class="n">labels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">labeling_features</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
             <span class="n">kwargs2</span><span class="p">[</span><span class="s1">&#39;mlabellist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">([</span><span class="n">labels</span><span class="p">])</span>
-        <span class="n">plotxy</span><span class="o">.</span><span class="n">multiple_overlay</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs2</span><span class="p">)</span>
+        <span class="n">myph</span> <span class="o">=</span> <span class="n">PlotHelper</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs2</span><span class="p">)</span>
+        <span class="n">myph</span><span class="o">.</span><span class="n">multiple_overlay</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Plot loo_results.png created,</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;    showing results of all LOO tests.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span></div>

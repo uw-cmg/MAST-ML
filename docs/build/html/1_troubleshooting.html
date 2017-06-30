@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Autodocumentation &mdash; MAST-ml 1.0 documentation</title>
+    <title>Troubleshooting &mdash; MAST-ml 1.0 documentation</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -24,7 +24,8 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="MAST-ml 1.0 documentation" href="index.html" />
-    <link rel="prev" title="Support Classes" href="support_classes.html" />
+    <link rel="next" title="Input file" href="2_input_file.html" />
+    <link rel="prev" title="Installing MASTML" href="0_installation.html" />
    
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
@@ -37,22 +38,30 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="autodocumentation">
-<h1>Autodocumentation<a class="headerlink" href="#autodocumentation" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="tests">
-<h2><a class="reference internal" href="autodoc_tests.html"><em>Tests</em></a><a class="headerlink" href="#tests" title="Permalink to this headline">¶</a></h2>
-</div>
-<div class="section" id="autodocumentation-of-support-classes">
-<h2><a class="reference internal" href="autodoc_support_classes.html"><em>Autodocumentation of  Support Classes</em></a><a class="headerlink" href="#autodocumentation-of-support-classes" title="Permalink to this headline">¶</a></h2>
-</div>
-</div>
-<div class="section" id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="troubleshooting">
+<h1>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="general">
+<h2>General<a class="headerlink" href="#general" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="check-the-mastmllog-log-file">
+<h3>Check the MASTMLlog.log file<a class="headerlink" href="#check-the-mastmllog-log-file" title="Permalink to this headline">¶</a></h3>
+<p>If you do not get a message like “Successfully read in and parsed your MASTML input file, test.conf” then something is wrong with the configuration file.</p>
+<p>Note that in early development, your config file may be correct, but your mastmlvalidationnames.conf and/or mastmlvaliddationtypes.conf files may not be up to date; may not include all class names.</p>
 <ul class="simple">
-<li><a class="reference internal" href="genindex.html"><span>Index</span></a></li>
-<li><a class="reference internal" href="py-modindex.html"><span>Module Index</span></a></li>
-<li><a class="reference internal" href="search.html"><span>Search Page</span></a></li>
+<li>Get those mastml*.conf files from test/main_test</li>
+<li>Put them in your working directory with your .conf file and data csv(s).</li>
 </ul>
+</div>
+<div class="section" id="update-your-local-copy-of-the-code">
+<h3>Update your local copy of the code<a class="headerlink" href="#update-your-local-copy-of-the-code" title="Permalink to this headline">¶</a></h3>
+<p>MASTML is changing quickly. Check master and pull from master before test runs.</p>
+<p>If you are having issues with github, check status.github.com</p>
+</div>
+</div>
+<div class="section" id="keyerror">
+<h2>KeyError<a class="headerlink" href="#keyerror" title="Permalink to this headline">¶</a></h2>
+<p>Generally KeyError’s come from not matching test_cases in the [models and tests to run] section with tests in the [Test Parameters} section</p>
+<p>They can also be caused by not having updated the mastmlvalidationnames.conf and mastmlvalidationtypes.conf files.</p>
+</div>
 </div>
 
 
@@ -63,25 +72,29 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Autodocumentation</a><ul>
-<li><a class="reference internal" href="#tests"><code class="docutils literal"><span class="pre">Tests</span></code></a></li>
-<li><a class="reference internal" href="#autodocumentation-of-support-classes"><code class="docutils literal"><span class="pre">Autodocumentation</span> <span class="pre">of</span>&nbsp; <span class="pre">Support</span> <span class="pre">Classes</span></code></a></li>
+<li><a class="reference internal" href="#">Troubleshooting</a><ul>
+<li><a class="reference internal" href="#general">General</a><ul>
+<li><a class="reference internal" href="#check-the-mastmllog-log-file">Check the MASTMLlog.log file</a></li>
+<li><a class="reference internal" href="#update-your-local-copy-of-the-code">Update your local copy of the code</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+<li><a class="reference internal" href="#keyerror">KeyError</a></li>
+</ul>
+</li>
 </ul>
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="support_classes.html" title="previous chapter">Support Classes</a></li>
+      <li>Previous: <a href="0_installation.html" title="previous chapter">Installing MASTML</a></li>
+      <li>Next: <a href="2_input_file.html" title="next chapter">Input file</a></li>
   </ul></li>
 </ul>
 </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/autodoc.txt"
+      <li><a href="_sources/1_troubleshooting.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -110,7 +123,7 @@
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
       
       |
-      <a href="_sources/autodoc.txt"
+      <a href="_sources/1_troubleshooting.txt"
           rel="nofollow">Page source</a>
     </div>
 

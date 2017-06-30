@@ -25,7 +25,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="MAST-ml 1.0 documentation" href="index.html" />
     <link rel="next" title="Support Classes" href="support_classes.html" />
-    <link rel="prev" title="MASTML Documentation" href="index.html" />
+    <link rel="prev" title="Glossary" href="3_glossary.html" />
    
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
@@ -48,7 +48,7 @@
 <h2>Cross validation<a class="headerlink" href="#cross-validation" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="KFoldCV.KFoldCV">
-<em class="property">class </em><code class="descclassname">KFoldCV.</code><code class="descname">KFoldCV</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='Measured'</em>, <em>ylabel='Predicted'</em>, <em>stepsize=1</em>, <em>mark_outlying_points=None</em>, <em>num_cvtests=10</em>, <em>fix_random_for_testing=0</em>, <em>num_folds=2</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/KFoldCV.html#KFoldCV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#KFoldCV.KFoldCV" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">KFoldCV.</code><code class="descname">KFoldCV</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='Measured'</em>, <em>ylabel='Predicted'</em>, <em>mark_outlying_points=None</em>, <em>num_cvtests=10</em>, <em>fix_random_for_testing=0</em>, <em>num_folds=2</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/KFoldCV.html#KFoldCV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#KFoldCV.KFoldCV" title="Permalink to this definition">¶</a></dt>
 <dd><p>KFold cross validation</p>
 <dl class="docutils">
 <dt>Args:</dt>
@@ -58,7 +58,6 @@ model,
 save_path,
 xlabel, 
 ylabel,
-stepsize,
 mark_outlying_points,
 num_cvtests,
 fix_random_for_testing, see parent class.
@@ -82,7 +81,7 @@ Plots results in a predicted vs. measured square plot.</dd>
 
 <dl class="class">
 <dt id="LeaveOneOutCV.LeaveOneOutCV">
-<em class="property">class </em><code class="descclassname">LeaveOneOutCV.</code><code class="descname">LeaveOneOutCV</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='Measured'</em>, <em>ylabel='Predicted'</em>, <em>stepsize=1</em>, <em>mark_outlying_points=None</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LeaveOneOutCV.html#LeaveOneOutCV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LeaveOneOutCV.LeaveOneOutCV" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">LeaveOneOutCV.</code><code class="descname">LeaveOneOutCV</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='Measured'</em>, <em>ylabel='Predicted'</em>, <em>mark_outlying_points=None</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LeaveOneOutCV.html#LeaveOneOutCV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LeaveOneOutCV.LeaveOneOutCV" title="Permalink to this definition">¶</a></dt>
 <dd><p>leave-one-out cross validation</p>
 <dl class="docutils">
 <dt>Args:</dt>
@@ -92,7 +91,6 @@ model,
 save_path,
 xlabel, 
 ylabel,
-stepsize,
 mark_outlying_points (Use only 1 number), see parent class.</dd>
 <dt>Returns:</dt>
 <dd>Analysis in the save_path folder
@@ -113,7 +111,7 @@ Plots results in a predicted vs. measured square plot.</dd>
 
 <dl class="class">
 <dt id="LeaveOutPercentCV.LeaveOutPercentCV">
-<em class="property">class </em><code class="descclassname">LeaveOutPercentCV.</code><code class="descname">LeaveOutPercentCV</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='Measured'</em>, <em>ylabel='Predicted'</em>, <em>stepsize=1</em>, <em>mark_outlying_points=None</em>, <em>percent_leave_out=20</em>, <em>num_cvtests=10</em>, <em>fix_random_for_testing=0</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LeaveOutPercentCV.html#LeaveOutPercentCV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LeaveOutPercentCV.LeaveOutPercentCV" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">LeaveOutPercentCV.</code><code class="descname">LeaveOutPercentCV</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='Measured'</em>, <em>ylabel='Predicted'</em>, <em>mark_outlying_points=None</em>, <em>percent_leave_out=20</em>, <em>num_cvtests=10</em>, <em>fix_random_for_testing=0</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LeaveOutPercentCV.html#LeaveOutPercentCV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LeaveOutPercentCV.LeaveOutPercentCV" title="Permalink to this definition">¶</a></dt>
 <dd><p>Leave out percent cross validation</p>
 <dl class="docutils">
 <dt>Args:</dt>
@@ -122,8 +120,7 @@ testing_dataset, (Should be the same as training_dataset)
 model,
 save_path,
 xlabel, 
-ylabel,
-stepsize, see parent class.
+ylabel, see parent class.
 mark_outlying_points &lt;list of int&gt;: Number of outlying points to mark in best and worst tests, e.g. [0,3]
 percent_leave_out &lt;int&gt;: Percent to leave out
 num_cvtests &lt;int&gt;: Number of CV tests (K folds in a KFoldCV is 1 test)
@@ -187,7 +184,7 @@ ValueError if testing target data is None; CV must have</p>
 <h2>Other<a class="headerlink" href="#other" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="PlotNoAnalysis.PlotNoAnalysis">
-<em class="property">class </em><code class="descclassname">PlotNoAnalysis.</code><code class="descname">PlotNoAnalysis</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='X'</em>, <em>ylabel='Y'</em>, <em>plot_filter_out=None</em>, <em>feature_plot_feature=None</em>, <em>data_labels=None</em>, <em>timex=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PlotNoAnalysis.html#PlotNoAnalysis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PlotNoAnalysis.PlotNoAnalysis" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">PlotNoAnalysis.</code><code class="descname">PlotNoAnalysis</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='X'</em>, <em>ylabel='Y'</em>, <em>plot_filter_out=None</em>, <em>feature_plot_feature=None</em>, <em>data_labels=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PlotNoAnalysis.html#PlotNoAnalysis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PlotNoAnalysis.PlotNoAnalysis" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plotting without analysis
 Args:</p>
 <blockquote>
@@ -199,7 +196,6 @@ xlabel,
 ylabel,
 plot_filter_out, see parent class.
 feature_plot_feature &lt;str&gt;: Feature to plot on x-axis, against target feature
-timex &lt;str&gt;: Time format string, if x-axis is a time
 data_labels &lt;list of str&gt;: Dataset labels</div></blockquote>
 <dl class="docutils">
 <dt>Returns:</dt>
@@ -242,7 +238,7 @@ data_labels is None</dd>
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="index.html" title="previous chapter">MASTML Documentation</a></li>
+      <li>Previous: <a href="3_glossary.html" title="previous chapter">Glossary</a></li>
       <li>Next: <a href="support_classes.html" title="next chapter">Support Classes</a></li>
   </ul></li>
 </ul>

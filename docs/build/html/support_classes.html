@@ -40,6 +40,39 @@
             
   <div class="section" id="support-classes">
 <h1>Support Classes<a class="headerlink" href="#support-classes" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="DataHandler.DataHandler">
+<em class="property">class </em><code class="descclassname">DataHandler.</code><code class="descname">DataHandler</code><span class="sig-paren">(</span><em>data=None</em>, <em>input_data=None</em>, <em>target_data=None</em>, <em>input_features=None</em>, <em>target_feature=None</em>, <em>target_error_feature=None</em>, <em>labeling_features=None</em>, <em>grouping_feature=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DataHandler.html#DataHandler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DataHandler.DataHandler" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Data handling class</dt>
+<dd>(Combines old data_parser functionality with new DataParser methods)</dd>
+<dt>Args:</dt>
+<dd><p class="first">data &lt;pandas dataframe&gt;
+input_data &lt;pandas dataframe&gt;: X data (input data)
+target_data &lt;pandas dataframe&gt;: y data (target data)
+input_features &lt;list of str&gt;: x features (input features)
+target_feature &lt;str&gt;: y feature (target feature)</p>
+<blockquote>
+<div>(the above five as parsed from DataParser)</div></blockquote>
+<p>target_error_feature &lt;str&gt;: error in y feature (target error feature)
+labeling_features &lt;list of str&gt;: features to help identify data in</p>
+<blockquote class="last">
+<div>plots</div></blockquote>
+</dd>
+</dl>
+<p>Returns:
+Raises:</p>
+<blockquote>
+<div>ValueError if dataframe is None</div></blockquote>
+<dl class="method">
+<dt id="DataHandler.DataHandler.set_up_data_from_features">
+<code class="descname">set_up_data_from_features</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/DataHandler.html#DataHandler.set_up_data_from_features"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DataHandler.DataHandler.set_up_data_from_features" title="Permalink to this definition">¶</a></dt>
+<dd><p>To reset data, for example, if self.data has been changed
+by filtering</p>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 
