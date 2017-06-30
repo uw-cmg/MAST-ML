@@ -157,6 +157,7 @@ class PlotHelper():
         return
 
     def write_data_section(self, single_array, label="array"):
+        np.set_printoptions(threshold=np.inf)
         section="""\
         \n
         %s = %s\n
