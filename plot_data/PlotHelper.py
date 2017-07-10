@@ -186,7 +186,7 @@ class PlotHelper():
 
     def write_line_section(self, lineobj, label="Line", usecsv=True):
         [xdata, ydata] = lineobj.get_data()
-        nospace_label = label.replace(" ","_")
+        nospace_label = label.replace(" ","_").replace("-","_")
         xdata_label = "%s_x" % nospace_label
         ydata_label = "%s_y" % nospace_label
         if usecsv is True:
@@ -223,7 +223,7 @@ class PlotHelper():
         children = container.get_children()
         lineobj = children[0]
         [xdata, ydata] = lineobj.get_data()
-        nospace_label = label.replace(" ","_")
+        nospace_label = label.replace(" ","_").replace("-","_")
         xdata_label = "%s_x" % nospace_label
         ydata_label = "%s_y" % nospace_label
         savecsv = os.path.join(self.save_path,"%s_data_%s.csv" % (self.plotlabel, nospace_label))
@@ -571,7 +571,7 @@ class PlotHelper():
     def print_data(self):
         for nidx in range(0, self.numlines):
             label = self.labellist[nidx]
-            nospace_label = label.replace(" ","_")
+            nospace_label = label.replace(" ","_").replace("-","_")
             savecsv = os.path.join(self.save_path,"%s_data_%s.csv" % (self.plotlabel, nospace_label))
             dataframe = pd.DataFrame() #index = np.arange(0, len(self.xdatalist[nidx])))
             dataframe[self.xlabel] = self.xdatalist[nidx]
