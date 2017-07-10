@@ -573,7 +573,7 @@ class PlotHelper():
             label = self.labellist[nidx]
             nospace_label = label.replace(" ","_")
             savecsv = os.path.join(self.save_path,"%s_data_%s.csv" % (self.plotlabel, nospace_label))
-            dataframe = pd.DataFrame(index = np.arange(0, len(self.xdatalist[nidx])))
+            dataframe = pd.DataFrame() #index = np.arange(0, len(self.xdatalist[nidx])))
             dataframe[self.xlabel] = self.xdatalist[nidx]
             if not(self.xerrlist[nidx] is None):
                 dataframe['xerr'] = self.xerrlist[nidx]

@@ -1,4 +1,4 @@
-Mon Jun 26 10:34:57 2017
+Mon Jul 10 15:31:02 2017
 ----- CV setup -----
 4 CV tests,
 leaving out str_cat groups.
@@ -22,36 +22,36 @@ Statistics by group:
 A_test_data.csv file created with columns:
     str_cat
     num_id
-    time
-    N_sine_feature
     N_linear_feature
+    N_sine_feature
+    time
     y_feature
     N_linear_feature
     Group Prediction
 B_test_data.csv file created with columns:
     str_cat
     num_id
-    time
-    N_sine_feature
     N_linear_feature
+    N_sine_feature
+    time
     y_feature
     N_linear_feature
     Group Prediction
 C_test_data.csv file created with columns:
     str_cat
     num_id
-    time
-    N_sine_feature
     N_linear_feature
+    N_sine_feature
+    time
     y_feature
     N_linear_feature
     Group Prediction
 D_test_data.csv file created with columns:
     str_cat
     num_id
-    time
-    N_sine_feature
     N_linear_feature
+    N_sine_feature
+    time
     y_feature
     N_linear_feature
     Group Prediction

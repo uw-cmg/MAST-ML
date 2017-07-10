@@ -1,4 +1,4 @@
-Fri Jun 23 17:10:43 2017
+Mon Jul 10 15:31:00 2017
 ----- CV setup -----
 1 CV tests,
 each with 100 folds
@@ -12,9 +12,9 @@ std_mean_error: 0.122
 loo_test_data.csv file created with columns:
     str_cat
     num_id
-    time
-    N_sine_feature
     N_linear_feature
+    N_sine_feature
+    time
     y_feature
     N_linear_feature
     LOO Predictions
