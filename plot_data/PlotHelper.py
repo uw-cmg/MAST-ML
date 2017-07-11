@@ -396,7 +396,7 @@ class PlotHelper():
             code = code + codeitem + "\n"
         nb = nbf.v4.new_notebook()
         nb['cells'] = [nbf.v4.new_code_cell(code)]
-        with open(nbname, 'w') as f:
+        with open(nbname, 'w', encoding="utf-8") as f:
             nbf.write(nb, f)
         return
 
