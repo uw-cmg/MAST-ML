@@ -23,65 +23,9 @@ Data
 Installation
 **************
 
-===============
-Install Python3
-===============
-
-Install Python 3: for easier installation of numpy and scipy dependencies, use either:
-
-* anaconda https://www.continuum.io/downloads OR
-
-* conda lite https://conda.io/miniconda.html
-
-Create a conda environment:
-
-Anaconda::
-
-    conda create --name TEST_ML numpy scipy matplotlib pandas sphinx nose 
-
-Miniconda::
-
-    conda create --name TEST_ML
-
-Activate the environment::
-
-    source activate TEST_ML
-    (For Windows: activate TEST_ML)
-
-=====================================
-Install the MAST-ml-private package
-=====================================
-
-Git clone the repository  (github.com/uw-cmg/MAST-ml-private)
-Clone from “master” 
-Ask for access if you cannot find this code.
-
-Check status.github.com for issues if you believe github may be malfunctioning
-
-``python setup.py install`` (inside the MAST-ml-private folder) (might not work)
-If “SyntaxError: Invalid syntax” occurs at lines 16, 17, or 34 try wrapping prints in () for windows [e.g. print ("Python Version %d.%d.%d found" % (sys.version_info[0], sys.version_info[1], sys.version_info[2])) ]
-
-If setup.py didn’t work, dependencies you need are:      
-
-numpy>=1.11.2
-scipy>=0.18.1
-pandas>=0.19.2
-matplotlib>=1.5.3
-configobj>=5.0.6
-validator
-scikit-learn>=0.18.1
-pymongo>=3.4.0
-pymatgen>=4.6.0
-PeakUtils>=1.0.3
-
--------------------------
-imports that don’t work 
--------------------------
-First try anaconda install, and if that gives errors try pip install
-Example: conda install numpy , or pip install numpy
-Put MAST-ml-private’s folder in your PYTHONPATH if it isn’t already
-Adding to PYTHONPATH and getting it to stay there
-If you get a missing import error, go ahead and install any other missing packages and submit a github ticket.
+For Python and MAST-ml package installation, see:
+:doc:`0_1_terminal_installation`
+:doc:`0_2_windows_installation`
 
 *******************
 Startup
@@ -110,7 +54,10 @@ For example::
     
     python MAST-ml-private/MASTML.py basicinput.conf
 
-This is a terminal command. If using Anaconda GUI, try using Anaconda’s Python Shell
+This is a terminal command. 
+For Windows, assuming setup has been followed
+as above, go to the Anaconda Navigator, Environments, select the environment,
+click the green arrow button, and Open terminal.
 
 ================
 Check output
