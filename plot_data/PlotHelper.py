@@ -157,6 +157,8 @@ class PlotHelper():
         return
 
     def write_csv_data_section(self, csvname, colname, label="array"):
+        if '\\' in csvname:
+            csvname = csvname.replace("\\","\\\\") #escape windows backslashes
         section="""\
         \n
         df_%s = pd.read_csv('%s')
