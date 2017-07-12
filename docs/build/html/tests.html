@@ -1,12 +1,12 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Tests &mdash; MAST-ml 1.0 documentation</title>
+    <title>Tests &#8212; MAST-ml 1.0 documentation</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -17,21 +17,26 @@
         VERSION:     '1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="MAST-ml 1.0 documentation" href="index.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Support Classes" href="support_classes.html" />
     <link rel="prev" title="Glossary" href="3_glossary.html" />
    
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body role="document">  
+  <body>
+  
 
     <div class="document">
       <div class="documentwrapper">
@@ -42,179 +47,16 @@
 <h1>Tests<a class="headerlink" href="#tests" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="single-fits">
 <h2>Single fits<a class="headerlink" href="#single-fits" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference internal" href="singlefit.html#singlefit"><span>SingleFit</span></a></p>
+<p><a class="reference internal" href="template.html#singlefit"><span class="std std-ref">SingleFit</span></a></p>
 </div>
 <div class="section" id="cross-validation">
 <h2>Cross validation<a class="headerlink" href="#cross-validation" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="KFoldCV.KFoldCV">
-<em class="property">class </em><code class="descclassname">KFoldCV.</code><code class="descname">KFoldCV</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='Measured'</em>, <em>ylabel='Predicted'</em>, <em>mark_outlying_points=None</em>, <em>num_cvtests=10</em>, <em>fix_random_for_testing=0</em>, <em>num_folds=2</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/KFoldCV.html#KFoldCV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#KFoldCV.KFoldCV" title="Permalink to this definition">¶</a></dt>
-<dd><p>KFold cross validation</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>training_dataset, (Should be the same as testing_dataset)
-testing_dataset, (Should be the same as training_dataset)
-model,
-save_path,
-xlabel, 
-ylabel,
-mark_outlying_points,
-num_cvtests,
-fix_random_for_testing, see parent class.
-num_folds &lt;int&gt;: Number of folds for KFold CV</dd>
-<dt>Returns:</dt>
-<dd>Analysis in the save_path folder
-Plots results in a predicted vs. measured square plot.</dd>
-<dt>Raises:</dt>
-<dd><dl class="first last docutils">
-<dt>ValueError if testing target data is None; CV must have</dt>
-<dd>testing target data</dd>
-</dl>
-</dd>
-</dl>
-<dl class="method">
-<dt id="KFoldCV.KFoldCV.print_best_worst_output_csv">
-<code class="descname">print_best_worst_output_csv</code><span class="sig-paren">(</span><em>label=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/KFoldCV.html#KFoldCV.print_best_worst_output_csv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#KFoldCV.KFoldCV.print_best_worst_output_csv" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="LeaveOneOutCV.LeaveOneOutCV">
-<em class="property">class </em><code class="descclassname">LeaveOneOutCV.</code><code class="descname">LeaveOneOutCV</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='Measured'</em>, <em>ylabel='Predicted'</em>, <em>mark_outlying_points=None</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LeaveOneOutCV.html#LeaveOneOutCV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LeaveOneOutCV.LeaveOneOutCV" title="Permalink to this definition">¶</a></dt>
-<dd><p>leave-one-out cross validation</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>training_dataset, (Should be the same as testing_dataset)
-testing_dataset, (Should be the same as training_dataset)
-model,
-save_path,
-xlabel, 
-ylabel,
-mark_outlying_points (Use only 1 number), see parent class.</dd>
-<dt>Returns:</dt>
-<dd>Analysis in the save_path folder
-Plots results in a predicted vs. measured square plot.</dd>
-<dt>Raises:</dt>
-<dd><dl class="first last docutils">
-<dt>ValueError if testing target data is None; CV must have</dt>
-<dd>testing target data</dd>
-</dl>
-</dd>
-</dl>
-<dl class="method">
-<dt id="LeaveOneOutCV.LeaveOneOutCV.print_output_csv">
-<code class="descname">print_output_csv</code><span class="sig-paren">(</span><em>label=''</em>, <em>cvtest_entry=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LeaveOneOutCV.html#LeaveOneOutCV.print_output_csv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LeaveOneOutCV.LeaveOneOutCV.print_output_csv" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="LeaveOutPercentCV.LeaveOutPercentCV">
-<em class="property">class </em><code class="descclassname">LeaveOutPercentCV.</code><code class="descname">LeaveOutPercentCV</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='Measured'</em>, <em>ylabel='Predicted'</em>, <em>mark_outlying_points=None</em>, <em>percent_leave_out=20</em>, <em>num_cvtests=10</em>, <em>fix_random_for_testing=0</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LeaveOutPercentCV.html#LeaveOutPercentCV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LeaveOutPercentCV.LeaveOutPercentCV" title="Permalink to this definition">¶</a></dt>
-<dd><p>Leave out percent cross validation</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><p class="first">training_dataset, (Should be the same as testing_dataset)
-testing_dataset, (Should be the same as training_dataset)
-model,
-save_path,
-xlabel, 
-ylabel, see parent class.
-mark_outlying_points &lt;list of int&gt;: Number of outlying points to mark in best and worst tests, e.g. [0,3]
-percent_leave_out &lt;int&gt;: Percent to leave out
-num_cvtests &lt;int&gt;: Number of CV tests (K folds in a KFoldCV is 1 test)
-fix_random_for_testing &lt;int&gt;: 1- fix random shuffle for testing purposes</p>
-<blockquote class="last">
-<div>0 (default) Use random shuffle</div></blockquote>
-</dd>
-<dt>Returns:</dt>
-<dd>Analysis in the save_path folder
-Plots results in a predicted vs. measured square plot.</dd>
-<dt>Raises:</dt>
-<dd><dl class="first last docutils">
-<dt>ValueError if testing target data is None; CV must have</dt>
-<dd>testing target data</dd>
-</dl>
-</dd>
-</dl>
-<dl class="method">
-<dt id="LeaveOutPercentCV.LeaveOutPercentCV.print_best_worst_output_csv">
-<code class="descname">print_best_worst_output_csv</code><span class="sig-paren">(</span><em>label=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LeaveOutPercentCV.html#LeaveOutPercentCV.print_best_worst_output_csv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LeaveOutPercentCV.LeaveOutPercentCV.print_best_worst_output_csv" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="LeaveOutGroupCV.LeaveOutGroupCV">
-<em class="property">class </em><code class="descclassname">LeaveOutGroupCV.</code><code class="descname">LeaveOutGroupCV</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='Measured'</em>, <em>ylabel='Predicted'</em>, <em>stepsize=1</em>, <em>mark_outlying_points=None</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LeaveOutGroupCV.html#LeaveOutGroupCV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LeaveOutGroupCV.LeaveOutGroupCV" title="Permalink to this definition">¶</a></dt>
-<dd><p>leave-out-group cross validation</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>training_dataset, (Should be the same as testing_dataset)
-testing_dataset, (Should be the same as training_dataset)
-model,
-save_path,
-xlabel, 
-ylabel,
-stepsize,
-mark_outlying_points (Use only 1 number), see parent class.</dd>
-<dt>Returns:</dt>
-<dd>Analysis in the save_path folder
-Plots results in a predicted vs. measured square plot.</dd>
-<dt>Raises:</dt>
-<dd><p class="first">ValueError if grouping feature is None
-ValueError if testing target data is None; CV must have</p>
-<blockquote class="last">
-<div>testing target data</div></blockquote>
-</dd>
-</dl>
-<dl class="method">
-<dt id="LeaveOutGroupCV.LeaveOutGroupCV.print_output_csv">
-<code class="descname">print_output_csv</code><span class="sig-paren">(</span><em>label=''</em>, <em>cvtest_entry=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LeaveOutGroupCV.html#LeaveOutGroupCV.print_output_csv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LeaveOutGroupCV.LeaveOutGroupCV.print_output_csv" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
 </div>
 <div class="section" id="hyperparameter-optimization">
 <h2>Hyperparameter optimization<a class="headerlink" href="#hyperparameter-optimization" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="other">
 <h2>Other<a class="headerlink" href="#other" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="PlotNoAnalysis.PlotNoAnalysis">
-<em class="property">class </em><code class="descclassname">PlotNoAnalysis.</code><code class="descname">PlotNoAnalysis</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='X'</em>, <em>ylabel='Y'</em>, <em>plot_filter_out=None</em>, <em>feature_plot_feature=None</em>, <em>data_labels=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PlotNoAnalysis.html#PlotNoAnalysis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PlotNoAnalysis.PlotNoAnalysis" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plotting without analysis
-Args:</p>
-<blockquote>
-<div>training_dataset, (for compatibility. only testing dataset is used)
-testing_dataset, (multiple sets are allowed)
-model, (not used)
-save_path,
-xlabel,
-ylabel,
-plot_filter_out, see parent class.
-feature_plot_feature &lt;str&gt;: Feature to plot on x-axis, against target feature
-data_labels &lt;list of str&gt;: Dataset labels</div></blockquote>
-<dl class="docutils">
-<dt>Returns:</dt>
-<dd><dl class="first last docutils">
-<dt>Plots target data against feature data, by group if a grouping feature</dt>
-<dd>is set</dd>
-</dl>
-</dd>
-<dt>Raises:</dt>
-<dd><dl class="first last docutils">
-<dt>ValueError if:</dt>
-<dd>feature_plot_feature is None
-there is no testing target data
-data_labels is None</dd>
-</dl>
-</dd>
-</dl>
-</dd></dl>
-
 </div>
 </div>
 
@@ -246,21 +88,18 @@ data_labels is None</dd>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/tests.txt"
+      <li><a href="_sources/tests.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -271,11 +110,11 @@ data_labels is None</dd>
       &copy;2017, UW-Madison Computational Materials Group.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.5</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
-      <a href="_sources/tests.txt"
+      <a href="_sources/tests.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 

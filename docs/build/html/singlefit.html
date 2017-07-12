@@ -1,12 +1,12 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>SingleFit &mdash; MAST-ml 1.0 documentation</title>
+    <title>SingleFit &#8212; MAST-ml 1.0 documentation</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -17,19 +17,24 @@
         VERSION:     '1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="MAST-ml 1.0 documentation" href="index.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
    
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body role="document">  
+  <body>
+  
 
     <div class="document">
       <div class="documentwrapper">
@@ -46,10 +51,10 @@ input feature data from the testing dataset.</p>
 versus target data.</p>
 <div class="section" id="keywords">
 <h2>Keywords<a class="headerlink" href="#keywords" title="Permalink to this headline">¶</a></h2>
-<ul>
+<ul class="simple">
 <li><dl class="first docutils">
 <dt>training_dataset</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>&lt;DataHandler object&gt;</li>
 <li>Training dataset handler</li>
 </ul>
@@ -58,7 +63,7 @@ versus target data.</p>
 </li>
 <li><dl class="first docutils">
 <dt>testing_dataset</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>&lt;DataHandler object&gt;</li>
 <li>Testing dataset handler</li>
 <li>If more than one datahandler is passed as a list, only the first one will be used.</li>
@@ -68,7 +73,7 @@ versus target data.</p>
 </li>
 <li><dl class="first docutils">
 <dt>model</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>&lt;sklearn model&gt;</li>
 <li>Machine-learning model</li>
 </ul>
@@ -77,24 +82,20 @@ versus target data.</p>
 </li>
 <li><dl class="first docutils">
 <dt>save_path</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>&lt;str&gt;</li>
 <li>Save path</li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><p class="first">xlabel &lt;str&gt;: Label for full-fit x-axis (default &#8220;Measured&#8221;)</p>
-</li>
-<li><p class="first">ylabel &lt;str&gt;: Label for full-fit y-axis (default &#8220;Predicted&#8221;)</p>
-</li>
-<li><p class="first">stepsize &lt;float&gt;: Step size for plot grid (default None)</p>
-</li>
+<li>xlabel &lt;str&gt;: Label for full-fit x-axis (default “Measured”)</li>
+<li>ylabel &lt;str&gt;: Label for full-fit y-axis (default “Predicted”)</li>
+<li>stepsize &lt;float&gt;: Step size for plot grid (default None)</li>
 <li><dl class="first docutils">
 <dt>plot_filter_out &lt;list&gt;: List of semicolon-delimited strings with</dt>
-<dd><p class="first last">feature;operator;value for filtering out
-values for plotting.</p>
-</dd>
+<dd>feature;operator;value for filtering out
+values for plotting.</dd>
 </dl>
 </li>
 </ul>
@@ -124,21 +125,18 @@ values for plotting.</p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/singlefit.txt"
+      <li><a href="_sources/singlefit.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -149,11 +147,11 @@ values for plotting.</p>
       &copy;2017, UW-Madison Computational Materials Group.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.5</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
-      <a href="_sources/singlefit.txt"
+      <a href="_sources/singlefit.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 
