@@ -1,12 +1,12 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Installing MASTML &mdash; MAST-ml 1.0 documentation</title>
+    <title>Installing MASTML &#8212; MAST-ml 1.0 documentation</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -17,21 +17,26 @@
         VERSION:     '1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="MAST-ml 1.0 documentation" href="index.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Troubleshooting" href="1_troubleshooting.html" />
     <link rel="prev" title="MASTML Documentation" href="index.html" />
    
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body role="document">  
+  <body>
+  
 
     <div class="document">
       <div class="documentwrapper">
@@ -56,56 +61,9 @@
 </div>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="install-python3">
-<h3>Install Python3<a class="headerlink" href="#install-python3" title="Permalink to this headline">¶</a></h3>
-<p>Install Python 3: for easier installation of numpy and scipy dependencies, use either:</p>
-<ul class="simple">
-<li>anaconda <a class="reference external" href="https://www.continuum.io/downloads">https://www.continuum.io/downloads</a> OR</li>
-<li>conda lite <a class="reference external" href="https://conda.io/miniconda.html">https://conda.io/miniconda.html</a></li>
-</ul>
-<p>Create a conda environment:</p>
-<p>Anaconda:</p>
-<div class="highlight-python"><div class="highlight"><pre>conda create --name TEST_ML numpy scipy matplotlib pandas sphinx nose
-</pre></div>
-</div>
-<p>Miniconda:</p>
-<div class="highlight-python"><div class="highlight"><pre>conda create --name TEST_ML
-</pre></div>
-</div>
-<p>Activate the environment:</p>
-<div class="highlight-python"><div class="highlight"><pre>source activate TEST_ML
-(For Windows: activate TEST_ML)
-</pre></div>
-</div>
-</div>
-<div class="section" id="install-the-mast-ml-private-package">
-<h3>Install the MAST-ml-private package<a class="headerlink" href="#install-the-mast-ml-private-package" title="Permalink to this headline">¶</a></h3>
-<p>Git clone the repository  (github.com/uw-cmg/MAST-ml-private)
-Clone from “master”
-Ask for access if you cannot find this code.</p>
-<p>Check status.github.com for issues if you believe github may be malfunctioning</p>
-<p><code class="docutils literal"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">install</span></code> (inside the MAST-ml-private folder) (might not work)
-If “SyntaxError: Invalid syntax” occurs at lines 16, 17, or 34 try wrapping prints in () for windows [e.g. print (&#8220;Python Version %d.%d.%d found&#8221; % (sys.version_info[0], sys.version_info[1], sys.version_info[2])) ]</p>
-<p>If setup.py didn’t work, dependencies you need are:</p>
-<p>numpy&gt;=1.11.2
-scipy&gt;=0.18.1
-pandas&gt;=0.19.2
-matplotlib&gt;=1.5.3
-configobj&gt;=5.0.6
-validator
-scikit-learn&gt;=0.18.1
-pymongo&gt;=3.4.0
-pymatgen&gt;=4.6.0
-PeakUtils&gt;=1.0.3</p>
-<div class="section" id="imports-that-dont-work">
-<h4>imports that don’t work<a class="headerlink" href="#imports-that-dont-work" title="Permalink to this headline">¶</a></h4>
-<p>First try anaconda install, and if that gives errors try pip install
-Example: conda install numpy , or pip install numpy
-Put MAST-ml-private’s folder in your PYTHONPATH if it isn’t already
-Adding to PYTHONPATH and getting it to stay there
-If you get a missing import error, go ahead and install any other missing packages and submit a github ticket.</p>
-</div>
-</div>
+<p>For Python and MAST-ml package installation, see:</p>
+<p><a class="reference internal" href="0_1_terminal_installation.html"><span class="doc">Terminal installation (Linux or linux-like terminal on Mac)</span></a> OR</p>
+<p><a class="reference internal" href="0_2_windows_installation.html"><span class="doc">Windows installation</span></a></p>
 </div>
 <div class="section" id="startup">
 <h2>Startup<a class="headerlink" href="#startup" title="Permalink to this headline">¶</a></h2>
@@ -123,10 +81,13 @@ If you get a missing import error, go ahead and install any other missing packag
 <h3>Run the MASTML command<a class="headerlink" href="#run-the-mastml-command" title="Permalink to this headline">¶</a></h3>
 <p>Format is <code class="docutils literal"><span class="pre">python</span> <span class="pre">&lt;path</span> <span class="pre">to</span> <span class="pre">MASTML&gt;/MASTML.py</span> <span class="pre">&lt;config</span> <span class="pre">file</span> <span class="pre">name&gt;</span></code></p>
 <p>For example:</p>
-<div class="highlight-python"><div class="highlight"><pre>python MAST-ml-private/MASTML.py basicinput.conf
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">MAST</span><span class="o">-</span><span class="n">ml</span><span class="o">-</span><span class="n">private</span><span class="o">/</span><span class="n">MASTML</span><span class="o">.</span><span class="n">py</span> <span class="n">basicinput</span><span class="o">.</span><span class="n">conf</span>
 </pre></div>
 </div>
-<p>This is a terminal command. If using Anaconda GUI, try using Anaconda’s Python Shell</p>
+<p>This is a terminal command.
+For Windows, assuming setup has been followed
+as above, go to the Anaconda Navigator, Environments, select the environment,
+click the green arrow button, and Open terminal.</p>
 </div>
 <div class="section" id="check-output">
 <h3>Check output<a class="headerlink" href="#check-output" title="Permalink to this headline">¶</a></h3>
@@ -150,14 +111,7 @@ If you get a missing import error, go ahead and install any other missing packag
 <li><a class="reference internal" href="#data">Data</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#installation">Installation</a><ul>
-<li><a class="reference internal" href="#install-python3">Install Python3</a></li>
-<li><a class="reference internal" href="#install-the-mast-ml-private-package">Install the MAST-ml-private package</a><ul>
-<li><a class="reference internal" href="#imports-that-dont-work">imports that don’t work</a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li><a class="reference internal" href="#installation">Installation</a></li>
 <li><a class="reference internal" href="#startup">Startup</a><ul>
 <li><a class="reference internal" href="#set-up-a-folder">Set up a folder</a></li>
 <li><a class="reference internal" href="#run-the-mastml-command">Run the MASTML command</a></li>
@@ -179,21 +133,18 @@ If you get a missing import error, go ahead and install any other missing packag
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/0_installation.txt"
+      <li><a href="_sources/0_installation.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -204,11 +155,11 @@ If you get a missing import error, go ahead and install any other missing packag
       &copy;2017, UW-Madison Computational Materials Group.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.5</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
-      <a href="_sources/0_installation.txt"
+      <a href="_sources/0_installation.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 
