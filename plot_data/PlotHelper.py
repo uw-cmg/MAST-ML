@@ -202,8 +202,8 @@ class PlotHelper():
         %s
         %s
         plt.plot(%s, %s, label='%s',
-                color='%s', linestyle='%s', linewidth='%s',
-                marker='%s', markersize='%s', markeredgewidth='%s',
+                color='%s', linestyle='%s', linewidth=%s,
+                marker='%s', markersize=%s, markeredgewidth=%s,
                 markeredgecolor='%s', markerfacecolor='%s')
         """ % (xsection, ysection, xdata_label, ydata_label, label,
         lineobj.get_color(), lineobj.get_linestyle(), lineobj.get_linewidth(),
@@ -249,8 +249,8 @@ class PlotHelper():
             errdatasection = errdatasection + yerrnegsection + yerrpossection
             yerrline = "        yerr=(%s_neg_err,%s_pos_err)," % (ydata_label, ydata_label)
         customsection="""\
-                color='%s', linestyle='%s', linewidth='%s',
-                marker='%s', markersize='%s', markeredgewidth='%s',
+                color='%s', linestyle='%s', linewidth=%s,
+                marker='%s', markersize=%s, markeredgewidth=%s,
                 markeredgecolor='%s', markerfacecolor='%s')
         """ % (lineobj.get_color(), lineobj.get_linestyle(), lineobj.get_linewidth(),
         lineobj.get_marker(), lineobj.get_markersize(), lineobj.get_markeredgewidth(),
