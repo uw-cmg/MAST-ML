@@ -1,18 +1,18 @@
-Mon Jun 26 10:35:34 2017
+Mon Jul 10 15:30:49 2017
 ----- Model parameters -----
-kernel_params: None
-alpha: 0.00139
-degree: 3
 gamma: 0.518
-coef0: 1
+alpha: 0.00139
 kernel: rbf
+kernel_params: None
+degree: 3
+coef0: 1
 ----- Output data -----
 output_data.csv file created with columns:
     str_cat
     num_id
-    time
-    N_sine_feature
     N_linear_feature
+    N_sine_feature
+    time
     y_feature
     N_linear_feature
     Prediction

@@ -156,12 +156,12 @@ class PlotHelper():
                 print(smemb)
         return
 
-    def write_data_section(self, single_array, label="array"):
-        np.set_printoptions(threshold=np.inf)
+    def write_csv_data_section(self, csvname, colname, label="array"):
         section="""\
         \n
-        %s = %s\n
-        """ % (label, repr(single_array))
+        df_%s = pd.read_csv('%s')
+        %s = df_%s['%s']\n
+        """ % (label, csvname, label, label, colname)
         return section
     
     def write_series_section(self, seriesobj, label="Line"):
@@ -174,19 +174,28 @@ class PlotHelper():
             label <str>: Series label
         """
         if type(seriesobj) == matplotlib.lines.Line2D:
-            return self.write_line_section(seriesobj, label)
+            if not(label[0] == "_"): #regular line
+                return self.write_line_section(seriesobj, label, usecsv=True)
+            else: #guideline or other non-data line
+                return self.write_line_section(seriesobj, label, usecsv=False)
         elif type(seriesobj) == matplotlib.container.ErrorbarContainer:
             return self.write_errorbar_section(seriesobj, label)
         else:
             raise ValueError("No implemented matching object type for %s" % type(seriesobj))
         return
 
-    def write_line_section(self, lineobj, label="Line"):
+    def write_line_section(self, lineobj, label="Line", usecsv=True):
         [xdata, ydata] = lineobj.get_data()
-        xdata_label = "%s_x" % label.replace(" ","_")
-        ydata_label = "%s_y" % label.replace(" ","_")
-        xsection = self.write_data_section(xdata, xdata_label)
-        ysection = self.write_data_section(ydata, ydata_label)
+        nospace_label = label.replace(" ","_").replace("-","_")
+        xdata_label = "%s_x" % nospace_label
+        ydata_label = "%s_y" % nospace_label
+        if usecsv is True:
+            savecsv = os.path.join(self.save_path,"%s_data_%s.csv" % (self.plotlabel, nospace_label))
+            xsection = self.write_csv_data_section(savecsv, self.xlabel, xdata_label)
+            ysection = self.write_csv_data_section(savecsv, self.ylabel, ydata_label)
+        else:
+            xsection = self.write_array_data_section(xdata, xdata_label)
+            ysection = self.write_array_data_section(ydata, ydata_label)
         section="""\
         %s
         %s
@@ -200,39 +209,33 @@ class PlotHelper():
         lineobj.get_markeredgecolor(), lineobj.get_markerfacecolor())
         return section
     
+    def write_array_data_section(self, single_array, label="array"):
+        np.set_printoptions(threshold=np.inf)
+        section="""\
+        \n
+        %s = %s\n
+        """ % (label, repr(single_array))
+        return section
+    
     def write_errorbar_section(self, container, label="Line"):
         """
         """
         children = container.get_children()
         lineobj = children[0]
         [xdata, ydata] = lineobj.get_data()
-        xdata_label = "%s_x" % label.replace(" ","_")
-        ydata_label = "%s_y" % label.replace(" ","_")
-        xsection = self.write_data_section(xdata, xdata_label)
-        ysection = self.write_data_section(ydata, ydata_label)
+        nospace_label = label.replace(" ","_").replace("-","_")
+        xdata_label = "%s_x" % nospace_label
+        ydata_label = "%s_y" % nospace_label
+        savecsv = os.path.join(self.save_path,"%s_data_%s.csv" % (self.plotlabel, nospace_label))
+        xsection = self.write_csv_data_section(savecsv, self.xlabel, xdata_label)
+        ysection = self.write_csv_data_section(savecsv, self.ylabel, ydata_label)
         ect = 1
         if container.has_xerr:
-            xerrnegobj = children[ect]
-            [xerrnegdata, ydummy]=xerrnegobj.get_data()
-            ect = ect + 1
-            xerrposobj = children[ect]
-            [xerrposdata, ydummy]=xerrposobj.get_data()
-            ect = ect + 1
-            xerrneg = xdata - xerrnegdata
-            xerrpos = xerrposdata - xdata
-            xerrnegsection = self.write_data_section(xerrneg, "%s_neg_err" % xdata_label)
-            xerrpossection = self.write_data_section(xerrpos, "%s_pos_err" % xdata_label)
+            xerrnegsection = self.write_csv_data_section(savecsv, "xerr", "%s_neg_err" % xdata_label)
+            xerrpossection = self.write_csv_data_section(savecsv, "xerr", "%s_pos_err" % xdata_label)
         if container.has_yerr:
-            yerrnegobj = children[ect]
-            [xdummy, yerrnegdata]=yerrnegobj.get_data()
-            ect = ect + 1
-            yerrposobj = children[ect]
-            [xdummy, yerrposdata]=yerrposobj.get_data()
-            ect = ect + 1
-            yerrneg = ydata - yerrnegdata
-            yerrpos = yerrposdata - ydata
-            yerrnegsection = self.write_data_section(yerrneg, "%s_neg_err" % ydata_label)
-            yerrpossection = self.write_data_section(yerrpos, "%s_pos_err" % ydata_label)
+            yerrnegsection = self.write_csv_data_section(savecsv, "yerr", "%s_neg_err" % ydata_label)
+            yerrpossection = self.write_csv_data_section(savecsv, "yerr", "%s_pos_err" % ydata_label)
         mainsection="(_, caps, _)=plt.errorbar(%s, %s, label='%s'," % (xdata_label, ydata_label, label)
         errdatasection=""
         xerrline="#"
@@ -349,6 +352,7 @@ class PlotHelper():
         import matplotlib
         import matplotlib.pyplot as plt
         import numpy as np
+        import pandas as pd
         from numpy import array
         from numpy import nan
         matplotlib.rcParams.update({'font.size': 18})
@@ -567,9 +571,9 @@ class PlotHelper():
     def print_data(self):
         for nidx in range(0, self.numlines):
             label = self.labellist[nidx]
-            nospace_label = label.replace(" ","_")
+            nospace_label = label.replace(" ","_").replace("-","_")
             savecsv = os.path.join(self.save_path,"%s_data_%s.csv" % (self.plotlabel, nospace_label))
-            dataframe = pd.DataFrame(index = np.arange(0, len(self.xdatalist[nidx])))
+            dataframe = pd.DataFrame() #index = np.arange(0, len(self.xdatalist[nidx])))
             dataframe[self.xlabel] = self.xdatalist[nidx]
             if not(self.xerrlist[nidx] is None):
                 dataframe['xerr'] = self.xerrlist[nidx]

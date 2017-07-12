@@ -1,9 +1,9 @@
-Mon Jun 26 09:49:09 2017
+Mon Jul 10 15:30:55 2017
 ----- Model parameters -----
 gamma: 0.518
-kernel_params: None
-kernel: rbf
 alpha: 0.00139
+kernel: rbf
+kernel_params: None
 degree: 3
 coef0: 1
 ----- Fitting and prediction -----

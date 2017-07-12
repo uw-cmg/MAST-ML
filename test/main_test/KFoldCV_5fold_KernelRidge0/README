@@ -1,4 +1,4 @@
-Fri Jun 23 17:00:51 2017
+Mon Jul 10 15:30:58 2017
 ----- CV setup -----
 20 CV tests,
 each with 5 folds
@@ -13,9 +13,9 @@ std_fold_avg_rmses: 0.0065
 best_and_worst_test_data.csv file created with columns:
     str_cat
     num_id
-    time
-    N_sine_feature
     N_linear_feature
+    N_sine_feature
+    time
     y_feature
     N_linear_feature
     Best Prediction

@@ -16,7 +16,6 @@ class SingleFitPerGroup(SingleFitGrouped):
         save_path,
         xlabel, 
         ylabel,
-        stepsize, 
         plot_filter_out, 
         mark_outlying_groups, see parent class
 
@@ -37,7 +36,6 @@ class SingleFitPerGroup(SingleFitGrouped):
         save_path=None,
         xlabel="Measured",
         ylabel="Predicted",
-        stepsize=1,
         plot_filter_out = None,
         mark_outlying_groups = 2,
         *args, **kwargs):
@@ -54,7 +52,6 @@ class SingleFitPerGroup(SingleFitGrouped):
             save_path = save_path,
             xlabel=xlabel,
             ylabel=ylabel,
-            stepsize=stepsize,
             plot_filter_out = plot_filter_out,
             mark_outlying_groups = mark_outlying_groups,
             fit_only_on_matched_groups = 0)
@@ -93,7 +90,6 @@ class SingleFitPerGroup(SingleFitGrouped):
                     save_path = os.path.join(self.save_path, str(group)),
                     xlabel = self.xlabel,
                     ylabel = self.ylabel,
-                    stepsize = self.stepsize,
                     plot_filter_out = self.plot_filter_out)
             self.per_group_singlefits[group].run()
         return
