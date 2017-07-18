@@ -451,7 +451,7 @@ class PlotHelper():
         notey = 0.88
         notestep=0.07
         for note in notelist:
-            plt.annotate(note, xy=(0.05, notey), xycoords="axes fraction",
+            plt.annotate(note, xy=(1.05, notey), xycoords="axes fraction",
                     fontsize=smallfont)
             notey = notey - notestep
         for midx in [7,8,9]:
@@ -509,7 +509,7 @@ class PlotHelper():
         notey = 0.88
         notestep = 0.07
         for note in self.notelist:
-            plt.annotate(note, xy=(0.05, notey), xycoords="axes fraction",
+            plt.annotate(note, xy=(1.05, notey), xycoords="axes fraction",
                         fontsize=self.smallfont)
             notey = notey - notestep
         #ANNOTATIONS FOR LARGEST
@@ -658,7 +658,7 @@ class PlotHelper():
         notey = 0.88
         notestep = 0.07
         for note in self.notelist:
-            plt.annotate(note, xy=(0.05, notey), xycoords="axes fraction",
+            plt.annotate(note, xy=(1.05, notey), xycoords="axes fraction",
                         fontsize=self.smallfont)
             notey = notey - notestep
         if self.marklargest is None:
