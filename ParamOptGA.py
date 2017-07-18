@@ -265,6 +265,7 @@ class GAGeneration():
         self.population_rmses = list()
         return
     
+    @timeit
     def run(self):
         self.set_up()
         self.evaluate_population()
@@ -506,6 +507,7 @@ class ParamOptGA(SingleFit):
         self.final_best_genome = None
         return
 
+    @timeit
     def run_ga(self):
         self.ga_dict[self.gact] = dict()
         self.ga_dict[self.gact]['generations'] = dict()
