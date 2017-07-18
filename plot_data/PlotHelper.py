@@ -49,6 +49,7 @@ class PlotHelper():
         self.numlines=0 #will be set in self.verify()
         self.smallfont = 0.85*self.fontsize
         matplotlib.rcParams.update({'font.size': self.fontsize})
+        matplotlib.rcParams.update({'axes.unicode_minus': False})
         self.verify()
         return
 
