@@ -18,17 +18,19 @@ class ConfigFileParser(object):
     def __init__(self, configfile):
         self.configfile = configfile
 
-    def get_config_dict(self):
-        return self._parse_config_file()
+    def get_config_dict(self, path_to_file):
+        return self._parse_config_file(path_to_file=path_to_file)
 
     def _get_config_dict_depth(self, test_dict, level=0):
         if not isinstance(test_dict, dict) or not test_dict:
             return level
         return max(self._get_config_dict_depth(test_dict=test_dict[k], level=level+1) for k in test_dict)
 
-    def _parse_config_file(self):
-        cwd = os.getcwd()
-        if os.path.exists(cwd+"/"+str(self.configfile)):
+    def _parse_config_file(self, path_to_file):
+        if not path_to_file:
+            path_to_file = os.getcwd()
+
+        if os.path.exists(path_to_file+"/"+str(self.configfile)):
             try:
                 config_dict = ConfigObj(self.configfile)
                 return config_dict
@@ -36,7 +38,7 @@ class ConfigFileParser(object):
                 print('Could not read in input file %s') % str(self.configfile)
                 sys.exit()
         else:
-            raise OSError('The input file you specified, %s, does not exist in the path %s' % (str(self.configfile), str(cwd)))
+            raise OSError('The input file you specified, %s, does not exist in the path %s' % (str(self.configfile), str(path_to_file)))
 
 class ConfigFileValidator(ConfigFileParser):
     """Class to validate contents of user-specified MASTML input file and flag any errors
@@ -47,9 +49,12 @@ class ConfigFileValidator(ConfigFileParser):
     def run_config_validation(self):
         errors_present = False
         validator = self._generate_validator()
-        configdict = self.get_config_dict()
-        validationdict_names = ConfigFileParser(configfile='mastmlinputvalidationnames.conf').get_config_dict()
-        validationdict_types = ConfigFileParser(configfile='mastmlinputvalidationtypes.conf').get_config_dict()
+        configdict = self.get_config_dict(path_to_file=os.getcwd())
+        config_files_path = configdict['General Setup']['config_files_path']
+        validationdict_names = ConfigFileParser(configfile='mastmlinputvalidationnames.conf').get_config_dict(path_to_file=config_files_path)
+        validationdict_types = ConfigFileParser(configfile='mastmlinputvalidationtypes.conf').get_config_dict(path_to_file=config_files_path)
+        #validationdict_names = ConfigFileParser(configfile='mastmlinputvalidationnames.conf').get_config_dict(path_to_file=None)
+        #validationdict_types = ConfigFileParser(configfile='mastmlinputvalidationtypes.conf').get_config_dict(path_to_file=None)
         logging.info('MASTML is checking that the section names of your input file are valid...')
         configdict, errors_present = self._check_config_headings(configdict=configdict, validationdict=validationdict_names,
                                                                  validator=validator, errors_present=errors_present)

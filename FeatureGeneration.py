@@ -7,6 +7,7 @@ from pymatgen import Element, Composition
 from pymatgen.matproj.rest import MPRester
 from citrination_client import *
 from DataOperations import DataframeUtilities
+from MASTMLInitializer import ConfigFileParser
 
 class MagpieFeatureGeneration(object):
     """Class to generate new features using Magpie data and dataframe containing material compositions. Creates
@@ -59,7 +60,9 @@ class MagpieFeatureGeneration(object):
 
     def _get_atomic_magpie_features(self, composition):
         # Get .table files containing feature values for each element, assign file names as feature names
-        data_path = './magpiedata/magpie_elementdata'
+        configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
+        config_files_path = configdict['General Setup']['config_files_path']
+        data_path = config_files_path+'/magpiedata/magpie_elementdata'
         magpie_feature_names = []
         for f in os.listdir(data_path):
             if '.table' in f:
