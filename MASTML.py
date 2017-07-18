@@ -18,6 +18,7 @@ if env_display is None:
 from DataHandler import DataHandler
 import importlib
 import pandas as pd
+from SingleFit import timeit
 
 class MASTMLDriver(object):
 
@@ -202,10 +203,11 @@ class MASTMLDriver(object):
             # Generate additional descriptors, as specified in input file (optional)
             if generate_features:
                 dataframe = self._perform_feature_generation(dataframe=dataframe)
+                # Actually, the x_features_NOUSE is required if starting from no features and doing feature generation. Not renaming for now. RJ 7/17
                 Xdata, ydata, x_features_NOUSE, y_feature, dataframe = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe, target_feature=y_feature)
             
             # First remove features containing strings before doing feature normalization or other operations, but don't remove grouping features
-            x_features, dataframe_nostrings = MiscFeatureOperations(configdict=self.configdict).remove_features_containing_strings(dataframe=dataframe, x_features=x_features)
+            x_features, dataframe_nostrings = MiscFeatureOperations(configdict=self.configdict).remove_features_containing_strings(dataframe=dataframe, x_features=x_features_NOUSE)
             logging.debug("pre-changes:%s" % dataframe_nostrings.columns)
 
             # Normalize features (optional)
@@ -266,6 +268,7 @@ class MASTMLDriver(object):
             logging.info('Parsed the input data located under %s' % data_path)
         return data_dict
 
+    @timeit
     def _perform_feature_generation(self, dataframe):
         for k, v in self.configdict['Feature Generation'].items():
             # TODO: Here, True/False are strings. Change them with validator to be bools
@@ -282,6 +285,7 @@ class MASTMLDriver(object):
             #    dataframe = cfg.generate_citrine_features()
         return dataframe
 
+    @timeit
     def _perform_feature_selection(self, dataframe, x_features, y_feature):
         for k, v in self.configdict['Feature Selection'].items():
             # TODO: Here, True/False are strings. Change them with validator to be bools
