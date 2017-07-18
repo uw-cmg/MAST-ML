@@ -192,7 +192,8 @@ class PlotHelper():
         xdata_label = "%s_x" % nospace_label
         ydata_label = "%s_y" % nospace_label
         if usecsv is True:
-            savecsv = os.path.join(self.save_path,"%s_data_%s.csv" % (self.plotlabel, nospace_label))
+            #savecsv = os.path.join(self.save_path,"%s_data_%s.csv" % (self.plotlabel, nospace_label))
+            savecsv = "%s_data_%s.csv" % (self.plotlabel, nospace_label)
             xsection = self.write_csv_data_section(savecsv, self.xlabel, xdata_label)
             ysection = self.write_csv_data_section(savecsv, self.ylabel, ydata_label)
         else:
@@ -228,7 +229,8 @@ class PlotHelper():
         nospace_label = label.replace(" ","_").replace("-","_")
         xdata_label = "%s_x" % nospace_label
         ydata_label = "%s_y" % nospace_label
-        savecsv = os.path.join(self.save_path,"%s_data_%s.csv" % (self.plotlabel, nospace_label))
+        #savecsv = os.path.join(self.save_path,"%s_data_%s.csv" % (self.plotlabel, nospace_label))
+        savecsv = "%s_data_%s.csv" % (self.plotlabel, nospace_label)
         xsection = self.write_csv_data_section(savecsv, self.xlabel, xdata_label)
         ysection = self.write_csv_data_section(savecsv, self.ylabel, ydata_label)
         ect = 1
