@@ -7,6 +7,7 @@ import os
 import time
 import logging
 import copy
+from sklearn.externals import joblib
 logger = logging.getLogger()
 
 def timeit(method):
@@ -140,6 +141,7 @@ class SingleFit():
     def fit(self):
         self.get_trained_model()
         self.print_model()
+        self.save_model()
         return
    
     @timeit
@@ -166,6 +168,12 @@ class SingleFit():
         self.readme_list.append("----- Model parameters -----\n")
         for param, paramval in self.trained_model.get_params().items():
             self.readme_list.append("%s: %s\n" % (param, paramval))
+        return
+
+    def save_model(self):
+        pname = os.path.join(self.save_path, "model.pickle")
+        with open(pname,'wb') as pfile:
+            joblib.dump(self.model, pfile) 
         return
 
     def get_prediction(self):
