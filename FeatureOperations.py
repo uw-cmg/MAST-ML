@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from DataOperations import DataframeUtilities
-from collections import OrderedDict
+import sys
 
 class FeatureIO(object):
     """Class to selectively filter (add/remove) features from a dataframe
@@ -94,15 +94,34 @@ class FeatureNormalization(object):
     def get_original_dataframe(self):
         return self.dataframe
 
-    def normalize_features(self, x_features, y_feature, to_csv=True):
-        scaler = StandardScaler().fit(X=self.dataframe[x_features])
-        array_normalized = scaler.fit_transform(X=self.dataframe[x_features], y=self.dataframe[y_feature])
-        array_normalized = DataframeUtilities()._concatenate_arrays(X_array=array_normalized, y_array=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
+    def normalize_features(self, x_features, y_feature, normalize_x_features, normalize_y_feature, to_csv=True):
+        if normalize_x_features == bool(True) and normalize_y_feature == bool(False):
+            scaler = StandardScaler().fit(X=self.dataframe[x_features])
+            array_normalized = scaler.fit_transform(X=self.dataframe[x_features])
+            array_normalized = DataframeUtilities()._concatenate_arrays(X_array=array_normalized, y_array=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
+        elif normalize_x_features == bool(False) and normalize_y_feature == bool(True):
+            scaler = StandardScaler().fit(X=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
+            array_normalized = scaler.fit_transform(X=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
+            array_normalized = DataframeUtilities()._concatenate_arrays(X_array=np.asarray(self.dataframe[x_features]), y_array=array_normalized.reshape([-1, 1]))
+        elif normalize_x_features == bool(True) and normalize_y_feature == bool(True):
+            scaler_x = StandardScaler().fit(X=self.dataframe[x_features])
+            scaler_y = StandardScaler().fit(X=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
+            array_normalized_x = scaler_x.fit_transform(X=self.dataframe[x_features])
+            array_normalized_y = scaler_y.fit_transform(X=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
+            array_normalized = DataframeUtilities()._concatenate_arrays(X_array=array_normalized_x, y_array=array_normalized_y)
+        else:
+            "You must specify to normalize either x_features, y_feature, or both, or set perform_feature_normalization=False in the input file"
+            sys.exit()
+
         dataframe_normalized = DataframeUtilities()._array_to_dataframe(array=array_normalized)
         dataframe_normalized = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe_normalized, x_features=x_features, y_feature=y_feature, remove_first_row=False)
         if to_csv == True:
             dataframe_normalized.to_csv('input_data_normalized.csv')
-        return dataframe_normalized, scaler
+
+        if not (normalize_x_features == bool(True) and normalize_y_feature == bool(True)):
+            return dataframe_normalized, scaler
+        else:
+            return dataframe_normalized, (scaler_x, scaler_y)
 
     def minmax_scale_single_feature(self, featurename, smin=None, smax=None):
         feature = self.dataframe[featurename]
