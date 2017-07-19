@@ -187,10 +187,19 @@ class MASTMLDriver(object):
                     generate_features = False
             else:
                 generate_features = False
-            if self.configdict['General Setup']['normalize_features']== bool(True):
-                normalize_features = True
+
+            if 'Feature Normalization' in self.configdict.keys():
+                if self.configdict['Feature Normalization']['normalize_x_features'] == bool(True) or self.configdict['Feature Normalization']['normalize_x_features'] == "True":
+                    normalize_x_features = True
+                else:
+                    normalize_x_features = False
+                if self.configdict['Feature Normalization']['normalize_y_feature'] == bool(True) or self.configdict['Feature Normalization']['normalize_y_feature'] == "True":
+                    normalize_y_feature = True
+                else:
+                    normalize_y_feature = False
             else:
-                normalize_features = False
+                normalize_x_features = False
+                normalize_y_feature = False
 
             if 'Feature Selection' in self.configdict.keys():
                 if self.configdict['Feature Selection']['perform_feature_selection'] == bool(True) or self.configdict['Feature Selection']['perform_feature_selection'] == "True":
@@ -201,7 +210,8 @@ class MASTMLDriver(object):
                 select_features = False
 
             logging.info("Feature Generation: %s" % generate_features)
-            logging.info("Feature Normalization: %s" % normalize_features)
+            logging.info("Feature Normalization (x_features): %s" % normalize_x_features)
+            logging.info("Feature Normalization (y_feature): %s" % normalize_y_feature)
             logging.info("Feature Selection: %s" % select_features)
             # Parse input data file
             Xdata, ydata, x_features, y_feature, dataframe = self._parse_input_data(data_path)
@@ -224,7 +234,7 @@ class MASTMLDriver(object):
             dataframe_grouped = pd.DataFrame()
             if not (labeling_features is None):
                 dataframe_labeled = FeatureIO(dataframe=dataframe).keep_custom_features(features_to_keep=labeling_features, y_feature=y_feature)
-                if normalize_features:
+                if normalize_x_features == bool(True):
                     dataframe_labeled, scaler = FeatureNormalization(dataframe=dataframe_labeled).normalize_features(x_features=labeling_features, y_feature=y_feature)
             if not (grouping_feature is None):
                 dataframe_grouped = FeatureIO(dataframe=dataframe).keep_custom_features(features_to_keep=[grouping_feature], y_feature=y_feature)
@@ -271,9 +281,9 @@ class MASTMLDriver(object):
             logging.debug("pre-changes:%s" % dataframe_nostrings.columns)
 
             # Normalize features (optional)
-            if normalize_features is True:
+            if normalize_x_features == bool(True) or normalize_y_feature == bool(True):
                 fn = FeatureNormalization(dataframe=dataframe_nostrings)
-                dataframe_nostrings, scaler = fn.normalize_features(x_features=x_features, y_feature=y_feature)
+                dataframe_nostrings, scaler = fn.normalize_features(x_features=x_features, y_feature=y_feature, normalize_x_features=normalize_x_features, normalize_y_feature=normalize_y_feature)
                 x_features, y_feature = DataParser(configdict=self.configdict).get_features(dataframe=dataframe_nostrings, target_feature=y_feature)
 
             # Perform feature selection and dimensional reduction, as specified in the input file (optional)
