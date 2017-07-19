@@ -367,7 +367,7 @@ class MASTMLDriver(object):
 
             if k == 'feature_selection_algorithm':
                 logging.info('FEATURE SELECTION: Selecting features using a %s algorithm' % v)
-                fs = FeatureSelection(dataframe=dataframe, x_features=x_features, y_feature=y_feature, selection_type=self.configdict['Feature Selection']['selection_type'])
+                fs = FeatureSelection(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
                 if v == 'forward':
                     if int(self.configdict['Feature Selection']['number_of_features_to_keep']) <= len(x_features):
                         dataframe = fs.forward_selection(number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']), save_to_csv=True)

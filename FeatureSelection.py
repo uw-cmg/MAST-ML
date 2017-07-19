@@ -44,15 +44,15 @@ class DimensionalReduction(object):
 class FeatureSelection(object):
     """Class to conduct feature selection routines to reduce the number of input features for regression and classification problems.
     """
-    def __init__(self, dataframe, x_features, y_feature, selection_type='Regression'):
+    def __init__(self, dataframe, x_features, y_feature, selection_type=None):
         self.dataframe = dataframe
         self.x_features = x_features
         self.y_feature = y_feature
-        self.selection_type = selection_type
+        #self.selection_type = selection_type
 
-        if self.selection_type not in ['Regression', 'regression', 'Classification', 'classification']:
-            logging.info('ERROR: You must specify "selection_type" as either "regression" or "classification"')
-            sys.exit()
+        #if self.selection_type not in ['Regression', 'regression', 'Classification', 'classification']:
+        #    logging.info('ERROR: You must specify "selection_type" as either "regression" or "classification"')
+        #    sys.exit()
 
     @property
     def get_original_dataframe(self):
