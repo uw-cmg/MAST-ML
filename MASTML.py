@@ -146,9 +146,20 @@ class MASTMLDriver(object):
     def _parse_input_data(self, data_path=""):
         if not(os.path.isfile(data_path)):
             raise OSError("No file found at %s" % data_path)
+
         Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=self.configdict).parse_fromfile(datapath=data_path, as_array=False)
         # Remove dataframe entries that contain 'NaN'
-        dataframe = dataframe.dropna()
+
+        print('during import')
+        print(len(x_features))
+        print(dataframe.shape)
+
+        #dataframe = dataframe.dropna()
+
+        print('during import, after drop')
+        print(len(x_features))
+        print(dataframe.shape)
+
         return Xdata, ydata, x_features, y_feature, dataframe
 
     def _create_data_dict(self):
@@ -168,27 +179,45 @@ class MASTMLDriver(object):
                 grouping_feature = self.general_setup['grouping_feature']
             else:
                 grouping_feature = None
+
             if 'Feature Generation' in self.configdict.keys():
-                generate_features = True
+                if self.configdict['Feature Generation']['perform_feature_generation'] == bool(True) or self.configdict['Feature Generation']['perform_feature_generation'] == "True":
+                    generate_features = True
+                else:
+                    generate_features = False
             else:
                 generate_features = False
-            if self.configdict['General Setup']['normalize_features'] is True:
+            if self.configdict['General Setup']['normalize_features']== bool(True):
                 normalize_features = True
             else:
                 normalize_features = False
+
             if 'Feature Selection' in self.configdict.keys():
-                select_features = True
+                if self.configdict['Feature Selection']['perform_feature_selection'] == bool(True) or self.configdict['Feature Selection']['perform_feature_selection'] == "True":
+                    select_features = True
+                else:
+                    select_features = False
             else:
                 select_features = False
+
             logging.info("Feature Generation: %s" % generate_features)
             logging.info("Feature Normalization: %s" % normalize_features)
             logging.info("Feature Selection: %s" % select_features)
             # Parse input data file
             Xdata, ydata, x_features, y_feature, dataframe = self._parse_input_data(data_path)
+
+            print('after import')
+            print(len(x_features))
+            print(dataframe.shape)
+
             original_x_features = list(x_features)
             original_columns = list(dataframe.columns)
             # Remove any missing rows from dataframe
-            dataframe = dataframe.dropna()
+            #dataframe = dataframe.dropna()
+
+            print('after import and drop')
+            print(len(x_features))
+            print(dataframe.shape)
             
             # Save off label and grouping data
             dataframe_labeled = pd.DataFrame()
@@ -205,19 +234,50 @@ class MASTMLDriver(object):
                 dataframe = self._perform_feature_generation(dataframe=dataframe)
                 # Actually, the x_features_NOUSE is required if starting from no features and doing feature generation. Not renaming for now. RJ 7/17
                 Xdata, ydata, x_features_NOUSE, y_feature, dataframe = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe, target_feature=y_feature)
-            
+            else:
+                Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe, target_feature=y_feature)
+
+            print('after gen')
+            print(dataframe.shape)
+            #print(len(x_features_NOUSE))
+
+
             # First remove features containing strings before doing feature normalization or other operations, but don't remove grouping features
-            x_features, dataframe_nostrings = MiscFeatureOperations(configdict=self.configdict).remove_features_containing_strings(dataframe=dataframe, x_features=x_features_NOUSE)
+            if generate_features == bool(True):
+                x_features, dataframe_nostrings = MiscFeatureOperations(configdict=self.configdict).remove_features_containing_strings(dataframe=dataframe, x_features=x_features_NOUSE)
+                #Remove columns containing all entries of NaN
+                dataframe_nostrings = dataframe_nostrings.dropna(axis=1, how='all')
+                # Re-obtain x_feature list as some features may have been dropped
+                Xdata, ydata, x_features_NOUSE, y_feature, dataframe_nostrings = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe_nostrings,target_feature=y_feature)
+            else:
+                x_features, dataframe_nostrings = MiscFeatureOperations(configdict=self.configdict).remove_features_containing_strings(dataframe=dataframe, x_features=x_features)
+
+                print('after string remove')
+                print(len(x_features))
+                print(dataframe_nostrings.shape)
+
+                # Remove columns containing all entries of NaN
+                dataframe_nostrings = dataframe_nostrings.dropna(axis=1, how='all')
+
+                print('after dropna')
+                print(len(x_features))
+                print(dataframe_nostrings.shape)
+
+                # Re-obtain x_feature list as some features may have been dropped
+                Xdata, ydata, x_features, y_feature, dataframe_nostrings = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe_nostrings, target_feature=y_feature)
+
+
+
             logging.debug("pre-changes:%s" % dataframe_nostrings.columns)
 
             # Normalize features (optional)
-            if normalize_features:
+            if normalize_features is True:
                 fn = FeatureNormalization(dataframe=dataframe_nostrings)
                 dataframe_nostrings, scaler = fn.normalize_features(x_features=x_features, y_feature=y_feature)
                 x_features, y_feature = DataParser(configdict=self.configdict).get_features(dataframe=dataframe_nostrings, target_feature=y_feature)
 
             # Perform feature selection and dimensional reduction, as specified in the input file (optional)
-            if (select_features) and (y_feature in dataframe_nostrings.columns):
+            if (select_features == bool(True)) and (y_feature in dataframe_nostrings.columns):
                 # Remove any additional columns that are not x_features using to be fit to data
                 features = dataframe_nostrings.columns.values.tolist()
                 features_to_remove = []
