@@ -68,7 +68,9 @@ class MagpieFeatureGeneration(object):
             dataframe = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_magpie)
 
         if save_to_csv == bool(True):
-            dataframe.to_csv('input_with_magpie_features.csv', index=False)
+            # Need configdict to get save path
+            configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
+            dataframe.to_csv(configdict['General Setup']['save_path']+"/"+'input_with_magpie_features.csv', index=False)
 
         return dataframe
 

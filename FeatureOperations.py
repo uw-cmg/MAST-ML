@@ -4,7 +4,9 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from DataOperations import DataframeUtilities
+from MASTMLInitializer import ConfigFileParser
 import sys
+import os
 
 class FeatureIO(object):
     """Class to selectively filter (add/remove) features from a dataframe
@@ -116,7 +118,9 @@ class FeatureNormalization(object):
         dataframe_normalized = DataframeUtilities()._array_to_dataframe(array=array_normalized)
         dataframe_normalized = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe_normalized, x_features=x_features, y_feature=y_feature, remove_first_row=False)
         if to_csv == True:
-            dataframe_normalized.to_csv('input_data_normalized.csv')
+            # Need configdict to get save path
+            configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
+            dataframe_normalized.to_csv(configdict['General Setup']['save_path'] + "/" +'input_data_normalized.csv')
 
         if not (normalize_x_features == bool(True) and normalize_y_feature == bool(True)):
             return dataframe_normalized, scaler
