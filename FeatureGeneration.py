@@ -66,8 +66,10 @@ class MagpieFeatureGeneration(object):
             del dataframe_magpie['Material compositions']
             # Merge magpie feature dataframe with originally supplied dataframe
             dataframe = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_magpie)
+
         if save_to_csv == bool(True):
             dataframe.to_csv('input_with_magpie_features.csv', index=False)
+
         return dataframe
 
     def _get_atomic_magpie_features(self, composition):
