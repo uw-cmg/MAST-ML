@@ -29,7 +29,8 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 import mongo_data.mongo_utilities as mongoutil
 from custom_features import cf_help
-from DataParser import DataParser, FeatureIO, FeatureNormalization
+from DataOperations import DataParser
+from FeatureOperations import FeatureIO, FeatureNormalization
 
 class DBTTData():
     def __init__(self, save_path="",
@@ -93,6 +94,7 @@ class DBTTData():
         cas.export_spreadsheet(self.db, "expt_ivar_ignore", self.save_path)
         cas.transfer_nonignore_records(self.db, "ucsb_ivar_and_ivarplus","expt_ivar")
         self.add_standard_fields("expt_ivar")
+        cas.remove_field(self.db, "expt_ivar","original_reported_temperature_C")
         cas.export_spreadsheet(self.db, "expt_ivar", self.save_path)
         return
 

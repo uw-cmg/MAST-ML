@@ -225,7 +225,7 @@ class MASTMLWrapper(object):
             return model
         elif model_type == 'custom_model':
             model_dict = self.configdict['Model Parameters']['custom_model']
-            package_name = model_dict['package_name']
+            package_name = model_dict.pop('package_name') #return and remove
             import importlib
             module = importlib.import_module(package_name)
             model = module.model(**model_dict) #pass all the rest as kwargs
