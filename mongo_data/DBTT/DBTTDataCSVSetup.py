@@ -50,8 +50,8 @@ class DBTTData():
         self.set_up()
         #self.csv_expt_ivar('expt_ivar')
         #self.csv_cd_ivar('cd2_ivar')
-        self.csv_cd_lwr('cd2_lwr')
-        #self.mongo_expt_atr2()
+        #self.csv_cd_lwr('cd2_lwr')
+        self.csv_expt_atr2('expt_atr2')
         #self.mongo_standard_lwr()
         #self.add_models_and_scaling()
         return
@@ -117,16 +117,13 @@ class DBTTData():
         self.export_spreadsheet(cname)
         return
 
-    def mongo_expt_atr2(self):
-        cas.transfer_ignore_records(self.db, "atr2_2016","expt_atr2_ignore")
-        cas.export_spreadsheet(self.db, "atr2_2016_ignore", self.save_path)
-        cas.transfer_nonignore_records(self.db, "atr2_2016","expt_atr2")
-        cas.rename_field(self.db,"expt_atr2","alloy name", "Alloy")
-        dclean.standardize_alloy_names(self.db,"expt_atr2")
-        cas.add_basic_field(self.db, "expt_atr2", "dataset", "ATR2")
-        mcas.add_time_field(self.db, "expt_atr2")
-        self.add_standard_fields("expt_atr2")
-        cas.export_spreadsheet(self.db, "expt_atr2", self.save_path)
+    def csv_expt_atr2(self, cname):
+        self.dfs[cname].rename(columns={"alloy name": "Alloy"}, inplace=True)
+        self.standardize_alloy_names(cname, verbose=0)
+        self.dfs[cname]['dataset'] = "ATR2"
+        self.dfs[cname]['time_sec'] = self.dfs[cname]['fluence_n_cm2'] / self.dfs[cname]['flux_n_cm2_sec']
+        self.add_standard_fields(cname)
+        self.export_spreadsheet(cname)
         return
 
     def mongo_standard_lwr(self):
