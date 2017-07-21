@@ -22,6 +22,7 @@ import mongo_data.mongo_data_utilities as cas
 import mongo_data.DBTT.DBTT_mongo_data_utilities as mcas
 import mongo_data.DBTT.data_verification as dver
 import mongo_data.DBTT.alloy_property_utilities as apu
+import mongo_data.data_utilities.percent_converter as pconv
 import time
 from pymongo import MongoClient
 from bson.objectid import ObjectId
@@ -233,15 +234,51 @@ class DBTTData():
             Note that pandas indexing CHANGES after merges
         """
         self.add_alloy_fields(cname, verbose=0)
-        #self.add_atomic_percent_field(cname, verbose=0)
+        self.add_atomic_percent_field(cname, verbose=0)
         
-        #cas.add_log10_of_a_field(db, cname,"fluence_n_cm2")
-        #cas.add_log10_of_a_field(db, cname,"flux_n_cm2_sec")
+        self.add_log10_of_a_field(cname,"fluence_n_cm2")
+        self.add_log10_of_a_field(cname,"flux_n_cm2_sec")
+
+        for pval in [0.1,0.2,0.26]:
+            self.add_generic_effective_fluence_field(cname, ref_flux=3e10, pval=pval, verbose=1)
         #TTM ParamOptGA can now add the appropriate effective fluence field 20170518
-        #for pval in np.arange(0.0,1.01,0.01):
-        #    pvalstr = "%i" % (100*pval)
-        #    cas.add_generic_effective_fluence_field(db, cname, 3e10, pval)
         return
+
+    def add_log10_of_a_field(self, cname, colname):
+        self.dfs[cname]["log(%s)" % colname] = np.log10(self.dfs[cname][colname])
+        #print(self.dfs[cname])
+        return
+
+    def add_generic_effective_fluence_field(self, cname, ref_flux=3e10, pval=1, verbose=0):
+        """
+            Calculated by fluence*(ref_flux/flux)^p 
+            IVAR has ref_flux of 3e11 n/cm^2/sec (Odette 2005)
+            However, LWR conditions have lower flux, so use 3e10 n/cm^2/sec.
+            Args:
+                ref_flux <float>: reference flux in n/cm^2/sec
+                pval <float>: p value
+            Also adds a log10 field
+            G.R. Odette, T. Yamamoto, and D. Klingensmith, 
+            Phil. Mag. 85, 779-797 (2005)
+            With:
+                flux <float> in n/cm2/sec
+                fluence <float> in n/cm2
+                ref_flux <float>: reference flux in n/cm2/sec
+                pval <float>: p-value for exponent.
+            Effective fluence takes the form:
+            effective fluence ~= fluence * (ref_flux/flux)^p
+            or equivalently:
+            flux*effective time ~= flux*time * (ref_flux/flux)^p
+        """
+        pvalstr = "%s" % (pval*100.0)
+        newfield = "eff fl 100p=%s" % pvalstr
+        df = self.dfs[cname]
+        self.dfs[cname][newfield] = df.fluence_n_cm2 * np.power((ref_flux/df.flux_n_cm2_sec), pval)
+        self.add_log10_of_a_field(cname, newfield)
+        if (verbose > 0):
+            print(self.dfs[cname])
+        return
+
 
     def add_alloy_fields(self, cname, verbose=0):
         """Add alloy number, product ID, and weight percents
@@ -259,13 +296,21 @@ class DBTTData():
             print(self.dfs[cname][self.dfs[cname].isnull().any(axis=1)])
         return
 
-    def add_product_id_field(self, cname, verbose=0):
-        return
-    
-    def add_weight_percent_field(self, cname, verbose=0):
-        return
-    
     def add_atomic_percent_field(self, cname, verbose=0):
+        elemlist=["Cu","Ni","Mn","P","Si","C"]
+        for elem in elemlist:
+            self.dfs[cname]["at_percent_%s" % elem] = 0.0 #float column
+        for inum in self.dfs[cname].index:
+            compstr=""
+            for elem in elemlist:
+                elem_wt = self.dfs[cname].get_value(inum, "wt_percent_%s" % elem)
+                compstr = compstr + "%s %s," % (elem, elem_wt)
+            compstr = compstr[:-1] # remove last comma
+            outdict = pconv.main(compstr,'weight',verbose)
+            for elem in elemlist:
+                self.dfs[cname].set_value(inum, "at_percent_%s" % elem, float(outdict[elem]['perc_out']))
+        if verbose > 0:
+            print(self.dfs[cname])
         return
 
     def clean_cd_ivar(self, cname, verbose=1):
