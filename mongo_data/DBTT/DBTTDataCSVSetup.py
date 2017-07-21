@@ -108,8 +108,12 @@ class DBTTData():
         return
 
     def csv_cd_lwr(self, cname):
+        self.dfs[cname].rename(columns={"CD_delta_sigma_y_MPa":"delta_sigma_y_MPa"}, inplace=True)
         self.clean_lwr(cname)
-        #self.create_lwr(cname)"cd2_lwr", "cd_lwr_2017")
+        if not "temperature_C" in self.dfs[cname].columns:
+            print("Adding temperature column")
+            self.dfs[cname]['temperature_C'] = 290.0
+        self.add_standard_fields(cname)
         self.export_spreadsheet(cname)
         return
 
@@ -337,37 +341,26 @@ class DBTTData():
                 self.dfs[cname].set_value(inum, 'Alloy', standard_name)
         return
 
-    def clean_lwr(self, cname, verbose=1):
-        self.standardize_alloy_names(cname, verbose=1)
-        #[id_list, reason_list] = dclean.get_alloy_removal_ids(self.db, cname,
-        #            [1,2,8,41])
-        #mclean.flag_for_ignore(self.db, cname, id_list, reason_list)
-        #print(len(id_list))
-        #[id_list, reason_list] = dclean.get_empty_flux_or_fluence_removal_ids(self.db, cname)
-        #mclean.flag_for_ignore(self.db, cname, id_list, reason_list)
-        #print(len(id_list))
-        #[id_list, reason_list] = dclean.get_short_time_removal_ids(self.db,cname, 3e6)
-        #mclean.flag_for_ignore(self.db, cname, id_list, reason_list)
-        #print(len(id_list))
-        #[id_list, reason_list] = mclean.get_field_condition_to_remove(self.db,cname,
-        #                            "CD_delta_sigma_y_MPa","")
-        #mclean.flag_for_ignore(self.db, cname, id_list, reason_list)
-        #print(len(id_list))
+    def standardize_flux_and_fluence(self, cname, verbose=1):
+        self.dfs[cname]['flux_n_cm2_sec'] = self.dfs[cname]['flux_n_m2_sec'] / 100.0 / 100.0
+        self.dfs[cname]['fluence_n_cm2'] = self.dfs[cname]['fluence_n_m2'] / 100.0 / 100.0
         return
 
-
-    def create_lwr(self, cname, fromcname, verbose=1):
-        """Create LWR condition spreadsheet
-        """
-        cas.transfer_ignore_records(self.db, fromcname, "%s_ignore" % cname, verbose)
-        cas.export_spreadsheet(self.db, "%s_ignore" % cname, self.save_path)
-        cas.transfer_nonignore_records(self.db, fromcname, cname, verbose)
-        #Additional cleaning. Flux and fluence must be present for all records.
-        dclean.standardize_flux_and_fluence(self.db, cname)
-        cas.rename_field(self.db, cname, "CD_delta_sigma_y_MPa", "delta_sigma_y_MPa")
-        if not "temperature_C" in cas.list_all_fields(self.db, cname):
-            cas.add_basic_field(self.db, cname, "temperature_C", 290.0) # all at 290
-        self.add_standard_fields(cname)
+    def clean_lwr(self, cname, verbose=0):
+        # Standardize alloy names
+        self.standardize_alloy_names(cname, verbose)
+        # Use cm2 for flux and fluence, not m2
+        self.standardize_flux_and_fluence(cname, verbose)
+        # Drop empty flux and fluences
+        self.dfs[cname].dropna(axis=0, subset=['flux_n_cm2_sec','fluence_n_cm2'], inplace=True)
+        # Drop empty delta_sigma_y_MPa values
+        self.dfs[cname].dropna(axis=0, subset=['delta_sigma_y_MPa'], inplace=True)
+        #print(self.dfs[cname])
+        if verbose > 0:
+            print(self.dfs[cname][self.dfs[cname].isnull().any(axis=1)])
+        # Remove short times (below 30000000 second)
+        self.dfs[cname].drop(self.dfs[cname][self.dfs[cname].time_sec < 30e6].index, inplace=True)
+        #print(self.dfs[cname])
         return
 
     def reformat_lwr(db, cname, fromcname, verbose=1):
