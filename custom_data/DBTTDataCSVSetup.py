@@ -32,7 +32,7 @@ from DataOperations import DataParser
 from FeatureOperations import FeatureIO, FeatureNormalization
 import pandas as pd
 
-class DBTTData():
+class DBTTDataCSVSetup():
     def __init__(self, save_path="",
                     import_path="",
                     *args,
