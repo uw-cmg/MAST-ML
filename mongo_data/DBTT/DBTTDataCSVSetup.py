@@ -94,12 +94,9 @@ class DBTTData():
         return
 
     def csv_expt_ivar(self):
-        self.clean_expt_ivar("ucsb_ivar_and_ivarplus")
+        self.clean_expt_ivar("expt_ivar")
+        self.add_standard_fields("expt_ivar")
         if True == False:
-            cas.transfer_ignore_records(self.db, "ucsb_ivar_and_ivarplus","expt_ivar_ignore")
-            cas.export_spreadsheet(self.db, "expt_ivar_ignore", self.save_path)
-            cas.transfer_nonignore_records(self.db, "ucsb_ivar_and_ivarplus","expt_ivar")
-            self.add_standard_fields("expt_ivar")
             cas.remove_field(self.db, "expt_ivar","original_reported_temperature_C")
             cas.export_spreadsheet(self.db, "expt_ivar", self.save_path)
         return
@@ -140,21 +137,21 @@ class DBTTData():
 
     def clean_expt_ivar(self, cname, verbose=1):
         #remove LO
-        self.dfs['expt_ivar'].drop(self.dfs['expt_ivar'][self.dfs['expt_ivar'].Alloy == 'LO'].index, inplace=True)
-        #self.dfs['expt_ivar'].reset_index(drop=True, inplace=True)
-        #print(self.dfs['expt_ivar'])
+        self.dfs[cname].drop(self.dfs[cname][self.dfs[cname].Alloy == 'LO'].index, inplace=True)
+        #self.dfs[cname].reset_index(drop=True, inplace=True)
+        #print(self.dfs[cname])
         #
         #update some experimental temperatures
-        self.update_experimental_temperatures('expt_ivar') ##MAYBE MOVE ABOVE CLOSE DUPS
+        self.update_experimental_temperatures(cname) ##MAYBE MOVE ABOVE CLOSE DUPS
         #
         #remove duplicates
-        duplicates = self.get_true_duplicates_to_remove('expt_ivar')
-        self.dfs['expt_ivar'].drop(self.dfs['expt_ivar'][duplicates].index, inplace=True)
+        duplicates = self.get_true_duplicates_to_remove(cname)
+        self.dfs[cname].drop(self.dfs[cname][duplicates].index, inplace=True)
         #
         #remove close duplicates
-        close_duplicates = self.get_close_duplicates_to_remove('expt_ivar')
-        self.dfs['expt_ivar'].drop(self.dfs['expt_ivar'][close_duplicates].index, inplace=True)
-        print(self.dfs['expt_ivar'])
+        close_duplicates = self.get_close_duplicates_to_remove(cname)
+        self.dfs[cname].drop(self.dfs[cname][close_duplicates].index, inplace=True)
+        #print(self.dfs[cname])
         return
 
     def get_true_duplicates_to_remove(self, cname):
@@ -233,17 +230,42 @@ class DBTTData():
 
     def add_standard_fields(self, cname, verbose=0):
         """Add fields that are standard to most analysis
+            Note that pandas indexing CHANGES after merges
         """
-        mcas.add_alloy_number_field(self.db, cname, verbose=0)
-        mcas.add_product_id_field(self.db, cname, verbose=0)
-        mcas.add_weight_percent_field(self.db, cname, verbose=0)
-        mcas.add_atomic_percent_field(self.db, cname, verbose=0)
+        self.add_alloy_fields(cname, verbose=0)
+        #self.add_atomic_percent_field(cname, verbose=0)
+        
         #cas.add_log10_of_a_field(db, cname,"fluence_n_cm2")
         #cas.add_log10_of_a_field(db, cname,"flux_n_cm2_sec")
         #TTM ParamOptGA can now add the appropriate effective fluence field 20170518
         #for pval in np.arange(0.0,1.01,0.01):
         #    pvalstr = "%i" % (100*pval)
         #    cas.add_generic_effective_fluence_field(db, cname, 3e10, pval)
+        return
+
+    def add_alloy_fields(self, cname, verbose=0):
+        """Add alloy number, product ID, and weight percents
+        """
+        acols = list()
+        acols.append("Alloy")
+        acols.append("alloy_number")
+        acols.append("product_id")
+        for elem in ["Cu","Ni","Mn","P","Si","C"]:
+            acols.append("wt_percent_%s" % elem)
+        self.dfs[cname] = self.dfs[cname].merge(self.init_dfs['alloys'][acols], on=['Alloy'])
+        self.dfs[cname] = self.dfs[cname].fillna(0.0) #fill NaN in wt_percent_C column with zeros
+        if verbose > 0:
+            print(self.dfs[cname])
+            print(self.dfs[cname][self.dfs[cname].isnull().any(axis=1)])
+        return
+
+    def add_product_id_field(self, cname, verbose=0):
+        return
+    
+    def add_weight_percent_field(self, cname, verbose=0):
+        return
+    
+    def add_atomic_percent_field(self, cname, verbose=0):
         return
 
     def clean_cd_ivar(self, cname, verbose=1):
