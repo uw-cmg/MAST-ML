@@ -85,7 +85,11 @@ class MASTMLDriver(object):
         return
 
     def _initialize_mastml_session(self):
-        logging.basicConfig(filename='MASTMLlog.log', level='INFO')
+        level="INFO"
+        envlevel = os.getenv("MASTML_LOGLEVEL")
+        if not envlevel is None:
+            level = envlevel
+        logging.basicConfig(filename='MASTMLlog.log', level=level)
         current_time = time.strftime('%Y'+'-'+'%m'+'-'+'%d'+', '+'%H'+' hours, '+'%M'+' minutes, '+'and '+'%S'+' seconds')
         logging.info('Initiated new MASTML session at: %s' % current_time)
         self.start_time = time.strftime("%Y-%m-%d, %H:%M:%S")
@@ -186,8 +190,10 @@ class MASTMLDriver(object):
             Xdata, ydata, x_features, y_feature, dataframe = self._parse_input_data(data_path)
             original_x_features = list(x_features)
             original_columns = list(dataframe.columns)
+            logging.debug("original columns: %s" % original_columns)
             # Remove any missing rows from dataframe
             dataframe = dataframe.dropna()
+            dataframe_orig_dropped_na = dataframe.copy()
             
             # Save off label and grouping data
             dataframe_labeled = pd.DataFrame()
@@ -205,7 +211,7 @@ class MASTMLDriver(object):
                 Xdata, ydata, x_features_NOUSE, y_feature, dataframe = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe, target_feature=y_feature)
             
             # First remove features containing strings before doing feature normalization or other operations, but don't remove grouping features
-            x_features, dataframe_nostrings = MiscFeatureOperations(configdict=self.configdict).remove_features_containing_strings(dataframe=dataframe, x_features=x_features)
+            nonstring_x_features, dataframe_nostrings = MiscFeatureOperations(configdict=self.configdict).remove_features_containing_strings(dataframe=dataframe, x_features=x_features)
             logging.debug("pre-changes:%s" % dataframe_nostrings.columns)
 
             # Normalize features (optional)
@@ -243,6 +249,17 @@ class MASTMLDriver(object):
             # Now merge dataframes
             dataframe_labeled_grouped = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe_labeled, dataframe2=dataframe_grouped)
             dataframe_merged = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe_nostrings, dataframe2=dataframe_labeled_grouped)
+
+            #Add string columns back in
+            string_x_features = list()
+            for my_x_feature in x_features:
+                if my_x_feature in nonstring_x_features:
+                    pass
+                else:
+                    string_x_features.append(my_x_feature)
+            logging.debug("string features: %s" % string_x_features)
+            for string_x_feature in string_x_features:
+                dataframe_merged[string_x_feature] = dataframe_orig_dropped_na[string_x_feature]
 
             # Need to remove duplicate features after merging.
             logging.debug("merged:%s" % dataframe_merged.columns)
