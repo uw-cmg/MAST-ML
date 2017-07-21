@@ -51,8 +51,8 @@ class DBTTData():
         #self.csv_expt_ivar('expt_ivar')
         #self.csv_cd_ivar('cd2_ivar')
         #self.csv_cd_lwr('cd2_lwr')
-        self.csv_expt_atr2('expt_atr2')
-        #self.mongo_standard_lwr()
+        #self.csv_expt_atr2('expt_atr2')
+        self.csv_standard_lwr('standard_lwr')
         #self.add_models_and_scaling()
         return
 
@@ -126,10 +126,10 @@ class DBTTData():
         self.export_spreadsheet(cname)
         return
 
-    def mongo_standard_lwr(self):
-        self.create_standard_conditions("standard_lwr",
+    def csv_standard_lwr(self, cname):
+        self.create_standard_conditions(cname,
                         ref_flux=3e10, temp=290, min_sec=3e6, max_sec=5e9)
-        cas.export_spreadsheet(self.db, "standard_lwr", self.save_path)
+        self.export_spreadsheet(cname) 
         return
 
     def clean_expt_ivar(self, cname, verbose=1):
@@ -391,37 +391,20 @@ class DBTTData():
     def create_standard_conditions(self, cname, ref_flux=3e10, temp=290, min_sec=3e6, max_sec=5e9, clist=list(), verbose=0):
         #ref_flux in n/cm2/sec
         second_range = np.logspace(np.log10(min_sec), np.log10(max_sec), 50)
-        alloys = apu.get_alloy_names(self.db)
+        alloys = self.init_dfs['alloys'].Alloy.tolist()
+        index_size = len(alloys) * len(second_range)
+        newdf = pd.DataFrame(index=range(0, index_size), columns=['Alloy','time_sec'])
+        ict=0
         for alloy in alloys:
             for time_sec in second_range:
-                fluence = ref_flux * time_sec
-                self.db[cname].insert_one({"Alloy": alloy,
-                                    "time_sec": time_sec,
-                                    "fluence_n_cm2": fluence,
-                                    "flux_n_cm2_sec": ref_flux})
-        cas.add_basic_field(self.db, cname, "temperature_C", temp)
-        mcas.add_alloy_number_field(self.db, cname, verbose=0)
-        mcas.add_product_id_field(self.db, cname, verbose=0)
-        mcas.add_weight_percent_field(self.db, cname, verbose=0)
-        mcas.add_atomic_percent_field(self.db, cname, verbose=0)
-        #cas.add_log10_of_a_field(db, cname,"fluence_n_cm2")
-        #cas.add_log10_of_a_field(db, cname,"flux_n_cm2_sec")
-        ##TTM ParamOptGA will now add field
-        ##for pval in np.arange(0.0,1.01,0.01):
-        ##    pvalstr = "%i" % (100*pval)
-        ##    mcas.add_generic_effective_fluence_field(db, cname, 3e10, pval)
-        ##    cas.add_minmax_normalization_of_a_field(db, cname, 
-        ##            "log(eff fl 100p=%s)" % pvalstr,
-        ##            verbose=verbose, collectionlist = clist)
-        #cas.add_minmax_normalization_of_a_field(db, cname, "temperature_C",
-        #        setmin=270,setmax=320,
-        #        verbose=verbose, collectionlist = clist)
-        #cas.add_minmax_normalization_of_a_field(db, cname, "log(fluence_n_cm2)",
-        #        setmin=17, setmax=25,
-        #        verbose=verbose, collectionlist = clist)
-        #cas.add_minmax_normalization_of_a_field(db, cname, "log(flux_n_cm2_sec)",
-        #        setmin=10, setmax=15,
-        #        verbose=verbose, collectionlist = clist)
+                newdf.set_value(ict, 'Alloy', alloy)
+                newdf.set_value(ict, 'time_sec', time_sec)
+                ict = ict + 1
+        newdf['fluence_n_cm2'] = ref_flux * newdf.time_sec
+        newdf['flux_n_cm2_sec'] = ref_flux
+        newdf['temperature_C'] = temp
+        self.dfs[cname] = newdf
+        self.add_standard_fields(cname, verbose=0)
         return
 
     def csv_add_features(self, csvsrc, csvdest):
