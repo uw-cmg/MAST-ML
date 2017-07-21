@@ -4,6 +4,8 @@
 ################################
 from custom_models.BaseCustomModel import BaseCustomModel
 import numpy as np
+import pandas as pd
+import os
 class E900model(BaseCustomModel):
     def __init__(self, **kwargs):
         """
@@ -36,48 +38,46 @@ class E900model(BaseCustomModel):
         mn = input_data[self.wtMn]
         cu = input_data[self.wtCu]
         tempc = input_data[self.tempC]
-        flu = input_data[self.fluencestr]
-        prod = input_data[self.prod_ID]
 
-        numvals = len(p)
+        pdf = pd.DataFrame(index=input_data.index, columns=['Acol','Bcol','cc'])
+        pdf['fluence_n_m2'] = input_data[self.fluencestr] * 100.0 * 100.0
 
-        fluence_n_m2 = flu * 100.0 * 100.0
+        plates_idx = input_data[input_data[self.prod_ID] == "P"].index
+        forgings_idx = input_data[input_data[self.prod_ID] == "F"].index
+        srm_plates_idx = input_data[input_data[self.prod_ID] == "SRM"].index
+        weldings_idx = input_data[input_data[self.prod_ID] == "W"].index
 
-        plates = np.array(prod == "P")
-        forgings = np.array(prod == "F")
-        srm_plates = np.array(prod=="SRM")
-        weldings = np.array(prod == "W")
+        for idx in plates_idx:
+            pdf.set_value(idx, 'Acol', 1.080)
+            pdf.set_value(idx, 'Bcol', 0.819)
+        for idx in forgings_idx:
+            pdf.set_value(idx, 'Acol', 1.011)
+            pdf.set_value(idx, 'Bcol', 0.738)
+        for idx in srm_plates_idx:
+            pdf.set_value(idx, 'Acol', 1.080) #standard reference material plate
+            pdf.set_value(idx, 'Bcol', 0.819)
+        for idx in weldings_idx:
+            pdf.set_value(idx, 'Acol', 0.919)
+            pdf.set_value(idx, 'Bcol', 0.968)
 
-        Acol = np.empty(numvals)
-        Acol.fill(1.080) #plates as default
-        Acol[plates] = 1.080 #plate
-        Acol[forgings] = 1.011 #forging
-        Acol[srm_plates] = 1.080 #standard reference material plate
-        Acol[weldings] = 0.919 #weld
+        pdf['tts1'] = pdf.Acol * (5./9.) * 1.8943 * np.power(10.,-12.) * np.power(pdf['fluence_n_m2'],0.5695) * np.power(((1.8 * input_data[self.tempC] + 32.0)/550.0),-5.47) * np.power((0.09 + input_data[self.wtP]/0.012),0.216) * np.power((1.66 + (np.power(input_data[self.wtNi],8.54))/0.63),0.39) * np.power((input_data[self.wtMn]/1.36),0.3)
         
-        Bcol = np.empty(numvals)
-        Bcol.fill(0.819) #plates as default
-        Bcol[plates] = 0.819 #plate
-        Bcol[forgings] =  0.738 #forging
-        Bcol[srm_plates] = 0.819 #SRM plate
-        Bcol[weldings] = 0.968 #weld
+        pdf['Mcol'] = pdf.Bcol * np.maximum(np.minimum(113.87 * (np.log(pdf['fluence_n_m2']) - np.log(4.5 * np.power(10.0,20.0))), 612.6), 0.) * np.power(((1.8 * input_data[self.tempC] + 32.0)/550.0), -5.45) * np.power((0.1 + input_data[self.wtP]/0.012),-0.098) * np.power((0.168 + np.power(input_data[self.wtNi],0.58)/0.63),0.73)
 
-        tts1 = Acol * (5./9.) * 1.8943 * np.power(10.,-12.) * np.power(fluence_n_m2,0.5695) * np.power(((1.8 * tempc + 32.0)/550.0),-5.47) * np.power((0.09 + p/0.012),0.216) * np.power((1.66 + (np.power(ni,8.54))/0.63),0.39) * np.power((mn/1.36),0.3)
+        pdf['tts2'] = (5./9.) * np.maximum(np.minimum(cu, 0.28) - 0.053,0) * pdf.Mcol
+
+        pdf['tts'] = pdf.tts1 + pdf.tts2
+
+        pdf.cc[weldings_idx] = 0.55 + (1.2e-3) * pdf.tts[weldings_idx] - 1.33e-6 * np.power(pdf.tts[weldings_idx],2.0)
+        pdf.cc[plates_idx] = 0.45 + (1.945e-3) * pdf.tts[plates_idx] - 5.496e-6 * np.power(pdf.tts[plates_idx],2.0) + 8.473e-9 * np.power(pdf.tts[plates_idx],3.0)
+        pdf.cc[srm_plates_idx] = 0.45 + (1.945e-3) * pdf.tts[srm_plates_idx] - 5.496e-6 * np.power(pdf.tts[srm_plates_idx],2.0) + 8.473e-9 * np.power(pdf.tts[srm_plates_idx],3.0)
         
-        Mcol = Bcol * np.maximum(np.minimum(113.87 * (np.log(fluence_n_m2) - np.log(4.5 * np.power(10.0,20.0))), 612.6), 0.) * np.power(((1.8 * tempc + 32.0)/550.0), -5.45) * np.power((0.1 + p/0.012),-0.098) * np.power((0.168 + np.power(ni,0.58)/0.63),0.73)
-
-        tts2 = (5./9.) * np.maximum(np.minimum(cu, 0.28) - 0.053,0) * Mcol
-
-        tts = tts1 + tts2
-
-        cc = np.empty(numvals)
-        cc[weldings] = 0.55 + (1.2e-3) * tts[weldings] - 1.33e-6 * np.power(tts[weldings],2.0)
-        cc[plates] = 0.45 + (1.945e03) * tts[plates] - 5.496e-6 * np.power(tts[plates],2.0) + 8.473e-9 * np.power(tts[plates],3.0)
-        others = ~np.any([weldings, plates],axis=0)
-        cc[others] = 0.45 + (1.945e03) * tts[others] - 5.496e-6 * np.power(tts[others],2.0) + 8.473e-9 * np.power(tts[others],3.0)
+        pdf.cc[forgings_idx] = 0.45 + (1.945e-3) * pdf.tts[forgings_idx] - 5.496e-6 * np.power(pdf.tts[forgings_idx],2.0) + 8.473e-9 * np.power(pdf.tts[forgings_idx],3.0)
         
-        ds = tts / cc
-        return ds
+        pdf['ds'] = pdf['tts'] / pdf['cc']
+        pdf = pdf.merge(input_data, left_index=True, right_index=True)
+        pdf.to_csv(os.path.join(os.getcwd(),"E900.csv"))
+        return pdf['ds']
         
     def get_params(self):
         param_dict=dict()
