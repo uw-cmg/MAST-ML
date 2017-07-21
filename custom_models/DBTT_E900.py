@@ -3,7 +3,7 @@
 # E900 model for DBTT project
 ################################
 from custom_models.BaseCustomModel import BaseCustomModel
-class model(BaseCustomModel):
+class E900model(BaseCustomModel):
     def __init__(self, **kwargs):
         """
             self.wtP: feature name for weight percentage of P
@@ -22,7 +22,7 @@ class model(BaseCustomModel):
         self.fluencestr="fluence_n_cm2"
         self.tempC="temperature_C"
         self.prod_ID="Product ID"
-        BaseCustomModel.__init__(**kwargs)
+        BaseCustomModel.__init__(self, **kwargs)
         return
 
     def predict(self, input_data):
@@ -30,13 +30,13 @@ class model(BaseCustomModel):
             CC conversion of TTS to delta sigma Y is from ORNL/TM-2006/530
             equation 6-3 and 6-4.
         """
-        p = input_data[wtP]
-        ni = input_data[wtNi]
-        mn = input_data[wtMn]
-        cu = input_data[wtCu]
-        tempc = input_data[tempC]
-        flu = input_data[fluencestr]
-        prod = input_data[prod_ID]
+        p = input_data[self.wtP]
+        ni = input_data[self.wtNi]
+        mn = input_data[self.wtMn]
+        cu = input_data[self.wtCu]
+        tempc = input_data[self.tempC]
+        flu = input_data[self.fluencestr]
+        prod = input_data[self.prod_ID]
 
         numvals = len(p)
 
@@ -77,3 +77,14 @@ class model(BaseCustomModel):
         
         ds = tts / cc
         return ds
+        
+    def get_params(self):
+        param_dict=dict()
+        param_dict['wtP'] = self.wtP
+        param_dict['wtNi'] = self.wtNi
+        param_dict['wtMn'] = self.wtMn
+        param_dict['wtCu'] = self.wtCu
+        param_dict['fluencestr'] = self.fluencestr
+        param_dict['tempC'] = self.tempC
+        param_dict['prod_ID'] = self.prod_ID
+        return param_dict
