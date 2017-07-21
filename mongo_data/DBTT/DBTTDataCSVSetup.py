@@ -48,20 +48,18 @@ class DBTTData():
 
     def run(self):
         self.set_up()
-        #self.csv_expt_ivar('expt_ivar')
-        #self.csv_cd_ivar('cd2_ivar')
-        #self.csv_cd_lwr('cd2_lwr')
-        #self.csv_expt_atr2('expt_atr2')
+        print('Creating expt ivar')
+        self.csv_expt_ivar('expt_ivar')
+        print('Creating cd2 ivar')
+        self.csv_cd_ivar('cd2_ivar')
+        print('Creating cd2 lwr')
+        self.csv_cd_lwr('cd2_lwr')
+        print('Creating expt atr2')
+        self.csv_expt_atr2('expt_atr2')
+        print('Creating standard lwr')
         self.csv_standard_lwr('standard_lwr')
-        #self.add_models_and_scaling()
-        return
-
-    def add_models_and_scaling(self):
-        self.csv_add_features("cd2_ivar", "cd2_ivar_with_models_and_scaled")
-        self.csv_add_features("cd2_lwr", "cd2_lwr_with_models_and_scaled")
-        self.csv_add_features("standard_lwr","standard_lwr_with_models_and_scaled")
-        self.csv_add_features("expt_ivar", "expt_ivar_with_models_and_scaled")
-        self.csv_add_features("expt_atr2", "expt_atr2_with_models_and_scaled")
+        #for cname in self.dfs.keys():
+        #    self.csv_add_features(cname)
         return
 
     def set_up(self):
@@ -238,6 +236,7 @@ class DBTTData():
         for pval in [0.1,0.2,0.26]:
             self.add_generic_effective_fluence_field(cname, ref_flux=3e10, pval=pval, verbose=0)
         #TTM ParamOptGA can now add the appropriate effective fluence field 20170518
+        self.add_normalization(cname, verbose)
         return
 
     def export_spreadsheet(self, cname):
@@ -272,7 +271,7 @@ class DBTTData():
             or equivalently:
             flux*effective time ~= flux*time * (ref_flux/flux)^p
         """
-        pvalstr = "%s" % (pval*100.0)
+        pvalstr = "%i" % (pval*100.0)
         newfield = "eff fl 100p=%s" % pvalstr
         df = self.dfs[cname]
         self.dfs[cname][newfield] = df.fluence_n_cm2 * np.power((ref_flux/df.flux_n_cm2_sec), pval)
@@ -405,6 +404,41 @@ class DBTTData():
         newdf['temperature_C'] = temp
         self.dfs[cname] = newdf
         self.add_standard_fields(cname, verbose=0)
+        return
+    
+    def add_normalization(self, cname, verbose=0):
+        df = self.dfs[cname]
+        norm_dict = dict()
+        norm_dict['log(fluence_n_cm2)']=dict()
+        norm_dict['log(fluence_n_cm2)']['smin'] = 17
+        norm_dict['log(fluence_n_cm2)']['smax'] = 25
+        norm_dict['log(flux_n_cm2_sec)']=dict()
+        norm_dict['log(flux_n_cm2_sec)']['smin'] = 10
+        norm_dict['log(flux_n_cm2_sec)']['smax'] = 15
+        norm_dict['log(eff fl 100p=10)']=dict()
+        norm_dict['log(eff fl 100p=10)']['smin'] = 17
+        norm_dict['log(eff fl 100p=10)']['smax'] = 25
+        norm_dict['log(eff fl 100p=20)']=dict()
+        norm_dict['log(eff fl 100p=20)']['smin'] = 17
+        norm_dict['log(eff fl 100p=20)']['smax'] = 25
+        norm_dict['log(eff fl 100p=26)']=dict()
+        norm_dict['log(eff fl 100p=26)']['smin'] = 17
+        norm_dict['log(eff fl 100p=26)']['smax'] = 25
+        norm_dict['temperature_C']=dict()
+        norm_dict['temperature_C']['smin'] = 270
+        norm_dict['temperature_C']['smax'] = 320
+        for elem in ["P","C","Cu","Ni","Mn","Si"]:
+            norm_dict["at_percent_%s" % elem] = dict()
+            norm_dict["at_percent_%s" % elem]['smin'] = 0.0
+            norm_dict["at_percent_%s" % elem]['smax'] = 1.717 #max Mn atomic percent
+        for nkey in norm_dict.keys():
+            fnorm = FeatureNormalization(df)
+            scaled_feature = fnorm.minmax_scale_single_feature(nkey,
+                                smin=norm_dict[nkey]['smin'], 
+                                smax=norm_dict[nkey]['smax'])
+            fio = FeatureIO(df)
+            df = fio.add_custom_features(["N(%s)" % nkey],scaled_feature)
+        self.dfs[cname] = df
         return
 
     def csv_add_features(self, csvsrc, csvdest):
