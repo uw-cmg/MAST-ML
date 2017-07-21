@@ -3,6 +3,7 @@
 # E900 model for DBTT project
 ################################
 from custom_models.BaseCustomModel import BaseCustomModel
+import numpy as np
 class E900model(BaseCustomModel):
     def __init__(self, **kwargs):
         """
