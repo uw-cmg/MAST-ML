@@ -48,9 +48,9 @@ class DBTTData():
 
     def run(self):
         self.set_up()
-        self.csv_expt_ivar()
-        #self.mongo_cd_ivar()
-        #self.mongo_cd_lwr()
+        #self.csv_expt_ivar('expt_ivar')
+        #self.csv_cd_ivar('cd2_ivar')
+        self.csv_cd_lwr('cd2_lwr')
         #self.mongo_expt_atr2()
         #self.mongo_standard_lwr()
         #self.add_models_and_scaling()
@@ -94,28 +94,23 @@ class DBTTData():
         self.dfs['expt_atr2'] = self.init_dfs['atr2_2016'].copy()
         return
 
-    def csv_expt_ivar(self):
-        self.clean_expt_ivar("expt_ivar")
-        self.add_standard_fields("expt_ivar")
-        if True == False:
-            cas.remove_field(self.db, "expt_ivar","original_reported_temperature_C")
-            cas.export_spreadsheet(self.db, "expt_ivar", self.save_path)
+    def csv_expt_ivar(self, cname):
+        self.clean_expt_ivar(cname)
+        self.add_standard_fields(cname)
+        self.export_spreadsheet(cname)
         return
 
-    def mongo_cd_ivar(self):
-        cas.rename_field(self.db,"cd_ivar_2017","CD_delta_sigma_y_MPa","delta_sigma_y_MPa")
-        self.clean_cd_ivar("cd_ivar_2017") 
-        cas.transfer_ignore_records(self.db, "cd_ivar_2017","cd2_ivar_ignore")
-        cas.export_spreadsheet(self.db, "cd2_ivar_ignore", self.save_path)
-        cas.transfer_nonignore_records(self.db, "cd_ivar_2017","cd2_ivar")
-        self.add_standard_fields("cd2_ivar")
-        cas.export_spreadsheet(self.db, "cd2_ivar", self.save_path)
+    def csv_cd_ivar(self, cname):
+        self.dfs[cname].rename(columns={"CD_delta_sigma_y_MPa":"delta_sigma_y_MPa"}, inplace=True)
+        self.clean_cd_ivar(cname) 
+        self.add_standard_fields(cname)
+        self.export_spreadsheet(cname)
         return
 
-    def mongo_cd_lwr(self):
-        self.clean_lwr("cd_lwr_2017")
-        self.create_lwr("cd2_lwr", "cd_lwr_2017")
-        cas.export_spreadsheet(self.db, "cd2_lwr", self.save_path)
+    def csv_cd_lwr(self, cname):
+        self.clean_lwr(cname)
+        #self.create_lwr(cname)"cd2_lwr", "cd_lwr_2017")
+        self.export_spreadsheet(cname)
         return
 
     def mongo_expt_atr2(self):
@@ -240,8 +235,14 @@ class DBTTData():
         self.add_log10_of_a_field(cname,"flux_n_cm2_sec")
 
         for pval in [0.1,0.2,0.26]:
-            self.add_generic_effective_fluence_field(cname, ref_flux=3e10, pval=pval, verbose=1)
+            self.add_generic_effective_fluence_field(cname, ref_flux=3e10, pval=pval, verbose=0)
         #TTM ParamOptGA can now add the appropriate effective fluence field 20170518
+        return
+
+    def export_spreadsheet(self, cname):
+        if not os.path.isdir(self.save_path):
+            os.mkdir(self.save_path)
+        self.dfs[cname].to_csv(os.path.join(self.save_path, "%s.csv" % cname))
         return
 
     def add_log10_of_a_field(self, cname, colname):
@@ -314,36 +315,44 @@ class DBTTData():
         return
 
     def clean_cd_ivar(self, cname, verbose=1):
-        [id_list, reason_list] = dclean.get_alloy_removal_ids(self.db, cname, 
-                                    [1,2,8,41])
-        #                            [41,1,2,8,14,29])
-        mclean.flag_for_ignore(self.db, cname, id_list, reason_list)
-        print(len(id_list))
-        [id_list, reason_list] = dclean.get_duplicate_ids_to_remove(self.db, cname)
-        mclean.flag_for_ignore(self.db, cname, id_list, reason_list)
-        print(len(id_list))
-        [id_list, reason_list] = dclean.flag_bad_cd1_points(self.db, cname)
-        mclean.flag_for_ignore(self.db, cname, id_list, reason_list)
-        print(len(id_list))
+        #remove alloys with no hardness change and/or no data
+        for alloy in ["CM1","CM2","CM8","LO"]: #also CM14, CM29?
+            self.dfs[cname].drop(self.dfs[cname][self.dfs[cname].Alloy == alloy].index, inplace=True)
+        #
+        #remove duplicates
+        duplicates = self.get_true_duplicates_to_remove(cname)
+        self.dfs[cname].drop(self.dfs[cname][duplicates].index, inplace=True)
+        #
+        #[id_list, reason_list] = dclean.flag_bad_cd1_points(self.db, cname)
+        return
+    
+    def standardize_alloy_names(self, cname, verbose=1):
+        for inum in self.dfs[cname].index:
+            ialloy = self.dfs[cname].get_value(inum, 'Alloy')
+            alias_matches = self.init_dfs['alloys'][self.init_dfs['alloys'].alias_1 == ialloy]
+            for mnum in alias_matches.index:
+                standard_name = self.init_dfs['alloys'].get_value(mnum, 'Alloy')
+                if (verbose > 0):
+                    print("replacing %s with %s" % (ialloy, standard_name))
+                self.dfs[cname].set_value(inum, 'Alloy', standard_name)
         return
 
-
     def clean_lwr(self, cname, verbose=1):
-        dclean.standardize_alloy_names(self.db, cname)
-        [id_list, reason_list] = dclean.get_alloy_removal_ids(self.db, cname,
-                    [1,2,8,41])
-        mclean.flag_for_ignore(self.db, cname, id_list, reason_list)
-        print(len(id_list))
-        [id_list, reason_list] = dclean.get_empty_flux_or_fluence_removal_ids(self.db, cname)
-        mclean.flag_for_ignore(self.db, cname, id_list, reason_list)
-        print(len(id_list))
-        [id_list, reason_list] = dclean.get_short_time_removal_ids(self.db,cname, 3e6)
-        mclean.flag_for_ignore(self.db, cname, id_list, reason_list)
-        print(len(id_list))
-        [id_list, reason_list] = mclean.get_field_condition_to_remove(self.db,cname,
-                                    "CD_delta_sigma_y_MPa","")
-        mclean.flag_for_ignore(self.db, cname, id_list, reason_list)
-        print(len(id_list))
+        self.standardize_alloy_names(cname, verbose=1)
+        #[id_list, reason_list] = dclean.get_alloy_removal_ids(self.db, cname,
+        #            [1,2,8,41])
+        #mclean.flag_for_ignore(self.db, cname, id_list, reason_list)
+        #print(len(id_list))
+        #[id_list, reason_list] = dclean.get_empty_flux_or_fluence_removal_ids(self.db, cname)
+        #mclean.flag_for_ignore(self.db, cname, id_list, reason_list)
+        #print(len(id_list))
+        #[id_list, reason_list] = dclean.get_short_time_removal_ids(self.db,cname, 3e6)
+        #mclean.flag_for_ignore(self.db, cname, id_list, reason_list)
+        #print(len(id_list))
+        #[id_list, reason_list] = mclean.get_field_condition_to_remove(self.db,cname,
+        #                            "CD_delta_sigma_y_MPa","")
+        #mclean.flag_for_ignore(self.db, cname, id_list, reason_list)
+        #print(len(id_list))
         return
 
 
