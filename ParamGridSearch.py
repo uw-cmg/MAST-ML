@@ -105,7 +105,7 @@ class ParamGridSearch(SingleFit):
                 self.pop_params
                 self.pop_size
                 self.pop_stats
-                ?self.cv_divisions
+                self.pop_rmses
                 ?self.random_state
         """
         if not(training_dataset == testing_dataset):
@@ -143,13 +143,15 @@ class ParamGridSearch(SingleFit):
         self.pop_params=None
         self.pop_size=None
         self.pop_stats=None
-        self.cv_divisions=dict()
+        self.pop_rmses=None
         return 
 
     @timeit
     def run(self):
         self.set_up()
         self.evaluate_pop()
+        self.get_best_indivs()
+        self.print_readme()
         return
     @timeit
     def set_up(self):
@@ -160,16 +162,17 @@ class ParamGridSearch(SingleFit):
         logger.debug("afm dict: %s" % self.afm_dict)
         self.set_up_pop_params()
         logger.debug("Population size: %i" % len(self.pop_params))
-        #self.cv_divisions = self.get_cv_divisions(self.num_cvtests)
-        #self.set_up_cv()
         return
     
 
 
     @timeit
     def evaluate_pop(self):
-        """make model and new testing dataset for each pop member"""
+        """make model and new testing dataset for each pop member
+            and evaluate
+        """
         self.pop_stats=list()
+        self.pop_rmses=list()
         #for pidx in range(0, self.pop_size):
         for pidx in range(0, 2):
             indiv_params = self.pop_params[pidx]
@@ -190,6 +193,7 @@ class ParamGridSearch(SingleFit):
                         fix_random_for_testing = self.fix_random_for_testing,
                         num_folds = self.num_folds)
                 mycv.run()
+                self.pop_rmses.append(mycv.statistics['avg_fold_avg_rmses'])
             elif not (self.percent_leave_out is None):
                 mycv = LeaveOutPercentCV(training_dataset= indiv_dh,
                         testing_dataset= indiv_dh,
@@ -202,6 +206,7 @@ class ParamGridSearch(SingleFit):
                         fix_random_for_testing = self.fix_random_for_testing,
                         percent_leave_out = self.percent_leave_out)
                 mycv.run()
+                self.pop_rmses.append(mycv.statistics['avg_rmse'])
             else:
                 raise ValueError("Both self.num_folds and self.percent_leave_out are None. One or the other must be specified.")
             with open(os.path.join(indiv_path,"param_values"), 'w') as indiv_pfile:
@@ -210,7 +215,24 @@ class ParamGridSearch(SingleFit):
                         val = indiv_params[loc][param]
                         indiv_pfile.write("%s, %s: %s\n" % (loc, param, val))
             self.pop_stats.append(mycv.statistics)
-        print(mycv.statistics)
+        return
+
+    def get_best_indivs(self):
+        how_many = min(10, len(self.pop_rmses))
+        largeval=1e10
+        lowest = list()
+        params = copy.deepcopy(self.pop_params)
+        rmses = copy.deepcopy(self.pop_rmses)
+        lct=0
+        while lct < how_many:
+            minidx = np.argmin(rmses)
+            lowest.append((minidx, rmses[minidx], params[minidx]))
+            rmses[minidx]=largeval
+            lct = lct + 1
+        self.readme_list.append("----Minimum RMSE params----\n")
+        for lowitem in lowest:
+            self.readme_list.append("%s: %3.3f, %s\n" % (lowitem[0],lowitem[1],lowitem[2]))
+        self.readme_list.append("-----------------------\n")
         return
 
     def get_afm_updated_dataset(self, indiv_df, indiv_params):
@@ -375,41 +397,6 @@ class ParamGridSearch(SingleFit):
                 self.afm_dict[location][paramname]=paramval
         return
 
-    def get_cv_divisions(self, num_runs=0):
-        """Preset all CV divisions so that all individuals in all
-            generations have the same CV divisions.
-            Presetting division ensures that comparisons are consistent,
-            with only the genome changing between individual evaluations.
-        """
-        cv_divisions = list()
-        if not(self.num_folds is None):
-            for kn in range(num_runs):
-                kf = KFold(n_splits=self.num_folds, shuffle=True, random_state = self.random_state)
-                splits = kf.split(range(len(self.testing_dataset.target_data)))
-                sdict=dict()
-                sdict['train_index'] = list()
-                sdict['test_index'] = list()
-                for train, test in splits:
-                    sdict['train_index'].append(train)
-                    sdict['test_index'].append(test)
-                cv_divisions.append(dict(sdict))
-        elif not(self.percent_leave_out is None):
-            test_fraction = self.percent_leave_out / 100.0
-            for kn in range(num_runs):
-                plo = ShuffleSplit(n_splits=1, 
-                                test_size = test_fraction,
-                                random_state = self.random_state)
-                splits = plo.split(range(len(self.testing_dataset.target_data)))
-                sdict=dict()
-                sdict['train_index'] = list()
-                sdict['test_index'] = list()
-                for train, test in splits:
-                    sdict['train_index'].append(train)
-                    sdict['test_index'].append(test)
-                cv_divisions.append(dict(sdict))
-        else:
-            raise ValueError("Neither percent_leave_out nor num_folds appears to be set.")
-        return cv_divisions
 
     @timeit
     def fit(self):
