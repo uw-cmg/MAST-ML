@@ -3,9 +3,14 @@ import numpy as np
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import KFold
 from sklearn.model_selection import ShuffleSplit
+from KFoldCV import KFoldCV
+from LeaveOutPercentCV import LeaveOutPercentCV
 from plot_data.PlotHelper import PlotHelper
 from SingleFit import SingleFit
 from SingleFit import timeit
+from custom_features import cf_help
+from FeatureOperations import FeatureIO
+from DataHandler import DataHandler
 import pandas as pd
 import copy
 import logging
@@ -95,7 +100,8 @@ class ParamGridSearch(SingleFit):
                 self.opt_dict
                 self.afm_dict
                 self.pop_params
-                ?self.grid_dict
+                self.pop_size
+                self.pop_stats
                 ?self.cv_divisions
                 ?self.random_state
         """
@@ -131,12 +137,15 @@ class ParamGridSearch(SingleFit):
         self.opt_dict=None
         self.afm_dict=None
         self.pop_params=None
+        self.pop_size=None
+        self.pop_stats=None
         self.cv_divisions=dict()
         return 
 
     @timeit
     def run(self):
         self.set_up()
+        self.evaluate_pop()
         return
     @timeit
     def set_up(self):
@@ -154,12 +163,51 @@ class ParamGridSearch(SingleFit):
 
 
     @timeit
-    def run_grid(self):
+    def evaluate_pop(self):
         """make model and new testing dataset for each pop member"""
+        for pidx in range(0, self.pop_size):
+            indiv_params = self.pop_params[pidx]
+            indiv_model = copy.deepcopy(self.model)
+            indiv_model.set_params(**indiv_params['model'])
+            indiv_dataframe = copy.deepcopy(self.testing_dataset.data)
+            indiv_dataframe = self.get_afm_updated_dataset(indiv_dataframe, indiv_params)
+            logging.debug(indiv_dataframe)
+            indiv_dh = self.get_indiv_datahandler(indiv_dataframe)
+            logging.debug(indiv_dh)
+            stat_list=list()
+            for cvtest in range(0, self.num_cvtests):
+                if not(self.num_folds is None):
+                    mycv = KFoldCV()
+                elif not (self.percent_leave_out is None):
+                    mycv = LeaveOutPercentCV()
+                else:
+                    raise ValueError("Both self.num_folds and self.percent_leave_out are None. One or the other must be specified.")
+            self.pop_stats.append(stat_list)
         return
 
-    def get_updated_dataset(self):
-        return updated_dataset
+    def get_afm_updated_dataset(self, indiv_df, indiv_params):
+        """Update dataframe with additional feature methods
+        """
+        for afm in indiv_params.keys():
+            if afm == 'model': #model dealt with separately
+                continue 
+            afm_kwargs = dict(indiv_params[afm])
+            (feature_name,feature_data)=cf_help.get_custom_feature_data(afm,
+                        starting_dataframe = indiv_df,
+                        addl_feature_method_kwargs = dict(afm_kwargs))
+            fio = FeatureIO(indiv_df)
+            indiv_df = fio.add_custom_features([afm], feature_data)
+        return indiv_df
+
+    def get_indiv_datahandler(self, indiv_df):
+        indiv_dh = copy.deepcopy(self.testing_dataset)
+        indiv_dh.data = indiv_dataframe
+        for afm in indiv_params.keys():
+            if afm == 'model':
+                continue
+            indiv_dh.input_features.append(afm)
+        indiv_dh.set_up_data_from_features()
+        return indiv_dh
 
     def set_up_pop_params(self):
         self.pop_params=dict()
@@ -221,7 +269,8 @@ class ParamGridSearch(SingleFit):
             else:
                 self.pop_params[pct]=copy.deepcopy(single_dict)
                 pct = pct + 1
-        for noct in range(0, pct):
+        self.pop_size = pct
+        for noct in range(0, self.pop_size):
             for afm_loc in self.afm_dict.keys():
                 if not afm_loc in self.pop_params[noct].keys():
                     self.pop_params[noct][afm_loc] = dict()
