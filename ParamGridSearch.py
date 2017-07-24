@@ -1,9 +1,15 @@
 import os
 import numpy as np
 from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import KFold
+from sklearn.model_selection import ShuffleSplit
 from plot_data.PlotHelper import PlotHelper
 from SingleFit import SingleFit
 from SingleFit import timeit
+import pandas as pd
+import copy
+import logging
+logger = logging.getLogger()
 
 class ParamGridSearch(SingleFit):
     """Parameter optimization by grid search
@@ -30,9 +36,11 @@ class ParamGridSearch(SingleFit):
             Piece 4: The series type. Use:
                         'discrete': List will be given in piece 5
                         'continuous': Range and step will be given in piece 5
-            Piece 5: A comma-delimited list of 
+                        'continuous-log: Range and step will be given in piece 5
+            Piece 5: A colon-delimited list of 
                     (a) a discrete list of values to grid over, OR
-                    (b) start, end, number of points: numpy's np.linspace 
+                    (b) start, end, number of points: 
+                        numpy's np.linspace or np.logspace
                         function will be used to generate this list,
                         using an inclusive start and inclusive end
         param_2 <str>
@@ -40,6 +48,7 @@ class ParamGridSearch(SingleFit):
         param_4 <str>
         fix_random_for_testing <int>: 0 - use random numbers
                                       1 - fix randomizer for testing
+        num_cvtests <int>: Number of CV tests for each validation step
     Returns:
         Analysis in the save_path folder
         Plots results in a predicted vs. measured square plot.
@@ -59,17 +68,29 @@ class ParamGridSearch(SingleFit):
         param_3=None,
         param_4=None,
         fix_random_for_testing=0,
+        num_cvtests=5,
+        num_folds=None,
+        percent_leave_out=None,
+        processors=1,
         *args, **kwargs):
         """
         Additional class attributes to parent class:
             Set by keyword:
-            self.param_1
-            self.param_2
-            self.param_3
-            self.param_4
-            self.fix_random_for_testing
+                self.param_1
+                self.param_2
+                self.param_3
+                self.param_4
+                self.fix_random_for_testing
+                self.num_cvtests
+                self.num_folds
+                self.percent_leave_out
+                self.processors
             Set in code:
-            self.opt_dict
+                self.opt_dict
+                self.pop_params
+                ?self.grid_dict
+                ?self.cv_divisions
+                ?self.random_state
         """
         if not(training_dataset == testing_dataset):
             raise ValueError("Only testing_dataset will be used. Use the same values for training_dataset and testing_dataset")
@@ -80,14 +101,23 @@ class ParamGridSearch(SingleFit):
             save_path = save_path,
             xlabel=xlabel,
             ylabel=ylabel)
-        if int(fix_random_for_testing) == 1:
-            np.random.seed(0)
+        self.fix_random_for_testing = int(fix_random_for_testing)
+        if self.fix_random_for_testing == 1:
+            self.random_state = np.random.RandomState(0)
+        else:
+            self.random_state = np.random.RandomState()
         self.param_1 = param_1
         self.param_2 = param_2
         self.param_3 = param_3
         self.param_4 = param_4
+        self.num_cvtests = int(num_cvtests)
+        self.num_folds = num_folds
+        self.percent_leave_out = percent_leave_out
+        self.processors=int(processors)
         # Sets later in code
         self.opt_dict=None
+        self.pop_params=None
+        self.cv_divisions=dict()
         return 
 
     @timeit
@@ -98,16 +128,97 @@ class ParamGridSearch(SingleFit):
     def set_up(self):
         SingleFit.set_up(self)
         self.set_up_opt_dict()
-        self.set_up_cv()
+        self.set_up_pop_params()
+        logger.debug("Population size: %i" % len(self.pop_params))
+        #self.cv_divisions = self.get_cv_divisions(self.num_cvtests)
+        #self.set_up_cv()
         return
     
+
+
+    @timeit
+    def run_grid(self):
+        """make model and new testing dataset for each pop member"""
+        return
+
+    def get_updated_dataset(self):
+        return updated_dataset
+
+    def set_up_pop_params(self):
+        self.pop_params=dict()
+        flat_params=list()
+        for location in self.opt_dict.keys():
+            for param in self.opt_dict[location].keys():
+                paramlist=list()
+                for val in self.opt_dict[location][param]:
+                    paramlist.append([location,param,val])
+                flat_params.append(paramlist)
+        logger.debug(flat_params)
+        num_params = len(flat_params)
+        pct = 0
+        for aidx in range(0, len(flat_params[0])):
+            alocation = flat_params[0][aidx][0]
+            aparam = flat_params[0][aidx][1]
+            aval = flat_params[0][aidx][2]
+            single_dict=dict()
+            single_dict[alocation]=dict()
+            single_dict[alocation][aparam] = aval
+            if num_params > 1:
+                for bidx in range(0, len(flat_params[1])):
+                    blocation = flat_params[1][bidx][0]
+                    bparam = flat_params[1][bidx][1]
+                    bval = flat_params[1][bidx][2]
+                    if not blocation in single_dict.keys():
+                        single_dict[blocation]=dict()
+                    single_dict[blocation][bparam] = bval
+                    if num_params > 2:
+                        for cidx in range(0, len(flat_params[2])):
+                            clocation = flat_params[2][cidx][0]
+                            cparam = flat_params[2][cidx][1]
+                            cval = flat_params[2][cidx][2]
+                            if not clocation in single_dict.keys():
+                                single_dict[clocation]=dict()
+                            single_dict[clocation][cparam] = cval
+                            if num_params > 3:
+                                for didx in range(0, len(flat_params[3])):
+                                    dlocation = flat_params[3][didx][0]
+                                    dparam = flat_params[3][didx][1]
+                                    dval = flat_params[3][didx][2]
+                                    if not dlocation in single_dict.keys():
+                                        single_dict[dlocation]=dict()
+                                    single_dict[dlocation][dparam] = dval
+                                    if num_params > 4:
+                                        raise ValueError("Too many params")
+                                    else:
+                                        self.pop_params[pct]=dict(single_dict)
+                                        pct = pct + 1
+
+                            else:
+                                self.pop_params[pct]=dict(single_dict)
+                                pct = pct +1
+                    else:
+                        self.pop_params[pct]=dict(single_dict)
+                        pct = pct + 1
+            else:
+                self.pop_params[pct]=dict(single_dict)
+                pct = pct + 1
+        return
+
     def set_up_opt_dict(self):
+        self.opt_dict=dict()
         params = list()
-        params.append(self.param_1)
-        params.append(self.param_2)
-        params.append(self.param_3)
-        params.append(self.param_4)
+        if not (self.param_1 is None):
+            params.append(self.param_1)
+        if not (self.param_2 is None):
+            params.append(self.param_2)
+        if not (self.param_3 is None):
+            params.append(self.param_3)
+        if not (self.param_4 is None):
+            params.append(self.param_4)
+        if len(params) == 0:
+            raise ValueError("No parameters to optimize. Exiting")
         for paramstr in params:
+            logger.debug(paramstr)
             paramsplit = paramstr.strip().split(";")
             location = paramsplit[0].strip()
             paramname = paramsplit[1].strip()
@@ -115,25 +226,67 @@ class ParamGridSearch(SingleFit):
             if not(paramtype in ['int','float']):
                 raise ValueError("Parameter type %s must be 'int' or 'float'. Exiting." % paramtype)
             rangetype = paramsplit[3].strip().lower()
-            if not(rangetype in ['discrete','continuous']):
-                raise ValueError("Range type %s must be 'discrete' or 'continuous'. Exiting." % rangetype)
+            if not(rangetype in ['discrete','continuous','continuous-log']):
+                raise ValueError("Range type %s must be 'discrete' or 'continuous' or 'continuous-log'. Exiting." % rangetype)
             gridinfo = paramsplit[4].strip()
             if not location in self.opt_dict.keys():
                 self.opt_dict[location] = dict()
             if paramname in self.opt_dict[location].keys():
                 raise KeyError("Parameter %s for optimization of %s appears to be listed twice. Exiting." % (paramname, location))
+            gridsplit = gridinfo.split(":") #split colon-delimited
+            gridsplit = np.array(gridsplit, paramtype)
             if rangetype == 'discrete':
-                gridvals = gridinfo.split(",") #split comma-delimited
-                gridvals = np.array(gridvals, paramtype)
+                gridvals = gridsplit
             elif rangetype == 'continuous':
-                gridbounds = gridinfo.split(",")
-                gridvals = np.linspace(start=gridbounds[0],
-                                        stop=gridbounds[1],
-                                        num=gridbounds[2],
+                gridvals = np.linspace(start=gridsplit[0],
+                                        stop=gridsplit[1],
+                                        num=gridsplit[2],
+                                        endpoint=True,
+                                        dtype=paramtype)
+            elif rangetype == 'continuous-log':
+                gridvals = np.logspace(start=gridsplit[0],
+                                        stop=gridsplit[1],
+                                        num=gridsplit[2],
                                         endpoint=True,
                                         dtype=paramtype)
             self.opt_dict[location][paramname] = gridvals
         return
+
+    def get_cv_divisions(self, num_runs=0):
+        """Preset all CV divisions so that all individuals in all
+            generations have the same CV divisions.
+            Presetting division ensures that comparisons are consistent,
+            with only the genome changing between individual evaluations.
+        """
+        cv_divisions = list()
+        if not(self.num_folds is None):
+            for kn in range(num_runs):
+                kf = KFold(n_splits=self.num_folds, shuffle=True, random_state = self.random_state)
+                splits = kf.split(range(len(self.testing_dataset.target_data)))
+                sdict=dict()
+                sdict['train_index'] = list()
+                sdict['test_index'] = list()
+                for train, test in splits:
+                    sdict['train_index'].append(train)
+                    sdict['test_index'].append(test)
+                cv_divisions.append(dict(sdict))
+        elif not(self.percent_leave_out is None):
+            test_fraction = self.percent_leave_out / 100.0
+            for kn in range(num_runs):
+                plo = ShuffleSplit(n_splits=1, 
+                                test_size = test_fraction,
+                                random_state = self.random_state)
+                splits = plo.split(range(len(self.testing_dataset.target_data)))
+                sdict=dict()
+                sdict['train_index'] = list()
+                sdict['test_index'] = list()
+                for train, test in splits:
+                    sdict['train_index'].append(train)
+                    sdict['test_index'].append(test)
+                cv_divisions.append(dict(sdict))
+        else:
+            raise ValueError("Neither percent_leave_out nor num_folds appears to be set.")
+        return cv_divisions
 
     @timeit
     def fit(self):
