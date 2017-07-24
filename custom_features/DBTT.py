@@ -22,8 +22,7 @@ class DBTT():
             self.original_dataframe <data object>: Dataframe
             self.df <data object>: Dataframe
 
-        Each custom feature should take a parameter dictionary, with integers
-            as keys starting from zero, followed by keyword arguments.
+        Each custom feature should take keyword arguments.
         """
         if dataframe is None:
             raise ValueError("No dataframe.")
@@ -31,11 +30,9 @@ class DBTT():
         self.df = copy.deepcopy(dataframe)
         return
 
-    def calculate_EffectiveFluence(self, params=dict(), ref_flux = 3e10, flux_feature="",fluence_feature="", scale_min = 1e17, scale_max = 1e25):
+    def calculate_EffectiveFluence(self, pvalue=0, ref_flux = 3e10, flux_feature="",fluence_feature="", scale_min = 1e17, scale_max = 1e25, **params):
         """Calculate effective fluence
-            params[0]: p value
         """
-        pvalue = params[0]
         fluence = self.df[fluence_feature]
         flux = self.df[flux_feature]
 
