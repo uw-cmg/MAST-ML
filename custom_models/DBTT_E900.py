@@ -89,7 +89,7 @@ class E900model(BaseCustomModel):
         # Cc default to plates
         pdf.Cc = c_plates[0] + c_plates[1]*pdf.TTS + c_plates[2]*np.power(pdf.TTS, 2.0) + c_plates[3]*np.power(pdf.TTS, 3.0)
         # Cc for welds
-        pdf.loc[welds_idx, 'Cc'] = c_welds[0] + c_welds[1]*pdf.TTS[welds_idx] + c_welds[2]*np.power(pdf.TTS[welds_idx], 2.0) + c_welds[3]*np.power(pdf.TTS[welds_idx], 3.0)
+        pdf.loc[welds_idx, 'Cc'] = c_welds[0] + c_welds[1]*pdf.TTS + c_welds[2]*np.power(pdf.TTS, 2.0) + c_welds[3]*np.power(pdf.TTS, 3.0)
         # Get hardening (delta_sigma_y_MPa)
         pdf['delta_sigma_y_MPa'] = pdf.TTS / pdf.Cc
         pdf.to_csv(os.path.join(os.getcwd(),"E900.csv"))
