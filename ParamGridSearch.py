@@ -58,6 +58,7 @@ class ParamGridSearch(SingleFit):
             a list, of semicolon-delimited pieces, formatted like:
             class.method;parameter1:value1;parameter2:value2;... 
             These values will be passed on and not optimized.
+        mark_outlying_points <int>: See KFoldCV
     Returns:
         Analysis in the save_path folder
         Plots results in a predicted vs. measured square plot.
@@ -79,6 +80,7 @@ class ParamGridSearch(SingleFit):
         additional_feature_methods=None,
         fix_random_for_testing=0,
         num_cvtests=5,
+        mark_outlying_points=3,
         num_folds=None,
         percent_leave_out=None,
         processors=1,
@@ -93,6 +95,7 @@ class ParamGridSearch(SingleFit):
                 self.additional_feature_methods
                 self.fix_random_for_testing
                 self.num_cvtests
+                self.mark_outlying_points
                 self.num_folds
                 self.percent_leave_out
                 self.processors
@@ -130,6 +133,7 @@ class ParamGridSearch(SingleFit):
         else:
             self.additional_feature_methods = additional_feature_methods
         self.num_cvtests = int(num_cvtests)
+        self.mark_outlying_points = int(mark_outlying_points)
         self.num_folds = num_folds
         self.percent_leave_out = percent_leave_out
         self.processors=int(processors)
@@ -165,24 +169,42 @@ class ParamGridSearch(SingleFit):
     @timeit
     def evaluate_pop(self):
         """make model and new testing dataset for each pop member"""
-        for pidx in range(0, self.pop_size):
+        #for pidx in range(0, self.pop_size):
+        for pidx in range(0, 2):
             indiv_params = self.pop_params[pidx]
             indiv_model = copy.deepcopy(self.model)
             indiv_model.set_params(**indiv_params['model'])
-            indiv_dataframe = copy.deepcopy(self.testing_dataset.data)
-            indiv_dataframe = self.get_afm_updated_dataset(indiv_dataframe, indiv_params)
-            logging.debug(indiv_dataframe)
-            indiv_dh = self.get_indiv_datahandler(indiv_dataframe)
-            logging.debug(indiv_dh)
-            stat_list=list()
-            for cvtest in range(0, self.num_cvtests):
-                if not(self.num_folds is None):
-                    mycv = KFoldCV()
-                elif not (self.percent_leave_out is None):
-                    mycv = LeaveOutPercentCV()
-                else:
-                    raise ValueError("Both self.num_folds and self.percent_leave_out are None. One or the other must be specified.")
-            self.pop_stats.append(stat_list)
+            indiv_dh = self.get_indiv_datahandler(indiv_params)
+            #logging.debug(indiv_dh)
+            indiv_path = os.path.join(self.save_path, "indiv_%i" % pidx)
+            if not(self.num_folds is None):
+                mycv = KFoldCV(training_dataset= indiv_dh,
+                        testing_dataset= indiv_dh,
+                        model = indiv_model,
+                        save_path = indiv_path,
+                        xlabel = self.xlabel,
+                        ylabel = self.ylabel,
+                        mark_outlying_points = self.mark_outlying_points,
+                        num_cvtests = self.num_cvtests,
+                        fix_random_for_testing = self.fix_random_for_testing,
+                        num_folds = self.num_folds)
+                mycv.run()
+            elif not (self.percent_leave_out is None):
+                mycv = LeaveOutPercentCV(training_dataset= indiv_dh,
+                        testing_dataset= indiv_dh,
+                        model = indiv_model,
+                        save_path = indiv_path,
+                        xlabel = self.xlabel,
+                        ylabel = self.ylabel,
+                        mark_outlying_points = self.mark_outlying_points,
+                        num_cvtests = self.num_cvtests,
+                        fix_random_for_testing = self.fix_random_for_testing,
+                        percent_leave_out = self.percent_leave_out)
+                mycv.run()
+            else:
+                raise ValueError("Both self.num_folds and self.percent_leave_out are None. One or the other must be specified.")
+            self.pop_stats.append(mycv.statistics)
+        print(mycv.statistics)
         return
 
     def get_afm_updated_dataset(self, indiv_df, indiv_params):
@@ -199,8 +221,9 @@ class ParamGridSearch(SingleFit):
             indiv_df = fio.add_custom_features([afm], feature_data)
         return indiv_df
 
-    def get_indiv_datahandler(self, indiv_df):
+    def get_indiv_datahandler(self, indiv_params):
         indiv_dh = copy.deepcopy(self.testing_dataset)
+        indiv_dataframe = self.get_afm_updated_dataset(indiv_dh.data, indiv_params)
         indiv_dh.data = indiv_dataframe
         for afm in indiv_params.keys():
             if afm == 'model':
