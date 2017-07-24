@@ -80,7 +80,7 @@ class ParamGridSearch(SingleFit):
         additional_feature_methods=None,
         fix_random_for_testing=0,
         num_cvtests=5,
-        mark_outlying_points=3,
+        mark_outlying_points='0,3',
         num_folds=None,
         percent_leave_out=None,
         processors=1,
@@ -133,7 +133,7 @@ class ParamGridSearch(SingleFit):
         else:
             self.additional_feature_methods = additional_feature_methods
         self.num_cvtests = int(num_cvtests)
-        self.mark_outlying_points = int(mark_outlying_points)
+        self.mark_outlying_points = mark_outlying_points
         self.num_folds = num_folds
         self.percent_leave_out = percent_leave_out
         self.processors=int(processors)
@@ -169,6 +169,7 @@ class ParamGridSearch(SingleFit):
     @timeit
     def evaluate_pop(self):
         """make model and new testing dataset for each pop member"""
+        self.pop_stats=list()
         #for pidx in range(0, self.pop_size):
         for pidx in range(0, 2):
             indiv_params = self.pop_params[pidx]
@@ -203,6 +204,11 @@ class ParamGridSearch(SingleFit):
                 mycv.run()
             else:
                 raise ValueError("Both self.num_folds and self.percent_leave_out are None. One or the other must be specified.")
+            with open(os.path.join(indiv_path,"param_values"), 'w') as indiv_pfile:
+                for loc in indiv_params.keys():
+                    for param in indiv_params[loc].keys():
+                        val = indiv_params[loc][param]
+                        indiv_pfile.write("%s, %s: %s\n" % (loc, param, val))
             self.pop_stats.append(mycv.statistics)
         print(mycv.statistics)
         return
