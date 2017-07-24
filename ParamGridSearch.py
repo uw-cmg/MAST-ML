@@ -49,6 +49,10 @@ class ParamGridSearch(SingleFit):
         fix_random_for_testing <int>: 0 - use random numbers
                                       1 - fix randomizer for testing
         num_cvtests <int>: Number of CV tests for each validation step
+        additional_feature_methods <str>: comma-delimited string, or
+            a list, of semicolon-delimited pieces, formatted like:
+            class.method;parameter1:value1;parameter2:value2;... 
+            These values will be passed on and not optimized.
     Returns:
         Analysis in the save_path folder
         Plots results in a predicted vs. measured square plot.
@@ -67,6 +71,7 @@ class ParamGridSearch(SingleFit):
         param_2=None,
         param_3=None,
         param_4=None,
+        additional_feature_methods=None,
         fix_random_for_testing=0,
         num_cvtests=5,
         num_folds=None,
@@ -80,6 +85,7 @@ class ParamGridSearch(SingleFit):
                 self.param_2
                 self.param_3
                 self.param_4
+                self.additional_feature_methods
                 self.fix_random_for_testing
                 self.num_cvtests
                 self.num_folds
@@ -87,6 +93,7 @@ class ParamGridSearch(SingleFit):
                 self.processors
             Set in code:
                 self.opt_dict
+                self.afm_dict
                 self.pop_params
                 ?self.grid_dict
                 ?self.cv_divisions
@@ -110,12 +117,19 @@ class ParamGridSearch(SingleFit):
         self.param_2 = param_2
         self.param_3 = param_3
         self.param_4 = param_4
+        if type(additional_feature_methods) is list:
+            self.additional_feature_methods = list(additional_feature_methods)
+        elif type(additional_feature_methods) is str:
+            self.additional_feature_methods = additional_feature_methods.split(",")
+        else:
+            self.additional_feature_methods = additional_feature_methods
         self.num_cvtests = int(num_cvtests)
         self.num_folds = num_folds
         self.percent_leave_out = percent_leave_out
         self.processors=int(processors)
         # Sets later in code
         self.opt_dict=None
+        self.afm_dict=None
         self.pop_params=None
         self.cv_divisions=dict()
         return 
@@ -128,6 +142,9 @@ class ParamGridSearch(SingleFit):
     def set_up(self):
         SingleFit.set_up(self)
         self.set_up_opt_dict()
+        logger.debug("opt dict: %s" % self.opt_dict)
+        self.set_up_afm_dict()
+        logger.debug("afm dict: %s" % self.afm_dict)
         self.set_up_pop_params()
         logger.debug("Population size: %i" % len(self.pop_params))
         #self.cv_divisions = self.get_cv_divisions(self.num_cvtests)
@@ -153,7 +170,9 @@ class ParamGridSearch(SingleFit):
                 for val in self.opt_dict[location][param]:
                     paramlist.append([location,param,val])
                 flat_params.append(paramlist)
-        logger.debug(flat_params)
+        logger.debug("Flattened:")
+        for flat_item in flat_params:
+            logger.debug(flat_item)
         num_params = len(flat_params)
         pct = 0
         for aidx in range(0, len(flat_params[0])):
@@ -190,18 +209,27 @@ class ParamGridSearch(SingleFit):
                                     if num_params > 4:
                                         raise ValueError("Too many params")
                                     else:
-                                        self.pop_params[pct]=dict(single_dict)
+                                        self.pop_params[pct]=copy.deepcopy(single_dict)
                                         pct = pct + 1
 
                             else:
-                                self.pop_params[pct]=dict(single_dict)
+                                self.pop_params[pct]=copy.deepcopy(single_dict)
                                 pct = pct +1
                     else:
-                        self.pop_params[pct]=dict(single_dict)
+                        self.pop_params[pct]=copy.deepcopy(single_dict)
                         pct = pct + 1
             else:
-                self.pop_params[pct]=dict(single_dict)
+                self.pop_params[pct]=copy.deepcopy(single_dict)
                 pct = pct + 1
+        for noct in range(0, pct):
+            for afm_loc in self.afm_dict.keys():
+                if not afm_loc in self.pop_params[noct].keys():
+                    self.pop_params[noct][afm_loc] = dict()
+                for afm_param in self.afm_dict[afm_loc].keys():
+                    if afm_param in self.pop_params[noct][afm_loc].keys():
+                        raise ValueError("Parameter %s for module %s appears twice. Exiting." % (afm_param, afm_loc))
+                    self.pop_params[noct][afm_loc][afm_param] = self.afm_dict[afm_loc][afm_param]
+        #logger.debug(self.pop_params)
         return
 
     def set_up_opt_dict(self):
@@ -250,6 +278,23 @@ class ParamGridSearch(SingleFit):
                                         endpoint=True,
                                         dtype=paramtype)
             self.opt_dict[location][paramname] = gridvals
+        return
+    
+    def set_up_afm_dict(self):
+        self.afm_dict=dict()
+        if self.additional_feature_methods is None:
+            return
+        for paramstr in self.additional_feature_methods:
+            logger.debug(paramstr)
+            paramsplit = paramstr.strip().split(";")
+            location = paramsplit[0].strip()
+            if not location in self.afm_dict.keys():
+                self.afm_dict[location]=dict()
+            for argidx in range(1, len(paramsplit)):
+                argitem = paramsplit[argidx]
+                paramname = argitem.split(":")[0]
+                paramval = argitem.split(":")[1]
+                self.afm_dict[location][paramname]=paramval
         return
 
     def get_cv_divisions(self, num_runs=0):
