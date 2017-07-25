@@ -183,6 +183,7 @@ class ParamGridSearch(SingleFit):
         self.pop_stats=list()
         self.pop_rmses=list()
         for pidx in range(0, self.pop_size):
+            print("Individual %i/%i (index %i)" % (pidx+1, self.pop_size, pidx))
             indiv_params = self.pop_params[pidx]
             indiv_model = copy.deepcopy(self.model)
             indiv_model.set_params(**indiv_params['model'])
