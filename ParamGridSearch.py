@@ -193,7 +193,11 @@ class ParamGridSearch(SingleFit):
                         num_cvtests = self.num_cvtests,
                         fix_random_for_testing = self.fix_random_for_testing,
                         num_folds = self.num_folds)
-                mycv.run()
+                #mycv.run() #run separately instead
+                mycv.set_up()
+                mycv.fit()
+                mycv.predict()
+                mycv.print_readme()
                 self.pop_rmses.append(mycv.statistics['avg_fold_avg_rmses'])
             elif not (self.percent_leave_out is None):
                 mycv = LeaveOutPercentCV(training_dataset= indiv_dh,
@@ -206,7 +210,11 @@ class ParamGridSearch(SingleFit):
                         num_cvtests = self.num_cvtests,
                         fix_random_for_testing = self.fix_random_for_testing,
                         percent_leave_out = self.percent_leave_out)
-                mycv.run()
+                #mycv.run() #run separately instead
+                mycv.set_up()
+                mycv.fit()
+                mycv.predict()
+                mycv.print_readme()
                 self.pop_rmses.append(mycv.statistics['avg_rmse'])
             else:
                 raise ValueError("Both self.num_folds and self.percent_leave_out are None. One or the other must be specified.")
