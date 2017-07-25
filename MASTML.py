@@ -150,15 +150,15 @@ class MASTMLDriver(object):
         Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=self.configdict).parse_fromfile(datapath=data_path, as_array=False)
         # Remove dataframe entries that contain 'NaN'
 
-        print('during import')
-        print(len(x_features))
-        print(dataframe.shape)
+        #print('during import')
+        #print(len(x_features))
+        #print(dataframe.shape)
 
         #dataframe = dataframe.dropna()
 
-        print('during import, after drop')
-        print(len(x_features))
-        print(dataframe.shape)
+        #print('during import, after drop')
+        #print(len(x_features))
+        #print(dataframe.shape)
 
         return Xdata, ydata, x_features, y_feature, dataframe
 
@@ -216,18 +216,18 @@ class MASTMLDriver(object):
             # Parse input data file
             Xdata, ydata, x_features, y_feature, dataframe = self._parse_input_data(data_path)
 
-            print('after import')
-            print(len(x_features))
-            print(dataframe.shape)
+            #print('after import')
+            #print(len(x_features))
+            #print(dataframe.shape)
 
             original_x_features = list(x_features)
             original_columns = list(dataframe.columns)
             # Remove any missing rows from dataframe
             #dataframe = dataframe.dropna()
 
-            print('after import and drop')
-            print(len(x_features))
-            print(dataframe.shape)
+            #print('after import and drop')
+            #print(len(x_features))
+            #print(dataframe.shape)
             
             # Save off label and grouping data
             dataframe_labeled = pd.DataFrame()
@@ -244,12 +244,14 @@ class MASTMLDriver(object):
                 dataframe = self._perform_feature_generation(dataframe=dataframe)
                 # Actually, the x_features_NOUSE is required if starting from no features and doing feature generation. Not renaming for now. RJ 7/17
                 Xdata, ydata, x_features_NOUSE, y_feature, dataframe = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe, target_feature=y_feature)
+                #print('after gen')
+                #print(dataframe.shape)
+                #print(len(x_features_NOUSE))
+
             else:
                 Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe, target_feature=y_feature)
 
-            print('after gen')
-            print(dataframe.shape)
-            #print(len(x_features_NOUSE))
+
 
 
             # First remove features containing strings before doing feature normalization or other operations, but don't remove grouping features
@@ -262,19 +264,19 @@ class MASTMLDriver(object):
             else:
                 x_features, dataframe_nostrings = MiscFeatureOperations(configdict=self.configdict).remove_features_containing_strings(dataframe=dataframe, x_features=x_features)
 
-                print('after string remove')
-                print(len(x_features))
-                print(dataframe_nostrings.shape)
+            #print('after string remove')
+            #print(len(x_features))
+            #print(dataframe_nostrings.shape)
 
-                # Remove columns containing all entries of NaN
-                dataframe_nostrings = dataframe_nostrings.dropna(axis=1, how='all')
+            # Remove columns containing all entries of NaN
+            dataframe_nostrings = dataframe_nostrings.dropna(axis=1, how='all')
 
-                print('after dropna')
-                print(len(x_features))
-                print(dataframe_nostrings.shape)
+            #print('after dropna')
+            #print(len(x_features))
+            #print(dataframe_nostrings.shape)
 
-                # Re-obtain x_feature list as some features may have been dropped
-                Xdata, ydata, x_features, y_feature, dataframe_nostrings = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe_nostrings, target_feature=y_feature)
+            # Re-obtain x_feature list as some features may have been dropped
+            Xdata, ydata, x_features, y_feature, dataframe_nostrings = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe_nostrings, target_feature=y_feature)
 
 
 
@@ -344,7 +346,15 @@ class MASTMLDriver(object):
             # TODO: Here, True/False are strings. Change them with validator to be bools
             if k == 'add_magpie_features' and v == 'True':
                 logging.info('FEATURE GENERATION: Adding Magpie features to your feature list')
-                mfg = MagpieFeatureGeneration(dataframe=dataframe)
+                if self.configdict['Feature Generation']['include_magpie_atomic_features'] == 'True':
+                    logging.info('FEATURE GENERATION: Include all atomic features: True')
+                    mfg = MagpieFeatureGeneration(dataframe=dataframe, include_atomic_features=True)
+                elif self.configdict['Feature Generation']['include_magpie_atomic_features'] == 'False':
+                    logging.info('FEATURE GENERATION: Include all atomic features: False')
+                    mfg = MagpieFeatureGeneration(dataframe=dataframe, include_atomic_features=False)
+                else:
+                    logging.info('FEATURE GENERATION: Include all atomic features: False')
+                    mfg = MagpieFeatureGeneration(dataframe=dataframe, include_atomic_features=False)
                 dataframe = mfg.generate_magpie_features(save_to_csv=True)
             if k == 'add_materialsproject_features' and v == 'True':
                 logging.info('FEATURE GENERATION: Adding Materials Project features to your feature list')
@@ -399,7 +409,6 @@ class MASTMLDriver(object):
         model_list = []
         model_val = self.models_and_tests_setup['models']
         model_vals = list()
-        #print(model_val)
         if type(model_val) is str:
             logging.info('Getting model %s' % model_val)
             ml_model = self.mastmlwrapper.get_machinelearning_model(model_type=model_val)

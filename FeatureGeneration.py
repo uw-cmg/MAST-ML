@@ -13,8 +13,9 @@ class MagpieFeatureGeneration(object):
     """Class to generate new features using Magpie data and dataframe containing material compositions. Creates
      a dataframe and append features to existing feature dataframes
     """
-    def __init__(self, dataframe):
+    def __init__(self, dataframe, include_atomic_features):
         self.dataframe = dataframe
+        self.include_atomic_features = include_atomic_features
 
     @property
     def get_original_dataframe(self):
@@ -34,10 +35,15 @@ class MagpieFeatureGeneration(object):
         magpiedata_dict_min = {}
         magpiedata_dict_difference = {}
         magpiedata_dict_atomic = {}
+        magpiedata_dict_atomic_difference = {}
+        magpiedata_dict_atomic_ratio = {}
+
         magpiedata_atomic_together = {}
+        magpiedata_atomic_difference_together = {}
+        magpiedata_atomic_ratio_together = {}
 
         for composition in compositions:
-            magpiedata_composition_average, magpiedata_arithmetic_average, magpiedata_max, magpiedata_min, magpiedata_difference, magpiedata_atomic = self._get_computed_magpie_features(composition=composition)
+            magpiedata_composition_average, magpiedata_arithmetic_average, magpiedata_max, magpiedata_min, magpiedata_difference, magpiedata_atomic, magpiedata_atomic_difference, magpiedata_atomic_ratio = self._get_computed_magpie_features(composition=composition)
 
             magpiedata_dict_composition_average[composition] = magpiedata_composition_average
             magpiedata_dict_arithmetic_average[composition] = magpiedata_arithmetic_average
@@ -45,14 +51,22 @@ class MagpieFeatureGeneration(object):
             magpiedata_dict_min[composition] = magpiedata_min
             magpiedata_dict_difference[composition] = magpiedata_difference
 
-            #Group all atomic features from the compositions together into one big dict
-            magpiedata_atomic_together.update(magpiedata_atomic)
+            # Group all atomic features from the compositions together into one big dict
+            if self.include_atomic_features == bool(True):
+                magpiedata_atomic_together.update(magpiedata_atomic)
+                magpiedata_atomic_difference_together.update(magpiedata_atomic_difference)
+                magpiedata_atomic_ratio_together.update(magpiedata_atomic_ratio)
 
         #Make it so that the atomic features of a single composition are a descriptor for all compositions (fill out dataframe)
-        for composition in compositions:
-            magpiedata_dict_atomic[composition] = magpiedata_atomic_together
+        if self.include_atomic_features == bool(True):
+            for composition in compositions:
+                magpiedata_dict_atomic[composition] = magpiedata_atomic_together
+                magpiedata_dict_atomic_difference[composition] = magpiedata_atomic_difference_together
+                magpiedata_dict_atomic_ratio[composition] = magpiedata_atomic_ratio_together
 
-        magpiedata_dict_list = [magpiedata_dict_composition_average, magpiedata_dict_arithmetic_average, magpiedata_dict_max, magpiedata_dict_min, magpiedata_dict_difference, magpiedata_dict_atomic]
+        magpiedata_dict_list = [magpiedata_dict_composition_average, magpiedata_dict_arithmetic_average,
+                                magpiedata_dict_max, magpiedata_dict_min, magpiedata_dict_difference,
+                                magpiedata_dict_atomic, magpiedata_dict_atomic_difference, magpiedata_dict_atomic_ratio]
 
         dataframe = self.dataframe
         for magpiedata_dict in magpiedata_dict_list:
@@ -153,6 +167,24 @@ class MagpieFeatureGeneration(object):
                 #if feature_value is 'NaN':
                 #    magpiedata_composition_average[magpie_feature] = 'NaN'
 
+        # Calculate differences and ratios of atomic feature pairs
+        magpiedata_atomic_difference = {}
+        magpiedata_atomic_ratio = {}
+        distinct_element_pairs = []
+        for element in magpiedata_atomic.keys():
+            for element2 in magpiedata_atomic.keys():
+                if element2 is not element:
+                    if ((element, element2) and (element2, element)) not in distinct_element_pairs:
+                        distinct_element_pairs.append((element, element2))
+
+        for entry in distinct_element_pairs:
+            for (key1, value1), (key2, value2) in zip(magpiedata_atomic[entry[0]].items(), magpiedata_atomic[entry[1]].items()):
+                magpiedata_atomic_difference[str(entry[0])+"_"+str(entry[1])+"_"+key1+"_difference"] = abs(float(value1) - float(value2))
+                try:
+                    magpiedata_atomic_ratio[str(entry[0])+"_"+str(entry[1])+"_"+key1+"_ratio"] = float(value1) / float(value2)
+                except ZeroDivisionError:
+                    pass
+
         # Change names of features to reflect each computed type of magpie feature (max, min, etc.)
         magpiedata_composition_average_renamed = {}
         magpiedata_arithmetic_average_renamed = {}
@@ -170,12 +202,11 @@ class MagpieFeatureGeneration(object):
             magpiedata_min_renamed[key+"_min_value"] = magpiedata_min[key]
         for key in magpiedata_difference.keys():
             magpiedata_difference_renamed[key+"_difference"] = magpiedata_difference[key]
+        for key, value in magpiedata_atomic.items():
+            for key2, value2 in value.items():
+                magpiedata_atomic_renamed[str(key)+"_"+str(key2)] = value2
 
-        for element, magpiefeaturelist in magpiedata_atomic.items():
-            for magpiefeaturename, magpiefeaturevalue in magpiefeaturelist.items():
-                magpiedata_atomic_renamed[magpiefeaturename+"_"+element+"_"+"atomic_feature"] = magpiefeaturevalue
-
-        return (magpiedata_composition_average_renamed, magpiedata_arithmetic_average_renamed, magpiedata_max_renamed, magpiedata_min_renamed, magpiedata_difference_renamed, magpiedata_atomic_renamed)
+        return magpiedata_composition_average_renamed, magpiedata_arithmetic_average_renamed, magpiedata_max_renamed, magpiedata_min_renamed, magpiedata_difference_renamed, magpiedata_atomic_renamed, magpiedata_atomic_difference, magpiedata_atomic_ratio
 
     def _get_element_list(self, composition):
         element_amounts = composition.get_el_amt_dict()
