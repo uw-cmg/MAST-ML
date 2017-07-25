@@ -458,11 +458,21 @@ class ParamGridSearch(SingleFit):
         return
 
     def plot_single_rmse(self, col):
+        #adjust for log params if necessary
+        xdata = self.flat_results[col]
+        xlabel = col
+        for param in [self.param_1,self.param_2,self.param_3,self.param_4]:
+            if param is None:
+                continue
+            if col in param:
+                if 'log' in param:
+                    xdata = np.log(xdata)
+                    xlabel = "log %s" % col 
         kwargs = dict()
-        kwargs['xlabel'] = col
+        kwargs['xlabel'] = xlabel
         kwargs['ylabel'] = 'RMSE'
         kwargs['labellist'] = [col]
-        kwargs['xdatalist'] = [self.flat_results[col]]
+        kwargs['xdatalist'] = [xdata]
         kwargs['ydatalist'] = [self.flat_results['rmse']]
         kwargs['xerrlist'] = list([None])
         kwargs['yerrlist'] = list([None])
