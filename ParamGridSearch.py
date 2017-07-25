@@ -471,8 +471,8 @@ class ParamGridSearch(SingleFit):
                     if 'log' in init_param:
                         import numpy as np
                         xdata_raw = np.array(self.flat_results[col].values,'float')
-                        xdata = np.log(xdata_raw)
-                        xlabel = "log %s" % col 
+                        xdata = np.log10(xdata_raw)
+                        xlabel = "log10 %s" % col 
                         break
         kwargs = dict()
         kwargs['xlabel'] = xlabel
