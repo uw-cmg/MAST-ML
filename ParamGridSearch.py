@@ -273,6 +273,12 @@ class ParamGridSearch(SingleFit):
         for flat_item in flat_params:
             logger.debug(flat_item)
         num_params = len(flat_params)
+        pop_size=1
+        for fplist in flat_params:
+            pop_size = pop_size * len(fplist)
+        upper_limit = 1e6
+        if pop_size > upper_limit:
+            raise ValueError("Over %i grid points. Exiting.")
         pct = 0
         for aidx in range(0, len(flat_params[0])):
             alocation = flat_params[0][aidx][0]
@@ -321,6 +327,8 @@ class ParamGridSearch(SingleFit):
                 self.pop_params[pct]=copy.deepcopy(single_dict)
                 pct = pct + 1
         self.pop_size = pct
+        if not(self.pop_size == pop_size):
+            raise ValueError("Flat population size does not match dictionary population size. Exiting.")
         for noct in range(0, self.pop_size):
             for afm_loc in self.afm_dict.keys():
                 if not afm_loc in self.pop_params[noct].keys():
