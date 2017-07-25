@@ -103,6 +103,7 @@ class ParamGridSearch(SingleFit):
                 self.opt_dict
                 self.afm_dict
                 self.flat_params
+                self.flat_results
                 self.pop_params
                 self.pop_size
                 self.pop_stats
@@ -148,6 +149,7 @@ class ParamGridSearch(SingleFit):
         self.pop_stats=None
         self.pop_rmses=None
         self.pop_upper_limit=1e6
+        self.flat_results=None
         return 
 
     @timeit
@@ -156,6 +158,7 @@ class ParamGridSearch(SingleFit):
         self.evaluate_pop()
         self.get_best_indivs()
         self.flatten_results()
+        self.plot()
         self.print_readme()
         return
     @timeit
@@ -440,13 +443,41 @@ class ParamGridSearch(SingleFit):
     @timeit
     def plot(self):
         self.readme_list.append("----- Plotting -----\n")
-        notelist=list()
-        notelist.append("Mean over %i LO %i%% tests:" % (self.num_cvtests, self.percent_leave_out))
-        notelist.append("RMSE:")
-        notelist.append("    {:.2f} $\pm$ {:.2f}".format(self.statistics['avg_rmse'], self.statistics['std_rmse']))
-        notelist.append("Mean error:")
-        notelist.append("    {:.2f} $\pm$ {:.2f}".format(self.statistics['avg_mean_error'], self.statistics['std_mean_error']))
-        self.plot_best_worst_overlay(notelist=list(notelist))
+        cols=list() #repeated code; may want to reduce
+        for fplist in self.flat_params:
+            loc=fplist[0][0]
+            param=fplist[0][1]
+            cols.append("%s.%s" % (loc, param))
+        for col in cols:
+            self.plot_single_rmse(col)
+        #heat maps?
+        #for colx in cols:
+        #    for coly in cols:
+        #        if (colx == coly):
+        #            continue
+        return
+
+    def plot_single_rmse(self, col):
+        kwargs = dict()
+        kwargs['xlabel'] = col
+        kwargs['ylabel'] = 'RMSE'
+        kwargs['labellist'] = [col]
+        kwargs['xdatalist'] = [self.flat_results[col]]
+        kwargs['ydatalist'] = [self.flat_results['rmse']]
+        kwargs['xerrlist'] = list([None])
+        kwargs['yerrlist'] = list([None])
+        kwargs['notelist'] = list()
+        kwargs['guideline'] = 0
+        plotlabel="rmse_vs_%s" % col
+        plotlabel=plotlabel.replace(".","_") #mask periods
+        kwargs['plotlabel'] = plotlabel
+        kwargs['save_path'] = self.save_path
+        myph = PlotHelper(**kwargs)
+        myph.multiple_overlay()
+        self.readme_list.append("Plot %s.png created,\n" % plotlabel)
+        return
+
+    def plot_pair(self):
         return
 
     def flatten_results(self):
@@ -469,6 +500,7 @@ class ParamGridSearch(SingleFit):
                     flat_results.set_value(pct, colname, val)
             flat_results.set_value(pct, 'rmse', rmse)
         flat_results.to_csv(os.path.join(self.save_path, "results.csv"))
+        self.flat_results = flat_results
         return
 
     def set_up_cv(self):
