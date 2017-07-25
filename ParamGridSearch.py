@@ -106,6 +106,7 @@ class ParamGridSearch(SingleFit):
                 self.pop_size
                 self.pop_stats
                 self.pop_rmses
+                self.pop_upper_limit
                 ?self.random_state
         """
         if not(training_dataset == testing_dataset):
@@ -144,6 +145,7 @@ class ParamGridSearch(SingleFit):
         self.pop_size=None
         self.pop_stats=None
         self.pop_rmses=None
+        self.pop_upper_limit=1e6
         return 
 
     @timeit
@@ -276,8 +278,7 @@ class ParamGridSearch(SingleFit):
         pop_size=1
         for fplist in flat_params:
             pop_size = pop_size * len(fplist)
-        upper_limit = 1e6
-        if pop_size > upper_limit:
+        if pop_size > self.pop_upper_limit:
             raise ValueError("Over %i grid points. Exiting.")
         pct = 0
         for aidx in range(0, len(flat_params[0])):
