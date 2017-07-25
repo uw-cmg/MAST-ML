@@ -102,6 +102,7 @@ class ParamGridSearch(SingleFit):
             Set in code:
                 self.opt_dict
                 self.afm_dict
+                self.flat_params
                 self.pop_params
                 self.pop_size
                 self.pop_stats
@@ -141,6 +142,7 @@ class ParamGridSearch(SingleFit):
         # Sets later in code
         self.opt_dict=None
         self.afm_dict=None
+        self.flat_params=None
         self.pop_params=None
         self.pop_size=None
         self.pop_stats=None
@@ -153,6 +155,7 @@ class ParamGridSearch(SingleFit):
         self.set_up()
         self.evaluate_pop()
         self.get_best_indivs()
+        self.flatten_results()
         self.print_readme()
         return
     @timeit
@@ -162,6 +165,7 @@ class ParamGridSearch(SingleFit):
         logger.debug("opt dict: %s" % self.opt_dict)
         self.set_up_afm_dict()
         logger.debug("afm dict: %s" % self.afm_dict)
+        self.flatten_params()
         self.set_up_pop_params()
         logger.debug("Population size: %i" % len(self.pop_params))
         return
@@ -269,8 +273,7 @@ class ParamGridSearch(SingleFit):
         indiv_dh.set_up_data_from_features()
         return indiv_dh
 
-    def set_up_pop_params(self):
-        self.pop_params=dict()
+    def flatten_params(self):
         flat_params=list()
         for location in self.opt_dict.keys():
             for param in self.opt_dict[location].keys():
@@ -281,12 +284,19 @@ class ParamGridSearch(SingleFit):
         logger.debug("Flattened:")
         for flat_item in flat_params:
             logger.debug(flat_item)
-        num_params = len(flat_params)
         pop_size=1
         for fplist in flat_params:
             pop_size = pop_size * len(fplist)
         if pop_size > self.pop_upper_limit:
             raise ValueError("Over %i grid points. Exiting.")
+        self.pop_size = pop_size
+        self.flat_params = flat_params
+        return
+
+    def set_up_pop_params(self):
+        self.pop_params=dict()
+        flat_params = self.flat_params
+        num_params = len(flat_params)
         pct = 0
         for aidx in range(0, len(flat_params[0])):
             alocation = flat_params[0][aidx][0]
@@ -334,8 +344,7 @@ class ParamGridSearch(SingleFit):
             else:
                 self.pop_params[pct]=copy.deepcopy(single_dict)
                 pct = pct + 1
-        self.pop_size = pct
-        if not(self.pop_size == pop_size):
+        if not(self.pop_size == pct):
             raise ValueError("Flat population size does not match dictionary population size. Exiting.")
         for noct in range(0, self.pop_size):
             for afm_loc in self.afm_dict.keys():
@@ -438,6 +447,28 @@ class ParamGridSearch(SingleFit):
         notelist.append("Mean error:")
         notelist.append("    {:.2f} $\pm$ {:.2f}".format(self.statistics['avg_mean_error'], self.statistics['std_mean_error']))
         self.plot_best_worst_overlay(notelist=list(notelist))
+        return
+
+    def flatten_results(self):
+        """Flatten results into a csv
+        """
+        cols=list()
+        for fplist in self.flat_params:
+            loc=fplist[0][0]
+            param=fplist[0][1]
+            cols.append("%s.%s" % (loc, param))
+        cols.append('rmse')
+        flat_results = pd.DataFrame(index=range(0, self.pop_size), columns=cols)
+        for pct in range(0, self.pop_size):
+            params = self.pop_params[pct]
+            rmse = self.pop_rmses[pct]
+            for loc in params.keys():
+                for param in params[loc].keys():
+                    colname = "%s.%s" % (loc, param)
+                    val = params[loc][param]
+                    flat_results.set_value(pct, colname, val)
+            flat_results.set_value(pct, 'rmse', rmse)
+        flat_results.to_csv(os.path.join(self.save_path, "results.csv"))
         return
 
     def set_up_cv(self):
