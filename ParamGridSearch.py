@@ -461,17 +461,23 @@ class ParamGridSearch(SingleFit):
         #adjust for log params if necessary
         xdata = self.flat_results[col]
         xlabel = col
-        for param in [self.param_1,self.param_2,self.param_3,self.param_4]:
-            if param is None:
+        location=col.split(".")[0]
+        param=col.split(".")[1]
+        for init_param in [self.param_1,self.param_2,self.param_3,self.param_4]:
+            if init_param is None:
                 continue
-            if col in param:
-                if 'log' in param:
-                    xdata = np.log(xdata)
-                    xlabel = "log %s" % col 
+            if location in init_param:
+                if param in init_param:
+                    if 'log' in init_param:
+                        import numpy as np
+                        xdata_raw = np.array(self.flat_results[col].values,'float')
+                        xdata = np.log(xdata_raw)
+                        xlabel = "log %s" % col 
+                        break
         kwargs = dict()
         kwargs['xlabel'] = xlabel
         kwargs['ylabel'] = 'RMSE'
-        kwargs['labellist'] = [col]
+        kwargs['labellist'] = [xlabel]
         kwargs['xdatalist'] = [xdata]
         kwargs['ydatalist'] = [self.flat_results['rmse']]
         kwargs['xerrlist'] = list([None])
