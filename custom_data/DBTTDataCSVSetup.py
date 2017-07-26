@@ -92,6 +92,7 @@ class DBTTDataCSVSetup():
         self.dfs[cname].rename(columns={"CD_delta_sigma_y_MPa":"delta_sigma_y_MPa"}, inplace=True)
         self.clean_cd_ivar(cname) 
         self.add_standard_fields(cname)
+        self.dfs[cname].rename(columns={'product_id_x':'product_id'}, inplace=True)
         self.export_spreadsheet(cname)
         return
 
