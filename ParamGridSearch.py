@@ -491,7 +491,7 @@ class ParamGridSearch(SingleFit):
         kwargs['save_path'] = self.save_path
         myph = PlotHelper(**kwargs)
         myph.multiple_overlay()
-        self.readme_list.append("Plot %s.png created,\n" % plotlabel)
+        self.readme_list.append("Plot %s.png created\n" % plotlabel)
         return
 
     def plot_pair(self):
