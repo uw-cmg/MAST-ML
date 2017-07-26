@@ -714,12 +714,11 @@ class PlotHelper():
         xvals = self.xdatalist[0]
         yvals = self.ydatalist[0]
         rmses = self.ydatalist[1]
-        plt.hexbin(xvals, yvals,
-                    C = rmses, 
-                    gridsize=15,
-                    cmap = cm.plasma,
-                    bins=None,
-                    vmax = max(rmses))
+        plt.scatter(xvals, yvals,
+                    s = 20,
+                    lw = 0,
+                    c = rmses,
+                    cmap = cm.plasma)
         plt.xlabel(self.xlabel)
         plt.ylabel(self.ylabel)
         cb = plt.colorbar()
@@ -753,6 +752,7 @@ class PlotHelper():
         scatter_series = ax.scatter(xvals, yvals, zvals,
                     marker='o',
                     c = rmses,
+                    lw = 0, 
                     s = 20,
                     cmap = cm.plasma)
         ax.set_xlabel(self.xlabel)
