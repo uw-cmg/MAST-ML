@@ -95,6 +95,7 @@ class PlotHelper():
     def sort_series(self, xvals, yvals, xerr, yerr, verbose=0):
         """Sort x and y according to x. 
         """
+        raise NotImplementedError("Deprecating sort_series")
         arraylist = list()
         arraylist.append(xvals)
         arraylist.append(yvals)
@@ -479,7 +480,7 @@ class PlotHelper():
             ydata = self.ydatalist[nidx]
             xerr = self.xerrlist[nidx]
             yerr = self.yerrlist[nidx]
-            [xdata,ydata,xerr,yerr] = self.sort_series(xdata,ydata,xerr,yerr)
+            #[xdata,ydata,xerr,yerr] = self.sort_series(xdata,ydata,xerr,yerr)
             (_, caps, _) = ax1.errorbar(xdata, ydata,
                 xerr=xerr,
                 yerr=yerr,
