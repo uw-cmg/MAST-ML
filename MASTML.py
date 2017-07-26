@@ -93,6 +93,8 @@ class MASTMLDriver(object):
         current_time = time.strftime('%Y'+'-'+'%m'+'-'+'%d'+', '+'%H'+' hours, '+'%M'+' minutes, '+'and '+'%S'+' seconds')
         logging.info('Initiated new MASTML session at: %s' % current_time)
         self.start_time = time.strftime("%Y-%m-%d, %H:%M:%S")
+        logging.info("Using matplotlib backend %s" % matplotlib.get_backend())
+        logging.info("Matplotlib defaults from %s" % matplotlib.matplotlib_fname())
         return
 
     def _initialize_html(self):
