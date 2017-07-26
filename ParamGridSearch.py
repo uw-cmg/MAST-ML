@@ -217,6 +217,7 @@ class ParamGridSearch(SingleFit):
         [indiv_rmse, indiv_stats] = self.evaluate_indiv(indiv_params, indiv_ct)
         pop_stats_dict[indiv_ct] = indiv_stats
         pop_rmses_list[indiv_ct] = indiv_rmse
+        print("Individual %i done (multiprocessing)" % indiv_ct)
         return
 
     def evaluate_indiv(self, indiv_params, indiv_ct):
