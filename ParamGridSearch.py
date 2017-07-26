@@ -183,14 +183,17 @@ class ParamGridSearch(SingleFit):
         """make model and new testing dataset for each pop member
             and evaluate
         """
-        self.pop_stats=list()
-        self.pop_rmses=list()
+        self.pop_stats=dict()
+        self.pop_rmses=np.zeros(self.pop_size)
+        from multiprocessing import Process, Manager
+        manager = Manager()
+
         for pidx in range(0, self.pop_size):
             print("Individual %i/%i (index %i)" % (pidx+1, self.pop_size, pidx))
             indiv_params = self.pop_params[pidx]
             [indiv_rmse, indiv_stats] = self.evaluate_indiv(indiv_params, pidx)
-            self.pop_stats.append(indiv_stats)
-            self.pop_rmses.append(indiv_rmse)
+            self.pop_stats[pidx] = indiv_stats
+            self.pop_rmses[pidx] = indiv_rmse
         return
 
     def evaluate_indiv(self, indiv_params, indiv_ct):
