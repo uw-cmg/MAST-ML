@@ -11,22 +11,12 @@
 #
 ###################
 import numpy as np
-import pymongo
 import os
 import sys
 import traceback
 import subprocess
-import mongo_data.mongo_data_cleaning as mclean
-import mongo_data.DBTT.DBTT_mongo_data_cleaning as dclean
-import mongo_data.mongo_data_utilities as cas
-import mongo_data.DBTT.DBTT_mongo_data_utilities as mcas
-import mongo_data.DBTT.data_verification as dver
-import mongo_data.DBTT.alloy_property_utilities as apu
 import mongo_data.data_utilities.percent_converter as pconv
 import time
-from pymongo import MongoClient
-from bson.objectid import ObjectId
-import mongo_data.mongo_utilities as mongoutil
 from custom_features import cf_help
 from DataOperations import DataParser
 from FeatureOperations import FeatureIO, FeatureNormalization
@@ -359,33 +349,6 @@ class DBTTDataCSVSetup():
         #print(self.dfs[cname])
         return
 
-    def reformat_lwr(db, cname, fromcname, verbose=1):
-        """Reformat CD LWR 2016 where each record has a number of
-            columns for each alloy number
-        """
-        raise NotImplementedError()
-        alloy_numbers = apu.get_alloy_numbers(db)
-        fields = cas.list_all_fields(db, fromcname)
-        transferfields = list(fields)
-        transferfields.remove("_id") # do not copy over ID from previous db
-        for alloy_num in alloy_numbers:
-            if str(alloy_num) in transferfields: #filter out alloy numbers
-                transferfields.remove(str(alloy_num))
-        records = db[fromcname].find()
-        for record in records:
-            for alloy_num in alloy_numbers:
-                idict=dict()
-                for tfield in transferfields:
-                    idict[tfield] = record[tfield]
-                try: 
-                    dsyval = float(record["%i" % alloy_num])
-                except (ValueError, KeyError): #might be Err!, blank, or not exist
-                    continue
-                idict["delta_sigma_y_MPa"] = dsyval
-                alloy_name = apu.look_up_name_or_number(db,alloy_num,"number")
-                idict["Alloy"] = alloy_name
-                db[cname].insert_one(idict)
-        return
 
     def create_standard_conditions(self, cname, ref_flux=3e10, temp=290, min_sec=3e6, max_sec=5e9, clist=list(), verbose=0):
         #ref_flux in n/cm2/sec
