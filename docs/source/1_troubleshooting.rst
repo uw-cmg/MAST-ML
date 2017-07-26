@@ -35,6 +35,8 @@ Generally KeyError’s come from not matching test_cases in the [models and test
 
 They can also be caused by not having updated the mastmlvalidationnames.conf and mastmlvalidationtypes.conf files.
 
+.. _matplotlib-backend:
+
 ***********************************************
 QXcbConnection: Could not connect to display 
 ***********************************************

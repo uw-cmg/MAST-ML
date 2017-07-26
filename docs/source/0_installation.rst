@@ -31,7 +31,7 @@ For Python and MAST-ml package installation, see:
 
 Note that in some situations, you may also need to change the
 matplotlib backend in order for plotting to work
-(see :doc:`1_troubleshooting`).
+(see :ref:`Matplotlib backend <matplotlib-backend>`).
 
 *******************
 Startup
