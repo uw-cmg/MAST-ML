@@ -287,7 +287,6 @@ class SingleFit():
         notelist.append("Mean abs error: %3.3f" % self.statistics['mean_absolute_error'])
         plot_kwargs['notelist'] = notelist
         plot_kwargs['save_path'] = self.save_path
-        plot_kwargs['xerr'] = self.testing_dataset.target_error_data
         if not (addl_plot_kwargs is None):
             for addl_plot_kwarg in addl_plot_kwargs:
                 plot_kwargs[addl_plot_kwarg] = addl_plot_kwargs[addl_plot_kwarg]
@@ -302,7 +301,10 @@ class SingleFit():
         #Data should already have been filtered by now
         plot_kwargs['xdatalist'] = [self.testing_dataset.target_data]
         plot_kwargs['ydatalist'] = [self.testing_dataset.target_prediction]
-        plot_kwargs['xerrlist']=[None]
+        if self.testing_dataset.target_error_feature is None:
+            plot_kwargs['xerrlist'] = [None]
+        else:
+            plot_kwargs['xerrlist'] = [self.testing_dataset.target_error_data]
         plot_kwargs['yerrlist']=[None]
         plot_kwargs['labellist'] = ["predicted_vs_measured"]
         myph = PlotHelper(**plot_kwargs)
