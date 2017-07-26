@@ -185,15 +185,38 @@ class ParamGridSearch(SingleFit):
         """
         self.pop_stats=dict()
         self.pop_rmses=np.zeros(self.pop_size)
-        from multiprocessing import Process, Manager
-        manager = Manager()
 
-        for pidx in range(0, self.pop_size):
-            print("Individual %i/%i (index %i)" % (pidx+1, self.pop_size, pidx))
-            indiv_params = self.pop_params[pidx]
-            [indiv_rmse, indiv_stats] = self.evaluate_indiv(indiv_params, pidx)
-            self.pop_stats[pidx] = indiv_stats
-            self.pop_rmses[pidx] = indiv_rmse
+        if self.processors == 1:
+            for pidx in range(0, self.pop_size):
+                print("Individual %i/%i (index %i)" % (pidx+1, self.pop_size, pidx))
+                indiv_params = self.pop_params[pidx]
+                [indiv_rmse, indiv_stats] = self.evaluate_indiv(indiv_params, pidx)
+                self.pop_stats[pidx] = indiv_stats
+                self.pop_rmses[pidx] = indiv_rmse
+        else:
+            from multiprocessing import Process, Manager
+            manager = Manager()
+            pop_stats_dict = manager.dict()
+            pop_rmses_list = manager.list(range(self.pop_size))
+            for pidx in range(0, self.pop_size):
+                pop_rmses_list[pidx] = 0
+            indiv_p_list=list()
+            for pidx in range(0, self.pop_size):
+                print("Individual %i/%i (index %i)" % (pidx+1, self.pop_size, pidx))
+                indiv_params = self.pop_params[pidx]
+                indiv_p = Process(target=self.evaluate_indiv_multiprocessing, args=(indiv_params, pidx, pop_stats_dict, pop_rmses_list))
+                indiv_p_list.append(indiv_p)
+                indiv_p.start()
+            for indiv_p in indiv_p_list:
+                indiv_p.join()
+            self.pop_stats = pop_stats_dict
+            self.pop_rmses = pop_rmses_list
+        return
+
+    def evaluate_indiv_multiprocessing(self, indiv_params, indiv_ct, pop_stats_dict, pop_rmses_list):
+        [indiv_rmse, indiv_stats] = self.evaluate_indiv(indiv_params, indiv_ct)
+        pop_stats_dict[indiv_ct] = indiv_stats
+        pop_rmses_list[indiv_ct] = indiv_rmse
         return
 
     def evaluate_indiv(self, indiv_params, indiv_ct):
