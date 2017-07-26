@@ -576,16 +576,20 @@ class PlotHelper():
             nbname = os.path.join(self.save_path, "%s.ipynb" % self.plotlabel))
         return
 
-    def print_data(self):
+    def print_data(self, ycol_labels=None):
         for nidx in range(0, self.numlines):
             label = self.labellist[nidx]
             nospace_label = label.replace(" ","_").replace("-","_")
             savecsv = os.path.join(self.save_path,"%s_data_%s.csv" % (self.plotlabel, nospace_label))
             dataframe = pd.DataFrame() #index = np.arange(0, len(self.xdatalist[nidx])))
+            if ycol_labels is None:
+                ylabel = self.ylabel
+            else:
+                ylabel = ycol_labels[nidx]
             dataframe[self.xlabel] = self.xdatalist[nidx]
             if not(self.xerrlist[nidx] is None):
                 dataframe['xerr'] = self.xerrlist[nidx]
-            dataframe[self.ylabel] = self.ydatalist[nidx]
+            dataframe[ylabel] = self.ydatalist[nidx]
             if not (self.yerrlist[nidx] is None):
                 dataframe['yerr'] = self.yerrlist[nidx]
             dataframe.to_csv(savecsv)
@@ -710,6 +714,38 @@ class PlotHelper():
         xvals = self.xdatalist[0]
         yvals = self.ydatalist[0]
         rmses = self.ydatalist[1]
+        plt.hexbin(xvals, yvals,
+                    C = rmses, 
+                    gridsize=15,
+                    cmap = cm.plasma,
+                    bins=None,
+                    vmax = max(rmses))
+        plt.xlabel(self.xlabel)
+        plt.ylabel(self.ylabel)
+        cb = plt.colorbar()
+        cb.set_label('RMSE')
+        plt.savefig(os.path.join(self.save_path, "%s" % self.plotlabel),
+                    bbox_inches='tight')
+        self.print_data(ycol_labels=[self.ylabel, 'RMSE']) #print csv for every plot
+        pname = os.path.join(self.save_path, "%s.pickle" % self.plotlabel)
+        with open(pname,'wb') as pfile:
+            pickle.dump(fig_handle, pfile) 
+        plt.close()
+        #No notebook support for hexbin types yet
+        print("No jupyter notebook will be printed for this plot.")
+        #self.write_notebook(picklename=pname, 
+        #    nbfigname = "%s_nb" % self.plotlabel,
+        #    nbname = os.path.join(self.save_path, "%s.ipynb" % self.plotlabel))
+        return
+    
+    def plot_3d_rmse_heatmap(self):
+        """Plot 3d rmse heatmap
+        """
+        fig_handle = plt.figure()
+        xvals = self.xdatalist[0]
+        yvals = self.ydatalist[0]
+        zvals = self.ydatalist[1]
+        rmses = self.ydatalist[2]
         plt.hexbin(xvals, yvals,
                     C = rmses, 
                     gridsize=15,
