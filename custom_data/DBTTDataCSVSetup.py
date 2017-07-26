@@ -344,8 +344,8 @@ class DBTTDataCSVSetup():
         #print(self.dfs[cname])
         if verbose > 0:
             print(self.dfs[cname][self.dfs[cname].isnull().any(axis=1)])
-        # Remove short times (below 30000000 second)
-        self.dfs[cname].drop(self.dfs[cname][self.dfs[cname].time_sec < 30e6].index, inplace=True)
+        # Remove short times (below 3000000 second)
+        self.dfs[cname].drop(self.dfs[cname][self.dfs[cname].time_sec < 3e6].index, inplace=True)
         #print(self.dfs[cname])
         return
 
