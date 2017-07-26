@@ -498,6 +498,8 @@ class ParamGridSearch(SingleFit):
             cols.append("%s.%s" % (loc, param))
         for col in cols:
             self.plot_single_rmse(col)
+        if len(cols) == 2:
+            self.plot_2d_rmse_heatmap(cols)
         #heat maps?
         #for colx in cols:
         #    for coly in cols:
@@ -505,10 +507,9 @@ class ParamGridSearch(SingleFit):
         #            continue
         return
 
-    def plot_single_rmse(self, col):
-        #adjust for log params if necessary
-        xdata = self.flat_results[col]
-        xlabel = col
+    def is_log_param(self, col):
+        """Check to see if flattened column was a log parameter
+        """
         location=col.split(".")[0]
         param=col.split(".")[1]
         for init_param in [self.param_1,self.param_2,self.param_3,self.param_4]:
@@ -517,11 +518,54 @@ class ParamGridSearch(SingleFit):
             if location in init_param:
                 if param in init_param:
                     if 'log' in init_param:
-                        import numpy as np
-                        xdata_raw = np.array(self.flat_results[col].values,'float')
-                        xdata = np.log10(xdata_raw)
-                        xlabel = "log10 %s" % col 
-                        break
+                        return True
+        return False
+
+    def plot_2d_rmse_heatmap(self, cols):
+        #adjust for log params if necessary
+        xcol = cols[0]
+        ycol = cols[1]
+        xdata = self.flat_results[xcol]
+        xlabel = xcol
+        if self.is_log_param(xcol):
+            import numpy as np
+            xdata_raw = np.array(self.flat_results[xcol].values,'float')
+            xdata = np.log10(xdata_raw)
+            xlabel = "log10 %s" % xcol 
+        ydata = self.flat_results[ycol]
+        ylabel = ycol
+        if self.is_log_param(ycol):
+            import numpy as np
+            ydata_raw = np.array(self.flat_results[ycol].values,'float')
+            ydata = np.log10(ydata_raw)
+            ylabel = "log10 %s" % ycol 
+        kwargs = dict()
+        kwargs['xlabel'] = xlabel
+        kwargs['ylabel'] = ylabel
+        kwargs['labellist'] = ['xy','rmse']
+        kwargs['xdatalist'] = [xdata, xdata]
+        kwargs['ydatalist'] = [ydata, self.flat_results['rmse']]
+        kwargs['xerrlist'] = [None, None]
+        kwargs['yerrlist'] = [None, None]
+        kwargs['notelist'] = list()
+        kwargs['guideline'] = 0
+        plotlabel="rmse_heatmap"
+        kwargs['plotlabel'] = plotlabel
+        kwargs['save_path'] = self.save_path
+        myph = PlotHelper(**kwargs)
+        myph.plot_2d_rmse_heatmap()
+        self.readme_list.append("Plot %s.png created\n" % plotlabel)
+        return
+
+    def plot_single_rmse(self, col):
+        #adjust for log params if necessary
+        xdata = self.flat_results[col]
+        xlabel = col
+        if self.is_log_param(col):
+            import numpy as np
+            xdata_raw = np.array(self.flat_results[col].values,'float')
+            xdata = np.log10(xdata_raw)
+            xlabel = "log10 %s" % col 
         kwargs = dict()
         kwargs['xlabel'] = xlabel
         kwargs['ylabel'] = 'RMSE'
