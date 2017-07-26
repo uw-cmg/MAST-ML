@@ -500,11 +500,8 @@ class ParamGridSearch(SingleFit):
             self.plot_single_rmse(col)
         if len(cols) == 2:
             self.plot_2d_rmse_heatmap(cols)
-        #heat maps?
-        #for colx in cols:
-        #    for coly in cols:
-        #        if (colx == coly):
-        #            continue
+        elif len(cols) == 3:
+            self.plot_3d_rmse_heatmap(cols)
         return
 
     def is_log_param(self, col):
@@ -520,22 +517,61 @@ class ParamGridSearch(SingleFit):
                     if 'log' in init_param:
                         return True
         return False
-
-    def plot_2d_rmse_heatmap(self, cols):
+    
+    def plot_3d_rmse_heatmap(self, cols):
         #adjust for log params if necessary
         xcol = cols[0]
         ycol = cols[1]
+        zcol = cols[2]
         xdata = self.flat_results[xcol]
         xlabel = xcol
         if self.is_log_param(xcol):
-            import numpy as np
             xdata_raw = np.array(self.flat_results[xcol].values,'float')
             xdata = np.log10(xdata_raw)
             xlabel = "log10 %s" % xcol 
         ydata = self.flat_results[ycol]
         ylabel = ycol
         if self.is_log_param(ycol):
-            import numpy as np
+            ydata_raw = np.array(self.flat_results[ycol].values,'float')
+            ydata = np.log10(ydata_raw)
+            ylabel = "log10 %s" % ycol 
+        zdata = self.flat_results[zcol]
+        zlabel = zcol
+        if self.is_log_param(zcol):
+            zdata_raw = np.array(self.flat_results[zcol].values,'float')
+            zdata = np.log10(zdata_raw)
+            zlabel = "log10 %s" % zcol 
+        kwargs = dict()
+        kwargs['xlabel'] = xlabel
+        kwargs['ylabel'] = ylabel
+        kwargs['labellist'] = ['xy',zlabel,'RMSE']
+        kwargs['xdatalist'] = [xdata, xdata, xdata]
+        kwargs['ydatalist'] = [ydata, zdata, self.flat_results['rmse']]
+        kwargs['xerrlist'] = [None, None, None]
+        kwargs['yerrlist'] = [None, None, None]
+        kwargs['notelist'] = list()
+        kwargs['guideline'] = 0
+        plotlabel="rmse_heatmap_3d"
+        kwargs['plotlabel'] = plotlabel
+        kwargs['save_path'] = self.save_path
+        myph = PlotHelper(**kwargs)
+        myph.plot_3d_rmse_heatmap()
+        self.readme_list.append("Plot %s.png created\n" % plotlabel)
+        return
+
+    def plot_2d_rmse_heatmap(self, cols):
+        #adjust for log params if necessary
+        xcol = cols[0]
+        ycol = cols[1]
+        xdata = np.array(self.flat_results[xcol])
+        xlabel = xcol
+        if self.is_log_param(xcol):
+            xdata_raw = np.array(self.flat_results[xcol].values,'float')
+            xdata = np.log10(xdata_raw)
+            xlabel = "log10 %s" % xcol 
+        ydata = np.array(self.flat_results[ycol])
+        ylabel = ycol
+        if self.is_log_param(ycol):
             ydata_raw = np.array(self.flat_results[ycol].values,'float')
             ydata = np.log10(ydata_raw)
             ylabel = "log10 %s" % ycol 

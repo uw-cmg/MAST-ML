@@ -741,24 +741,28 @@ class PlotHelper():
     def plot_3d_rmse_heatmap(self):
         """Plot 3d rmse heatmap
         """
+        from mpl_toolkits.mplot3d import Axes3D
         fig_handle = plt.figure()
-        xvals = self.xdatalist[0]
-        yvals = self.ydatalist[0]
-        zvals = self.ydatalist[1]
-        rmses = self.ydatalist[2]
-        plt.hexbin(xvals, yvals,
-                    C = rmses, 
-                    gridsize=15,
-                    cmap = cm.plasma,
-                    bins=None,
-                    vmax = max(rmses))
-        plt.xlabel(self.xlabel)
-        plt.ylabel(self.ylabel)
-        cb = plt.colorbar()
+        ax = plt.gca()
+        ax = fig_handle.add_subplot(111, projection='3d')
+        xvals = np.array(self.xdatalist[0])
+        yvals = np.array(self.ydatalist[0])
+        zvals = np.array(self.ydatalist[1])
+        zlabel = self.labellist[1]
+        rmses = np.array(self.ydatalist[2])
+        scatter_series = ax.scatter(xvals, yvals, zvals,
+                    marker='o',
+                    c = rmses,
+                    s = 20,
+                    cmap = cm.plasma)
+        ax.set_xlabel(self.xlabel)
+        ax.set_ylabel(self.ylabel)
+        ax.set_zlabel(zlabel)
+        cb = fig_handle.colorbar(scatter_series)
         cb.set_label('RMSE')
         plt.savefig(os.path.join(self.save_path, "%s" % self.plotlabel),
                     bbox_inches='tight')
-        self.print_data() #print csv for every plot
+        self.print_data(ycol_labels=[self.ylabel, zlabel, 'RMSE']) #print csv for every plot
         pname = os.path.join(self.save_path, "%s.pickle" % self.plotlabel)
         with open(pname,'wb') as pfile:
             pickle.dump(fig_handle, pfile) 
