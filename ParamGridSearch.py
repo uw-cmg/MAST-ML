@@ -155,23 +155,33 @@ class ParamGridSearch(SingleFit):
         self.set_up()
         self.evaluate_pop()
         self.get_best_indivs()
+        self.print_results()
+        self.plot()
+        self.print_readme()
+        return
+
+    @timeit
+    def print_results(self):
         self.print_best_params()
         self.save_best_model()
         self.print_best_dataframe()
         self.flatten_results()
-        self.plot()
-        self.print_readme()
         return
+
     @timeit
     def set_up(self):
+        self.set_up_prior_to_population()
+        self.set_up_pop_params()
+        #logger.debug("Population: %s" % self.pop_params)
+        logger.debug("Population size: %i" % len(self.pop_params))
+        return
+
+    def set_up_prior_to_population(self):
         SingleFit.set_up(self)
         self.set_up_opt_dict()
         logger.debug("opt dict: %s" % self.opt_dict)
         logger.debug("opt param list: %s" % self.opt_param_list)
         logger.debug("nonopt param list: %s" % self.nonopt_param_list)
-        self.set_up_pop_params()
-        #logger.debug("Population: %s" % self.pop_params)
-        logger.debug("Population size: %i" % len(self.pop_params))
         return
     
 
