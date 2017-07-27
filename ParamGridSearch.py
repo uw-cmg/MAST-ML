@@ -180,50 +180,48 @@ class ParamGridSearch(SingleFit):
             and evaluate
         """
         self.pop_stats=dict()
-        self.pop_rmses=np.zeros(self.pop_size)
+        self.pop_rmses=dict()
 
         if self.processors == 1:
-            for pidx in range(0, self.pop_size):
-                print("Individual %i/%i (index %i)" % (pidx+1, self.pop_size, pidx))
-                indiv_params = self.pop_params[pidx]
-                [indiv_rmse, indiv_stats] = self.evaluate_indiv(indiv_params, pidx)
-                self.pop_stats[pidx] = indiv_stats
-                self.pop_rmses[pidx] = indiv_rmse
+            for ikey in self.pop_params.keys():
+                print("Individual %i/%i" % (ikey, self.pop_size))
+                indiv_params = self.pop_params[ikey]
+                [indiv_rmse, indiv_stats] = self.evaluate_indiv(indiv_params, ikey)
+                self.pop_stats[ikey] = indiv_stats
+                self.pop_rmses[ikey] = indiv_rmse
         else:
             from multiprocessing import Process, Manager
             manager = Manager()
             pop_stats_dict = manager.dict()
-            pop_rmses_list = manager.list(range(self.pop_size))
-            for pidx in range(0, self.pop_size):
-                pop_rmses_list[pidx] = 0
+            pop_rmses_dict = manager.dict()
             indiv_p_list=list()
-            for pidx in range(0, self.pop_size):
-                print("Individual %i/%i (index %i)" % (pidx+1, self.pop_size, pidx))
-                indiv_params = self.pop_params[pidx]
-                indiv_p = Process(target=self.evaluate_indiv_multiprocessing, args=(indiv_params, pidx, pop_stats_dict, pop_rmses_list))
+            for ikey in self.pop_params.keys():
+                print("Individual %i/%i" % (ikey, self.pop_size))
+                indiv_params = self.pop_params[ikey]
+                indiv_p = Process(target=self.evaluate_indiv_multiprocessing, args=(indiv_params, ikey, pop_stats_dict, pop_rmses_dict))
                 indiv_p_list.append(indiv_p)
                 indiv_p.start()
             for indiv_p in indiv_p_list:
                 indiv_p.join()
             self.pop_stats = pop_stats_dict
-            self.pop_rmses = pop_rmses_list
+            self.pop_rmses = pop_rmses_dict
         return
 
-    def evaluate_indiv_multiprocessing(self, indiv_params, indiv_ct, pop_stats_dict, pop_rmses_list):
-        [indiv_rmse, indiv_stats] = self.evaluate_indiv(indiv_params, indiv_ct)
-        pop_stats_dict[indiv_ct] = indiv_stats
-        pop_rmses_list[indiv_ct] = indiv_rmse
-        print("Individual %i done (multiprocessing)" % indiv_ct)
+    def evaluate_indiv_multiprocessing(self, indiv_params, indiv_key, pop_stats_dict, pop_rmses_list):
+        [indiv_rmse, indiv_stats] = self.evaluate_indiv(indiv_params, indiv_key)
+        pop_stats_dict[indiv_key] = indiv_stats
+        pop_rmses_dict[indiv_key] = indiv_rmse
+        print("Individual %i done (multiprocessing)" % indiv_key)
         return
 
-    def evaluate_indiv(self, indiv_params, indiv_ct):
+    def evaluate_indiv(self, indiv_params, indiv_key):
         """Evaluate an individual
         """
         indiv_model = copy.deepcopy(self.model)
         indiv_model.set_params(**indiv_params['model'])
         indiv_dh = self.get_indiv_datahandler(indiv_params)
         #logging.debug(indiv_dh)
-        indiv_path = os.path.join(self.save_path, "indiv_%i" % indiv_ct)
+        indiv_path = os.path.join(self.save_path, "indiv_%s" % indiv_key)
         if not(self.num_folds is None):
             mycv = KFoldCV(training_dataset= indiv_dh,
                     testing_dataset= indiv_dh,
