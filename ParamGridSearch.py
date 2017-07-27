@@ -619,6 +619,7 @@ class ParamGridSearch(SingleFit):
             flat_results.set_value(pct, 'key', pkey)
             pct = pct + 1
         flat_results.to_csv(os.path.join(self.save_path, "results.csv"))
+        self.readme_list.append("Printed RMSE results to results.csv\n")
         self.flat_results = flat_results
         return
 
