@@ -544,16 +544,16 @@ class PlotHelper():
                         verticalalignment = "bottom",
                         fontsize=self.smallfont)
         #LEGEND
-        if self.guideline:
-            loc1 = "lower right"
-        else:
-            loc1 = "best"
         if not(self.legendloc is None):
-            loc1 = self.legendloc
-        lgd1=ax1.legend(loc = loc1, 
+            lgd1=ax1.legend(loc = self.legendloc, 
                     fontsize=self.smallfont, 
                     numpoints=1,
                     fancybox=True) 
+        else:
+            lgd1 = ax1.legend(bbox_to_anchor=(1,0), loc="lower left",
+                    fontsize = self.smallfont,
+                    numpoints=1,
+                    fancybox=True)
         try:
             lgd1.get_frame().set_alpha(0.5) #translucent legend!
         except AttributeError: # no labeled lines
@@ -678,13 +678,16 @@ class PlotHelper():
                             xy = (numeric_list[largerms_index], 
                                     rms_list[largerms_index]),
                             fontsize=self.smallfont)
-        loc1 = 'best'
         if not(self.legendloc is None):
-            loc1 = self.legendloc
-        lgd1=ax1.legend(loc = loc1, 
+            lgd1=ax1.legend(loc = self.legendloc, 
                     fontsize=self.smallfont, 
                     numpoints=1,
                     fancybox=True) 
+        else:
+            lgd1 = ax1.legend(bbox_to_anchor=(1,0), loc="lower left",
+                    fontsize = self.smallfont,
+                    numpoints=1,
+                    fancybox=True)
         try:
             lgd1.get_frame().set_alpha(0.5) #translucent legend!
         except AttributeError: # no labeled lines
