@@ -311,7 +311,9 @@ class ParamGridSearch(SingleFit):
     def print_best_dataframe(self):
         best_dh = copy.deepcopy(self.testing_dataset)
         best_df = self.get_afm_updated_dataset(best_dh.data, self.best_params)
-        best_df.to_csv("best_params_updated_dataframe.csv") 
+        updated_name = os.path.join(self.save_path,"best_params_updated_dataframe.csv")
+        best_df.to_csv(updated_name)
+        self.readme_list.append("Updated dataframe printed as %s\n" % updated_name)
         return
 
     def get_afm_updated_dataset(self, indiv_df, indiv_params):
