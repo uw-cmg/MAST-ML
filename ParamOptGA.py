@@ -609,7 +609,7 @@ class ParamOptGA(ParamGridSearch):
             mygen.evaluate_pop()
             mygen.get_best_indivs()
             mygen.print_results()
-            mygen.plot()
+            #mygen.plot() #do not plot heatmaps etc. for each generation
             mygen.print_readme()
             gen_best_genome = mygen.best_params
             gen_best_rmse = mygen.best_indivs[0][1]
@@ -650,16 +650,16 @@ class ParamOptGA(ParamGridSearch):
         self.readme_list.append("Converged?: %s\n" % self.ga_dict[ga]['converged'])
         prefacestr= "Best %i-CV avg RMSE: %3.3f" % (self.num_cvtests, self.ga_dict[ga]['best_rmse'])
         printlist = self.print_params(self.ga_dict[ga]['best_genome'])
-        print("%s: %s" % (prefacestr, printlist))
-        self.readme_list.append("%s\n" % genomestr)
+        printstr = "%s: %s" % (prefacestr, printlist)
+        self.readme_list.append("%s\n" % printstr)
         gens = list(self.ga_dict[ga]['generations'].keys())
         gens.sort()
         self.readme_list.append("..... Generations .....\n")
         for gen in gens:
             prefacestr = "Generation %i best: avg rmse %3.3f" % (gen, self.ga_dict[ga]['generations'][gen]['best_rmse'])
             printlist = self.print_params(self.ga_dict[ga]['generations'][gen]['best_genome'])
-            print("%s: %s" % (prefacestr, printlist))
-            self.readme_list.append("%s\n" % genomestr)
+            printstr="%s: %s" % (prefacestr, printlist)
+            self.readme_list.append("%s\n" % printstr)
         return
 
     def print_final_eval(self, ga=""):
