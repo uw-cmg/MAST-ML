@@ -55,12 +55,16 @@ class ParamGridSearch(SingleFit):
         fix_random_for_testing <int>: 0 - use random numbers
                                       1 - fix randomizer for testing
         num_cvtests <int>: Number of CV tests for each validation step
-        additional_feature_methods <str>: comma-delimited string, or
-            a list, of semicolon-delimited pieces, formatted like:
-            class.method;parameter1:value1;parameter2:value2;... 
-            These values will be passed on and not optimized.
+        num_folds <int>: Number of folds for K-fold cross validation;
+                            leave blank to use LO% CV
+        leave_out_percent <int>: Percentage to leave out for LO% CV; 
+                                    leave blank to use K-fold CV
         mark_outlying_points <int>: See KFoldCV
         num_bests <int>: Number of best individuals to track
+        processors <int>: Number of processors to use
+                            1 - single processor (serial)
+                            2 - use multiprocessing (actual number of
+                                processors is not used)
     Returns:
         Analysis in the save_path folder
         Plots results in a predicted vs. measured square plot.
@@ -76,7 +80,6 @@ class ParamGridSearch(SingleFit):
         xlabel="Measured",
         ylabel="Predicted",
         #param_1 and as many param_xxx as necessary are given through **kwargs
-        additional_feature_methods=None,
         fix_random_for_testing=0,
         num_cvtests=5,
         mark_outlying_points='0,3',
