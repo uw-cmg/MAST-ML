@@ -270,7 +270,7 @@ class ParamOptGA(ParamGridSearch):
         gens.sort()
         self.readme_list.append("..... Generations .....\n")
         for gen in gens:
-            self.readme_list.append("Generation %i best: avg rmse %3.3f\n" % (gen, self.ga_dict[ga]['generations'][gen]['best_rmse'])
+            self.readme_list.append("Generation %i best: avg rmse %3.3f\n" % (gen, self.ga_dict[ga]['generations'][gen]['best_rmse']))
         return
 
     @timeit
