@@ -535,31 +535,41 @@ class ParamOptGA(ParamGridSearch):
                 directly into ParamGridSearch.pop_params dictionary
         """
         pop_params = dict()
-        for indiv_ct in range(0, self.ga_pop_size):
+        for ict in range(0, self.ga_pop_size):
+            pop_params[ict] = dict()
             (p1_params, p2_params) = self.get_parent_params(prev_gen.best_indivs)
-            
-
-            pop_params[indiv_ct] = dict()
+            # add nonoptimized parameters
             for nonopt_param in self.nonopt_param_list:
                 (location, param_name) = self.get_split_name(nonopt_param)
-                if not (location in pop_params.keys()):
-                    pop_params[location] = dict()
-                pop_params[location][param_name] = 
-        #Add nonoptimized parameters
-        param_ct = 0
-        for nonopt_param in self.nonopt_param_list:
-            (location, param_name) = self.get_split_name(nonopt_param)
-            new_pop_par
-            
-
-            for input_param_str in self.param_strings:
-                if location in input_param_str:
-                    if param_name in input_param_str:
-                        gen_kwargs["param_%i" % param_ct] = input_param_str
-                        param_ct = param_ct + 1
-        for opt_param in self.opt_param_list:
-
-        param_strings = self.get_params_strings_for_generation()
+                if not (location in pop_params[ict].keys()):
+                    pop_params[ict][location] = dict()
+                pop_params[ict][location][param_name] = p1_params[location][param_name] #p1_param and p2_param values should be equivalent
+            # add optimized parameters
+            for opt_param in self.opt_param_list:
+                (location, param_name) = self.get_split_name(opt_param)
+                if not (location in pop_params[ict].keys()):
+                    pop_params[ict][location] = dict()
+                crossover_val = self.random_state.rand()
+                mutation_val = self.random_state.rand()
+                shift_val = self.random_state.rand()
+                if crossover_val <= self.crossover_prob:
+                    new_val = p1_params[location][param_name]
+                else:
+                    new_val = p2_params[location][param_name]
+                opvalues =list(self.opt_dict[location][param_name]) #all choices
+                if shift_val <= self.shift_prob: #shift along the value list
+                    validx = opvalues.index(new_val)
+                    shift_len = self.random_state.randint(-2,3) #-2,-1,0,1,2
+                    newidx = validx + shift_len
+                    if newidx < 0:
+                        newidx == 0
+                    elif newidx >= len(opvalues):
+                        newidx = len(opvalues) - 1 #maximum index
+                    new_val = opvalues[newidx]
+                if mutation_val <= self.mutation_prob:
+                    newidx = self.random_state.randint(0,len(opvalues))
+                    new_val = opvalues[newidx]
+                pop_params[ict][location][param_name] = new_val
         return pop_params
 
     def run_ga(self):
