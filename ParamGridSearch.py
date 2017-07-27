@@ -469,7 +469,7 @@ class ParamGridSearch(SingleFit):
         self.readme_list.append("----- Plotting -----\n")
         cols=list() #repeated code; may want to reduce
         for opt_param in self.opt_param_list:
-            self.plot_single_rmse(col)
+            self.plot_single_rmse(opt_param)
         if len(self.opt_param_list) == 2:
             self.plot_2d_rmse_heatmap(self.opt_param_list)
         elif len(self.opt_param_list) == 3:
@@ -481,9 +481,7 @@ class ParamGridSearch(SingleFit):
         """
         location=col.split(".")[0]
         param=col.split(".")[1]
-        for init_param in [self.param_1,self.param_2,self.param_3,self.param_4]:
-            if init_param is None:
-                continue
+        for init_param in self.param_strings.values():
             if location in init_param:
                 if param in init_param:
                     if 'log' in init_param:
