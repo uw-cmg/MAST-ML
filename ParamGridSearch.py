@@ -60,6 +60,7 @@ class ParamGridSearch(SingleFit):
             class.method;parameter1:value1;parameter2:value2;... 
             These values will be passed on and not optimized.
         mark_outlying_points <int>: See KFoldCV
+        num_bests <int>: Number of best individuals to track
     Returns:
         Analysis in the save_path folder
         Plots results in a predicted vs. measured square plot.
@@ -82,6 +83,7 @@ class ParamGridSearch(SingleFit):
         num_folds=None,
         percent_leave_out=None,
         processors=1,
+        num_bests=10,
         *args, **kwargs):
         """
         Additional class attributes to parent class:
@@ -93,6 +95,7 @@ class ParamGridSearch(SingleFit):
                 self.num_folds
                 self.percent_leave_out
                 self.processors
+                self.num_bests
             Set in code:
                 self.param_strings
                 self.opt_dict
@@ -133,6 +136,7 @@ class ParamGridSearch(SingleFit):
         self.num_folds = num_folds
         self.percent_leave_out = percent_leave_out
         self.processors=int(processors)
+        self.num_bests = int(num_bests)
         self.param_strings = dict()
         for argname in kwargs.keys():
             if 'param_' in argname:
@@ -270,7 +274,9 @@ class ParamGridSearch(SingleFit):
         return [mycv_rmse, mycv.statistics]
 
     def get_best_indivs(self):
-        how_many = min(10, len(self.pop_rmses.keys()))
+        how_many = min(self.num_bests, len(self.pop_rmses.keys()))
+        if how_many < self.num_bests:
+            logger.info("Only %i best values will be returned because population size is limited to %i." % (how_many, how_many))
         largeval=1e10
         lowest = list()
         params = copy.deepcopy(self.pop_params)
