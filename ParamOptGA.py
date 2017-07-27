@@ -3,7 +3,7 @@ import copy
 import os
 from SingleFit import SingleFit
 from SingleFit import timeit
-from ParamGridSeach import ParamGridSearch
+from ParamGridSearch import ParamGridSearch
 from sklearn.model_selection import KFold
 from sklearn.model_selection import ShuffleSplit
 from sklearn.metrics import mean_squared_error
@@ -428,6 +428,7 @@ class ParamOptGA(ParamGridSearch):
         num_folds=2,
         percent_leave_out=None,
         num_cvtests=20,
+        mark_outlying_points='0,3',
         num_bests=10,
         fix_random_for_testing=0,
         processors=1,
@@ -460,9 +461,13 @@ class ParamOptGA(ParamGridSearch):
             self.final_best_rmse 
             self.final_best_genome 
         """
+        if type(testing_dataset) is 'list':
+            test_ds = testing_dataset[0]
+        else:
+            test_ds = testing_dataset
         ParamGridSearch.__init__(self, 
             training_dataset=training_dataset, 
-            testing_dataset=testing_dataset,
+            testing_dataset=test_ds, #only first, same as training
             model=model, 
             save_path = save_path,
             fix_random_for_testing = fix_random_for_testing,
@@ -472,6 +477,7 @@ class ParamOptGA(ParamGridSearch):
             percent_leave_out = percent_leave_out,
             processors = processors,
             num_bests = num_bests, **kwargs)
+        self.set_up()
         #Sets by keyword
         self.num_gas = int(num_gas)
         self.ga_pop_size = int(ga_pop_size)
@@ -499,9 +505,8 @@ class ParamOptGA(ParamGridSearch):
         gen_kwargs = dict()
         for param_ct in self.param_strings.keys():
             gen_kwargs["param_%i" % param_ct] = self.param_strings[param_ct]
-        mygen = ParamGridSearch.__init__(self, 
-            training_dataset=self.training_dataset, 
-            testing_dataset=self.testing_dataset,
+        mygen =ParamGridSearch(training_dataset=self.training_dataset, 
+            testing_dataset=self.training_dataset, #SAME AS TRAIN
             model=self.model, 
             save_path = gen_save_path,
             fix_random_for_testing = self.fix_random_for_testing,
@@ -513,17 +518,28 @@ class ParamOptGA(ParamGridSearch):
             num_bests = self.num_bests, **gen_kwargs)
         return mygen
 
-    def get_parent_params(self, best_indivs):
-        p1idx = self.random_state.randint(0, self.num_bests)[0]
+    def get_parent_params(self, prev_gen):
+        upper_lim=0
+        if prev_gen is None:
+            upper_lim = self.pop_size #refers to GA's total combinatorial space
+        else:
+            upper_lim = self.num_bests #number of potential parents
+        p1idx = self.random_state.randint(0, upper_lim)
         p2idx = p1idx
         safety_ct = 0
-        while (p2idx == p1idx) or (safety_ct < 1000):
-            p2idx = self.random_state.randint(0, self.num_bests)[0]
+        while (p2idx == p1idx) and (safety_ct < 1000):
+            p2idx = self.random_state.randint(0, upper_lim)
+            print(p1idx, p2idx)
             safety_ct = safety_ct + 1
         if safety_ct == 1000:
             raise ValueError("Error generating parents. Reached 1000 random integers, all identical in second parent.")
-        p1_params = best_indivs[p1idx][2] #params are in third column
-        p2_params = best_indivs[p2idx][2]
+        if prev_gen is None:
+            pop_keys = list(self.pop_params.keys()) #these keys are combinatorial, not by count
+            p1_params = self.pop_params[pop_keys[p1idx]]
+            p2_params = self.pop_params[pop_keys[p2idx]]
+        else:
+            p1_params = prev_gen.best_indivs[p1idx][2] #params in third column
+            p2_params = prev_gen.best_indivs[p2idx][2]
         return (p1_params, p2_params)
 
     def get_new_pop_params(self, prev_gen):
@@ -537,7 +553,7 @@ class ParamOptGA(ParamGridSearch):
         pop_params = dict()
         for ict in range(0, self.ga_pop_size):
             pop_params[ict] = dict()
-            (p1_params, p2_params) = self.get_parent_params(prev_gen.best_indivs)
+            (p1_params, p2_params) = self.get_parent_params(prev_gen)
             # add nonoptimized parameters
             for nonopt_param in self.nonopt_param_list:
                 (location, param_name) = self.get_split_name(nonopt_param)
@@ -587,6 +603,7 @@ class ParamOptGA(ParamGridSearch):
 
         while ga_repetitions_of_best < self.convergence_generations and ga_genct < self.max_generations: 
             print("Generation %i %s" % (ga_genct, time.asctime()), flush=True)
+            mygen = self.set_up_generation(ga_genct)
             mygen.set_up_prior_to_population()
             mygen.pop_size = self.ga_pop_size
             new_pop_params = self.get_new_pop_params(previous_generation)
@@ -642,7 +659,7 @@ class ParamOptGA(ParamGridSearch):
         self.readme_list.append("..... Generations .....\n")
         for gen in gens:
             prefacestr = "Generation %i best: avg rmse %3.3f" % (gen, self.ga_dict[ga]['generations'][gen]['best_rmse'])
-            printlist = self.print_params(self.ga_dict[ga]['generations'][gen]['best_genome']
+            printlist = self.print_params(self.ga_dict[ga]['generations'][gen]['best_genome'])
             print("%s: %s" % (prefacestr, printlist))
             self.readme_list.append("%s\n" % genomestr)
         return
