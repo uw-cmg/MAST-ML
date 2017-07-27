@@ -283,10 +283,10 @@ class ParamOptGA(ParamGridSearch):
             self.run_ga()
             self.print_ga(ga)
         self.select_final_best()
-        self.print_results()
+        self.print_final_results()
         return
     
-    def print_results(self):
+    def print_final_results(self):
         self.print_best_params()
         self.save_best_model()
         self.print_best_dataframe()
@@ -303,10 +303,10 @@ class ParamOptGA(ParamGridSearch):
             ga_final_rmse_list = list()
             ga_final_rmse_list.append(self.ga_dict[ga]['best_rmse'])
         ga_min_idx = np.argmin(ga_final_rmse_list)
-        self.best_genome = self.ga_dict[ga]['best_genome']
+        self.best_params = self.ga_dict[ga_min_idx]['best_genome']
         self.readme_list.append("===== Overall info =====\n")
         self.readme_list.append("%s\n" % time.asctime())
-        printlist = self.print_params(self.best_genome)
+        printlist = self.print_params(self.best_params)
         printstr = "Overall best genome: %s" % printlist
         self.readme_list.append("%s\n" % printstr)
         return
