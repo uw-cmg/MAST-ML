@@ -97,6 +97,7 @@ class ParamGridSearch(SingleFit):
                 self.param_strings
                 self.opt_dict
                 self.opt_param_list
+                self.nonopt_param_list
                 self.flat_params
                 self.flat_results
                 self.pop_params
@@ -140,6 +141,7 @@ class ParamGridSearch(SingleFit):
         # Sets later in code
         self.opt_dict=None
         self.opt_param_list=None
+        self.nonopt_param_list=None
         self.flat_params=None
         self.pop_params=None
         self.pop_size=None
@@ -153,6 +155,7 @@ class ParamGridSearch(SingleFit):
     @timeit
     def run(self):
         self.set_up()
+        raise NotImplementedError("Stopping old setup.")
         self.evaluate_pop()
         self.get_best_indivs()
         self.print_best_params()
@@ -166,9 +169,9 @@ class ParamGridSearch(SingleFit):
         self.set_up_opt_dict()
         logger.debug("opt dict: %s" % self.opt_dict)
         logger.debug("opt param list: %s" % self.opt_param_list)
-        raise NotImplementedError("Stopping old setup.")
-        self.flatten_params()
+        logger.debug("nonopt param list: %s" % self.nonopt_param_list)
         self.set_up_pop_params()
+        logger.debug("Population: %s" % self.pop_params)
         logger.debug("Population size: %i" % len(self.pop_params))
         return
     
@@ -334,68 +337,63 @@ class ParamGridSearch(SingleFit):
         self.flat_params = flat_params
         return
 
+    def get_split_name(self, combined_name):
+        """ model.param or package.class.param to
+            (model, param) or (package.class, param)
+        """
+        name_split = combined_name.split(".")
+        param_name = name_split.pop(-1) #get and remove
+        location = str.join(".", name_split) #join back up
+        return (location, param_name)
+
+    def grow_param_dict(self, old_dict, add_combined_name):
+        """Increase the parameter dictionary by having each entry
+            branch into new entries
+        """
+        add_vals = self.opt_dict[add_combined_name]
+        (location, param_name) = self.get_split_name(add_combined_name)
+        if len(old_dict.keys()) == 0:
+            new_dict = dict()
+            for addct in range(0, len(add_vals)):
+                newstr = "%i" % addct
+                new_dict[newstr]=dict()
+                if not location in new_dict[newstr].keys():
+                    new_dict[newstr][location]=dict()
+                new_dict[newstr][location][param_name] = add_vals[addct]
+        else:
+            new_dict = dict()
+            for oldstr in old_dict.keys():
+                for addct in range(0, len(add_vals)):
+                    newstr = "%s_%i" % (oldstr, addct) 
+                    new_dict[newstr] = copy.deepcopy(old_dict[oldstr])
+                    if not location in new_dict[newstr].keys():
+                        new_dict[newstr][location]=dict()
+                    new_dict[newstr][location][param_name] = add_vals[addct]
+        return new_dict
+    
+    def grow_param_dict_nonopt(self, old_dict, add_combined_name):
+        """Add nonoptimized parameters (single value) to parameter
+            dictionary.
+        """
+        add_value = self.opt_dict[add_combined_name]
+        (location, param_name) = self.get_split_name(add_combined_name)
+        if len(old_dict.keys()) == 0:
+            raise ValueError("No optimized parameters in grid search? Run SingleFit or other tests instead.")
+        new_dict = dict()
+        for oldstr in old_dict.keys():
+            newstr = oldstr
+            new_dict[newstr] = copy.deepcopy(old_dict[oldstr])
+            if not location in new_dict[newstr].keys():
+                new_dict[newstr][location]=dict()
+            new_dict[newstr][location][param_name] = add_value
+        return new_dict
+
     def set_up_pop_params(self):
         self.pop_params=dict()
-        flat_params = self.flat_params
-        num_params = len(flat_params)
-        pct = 0
-        for aidx in range(0, len(flat_params[0])):
-            alocation = flat_params[0][aidx][0]
-            aparam = flat_params[0][aidx][1]
-            aval = flat_params[0][aidx][2]
-            single_dict=dict()
-            single_dict[alocation]=dict()
-            single_dict[alocation][aparam] = aval
-            if num_params > 1:
-                for bidx in range(0, len(flat_params[1])):
-                    blocation = flat_params[1][bidx][0]
-                    bparam = flat_params[1][bidx][1]
-                    bval = flat_params[1][bidx][2]
-                    if not blocation in single_dict.keys():
-                        single_dict[blocation]=dict()
-                    single_dict[blocation][bparam] = bval
-                    if num_params > 2:
-                        for cidx in range(0, len(flat_params[2])):
-                            clocation = flat_params[2][cidx][0]
-                            cparam = flat_params[2][cidx][1]
-                            cval = flat_params[2][cidx][2]
-                            if not clocation in single_dict.keys():
-                                single_dict[clocation]=dict()
-                            single_dict[clocation][cparam] = cval
-                            if num_params > 3:
-                                for didx in range(0, len(flat_params[3])):
-                                    dlocation = flat_params[3][didx][0]
-                                    dparam = flat_params[3][didx][1]
-                                    dval = flat_params[3][didx][2]
-                                    if not dlocation in single_dict.keys():
-                                        single_dict[dlocation]=dict()
-                                    single_dict[dlocation][dparam] = dval
-                                    if num_params > 4:
-                                        raise ValueError("Too many params")
-                                    else:
-                                        self.pop_params[pct]=copy.deepcopy(single_dict)
-                                        pct = pct + 1
-
-                            else:
-                                self.pop_params[pct]=copy.deepcopy(single_dict)
-                                pct = pct +1
-                    else:
-                        self.pop_params[pct]=copy.deepcopy(single_dict)
-                        pct = pct + 1
-            else:
-                self.pop_params[pct]=copy.deepcopy(single_dict)
-                pct = pct + 1
-        if not(self.pop_size == pct):
-            raise ValueError("Flat population size does not match dictionary population size. Exiting.")
-        for noct in range(0, self.pop_size):
-            for afm_loc in self.afm_dict.keys():
-                if not afm_loc in self.pop_params[noct].keys():
-                    self.pop_params[noct][afm_loc] = dict()
-                for afm_param in self.afm_dict[afm_loc].keys():
-                    if afm_param in self.pop_params[noct][afm_loc].keys():
-                        raise ValueError("Parameter %s for module %s appears twice. Exiting." % (afm_param, afm_loc))
-                    self.pop_params[noct][afm_loc][afm_param] = self.afm_dict[afm_loc][afm_param]
-        #logger.debug(self.pop_params)
+        for opt_param in self.opt_param_list:
+            self.pop_params = self.grow_param_dict(self.pop_params, opt_param)
+        for nonopt_param in self.nonopt_param_list:
+            self.pop_params = self.grow_param_dict_nonopt(self.pop_params, nonopt_param)
         return
 
     def set_up_opt_dict(self):
@@ -404,10 +402,12 @@ class ParamGridSearch(SingleFit):
             Also sets:
                 self.opt_param_list (only those parameters which will be
                                     optimized)
+                self.nonopt_param_list
                 self.pop_size
         """
         self.opt_dict=dict()
         self.opt_param_list=list()
+        self.nonopt_param_list=list()
         pop_size = None
         for paramct in self.param_strings.keys():
             paramstr = self.param_strings[paramct]
@@ -451,6 +451,7 @@ class ParamGridSearch(SingleFit):
                 self.opt_param_list.append(combined_name)
                 self.opt_dict[combined_name] = gridvals
             elif numvals == 1: #
+                self.nonopt_param_list.append(combined_name)
                 self.opt_dict[combined_name] = gridvals[0]
             if pop_size is None:
                 pop_size = numvals
