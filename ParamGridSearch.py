@@ -184,7 +184,7 @@ class ParamGridSearch(SingleFit):
 
         if self.processors == 1:
             for ikey in self.pop_params.keys():
-                print("Individual %i/%i" % (ikey, self.pop_size))
+                print("Individual %s/%i" % (ikey, self.pop_size))
                 indiv_params = self.pop_params[ikey]
                 [indiv_rmse, indiv_stats] = self.evaluate_indiv(indiv_params, ikey)
                 self.pop_stats[ikey] = indiv_stats
@@ -196,7 +196,7 @@ class ParamGridSearch(SingleFit):
             pop_rmses_dict = manager.dict()
             indiv_p_list=list()
             for ikey in self.pop_params.keys():
-                print("Individual %i/%i" % (ikey, self.pop_size))
+                print("Individual %s/%i" % (ikey, self.pop_size))
                 indiv_params = self.pop_params[ikey]
                 indiv_p = Process(target=self.evaluate_indiv_multiprocessing, args=(indiv_params, ikey, pop_stats_dict, pop_rmses_dict))
                 indiv_p_list.append(indiv_p)
@@ -211,7 +211,7 @@ class ParamGridSearch(SingleFit):
         [indiv_rmse, indiv_stats] = self.evaluate_indiv(indiv_params, indiv_key)
         pop_stats_dict[indiv_key] = indiv_stats
         pop_rmses_dict[indiv_key] = indiv_rmse
-        print("Individual %i done (multiprocessing)" % indiv_key)
+        print("Individual %s done (multiprocessing)" % indiv_key)
         return
 
     def evaluate_indiv(self, indiv_params, indiv_key):
@@ -266,16 +266,22 @@ class ParamGridSearch(SingleFit):
         return [mycv_rmse, mycv.statistics]
 
     def get_best_indivs(self):
-        how_many = min(10, len(self.pop_rmses))
+        how_many = min(10, len(self.pop_rmses.keys()))
         largeval=1e10
         lowest = list()
         params = copy.deepcopy(self.pop_params)
         rmses = copy.deepcopy(self.pop_rmses)
         lct=0
         while lct < how_many:
-            minidx = np.argmin(rmses)
-            lowest.append((minidx, rmses[minidx], params[minidx]))
-            rmses[minidx]=largeval
+            minval = largeval
+            minikey = None
+            for ikey in rmses.keys():
+                ival = rmses[ikey]
+                if ival < minval:
+                    minval = ival
+                    minikey = ikey
+            lowest.append((minikey, rmses[minidx], params[minidx]))
+            rmses[minikey]=largeval
             lct = lct + 1
         self.readme_list.append("----Minimum RMSE params----\n")
         for lowitem in lowest:
@@ -285,7 +291,7 @@ class ParamGridSearch(SingleFit):
         return
 
     def print_best_params(self):
-        best_params = self.best_indivs[0][2]
+        best_params = self.best_indivs[0][2] #first entry, params is third col
         with open(os.path.join(self.save_path,"OPTIMIZED_PARAMS"),'w') as pfile:
             for loc in best_params.keys():
                 for param in best_params[loc].keys():
@@ -597,16 +603,20 @@ class ParamGridSearch(SingleFit):
         for opt_param in self.opt_param_list:
             cols.append(opt_param)
         cols.append('rmse')
+        cols.append('key')
         flat_results = pd.DataFrame(index=range(0, self.pop_size), columns=cols)
-        for pct in range(0, self.pop_size):
-            params = self.pop_params[pct]
-            rmse = self.pop_rmses[pct]
+        pct = 0
+        for pkey in self.pop_params.keys():
+            params = self.pop_params[pkey]
+            rmse = self.pop_rmses[pkey]
             for loc in params.keys():
                 for param in params[loc].keys():
                     colname = "%s.%s" % (loc, param)
                     val = params[loc][param]
                     flat_results.set_value(pct, colname, val)
             flat_results.set_value(pct, 'rmse', rmse)
+            flat_results.set_value(pct, 'key', pkey)
+            pct = pct + 1
         flat_results.to_csv(os.path.join(self.save_path, "results.csv"))
         self.flat_results = flat_results
         return
