@@ -477,7 +477,6 @@ class ParamOptGA(ParamGridSearch):
             percent_leave_out = percent_leave_out,
             processors = processors,
             num_bests = num_bests, **kwargs)
-        self.set_up()
         #Sets by keyword
         self.num_gas = int(num_gas)
         self.ga_pop_size = int(ga_pop_size)
@@ -529,7 +528,6 @@ class ParamOptGA(ParamGridSearch):
         safety_ct = 0
         while (p2idx == p1idx) and (safety_ct < 1000):
             p2idx = self.random_state.randint(0, upper_lim)
-            print(p1idx, p2idx)
             safety_ct = safety_ct + 1
         if safety_ct == 1000:
             raise ValueError("Error generating parents. Reached 1000 random integers, all identical in second parent.")
@@ -572,7 +570,7 @@ class ParamOptGA(ParamGridSearch):
                     new_val = p1_params[location][param_name]
                 else:
                     new_val = p2_params[location][param_name]
-                opvalues =list(self.opt_dict[location][param_name]) #all choices
+                opvalues =list(self.opt_dict[opt_param]) #all choices
                 if shift_val <= self.shift_prob: #shift along the value list
                     validx = opvalues.index(new_val)
                     shift_len = self.random_state.randint(-2,3) #-2,-1,0,1,2
@@ -687,8 +685,7 @@ class ParamOptGA(ParamGridSearch):
 
     @timeit
     def set_up(self):
-        SingleFit.set_up(self)
-        self.set_up_opt_dict() #inherited from ParamGridSearch
+        ParamGridSearch.set_up(self)
         return
 
     def set_gene_info(self):
