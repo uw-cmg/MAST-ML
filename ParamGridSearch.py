@@ -98,7 +98,6 @@ class ParamGridSearch(SingleFit):
                 self.opt_dict
                 self.opt_param_list
                 self.nonopt_param_list
-                self.flat_params
                 self.flat_results
                 self.pop_params
                 self.pop_size
@@ -142,7 +141,6 @@ class ParamGridSearch(SingleFit):
         self.opt_dict=None
         self.opt_param_list=None
         self.nonopt_param_list=None
-        self.flat_params=None
         self.pop_params=None
         self.pop_size=None
         self.pop_stats=None
@@ -155,7 +153,6 @@ class ParamGridSearch(SingleFit):
     @timeit
     def run(self):
         self.set_up()
-        raise NotImplementedError("Stopping old setup.")
         self.evaluate_pop()
         self.get_best_indivs()
         self.print_best_params()
@@ -467,16 +464,12 @@ class ParamGridSearch(SingleFit):
     def plot(self):
         self.readme_list.append("----- Plotting -----\n")
         cols=list() #repeated code; may want to reduce
-        for fplist in self.flat_params:
-            loc=fplist[0][0]
-            param=fplist[0][1]
-            cols.append("%s.%s" % (loc, param))
-        for col in cols:
+        for opt_param in self.opt_param_list:
             self.plot_single_rmse(col)
-        if len(cols) == 2:
-            self.plot_2d_rmse_heatmap(cols)
-        elif len(cols) == 3:
-            self.plot_3d_rmse_heatmap(cols)
+        if len(self.opt_param_list) == 2:
+            self.plot_2d_rmse_heatmap(self.opt_param_list)
+        elif len(self.opt_param_list) == 3:
+            self.plot_3d_rmse_heatmap(self.opt_param_list)
         return
 
     def is_log_param(self, col):
@@ -603,10 +596,8 @@ class ParamGridSearch(SingleFit):
         """Flatten results into a csv
         """
         cols=list()
-        for fplist in self.flat_params:
-            loc=fplist[0][0]
-            param=fplist[0][1]
-            cols.append("%s.%s" % (loc, param))
+        for opt_param in self.opt_param_list:
+            cols.append(opt_param)
         cols.append('rmse')
         flat_results = pd.DataFrame(index=range(0, self.pop_size), columns=cols)
         for pct in range(0, self.pop_size):
