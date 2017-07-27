@@ -261,18 +261,16 @@ class ParamOptGA(ParamGridSearch):
     def print_ga(self, ga=""):
         self.readme_list.append("----- GA %i -----\n" % ga)
         self.readme_list.append("Converged?: %s\n" % self.ga_dict[ga]['converged'])
-        prefacestr= "Best %i-CV avg RMSE: %3.3f" % (self.num_cvtests, self.ga_dict[ga]['best_rmse'])
+        prefacestr= "Best %i-CV avg RMSE: %3.3f\n" % (self.num_cvtests, self.ga_dict[ga]['best_rmse'])
+        self.readme_list.append(prefacestr)
         printlist = self.print_params(self.ga_dict[ga]['best_genome'])
-        printstr = "%s: %s" % (prefacestr, printlist)
-        self.readme_list.append("%s\n" % printstr)
+        for printitem in printlist:
+            self.readme_list.append("%s" % printitem)
         gens = list(self.ga_dict[ga]['generations'].keys())
         gens.sort()
         self.readme_list.append("..... Generations .....\n")
         for gen in gens:
-            prefacestr = "Generation %i best: avg rmse %3.3f" % (gen, self.ga_dict[ga]['generations'][gen]['best_rmse'])
-            printlist = self.print_params(self.ga_dict[ga]['generations'][gen]['best_genome'])
-            printstr="%s: %s" % (prefacestr, printlist)
-            self.readme_list.append("%s\n" % printstr)
+            self.readme_list.append("Generation %i best: avg rmse %3.3f\n" % (gen, self.ga_dict[ga]['generations'][gen]['best_rmse'])
         return
 
     @timeit
@@ -299,14 +297,15 @@ class ParamOptGA(ParamGridSearch):
         return
 
     def select_final_best(self):
-        for ga in self.ga_dict.keys():
-            ga_final_rmse_list = list()
-            ga_final_rmse_list.append(self.ga_dict[ga]['best_rmse'])
+        ga_final_rmse_list = list()
+        for gact in range(0, self.gact):
+            ga_final_rmse_list.append(self.ga_dict[gact]['best_rmse'])
         ga_min_idx = np.argmin(ga_final_rmse_list)
         self.best_params = self.ga_dict[ga_min_idx]['best_genome']
         self.readme_list.append("===== Overall info =====\n")
         self.readme_list.append("%s\n" % time.asctime())
+        self.readme_list.append("Overall best genome:\n")
         printlist = self.print_params(self.best_params)
-        printstr = "Overall best genome: %s" % printlist
-        self.readme_list.append("%s\n" % printstr)
+        for printitem in printlist:
+            self.readme_list.append(printitem)
         return
