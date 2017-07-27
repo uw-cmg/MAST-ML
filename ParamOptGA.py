@@ -3,6 +3,7 @@ import copy
 import os
 from SingleFit import SingleFit
 from SingleFit import timeit
+from ParamGridSeach import ParamGridSearch
 from sklearn.model_selection import KFold
 from sklearn.model_selection import ShuffleSplit
 from sklearn.metrics import mean_squared_error
@@ -383,7 +384,7 @@ class GAGeneration():
     def __exit__(self, type, value, traceback):
         return None
 
-class ParamOptGA(SingleFit):
+class ParamOptGA(ParamGridSearch):
     """Search for paramters using GA.
         Allows custom features.
     Args:
@@ -394,24 +395,26 @@ class ParamOptGA(SingleFit):
                         All sets must have target data for evaluation.
         model,
         save_path,
-        num_folds <int>: Number of folds for K-fold CV. Keep blank to use LO% CV
-        percent_leave_out <int>: Percent to leave out for LO%. Keep blank to use                                 K-fold CV.
-        num_cvtests <int>: Number of CV tests for each individual
+        xlabel,
+        ylabel,
+        param_1 and other param_xxx,
+        fix_random_for_testing,
+        num_cvtests,
+        num_folds,
+        percent_leave_out,
+        mark_outlying_points,
+        processors,
+        num_bests, see parent class.
         population_size <int>: Number of individuals in each generation's
                                 population
         convergence_generations <int>: Number of generations where the
                                         genome must stay constant in order to
                                         establish convergence
         max_generations <int>: Maximum number of generations
-        num_parents <int>: Number of best individuals to pull out of each
-                        generation to use as parents in next generation
-        fix_random_for_testing <int>: 1 - Fix random seed for testing
-                                      0 - Randomize (default)
-        use_multiprocessing <int>: 1 - use multiprocessing
-                                   0 - do not use multiprocessing
-        additional_feature_methods <str or list>: comma-delimited string, or
-                        a list, of semicolon-delimited pieces, formatted like:
-                        methodname;number_of_genes;parameter1:value1;parameter2:value2;...
+        num_gas <int>: Number of GAs to run
+        crossover_prob <float>: Crossover probability (float < 1.00)
+        mutation_prob <float>: Mutation probability (float < 1.00)
+        shift_prob <float>: Shift probability (float < 1.00)
 
     Returns:
         Analysis in save_path folder
@@ -425,86 +428,139 @@ class ParamOptGA(SingleFit):
         num_folds=2,
         percent_leave_out=None,
         num_cvtests=20,
+        num_bests=10,
+        fix_random_for_testing=0,
+        processors=1,
         num_gas=1,
-        population_size=50,
+        ga_pop_size=50,
         convergence_generations=30,
         max_generations=200,
-        num_parents=10,
-        fix_random_for_testing=0,
-        use_multiprocessing=1,
-        additional_feature_methods=None,
+        crossover_prob = 0.5,
+        mutation_prob = 0.1,
+        shift_prob = 0.5,
         *args, **kwargs):
         """
             Additional class attributes not in parent class:
            
             Set by keyword:
-            self.num_folds <int>: Number of folds, if using KFold CV
-            self.percent_leave_out <int>: Percent to leave out of training set,
-                                            if using KFold CV
-            self.num_cvtests <int>: Number of CV tests per individual
-            self.population_size <int>: Number of individuals in a generation
+            self.ga_pop_size <int>: GA population size
+            self.num_gas <int>
             self.convergence_generations <int>: Number of generations where
                                 the genome stays the same, to be considered
                                 converged
             self.max_generations <int>: Maximum number of generations
-            self.num_parents <int>: Number of best individuals to pull out of
-                                  each generation as parents
-            self.use_multiprocessing <int>: 1 to use multiprocessing;
-                                            0 otherwise
-            self.additional_feature_methods <list of str>: List of additional
-                        feature methods for fitting.
-                        Each string takes the format:
-                        methodname;parameter1:value1;parameter2:value2;...
-            self.final_testing_datasets <list>: post-GA testing datasets
-            self.model <sklearn model>
+            self.crossover_prob
+            self.mutation_prob
+            self.shift_prob
             Set by code:
+            self.random_state <numpy RandomState>: random state
+            self.final_testing_datasets <list>: post-GA testing datasets
+            self.ga_dict 
+            self.gact 
+            self.final_best_rmse 
+            self.final_best_genome 
         """
-        SingleFit.__init__(self, 
+        ParamGridSearch.__init__(self, 
             training_dataset=training_dataset, 
             testing_dataset=testing_dataset,
             model=model, 
-            save_path = save_path)
+            save_path = save_path,
+            fix_random_for_testing = fix_random_for_testing,
+            num_cvtests = num_cvtests,
+            mark_outlying_points = mark_outlying_points,
+            num_folds = num_folds,
+            percent_leave_out = percent_leave_out,
+            processors = processors,
+            num_bests = num_bests, **kwargs)
         #Sets by keyword
-        if num_folds is None:
-            self.num_folds = None
-        else:
-            self.num_folds = int(num_folds)
-        if percent_leave_out is None:
-            self.percent_leave_out = None  
-        else:
-            self.percent_leave_out = int(percent_leave_out)
-        self.num_cvtests = int(num_cvtests)
         self.num_gas = int(num_gas)
-        self.population_size = int(population_size)
+        self.ga_pop_size = int(ga_pop_size)
         self.convergence_generations = int(convergence_generations)
         self.max_generations = int(max_generations)
-        self.num_parents = int(num_parents)
-        self.fix_random_for_testing = int(fix_random_for_testing)
+        self.processors = int(processors)
+        self.final_testing_datasets = list(testing_dataset)
+        self.crossover_prob = float(crossover_prob)
+        self.mutation_prob = float(mutation_prob)
+        self.shift_prob = float(shift_prob)
+        #Sets in code
         if self.fix_random_for_testing == 1:
             self.random_state = np.random.RandomState(0)
         else:
             self.random_state = np.random.RandomState()
-        self.use_multiprocessing = int(use_multiprocessing)
-        if type(additional_feature_methods) is list:
-            self.additional_feature_methods = list(additional_feature_methods)
-        elif type(additional_feature_methods) is str:
-            self.additional_feature_methods = additional_feature_methods.split(",")
-        else:
-            self.additional_feature_methods = additional_feature_methods
-        self.final_testing_datasets = list(testing_dataset)
-        #Sets in code
-        self.cv_divisions = None
-        self.cv_divisions_final = None
-        self.population = list() #list of dict
-        self.afm_dict = dict()
-        self.hp_dict = dict()
-        self.gene_dict = dict()
         #
         self.ga_dict = dict()
         self.gact = 0
         self.final_best_rmse = 100000000
         self.final_best_genome = None
         return
+
+    def set_up_generation(self, genct=0):
+        gen_save_path = os.path.join(self.save_path, "Gen_%i" % genct)
+        gen_kwargs = dict()
+        for param_ct in self.param_strings.keys():
+            gen_kwargs["param_%i" % param_ct] = self.param_strings[param_ct]
+        mygen = ParamGridSearch.__init__(self, 
+            training_dataset=self.training_dataset, 
+            testing_dataset=self.testing_dataset,
+            model=self.model, 
+            save_path = gen_save_path,
+            fix_random_for_testing = self.fix_random_for_testing,
+            num_cvtests = self.num_cvtests,
+            mark_outlying_points = self.mark_outlying_points,
+            num_folds = self.num_folds,
+            percent_leave_out = self.percent_leave_out,
+            processors = self.processors,
+            num_bests = self.num_bests, **gen_kwargs)
+        return mygen
+
+    def get_parent_params(self, best_indivs):
+        p1idx = self.random_state.randint(0, self.num_bests)[0]
+        p2idx = p1idx
+        safety_ct = 0
+        while (p2idx == p1idx) or (safety_ct < 1000):
+            p2idx = self.random_state.randint(0, self.num_bests)[0]
+            safety_ct = safety_ct + 1
+        if safety_ct == 1000:
+            raise ValueError("Error generating parents. Reached 1000 random integers, all identical in second parent.")
+        p1_params = best_indivs[p1idx][2] #params are in third column
+        p2_params = best_indivs[p2idx][2]
+        return (p1_params, p2_params)
+
+    def get_new_pop_params(self, prev_gen):
+        """
+            Args:
+                prev_gen <ParamGridSearch object>
+            Returns:
+                parameter dictionary for new population, to be fed
+                directly into ParamGridSearch.pop_params dictionary
+        """
+        pop_params = dict()
+        for indiv_ct in range(0, self.ga_pop_size):
+            (p1_params, p2_params) = self.get_parent_params(prev_gen.best_indivs)
+            
+
+            pop_params[indiv_ct] = dict()
+            for nonopt_param in self.nonopt_param_list:
+                (location, param_name) = self.get_split_name(nonopt_param)
+                if not (location in pop_params.keys()):
+                    pop_params[location] = dict()
+                pop_params[location][param_name] = 
+        #Add nonoptimized parameters
+        param_ct = 0
+        for nonopt_param in self.nonopt_param_list:
+            (location, param_name) = self.get_split_name(nonopt_param)
+            new_pop_par
+            
+
+            for input_param_str in self.param_strings:
+                if location in input_param_str:
+                    if param_name in input_param_str:
+                        gen_kwargs["param_%i" % param_ct] = input_param_str
+                        param_ct = param_ct + 1
+        for opt_param in self.opt_param_list:
+
+        param_strings = self.get_params_strings_for_generation()
+        return pop_params
 
     def run_ga(self):
         self.ga_dict[self.gact] = dict()
@@ -517,25 +573,22 @@ class ParamOptGA(SingleFit):
         ga_converged = 0
         ga_repetitions_of_best = 0
 
-        new_population=None
+        previous_generation = None
 
         while ga_repetitions_of_best < self.convergence_generations and ga_genct < self.max_generations: 
             print("Generation %i %s" % (ga_genct, time.asctime()), flush=True)
-            with GAGeneration(testing_dataset_for_init = self.testing_dataset,
-                cv_divisions=self.cv_divisions,
-                population=new_population,
-                num_parents=self.num_parents,
-                gene_template=self.gene_template,
-                afm_dict=self.afm_dict,
-                population_size=self.population_size,
-                use_multiprocessing=self.use_multiprocessing,
-                model = self.model) as Gen:
-                if self.fix_random_for_testing == 1:
-                    Gen.random_state.seed(self.gact)
-                Gen.run()
-                gen_best_genome = dict(Gen.best_genome)
-                gen_best_rmse = Gen.best_rmse
-                new_population = dict(Gen.new_population)
+            mygen.set_up_prior_to_population()
+            mygen.pop_size = self.ga_pop_size
+            new_pop_params = self.get_new_pop_params(previous_generation)
+            mygen.pop_params = new_pop_params
+            mygen.evaluate_pop()
+            mygen.get_best_indivs()
+            mygen.print_results()
+            mygen.plot()
+            mygen.print_readme()
+            gen_best_genome = mygen.best_params
+            gen_best_rmse = mygen.best_indivs[0][1]
+            previous_generation = mygen
             self.ga_dict[self.gact]['generations'][ga_genct] = dict()
             self.ga_dict[self.gact]['generations'][ga_genct]['best_rmse'] = gen_best_rmse
             self.ga_dict[self.gact]['generations'][ga_genct]['best_genome'] = gen_best_genome
@@ -555,7 +608,8 @@ class ParamOptGA(SingleFit):
             # prints output for each generation
             print(time.asctime())
             genpref = "Results gen %i (%i/%i convergence), rmse %3.3f" % (ga_genct, ga_repetitions_of_best, self.convergence_generations, gen_best_rmse)
-            print_genome(gen_best_genome, preface=genpref, model = self.model)
+            printlist = self.print_params(gen_best_genome)
+            print("%s: %s" % (genpref, printlist))
             ga_genct = ga_genct + 1
         self.ga_dict[self.gact]['best_rmse'] = ga_best_rmse
         self.ga_dict[self.gact]['best_genome'] = ga_best_genome
@@ -570,14 +624,16 @@ class ParamOptGA(SingleFit):
         self.readme_list.append("----- GA %i -----\n" % ga)
         self.readme_list.append("Converged?: %s\n" % self.ga_dict[ga]['converged'])
         prefacestr= "Best %i-CV avg RMSE: %3.3f" % (self.num_cvtests, self.ga_dict[ga]['best_rmse'])
-        [genomestr, printlist] = print_genome(self.ga_dict[ga]['best_genome'], preface=prefacestr, model = self.model)
+        printlist = self.print_params(self.ga_dict[ga]['best_genome'])
+        print("%s: %s" % (prefacestr, printlist))
         self.readme_list.append("%s\n" % genomestr)
         gens = list(self.ga_dict[ga]['generations'].keys())
         gens.sort()
         self.readme_list.append("..... Generations .....\n")
         for gen in gens:
             prefacestr = "Generation %i best: avg rmse %3.3f" % (gen, self.ga_dict[ga]['generations'][gen]['best_rmse'])
-            [genomestr, printlist] = print_genome(self.ga_dict[ga]['generations'][gen]['best_genome'], preface = prefacestr, model = self.model)
+            printlist = self.print_params(self.ga_dict[ga]['generations'][gen]['best_genome']
+            print("%s: %s" % (prefacestr, printlist))
             self.readme_list.append("%s\n" % genomestr)
         return
 
@@ -605,10 +661,7 @@ class ParamOptGA(SingleFit):
     @timeit
     def set_up(self):
         SingleFit.set_up(self)
-        self.cv_divisions = self.get_cv_divisions(self.num_cvtests)
-        self.set_hp_dict()
-        self.set_afm_dict()
-        self.set_gene_info()
+        self.set_up_opt_dict() #inherited from ParamGridSearch
         return
 
     def set_gene_info(self):
@@ -755,12 +808,13 @@ class ParamOptGA(SingleFit):
                 self.final_best_genome = self.ga_dict[ga]['best_genome']
         self.readme_list.append("===== Overall info =====\n")
         self.readme_list.append("%s\n" % time.asctime())
-        [printstr, printlist] = print_genome(self.final_best_genome, preface="Overall best genome", model = self.model)
+        printlist = self.print_params(self.final_best_genome)
+        printstr = "Overall best genome: %s" % printlist
         self.readme_list.append("%s\n" % printstr)
         return
 
     def print_final_best_for_code(self):
-        [printstr, printlist] = print_genome(self.final_best_genome, preface="", model = self.model)
+        printlist = self.print_params(self.final_best_genome)
         with open(os.path.join(self.save_path,"OPTIMIZED_PARAMS"),'w') as pfile:
             pfile.writelines(printlist)
         return
