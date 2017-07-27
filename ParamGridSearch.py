@@ -89,7 +89,6 @@ class ParamGridSearch(SingleFit):
         """
         Additional class attributes to parent class:
             Set by keyword:
-                self.additional_feature_methods
                 self.fix_random_for_testing
                 self.num_cvtests
                 self.mark_outlying_points
@@ -126,12 +125,6 @@ class ParamGridSearch(SingleFit):
             self.random_state = np.random.RandomState(0)
         else:
             self.random_state = np.random.RandomState()
-        if type(additional_feature_methods) is list:
-            self.additional_feature_methods = list(additional_feature_methods)
-        elif type(additional_feature_methods) is str:
-            self.additional_feature_methods = additional_feature_methods.split(",")
-        else:
-            self.additional_feature_methods = additional_feature_methods
         self.num_cvtests = int(num_cvtests)
         self.mark_outlying_points = mark_outlying_points
         self.num_folds = num_folds
@@ -303,12 +296,19 @@ class ParamGridSearch(SingleFit):
         return
 
     def print_best_params(self):
+        bplist = self.print_params(self.best_params)
         with open(os.path.join(self.save_path,"OPTIMIZED_PARAMS"),'w') as pfile:
-            for loc in self.best_params.keys():
-                for param in self.best_params[loc].keys():
-                    val = self.best_params[loc][param]
-                    pfile.write("%s;%s;%s\n" % (loc, param, val))
+            pfile.writelines(bplist)
         return
+
+    def print_params(self, param_dict):
+        param_list =list()
+        for loc in param_dict.keys():
+            for param in param_dict[loc].keys():
+                val = param_dict[loc][param]
+                paramstr = "%s;%s;%s\n" % (loc, param, val)
+                param_list.append(paramstr)
+        return param_list
 
     def save_best_model(self):
         self.model.set_params(**self.best_params['model'])
