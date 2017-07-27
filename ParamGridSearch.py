@@ -270,11 +270,9 @@ class ParamGridSearch(SingleFit):
             mycv_rmse = mycv.statistics['avg_rmse']
         else:
             raise ValueError("Both self.num_folds and self.percent_leave_out are None. One or the other must be specified.")
+        indiv_param_list = self.print_params(indiv_params)
         with open(os.path.join(indiv_path,"param_values"), 'w') as indiv_pfile:
-            for loc in indiv_params.keys():
-                for param in indiv_params[loc].keys():
-                    val = indiv_params[loc][param]
-                    indiv_pfile.write("%s, %s: %s\n" % (loc, param, val))
+            indiv_pfile.writelines(indiv_param_list)
         return [mycv_rmse, mycv.statistics]
 
     def get_best_indivs(self):
