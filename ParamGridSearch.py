@@ -171,7 +171,7 @@ class ParamGridSearch(SingleFit):
         logger.debug("opt param list: %s" % self.opt_param_list)
         logger.debug("nonopt param list: %s" % self.nonopt_param_list)
         self.set_up_pop_params()
-        logger.debug("Population: %s" % self.pop_params)
+        #logger.debug("Population: %s" % self.pop_params)
         logger.debug("Population size: %i" % len(self.pop_params))
         return
     
