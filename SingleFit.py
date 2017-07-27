@@ -165,6 +165,9 @@ class SingleFit():
         return
     
     def print_model(self):
+        self.readme_list.append("----- Model ----------------\n")
+        self.readme_list.append("Class: %s\n" % self.model.__class__)
+        self.readme_list.append("Name: %s\n" % self.model.__class__.__name__)
         self.readme_list.append("----- Model parameters -----\n")
         for param, paramval in self.trained_model.get_params().items():
             self.readme_list.append("%s: %s\n" % (param, paramval))
