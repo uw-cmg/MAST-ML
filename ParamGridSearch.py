@@ -207,7 +207,7 @@ class ParamGridSearch(SingleFit):
             self.pop_rmses = pop_rmses_dict
         return
 
-    def evaluate_indiv_multiprocessing(self, indiv_params, indiv_key, pop_stats_dict, pop_rmses_list):
+    def evaluate_indiv_multiprocessing(self, indiv_params, indiv_key, pop_stats_dict, pop_rmses_dict):
         [indiv_rmse, indiv_stats] = self.evaluate_indiv(indiv_params, indiv_key)
         pop_stats_dict[indiv_key] = indiv_stats
         pop_rmses_dict[indiv_key] = indiv_rmse
