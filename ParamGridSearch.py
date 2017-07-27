@@ -24,9 +24,7 @@ class ParamGridSearch(SingleFit):
         training_dataset, (Should be the same as testing_dataset)
         testing_dataset, (Should be the same as training_dataset)
         model,
-        save_path,
-        xlabel, 
-        ylabel, see parent class.
+        save_path, see parent class.
         param_1 <str>: parameter string made up of semicolon-delimited pieces
             Piece 1: The word 'model' or a custom feature class.method string, 
                         e.g. DBTT.calculate_EffectiveFluence,
