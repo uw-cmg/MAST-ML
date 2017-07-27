@@ -323,19 +323,6 @@ class ParamGridSearch(SingleFit):
         indiv_dh.set_up_data_from_features()
         return indiv_dh
 
-    def flatten_params(self):
-        flat_params=list()
-        for location in self.opt_dict.keys():
-            for param in self.opt_dict[location].keys():
-                paramlist=list()
-                for val in self.opt_dict[location][param]:
-                    paramlist.append([location,param,val])
-                flat_params.append(paramlist)
-        logger.debug("Flattened:")
-        for flat_item in flat_params:
-            logger.debug(flat_item)
-        self.flat_params = flat_params
-        return
 
     def get_split_name(self, combined_name):
         """ model.param or package.class.param to
