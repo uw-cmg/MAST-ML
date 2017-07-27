@@ -105,6 +105,7 @@ class ParamGridSearch(SingleFit):
                 self.pop_rmses
                 self.pop_upper_limit
                 self.best_indivs
+                self.best_params
                 ?self.random_state
         """
         if not(training_dataset == testing_dataset):
@@ -148,6 +149,7 @@ class ParamGridSearch(SingleFit):
         self.pop_upper_limit=1e6
         self.flat_results=None
         self.best_indivs=None
+        self.best_params=None
         return 
 
     @timeit
@@ -156,6 +158,8 @@ class ParamGridSearch(SingleFit):
         self.evaluate_pop()
         self.get_best_indivs()
         self.print_best_params()
+        self.save_best_model()
+        self.print_best_dataframe()
         self.flatten_results()
         self.plot()
         self.print_readme()
@@ -288,15 +292,26 @@ class ParamGridSearch(SingleFit):
             self.readme_list.append("%s: %3.3f, %s\n" % (lowitem[0],lowitem[1],lowitem[2]))
         self.readme_list.append("-----------------------\n")
         self.best_indivs = lowest
+        self.best_params = self.best_indivs[0][2] #first index, third col
         return
 
     def print_best_params(self):
-        best_params = self.best_indivs[0][2] #first entry, params is third col
         with open(os.path.join(self.save_path,"OPTIMIZED_PARAMS"),'w') as pfile:
-            for loc in best_params.keys():
-                for param in best_params[loc].keys():
-                    val = best_params[loc][param]
+            for loc in self.best_params.keys():
+                for param in self.best_params[loc].keys():
+                    val = self.best_params[loc][param]
                     pfile.write("%s;%s;%s\n" % (loc, param, val))
+        return
+
+    def save_best_model(self):
+        self.model.set_params(**self.best_params['model'])
+        self.save_model()
+        return
+
+    def print_best_dataframe(self):
+        best_dh = copy.deepcopy(self.testing_dataset)
+        best_df = self.get_afm_updated_dataset(best_dh.data, self.best_params)
+        best_df.to_csv("best_params_updated_dataframe.csv") 
         return
 
     def get_afm_updated_dataset(self, indiv_df, indiv_params):
