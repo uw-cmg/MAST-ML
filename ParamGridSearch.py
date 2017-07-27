@@ -97,7 +97,6 @@ class ParamGridSearch(SingleFit):
                 self.param_strings
                 self.opt_dict
                 self.opt_param_list
-                self.afm_dict
                 self.flat_params
                 self.flat_results
                 self.pop_params
@@ -141,7 +140,6 @@ class ParamGridSearch(SingleFit):
         # Sets later in code
         self.opt_dict=None
         self.opt_param_list=None
-        self.afm_dict=None
         self.flat_params=None
         self.pop_params=None
         self.pop_size=None
@@ -169,8 +167,6 @@ class ParamGridSearch(SingleFit):
         logger.debug("opt dict: %s" % self.opt_dict)
         logger.debug("opt param list: %s" % self.opt_param_list)
         raise NotImplementedError("Stopping old setup.")
-        self.set_up_afm_dict()
-        logger.debug("afm dict: %s" % self.afm_dict)
         self.flatten_params()
         self.set_up_pop_params()
         logger.debug("Population size: %i" % len(self.pop_params))
@@ -335,12 +331,6 @@ class ParamGridSearch(SingleFit):
         logger.debug("Flattened:")
         for flat_item in flat_params:
             logger.debug(flat_item)
-        pop_size=1
-        for fplist in flat_params:
-            pop_size = pop_size * len(fplist)
-        if pop_size > self.pop_upper_limit:
-            raise ValueError("Over %i grid points. Exiting.")
-        self.pop_size = pop_size
         self.flat_params = flat_params
         return
 
@@ -466,26 +456,10 @@ class ParamGridSearch(SingleFit):
                 pop_size = numvals
             else:
                 pop_size = pop_size * numvals
+            if pop_size > self.pop_upper_limit:
+                raise ValueError("Population size has reached the upper limit of %i. Exiting." % self.pop_upper_limit)
         self.pop_size = pop_size
         return
-    
-    def set_up_afm_dict(self):
-        self.afm_dict=dict()
-        if self.additional_feature_methods is None:
-            return
-        for paramstr in self.additional_feature_methods:
-            logger.debug(paramstr)
-            paramsplit = paramstr.strip().split(";")
-            location = paramsplit[0].strip()
-            if not location in self.afm_dict.keys():
-                self.afm_dict[location]=dict()
-            for argidx in range(1, len(paramsplit)):
-                argitem = paramsplit[argidx]
-                paramname = argitem.split(":")[0]
-                paramval = argitem.split(":")[1]
-                self.afm_dict[location][paramname]=paramval
-        return
-
 
     @timeit
     def fit(self):
