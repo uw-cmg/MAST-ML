@@ -481,6 +481,7 @@ class MASTMLDriver(object):
         fdict["LeaveOutPercentCV"] = ["best_worst_overlay.png"]
         fdict["LeaveOutGroupCV"] = ["leave_out_group.png"]
         fdict["ParamOptGA"] = ["OPTIMIZED_PARAMS"]
+        fdict["ParamGridSearch"] = ["OPTIMIZED_PARAMS","rmse_heatmap.png","rmse_heatmap_3d.png"]
         fdict["PredictionVsFeature"] = [] #not sure
         self.favorites_dict=dict(fdict)
         return
@@ -499,12 +500,15 @@ class MASTMLDriver(object):
                 testrelpath = os.path.relpath(test_save_path, self.save_path)
                 linkline = '<A HREF="%s">%s</A> from test <A HREF="%s">%s</A><BR><BR>\n' % (linkloc, fval, testrelpath, test_folder)
                 linklist.append(linkline)
-                if '.png' in fval:
-                    imline = '<A HREF="%s"><IMG SRC="%s" height=300 width=400></A><BR>\n' % (linkloc, linkloc)
-                    linklist.append(imline)
+                if not (os.path.exists(linkloc)):
+                    linklist.append("File not found.\n")
                 else:
-                    txtline = '<EMBED SRC="%s" width=75%%><BR>\n' % (linkloc)
-                    linklist.append(txtline)
+                    if '.png' in fval:
+                        imline = '<A HREF="%s"><IMG SRC="%s" height=300 width=400></A><BR>\n' % (linkloc, linkloc)
+                        linklist.append(imline)
+                    else:
+                        txtline = '<EMBED SRC="%s" width=75%%><BR>\n' % (linkloc)
+                        linklist.append(txtline)
                 linklist.append("<BR>\n") 
         return linklist
 
