@@ -31,7 +31,7 @@ class MASTMLDriver(object):
         self.data_dict = dict() #Data dictionary
         self.model_list = list() #list of actual models
         self.model_vals = list() #list of model names, like "gkrr_model"
-        self.param_optimizing_tests = ["ParamOptGA"]
+        self.param_optimizing_tests = ["ParamOptGA","ParamGridSearch"]
         self.readme_html = list()
         self.readme_html_tests = list()
         self.start_time = None
@@ -388,77 +388,21 @@ class MASTMLDriver(object):
                 self.mastmlwrapper.get_machinelearning_test(test_type=test_type,
                         model=model, save_path=test_save_path, **test_params)
                 logging.info('Ran test %s for your %s model' % (test_type, str(model)))
-                self._update_models_and_data(test_folder, test_save_path, midx)
                 self.readme_html.extend(self.make_links_for_favorites(test_folder, test_save_path))
                 testrelpath = os.path.relpath(test_save_path, self.save_path)
                 self.readme_html_tests.append('<A HREF="%s">%s</A><BR>\n' % (testrelpath, test_type))
+                test_short = test_folder.split("_")[0]
+                if test_short in self.param_optimizing_tests:
+                    popt_warn = list()
+                    popt_warn.append("Last test was a parameter-optimizing test.")
+                    popt_warn.append("The test results may have specified an update of model parameters or data.")
+                    popt_warn.append("Please run a separate test.conf file with updated data and model parameters.")
+                    popt_warn.append("No further tests will be run on this file.")
+                    for popt_warn_line in popt_warn:
+                        logging.warning(popt_warn_line)
+                        print(popt_warn_line)
+                    break
         return test_list
-
-    def _update_models_and_data(self, test_folder, test_save_path, model_index=None):
-        test_short = test_folder.split("_")[0]
-        if not (test_short in self.param_optimizing_tests): #no need
-            logging.info("No parameter or data updates necessary.")
-            return
-        logging.info("UPDATING PARAMETERS from %s" % test_folder)
-        param_dict = self._get_param_dict(os.path.join(test_save_path,"OPTIMIZED_PARAMS"))
-        model_val = self.model_vals[model_index]
-        self.mastmlwrapper.configdict["Model Parameters"][model_val].update(param_dict["model"])
-        logging.info("New %s params: %s" % (model_val, self.mastmlwrapper.configdict["Model Parameters"][model_val]))
-        self.model_list[model_index] = self.mastmlwrapper.get_machinelearning_model(model_type=model_val) #update model list IN PLACE
-        logging.info("Updated model.")
-        afm_dict = self._get_afm_args(os.path.join(test_save_path,"ADDITIONAL_FEATURES"))
-        self._update_data_dict(afm_dict, param_dict)
-        return
-
-    def _update_data_dict(self, afm_dict=dict(), param_dict=dict()):
-        if len(afm_dict.keys()) == 0:
-            logging.info("No data updates necessary.")
-            return
-        for dname in self.data_dict.keys():
-            for afm in afm_dict.keys():
-                afm_kwargs = dict(afm_dict[afm])
-                (feature_name, feature_data) = cf_help.get_custom_feature_data(class_method_str = afm,
-                    starting_dataframe = self.data_dict[dname].data,
-                    param_dict = dict(param_dict[afm]),
-                    addl_feature_method_kwargs = dict(afm_kwargs))
-                self.data_dict[dname].add_feature(feature_name, feature_data)
-                self.data_dict[dname].input_features.append(feature_name)
-                self.data_dict[dname].set_up_data_from_features()
-                logging.info("Updated dataset %s data and input features with new feature %s" % (dname,afm))
-            newcsv = os.path.join(self.save_path, "updated_%s.csv" % dname)
-            self.data_dict[dname].data.to_csv(newcsv)
-            logging.info("Updated dataset printed to %s" % newcsv)
-        return
-
-    def _get_param_dict(self, fname):
-        pdict=dict()
-        with open(fname,'r') as pfile:
-            flines = pfile.readlines()
-        for fline in flines:
-            fline = fline.strip()
-            [gene, geneidx, genevalstr] = fline.split(";")
-            if not gene in pdict.keys():
-                pdict[gene] = dict()
-            if not (gene == 'model'):
-                geneidx = int(geneidx) #integer key to match ParamOptGA
-            if geneidx in pdict[gene].keys():
-                raise ValueError("Param file at %s returned two of the same paramter" % fname)
-            geneval = float(genevalstr)
-            pdict[gene][geneidx] = geneval
-        return pdict
-
-    def _get_afm_args(self, fname):
-        adict=dict()
-        with open(fname,'r') as afile:
-            alines = afile.readlines()
-        for aline in alines:
-            aline = aline.strip()
-            [af_method, af_arg, af_argval] = aline.split(";")
-            if not af_method in adict.keys():
-                adict[af_method] = dict()
-            adict[af_method][af_arg] = af_argval
-        return adict
-
     def _move_log_and_input_files(self):
         cwd = os.getcwd()
         if not(self.save_path == cwd):
