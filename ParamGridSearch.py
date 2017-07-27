@@ -280,7 +280,7 @@ class ParamGridSearch(SingleFit):
                 if ival < minval:
                     minval = ival
                     minikey = ikey
-            lowest.append((minikey, rmses[minidx], params[minidx]))
+            lowest.append((minikey, rmses[minikey], params[minikey]))
             rmses[minikey]=largeval
             lct = lct + 1
         self.readme_list.append("----Minimum RMSE params----\n")
