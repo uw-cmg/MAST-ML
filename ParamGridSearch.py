@@ -35,11 +35,12 @@ class ParamGridSearch(SingleFit):
                         the custom_features folder
             Piece 2: The parameter name
             Piece 3: The parameter type. Use only:
-                        'int', 'float' (boolean and string not supported)
+                        'int', 'float', 'bool', 'str'
                         (Some sklearn model
                         hyperparameters are type-sensitive)
             Piece 4: The series type. Use:
                         'discrete': List will be given in piece 5
+                                'bool' and 'str' MUST use 'discrete'
                         'continuous': Range and step will be given in piece 5
                         'continuous-log: Range and step will be given in piece 5
             Piece 5: A colon-delimited list of 
@@ -48,9 +49,9 @@ class ParamGridSearch(SingleFit):
                         numpy's np.linspace or np.logspace
                         function will be used to generate this list,
                         using an inclusive start and inclusive end
-        param_2 <str>
-        param_3 <str>
-        param_4 <str>
+                    A parameter with only one discrete value will not be
+                    considered as an 'optimized' parameter.
+        param_2 <str> etc. 
         fix_random_for_testing <int>: 0 - use random numbers
                                       1 - fix randomizer for testing
         num_cvtests <int>: Number of CV tests for each validation step
@@ -73,10 +74,7 @@ class ParamGridSearch(SingleFit):
         save_path=None,
         xlabel="Measured",
         ylabel="Predicted",
-        param_1=None,
-        param_2=None,
-        param_3=None,
-        param_4=None,
+        #param_1 and as many param_xxx as necessary are given through **kwargs
         additional_feature_methods=None,
         fix_random_for_testing=0,
         num_cvtests=5,
@@ -88,10 +86,6 @@ class ParamGridSearch(SingleFit):
         """
         Additional class attributes to parent class:
             Set by keyword:
-                self.param_1
-                self.param_2
-                self.param_3
-                self.param_4
                 self.additional_feature_methods
                 self.fix_random_for_testing
                 self.num_cvtests
@@ -100,7 +94,9 @@ class ParamGridSearch(SingleFit):
                 self.percent_leave_out
                 self.processors
             Set in code:
+                self.param_strings
                 self.opt_dict
+                self.opt_param_list
                 self.afm_dict
                 self.flat_params
                 self.flat_results
@@ -126,10 +122,6 @@ class ParamGridSearch(SingleFit):
             self.random_state = np.random.RandomState(0)
         else:
             self.random_state = np.random.RandomState()
-        self.param_1 = param_1
-        self.param_2 = param_2
-        self.param_3 = param_3
-        self.param_4 = param_4
         if type(additional_feature_methods) is list:
             self.additional_feature_methods = list(additional_feature_methods)
         elif type(additional_feature_methods) is str:
@@ -141,8 +133,14 @@ class ParamGridSearch(SingleFit):
         self.num_folds = num_folds
         self.percent_leave_out = percent_leave_out
         self.processors=int(processors)
+        self.param_strings = dict()
+        for argname in kwargs.keys():
+            if 'param_' in argname:
+                param_num = int(argname.split("_")[1].strip())
+                self.param_strings[param_num] = kwargs[argname]
         # Sets later in code
         self.opt_dict=None
+        self.opt_param_list=None
         self.afm_dict=None
         self.flat_params=None
         self.pop_params=None
@@ -169,6 +167,8 @@ class ParamGridSearch(SingleFit):
         SingleFit.set_up(self)
         self.set_up_opt_dict()
         logger.debug("opt dict: %s" % self.opt_dict)
+        logger.debug("opt param list: %s" % self.opt_param_list)
+        raise NotImplementedError("Stopping old setup.")
         self.set_up_afm_dict()
         logger.debug("afm dict: %s" % self.afm_dict)
         self.flatten_params()
@@ -409,33 +409,34 @@ class ParamGridSearch(SingleFit):
         return
 
     def set_up_opt_dict(self):
+        """Set up parameter value dictionary based on parameter strings, into
+            self.opt_dict
+            Also sets:
+                self.opt_param_list (only those parameters which will be
+                                    optimized)
+                self.pop_size
+        """
         self.opt_dict=dict()
-        params = list()
-        if not (self.param_1 is None):
-            params.append(self.param_1)
-        if not (self.param_2 is None):
-            params.append(self.param_2)
-        if not (self.param_3 is None):
-            params.append(self.param_3)
-        if not (self.param_4 is None):
-            params.append(self.param_4)
-        if len(params) == 0:
-            raise ValueError("No parameters to optimize. Exiting")
-        for paramstr in params:
+        self.opt_param_list=list()
+        pop_size = None
+        for paramct in self.param_strings.keys():
+            paramstr = self.param_strings[paramct]
             logger.debug(paramstr)
             paramsplit = paramstr.strip().split(";")
             location = paramsplit[0].strip()
             paramname = paramsplit[1].strip()
             paramtype = paramsplit[2].strip().lower()
-            if not(paramtype in ['int','float']):
-                raise ValueError("Parameter type %s must be 'int' or 'float'. Exiting." % paramtype)
+            if not(paramtype in ['int','float','bool','str']):
+                raise ValueError("Parameter type %s must be one of int, float, bool, or str. Exiting." % paramtype)
             rangetype = paramsplit[3].strip().lower()
             if not(rangetype in ['discrete','continuous','continuous-log']):
-                raise ValueError("Range type %s must be 'discrete' or 'continuous' or 'continuous-log'. Exiting." % rangetype)
+                raise ValueError("Range type %s must be 'discrete' or 'continuous' or 'continuous-log'. Exiting." % rangetype) 
+            if paramtype in ['bool', 'str']:
+                if not(rangetype in ['discrete']):
+                    raise ValueError("Range type %s must be discrete for parameter type of %s" % (rangetype, paramtype))
             gridinfo = paramsplit[4].strip()
-            if not location in self.opt_dict.keys():
-                self.opt_dict[location] = dict()
-            if paramname in self.opt_dict[location].keys():
+            combined_name = "%s.%s" % (location, paramname)
+            if combined_name in self.opt_dict.keys():
                 raise KeyError("Parameter %s for optimization of %s appears to be listed twice. Exiting." % (paramname, location))
             gridsplit = gridinfo.split(":") #split colon-delimited
             gridsplit = np.array(gridsplit, paramtype)
@@ -453,7 +454,19 @@ class ParamGridSearch(SingleFit):
                                         num=gridsplit[2],
                                         endpoint=True,
                                         dtype=paramtype)
-            self.opt_dict[location][paramname] = gridvals
+            numvals = len(gridvals)
+            if numvals < 1:
+                raise ValueError("Parameter %s does not evaluate to having any values." % paramstr)
+            elif numvals > 1: #optimization to be done
+                self.opt_param_list.append(combined_name)
+                self.opt_dict[combined_name] = gridvals
+            elif numvals == 1: #
+                self.opt_dict[combined_name] = gridvals[0]
+            if pop_size is None:
+                pop_size = numvals
+            else:
+                pop_size = pop_size * numvals
+        self.pop_size = pop_size
         return
     
     def set_up_afm_dict(self):
