@@ -207,21 +207,62 @@ class ParamOptGA(ParamGridSearch):
                 pop_params[ict][location][param_name] = new_val
         return pop_params
 
+    def check_convergence(self, results):
+        """Check convergence. 
+            Args:
+                results <list of (RMSE, parameter dictionary) entries>
+            Returns:
+                (boolean for convergence, best rmse, best rmse params)
+        """
+        rmses_same = False
+        params_same = False
+        converged = False
+        rmses=list()
+        unmatching_params = 0
+        overtol_rmses = 0
+        for ridx in range(0, len(results)):
+            rmse = results[ridx][0]
+            params = results[ridx][1]
+            rmses.append(rmse) #make rmse list
+            if ridx > 0:
+                old_params = results[ridx - 1][1]
+                if not (old_params == params):
+                    unmatching_params += 1
+        if unmatching_params > 0:
+            params_same = False
+        min_idx = np.argmin(rmses)
+        min_rmse = rmses[min_idx]
+        min_params = results[min_idx][1]
+        deviations = np.abs(np.array(rmses,'float') - min_rmse)
+        for deviation in deviations:
+            if deviation > self.gen_tol:
+                overtol_rmses +=1
+        if overtol_rmses > 0:
+            rmses_same = False
+        #If RMSEs are same/similar but params flip-flop, still converged
+        if rmses_same is True:
+            converged = True
+            if unmatching_params is True:
+                logger.info("RMSE convergence is true, but generation parameters are not all the same.")
+        return (converged, min_rmse, min_params)
 
     def run_ga(self):
         self.ga_dict[self.gact] = dict()
         self.ga_dict[self.gact]['generations'] = dict()
+        self.ga_dict[self.gact]['gen_bests'] = list()
+        
+        highval = 10000000
+        for gbidx in range(0, self.convergence_generations):
+            self.ga_dict[self.gact]['gen_bests'].append((highval, dict()))
         
         print('running', flush=True)
         ga_genct = 0
         ga_best_rmse = 10000000
         ga_best_genome = None
-        ga_converged = 0
-        ga_repetitions_of_best = 0
-
+        ga_converged = False
         previous_generation = None
 
-        while ga_repetitions_of_best < self.convergence_generations and ga_genct < self.max_generations: 
+        while (ga_converged is False) and (ga_genct < self.max_generations): 
             print("Generation %i %s" % (ga_genct, time.asctime()), flush=True)
             mygen = self.set_up_generation(ga_genct)
             mygen.set_up_prior_to_population()
@@ -239,40 +280,18 @@ class ParamOptGA(ParamGridSearch):
             self.ga_dict[self.gact]['generations'][ga_genct] = dict()
             self.ga_dict[self.gact]['generations'][ga_genct]['best_rmse'] = gen_best_rmse
             self.ga_dict[self.gact]['generations'][ga_genct]['best_genome'] = gen_best_genome
-            
-
-            # updates best parameter set
-            if (gen_best_rmse < ga_best_rmse):
-                ga_best_rmse = gen_best_rmse
-                if ga_best_genome == gen_best_genome:
-                    # slightly different CV may produce slightly diff results
-                    # for same genome; account for this case
-                    ga_repetitions_of_best += 1
-                else:
-                    ga_best_genome = gen_best_genome
-                    ga_repetitions_of_best = 0
-            elif (np.isclose(gen_best_rmse, ga_best_rmse, atol=self.gen_tol)):
-                # slightly higher but similar RMSE: avoid non-convergence by
-                # flip-flopping between two genomes with similar RMSE
-                # keep lower RMSE but take this genome
-                ga_best_genome = gen_best_genome
-                # convergence adds because of plateau
-                ga_repetitions_of_best += 1
-            else:
-                ga_repetitions_of_best = 0
-            
+            self.ga_dict[self.gact]['gen_bests'].pop(0) #pop off oldest entry
+            self.ga_dict[self.gact]['gen_bests'].append((gen_best_rmse, gen_best_genome))
             # prints output for each generation
             print(time.asctime())
-            genpref = "Results gen %i (%i/%i convergence), rmse %3.3f" % (ga_genct, ga_repetitions_of_best, self.convergence_generations, gen_best_rmse)
+            genpref = "Results gen %i, rmse %3.3f" % (ga_genct, gen_best_rmse)
             printlist = self.print_params(gen_best_genome)
             print("%s: %s" % (genpref, printlist))
             ga_genct = ga_genct + 1
-        self.ga_dict[self.gact]['best_rmse'] = ga_best_rmse
+            (ga_converged, ga_best_rmse, ga_best_genome) = self.check_convergence(self.ga_dict[self.gact]['gen_bests'])
+        self.ga_dict[self.gact]['best_rmse'] = ga_best_rmse #note that this RMSE is only the best of the last self.convergence_generations generations, not all generations of the GA.
         self.ga_dict[self.gact]['best_genome'] = ga_best_genome
-        if ga_genct < self.max_generations:
-            self.ga_dict[self.gact]['converged']=True
-        else:
-            self.ga_dict[self.gact]['converged']=False
+        self.ga_dict[self.gact]['converged'] = ga_converged
         self.gact = self.gact + 1
         return
 
