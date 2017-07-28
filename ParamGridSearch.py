@@ -235,7 +235,7 @@ class ParamGridSearch(SingleFit):
         #logging.debug(indiv_dh)
         indiv_path = os.path.join(self.save_path, "indiv_%s" % indiv_key)
         if not(self.num_folds is None):
-            mycv = KFoldCV(training_dataset= indiv_dh,
+            with KFoldCV(training_dataset= indiv_dh,
                     testing_dataset= indiv_dh,
                     model = indiv_model,
                     save_path = indiv_path,
@@ -244,15 +244,16 @@ class ParamGridSearch(SingleFit):
                     mark_outlying_points = self.mark_outlying_points,
                     num_cvtests = self.num_cvtests,
                     fix_random_for_testing = self.fix_random_for_testing,
-                    num_folds = self.num_folds)
-            #mycv.run() #run separately instead
-            mycv.set_up()
-            mycv.fit()
-            mycv.predict()
-            mycv.print_readme()
-            mycv_rmse = mycv.statistics['avg_fold_avg_rmses']
+                    num_folds = self.num_folds) as mycv:
+                #mycv.run() #run separately instead
+                mycv.set_up()
+                mycv.fit()
+                mycv.predict()
+                mycv.print_readme()
+                mycv_rmse = mycv.statistics['avg_fold_avg_rmses']
+                mycv_stats = dict(mycv.statistics)
         elif not (self.percent_leave_out is None):
-            mycv = LeaveOutPercentCV(training_dataset= indiv_dh,
+            with LeaveOutPercentCV(training_dataset= indiv_dh,
                     testing_dataset= indiv_dh,
                     model = indiv_model,
                     save_path = indiv_path,
@@ -261,19 +262,20 @@ class ParamGridSearch(SingleFit):
                     mark_outlying_points = self.mark_outlying_points,
                     num_cvtests = self.num_cvtests,
                     fix_random_for_testing = self.fix_random_for_testing,
-                    percent_leave_out = self.percent_leave_out)
-            #mycv.run() #run separately instead
-            mycv.set_up()
-            mycv.fit()
-            mycv.predict()
-            mycv.print_readme()
-            mycv_rmse = mycv.statistics['avg_rmse']
+                    percent_leave_out = self.percent_leave_out) as mycv:
+                #mycv.run() #run separately instead
+                mycv.set_up()
+                mycv.fit()
+                mycv.predict()
+                mycv.print_readme()
+                mycv_rmse = mycv.statistics['avg_rmse']
+                mycv_stats = dict(mycv.statistics)
         else:
             raise ValueError("Both self.num_folds and self.percent_leave_out are None. One or the other must be specified.")
         indiv_param_list = self.print_params(indiv_params)
         with open(os.path.join(indiv_path,"param_values"), 'w') as indiv_pfile:
             indiv_pfile.writelines(indiv_param_list)
-        return [mycv_rmse, mycv.statistics]
+        return [mycv_rmse, mycv_stats]
 
     def get_best_indivs(self):
         how_many = min(self.num_bests, len(self.pop_rmses.keys()))
