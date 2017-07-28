@@ -411,7 +411,12 @@ class ParamGridSearch(SingleFit):
             for oldstr in old_dict.keys():
                 for addct in range(0, len(add_vals)):
                     newstr = "%s_%i" % (oldstr, addct) 
-                    new_dict[newstr] = copy.deepcopy(old_dict[oldstr])
+                    new_dict[newstr] = dict()
+                    for oloc in old_dict[oldstr].keys():
+                        if not oloc in new_dict[newstr].keys():
+                            new_dict[newstr][oloc] = dict()
+                        for oparam in old_dict[oldstr][oloc].keys():
+                            new_dict[newstr][oloc][oparam] = old_dict[oldstr][oloc][oparam]
                     if not location in new_dict[newstr].keys():
                         new_dict[newstr][location]=dict()
                     new_dict[newstr][location][param_name] = add_vals[addct]
@@ -428,7 +433,12 @@ class ParamGridSearch(SingleFit):
         new_dict = dict()
         for oldstr in old_dict.keys():
             newstr = oldstr
-            new_dict[newstr] = copy.deepcopy(old_dict[oldstr])
+            new_dict[newstr] = dict()
+            for oloc in old_dict[oldstr].keys():
+                if not oloc in new_dict[newstr].keys():
+                    new_dict[newstr][oloc] = dict()
+                for oparam in old_dict[oldstr][oloc].keys():
+                    new_dict[newstr][oloc][oparam] = old_dict[oldstr][oloc][oparam]
             if not location in new_dict[newstr].keys():
                 new_dict[newstr][location]=dict()
             new_dict[newstr][location][param_name] = add_value
