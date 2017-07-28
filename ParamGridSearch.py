@@ -206,24 +206,41 @@ class ParamGridSearch(SingleFit):
             manager = Manager()
             pop_stats_dict = manager.dict()
             pop_rmses_dict = manager.dict()
-            indiv_p_list=list()
-            for ikey in self.pop_params.keys():
-                print("Individual %s/%i" % (ikey, self.pop_size))
-                indiv_params = self.pop_params[ikey]
-                indiv_p = Process(target=self.evaluate_indiv_multiprocessing, args=(indiv_params, ikey, pop_stats_dict, pop_rmses_dict))
-                indiv_p_list.append(indiv_p)
-                indiv_p.start()
-            for indiv_p in indiv_p_list:
-                indiv_p.join()
+            pop_done = manager.Value('i',0)
+            #create a number of lists each with the size of number of processors
+            pop_keys = list(self.pop_params.keys())
+            num_lists = int(np.ceil(self.pop_size/self.processors)) #round up
+            flat_lists = list()
+            pkct = 0
+            for listct in range(0, num_lists):
+                flat_list = list()
+                for item_ct in range(0, self.processors):
+                    if pkct < self.pop_size: #last list may have fewer entries
+                        flat_list.append(pop_keys[pkct])
+                        pkct = pkct + 1
+                flat_lists.append(flat_list)
+            for listct in range(0, num_lists):
+                pkey_list = flat_lists[listct]
+                indiv_p_list = list()
+                for iidx in range(0, len(pkey_list)):
+                    ikey = pkey_list[iidx]
+                    print("Individual %s/%i" % (ikey, self.pop_size))
+                    indiv_params = self.pop_params[ikey]
+                    indiv_p = Process(target=self.evaluate_indiv_multiprocessing, args=(indiv_params, ikey, pop_stats_dict, pop_rmses_dict, pop_done))
+                    indiv_p_list.append(indiv_p)
+                    indiv_p.start()
+                for indiv_p in indiv_p_list:
+                    indiv_p.join()
             self.pop_stats = pop_stats_dict
             self.pop_rmses = pop_rmses_dict
         return
 
-    def evaluate_indiv_multiprocessing(self, indiv_params, indiv_key, pop_stats_dict, pop_rmses_dict):
+    def evaluate_indiv_multiprocessing(self, indiv_params, indiv_key, pop_stats_dict, pop_rmses_dict, pop_done):
         [indiv_rmse, indiv_stats] = self.evaluate_indiv(indiv_params, indiv_key)
         pop_stats_dict[indiv_key] = indiv_stats
         pop_rmses_dict[indiv_key] = indiv_rmse
-        print("Individual %s done (multiprocessing)" % indiv_key)
+        pop_done.value += 1
+        print("Individual %s done (multiprocessing), %i/%i" % (indiv_key, pop_done.value, self.pop_size))
         return
 
     def evaluate_indiv(self, indiv_params, indiv_key):
