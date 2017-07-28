@@ -228,8 +228,8 @@ class ParamOptGA(ParamGridSearch):
                 old_params = results[ridx - 1][1]
                 if not (old_params == params):
                     unmatching_params += 1
-        if unmatching_params > 0:
-            params_same = False
+        if unmatching_params == 0:
+            params_same = True
         min_idx = np.argmin(rmses)
         min_rmse = rmses[min_idx]
         min_params = results[min_idx][1]
