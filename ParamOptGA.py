@@ -302,7 +302,7 @@ class ParamOptGA(ParamGridSearch):
         for gact in range(1, self.gact+1): #self.gact starts at 1
             ga_final_rmse_list.append(self.ga_dict[gact]['best_rmse'])
         ga_min_idx = np.argmin(ga_final_rmse_list)
-        self.best_params = self.ga_dict[ga_min_idx]['best_genome']
+        self.best_params = self.ga_dict[ga_min_idx+1]['best_genome'] #gact starts at 1
         self.readme_list.append("===== Overall info =====\n")
         self.readme_list.append("%s\n" % time.asctime())
         self.readme_list.append("Overall best genome:\n")
