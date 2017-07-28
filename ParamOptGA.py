@@ -257,7 +257,7 @@ class ParamOptGA(ParamGridSearch):
         
         print('running', flush=True)
         ga_genct = 0
-        ga_best_rmse = highval
+        ga_best_rmse = -1*highval
         ga_best_genome = None
         ga_converged = False
         previous_generation = None
