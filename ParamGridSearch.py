@@ -275,6 +275,12 @@ class ParamGridSearch(SingleFit):
         indiv_param_list = self.print_params(indiv_params)
         with open(os.path.join(indiv_path,"param_values"), 'w') as indiv_pfile:
             indiv_pfile.writelines(indiv_param_list)
+        files_to_clean=list()
+        files_to_clean.append("best_and_worst_test_data.csv")
+        for cfile in files_to_clean:
+            cdir = os.path.join(indiv_path, cfile)
+            if os.path.isfile(cdir):
+                os.remove(cdir)
         return [mycv_rmse, mycv_stats]
 
     def get_best_indivs(self):

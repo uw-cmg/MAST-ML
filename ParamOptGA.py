@@ -199,21 +199,6 @@ class ParamOptGA(ParamGridSearch):
                 pop_params[ict][location][param_name] = new_val
         return pop_params
 
-    def clean_up_path(self, path_to_clean):
-        """Remove best-and-worst CV data CSV as all of these files
-            for all individuals and generations can get very large
-        """
-        if not ("Gen_") in path_to_clean:
-            raise ValueError("Cannot clean a non-Generation path with this method.")
-        subdirs = os.listdir(path_to_clean)
-        for subtry in subdirs:
-            if 'indiv_' in subtry:
-                pathtry = os.path.join(path_to_clean, subtry)
-                if os.path.isdir(pathtry):
-                    filetry = os.path.join(pathtry, "best_and_worst_test_data.csv")
-                    if os.path.isfile(filetry):
-                        os.remove(filetry)
-        return
 
     def run_ga(self):
         self.ga_dict[self.gact] = dict()
@@ -240,7 +225,6 @@ class ParamOptGA(ParamGridSearch):
             mygen.print_results()
             #mygen.plot() #do not plot heatmaps etc. for each generation
             mygen.print_readme()
-            self.clean_up_path(mygen.save_path) #remove CV data as can get large
             gen_best_genome = mygen.best_params
             gen_best_rmse = mygen.best_indivs[0][1]
             previous_generation = mygen
