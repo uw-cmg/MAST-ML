@@ -47,7 +47,7 @@ class ParamOptGA(ParamGridSearch):
         testing_dataset=None,
         model=None,
         save_path=None,
-        num_folds=2,
+        num_folds=None,
         percent_leave_out=None,
         num_cvtests=20,
         mark_outlying_points='0,3',
