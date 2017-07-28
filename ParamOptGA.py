@@ -36,7 +36,7 @@ class ParamOptGA(ParamGridSearch):
         mutation_prob <float>: Mutation probability (float < 1.00)
         shift_prob <float>: Shift probability (float < 1.00)
         gen_tol <float>: Generation-to-generation RMSE tolerance for considering
-                            RMSEs to be equal
+                            RMSEs to be equal (absolute float tolerance)
 
     Returns:
         Analysis in save_path folder
@@ -243,7 +243,7 @@ class ParamOptGA(ParamGridSearch):
                 ga_best_rmse = gen_best_rmse
                 ga_best_genome = gen_best_genome
                 ga_repetitions_of_best = 0
-            elif (np.isclose(gen_best_rmse, ga_best_rmse, self.gen_tol)):
+            elif (np.isclose(gen_best_rmse, ga_best_rmse, atol=self.gen_tol)):
                 ga_best_genome = gen_best_genome
                 ga_repetitions_of_best = ga_repetitions_of_best + 1
             else:
