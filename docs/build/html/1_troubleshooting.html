@@ -88,6 +88,35 @@ Rerun MASTML and see if the MASTMLlog.log file picks up the new backend and,
 if so, whether the plots are now made correctly.</p>
 <p>If the problem persists, please submit a github issue ticket.</p>
 </div>
+<div class="section" id="memoryerror">
+<h2>MemoryError<a class="headerlink" href="#memoryerror" title="Permalink to this headline">¶</a></h2>
+<p>Memory errors may be found when running ParamOptGA or other tests.</p>
+<p>Note that ParamOptGA builds an initial large dictionary of all combinations,
+so the number of param_xxx being optimized and the grid spacing of
+each such parameter will affect the initial memory that the test must use.</p>
+<p>Try increasing the available memory or decreasing the test requirements like
+fineness of grid spacing.</p>
+<p>When running on a cluster, it may be possible to increase available memory by:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Changing the memory requirements in the submission script</li>
+<li>Switching to a different queue with higher-memory nodes</li>
+<li>Switching to a different cluster with higher-memory nodes</li>
+</ul>
+</div></blockquote>
+<p>Using PBS/Torque, it may be helpful to try omitting the pvmem term, as in:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c1">#PBS -l nodes=1:ppn=12</span>
+</pre></div>
+</div>
+<p>(normally <code class="docutils literal"><span class="pre">#PBS</span> <span class="pre">-l</span> <span class="pre">nodes=1:ppn=12,pvmem=2000mb</span></code>), or increasing it (<code class="docutils literal"><span class="pre">pvmem=3000mb</span></code>).
+Similar strategies may apply to other resource managers.</p>
+<p>To check available memory when running on a cluster, try adding a line</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ulimit</span> <span class="o">-</span><span class="n">a</span>
+</pre></div>
+</div>
+<p>to the submission script to see if there is any information about the memory
+the system thinks is available for the job.</p>
+</div>
 </div>
 
 
@@ -106,6 +135,7 @@ if so, whether the plots are now made correctly.</p>
 </li>
 <li><a class="reference internal" href="#keyerror">KeyError</a></li>
 <li><a class="reference internal" href="#qxcbconnection-could-not-connect-to-display">QXcbConnection: Could not connect to display</a></li>
+<li><a class="reference internal" href="#memoryerror">MemoryError</a></li>
 </ul>
 </li>
 </ul>

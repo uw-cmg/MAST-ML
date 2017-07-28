@@ -70,23 +70,30 @@ MemoryError
 *********************
 
 Memory errors may be found when running ParamOptGA or other tests.
+
 Note that ParamOptGA builds an initial large dictionary of all combinations,
-so the number and grid spacing of parameters in the param_xxx 
-will affect the initial memory that the test must use.
+so the number of param_xxx being optimized and the grid spacing of 
+each such parameter will affect the initial memory that the test must use.
 
-Try increasing the available memory or decreasing parameters.
+Try increasing the available memory or decreasing the test requirements like
+fineness of grid spacing.
 
-To check memory when running on a cluster, try adding a line ::
+When running on a cluster, it may be possible to increase available memory by:
 
-    ulimit -a
+    * Changing the memory requirements in the submission script
+    * Switching to a different queue with higher-memory nodes
+    * Switching to a different cluster with higher-memory nodes
 
-to the submission script to see if there is any memory information.
-
-On PBS/Torque, it may be helpful to try omitting the pvmem term, as in::
+Using PBS/Torque, it may be helpful to try omitting the pvmem term, as in::
 
     #PBS -l nodes=1:ppn=12
 
-(no pvmem term, normally #PBS -l nodes=1:ppn=12,pvmem=2000mb), or increasing it.
+(normally ``#PBS -l nodes=1:ppn=12,pvmem=2000mb``), or increasing it (``pvmem=3000mb``).
+Similar strategies may apply to other resource managers.
 
+To check available memory when running on a cluster, try adding a line ::
 
+    ulimit -a
 
+to the submission script to see if there is any information about the memory
+the system thinks is available for the job.
