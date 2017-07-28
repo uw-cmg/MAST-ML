@@ -111,7 +111,7 @@ class ParamOptGA(ParamGridSearch):
             self.random_state = np.random.RandomState()
         #
         self.ga_dict = dict()
-        self.gact = 1 #Start GAs at 1
+        self.gact = 0
         return
 
     def set_up_generation(self, genct=0):
@@ -278,7 +278,7 @@ class ParamOptGA(ParamGridSearch):
     def run(self):
         self.set_up()
         self.readme_list.append("===== GA info =====\n")
-        for ga in range(1, self.num_gas+1): #gact indexing starts at 1
+        for ga in range(0, self.num_gas):
             self.run_ga()
             self.print_ga(ga)
         self.select_final_best()
@@ -299,10 +299,10 @@ class ParamOptGA(ParamGridSearch):
 
     def select_final_best(self):
         ga_final_rmse_list = list()
-        for gact in range(1, self.gact+1): #self.gact starts at 1
+        for gact in range(0, self.gact): 
             ga_final_rmse_list.append(self.ga_dict[gact]['best_rmse'])
         ga_min_idx = np.argmin(ga_final_rmse_list)
-        self.best_params = self.ga_dict[ga_min_idx+1]['best_genome'] #gact starts at 1
+        self.best_params = self.ga_dict[ga_min_idx]['best_genome']
         self.readme_list.append("===== Overall info =====\n")
         self.readme_list.append("%s\n" % time.asctime())
         self.readme_list.append("Overall best genome:\n")
