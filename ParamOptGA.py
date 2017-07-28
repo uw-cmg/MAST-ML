@@ -257,7 +257,7 @@ class ParamOptGA(ParamGridSearch):
         
         print('running', flush=True)
         ga_genct = 0
-        ga_best_rmse = 10000000
+        ga_best_rmse = highval
         ga_best_genome = None
         ga_converged = False
         previous_generation = None
@@ -280,8 +280,11 @@ class ParamOptGA(ParamGridSearch):
             self.ga_dict[self.gact]['generations'][ga_genct] = dict()
             self.ga_dict[self.gact]['generations'][ga_genct]['best_rmse'] = gen_best_rmse
             self.ga_dict[self.gact]['generations'][ga_genct]['best_genome'] = gen_best_genome
-            self.ga_dict[self.gact]['gen_bests'].pop(0) #pop off oldest entry
-            self.ga_dict[self.gact]['gen_bests'].append((gen_best_rmse, gen_best_genome))
+            if (gen_best_rmse - self.gen_tol) > ga_best_rmse:
+                pass
+            else:
+                self.ga_dict[self.gact]['gen_bests'].pop(0) #pop off oldest entry
+                self.ga_dict[self.gact]['gen_bests'].append((gen_best_rmse, gen_best_genome))
             # prints output for each generation
             print(time.asctime())
             genpref = "Results gen %i, rmse %3.3f" % (ga_genct, gen_best_rmse)
