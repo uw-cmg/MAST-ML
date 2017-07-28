@@ -323,3 +323,12 @@ class SingleFit():
             rfile.writelines(self.readme_list)
         return
 
+    def __enter__(self):
+        """enter method is for with...as construction
+        """
+        return self
+
+    def __exit__(self, type, value, traceback):
+        """exit method is necessary for with...as construction
+        """
+        return None
