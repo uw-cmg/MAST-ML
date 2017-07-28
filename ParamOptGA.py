@@ -244,11 +244,20 @@ class ParamOptGA(ParamGridSearch):
             # updates best parameter set
             if (gen_best_rmse < ga_best_rmse):
                 ga_best_rmse = gen_best_rmse
-                ga_best_genome = gen_best_genome
-                ga_repetitions_of_best = 0
+                if ga_best_genome == gen_best_genome:
+                    # slightly different CV may produce slightly diff results
+                    # for same genome; account for this case
+                    ga_repetitions_of_best += 1
+                else:
+                    ga_best_genome = gen_best_genome
+                    ga_repetitions_of_best = 0
             elif (np.isclose(gen_best_rmse, ga_best_rmse, atol=self.gen_tol)):
+                # slightly higher but similar RMSE: avoid non-convergence by
+                # flip-flopping between two genomes with similar RMSE
+                # keep lower RMSE but take this genome
                 ga_best_genome = gen_best_genome
-                ga_repetitions_of_best = ga_repetitions_of_best + 1
+                # convergence adds because of plateau
+                ga_repetitions_of_best += 1
             else:
                 ga_repetitions_of_best = 0
             
