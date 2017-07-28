@@ -64,3 +64,29 @@ Rerun MASTML and see if the MASTMLlog.log file picks up the new backend and,
 if so, whether the plots are now made correctly.
 
 If the problem persists, please submit a github issue ticket.
+
+*********************
+MemoryError
+*********************
+
+Memory errors may be found when running ParamOptGA or other tests.
+Note that ParamOptGA builds an initial large dictionary of all combinations,
+so the number and grid spacing of parameters in the param_xxx 
+will affect the initial memory that the test must use.
+
+Try increasing the available memory or decreasing parameters.
+
+To check memory when running on a cluster, try adding a line ::
+
+    ulimit -a
+
+to the submission script to see if there is any memory information.
+
+On PBS/Torque, it may be helpful to try omitting the pvmem term, as in::
+
+    #PBS -l nodes=1:ppn=12
+
+(no pvmem term, normally #PBS -l nodes=1:ppn=12,pvmem=2000mb), or increasing it.
+
+
+
