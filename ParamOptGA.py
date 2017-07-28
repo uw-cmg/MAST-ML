@@ -35,6 +35,8 @@ class ParamOptGA(ParamGridSearch):
         crossover_prob <float>: Crossover probability (float < 1.00)
         mutation_prob <float>: Mutation probability (float < 1.00)
         shift_prob <float>: Shift probability (float < 1.00)
+        gen_tol <float>: Generation-to-generation RMSE tolerance for considering
+                            RMSEs to be equal
 
     Returns:
         Analysis in save_path folder
@@ -59,6 +61,7 @@ class ParamOptGA(ParamGridSearch):
         crossover_prob = 0.5,
         mutation_prob = 0.1,
         shift_prob = 0.5,
+        gen_tol = 0.00000001,
         *args, **kwargs):
         """
             Additional class attributes not in parent class:
@@ -73,6 +76,7 @@ class ParamOptGA(ParamGridSearch):
             self.crossover_prob
             self.mutation_prob
             self.shift_prob
+            self.gen_tol
             Set by code:
             self.random_state <numpy RandomState>: random state
             self.ga_dict 
@@ -99,6 +103,7 @@ class ParamOptGA(ParamGridSearch):
         self.crossover_prob = float(crossover_prob)
         self.mutation_prob = float(mutation_prob)
         self.shift_prob = float(shift_prob)
+        self.gen_tol = float(gen_tol)
         #Sets in code
         if self.fix_random_for_testing == 1:
             self.random_state = np.random.RandomState(0)
@@ -106,7 +111,7 @@ class ParamOptGA(ParamGridSearch):
             self.random_state = np.random.RandomState()
         #
         self.ga_dict = dict()
-        self.gact = 0
+        self.gact = 1 #Start GAs at 1
         return
 
     def set_up_generation(self, genct=0):
@@ -234,15 +239,15 @@ class ParamOptGA(ParamGridSearch):
             
 
             # updates best parameter set
-            if gen_best_rmse < ga_best_rmse:
+            if (gen_best_rmse < ga_best_rmse):
                 ga_best_rmse = gen_best_rmse
                 ga_best_genome = gen_best_genome
                 ga_repetitions_of_best = 0
+            elif (np.isclose(gen_best_rmse, ga_best_rmse, self.gen_tol)):
+                ga_best_genome = gen_best_genome
+                ga_repetitions_of_best = ga_repetitions_of_best + 1
             else:
-                if gen_best_genome == ga_best_genome:
-                    ga_repetitions_of_best = ga_repetitions_of_best + 1
-                else:
-                    ga_repetitions_of_best = 0
+                ga_repetitions_of_best = 0
             
             # prints output for each generation
             print(time.asctime())
@@ -294,7 +299,7 @@ class ParamOptGA(ParamGridSearch):
 
     def select_final_best(self):
         ga_final_rmse_list = list()
-        for gact in range(0, self.gact):
+        for gact in range(1, self.gact+1): #self.gact starts at 1
             ga_final_rmse_list.append(self.ga_dict[gact]['best_rmse'])
         ga_min_idx = np.argmin(ga_final_rmse_list)
         self.best_params = self.ga_dict[ga_min_idx]['best_genome']
