@@ -278,7 +278,7 @@ class ParamOptGA(ParamGridSearch):
     def run(self):
         self.set_up()
         self.readme_list.append("===== GA info =====\n")
-        for ga in range(0, self.num_gas):
+        for ga in range(1, self.num_gas+1): #gact indexing starts at 1
             self.run_ga()
             self.print_ga(ga)
         self.select_final_best()
