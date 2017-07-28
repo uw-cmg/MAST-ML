@@ -61,8 +61,8 @@ class ParamGridSearch(SingleFit):
         num_bests <int>: Number of best individuals to track
         processors <int>: Number of processors to use
                             1 - single processor (serial)
-                            2 - use multiprocessing (actual number of
-                                processors is not used)
+                            2 - use multiprocessing with this many processors,
+                                all on a SINGLE node
     Returns:
         Analysis in the save_path folder
         Plots results in a predicted vs. measured square plot.
