@@ -63,6 +63,7 @@ class ParamGridSearch(SingleFit):
                             1 - single processor (serial)
                             2 - use multiprocessing with this many processors,
                                 all on a SINGLE node
+        pop_upper_limit <int>: Upper limit for population size.
     Returns:
         Analysis in the save_path folder
         Plots results in a predicted vs. measured square plot.
@@ -84,6 +85,7 @@ class ParamGridSearch(SingleFit):
         num_folds=None,
         percent_leave_out=None,
         processors=1,
+        pop_upper_limit=1000000,
         num_bests=10,
         *args, **kwargs):
         """
@@ -95,6 +97,7 @@ class ParamGridSearch(SingleFit):
                 self.num_folds
                 self.percent_leave_out
                 self.processors
+                self.pop_upper_limit
                 self.num_bests
             Set in code:
                 self.param_strings
@@ -106,7 +109,6 @@ class ParamGridSearch(SingleFit):
                 self.pop_size
                 self.pop_stats
                 self.pop_rmses
-                self.pop_upper_limit
                 self.best_indivs
                 self.best_params
                 ?self.random_state
@@ -130,6 +132,7 @@ class ParamGridSearch(SingleFit):
         self.num_folds = num_folds
         self.percent_leave_out = percent_leave_out
         self.processors=int(processors)
+        self.pop_upper_limit = int(pop_upper_limit)
         self.num_bests = int(num_bests)
         self.param_strings = dict()
         for argname in kwargs.keys():
@@ -144,7 +147,6 @@ class ParamGridSearch(SingleFit):
         self.pop_size=None
         self.pop_stats=None
         self.pop_rmses=None
-        self.pop_upper_limit=1e6
         self.flat_results=None
         self.best_indivs=None
         self.best_params=None

@@ -54,6 +54,7 @@ class ParamOptGA(ParamGridSearch):
         num_bests=10,
         fix_random_for_testing=0,
         processors=1,
+        pop_upper_limit=1000000,
         num_gas=1,
         ga_pop_size=50,
         convergence_generations=30,
@@ -93,6 +94,7 @@ class ParamOptGA(ParamGridSearch):
             num_folds = num_folds,
             percent_leave_out = percent_leave_out,
             processors = processors,
+            pop_upper_limit = pop_upper_limit,
             num_bests = num_bests, **kwargs)
         #Sets by keyword
         self.num_gas = int(num_gas)
@@ -132,6 +134,7 @@ class ParamOptGA(ParamGridSearch):
             num_folds = self.num_folds,
             percent_leave_out = self.percent_leave_out,
             processors = self.processors,
+            pop_upper_limit = self.pop_upper_limit,
             num_bests = self.num_bests, **gen_kwargs)
         return mygen
 
