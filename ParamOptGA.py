@@ -293,7 +293,7 @@ class ParamOptGA(ParamGridSearch):
             printlist = self.print_params(gen_best_genome)
             print("%s: %s" % (genpref, printlist))
             ga_genct = ga_genct + 1
-            (ga_converged, ga_best_rmse, ga_best_genome) = self.check_convergence(gen_bests, ga_best_rmse)
+            (ga_converged, ga_best_rmse, ga_best_genome) = self.check_convergence(gen_bests, ga_best_rmse, ga_best_genome)
         self.ga_dict[self.gact]['best_rmse'] = ga_best_rmse 
         self.ga_dict[self.gact]['best_genome'] = ga_best_genome
         self.ga_dict[self.gact]['converged'] = ga_converged
