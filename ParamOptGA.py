@@ -227,7 +227,7 @@ class ParamOptGA(ParamGridSearch):
             rmse = results[ridx][0]
             params = results[ridx][1]
             rmses.append(rmse) #make rmse list
-            params.append(params)
+            params.append(param)
         min_idx = np.argmin(rmses)
         min_rmse = rmses[min_idx]
         if min_rmse < best_rmse:
