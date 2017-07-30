@@ -220,21 +220,21 @@ class ParamOptGA(ParamGridSearch):
         params_same = False
         converged = False
         rmses=list()
-        params=list()
+        param_list=list()
         unmatching_params = 0
         overtol_rmses = 0
         for ridx in range(0, len(results)):
             rmse = results[ridx][0]
             params = results[ridx][1]
             rmses.append(rmse) #make rmse list
-            params.append(param)
+            param_list.append(params)
         min_idx = np.argmin(rmses)
         min_rmse = rmses[min_idx]
         if min_rmse < best_rmse:
             best_rmse = min_rmse
-            best_params = params[min_idx]
-        for param in params:
-            if not (param == best_params):
+            best_params = param_list[min_idx]
+        for params in param_list:
+            if not (params == best_params):
                 unmatching_params +=1
         if unmatching_params == 0:
             params_same = True
