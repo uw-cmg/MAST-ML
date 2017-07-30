@@ -207,10 +207,12 @@ class ParamOptGA(ParamGridSearch):
                 pop_params[ict][location][param_name] = new_val
         return pop_params
 
-    def check_convergence(self, results):
+    def check_convergence(self, results, best_rmse, best_params):
         """Check convergence. 
             Args:
                 results <list of (RMSE, parameter dictionary) entries>
+                best_rmse <float>: best RMSE to this point
+                best_params <dict>: best parameters to this point
             Returns:
                 (boolean for convergence, best rmse, best rmse params)
         """
@@ -218,22 +220,25 @@ class ParamOptGA(ParamGridSearch):
         params_same = False
         converged = False
         rmses=list()
+        params=list()
         unmatching_params = 0
         overtol_rmses = 0
         for ridx in range(0, len(results)):
             rmse = results[ridx][0]
             params = results[ridx][1]
             rmses.append(rmse) #make rmse list
-            if ridx > 0:
-                old_params = results[ridx - 1][1]
-                if not (old_params == params):
-                    unmatching_params += 1
-        if unmatching_params == 0:
-            params_same = True
+            params.append(params)
         min_idx = np.argmin(rmses)
         min_rmse = rmses[min_idx]
-        min_params = results[min_idx][1]
-        deviations = np.abs(np.array(rmses,'float') - min_rmse)
+        if min_rmse < best_rmse:
+            best_rmse = min_rmse
+            best_params = params[min_idx]
+        for param in params:
+            if not (param == best_params):
+                unmatching_params +=1
+        if unmatching_params == 0:
+            params_same = True
+        deviations = np.abs(np.array(rmses,'float') - best_rmse)
         for deviation in deviations:
             if deviation > self.gen_tol:
                 overtol_rmses +=1
@@ -244,7 +249,7 @@ class ParamOptGA(ParamGridSearch):
             converged = True
             if unmatching_params is True:
                 logger.info("RMSE convergence is true, but generation parameters are not all the same.")
-        return (converged, min_rmse, min_params)
+        return (converged, best_rmse, best_params)
 
     def run_ga(self):
         self.ga_dict[self.gact] = dict()
@@ -280,16 +285,15 @@ class ParamOptGA(ParamGridSearch):
             self.ga_dict[self.gact]['generations'][ga_genct] = dict()
             self.ga_dict[self.gact]['generations'][ga_genct]['best_rmse'] = gen_best_rmse
             self.ga_dict[self.gact]['generations'][ga_genct]['best_genome'] = gen_best_genome
-            if gen_best_rmse <= ga_best_rmse + self.gen_tol:
-                gen_bests.pop(0)
-                gen_bests.append((gen_best_rmse, gen_best_genome))
+            gen_bests.pop(0)
+            gen_bests.append((gen_best_rmse, gen_best_genome))
             # prints output for each generation
             print(time.asctime())
             genpref = "Results gen %i, rmse %3.3f" % (ga_genct, gen_best_rmse)
             printlist = self.print_params(gen_best_genome)
             print("%s: %s" % (genpref, printlist))
             ga_genct = ga_genct + 1
-            (ga_converged, ga_best_rmse, ga_best_genome) = self.check_convergence(gen_bests)
+            (ga_converged, ga_best_rmse, ga_best_genome) = self.check_convergence(gen_bests, ga_best_rmse)
         self.ga_dict[self.gact]['best_rmse'] = ga_best_rmse 
         self.ga_dict[self.gact]['best_genome'] = ga_best_genome
         self.ga_dict[self.gact]['converged'] = ga_converged
