@@ -21,7 +21,7 @@ paragraph
 Test Classes
 ********************
 
-:ref:`singlefit`
+:ref:`4_1_singlefit`
 
 
 
