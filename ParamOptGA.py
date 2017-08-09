@@ -141,7 +141,7 @@ class ParamOptGA(ParamGridSearch):
     def get_parent_params(self, prev_gen):
         upper_lim=0
         if prev_gen is None:
-            upper_lim = self.pop_size #refers to GA's total combinatorial space
+            upper_lim = self.ga_pop_size #refers to GA's total combinatorial space
         else:
             upper_lim = self.num_bests #number of potential parents
         p1idx = self.random_state.randint(0, upper_lim)
