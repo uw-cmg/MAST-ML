@@ -224,7 +224,7 @@ class DBTTDataCSVSetup():
         self.add_log10_of_a_field(cname,"fluence_n_cm2")
         self.add_log10_of_a_field(cname,"flux_n_cm2_sec")
 
-        for pval in [0.1,0.2,0.26]:
+        for pval in [0.1,0.2,0.26,0.08,0.23]: #added GA optimized cols
             self.add_generic_effective_fluence_field(cname, ref_flux=3e10, pval=pval, verbose=0)
         #TTM ParamOptGA can now add the appropriate effective fluence field 20170518
         self.add_normalization(cname, verbose)
