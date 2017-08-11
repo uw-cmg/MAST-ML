@@ -388,6 +388,12 @@ class DBTTDataCSVSetup():
         norm_dict['log(eff fl 100p=26)']=dict()
         norm_dict['log(eff fl 100p=26)']['smin'] = 17
         norm_dict['log(eff fl 100p=26)']['smax'] = 25
+        norm_dict['log(eff fl 100p=23)']=dict()
+        norm_dict['log(eff fl 100p=23)']['smin'] = 17
+        norm_dict['log(eff fl 100p=23)']['smax'] = 25
+        norm_dict['log(eff fl 100p=8)']=dict()
+        norm_dict['log(eff fl 100p=8)']['smin'] = 17
+        norm_dict['log(eff fl 100p=8)']['smax'] = 25
         norm_dict['temperature_C']=dict()
         norm_dict['temperature_C']['smin'] = 270
         norm_dict['temperature_C']['smax'] = 320
