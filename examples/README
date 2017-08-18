@@ -1,3 +1,3 @@
 From this directory, the command to run would be:
 
-python ../MASTML.py basicinput.conf
+python ../MASTML.py example_input.conf
