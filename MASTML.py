@@ -260,13 +260,13 @@ class MASTMLDriver(object):
 
             # First remove features containing strings before doing feature normalization or other operations, but don't remove grouping features
             if generate_features == bool(True):
-                x_features, dataframe_nostrings = MiscFeatureOperations(configdict=self.configdict).remove_features_containing_strings(dataframe=dataframe, x_features=x_features_NOUSE)
+                nonstring_x_features, dataframe_nostrings = MiscFeatureOperations(configdict=self.configdict).remove_features_containing_strings(dataframe=dataframe, x_features=x_features_NOUSE)
                 #Remove columns containing all entries of NaN
                 dataframe_nostrings = dataframe_nostrings.dropna(axis=1, how='all')
                 # Re-obtain x_feature list as some features may have been dropped
                 Xdata, ydata, x_features_NOUSE, y_feature, dataframe_nostrings = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe_nostrings,target_feature=y_feature)
             else:
-                x_features, dataframe_nostrings = MiscFeatureOperations(configdict=self.configdict).remove_features_containing_strings(dataframe=dataframe, x_features=x_features)
+                nonstring_x_features, dataframe_nostrings = MiscFeatureOperations(configdict=self.configdict).remove_features_containing_strings(dataframe=dataframe, x_features=x_features)
 
             #print('after string remove')
             #print(len(x_features))
@@ -522,18 +522,18 @@ class MASTMLDriver(object):
             flist = self.favorites_dict[test_short]
             for fval in flist:
                 linkloc = os.path.join(test_save_path, fval)
-                linkloc = os.path.relpath(linkloc, self.save_path)
+                linklocrel = os.path.relpath(linkloc, self.save_path)
                 testrelpath = os.path.relpath(test_save_path, self.save_path)
-                linkline = '<A HREF="%s">%s</A> from test <A HREF="%s">%s</A><BR><BR>\n' % (linkloc, fval, testrelpath, test_folder)
+                linkline = '<A HREF="%s">%s</A> from test <A HREF="%s">%s</A><BR><BR>\n' % (linklocrel, fval, testrelpath, test_folder)
                 linklist.append(linkline)
                 if not (os.path.exists(linkloc)):
                     linklist.append("File not found.\n")
                 else:
                     if '.png' in fval:
-                        imline = '<A HREF="%s"><IMG SRC="%s" height=300 width=400></A><BR>\n' % (linkloc, linkloc)
+                        imline = '<A HREF="%s"><IMG SRC="%s" height=300 width=400></A><BR>\n' % (linklocrel, linklocrel)
                         linklist.append(imline)
                     else:
-                        txtline = '<EMBED SRC="%s" width=75%%><BR>\n' % (linkloc)
+                        txtline = '<EMBED SRC="%s" width=75%%><BR>\n' % (linklocrel)
                         linklist.append(txtline)
                 linklist.append("<BR>\n") 
         return linklist
