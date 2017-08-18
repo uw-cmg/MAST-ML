@@ -4,7 +4,7 @@ Tests
 -----------------------------------
 Single fits
 -----------------------------------
-:ref:`singlefit`
+:ref:`4_1_singlefit`
 
 .. .. autoclass:: SingleFit.SingleFit
 ..   :members:

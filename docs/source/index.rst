@@ -15,8 +15,8 @@ Contents:
 
    3_glossary.rst
 
-   tests.rst
+   4_tests.rst
 
-   support_classes.rst
+   5_support_classes.rst
 
-   autodoc.rst
+   6_autodoc.rst
