@@ -30,10 +30,23 @@ class TestSingleFit(TestHelper):
         clist.append("README")
         clist.append("model.pickle")
         clist.append("output_data.csv")
+        clist.append("output_data_filtered.csv")
         clist.append("single_fit.ipynb")
         clist.append("single_fit.pickle")
         clist.append("single_fit.png")
         clist.append("single_fit_data_predicted_vs_measured.csv")
-        self.compare_contents("singlefit", "SingleFit_KernelRidge0",clist)
+        self.compare_contents("filter", "SingleFit_filter_KernelRidge0",clist)
+        return
+    
+    def test_notarget(self):
+        self.run_command_mastml("notarget")
+        rmse=self.get_readme_line("notarget", "SingleFit_notarget_KernelRidge0", 
+                        "rmse")
+        self.assertEqual(rmse, None) #no statistics because no target data
+        clist = list()
+        clist.append("README")
+        clist.append("model.pickle")
+        clist.append("output_data.csv")
+        self.compare_contents("notarget", "SingleFit_notarget_KernelRidge0",clist)
         return
 
