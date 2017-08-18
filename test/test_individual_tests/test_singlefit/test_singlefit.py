@@ -20,4 +20,20 @@ class TestSingleFit(TestHelper):
         clist.append("single_fit_data_predicted_vs_measured.csv")
         self.compare_contents("singlefit", "SingleFit_KernelRidge0",clist)
         return
+    
+    def test_filter(self):
+        self.run_command_mastml("filter")
+        rmse=self.get_readme_line("filter", "SingleFit_filter_KernelRidge0", 
+                        "filtered_rmse")
+        self.assertEqual(rmse, "filtered_rmse: 56.3935")
+        clist = list()
+        clist.append("README")
+        clist.append("model.pickle")
+        clist.append("output_data.csv")
+        clist.append("single_fit.ipynb")
+        clist.append("single_fit.pickle")
+        clist.append("single_fit.png")
+        clist.append("single_fit_data_predicted_vs_measured.csv")
+        self.compare_contents("singlefit", "SingleFit_KernelRidge0",clist)
+        return
 
