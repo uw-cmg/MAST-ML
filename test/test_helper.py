@@ -1,10 +1,10 @@
 import unittest
 from nose import SkipTest
 import os
-import subprocess
-tdir=os.path.abspath(os.getcwd())
 from MASTML import MASTMLDriver
 import MASTML
+import shutil
+tdir=os.path.abspath(os.getcwd())
 
 class TestHelper(unittest.TestCase):
     def setUp(self):
@@ -17,7 +17,13 @@ class TestHelper(unittest.TestCase):
         return
 
     def tearDown(self):
-        os.chdir(tdir)
+        do_teardown=False
+        if do_teardown:
+            odirs = os.listdir(self.test_folder)
+            for odir in odirs:
+                if odir[0:12] == "output_test_":
+                    shutil.rmtree(odir)
+            os.chdir(tdir)
         return
 
     def run_command_mastml(self, test_name=""):
