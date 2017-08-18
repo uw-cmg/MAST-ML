@@ -40,20 +40,20 @@ class SingleFit():
     to do meta-analysis.
 
     Args:
-        training_dataset <DataHandler object>: Training dataset handler
-        testing_dataset <DataHandler object>: Testing dataset handler
-        model <sklearn model>: Machine-learning model
-        save_path <str>: Save path
-        xlabel <str>: Label for full-fit x-axis (default "Measured")
-        ylabel <str>: Label for full-fit y-axis (default "Predicted")
-        plot_filter_out <list>: List of semicolon-delimited strings with
+        training_dataset (DataHandler object): Training dataset handler
+        testing_dataset (DataHandler object): Testing dataset handler
+        model (sklearn model): Machine-learning model
+        save_path (str): Save path
+        xlabel (str): Label for full-fit x-axis (default "Measured")
+        ylabel (str): Label for full-fit y-axis (default "Predicted")
+        plot_filter_out (list): List of semicolon-delimited strings with
                             feature;operator;value for filtering out
                             values for plotting.
     Returns:
         Analysis in the path marked by save_path
 
     Raises:
-        ValueError if the following are not set:
+        ValueError: if the following are not set:
                     training_dataset, testing_dataset,
                     input_features, target_feature,
                     model
