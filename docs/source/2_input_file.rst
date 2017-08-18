@@ -59,9 +59,11 @@ Example::
 
 * All following keywords will be passed to the class __init__() method as a kwargs dictionary.
 
-===============
+.. _data-setup:
+
+====================
 Data Setup
-===============
+====================
 Example::
 
     [Data Setup]
