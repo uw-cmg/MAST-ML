@@ -17,6 +17,3 @@ Contents:
 
    4_tests.rst
 
-   5_support_classes.rst
-
-   6_autodoc.rst

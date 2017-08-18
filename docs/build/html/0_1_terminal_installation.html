@@ -1,35 +1,37 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Terminal installation (Linux or linux-like terminal on Mac) &mdash; MAST-ml 1.0 documentation</title>
-    
+    <title>Terminal installation (Linux or linux-like terminal on Mac) &#8212; MAST-ml 1.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
         VERSION:     '1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="MAST-ml 1.0 documentation" href="index.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
    
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body role="document">  
+  <body>
+  
 
     <div class="document">
       <div class="documentwrapper">
@@ -45,20 +47,20 @@ download Anaconda from <a class="reference external" href="https://www.continuum
 <div class="section" id="create-a-conda-environment">
 <h3>Create a conda environment<a class="headerlink" href="#create-a-conda-environment" title="Permalink to this headline">¶</a></h3>
 <p>Create an environment:</p>
-<div class="highlight-python"><div class="highlight"><pre>conda create --name TEST_ML numpy scipy matplotlib pandas pymongo configobj nbformat scikit-learn
-source activate TEST_ML
-conda install --channel matsci pymatgen
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">--</span><span class="n">name</span> <span class="n">TEST_ML</span> <span class="n">numpy</span> <span class="n">scipy</span> <span class="n">matplotlib</span> <span class="n">pandas</span> <span class="n">pymongo</span> <span class="n">configobj</span> <span class="n">nbformat</span> <span class="n">scikit</span><span class="o">-</span><span class="n">learn</span>
+<span class="n">source</span> <span class="n">activate</span> <span class="n">TEST_ML</span>
+<span class="n">conda</span> <span class="n">install</span> <span class="o">--</span><span class="n">channel</span> <span class="n">matsci</span> <span class="n">pymatgen</span>
 </pre></div>
 </div>
-<p>(may also be the &#8220;materials&#8221; channel for pymatgen)
-(may also need conda create &#8211;name TEST_ML python=3.5 numpy scipy...etc. if pymatgen requires python 3.5)</p>
+<p>(may also be the “materials” channel for pymatgen)
+(may also need conda create –name TEST_ML python=3.5 numpy scipy…etc. if pymatgen requires python 3.5)</p>
 </div>
 <div class="section" id="set-up-juptyer-notebooks">
 <h3>Set up Juptyer notebooks<a class="headerlink" href="#set-up-juptyer-notebooks" title="Permalink to this headline">¶</a></h3>
 <p>There is no separate setup for Jupyter notebooks necessary;
 once MASTML has been run and created a notebook, then in the terminal,
 navigate to a directory housing the notebook and type:</p>
-<div class="highlight-python"><div class="highlight"><pre>jupyter notebook
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">jupyter</span> <span class="n">notebook</span>
 </pre></div>
 </div>
 <p>and a browser window with the notebook should appear.</p>
@@ -67,20 +69,20 @@ navigate to a directory housing the notebook and type:</p>
 <div class="section" id="install-the-mast-ml-private-package">
 <h2>Install the MAST-ml-private package<a class="headerlink" href="#install-the-mast-ml-private-package" title="Permalink to this headline">¶</a></h2>
 <p>Git clone the repository, for example:</p>
-<div class="highlight-python"><div class="highlight"><pre>git clone ssh://git@github.com/uw-cmg/MAST-ml-private
-OR
-git clone ssh://git@github.com/uw-cmg/MAST-ml-private --branch dev
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">ssh</span><span class="p">:</span><span class="o">//</span><span class="n">git</span><span class="nd">@github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">uw</span><span class="o">-</span><span class="n">cmg</span><span class="o">/</span><span class="n">MAST</span><span class="o">-</span><span class="n">ml</span><span class="o">-</span><span class="n">private</span>
+<span class="n">OR</span>
+<span class="n">git</span> <span class="n">clone</span> <span class="n">ssh</span><span class="p">:</span><span class="o">//</span><span class="n">git</span><span class="nd">@github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">uw</span><span class="o">-</span><span class="n">cmg</span><span class="o">/</span><span class="n">MAST</span><span class="o">-</span><span class="n">ml</span><span class="o">-</span><span class="n">private</span> <span class="o">--</span><span class="n">branch</span> <span class="n">dev</span>
 </pre></div>
 </div>
-<p>Clone from “master” or &#8220;dev&#8221;
+<p>Clone from “master” or “dev”
 Ask for access if you cannot find this code.</p>
 <p>Check status.github.com for issues if you believe github may be malfunctioning</p>
 <p>Run:</p>
-<div class="highlight-python"><div class="highlight"><pre>python setup.py install
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
 </pre></div>
 </div>
 <p>(inside the MAST-ml-private folder) (might not work)
-If “SyntaxError: Invalid syntax” occurs at lines 16, 17, or 34 try wrapping prints in () for windows [e.g. print (&#8220;Python Version %d.%d.%d found&#8221; % (sys.version_info[0], sys.version_info[1], sys.version_info[2])) ]</p>
+If “SyntaxError: Invalid syntax” occurs at lines 16, 17, or 34 try wrapping prints in () for windows [e.g. print (“Python Version %d.%d.%d found” % (sys.version_info[0], sys.version_info[1], sys.version_info[2])) ]</p>
 <p>If setup.py didn’t work, dependencies you need are:</p>
 <p>numpy&gt;=1.11.2
 scipy&gt;=0.18.1
@@ -136,21 +138,18 @@ If you get a missing import error, go ahead and install any other missing packag
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/0_1_terminal_installation.txt"
+      <li><a href="_sources/0_1_terminal_installation.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -161,11 +160,11 @@ If you get a missing import error, go ahead and install any other missing packag
       &copy;2017, UW-Madison Computational Materials Group.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.5</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
-      <a href="_sources/0_1_terminal_installation.txt"
+      <a href="_sources/0_1_terminal_installation.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 

@@ -1,37 +1,39 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Troubleshooting &mdash; MAST-ml 1.0 documentation</title>
-    
+    <title>Troubleshooting &#8212; MAST-ml 1.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
         VERSION:     '1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="MAST-ml 1.0 documentation" href="index.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Input file" href="2_input_file.html" />
     <link rel="prev" title="Installing MASTML" href="0_installation.html" />
    
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body role="document">  
+  <body>
+  
 
     <div class="document">
       <div class="documentwrapper">
@@ -67,8 +69,8 @@
 <p>If no plots can be created because of a display error,
 check the MASTMLlog.log file near the beginning of
 the current MASTML run for the lines</p>
-<div class="highlight-python"><div class="highlight"><pre>Using matplotlib backend &lt;backend name&gt;
-Matplotlib defaults from &lt;file location&gt;
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Using</span> <span class="n">matplotlib</span> <span class="n">backend</span> <span class="o">&lt;</span><span class="n">backend</span> <span class="n">name</span><span class="o">&gt;</span>
+<span class="n">Matplotlib</span> <span class="n">defaults</span> <span class="kn">from</span> <span class="o">&lt;</span><span class="n">file</span> <span class="n">location</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>Some backends only work on certain machines or setups:</p>
@@ -80,7 +82,7 @@ Matplotlib defaults from &lt;file location&gt;
 </div></blockquote>
 <p>Try adding a matplotlibrc file into your current running directory
 (e.g. where your .conf file is) with the line</p>
-<div class="highlight-python"><div class="highlight"><pre>backend: Agg
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">backend</span><span class="p">:</span> <span class="n">Agg</span>
 </pre></div>
 </div>
 <p>or another backend to replace the previous backend.
@@ -105,13 +107,13 @@ fineness of grid spacing.</p>
 </ul>
 </div></blockquote>
 <p>Using PBS/Torque, it may be helpful to try omitting the pvmem term, as in:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1">#PBS -l nodes=1:ppn=12</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1">#PBS -l nodes=1:ppn=12</span>
 </pre></div>
 </div>
 <p>(normally <code class="docutils literal"><span class="pre">#PBS</span> <span class="pre">-l</span> <span class="pre">nodes=1:ppn=12,pvmem=2000mb</span></code>), or increasing it (<code class="docutils literal"><span class="pre">pvmem=3000mb</span></code>).
 Similar strategies may apply to other resource managers.</p>
 <p>To check available memory when running on a cluster, try adding a line</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">ulimit</span> <span class="o">-</span><span class="n">a</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ulimit</span> <span class="o">-</span><span class="n">a</span>
 </pre></div>
 </div>
 <p>to the submission script to see if there is any information about the memory
@@ -151,21 +153,18 @@ the system thinks is available for the job.</p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/1_troubleshooting.txt"
+      <li><a href="_sources/1_troubleshooting.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -176,11 +175,11 @@ the system thinks is available for the job.</p>
       &copy;2017, UW-Madison Computational Materials Group.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.5</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
-      <a href="_sources/1_troubleshooting.txt"
+      <a href="_sources/1_troubleshooting.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 
