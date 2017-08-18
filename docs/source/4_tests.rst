@@ -1,40 +1,41 @@
 Tests
 ===================================
 
+.. toctree::
+
+   4_1_singlefit
+
 -----------------------------------
 Single fits
 -----------------------------------
-:ref:`4_1_singlefit`
-
-.. .. autoclass:: SingleFit.SingleFit
-..   :members:
+:doc:`4_1_singlefit`
 
 -----------------------------------
 Cross validation
 -----------------------------------
 
-.. autoclass:: KFoldCV.KFoldCV
-   :members:
+.. .. autoclass:: KFoldCV.KFoldCV
+..    :members:
 
-.. autoclass:: LeaveOneOutCV.LeaveOneOutCV
-   :members:
+.. .. autoclass:: LeaveOneOutCV.LeaveOneOutCV
+..    :members:
 
-.. autoclass:: LeaveOutPercentCV.LeaveOutPercentCV
-   :members:
+.. .. autoclass:: LeaveOutPercentCV.LeaveOutPercentCV
+..    :members:
 
-.. autoclass:: LeaveOutGroupCV.LeaveOutGroupCV
-   :members:
+.. .. autoclass:: LeaveOutGroupCV.LeaveOutGroupCV
+..    :members:
 
 ------------------------------------
 Hyperparameter optimization
 ------------------------------------
 
-.. autoclass:: ParamOptGA.ParamOptGA
-   :members:
+.. .. autoclass:: ParamOptGA.ParamOptGA
+..    :members:
 
 ------------------------------------
 Other
 ------------------------------------
 
-.. autoclass:: PlotNoAnalysis.PlotNoAnalysis
-   :members:
+.. .. autoclass:: PlotNoAnalysis.PlotNoAnalysis
+..    :members:
