@@ -1,0 +1,170 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>SingleFit &#8212; MAST-ml 1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Tests" href="4_tests.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="singlefit">
+<h1>SingleFit<a class="headerlink" href="#singlefit" title="Permalink to this headline">¶</a></h1>
+<p>Perform a single fit using all input feature data and target feature data
+from the training dataset.</p>
+<p>Create predictions for all observations in the testing dataset using
+input feature data from the testing dataset.</p>
+<p>If target data is available in the testing dataset, plot target predictions
+versus target data.</p>
+<div class="section" id="input-keywords">
+<h2>Input keywords<a class="headerlink" href="#input-keywords" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>training_dataset: Training dataset. Use a dataset name from the <a class="reference internal" href="2_input_file.html#data-setup"><span class="std std-ref">Data Setup</span></a> section of the input file.</li>
+<li>testing_dataset: Testing dataset. Use a dataset name from the <a class="reference internal" href="2_input_file.html#data-setup"><span class="std std-ref">Data Setup</span></a> section of the input file.</li>
+<li>xlabel: Label for x-axis in a plot of target prediction vs. target data (default “Measured”)</li>
+<li>ylabel: Label for y-axis in a plot of target prediction vs. target data (default “Predicted”)</li>
+<li><dl class="first docutils">
+<dt>plot_filter_out: Comma-separated list of feature;operator;value for filtering out values in the plot.</dt>
+<dd><ul class="first last">
+<li>Example: <code class="docutils literal"><span class="pre">temperature_C;&lt;&gt;;290,time;=;0</span></code></li>
+<li>Note that the plot filtering is only for plotting and does not change the quality of the fit.</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="code">
+<h2>Code<a class="headerlink" href="#code" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="SingleFit.SingleFit">
+<em class="property">class </em><code class="descclassname">SingleFit.</code><code class="descname">SingleFit</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='Measured'</em>, <em>ylabel='Predicted'</em>, <em>plot_filter_out=None</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SingleFit.html#SingleFit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#SingleFit.SingleFit" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is the basic analysis class.</p>
+<p>This class provides a template for other classes. Combine many classes
+to do meta-analysis.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>training_dataset</strong> (<em>DataHandler object</em>) – Training dataset handler</li>
+<li><strong>testing_dataset</strong> (<em>DataHandler object</em>) – Testing dataset handler</li>
+<li><strong>model</strong> (<em>sklearn model</em>) – Machine-learning model</li>
+<li><strong>save_path</strong> (<em>str</em>) – Save path</li>
+<li><strong>xlabel</strong> (<em>str</em>) – Label for full-fit x-axis (default “Measured”)</li>
+<li><strong>ylabel</strong> (<em>str</em>) – Label for full-fit y-axis (default “Predicted”)</li>
+<li><strong>plot_filter_out</strong> (<em>list</em>) – List of semicolon-delimited strings with
+feature;operator;value for filtering out
+values for plotting.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Analysis in the path marked by save_path</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> – if the following are not set:
+training_dataset, testing_dataset,
+input_features, target_feature,
+model</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">SingleFit</a><ul>
+<li><a class="reference internal" href="#input-keywords">Input keywords</a></li>
+<li><a class="reference internal" href="#code">Code</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="4_tests.html">Tests</a><ul>
+      <li>Previous: <a href="4_tests.html" title="previous chapter">Tests</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/4_1_singlefit.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, UW-Madison Computational Materials Group.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/4_1_singlefit.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
