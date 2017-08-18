@@ -21,6 +21,7 @@ Input keywords
 * ylabel: Label for y-axis in a plot of target prediction vs. target data (default "Predicted")
 * plot_filter_out: Comma-separated list of feature;operator;value for filtering out values in the plot.
     * Example: ``temperature_C;<>;290,time;=;0``
+    * Note that the plot filtering is only for plotting and does not change the quality of the fit. 
 
 ----------------
 Code
