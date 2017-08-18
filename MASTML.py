@@ -15,6 +15,7 @@ import matplotlib
 from DataHandler import DataHandler
 import importlib
 import pandas as pd
+from SingleFit import timeit
 
 class MASTMLDriver(object):
 
@@ -148,9 +149,20 @@ class MASTMLDriver(object):
     def _parse_input_data(self, data_path=""):
         if not(os.path.isfile(data_path)):
             raise OSError("No file found at %s" % data_path)
+
         Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=self.configdict).parse_fromfile(datapath=data_path, as_array=False)
         # Remove dataframe entries that contain 'NaN'
-        dataframe = dataframe.dropna()
+
+        #print('during import')
+        #print(len(x_features))
+        #print(dataframe.shape)
+
+        #dataframe = dataframe.dropna()
+
+        #print('during import, after drop')
+        #print(len(x_features))
+        #print(dataframe.shape)
+
         return Xdata, ydata, x_features, y_feature, dataframe
 
     def _create_data_dict(self):
@@ -170,36 +182,63 @@ class MASTMLDriver(object):
                 grouping_feature = self.general_setup['grouping_feature']
             else:
                 grouping_feature = None
+
             if 'Feature Generation' in self.configdict.keys():
-                generate_features = True
+                if self.configdict['Feature Generation']['perform_feature_generation'] == bool(True) or self.configdict['Feature Generation']['perform_feature_generation'] == "True":
+                    generate_features = True
+                else:
+                    generate_features = False
             else:
                 generate_features = False
-            if self.configdict['General Setup']['normalize_features'] is True:
-                normalize_features = True
+
+            if 'Feature Normalization' in self.configdict.keys():
+                if self.configdict['Feature Normalization']['normalize_x_features'] == bool(True) or self.configdict['Feature Normalization']['normalize_x_features'] == "True":
+                    normalize_x_features = True
+                else:
+                    normalize_x_features = False
+                if self.configdict['Feature Normalization']['normalize_y_feature'] == bool(True) or self.configdict['Feature Normalization']['normalize_y_feature'] == "True":
+                    normalize_y_feature = True
+                else:
+                    normalize_y_feature = False
             else:
-                normalize_features = False
+                normalize_x_features = False
+                normalize_y_feature = False
+
             if 'Feature Selection' in self.configdict.keys():
-                select_features = True
+                if self.configdict['Feature Selection']['perform_feature_selection'] == bool(True) or self.configdict['Feature Selection']['perform_feature_selection'] == "True":
+                    select_features = True
+                else:
+                    select_features = False
             else:
                 select_features = False
+
             logging.info("Feature Generation: %s" % generate_features)
-            logging.info("Feature Normalization: %s" % normalize_features)
+            logging.info("Feature Normalization (x_features): %s" % normalize_x_features)
+            logging.info("Feature Normalization (y_feature): %s" % normalize_y_feature)
             logging.info("Feature Selection: %s" % select_features)
             # Parse input data file
             Xdata, ydata, x_features, y_feature, dataframe = self._parse_input_data(data_path)
+
+            #print('after import')
+            #print(len(x_features))
+            #print(dataframe.shape)
+
             original_x_features = list(x_features)
             original_columns = list(dataframe.columns)
             logging.debug("original columns: %s" % original_columns)
             # Remove any missing rows from dataframe
-            dataframe = dataframe.dropna()
-            dataframe_orig_dropped_na = dataframe.copy()
+            #dataframe = dataframe.dropna()
+
+            #print('after import and drop')
+            #print(len(x_features))
+            #print(dataframe.shape)
             
             # Save off label and grouping data
             dataframe_labeled = pd.DataFrame()
             dataframe_grouped = pd.DataFrame()
             if not (labeling_features is None):
                 dataframe_labeled = FeatureIO(dataframe=dataframe).keep_custom_features(features_to_keep=labeling_features, y_feature=y_feature)
-                if normalize_features:
+                if normalize_x_features == bool(True):
                     dataframe_labeled, scaler = FeatureNormalization(dataframe=dataframe_labeled).normalize_features(x_features=labeling_features, y_feature=y_feature)
             if not (grouping_feature is None):
                 dataframe_grouped = FeatureIO(dataframe=dataframe).keep_custom_features(features_to_keep=[grouping_feature], y_feature=y_feature)
@@ -207,20 +246,54 @@ class MASTMLDriver(object):
             # Generate additional descriptors, as specified in input file (optional)
             if generate_features:
                 dataframe = self._perform_feature_generation(dataframe=dataframe)
+                # Actually, the x_features_NOUSE is required if starting from no features and doing feature generation. Not renaming for now. RJ 7/17
                 Xdata, ydata, x_features_NOUSE, y_feature, dataframe = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe, target_feature=y_feature)
-            
+                #print('after gen')
+                #print(dataframe.shape)
+                #print(len(x_features_NOUSE))
+
+            else:
+                Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe, target_feature=y_feature)
+
+
+
+
             # First remove features containing strings before doing feature normalization or other operations, but don't remove grouping features
-            nonstring_x_features, dataframe_nostrings = MiscFeatureOperations(configdict=self.configdict).remove_features_containing_strings(dataframe=dataframe, x_features=x_features)
+            if generate_features == bool(True):
+                x_features, dataframe_nostrings = MiscFeatureOperations(configdict=self.configdict).remove_features_containing_strings(dataframe=dataframe, x_features=x_features_NOUSE)
+                #Remove columns containing all entries of NaN
+                dataframe_nostrings = dataframe_nostrings.dropna(axis=1, how='all')
+                # Re-obtain x_feature list as some features may have been dropped
+                Xdata, ydata, x_features_NOUSE, y_feature, dataframe_nostrings = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe_nostrings,target_feature=y_feature)
+            else:
+                x_features, dataframe_nostrings = MiscFeatureOperations(configdict=self.configdict).remove_features_containing_strings(dataframe=dataframe, x_features=x_features)
+
+            #print('after string remove')
+            #print(len(x_features))
+            #print(dataframe_nostrings.shape)
+
+            # Remove columns containing all entries of NaN
+            dataframe_nostrings = dataframe_nostrings.dropna(axis=1, how='all')
+
+            #print('after dropna')
+            #print(len(x_features))
+            #print(dataframe_nostrings.shape)
+
+            # Re-obtain x_feature list as some features may have been dropped
+            Xdata, ydata, x_features, y_feature, dataframe_nostrings = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe_nostrings, target_feature=y_feature)
+
+
+
             logging.debug("pre-changes:%s" % dataframe_nostrings.columns)
 
             # Normalize features (optional)
-            if normalize_features:
+            if normalize_x_features == bool(True) or normalize_y_feature == bool(True):
                 fn = FeatureNormalization(dataframe=dataframe_nostrings)
-                dataframe_nostrings, scaler = fn.normalize_features(x_features=x_features, y_feature=y_feature)
+                dataframe_nostrings, scaler = fn.normalize_features(x_features=x_features, y_feature=y_feature, normalize_x_features=normalize_x_features, normalize_y_feature=normalize_y_feature)
                 x_features, y_feature = DataParser(configdict=self.configdict).get_features(dataframe=dataframe_nostrings, target_feature=y_feature)
 
             # Perform feature selection and dimensional reduction, as specified in the input file (optional)
-            if (select_features) and (y_feature in dataframe_nostrings.columns):
+            if (select_features == bool(True)) and (y_feature in dataframe_nostrings.columns):
                 # Remove any additional columns that are not x_features using to be fit to data
                 features = dataframe_nostrings.columns.values.tolist()
                 features_to_remove = []
@@ -282,12 +355,21 @@ class MASTMLDriver(object):
             logging.info('Parsed the input data located under %s' % data_path)
         return data_dict
 
+    @timeit
     def _perform_feature_generation(self, dataframe):
         for k, v in self.configdict['Feature Generation'].items():
             # TODO: Here, True/False are strings. Change them with validator to be bools
             if k == 'add_magpie_features' and v == 'True':
                 logging.info('FEATURE GENERATION: Adding Magpie features to your feature list')
-                mfg = MagpieFeatureGeneration(dataframe=dataframe)
+                if self.configdict['Feature Generation']['include_magpie_atomic_features'] == 'True':
+                    logging.info('FEATURE GENERATION: Include all atomic features: True')
+                    mfg = MagpieFeatureGeneration(dataframe=dataframe, include_atomic_features=True)
+                elif self.configdict['Feature Generation']['include_magpie_atomic_features'] == 'False':
+                    logging.info('FEATURE GENERATION: Include all atomic features: False')
+                    mfg = MagpieFeatureGeneration(dataframe=dataframe, include_atomic_features=False)
+                else:
+                    logging.info('FEATURE GENERATION: Include all atomic features: False')
+                    mfg = MagpieFeatureGeneration(dataframe=dataframe, include_atomic_features=False)
                 dataframe = mfg.generate_magpie_features(save_to_csv=True)
             if k == 'add_materialsproject_features' and v == 'True':
                 logging.info('FEATURE GENERATION: Adding Materials Project features to your feature list')
@@ -298,6 +380,7 @@ class MASTMLDriver(object):
             #    dataframe = cfg.generate_citrine_features()
         return dataframe
 
+    @timeit
     def _perform_feature_selection(self, dataframe, x_features, y_feature):
         for k, v in self.configdict['Feature Selection'].items():
             # TODO: Here, True/False are strings. Change them with validator to be bools
@@ -309,7 +392,7 @@ class MASTMLDriver(object):
 
             if k == 'feature_selection_algorithm':
                 logging.info('FEATURE SELECTION: Selecting features using a %s algorithm' % v)
-                fs = FeatureSelection(dataframe=dataframe, x_features=x_features, y_feature=y_feature, selection_type=self.configdict['Feature Selection']['selection_type'])
+                fs = FeatureSelection(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
                 if v == 'forward':
                     if int(self.configdict['Feature Selection']['number_of_features_to_keep']) <= len(x_features):
                         dataframe = fs.forward_selection(number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']), save_to_csv=True)
@@ -341,7 +424,6 @@ class MASTMLDriver(object):
         model_list = []
         model_val = self.models_and_tests_setup['models']
         model_vals = list()
-        #print(model_val)
         if type(model_val) is str:
             logging.info('Getting model %s' % model_val)
             ml_model = self.mastmlwrapper.get_machinelearning_model(model_type=model_val)

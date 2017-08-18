@@ -3,6 +3,7 @@ __author__ = 'Ryan Jacobs'
 from sklearn.decomposition import PCA
 from DataOperations import DataframeUtilities
 from FeatureOperations import FeatureIO
+from MASTMLInitializer import ConfigFileParser
 from sklearn.model_selection import learning_curve, ShuffleSplit, cross_val_score
 from sklearn.feature_selection import SelectKBest, f_classif, f_regression
 from sklearn.svm import SVR, SVC
@@ -16,6 +17,7 @@ import matplotlib.pyplot as plt
 from sklearn.ensemble import ExtraTreesRegressor
 from mlxtend.feature_selection import SequentialFeatureSelector as SFS
 import pandas as pd
+import os
 
 class DimensionalReduction(object):
     """Class to conduct PCA and constant feature removal for dimensional reduction of features. Mind that PCA produces linear combinations of features,
@@ -44,15 +46,15 @@ class DimensionalReduction(object):
 class FeatureSelection(object):
     """Class to conduct feature selection routines to reduce the number of input features for regression and classification problems.
     """
-    def __init__(self, dataframe, x_features, y_feature, selection_type='Regression'):
+    def __init__(self, dataframe, x_features, y_feature, selection_type=None):
         self.dataframe = dataframe
         self.x_features = x_features
         self.y_feature = y_feature
-        self.selection_type = selection_type
+        #self.selection_type = selection_type
 
-        if self.selection_type not in ['Regression', 'regression', 'Classification', 'classification']:
-            logging.info('ERROR: You must specify "selection_type" as either "regression" or "classification"')
-            sys.exit()
+        #if self.selection_type not in ['Regression', 'regression', 'Classification', 'classification']:
+        #    logging.info('ERROR: You must specify "selection_type" as either "regression" or "classification"')
+        #    sys.exit()
 
     @property
     def get_original_dataframe(self):
@@ -74,8 +76,10 @@ class FeatureSelection(object):
         logging.info(("Summary of forward selection:"))
         logging.info(fs_dataframe)
         if save_to_csv == bool(True):
-            dataframe.to_csv('input_with_forward_selection.csv', index=False)
-            fs_dataframe.to_csv('foward_selection_data.csv', index=False)
+            # Need configdict to get save path
+            configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
+            dataframe.to_csv(configdict['General Setup']['save_path']+"/"+'input_with_forward_selection.csv', index=False)
+            fs_dataframe.to_csv(configdict['General Setup']['save_path']+"/"+'foward_selection_data.csv', index=False)
         return dataframe
 
     """

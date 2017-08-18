@@ -251,6 +251,7 @@ class ParamOptGA(ParamGridSearch):
                 logger.info("RMSE convergence is true, but generation parameters are not all the same.")
         return (converged, best_rmse, best_params)
 
+    @timeit
     def run_ga(self):
         self.ga_dict[self.gact] = dict()
         self.ga_dict[self.gact]['generations'] = dict()
