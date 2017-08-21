@@ -21,7 +21,7 @@ class TestHelper(unittest.TestCase):
         pass
         return
 
-    def remove_output(self, test_name, remove=True):
+    def remove_output(self, test_name, remove=False):
         rdir = os.path.join(self.test_folder, test_name)
         if remove is True:
             shutil.rmtree(rdir)

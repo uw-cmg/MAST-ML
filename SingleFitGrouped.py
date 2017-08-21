@@ -18,8 +18,8 @@ class SingleFitGrouped(SingleFit):
         ylabel,
         stepsize, 
         plot_filter_out, see parent class
-        mark_outlying_groups <int>: Number of outlying groups to mark
-        fit_only_on_matched_groups <int>: 0 - fit on all data in the training
+        mark_outlying_groups (int): Number of outlying groups to mark
+        fit_only_on_matched_groups (int): 0 - fit on all data in the training
                                                 dataset (default)
                                           1 - fit only on groups in the training
                                                 dataset that are also in the
@@ -30,8 +30,8 @@ class SingleFitGrouped(SingleFit):
         Plots results in a predicted vs. measured square plot.
 
     Raises:
-        ValueError if grouping_feature is not set in testing dataset
-        ValueError if testing target data is None; has to have at least
+        ValueError: if grouping_feature is not set in testing dataset
+        ValueError: if testing target data is None; has to have at least
                     some testing target data to plot
     """
     def __init__(self, 

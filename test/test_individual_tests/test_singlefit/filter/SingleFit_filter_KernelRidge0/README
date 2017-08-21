@@ -1,0 +1,45 @@
+Mon Aug 21 16:31:01 2017
+----- Model ----------------
+Class: <class 'sklearn.kernel_ridge.KernelRidge'>
+Name: KernelRidge
+----- Model parameters -----
+alpha: 0.001
+degree: 3
+coef0: 1
+kernel: rbf
+gamma: 0.25
+kernel_params: None
+----- Output data -----
+output_data.csv file created with columns:
+    Lot
+    Description
+    Comp A
+    Operator
+    Time
+    Observation
+    Obs Error
+    Prediction
+----- Output data -----
+output_data_filtered.csv file created with columns:
+    Lot
+    Description
+    Comp A
+    Operator
+    Time
+    Observation
+    Obs Error
+    Prediction
+----- Statistics -----
+filtered_rmse: 56.3935
+mean_absolute_error: 29.0194
+mean_error: -0.0498
+rmse: 47.8267
+rsquared: 0.9088
+----- Plotting -----
+Plot filtering out:
+  Time = 0.0
+  Operator < 2.0
+  Lot <> C
+Plot single_fit.png created.
+    Plotted data is in the data_... csv file.
+    Error column of all zeros indicates no error.
