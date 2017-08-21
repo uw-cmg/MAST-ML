@@ -16,7 +16,7 @@ class SingleFitGrouped(SingleFit):
         save_path,
         xlabel, 
         ylabel,
-        plot_filter_out, see parent class
+        plot_filter_out: see parent class
         mark_outlying_groups (int): Number of outlying groups to mark
         fit_only_on_matched_groups (int): 0 - fit on all data in the training
                                                 dataset (default)

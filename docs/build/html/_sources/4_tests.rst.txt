@@ -1,18 +1,20 @@
 Tests
 ===================================
 
+-----------------
+Single fits
+-----------------
 .. toctree::
 
    4_1_singlefit
-
------------------------------------
-Single fits
------------------------------------
-:doc:`4_1_singlefit`
+   4_2_singlefitgrouped
 
 -----------------------------------
 Cross validation
 -----------------------------------
+.. toctree::
+
+   4_1_singlefit
 
 .. .. autoclass:: KFoldCV.KFoldCV
 ..    :members:

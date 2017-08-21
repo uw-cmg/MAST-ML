@@ -15,6 +15,8 @@ General
 Sections
 *********
 
+.. _general-setup:
+
 ================
 General Setup
 ================
