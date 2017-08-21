@@ -81,6 +81,7 @@ class TestHelper(unittest.TestCase):
         """Get test folder
         """
         idstring = self.id()
+        print(idstring)
         idsplit = idstring.split(".")
         relative_folder = str.join("/",idsplit[:-3])
         mastml_path = os.path.dirname(MASTML.__file__)
