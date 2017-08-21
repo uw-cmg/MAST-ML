@@ -16,7 +16,6 @@ class SingleFitGrouped(SingleFit):
         save_path,
         xlabel, 
         ylabel,
-        stepsize, 
         plot_filter_out, see parent class
         mark_outlying_groups (int): Number of outlying groups to mark
         fit_only_on_matched_groups (int): 0 - fit on all data in the training
@@ -41,7 +40,6 @@ class SingleFitGrouped(SingleFit):
         save_path=None,
         xlabel="Measured",
         ylabel="Predicted",
-        stepsize=1,
         plot_filter_out = None,
         mark_outlying_groups = 2,
         fit_only_on_matched_groups = 0,
@@ -66,7 +64,6 @@ class SingleFitGrouped(SingleFit):
             save_path = save_path,
             xlabel=xlabel,
             ylabel=ylabel,
-            stepsize=stepsize,
             plot_filter_out = plot_filter_out)
         if self.testing_dataset.grouping_feature is None:
             raise ValueError("grouping_feature is not set.")

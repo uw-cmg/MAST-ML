@@ -1,14 +1,14 @@
-Mon Aug 21 16:30:39 2017
+Mon Aug 21 16:32:17 2017
 ----- Model ----------------
 Class: <class 'sklearn.kernel_ridge.KernelRidge'>
 Name: KernelRidge
 ----- Model parameters -----
-degree: 3
-coef0: 1
-kernel: rbf
 gamma: 0.25
 alpha: 0.001
+coef0: 1
+degree: 3
 kernel_params: None
+kernel: rbf
 ----- Output data -----
 output_data.csv file created with columns:
     Lot
