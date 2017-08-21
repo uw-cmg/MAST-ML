@@ -7,8 +7,9 @@ from test.test_helper import TestHelper
 
 class TestSingleFit(TestHelper):
     def test_singlefit(self):
-        self.run_command_mastml("singlefit")
-        rmse=self.get_readme_line("singlefit", "SingleFit_KernelRidge0", "rmse")
+        tname="singlefit"
+        self.run_command_mastml(tname)
+        rmse=self.get_readme_line(tname, "rmse")
         self.assertEqual(rmse, "rmse: 47.8267")
         clist = list()
         clist.append("README")
@@ -18,13 +19,14 @@ class TestSingleFit(TestHelper):
         clist.append("single_fit.pickle")
         clist.append("single_fit.png")
         clist.append("single_fit_data_predicted_vs_measured.csv")
-        self.compare_contents("singlefit", "SingleFit_KernelRidge0",clist)
+        self.compare_contents(tname, clist)
+        self.remove_output(tname)
         return
     
     def test_filter(self):
-        self.run_command_mastml("filter")
-        rmse=self.get_readme_line("filter", "SingleFit_filter_KernelRidge0", 
-                        "filtered_rmse")
+        tname = "filter"
+        self.run_command_mastml(tname)
+        rmse=self.get_readme_line(tname, "filtered_rmse")
         self.assertEqual(rmse, "filtered_rmse: 56.3935")
         clist = list()
         clist.append("README")
@@ -35,18 +37,20 @@ class TestSingleFit(TestHelper):
         clist.append("single_fit.pickle")
         clist.append("single_fit.png")
         clist.append("single_fit_data_predicted_vs_measured.csv")
-        self.compare_contents("filter", "SingleFit_filter_KernelRidge0",clist)
+        self.compare_contents(tname, clist)
+        self.remove_output(tname)
         return
     
     def test_notarget(self):
-        self.run_command_mastml("notarget")
-        rmse=self.get_readme_line("notarget", "SingleFit_notarget_KernelRidge0", 
-                        "rmse")
+        tname="notarget"
+        self.run_command_mastml(tname)
+        rmse=self.get_readme_line(tname, "rmse")
         self.assertEqual(rmse, None) #no statistics because no target data
         clist = list()
         clist.append("README")
         clist.append("model.pickle")
         clist.append("output_data.csv")
-        self.compare_contents("notarget", "SingleFit_notarget_KernelRidge0",clist)
+        self.compare_contents(tname, clist)
+        self.remove_output(tname)
         return
 
