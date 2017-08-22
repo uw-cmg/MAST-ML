@@ -32,6 +32,10 @@ Cross validation
 Hyperparameter optimization
 ------------------------------------
 
+.. toctree::
+
+   4_p1_paramgridsearch
+
 .. .. autoclass:: ParamOptGA.ParamOptGA
 ..    :members:
 

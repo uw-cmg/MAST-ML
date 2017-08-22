@@ -25,7 +25,7 @@ class ParamGridSearch(SingleFit):
         testing_dataset, (Should be the same as training_dataset)
         model,
         save_path, see parent class.
-        param_1 <str>: parameter string made up of semicolon-delimited pieces
+        param_1 (str): parameter string made up of semicolon-delimited pieces
             Piece 1: The word 'model' or a custom feature class.method string, 
                         e.g. DBTT.calculate_EffectiveFluence,
                         where the custom module has the same name as the 
@@ -49,21 +49,21 @@ class ParamGridSearch(SingleFit):
                         using an inclusive start and inclusive end
                     A parameter with only one discrete value will not be
                     considered as an 'optimized' parameter.
-        param_2 <str> etc. 
-        fix_random_for_testing <int>: 0 - use random numbers
+        param_2 (str) etc. 
+        fix_random_for_testing (int): 0 - use random numbers
                                       1 - fix randomizer for testing
-        num_cvtests <int>: Number of CV tests for each validation step
-        num_folds <int>: Number of folds for K-fold cross validation;
+        num_cvtests (int): Number of CV tests for each validation step
+        num_folds (int): Number of folds for K-fold cross validation;
                             leave blank to use LO% CV
-        leave_out_percent <int>: Percentage to leave out for LO% CV; 
+        leave_out_percent (int): Percentage to leave out for LO% CV; 
                                     leave blank to use K-fold CV
-        mark_outlying_points <int>: See KFoldCV
-        num_bests <int>: Number of best individuals to track
-        processors <int>: Number of processors to use
+        mark_outlying_points (int): See KFoldCV
+        num_bests (int): Number of best individuals to track
+        processors (int): Number of processors to use
                             1 - single processor (serial)
                             2 - use multiprocessing with this many processors,
                                 all on a SINGLE node
-        pop_upper_limit <int>: Upper limit for population size.
+        pop_upper_limit (int): Upper limit for population size.
     Returns:
         Analysis in the save_path folder
         Plots results in a predicted vs. measured square plot.
