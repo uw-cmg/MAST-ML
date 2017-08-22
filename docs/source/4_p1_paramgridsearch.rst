@@ -12,7 +12,6 @@ See :doc:`4_1_singlefit` for the following keywords:
 
 * training_dataset
 * testing_dataset: Should be the same as training_dataset
-* save_path
 
 Additional keywords:
 
