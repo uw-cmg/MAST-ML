@@ -30,16 +30,16 @@ class Testing():
         self.df = copy.deepcopy(dataframe)
         return
 
-    def subtraction(self, params=dict(), col1="",col2=""):
+    def subtraction(self, col1="", col2="", num1="", num2="", **params):
         """Testing function.
-            params[0]: first parameter
-            params[1]: second parameter
             col1 <str>: first feature name
             col2 <str>: second feature name
+            num1 <float>: number to multiply col1 by
+            num2 <float>: number to subtract
         """
         col1_data = self.df[col1]
         col2_data = self.df[col2]
-        new_data = (col1_data * params[0]) - col2_data + params[1]
+        new_data = (col1_data * num1) - col2_data + num2
         fio = FeatureIO(self.df)
         new_df = fio.add_custom_features(["Subtraction_test"],new_data)
         fnorm = FeatureNormalization(new_df)
