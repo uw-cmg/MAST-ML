@@ -1,0 +1,30 @@
+Fri Aug 25 16:00:56 2017
+===== GA info =====
+----- GA 0 -----
+Converged?: True
+Best 5-CV avg RMSE: 163.687
+Testing.subtraction;col1;Operator
+Testing.subtraction;col2;Time
+Testing.subtraction;num1;0.5
+Testing.subtraction;num2;20.0
+model;alpha;1.0
+model;gamma;0.001
+----- GA 1 -----
+Converged?: True
+Best 5-CV avg RMSE: 163.687
+Testing.subtraction;col1;Operator
+Testing.subtraction;col2;Time
+Testing.subtraction;num1;0.4
+Testing.subtraction;num2;10.0
+model;alpha;1.0
+model;gamma;0.001
+===== Overall info =====
+Fri Aug 25 16:01:03 2017
+Overall best genome:
+Testing.subtraction;col1;Operator
+Testing.subtraction;col2;Time
+Testing.subtraction;num1;0.5
+Testing.subtraction;num2;20.0
+model;alpha;1.0
+model;gamma;0.001
+Updated dataframe printed as best_params_updated_dataframe.csv
