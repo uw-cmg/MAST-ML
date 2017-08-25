@@ -35,6 +35,7 @@ Hyperparameter optimization
 .. toctree::
 
    4_p1_paramgridsearch
+   4_p2_paramoptga
 
 .. .. autoclass:: ParamOptGA.ParamOptGA
 ..    :members:

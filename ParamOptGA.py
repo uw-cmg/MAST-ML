@@ -24,18 +24,18 @@ class ParamOptGA(ParamGridSearch):
         percent_leave_out,
         mark_outlying_points,
         processors,
-        num_bests, see parent class.
-        population_size <int>: Number of individuals in each generation's
+        num_bests: see parent class.
+        population_size (int): Number of individuals in each generation's
                                 population
-        convergence_generations <int>: Number of generations where the
+        convergence_generations (int): Number of generations where the
                                         genome must stay constant in order to
                                         establish convergence
-        max_generations <int>: Maximum number of generations
-        num_gas <int>: Number of GAs to run
-        crossover_prob <float>: Crossover probability (float < 1.00)
-        mutation_prob <float>: Mutation probability (float < 1.00)
-        shift_prob <float>: Shift probability (float < 1.00)
-        gen_tol <float>: Generation-to-generation RMSE tolerance for considering
+        max_generations (int): Maximum number of generations
+        num_gas (int): Number of GAs to run
+        crossover_prob (float): Crossover probability (float < 1.00)
+        mutation_prob (float): Mutation probability (float < 1.00)
+        shift_prob (float): Shift probability (float < 1.00)
+        gen_tol (float): Generation-to-generation RMSE tolerance for considering
                             RMSEs to be equal (absolute float tolerance)
 
     Returns:
