@@ -53,8 +53,20 @@ class TestHelper(unittest.TestCase):
                 matching line if found
                 None otherwise
         """
+        return self.get_output_line(test_name, line_match, "README")
+    
+    def get_output_line(self, test_name, line_match, doc_name):
+        """Get a line from a document in the test path.
+            Args:
+                test_name (str): test name (should match test folder)
+                line_match (str): string to match
+                doc_name (str): document name, like README
+            Returns:
+                matching line if found
+                None otherwise
+        """
         subpath = self.get_subdirectory(test_name)
-        with open(os.path.join(subpath, "README"),"r") as rfile:
+        with open(os.path.join(subpath, doc_name),"r") as rfile:
             rlines = rfile.readlines()
         for rline in rlines:
             if line_match in rline:
