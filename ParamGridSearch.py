@@ -55,7 +55,7 @@ class ParamGridSearch(SingleFit):
         num_cvtests (int): Number of CV tests for each validation step
         num_folds (int): Number of folds for K-fold cross validation;
                             leave blank to use LO% CV
-        leave_out_percent (int): Percentage to leave out for LO% CV; 
+        percent_leave_out (int): Percentage to leave out for LO% CV; 
                                     leave blank to use K-fold CV
         mark_outlying_points (int): See KFoldCV
         num_bests (int): Number of best individuals to track

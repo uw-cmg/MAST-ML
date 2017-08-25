@@ -50,7 +50,7 @@ Additional keywords:
         * 1 - fix the randomizer for testing purposes
 * num_cvtests: The number of cross-validation (CV) tests to use for evaluating every grid point
 * num_folds: The number of folds for K-fold CV; leave blank to use leave-out-percent CV
-* leave_out_percent: Percent to leave out for leave-out-percent CV; leave blank to use K-fold CV
+* percent_leave_out: Percent to leave out for leave-out-percent CV; leave blank to use K-fold CV
 * num_bests: Number of best individuals to track (default 10)
 * processors: Number of processors to use. 
     * 1 - use one processor (default)
