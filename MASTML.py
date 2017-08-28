@@ -17,6 +17,7 @@ import importlib
 import pandas as pd
 from SingleFit import timeit
 
+
 class MASTMLDriver(object):
 
     def __init__(self, configfile):
@@ -219,9 +220,9 @@ class MASTMLDriver(object):
             # Parse input data file
             Xdata, ydata, x_features, y_feature, dataframe = self._parse_input_data(data_path)
 
-            #print('after import')
-            #print(len(x_features))
-            #print(dataframe.shape)
+            print('after import')
+            print(len(x_features))
+            print(dataframe.shape)
 
             original_x_features = list(x_features)
             original_columns = list(dataframe.columns)
@@ -229,9 +230,9 @@ class MASTMLDriver(object):
             # Remove any missing rows from dataframe
             #dataframe = dataframe.dropna()
 
-            #print('after import and drop')
-            #print(len(x_features))
-            #print(dataframe.shape)
+            print('after import and drop')
+            print(len(x_features))
+            print(dataframe.shape)
             
             # Save off label and grouping data
             dataframe_labeled = pd.DataFrame()
@@ -248,9 +249,9 @@ class MASTMLDriver(object):
                 dataframe = self._perform_feature_generation(dataframe=dataframe)
                 # Actually, the x_features_NOUSE is required if starting from no features and doing feature generation. Not renaming for now. RJ 7/17
                 Xdata, ydata, x_features_NOUSE, y_feature, dataframe = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe, target_feature=y_feature)
-                #print('after gen')
-                #print(dataframe.shape)
-                #print(len(x_features_NOUSE))
+                print('after gen')
+                print(dataframe.shape)
+                print(len(x_features_NOUSE))
 
             else:
                 Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe, target_feature=y_feature)
@@ -268,16 +269,21 @@ class MASTMLDriver(object):
             else:
                 nonstring_x_features, dataframe_nostrings = MiscFeatureOperations(configdict=self.configdict).remove_features_containing_strings(dataframe=dataframe, x_features=x_features)
 
-            #print('after string remove')
-            #print(len(x_features))
-            #print(dataframe_nostrings.shape)
+            print('after string remove')
+            print(len(x_features))
+            print(dataframe_nostrings.shape)
 
             # Remove columns containing all entries of NaN
             dataframe_nostrings = dataframe_nostrings.dropna(axis=1, how='all')
+            print('after dropna all')
+            print(len(x_features))
+            print(dataframe_nostrings.shape)
 
-            #print('after dropna')
-            #print(len(x_features))
-            #print(dataframe_nostrings.shape)
+            # Fill spots with NaN to be empty string
+            dataframe_nostrings = dataframe_nostrings.dropna(axis=1, how='any')
+            print('after dropna any')
+            print(len(x_features))
+            print(dataframe_nostrings.shape)
 
             # Re-obtain x_feature list as some features may have been dropped
             Xdata, ydata, x_features, y_feature, dataframe_nostrings = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe_nostrings, target_feature=y_feature)
