@@ -9,6 +9,8 @@ import nbformat as nbf
 import pickle
 import inspect
 from sklearn.metrics import mean_squared_error
+from matplotlib import cm as cm
+
 class PlotHelper():
     """Plotting class
         Expects **kwargs dictionary.
@@ -49,6 +51,7 @@ class PlotHelper():
         self.numlines=0 #will be set in self.verify()
         self.smallfont = 0.85*self.fontsize
         matplotlib.rcParams.update({'font.size': self.fontsize})
+        matplotlib.rcParams.update({'axes.unicode_minus': False})
         self.verify()
         return
 
@@ -94,6 +97,7 @@ class PlotHelper():
     def sort_series(self, xvals, yvals, xerr, yerr, verbose=0):
         """Sort x and y according to x. 
         """
+        raise NotImplementedError("Deprecating sort_series")
         arraylist = list()
         arraylist.append(xvals)
         arraylist.append(yvals)
@@ -451,7 +455,7 @@ class PlotHelper():
         notey = 0.88
         notestep=0.07
         for note in notelist:
-            plt.annotate(note, xy=(0.05, notey), xycoords="axes fraction",
+            plt.annotate(note, xy=(1.05, notey), xycoords="axes fraction",
                     fontsize=smallfont)
             notey = notey - notestep
         for midx in [7,8,9]:
@@ -478,7 +482,7 @@ class PlotHelper():
             ydata = self.ydatalist[nidx]
             xerr = self.xerrlist[nidx]
             yerr = self.yerrlist[nidx]
-            [xdata,ydata,xerr,yerr] = self.sort_series(xdata,ydata,xerr,yerr)
+            #[xdata,ydata,xerr,yerr] = self.sort_series(xdata,ydata,xerr,yerr)
             (_, caps, _) = ax1.errorbar(xdata, ydata,
                 xerr=xerr,
                 yerr=yerr,
@@ -509,7 +513,7 @@ class PlotHelper():
         notey = 0.88
         notestep = 0.07
         for note in self.notelist:
-            plt.annotate(note, xy=(0.05, notey), xycoords="axes fraction",
+            plt.annotate(note, xy=(1.05, notey), xycoords="axes fraction",
                         fontsize=self.smallfont)
             notey = notey - notestep
         #ANNOTATIONS FOR LARGEST
@@ -540,16 +544,16 @@ class PlotHelper():
                         verticalalignment = "bottom",
                         fontsize=self.smallfont)
         #LEGEND
-        if self.guideline:
-            loc1 = "lower right"
-        else:
-            loc1 = "best"
         if not(self.legendloc is None):
-            loc1 = self.legendloc
-        lgd1=ax1.legend(loc = loc1, 
+            lgd1=ax1.legend(loc = self.legendloc, 
                     fontsize=self.smallfont, 
                     numpoints=1,
                     fancybox=True) 
+        else:
+            lgd1 = ax1.legend(bbox_to_anchor=(1,0), loc="lower left",
+                    fontsize = self.smallfont,
+                    numpoints=1,
+                    fancybox=True)
         try:
             lgd1.get_frame().set_alpha(0.5) #translucent legend!
         except AttributeError: # no labeled lines
@@ -572,16 +576,20 @@ class PlotHelper():
             nbname = os.path.join(self.save_path, "%s.ipynb" % self.plotlabel))
         return
 
-    def print_data(self):
+    def print_data(self, ycol_labels=None):
         for nidx in range(0, self.numlines):
             label = self.labellist[nidx]
             nospace_label = label.replace(" ","_").replace("-","_")
             savecsv = os.path.join(self.save_path,"%s_data_%s.csv" % (self.plotlabel, nospace_label))
             dataframe = pd.DataFrame() #index = np.arange(0, len(self.xdatalist[nidx])))
+            if ycol_labels is None:
+                ylabel = self.ylabel
+            else:
+                ylabel = ycol_labels[nidx]
             dataframe[self.xlabel] = self.xdatalist[nidx]
             if not(self.xerrlist[nidx] is None):
                 dataframe['xerr'] = self.xerrlist[nidx]
-            dataframe[self.ylabel] = self.ydatalist[nidx]
+            dataframe[ylabel] = self.ydatalist[nidx]
             if not (self.yerrlist[nidx] is None):
                 dataframe['yerr'] = self.yerrlist[nidx]
             dataframe.to_csv(savecsv)
@@ -658,7 +666,7 @@ class PlotHelper():
         notey = 0.88
         notestep = 0.07
         for note in self.notelist:
-            plt.annotate(note, xy=(0.05, notey), xycoords="axes fraction",
+            plt.annotate(note, xy=(1.05, notey), xycoords="axes fraction",
                         fontsize=self.smallfont)
             notey = notey - notestep
         if self.marklargest is None:
@@ -670,13 +678,16 @@ class PlotHelper():
                             xy = (numeric_list[largerms_index], 
                                     rms_list[largerms_index]),
                             fontsize=self.smallfont)
-        loc1 = 'best'
         if not(self.legendloc is None):
-            loc1 = self.legendloc
-        lgd1=ax1.legend(loc = loc1, 
+            lgd1=ax1.legend(loc = self.legendloc, 
                     fontsize=self.smallfont, 
                     numpoints=1,
                     fancybox=True) 
+        else:
+            lgd1 = ax1.legend(bbox_to_anchor=(1,0), loc="lower left",
+                    fontsize = self.smallfont,
+                    numpoints=1,
+                    fancybox=True)
         try:
             lgd1.get_frame().set_alpha(0.5) #translucent legend!
         except AttributeError: # no labeled lines
@@ -697,6 +708,73 @@ class PlotHelper():
         self.write_notebook(picklename=pname, 
             nbfigname = "%s_nb" % self.plotlabel,
             nbname = os.path.join(self.save_path, "%s.ipynb" % self.plotlabel))
+        return
+
+    def plot_2d_rmse_heatmap(self):
+        """Plot 2d hex heatmap
+        """
+        fig_handle = plt.figure()
+        xvals = self.xdatalist[0]
+        yvals = self.ydatalist[0]
+        rmses = self.ydatalist[1]
+        plt.scatter(xvals, yvals,
+                    s = 20,
+                    lw = 0,
+                    c = rmses,
+                    cmap = cm.plasma)
+        plt.xlabel(self.xlabel)
+        plt.ylabel(self.ylabel)
+        cb = plt.colorbar()
+        cb.set_label('RMSE')
+        plt.savefig(os.path.join(self.save_path, "%s" % self.plotlabel),
+                    bbox_inches='tight')
+        self.print_data(ycol_labels=[self.ylabel, 'RMSE']) #print csv for every plot
+        pname = os.path.join(self.save_path, "%s.pickle" % self.plotlabel)
+        with open(pname,'wb') as pfile:
+            pickle.dump(fig_handle, pfile) 
+        plt.close()
+        #No notebook support for hexbin types yet
+        print("No jupyter notebook will be printed for this plot.")
+        #self.write_notebook(picklename=pname, 
+        #    nbfigname = "%s_nb" % self.plotlabel,
+        #    nbname = os.path.join(self.save_path, "%s.ipynb" % self.plotlabel))
+        return
+    
+    def plot_3d_rmse_heatmap(self):
+        """Plot 3d rmse heatmap
+        """
+        from mpl_toolkits.mplot3d import Axes3D
+        fig_handle = plt.figure()
+        ax = plt.gca()
+        ax = fig_handle.add_subplot(111, projection='3d')
+        xvals = np.array(self.xdatalist[0])
+        yvals = np.array(self.ydatalist[0])
+        zvals = np.array(self.ydatalist[1])
+        zlabel = self.labellist[1]
+        rmses = np.array(self.ydatalist[2])
+        scatter_series = ax.scatter(xvals, yvals, zvals,
+                    marker='o',
+                    c = rmses,
+                    lw = 0, 
+                    s = 20,
+                    cmap = cm.plasma)
+        ax.set_xlabel(self.xlabel)
+        ax.set_ylabel(self.ylabel)
+        ax.set_zlabel(zlabel)
+        cb = fig_handle.colorbar(scatter_series)
+        cb.set_label('RMSE')
+        plt.savefig(os.path.join(self.save_path, "%s" % self.plotlabel),
+                    bbox_inches='tight')
+        self.print_data(ycol_labels=[self.ylabel, zlabel, 'RMSE']) #print csv for every plot
+        pname = os.path.join(self.save_path, "%s.pickle" % self.plotlabel)
+        with open(pname,'wb') as pfile:
+            pickle.dump(fig_handle, pfile) 
+        plt.close()
+        #No notebook support for hexbin types yet
+        print("No jupyter notebook will be printed for this plot.")
+        #self.write_notebook(picklename=pname, 
+        #    nbfigname = "%s_nb" % self.plotlabel,
+        #    nbname = os.path.join(self.save_path, "%s.ipynb" % self.plotlabel))
         return
 
         

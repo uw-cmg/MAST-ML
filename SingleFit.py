@@ -7,6 +7,7 @@ import os
 import time
 import logging
 import copy
+from sklearn.externals import joblib
 logger = logging.getLogger()
 
 def timeit(method):
@@ -140,6 +141,7 @@ class SingleFit():
     def fit(self):
         self.get_trained_model()
         self.print_model()
+        self.save_model()
         return
    
     @timeit
@@ -163,9 +165,18 @@ class SingleFit():
         return
     
     def print_model(self):
+        self.readme_list.append("----- Model ----------------\n")
+        self.readme_list.append("Class: %s\n" % self.model.__class__)
+        self.readme_list.append("Name: %s\n" % self.model.__class__.__name__)
         self.readme_list.append("----- Model parameters -----\n")
         for param, paramval in self.trained_model.get_params().items():
             self.readme_list.append("%s: %s\n" % (param, paramval))
+        return
+
+    def save_model(self):
+        pname = os.path.join(self.save_path, "model.pickle")
+        with open(pname,'wb') as pfile:
+            joblib.dump(self.model, pfile) 
         return
 
     def get_prediction(self):
@@ -279,7 +290,6 @@ class SingleFit():
         notelist.append("Mean abs error: %3.3f" % self.statistics['mean_absolute_error'])
         plot_kwargs['notelist'] = notelist
         plot_kwargs['save_path'] = self.save_path
-        plot_kwargs['xerr'] = self.testing_dataset.target_error_data
         if not (addl_plot_kwargs is None):
             for addl_plot_kwarg in addl_plot_kwargs:
                 plot_kwargs[addl_plot_kwarg] = addl_plot_kwargs[addl_plot_kwarg]
@@ -294,7 +304,10 @@ class SingleFit():
         #Data should already have been filtered by now
         plot_kwargs['xdatalist'] = [self.testing_dataset.target_data]
         plot_kwargs['ydatalist'] = [self.testing_dataset.target_prediction]
-        plot_kwargs['xerrlist']=[None]
+        if self.testing_dataset.target_error_feature is None:
+            plot_kwargs['xerrlist'] = [None]
+        else:
+            plot_kwargs['xerrlist'] = [self.testing_dataset.target_error_data]
         plot_kwargs['yerrlist']=[None]
         plot_kwargs['labellist'] = ["predicted_vs_measured"]
         myph = PlotHelper(**plot_kwargs)
@@ -310,3 +323,12 @@ class SingleFit():
             rfile.writelines(self.readme_list)
         return
 
+    def __enter__(self):
+        """enter method is for with...as construction
+        """
+        return self
+
+    def __exit__(self, type, value, traceback):
+        """exit method is necessary for with...as construction
+        """
+        return None

@@ -1,12 +1,12 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Input file &#8212; MAST-ml 1.0 documentation</title>
+    <title>Input file &mdash; MAST-ml 1.0 documentation</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -17,26 +17,21 @@
         VERSION:     '1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
+        HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="MAST-ml 1.0 documentation" href="index.html" />
     <link rel="next" title="Glossary" href="3_glossary.html" />
     <link rel="prev" title="Troubleshooting" href="1_troubleshooting.html" />
    
-  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
-  
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body>
-  
+  <body role="document">  
 
     <div class="document">
       <div class="documentwrapper">
@@ -59,14 +54,14 @@
 <h3>General Setup<a class="headerlink" href="#general-setup" title="Permalink to this headline">¶</a></h3>
 <p>This section has general setup information common to the entire input file.</p>
 <p>Example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">General</span> <span class="n">Setup</span><span class="p">]</span>
+<div class="highlight-python"><div class="highlight"><pre>[General Setup]
 
-    <span class="n">save_path</span> <span class="o">=</span> <span class="o">./</span>
-    <span class="n">input_features</span> <span class="o">=</span> <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">x3</span>
-    <span class="n">target_feature</span> <span class="o">=</span> <span class="n">y_feature</span>
-            <span class="n">target_error_feature</span> <span class="o">=</span> <span class="n">error</span>
-            <span class="n">labeling_features</span> <span class="o">=</span> <span class="n">group</span><span class="p">,</span> <span class="n">group_num</span>
-            <span class="n">grouping_feature</span> <span class="o">=</span> <span class="n">group</span>
+    save_path = ./
+    input_features = x1, x2, x3
+    target_feature = y_feature
+            target_error_feature = error
+            labeling_features = group, group_num
+            grouping_feature = group
 </pre></div>
 </div>
 <ul class="simple">
@@ -82,10 +77,10 @@
 <h3>CSV Setup (optional)<a class="headerlink" href="#csv-setup-optional" title="Permalink to this headline">¶</a></h3>
 <p>This section is used to call a python routine that will automatically create a CSV file. Most users should skip this section.</p>
 <p>Example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">CSV</span> <span class="n">Setup</span><span class="p">]</span>
-    <span class="n">setup_class</span> <span class="o">=</span> <span class="n">test</span><span class="o">.</span><span class="n">random_data</span><span class="o">.</span><span class="n">MakeRandomData</span>
-    <span class="n">save_path</span> <span class="o">=</span> <span class="o">../</span><span class="n">random_data</span>
-    <span class="n">random_seed</span> <span class="o">=</span> <span class="mi">0</span>
+<div class="highlight-python"><div class="highlight"><pre>[CSV Setup]
+    setup_class = test.random_data.MakeRandomData
+    save_path = ../random_data
+    random_seed = 0
 </pre></div>
 </div>
 <ul class="simple">
@@ -96,11 +91,11 @@
 <div class="section" id="data-setup">
 <h3>Data Setup<a class="headerlink" href="#data-setup" title="Permalink to this headline">¶</a></h3>
 <p>Example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Data</span> <span class="n">Setup</span><span class="p">]</span>
+<div class="highlight-python"><div class="highlight"><pre>[Data Setup]
 
-    <span class="p">[[</span><span class="n">Initial</span><span class="p">]]</span>
-    <span class="n">data_path</span> <span class="o">=</span> <span class="o">./</span><span class="n">basic_test_data</span><span class="o">.</span><span class="n">csv</span>
-    <span class="n">weights</span> <span class="o">=</span> <span class="kc">False</span>
+    [[Initial]]
+    data_path = ./basic_test_data.csv
+    weights = False
 </pre></div>
 </div>
 <ul class="simple">
@@ -113,16 +108,16 @@
 <h3>Feature Generation (optional)<a class="headerlink" href="#feature-generation-optional" title="Permalink to this headline">¶</a></h3>
 <p>This section generates features.</p>
 <p>Example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Feature</span> <span class="n">Generation</span><span class="p">]</span>
-    <span class="n">add_magpie_features</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="n">add_materialsproject_features</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">materialsproject_apikey</span> <span class="o">=</span> <span class="s1">&#39;USE_YOUR_API_KEY&#39;</span> <span class="c1">#</span>
-    <span class="c1">#add_citrine_features = False #This won&#39;t work right now</span>
-    <span class="c1">#citrine_apikey = &#39;USE_YOUR_CITRINE_API_KEY&#39;</span>
+<div class="highlight-python"><div class="highlight"><pre>[Feature Generation]
+    add_magpie_features = True
+    add_materialsproject_features = False
+    materialsproject_apikey = &#39;USE_YOUR_API_KEY&#39; #
+    #add_citrine_features = False #This won&#39;t work right now
+    #citrine_apikey = &#39;USE_YOUR_CITRINE_API_KEY&#39;
 </pre></div>
 </div>
 <ul class="simple">
-<li>A <code class="docutils literal"><span class="pre">Materials</span> <span class="pre">composition</span></code> column must be included, using common materials naming formats, for example, “H2O”.</li>
+<li>A <code class="docutils literal"><span class="pre">Materials</span> <span class="pre">composition</span></code> column must be included, using common materials naming formats, for example, &#8220;H2O&#8221;.</li>
 <li>Note that you may need to copy the magpiedata folder into your test folder for magpie features to work (DEV)</li>
 </ul>
 </div>
@@ -130,11 +125,11 @@
 <h3>Feature Selection (optional)<a class="headerlink" href="#feature-selection-optional" title="Permalink to this headline">¶</a></h3>
 <p>This section reduces the number of input features, especially useful if many new features were generated through the Feature Generation section.</p>
 <p>Example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Feature</span> <span class="n">Selection</span><span class="p">]</span> <span class="c1">#optional</span>
-    <span class="n">remove_constant_features</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="n">feature_selection_algorithm</span> <span class="o">=</span> <span class="n">univariate</span> <span class="c1">#Choose either RFE, univariate, stability</span>
-    <span class="n">selection_type</span> <span class="o">=</span> <span class="n">regression</span> <span class="c1"># Choose either regression or classification</span>
-    <span class="n">number_of_features_to_keep</span> <span class="o">=</span> <span class="mi">10</span>
+<div class="highlight-python"><div class="highlight"><pre>[Feature Selection] #optional
+    remove_constant_features = True
+    feature_selection_algorithm = univariate #Choose either RFE, univariate, stability
+    selection_type = regression # Choose either regression or classification
+    number_of_features_to_keep = 10
 </pre></div>
 </div>
 </div>
@@ -142,11 +137,11 @@
 <h3>Models and Tests to Run<a class="headerlink" href="#models-and-tests-to-run" title="Permalink to this headline">¶</a></h3>
 <p>This section sets up which models and tests to run.</p>
 <p>Example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Models</span> <span class="ow">and</span> <span class="n">Tests</span> <span class="n">to</span> <span class="n">Run</span><span class="p">]</span>
+<div class="highlight-python"><div class="highlight"><pre>[Models and Tests to Run]
 
-    <span class="n">models</span> <span class="o">=</span> <span class="n">gkrr_model</span>
-    <span class="n">test_cases</span> <span class="o">=</span> <span class="n">SingleFit_withy</span>
-    <span class="c1">#test_cases = ParamOptGA, SingleFit_withy</span>
+    models = gkrr_model
+    test_cases = SingleFit_withy
+    #test_cases = ParamOptGA, SingleFit_withy
 </pre></div>
 </div>
 <ul class="simple">
@@ -161,27 +156,27 @@
 <p>This section specifies the parameters for tests.
 Note that parameters are subject to change. Documentation mismatches or missing documentation should be reported via a github issue.</p>
 <p>Example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Test</span> <span class="n">Parameters</span><span class="p">]</span>
-    <span class="p">[[</span><span class="n">ParamOptGA</span><span class="p">]]</span>
-    <span class="n">training_dataset</span> <span class="o">=</span> <span class="n">Initial</span>
-    <span class="n">testing_dataset</span> <span class="o">=</span> <span class="n">Initial</span>
-    <span class="n">num_folds</span> <span class="o">=</span> <span class="mi">2</span>
-    <span class="n">num_cvtests</span> <span class="o">=</span> <span class="mi">20</span>
-    <span class="n">num_gas</span> <span class="o">=</span> <span class="mi">2</span>
-    <span class="n">population_size</span> <span class="o">=</span> <span class="mi">50</span>
-    <span class="n">convergence_generations</span> <span class="o">=</span> <span class="mi">2</span>
-    <span class="n">max_generations</span> <span class="o">=</span> <span class="mi">10</span>
-    <span class="n">fix_random_for_testing</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">num_parents</span> <span class="o">=</span> <span class="mi">10</span>
-    <span class="n">use_multiprocessing</span> <span class="o">=</span> <span class="mi">2</span> <span class="c1">#usually number of processors - 1</span>
-    <span class="c1">#additional_feature_methods =</span>
+<div class="highlight-python"><div class="highlight"><pre>[Test Parameters]
+    [[ParamOptGA]]
+    training_dataset = Initial
+    testing_dataset = Initial
+    num_folds = 2
+    num_cvtests = 20
+    num_gas = 2
+    population_size = 50
+    convergence_generations = 2
+    max_generations = 10
+    fix_random_for_testing = 1
+    num_parents = 10
+    use_multiprocessing = 2 #usually number of processors - 1
+    #additional_feature_methods =
 
-    <span class="p">[[</span><span class="n">SingleFit_withy</span><span class="p">]]</span>
-    <span class="n">training_dataset</span> <span class="o">=</span> <span class="n">Initial</span>
-    <span class="n">testing_dataset</span>  <span class="o">=</span> <span class="n">Initial</span>
-    <span class="n">xlabel</span> <span class="o">=</span> <span class="n">Measured</span> <span class="n">target</span>
-    <span class="n">ylabel</span> <span class="o">=</span> <span class="n">Target</span> <span class="n">prediction</span>
-    <span class="n">stepsize</span> <span class="o">=</span> <span class="mf">1.0</span>
+    [[SingleFit_withy]]
+    training_dataset = Initial
+    testing_dataset  = Initial
+    xlabel = Measured target
+    ylabel = Target prediction
+    stepsize = 1.0
 </pre></div>
 </div>
 <ul class="simple">
@@ -218,7 +213,7 @@ Note that parameters are subject to change. Documentation mismatches or missing 
 <li><p class="first"><strong>xlabel</strong> and <strong>ylabel</strong>: labels for generated plots.</p>
 </li>
 <li><p class="first"><strong>plot_filter_out</strong>: This specifies data to be filtered and not included on plots. The general form is:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">plot_filter_out</span> <span class="o">=</span> <span class="n">feature_name</span><span class="p">;</span><span class="n">operator</span><span class="p">;</span><span class="n">value</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">plot_filter_out</span> <span class="o">=</span> <span class="n">feature_name</span><span class="p">;</span><span class="n">operator</span><span class="p">;</span><span class="n">value</span>
 </pre></div>
 </div>
 </li>
@@ -233,14 +228,14 @@ Note that parameters are subject to change. Documentation mismatches or missing 
 <h3>Model Parameters<a class="headerlink" href="#model-parameters" title="Permalink to this headline">¶</a></h3>
 <p>This section sets up the model parameters. If ParamOptGA is used, model parameters will be optimized, and numeric model parameters set here will not be used.</p>
 <p>Example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Model</span> <span class="n">Parameters</span><span class="p">]</span>
+<div class="highlight-python"><div class="highlight"><pre>[Model Parameters]
 
-    <span class="p">[[</span><span class="n">gkrr_model</span><span class="p">]]</span>
-    <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.003019951720</span>
-    <span class="n">gamma</span> <span class="o">=</span> <span class="mf">3.467368504525</span>
-    <span class="n">coef0</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">degree</span> <span class="o">=</span> <span class="mi">3</span>
-    <span class="n">kernel</span> <span class="o">=</span> <span class="n">rbf</span>
+    [[gkrr_model]]
+    alpha = 0.003019951720
+    gamma = 3.467368504525
+    coef0 = 1
+    degree = 3
+    kernel = rbf
 </pre></div>
 </div>
 <ul>
@@ -302,18 +297,21 @@ Note that parameters are subject to change. Documentation mismatches or missing 
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/2_input_file.rst.txt"
+      <li><a href="_sources/2_input_file.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -324,11 +322,11 @@ Note that parameters are subject to change. Documentation mismatches or missing 
       &copy;2017, UW-Madison Computational Materials Group.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
       
       |
-      <a href="_sources/2_input_file.rst.txt"
+      <a href="_sources/2_input_file.txt"
           rel="nofollow">Page source</a>
     </div>
 

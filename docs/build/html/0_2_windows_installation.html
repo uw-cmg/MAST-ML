@@ -1,12 +1,12 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Windows installation &#8212; MAST-ml 1.0 documentation</title>
+    <title>Windows installation &mdash; MAST-ml 1.0 documentation</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -17,24 +17,19 @@
         VERSION:     '1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
+        HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="MAST-ml 1.0 documentation" href="index.html" />
    
-  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
-  
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body>
-  
+  <body role="document">  
 
     <div class="document">
       <div class="documentwrapper">
@@ -52,16 +47,16 @@ download anaconda from <a class="reference external" href="https://www.continuum
 <p>From the Anaconda Navigator, go to Environments and create a new environment
 Select python version <strong>3.5</strong> (3.6 may work with later version of the pymatgen
 conda package)</p>
-<p>Under “Channels”, along with defaults channel, “Add” the “materials” channel.
+<p>Under &#8220;Channels&#8221;, along with defaults channel, &#8220;Add&#8221; the &#8220;materials&#8221; channel.
 The Channels list should now read:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">defaults</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">defaults</span>
 <span class="n">materials</span>
 </pre></div>
 </div>
-<p>(may be the “matsci” channel instead of the “materials” channel;
+<p>(may be the &#8220;matsci&#8221; channel instead of the &#8220;materials&#8221; channel;
 this channel is used to install pymatgen)</p>
 <p>Search for and select the following packages:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">numpy</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">numpy</span>
 <span class="n">scipy</span>
 <span class="n">matplotlib</span>
 <span class="n">nbformat</span>
@@ -72,22 +67,22 @@ this channel is used to install pymatgen)</p>
 <span class="n">pymatgen</span>
 </pre></div>
 </div>
-<p>Click on “Apply” at the bottom to install all of the packages.</p>
+<p>Click on &#8220;Apply&#8221; at the bottom to install all of the packages.</p>
 <p>To get a terminal, from the Anaconda Navigator, go to
 Environments, make sure the environment is selected, press the green arrow
 button, and select Open terminal.</p>
 <p>From the terminal:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">citrination</span><span class="o">-</span><span class="n">client</span>
-<span class="n">pip</span> <span class="n">install</span> <span class="n">PeakUtils</span>
-<span class="n">pip</span> <span class="n">install</span> <span class="n">mlxtend</span>
+<div class="highlight-python"><div class="highlight"><pre>pip install citrination-client
+pip install PeakUtils
+pip install mlxtend
 </pre></div>
 </div>
 </div>
 <div class="section" id="set-up-the-spyder-ide-and-jupyter-notebooks">
 <h3>Set up the Spyder IDE and Jupyter notebooks<a class="headerlink" href="#set-up-the-spyder-ide-and-jupyter-notebooks" title="Permalink to this headline">¶</a></h3>
 <p>From the Anaconda Navigator, go to Home
-With the newly created environment selected, click on “Install” below Jupyter.
-Click on “Install” below Spyder.</p>
+With the newly created environment selected, click on &#8220;Install&#8221; below Jupyter.
+Click on &#8220;Install&#8221; below Spyder.</p>
 <p>Once the MASTML has been run and has created a jupyter notebook (run MASTML
 from a location inside the anaconda environment, so that the notebook will
 also be inside the environment tree), from the Anaconda Navigator, go to
@@ -99,7 +94,7 @@ button, and select Open jupyter notebook.</p>
 <h2>Install the MAST-ml-private package<a class="headerlink" href="#install-the-mast-ml-private-package" title="Permalink to this headline">¶</a></h2>
 <p>Install github (for example, the Github Desktop from desktop.github.com)</p>
 <p>Clone the repository at /uw-cmg/MAST-ml-private
-Clone from “master” or “dev”
+Clone from “master” or &#8220;dev&#8221;
 Ask for access if you cannot find this code.</p>
 <p>Check status.github.com for issues if you believe github may be malfunctioning</p>
 <div class="section" id="imports-that-dont-work">
@@ -144,18 +139,21 @@ If you get a missing import error, go ahead and install any other missing packag
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/0_2_windows_installation.rst.txt"
+      <li><a href="_sources/0_2_windows_installation.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -166,11 +164,11 @@ If you get a missing import error, go ahead and install any other missing packag
       &copy;2017, UW-Madison Computational Materials Group.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
       
       |
-      <a href="_sources/0_2_windows_installation.rst.txt"
+      <a href="_sources/0_2_windows_installation.txt"
           rel="nofollow">Page source</a>
     </div>
 

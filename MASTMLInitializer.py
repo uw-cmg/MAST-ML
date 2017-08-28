@@ -11,6 +11,7 @@ from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor
 from sklearn.tree import DecisionTreeRegressor
 import importlib
 import logging
+import traceback
 
 class ConfigFileParser(object):
     """Class to read in and parse contents of config file
@@ -226,6 +227,21 @@ class MASTMLWrapper(object):
                                  learning_rate='constant',
                                  max_iter=int(self.configdict['Model Parameters']['nn_model']['max_iter']),
                                  tol=float(self.configdict['Model Parameters']['nn_model']['tol']))
+            return model
+        elif model_type == 'custom_model':
+            model_dict = self.configdict['Model Parameters']['custom_model']
+            package_name = model_dict.pop('package_name') #return and remove
+            class_name = model_dict.pop('class_name') #return and remove
+            import importlib
+            custom_module = importlib.import_module(package_name)
+            module_class_def = getattr(custom_module, class_name) 
+            model = module_class_def(**model_dict) #pass all the rest as kwargs
+            return model
+        elif model_type == 'load_model':
+            model_dict = self.configdict['Model Parameters']['load_model']
+            model_location = model_dict['location'] #pickle location
+            from sklearn.externals import joblib
+            model = joblib.load(model_location)
             return model
         else:
             raise TypeError('You have specified an invalid model_type name in your input file')
