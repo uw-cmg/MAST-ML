@@ -6,7 +6,7 @@ import sys
 import os
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.neural_network import MLPRegressor
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, Lasso
 from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor
 from sklearn.tree import DecisionTreeRegressor
 import importlib
@@ -181,6 +181,10 @@ class MASTMLWrapper(object):
         if model_type == 'linear_model':
             model = LinearRegression(fit_intercept=bool(self.configdict['Model Parameters']['linear_model']['fit_intercept']))
             return model
+        if model_type == 'linear_model_lasso':
+            model = Lasso(alpha=float(self.configdict['Model Parameters']['linear_model_lasso']['alpha']),
+                          fit_intercept=bool(self.configdict['Model Parameters']['linear_model_lasso']['fit_intercept']))
+            return model
         if model_type == 'lkrr_model':
             model = KernelRidge(alpha = float(self.configdict['Model Parameters']['gkrr_model']['alpha']),
                                gamma = float(self.configdict['Model Parameters']['gkrr_model']['gamma']),
@@ -201,12 +205,12 @@ class MASTMLWrapper(object):
                                                min_samples_leaf=int(self.configdict['Model Parameters']['decision_tree_model']['min_samples_leaf']),
                                                min_samples_split=int(self.configdict['Model Parameters']['decision_tree_model']['min_samples_split']))
             return model
-        if model_type == 'extra_tree_model':
-            model = ExtraTreesRegressor(criterion=str(self.configdict['Model Parameters']['extra_tree_model']['criterion']),
-                                               n_estimators=str(self.configdict['Model Parameters']['extra_tree_model']['n_estimators']),
-                                               max_depth=int(self.configdict['Model Parameters']['extra_tree_model']['max_depth']),
-                                               min_samples_leaf=int(self.configdict['Model Parameters']['extra_tree_model']['min_samples_leaf']),
-                                               min_samples_split=int(self.configdict['Model Parameters']['extra_tree_model']['min_samples_split']))
+        if model_type == 'extra_trees_model':
+            model = ExtraTreesRegressor(criterion=str(self.configdict['Model Parameters']['extra_trees_model']['criterion']),
+                                               n_estimators=str(self.configdict['Model Parameters']['extra_trees_model']['n_estimators']),
+                                               max_depth=int(self.configdict['Model Parameters']['extra_trees_model']['max_depth']),
+                                               min_samples_leaf=int(self.configdict['Model Parameters']['extra_trees_model']['min_samples_leaf']),
+                                               min_samples_split=int(self.configdict['Model Parameters']['extra_trees_model']['min_samples_split']))
             return model
         if model_type == 'randomforest_model':
             model = RandomForestRegressor(criterion=str(self.configdict['Model Parameters']['randomforest_model']['criterion']),
