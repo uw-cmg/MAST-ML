@@ -1,0 +1,11 @@
+,model.alpha,model.gamma,Testing.subtraction.num1,Testing.subtraction.num2,rmse,key,Testing.subtraction.col1,Testing.subtraction.col2
+0,1.0,0.001,0.7,11.0,163.686927516,0,Operator,Time
+1,1.0,0.001,0.4,10.0,163.686674406,1,Operator,Time
+2,316.227766017,0.001,0.3,20.0,338.219745285,2,Operator,Time
+3,316.227766017,1e-05,0.8,11.0,334.867955587,3,Operator,Time
+4,316.227766017,0.001,0.6,11.0,338.218890637,4,Operator,Time
+5,1.0,1e-05,0.6,10.0,165.724304121,5,Operator,Time
+6,316.227766017,1e-05,0.7,10.0,334.867955571,6,Operator,Time
+7,1e-05,1e-05,0.8,10.0,168.455032569,7,Operator,Time
+8,316.227766017,0.0001,0.6,11.0,335.188352531,8,Operator,Time
+9,1.0,0.01,0.8,11.0,165.6031088,9,Operator,Time

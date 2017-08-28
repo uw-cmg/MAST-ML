@@ -1,0 +1,25 @@
+Tue Aug 22 15:37:16 2017
+----- CV setup -----
+5 CV tests,
+each with 2 folds
+----- Statistics -----
+avg_fold_avg_mean_errors: -348.4110
+avg_fold_avg_rmses: 382.7074
+fold_avg_rmse_best: 382.4291
+fold_avg_rmse_worst: 382.9061
+std_fold_avg_mean_errors: 0.0720
+std_fold_avg_rmses: 0.1940
+----- Output data -----
+best_and_worst_test_data.csv file created with columns:
+    Lot
+    Description
+    Comp A
+    Operator
+    Time
+    Testing.subtraction
+    Observation
+    Obs Error
+    Best Prediction
+    Folds for best
+    Worst Prediction
+    Folds for worst

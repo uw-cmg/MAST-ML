@@ -1,0 +1,10 @@
+Fri Aug 25 16:01:02 2017
+----Minimum RMSE params----
+1: 163.687, {'Testing.subtraction': {'col1': 'Operator', 'col2': 'Time', 'num1': 0.40000000000000002, 'num2': 10.0}, 'model': {'alpha': 1.0, 'gamma': 0.001}}
+0: 163.687, {'Testing.subtraction': {'col1': 'Operator', 'col2': 'Time', 'num1': 0.70000000000000007, 'num2': 11.0}, 'model': {'alpha': 1.0, 'gamma': 0.001}}
+9: 165.603, {'Testing.subtraction': {'col1': 'Operator', 'col2': 'Time', 'num1': 0.80000000000000004, 'num2': 11.0}, 'model': {'alpha': 1.0, 'gamma': 0.01}}
+5: 165.724, {'Testing.subtraction': {'col1': 'Operator', 'col2': 'Time', 'num1': 0.60000000000000009, 'num2': 10.0}, 'model': {'alpha': 1.0, 'gamma': 1.0000000000000001e-05}}
+7: 168.455, {'Testing.subtraction': {'col1': 'Operator', 'col2': 'Time', 'num1': 0.80000000000000004, 'num2': 10.0}, 'model': {'alpha': 1.0000000000000001e-05, 'gamma': 1.0000000000000001e-05}}
+-----------------------
+Updated dataframe printed as best_params_updated_dataframe.csv
+Printed RMSE results to results.csv

@@ -12,9 +12,6 @@ import shutil
 import time
 from custom_features import cf_help
 import matplotlib
-env_display = os.getenv("DISPLAY")
-if env_display is None:
-    matplotlib.use("agg")
 from DataHandler import DataHandler
 import importlib
 import pandas as pd
@@ -35,7 +32,7 @@ class MASTMLDriver(object):
         self.data_dict = dict() #Data dictionary
         self.model_list = list() #list of actual models
         self.model_vals = list() #list of model names, like "gkrr_model"
-        self.param_optimizing_tests = ["ParamOptGA"]
+        self.param_optimizing_tests = ["ParamOptGA","ParamGridSearch"]
         self.readme_html = list()
         self.readme_html_tests = list()
         self.start_time = None
@@ -86,10 +83,16 @@ class MASTMLDriver(object):
         return
 
     def _initialize_mastml_session(self):
-        logging.basicConfig(filename='MASTMLlog.log', level='INFO')
+        level="INFO"
+        envlevel = os.getenv("MASTML_LOGLEVEL")
+        if not envlevel is None:
+            level = envlevel
+        logging.basicConfig(filename='MASTMLlog.log', level=level)
         current_time = time.strftime('%Y'+'-'+'%m'+'-'+'%d'+', '+'%H'+' hours, '+'%M'+' minutes, '+'and '+'%S'+' seconds')
         logging.info('Initiated new MASTML session at: %s' % current_time)
         self.start_time = time.strftime("%Y-%m-%d, %H:%M:%S")
+        logging.info("Using matplotlib backend %s" % matplotlib.get_backend())
+        logging.info("Matplotlib defaults from %s" % matplotlib.matplotlib_fname())
         return
 
     def _initialize_html(self):
@@ -222,6 +225,7 @@ class MASTMLDriver(object):
 
             original_x_features = list(x_features)
             original_columns = list(dataframe.columns)
+            logging.debug("original columns: %s" % original_columns)
             # Remove any missing rows from dataframe
             #dataframe = dataframe.dropna()
 
@@ -256,13 +260,13 @@ class MASTMLDriver(object):
 
             # First remove features containing strings before doing feature normalization or other operations, but don't remove grouping features
             if generate_features == bool(True):
-                x_features, dataframe_nostrings = MiscFeatureOperations(configdict=self.configdict).remove_features_containing_strings(dataframe=dataframe, x_features=x_features_NOUSE)
+                nonstring_x_features, dataframe_nostrings = MiscFeatureOperations(configdict=self.configdict).remove_features_containing_strings(dataframe=dataframe, x_features=x_features_NOUSE)
                 #Remove columns containing all entries of NaN
                 dataframe_nostrings = dataframe_nostrings.dropna(axis=1, how='all')
                 # Re-obtain x_feature list as some features may have been dropped
                 Xdata, ydata, x_features_NOUSE, y_feature, dataframe_nostrings = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe_nostrings,target_feature=y_feature)
             else:
-                x_features, dataframe_nostrings = MiscFeatureOperations(configdict=self.configdict).remove_features_containing_strings(dataframe=dataframe, x_features=x_features)
+                nonstring_x_features, dataframe_nostrings = MiscFeatureOperations(configdict=self.configdict).remove_features_containing_strings(dataframe=dataframe, x_features=x_features)
 
             #print('after string remove')
             #print(len(x_features))
@@ -317,6 +321,17 @@ class MASTMLDriver(object):
             # Now merge dataframes
             dataframe_labeled_grouped = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe_labeled, dataframe2=dataframe_grouped)
             dataframe_merged = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe_nostrings, dataframe2=dataframe_labeled_grouped)
+
+            #Add string columns back in
+            string_x_features = list()
+            for my_x_feature in x_features:
+                if my_x_feature in nonstring_x_features:
+                    pass
+                else:
+                    string_x_features.append(my_x_feature)
+            logging.debug("string features: %s" % string_x_features)
+            for string_x_feature in string_x_features:
+                dataframe_merged[string_x_feature] = dataframe_orig_dropped_na[string_x_feature]
 
             # Need to remove duplicate features after merging.
             logging.debug("merged:%s" % dataframe_merged.columns)
@@ -455,77 +470,21 @@ class MASTMLDriver(object):
                 self.mastmlwrapper.get_machinelearning_test(test_type=test_type,
                         model=model, save_path=test_save_path, **test_params)
                 logging.info('Ran test %s for your %s model' % (test_type, str(model)))
-                self._update_models_and_data(test_folder, test_save_path, midx)
                 self.readme_html.extend(self.make_links_for_favorites(test_folder, test_save_path))
                 testrelpath = os.path.relpath(test_save_path, self.save_path)
                 self.readme_html_tests.append('<A HREF="%s">%s</A><BR>\n' % (testrelpath, test_type))
+                test_short = test_folder.split("_")[0]
+                if test_short in self.param_optimizing_tests:
+                    popt_warn = list()
+                    popt_warn.append("Last test was a parameter-optimizing test.")
+                    popt_warn.append("The test results may have specified an update of model parameters or data.")
+                    popt_warn.append("Please run a separate test.conf file with updated data and model parameters.")
+                    popt_warn.append("No further tests will be run on this file.")
+                    for popt_warn_line in popt_warn:
+                        logging.warning(popt_warn_line)
+                        print(popt_warn_line)
+                    break
         return test_list
-
-    def _update_models_and_data(self, test_folder, test_save_path, model_index=None):
-        test_short = test_folder.split("_")[0]
-        if not (test_short in self.param_optimizing_tests): #no need
-            logging.info("No parameter or data updates necessary.")
-            return
-        logging.info("UPDATING PARAMETERS from %s" % test_folder)
-        param_dict = self._get_param_dict(os.path.join(test_save_path,"OPTIMIZED_PARAMS"))
-        model_val = self.model_vals[model_index]
-        self.mastmlwrapper.configdict["Model Parameters"][model_val].update(param_dict["model"])
-        logging.info("New %s params: %s" % (model_val, self.mastmlwrapper.configdict["Model Parameters"][model_val]))
-        self.model_list[model_index] = self.mastmlwrapper.get_machinelearning_model(model_type=model_val) #update model list IN PLACE
-        logging.info("Updated model.")
-        afm_dict = self._get_afm_args(os.path.join(test_save_path,"ADDITIONAL_FEATURES"))
-        self._update_data_dict(afm_dict, param_dict)
-        return
-
-    def _update_data_dict(self, afm_dict=dict(), param_dict=dict()):
-        if len(afm_dict.keys()) == 0:
-            logging.info("No data updates necessary.")
-            return
-        for dname in self.data_dict.keys():
-            for afm in afm_dict.keys():
-                afm_kwargs = dict(afm_dict[afm])
-                (feature_name, feature_data) = cf_help.get_custom_feature_data(class_method_str = afm,
-                    starting_dataframe = self.data_dict[dname].data,
-                    param_dict = dict(param_dict[afm]),
-                    addl_feature_method_kwargs = dict(afm_kwargs))
-                self.data_dict[dname].add_feature(feature_name, feature_data)
-                self.data_dict[dname].input_features.append(feature_name)
-                self.data_dict[dname].set_up_data_from_features()
-                logging.info("Updated dataset %s data and input features with new feature %s" % (dname,afm))
-            newcsv = os.path.join(self.save_path, "updated_%s.csv" % dname)
-            self.data_dict[dname].data.to_csv(newcsv)
-            logging.info("Updated dataset printed to %s" % newcsv)
-        return
-
-    def _get_param_dict(self, fname):
-        pdict=dict()
-        with open(fname,'r') as pfile:
-            flines = pfile.readlines()
-        for fline in flines:
-            fline = fline.strip()
-            [gene, geneidx, genevalstr] = fline.split(";")
-            if not gene in pdict.keys():
-                pdict[gene] = dict()
-            if not (gene == 'model'):
-                geneidx = int(geneidx) #integer key to match ParamOptGA
-            if geneidx in pdict[gene].keys():
-                raise ValueError("Param file at %s returned two of the same paramter" % fname)
-            geneval = float(genevalstr)
-            pdict[gene][geneidx] = geneval
-        return pdict
-
-    def _get_afm_args(self, fname):
-        adict=dict()
-        with open(fname,'r') as afile:
-            alines = afile.readlines()
-        for aline in alines:
-            aline = aline.strip()
-            [af_method, af_arg, af_argval] = aline.split(";")
-            if not af_method in adict.keys():
-                adict[af_method] = dict()
-            adict[af_method][af_arg] = af_argval
-        return adict
-
     def _move_log_and_input_files(self):
         cwd = os.getcwd()
         if not(self.save_path == cwd):
@@ -548,6 +507,7 @@ class MASTMLDriver(object):
         fdict["LeaveOutPercentCV"] = ["best_worst_overlay.png"]
         fdict["LeaveOutGroupCV"] = ["leave_out_group.png"]
         fdict["ParamOptGA"] = ["OPTIMIZED_PARAMS"]
+        fdict["ParamGridSearch"] = ["OPTIMIZED_PARAMS","rmse_heatmap.png","rmse_heatmap_3d.png"]
         fdict["PredictionVsFeature"] = [] #not sure
         self.favorites_dict=dict(fdict)
         return
@@ -562,16 +522,19 @@ class MASTMLDriver(object):
             flist = self.favorites_dict[test_short]
             for fval in flist:
                 linkloc = os.path.join(test_save_path, fval)
-                linkloc = os.path.relpath(linkloc, self.save_path)
+                linklocrel = os.path.relpath(linkloc, self.save_path)
                 testrelpath = os.path.relpath(test_save_path, self.save_path)
-                linkline = '<A HREF="%s">%s</A> from test <A HREF="%s">%s</A><BR><BR>\n' % (linkloc, fval, testrelpath, test_folder)
+                linkline = '<A HREF="%s">%s</A> from test <A HREF="%s">%s</A><BR><BR>\n' % (linklocrel, fval, testrelpath, test_folder)
                 linklist.append(linkline)
-                if '.png' in fval:
-                    imline = '<A HREF="%s"><IMG SRC="%s" height=300 width=400></A><BR>\n' % (linkloc, linkloc)
-                    linklist.append(imline)
+                if not (os.path.exists(linkloc)):
+                    linklist.append("File not found.\n")
                 else:
-                    txtline = '<EMBED SRC="%s" width=75%%><BR>\n' % (linkloc)
-                    linklist.append(txtline)
+                    if '.png' in fval:
+                        imline = '<A HREF="%s"><IMG SRC="%s" height=300 width=400></A><BR>\n' % (linklocrel, linklocrel)
+                        linklist.append(imline)
+                    else:
+                        txtline = '<EMBED SRC="%s" width=75%%><BR>\n' % (linklocrel)
+                        linklist.append(txtline)
                 linklist.append("<BR>\n") 
         return linklist
 

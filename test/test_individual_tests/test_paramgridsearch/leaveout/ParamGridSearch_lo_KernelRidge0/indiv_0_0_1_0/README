@@ -1,0 +1,23 @@
+Tue Aug 22 15:37:07 2017
+----- CV setup -----
+5 CV tests,
+leaving out 75 percent
+----- Statistics -----
+avg_mean_error: -337.3960
+avg_rmse: 1569.9142
+rmse_best: 747.8607
+rmse_worst: 4253.6177
+std_mean_error: 721.4577
+std_rmse: 1359.8647
+----- Output data -----
+best_and_worst_test_data.csv file created with columns:
+    Lot
+    Description
+    Comp A
+    Operator
+    Time
+    Testing.subtraction
+    Observation
+    Obs Error
+    Best Prediction
+    Worst Prediction

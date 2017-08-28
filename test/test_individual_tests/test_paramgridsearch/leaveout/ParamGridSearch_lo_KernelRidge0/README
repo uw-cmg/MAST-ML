@@ -1,0 +1,20 @@
+Tue Aug 22 15:37:04 2017
+----Minimum RMSE params----
+4_0_1_1: 157.725, {'model': {'gamma': 0.001, 'alpha': 1.0}, 'Testing.subtraction': {'col1': 'Operator', 'num2': 20.0, 'num1': 1.0, 'col2': 'Time'}}
+4_0_1_0: 157.725, {'model': {'gamma': 0.001, 'alpha': 1.0}, 'Testing.subtraction': {'col1': 'Operator', 'num2': 10.0, 'num1': 1.0, 'col2': 'Time'}}
+4_0_0_1: 157.726, {'model': {'gamma': 0.001, 'alpha': 1.0}, 'Testing.subtraction': {'col1': 'Operator', 'num2': 20.0, 'num1': 0.5, 'col2': 'Time'}}
+4_0_0_0: 157.726, {'model': {'gamma': 0.001, 'alpha': 1.0}, 'Testing.subtraction': {'col1': 'Operator', 'num2': 10.0, 'num1': 0.5, 'col2': 'Time'}}
+4_1_1_1: 160.718, {'model': {'gamma': 0.01, 'alpha': 1.0}, 'Testing.subtraction': {'col1': 'Operator', 'num2': 20.0, 'num1': 1.0, 'col2': 'Time'}}
+4_1_1_0: 160.718, {'model': {'gamma': 0.01, 'alpha': 1.0}, 'Testing.subtraction': {'col1': 'Operator', 'num2': 10.0, 'num1': 1.0, 'col2': 'Time'}}
+4_1_0_1: 160.718, {'model': {'gamma': 0.01, 'alpha': 1.0}, 'Testing.subtraction': {'col1': 'Operator', 'num2': 20.0, 'num1': 0.5, 'col2': 'Time'}}
+4_1_0_0: 160.718, {'model': {'gamma': 0.01, 'alpha': 1.0}, 'Testing.subtraction': {'col1': 'Operator', 'num2': 10.0, 'num1': 0.5, 'col2': 'Time'}}
+3_0_0_1: 174.948, {'model': {'gamma': 0.001, 'alpha': 0.0031622776601683794}, 'Testing.subtraction': {'col1': 'Operator', 'num2': 20.0, 'num1': 0.5, 'col2': 'Time'}}
+3_0_0_0: 174.948, {'model': {'gamma': 0.001, 'alpha': 0.0031622776601683794}, 'Testing.subtraction': {'col1': 'Operator', 'num2': 10.0, 'num1': 0.5, 'col2': 'Time'}}
+-----------------------
+Updated dataframe printed as best_params_updated_dataframe.csv
+Printed RMSE results to results.csv
+----- Plotting -----
+Plot rmse_vs_model_alpha.png created
+Plot rmse_vs_model_gamma.png created
+Plot rmse_vs_Testing_subtraction_num1.png created
+Plot rmse_vs_Testing_subtraction_num2.png created
