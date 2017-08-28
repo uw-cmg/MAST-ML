@@ -7,8 +7,8 @@ import os
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.neural_network import MLPRegressor
 from sklearn.linear_model import LinearRegression
-from sklearn.ensemble import RandomForestRegressor
-import sklearn.tree as tree
+from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor
+from sklearn.tree import DecisionTreeRegressor
 import importlib
 import logging
 
@@ -194,15 +194,15 @@ class MASTMLWrapper(object):
                                 kernel_params=None)
             return model
         if model_type == 'decision_tree_model':
-            model = tree.DecisionTreeRegressor(criterion=str(self.configdict['Model Parameters']['decision_tree_model']['criterion']),
+            model = DecisionTreeRegressor(criterion=str(self.configdict['Model Parameters']['decision_tree_model']['criterion']),
                                                splitter=str(self.configdict['Model Parameters']['decision_tree_model']['splitter']),
                                                max_depth=int(self.configdict['Model Parameters']['decision_tree_model']['max_depth']),
                                                min_samples_leaf=int(self.configdict['Model Parameters']['decision_tree_model']['min_samples_leaf']),
                                                min_samples_split=int(self.configdict['Model Parameters']['decision_tree_model']['min_samples_split']))
             return model
         if model_type == 'extra_tree_model':
-            model = tree.ExtraTreeRegressor(criterion=str(self.configdict['Model Parameters']['extra_tree_model']['criterion']),
-                                               splitter=str(self.configdict['Model Parameters']['extra_tree_model']['splitter']),
+            model = ExtraTreesRegressor(criterion=str(self.configdict['Model Parameters']['extra_tree_model']['criterion']),
+                                               n_estimators=str(self.configdict['Model Parameters']['extra_tree_model']['n_estimators']),
                                                max_depth=int(self.configdict['Model Parameters']['extra_tree_model']['max_depth']),
                                                min_samples_leaf=int(self.configdict['Model Parameters']['extra_tree_model']['min_samples_leaf']),
                                                min_samples_split=int(self.configdict['Model Parameters']['extra_tree_model']['min_samples_split']))
