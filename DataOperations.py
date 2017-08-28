@@ -48,7 +48,8 @@ class DataParser(object):
     def get_features(self, dataframe, target_feature=None, from_input_file=False):
         if from_input_file == bool(True):
             y_feature = self.configdict['General Setup']['target_feature']
-            if self.configdict['General Setup']['input_features'] == ['Auto']:
+
+            if self.configdict['General Setup']['input_features'] == ['Auto'] or self.configdict['General Setup']['input_features'] == 'Auto':
                 print('found auto')
                 x_and_y_features = dataframe.columns.values.tolist()
                 x_features = []

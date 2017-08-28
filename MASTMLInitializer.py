@@ -28,12 +28,15 @@ class ConfigFileParser(object):
         return max(self._get_config_dict_depth(test_dict=test_dict[k], level=level+1) for k in test_dict)
 
     def _parse_config_file(self, path_to_file):
-        if not path_to_file:
-            path_to_file = os.getcwd()
-
+        if not os.path.exists(path_to_file):
+            print('You must specify a valid path')
+            sys.exit()
         if os.path.exists(path_to_file+"/"+str(self.configfile)):
+            original_dir = os.getcwd()
+            os.chdir(path_to_file)
             try:
                 config_dict = ConfigObj(self.configfile)
+                os.chdir(original_dir)
                 return config_dict
             except(ConfigObjError, IOError):
                 print('Could not read in input file %s') % str(self.configfile)
