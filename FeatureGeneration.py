@@ -22,11 +22,30 @@ class MagpieFeatureGeneration(object):
         return self.dataframe
 
     def generate_magpie_features(self, save_to_csv=True):
-        try:
-            compositions = self.dataframe['Material compositions']
-        except KeyError:
-            print('No column called "Material compositions" exists in the supplied dataframe.')
+        compositions = []
+        composition_components = []
+
+        # Replace empty composition fields with empty string instead of NaN
+        self.dataframe = self.dataframe.fillna('')
+        for column in self.dataframe.columns:
+            if 'Material composition' in column:
+                composition_components.append(self.dataframe[column].tolist())
+
+        if len(composition_components) < 1:
+            print('No column with "Material composition xx" was found in the supplied dataframe')
             sys.exit()
+
+        row = 0
+        while row < len(composition_components[0]):
+            composition = ''
+            for composition_component in composition_components:
+                composition += str(composition_component[row])
+            compositions.append(composition)
+            row += 1
+
+        # Add the column of combined material compositions into the dataframe
+        self.dataframe['Material compositions'] = compositions
+        print(self.dataframe)
 
         # Assign each magpiedata feature set to appropriate composition name
         magpiedata_dict_composition_average = {}
