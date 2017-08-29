@@ -1,5 +1,5 @@
 =====================================
-Leave Out Percent Cross-Validation
+Leave Out Percent Cross Validation
 =====================================
 
 Perform leave-out-percent cross validation.

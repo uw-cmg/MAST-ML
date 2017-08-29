@@ -16,6 +16,7 @@ Cross validation
 
    4_cv1_loperc
    4_cv2_kfold
+   4_cv3_loo
 
 .. .. autoclass:: KFoldCV.KFoldCV
 ..    :members:
