@@ -16,14 +16,14 @@ class LeaveOutGroupCV(LeaveOutPercentCV):
         xlabel, 
         ylabel,
         stepsize,
-        mark_outlying_points (Use only 1 number), see parent class.
+        mark_outlying_points (Use only 1 number): see parent class.
  
     Returns:
         Analysis in the save_path folder
         Plots results in a predicted vs. measured square plot.
     Raises:
-        ValueError if grouping feature is None
-        ValueError if testing target data is None; CV must have
+        ValueError: if grouping feature is None
+        ValueError: if testing target data is None; CV must have
                 testing target data
     """
     def __init__(self, 
