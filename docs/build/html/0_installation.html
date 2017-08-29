@@ -67,21 +67,16 @@ matplotlib backend in order for plotting to work
 </div>
 <div class="section" id="startup">
 <h2>Startup<a class="headerlink" href="#startup" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="set-up-a-folder">
-<h3>Set up a folder<a class="headerlink" href="#set-up-a-folder" title="Permalink to this headline">¶</a></h3>
-<ol class="arabic simple">
-<li>Make a folder (let’s call it my_test)</li>
-<li>Copy basic_test_data.csv into this folder.</li>
-<li>Copy the mastmlvalidation*.conf files (both of them) into this folder. In the General Setup section, these mastmlvalidation*.conf files should read save_path = string (etc; keyword and then type)</li>
-<li>Copy basicinput.conf into this folder</li>
-<li>Change directories to be in this folder (cd my_test)</li>
-</ol>
+<div class="section" id="locate-the-examples-folder">
+<h3>Locate the examples folder<a class="headerlink" href="#locate-the-examples-folder" title="Permalink to this headline">¶</a></h3>
+<p>In the MASTML code directory, navigate to the <code class="docutils literal"><span class="pre">examples</span></code> folder.</p>
+<p>The file <code class="docutils literal"><span class="pre">example_input.conf</span></code> will use <code class="docutils literal"><span class="pre">basic_test_data.csv</span></code> to run an example.</p>
 </div>
 <div class="section" id="run-the-mastml-command">
 <h3>Run the MASTML command<a class="headerlink" href="#run-the-mastml-command" title="Permalink to this headline">¶</a></h3>
-<p>Format is <code class="docutils literal"><span class="pre">python</span> <span class="pre">&lt;path</span> <span class="pre">to</span> <span class="pre">MASTML&gt;/MASTML.py</span> <span class="pre">&lt;config</span> <span class="pre">file</span> <span class="pre">name&gt;</span></code></p>
-<p>For example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">MAST</span><span class="o">-</span><span class="n">ml</span><span class="o">-</span><span class="n">private</span><span class="o">/</span><span class="n">MASTML</span><span class="o">.</span><span class="n">py</span> <span class="n">basicinput</span><span class="o">.</span><span class="n">conf</span>
+<p>The format is <code class="docutils literal"><span class="pre">python</span> <span class="pre">&lt;path</span> <span class="pre">to</span> <span class="pre">MASTML&gt;/MASTML.py</span> <span class="pre">&lt;config</span> <span class="pre">file</span> <span class="pre">name&gt;</span></code></p>
+<p>For example, from inside the <code class="docutils literal"><span class="pre">examples</span></code> folder:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">../</span><span class="n">MASTML</span><span class="o">.</span><span class="n">py</span> <span class="n">example_input</span><span class="o">.</span><span class="n">conf</span>
 </pre></div>
 </div>
 <p>This is a terminal command.
@@ -91,8 +86,8 @@ click the green arrow button, and Open terminal.</p>
 </div>
 <div class="section" id="check-output">
 <h3>Check output<a class="headerlink" href="#check-output" title="Permalink to this headline">¶</a></h3>
-<p><code class="docutils literal"><span class="pre">index.html</span></code> should be created, linking to certain representative plots for each test. (see test/main_test/index.html for an example)</p>
-<p>Output will be located in subfolders in your test folder (e.g. “my_test/SingleFit…”) and should also be available as links in index.html</p>
+<p><code class="docutils literal"><span class="pre">index.html</span></code> should be created, linking to certain representative plots for each test</p>
+<p>Output will be located in subfolders in the test folder given by save_path in the <a class="reference internal" href="2_input_file.html#general-setup"><span class="std std-ref">General Setup</span></a> section of the input file.</p>
 </div>
 </div>
 </div>
@@ -113,7 +108,7 @@ click the green arrow button, and Open terminal.</p>
 </li>
 <li><a class="reference internal" href="#installation">Installation</a></li>
 <li><a class="reference internal" href="#startup">Startup</a><ul>
-<li><a class="reference internal" href="#set-up-a-folder">Set up a folder</a></li>
+<li><a class="reference internal" href="#locate-the-examples-folder">Locate the examples folder</a></li>
 <li><a class="reference internal" href="#run-the-mastml-command">Run the MASTML command</a></li>
 <li><a class="reference internal" href="#check-output">Check output</a></li>
 </ul>

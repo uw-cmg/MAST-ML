@@ -61,9 +61,11 @@
     <span class="n">save_path</span> <span class="o">=</span> <span class="o">./</span>
     <span class="n">input_features</span> <span class="o">=</span> <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">x3</span>
     <span class="n">target_feature</span> <span class="o">=</span> <span class="n">y_feature</span>
-            <span class="n">target_error_feature</span> <span class="o">=</span> <span class="n">error</span>
-            <span class="n">labeling_features</span> <span class="o">=</span> <span class="n">group</span><span class="p">,</span> <span class="n">group_num</span>
-            <span class="n">grouping_feature</span> <span class="o">=</span> <span class="n">group</span>
+    <span class="n">target_error_feature</span> <span class="o">=</span> <span class="n">error</span>
+    <span class="n">labeling_features</span> <span class="o">=</span> <span class="n">group</span><span class="p">,</span> <span class="n">group_num</span>
+    <span class="n">grouping_feature</span> <span class="o">=</span> <span class="n">group</span>
+    <span class="n">config_files_path</span> <span class="o">=</span> <span class="o">../</span><span class="n">MASTML_config_files</span>
+    <span class="n">normalize_features</span> <span class="o">=</span> <span class="kc">True</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -73,6 +75,8 @@
 <li><strong>labeling_features</strong> are the names and number identifiers for groups. This generally overlaps with grouping_feature unless you want a different naming method.</li>
 <li><strong>grouping_feature</strong> is the feature to create groups on for any of the group tests.</li>
 <li><strong>input_features</strong> are all the other features that should be used in the prediction. Use <code class="docutils literal"><span class="pre">input_features</span> <span class="pre">=</span> <span class="pre">Auto</span></code> to make everything except target feature into input_features.</li>
+<li><strong>config_files_path</strong> is the path to the general configuration files for MASTML</li>
+<li><strong>normalize_features</strong> indicates whether to automatically normalize the input features.</li>
 </ul>
 </div>
 <div class="section" id="csv-setup-optional">
