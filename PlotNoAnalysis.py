@@ -10,21 +10,22 @@ from SingleFit import timeit
 
 class PlotNoAnalysis(SingleFit):
     """Plotting without analysis
+
     Args:
-        training_dataset, (for compatibility. only testing dataset is used)
-        testing_dataset, (multiple sets are allowed)
+        training_dataset: for compatibility; only testing dataset is used
+        testing_dataset: multiple sets are allowed
         model, (not used)
         save_path,
         xlabel,
         ylabel,
-        plot_filter_out, see parent class.
-        feature_plot_feature <str>: Feature to plot on x-axis, against target feature
-        data_labels <list of str>: Dataset labels
+        plot_filter_out: see parent class.
+        feature_plot_feature (str): Feature to plot on x-axis, against target feature
+        data_labels (list of str): Dataset labels
     Returns:
         Plots target data against feature data, by group if a grouping feature
             is set
     Raises:
-        ValueError if:
+        ValueError: if
             feature_plot_feature is None
             there is no testing target data
             data_labels is None

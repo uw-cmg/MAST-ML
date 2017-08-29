@@ -1,0 +1,248 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>PlotNoAnalysis &#8212; MAST-ml 1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for PlotNoAnalysis</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">plot_data.PlotHelper</span> <span class="k">import</span> <span class="n">PlotHelper</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">SingleFit</span> <span class="k">import</span> <span class="n">SingleFit</span>
+<span class="kn">from</span> <span class="nn">SingleFit</span> <span class="k">import</span> <span class="n">timeit</span>
+<span class="c1">###########</span>
+<span class="c1"># Just plotting, no analysis</span>
+<span class="c1"># Tam Mayeshiba 2017-03-24</span>
+<span class="c1">###########</span>
+
+<div class="viewcode-block" id="PlotNoAnalysis"><a class="viewcode-back" href="../4_o1_plotnoanalysis.html#PlotNoAnalysis.PlotNoAnalysis">[docs]</a><span class="k">class</span> <span class="nc">PlotNoAnalysis</span><span class="p">(</span><span class="n">SingleFit</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plotting without analysis</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        training_dataset: for compatibility; only testing dataset is used</span>
+<span class="sd">        testing_dataset: multiple sets are allowed</span>
+<span class="sd">        model, (not used)</span>
+<span class="sd">        save_path,</span>
+<span class="sd">        xlabel,</span>
+<span class="sd">        ylabel,</span>
+<span class="sd">        plot_filter_out: see parent class.</span>
+<span class="sd">        feature_plot_feature (str): Feature to plot on x-axis, against target feature</span>
+<span class="sd">        data_labels (list of str): Dataset labels</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        Plots target data against feature data, by group if a grouping feature</span>
+<span class="sd">            is set</span>
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: if</span>
+<span class="sd">            feature_plot_feature is None</span>
+<span class="sd">            there is no testing target data</span>
+<span class="sd">            data_labels is None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+            <span class="n">training_dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">testing_dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">save_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;X&quot;</span><span class="p">,</span>
+            <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span>
+            <span class="n">plot_filter_out</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">feature_plot_feature</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">data_labels</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Additional attributes to parent class:</span>
+<span class="sd">            self.testing_datasets &lt;list&gt;: List of testing datasets which</span>
+<span class="sd">                        will be plotted simultaneously</span>
+<span class="sd">            self.feature_plot_feature &lt;str&gt;: Feature to plot on x-axis</span>
+<span class="sd">            self.data_labels &lt;list of str&gt;: Labels for datasets</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">SingleFit</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                <span class="n">training_dataset</span> <span class="o">=</span> <span class="n">training_dataset</span><span class="p">,</span>
+                <span class="n">testing_dataset</span> <span class="o">=</span> <span class="n">testing_dataset</span><span class="p">,</span>
+                <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="p">,</span>
+                <span class="n">save_path</span> <span class="o">=</span> <span class="n">save_path</span><span class="p">,</span>
+                <span class="n">xlabel</span> <span class="o">=</span> <span class="n">xlabel</span><span class="p">,</span>
+                <span class="n">ylabel</span> <span class="o">=</span> <span class="n">ylabel</span><span class="p">,</span>
+                <span class="n">plot_filter_out</span> <span class="o">=</span> <span class="n">plot_filter_out</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">feature_plot_feature</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;feature_plot_feature is not set&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">testing_datasets</span> <span class="o">=</span> <span class="n">testing_dataset</span> <span class="c1">#full list</span>
+        <span class="k">for</span> <span class="n">tidx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_datasets</span><span class="p">)):</span>
+            <span class="n">testing_dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing_datasets</span><span class="p">[</span><span class="n">tidx</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No testing target data for dataset </span><span class="si">%i</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">tidx</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">feature_plot_feature</span> <span class="o">=</span> <span class="n">feature_plot_feature</span>
+        <span class="k">if</span> <span class="n">data_labels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;data_labels is not set&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_labels</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">data_labels</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">data_labels</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">data_labels</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_labels</span> <span class="o">=</span> <span class="n">data_labels</span>
+        <span class="k">return</span>
+
+    <span class="nd">@timeit</span>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_up</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print_readme</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print_output_csv</span><span class="p">()</span>
+        <span class="k">return</span>
+    
+    <span class="nd">@timeit</span>
+    <span class="k">def</span> <span class="nf">print_output_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;----- Output data -----</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">tidx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_labels</span><span class="p">)):</span>
+            <span class="n">csvname</span> <span class="o">=</span> <span class="s2">&quot;output_</span><span class="si">%s</span><span class="s2">.csv&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_labels</span><span class="p">[</span><span class="n">tidx</span><span class="p">]</span>
+            <span class="n">testing_dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing_datasets</span><span class="p">[</span><span class="n">tidx</span><span class="p">]</span>
+            <span class="n">ocsvname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_path</span><span class="p">,</span> <span class="n">csvname</span><span class="p">)</span>
+            <span class="n">cols_printed</span> <span class="o">=</span> <span class="n">testing_dataset</span><span class="o">.</span><span class="n">print_data</span><span class="p">(</span><span class="n">ocsvname</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> file created with columns:</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">csvname</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">cols_printed</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;    </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">col</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="nd">@timeit</span>
+    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plot_filter_out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Plot filtering out:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">feature</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_filter_out</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;  </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">feature</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">threshold</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">one_plot</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">grouping_feature</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="c1">#same for all datasets</span>
+            <span class="k">return</span>
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">groups</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">one_plot</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="nd">@timeit</span>
+    <span class="k">def</span> <span class="nf">set_up</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">testing_dataset</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing_datasets</span><span class="p">:</span>
+            <span class="n">testing_dataset</span><span class="o">.</span><span class="n">add_filters</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plot_filter_out</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">one_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">xdatalist</span><span class="o">=</span><span class="nb">list</span><span class="p">()</span>
+        <span class="n">xerrlist</span><span class="o">=</span><span class="nb">list</span><span class="p">()</span>
+        <span class="n">ydatalist</span><span class="o">=</span><span class="nb">list</span><span class="p">()</span>
+        <span class="n">yerrlist</span><span class="o">=</span><span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">testing_dataset</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing_datasets</span><span class="p">:</span>
+            <span class="n">xdata</span> <span class="o">=</span> <span class="n">testing_dataset</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">feature_plot_feature</span><span class="p">]</span>
+            <span class="n">ydata</span> <span class="o">=</span> <span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_data</span>
+            <span class="n">yerrdata</span> <span class="o">=</span> <span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_error_data</span>
+            <span class="n">xerrdata</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">group</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+                <span class="n">xdata</span> <span class="o">=</span> <span class="n">xdata</span><span class="p">[</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">group_data</span> <span class="o">==</span> <span class="n">group</span><span class="p">]</span>
+                <span class="n">ydata</span> <span class="o">=</span> <span class="n">ydata</span><span class="p">[</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">group_data</span> <span class="o">==</span> <span class="n">group</span><span class="p">]</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">xdata</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">xdata</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ydata</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">ydata</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">yerrdata</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+                    <span class="n">yerrdata</span> <span class="o">=</span> <span class="n">yerrdata</span><span class="p">[</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">group_data</span> <span class="o">==</span> <span class="n">group</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">yerrdata</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">yerrdata</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">xdatalist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xdata</span><span class="p">)</span>
+            <span class="n">xerrlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xerrdata</span><span class="p">)</span>
+            <span class="n">ydatalist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ydata</span><span class="p">)</span>
+            <span class="n">yerrlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">yerrdata</span><span class="p">)</span>
+        <span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">group</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;plotlabel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;all&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">group</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;plotlabel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">group</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;xdatalist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xdatalist</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;ydatalist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ydatalist</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;xerrlist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xerrlist</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;yerrlist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">yerrlist</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;labellist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_labels</span>
+        <span class="c1">#kwargs[&#39;faces&#39;] = [&quot;None&quot;] * len(self.data_labels)</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;save_path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_path</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;xlabel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlabel</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;ylabel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ylabel</span>
+        <span class="n">notelist</span><span class="o">=</span><span class="nb">list</span><span class="p">()</span>
+        <span class="c1">#if not(self.plot_filter_out is None):</span>
+        <span class="c1">#    notelist.append(&quot;Data not shown:&quot;)</span>
+        <span class="c1">#    for (feature, symbol, threshold) in self.plot_filter_out:</span>
+        <span class="c1">#        notelist.append(&quot;  %s %s %s&quot; % (feature, symbol, threshold))</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;notelist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">notelist</span>
+        <span class="n">myph</span> <span class="o">=</span> <span class="n">PlotHelper</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">myph</span><span class="o">.</span><span class="n">multiple_overlay</span><span class="p">()</span>
+        <span class="c1">#if do_fft == 1:</span>
+        <span class="c1">#    plotxy.single(xdata, fft(ydata), **kwargs)</span>
+        <span class="k">return</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, UW-Madison Computational Materials Group.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

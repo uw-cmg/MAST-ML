@@ -20,18 +20,6 @@ Cross validation
    4_cv3_loo
    4_cv4_logroup
 
-.. .. autoclass:: KFoldCV.KFoldCV
-..    :members:
-
-.. .. autoclass:: LeaveOneOutCV.LeaveOneOutCV
-..    :members:
-
-.. .. autoclass:: LeaveOutPercentCV.LeaveOutPercentCV
-..    :members:
-
-.. .. autoclass:: LeaveOutGroupCV.LeaveOutGroupCV
-..    :members:
-
 ------------------------------------
 Hyperparameter optimization
 ------------------------------------
@@ -41,12 +29,10 @@ Hyperparameter optimization
    4_p1_paramgridsearch
    4_p2_paramoptga
 
-.. .. autoclass:: ParamOptGA.ParamOptGA
-..    :members:
-
 ------------------------------------
 Other
 ------------------------------------
 
-.. .. autoclass:: PlotNoAnalysis.PlotNoAnalysis
-..    :members:
+.. toctree::
+
+   4_o1_plotnoanalysis
