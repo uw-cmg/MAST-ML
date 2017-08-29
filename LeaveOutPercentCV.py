@@ -15,18 +15,19 @@ class LeaveOutPercentCV(SingleFit):
         model,
         save_path,
         xlabel, 
-        ylabel, see parent class.
-        mark_outlying_points <list of int>: Number of outlying points to mark in best and worst tests, e.g. [0,3]
-        percent_leave_out <int>: Percent to leave out
-        num_cvtests <int>: Number of CV tests (K folds in a KFoldCV is 1 test)
-        fix_random_for_testing <int>: 1- fix random shuffle for testing purposes
-                                      0 (default) Use random shuffle
+        ylabel: see parent class.
+        mark_outlying_points (list of int): Number of outlying points to mark in best and worst tests, e.g. [0,3]
+        percent_leave_out (int): Percent to leave out
+        num_cvtests (int): Number of CV tests
+        fix_random_for_testing (int): 
+                1 - fix random shuffle for testing purposes
+                0 (default) Use random shuffle
  
     Returns:
         Analysis in the save_path folder
         Plots results in a predicted vs. measured square plot.
     Raises:
-        ValueError if testing target data is None; CV must have
+        ValueError: if testing target data is None; CV must have
                 testing target data
     """
     def __init__(self, 
