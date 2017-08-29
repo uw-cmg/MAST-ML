@@ -25,6 +25,7 @@ class PredictionVsFeature(SingleFit):
         markers (str): comma-delimited marker list for split plots
         outlines (str): comma-delimited color list for split plots
         linestyles (str): comma-delimited list of line styles for split plots
+        sizes (str): comma-delimited list of sizes for split plots
         data_labels (str): comma-delimited list of testing dataset labels for split plots
 
     Returns:
