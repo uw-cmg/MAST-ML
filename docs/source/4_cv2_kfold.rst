@@ -1,5 +1,5 @@
 =====================================
-K-fold Cross Validation
+KFoldCV
 =====================================
 
 Perform K-fold cross validation.

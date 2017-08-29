@@ -1,5 +1,5 @@
 =====================================
-Leave One Out Cross Validation
+LeaveOneOutCV
 =====================================
 
 Perform leave-one-out (LOO) cross validation.

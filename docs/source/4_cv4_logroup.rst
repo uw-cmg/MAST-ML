@@ -1,5 +1,5 @@
 =====================================
-Leave Out Group Cross Validation
+LeaveOutGroupCV
 =====================================
 
 Perform leave-out-group cross validation.
