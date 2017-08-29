@@ -209,6 +209,8 @@ The feature name can be any feature from your data.
  
 * **mark_outlying_groups**: This a numeric value of the number of groups to write notations for on the output plots starting with the groups that performed worst.
 
+.. _model-parameters:
+
 =========================
 Model Parameters
 =========================
