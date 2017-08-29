@@ -14,7 +14,8 @@ Cross validation
 -----------------------------------
 .. toctree::
 
-   4_1_singlefit
+   4_cv1_loperc
+   4_cv2_kfold
 
 .. .. autoclass:: KFoldCV.KFoldCV
 ..    :members:
