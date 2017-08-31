@@ -7,7 +7,7 @@ import os
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.neural_network import MLPRegressor
 from sklearn.linear_model import LinearRegression, Lasso
-from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor
+from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor, AdaBoostRegressor
 from sklearn.tree import DecisionTreeRegressor
 import importlib
 import logging
@@ -259,7 +259,8 @@ class MASTMLWrapper(object):
                                           min_samples_leaf=int(self.configdict['Model Parameters']['randomforest_model']['min_samples_leaf'][target_feature_count]),
                                           max_leaf_nodes=int(self.configdict['Model Parameters']['randomforest_model']['max_leaf_nodes'][target_feature_count]),
                                           n_jobs=int(self.configdict['Model Parameters']['randomforest_model']['n_jobs'][target_feature_count]),
-                                          warm_start=bool(self.configdict['Model Parameters']['randomforest_model']['warm_start'][target_feature_count]))
+                                          warm_start=bool(self.configdict['Model Parameters']['randomforest_model']['warm_start'][target_feature_count]),
+                                          bootstrap=True)
             else:
                 model = RandomForestRegressor(criterion=str(self.configdict['Model Parameters']['randomforest_model']['criterion']),
                                           n_estimators=int(self.configdict['Model Parameters']['randomforest_model']['n_estimators']),
@@ -268,8 +269,25 @@ class MASTMLWrapper(object):
                                           min_samples_leaf=int(self.configdict['Model Parameters']['randomforest_model']['min_samples_leaf']),
                                           max_leaf_nodes=int(self.configdict['Model Parameters']['randomforest_model']['max_leaf_nodes']),
                                           n_jobs=int(self.configdict['Model Parameters']['randomforest_model']['n_jobs']),
-                                          warm_start=bool(self.configdict['Model Parameters']['randomforest_model']['warm_start']))
+                                          warm_start=bool(self.configdict['Model Parameters']['randomforest_model']['warm_start']),
+                                          bootstrap=True)
             return model
+
+        if model_type == 'adaboost_model':
+            if type(self.configdict['Model Parameters']['adaboost_model']['base_estimator_max_depth']) is list:
+                model = AdaBoostRegressor(base_estimator= DecisionTreeRegressor(max_depth=int(self.configdict['Model Parameters']['adaboost_model']['base_estimator_max_depth'][target_feature_count])),
+                                          n_estimators=int(self.configdict['Model Parameters']['adaboost_model']['n_estimators'][target_feature_count]),
+                                          learning_rate=float(self.configdict['Model Parameters']['adaboost_model']['learning_rate'][target_feature_count]),
+                                          loss=str(self.configdict['Model Parameters']['adaboost_model']['loss'][target_feature_count]),
+                                          random_state=None)
+            else:
+                model = AdaBoostRegressor(base_estimator=DecisionTreeRegressor(max_depth=int(self.configdict['Model Parameters']['adaboost_model']['base_estimator_max_depth'])),
+                                          n_estimators=int(self.configdict['Model Parameters']['adaboost_model']['n_estimators']),
+                                          learning_rate=float(self.configdict['Model Parameters']['adaboost_model']['learning_rate']),
+                                          loss=str(self.configdict['Model Parameters']['adaboost_model']['loss']),
+                                          random_state=None)
+            return model
+
         if model_type == 'nn_model':
             if type(self.configdict['Model Parameters']['nn_model']['hidden_layer_sizes']) is list:
                 model = MLPRegressor(hidden_layer_sizes=int(self.configdict['Model Parameters']['nn_model']['hidden_layer_sizes'][target_feature_count]),
