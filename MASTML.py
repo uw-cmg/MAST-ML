@@ -79,7 +79,6 @@ class MASTMLDriver(object):
             data_path_list.append(data_path)
 
         # Loop over the locations of each CSV file, where each CSV contains a y_feature to be fit.
-        feature_count=1
         for data_path in data_path_list:
             self.data_dict = self._create_data_dict(data_path=data_path)
 
@@ -89,8 +88,7 @@ class MASTMLDriver(object):
             # Gather tests
             test_list = self._gather_tests(mastmlwrapper=self.mastmlwrapper, configdict=self.configdict,
                                            data_dict=self.data_dict, model_list=self.model_list,
-                                           save_path=self.save_path, model_vals = self.model_vals, feature_count=feature_count)
-            feature_count += 1
+                                           save_path=self.save_path, model_vals = self.model_vals)
 
         # End MASTML session
         self._move_log_and_input_files()
@@ -489,7 +487,7 @@ class MASTMLDriver(object):
                 model_vals.append(model_val)
         return (model_list, model_val)
 
-    def _gather_tests(self, mastmlwrapper, configdict, data_dict, model_list, save_path, model_vals, feature_count):
+    def _gather_tests(self, mastmlwrapper, configdict, data_dict, model_list, save_path, model_vals):
         # Gather test types
         self.readme_html_tests.append("<H2>Tests</H2>\n")
         self.readme_html.append("<H2>Favorites</H2>\n")
@@ -516,8 +514,11 @@ class MASTMLDriver(object):
             test_params['testing_dataset'] = testing_dataset_list
             # Run the test case for every model
             for midx, model in enumerate(self.model_list):
+                # Get name of target_feature for use in test_folder naming
+                for key, value in self.data_dict.items():
+                    target_feature = value.target_feature
                 # Set save path, allowing for multiple tests and models and potentially multiple of the same model (KernelRidge rbf kernel, KernelRidge linear kernel, etc.)
-                test_folder = "%s_%s%i_%i" % (test_type, model.__class__.__name__, midx, feature_count)
+                test_folder = "%s_%s%i_%s" % (test_type, model.__class__.__name__, midx, str(target_feature))
                 test_save_path = os.path.join(self.save_path, test_folder)
                 self.test_save_paths.append(test_save_path)
                 if not os.path.isdir(test_save_path):
