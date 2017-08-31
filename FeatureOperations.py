@@ -120,7 +120,11 @@ class FeatureNormalization(object):
         if to_csv == True:
             # Need configdict to get save path
             configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
-            dataframe_normalized.to_csv(configdict['General Setup']['save_path'] + "/" +'input_data_normalized.csv')
+            # Get y_feature in this dataframe, attach it to save path
+            for column in dataframe_normalized.columns.values:
+                if column in configdict['General Setup']['target_feature']:
+                    filetag = column
+            dataframe_normalized.to_csv(configdict['General Setup']['save_path']+"/"+'input_data_normalized'+'_'+str(filetag)+'.csv', index=False)
 
         if not (normalize_x_features == bool(True) and normalize_y_feature == bool(True)):
             return dataframe_normalized, scaler

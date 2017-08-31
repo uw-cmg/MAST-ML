@@ -78,8 +78,12 @@ class FeatureSelection(object):
         if save_to_csv == bool(True):
             # Need configdict to get save path
             configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
-            dataframe.to_csv(configdict['General Setup']['save_path']+"/"+'input_with_forward_selection.csv', index=False)
-            fs_dataframe.to_csv(configdict['General Setup']['save_path']+"/"+'foward_selection_data.csv', index=False)
+            # Get y_feature in this dataframe, attach it to save path
+            for column in dataframe.columns.values:
+                if column in configdict['General Setup']['target_feature']:
+                    filetag = column
+            dataframe.to_csv(configdict['General Setup']['save_path']+"/"+'input_with_forward_selection'+'_'+str(filetag)+'.csv', index=False)
+            fs_dataframe.to_csv(configdict['General Setup']['save_path']+"/"+'foward_selection_data'+'_'+str(filetag)+'.csv', index=False)
         return dataframe
 
     """

@@ -45,7 +45,6 @@ class MagpieFeatureGeneration(object):
 
         # Add the column of combined material compositions into the dataframe
         self.dataframe['Material compositions'] = compositions
-        print(self.dataframe)
 
         # Assign each magpiedata feature set to appropriate composition name
         magpiedata_dict_composition_average = {}
@@ -116,7 +115,11 @@ class MagpieFeatureGeneration(object):
         if save_to_csv == bool(True):
             # Need configdict to get save path
             configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
-            dataframe.to_csv(configdict['General Setup']['save_path']+"/"+'input_with_magpie_features.csv', index=False)
+            # Get y_feature in this dataframe, attach it to save path
+            for column in dataframe.columns.values:
+                if column in configdict['General Setup']['target_feature']:
+                    filetag = column
+            dataframe.to_csv(configdict['General Setup']['save_path']+"/"+'input_with_magpie_features'+'_'+str(filetag)+'.csv', index=False)
 
         return dataframe
 

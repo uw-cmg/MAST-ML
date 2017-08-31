@@ -2,7 +2,7 @@ __author__ = 'Ryan Jacobs, Tam Mayeshiba'
 
 import sys
 import os
-from MASTMLInitializer import MASTMLWrapper, ConfigFileValidator
+from MASTMLInitializer import MASTMLWrapper, ConfigFileValidator, ConfigFileParser
 from DataOperations import DataParser, DataframeUtilities
 from FeatureGeneration import MagpieFeatureGeneration, MaterialsProjectFeatureGeneration, CitrineFeatureGeneration
 from FeatureOperations import FeatureNormalization, FeatureIO, MiscFeatureOperations
@@ -68,20 +68,59 @@ class MASTMLDriver(object):
         if "CSV Setup" in self.configdict.keys():
             self._perform_csv_setup()
 
-        self.data_dict = self._create_data_dict()
+        # Split input CSV into multiple CSVs if multiple y_features are specified in input file
+        if type(self.configdict['General Setup']['target_feature']) is list:
+            logging.info('MASTML detected multiple y_feature to fit to')
+            data_path_list = self._split_csv_file()
+        else:
+            data_path_list = []
+            logging.info('MASTML detected a single y_feature to fit to')
+            data_path = self.configdict['Data Setup']['Initial']['data_path']
+            data_path_list.append(data_path)
 
-        # Gather models
-        (self.model_list, self.model_vals) = self._gather_models()
+        # Loop over the locations of each CSV file, where each CSV contains a y_feature to be fit.
+        feature_count=1
+        for data_path in data_path_list:
+            self.data_dict = self._create_data_dict(data_path=data_path)
 
-        # Gather tests
-        test_list = self._gather_tests(mastmlwrapper=self.mastmlwrapper, configdict=self.configdict, data_dict=self.data_dict, model_list=self.model_list, save_path=self.save_path,
-                model_vals = self.model_vals)
+            # Gather models
+            (self.model_list, self.model_vals) = self._gather_models()
+
+            # Gather tests
+            test_list = self._gather_tests(mastmlwrapper=self.mastmlwrapper, configdict=self.configdict,
+                                           data_dict=self.data_dict, model_list=self.model_list,
+                                           save_path=self.save_path, model_vals = self.model_vals, feature_count=feature_count)
+            feature_count += 1
 
         # End MASTML session
         self._move_log_and_input_files()
         self._end_html()
 
         return
+
+    def _split_csv_file(self):
+        # Need dataframe and x and y features so can split CSV accordingly.
+        data_path_list = []
+        dataframe = DataParser(configdict=self.configdict).import_data(datapath=self.configdict['Data Setup']['Initial']['data_path'])
+        y_feature = self.configdict['General Setup']['target_feature']
+        other_features = []
+        for column in dataframe.columns.values:
+            if column not in y_feature:
+                other_features.append(column)
+
+        dataframe_x = dataframe.loc[:, other_features]
+        count = 1
+        for feature in y_feature:
+            dataframe_y = dataframe.loc[:, feature]
+            dataframe_new = DataframeUtilities._merge_dataframe_columns(dataframe1=dataframe_x, dataframe2=dataframe_y)
+            # Write the new dataframe to new CSV, and update data_path_list
+            data_path_split = os.path.split(self.configdict['Data Setup']['Initial']['data_path'])
+            filename = data_path_split[1].split(".csv")
+            data_path = data_path_split[0]+"/"+str(filename[0])+"_"+str(count)+".csv"
+            dataframe_new.to_csv(data_path, index=False)
+            data_path_list.append(data_path)
+            count += 1
+        return data_path_list
 
     def _initialize_mastml_session(self):
         level="INFO"
@@ -150,7 +189,8 @@ class MASTMLDriver(object):
     def _parse_input_data(self, data_path=""):
         if not(os.path.isfile(data_path)):
             raise OSError("No file found at %s" % data_path)
-
+        print('parsing input data path')
+        print(data_path)
         Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=self.configdict).parse_fromfile(datapath=data_path, as_array=False)
         # Remove dataframe entries that contain 'NaN'
 
@@ -166,10 +206,10 @@ class MASTMLDriver(object):
 
         return Xdata, ydata, x_features, y_feature, dataframe
 
-    def _create_data_dict(self):
+    def _create_data_dict(self, data_path):
         data_dict=dict()
         for data_name in self.data_setup.keys():
-            data_path = self.data_setup[data_name]['data_path']
+            #data_path = self.data_setup[data_name]['data_path']
             data_weights = self.data_setup[data_name]['weights']
             if 'labeling_features' in self.general_setup.keys():
                 labeling_features = self.string_or_list_input_to_list(self.general_setup['labeling_features'])
@@ -221,7 +261,9 @@ class MASTMLDriver(object):
             Xdata, ydata, x_features, y_feature, dataframe = self._parse_input_data(data_path)
 
             print('after import')
+            print(data_path)
             print(len(x_features))
+            print(y_feature)
             print(dataframe.shape)
 
             original_x_features = list(x_features)
@@ -256,9 +298,6 @@ class MASTMLDriver(object):
             else:
                 Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe, target_feature=y_feature)
 
-
-
-
             # First remove features containing strings before doing feature normalization or other operations, but don't remove grouping features
             if generate_features == bool(True):
                 nonstring_x_features, dataframe_nostrings = MiscFeatureOperations(configdict=self.configdict).remove_features_containing_strings(dataframe=dataframe, x_features=x_features_NOUSE)
@@ -288,8 +327,6 @@ class MASTMLDriver(object):
             # Re-obtain x_feature list as some features may have been dropped
             Xdata, ydata, x_features, y_feature, dataframe_nostrings = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe_nostrings, target_feature=y_feature)
 
-
-
             logging.debug("pre-changes:%s" % dataframe_nostrings.columns)
 
             # Normalize features (optional)
@@ -297,6 +334,10 @@ class MASTMLDriver(object):
                 fn = FeatureNormalization(dataframe=dataframe_nostrings)
                 dataframe_nostrings, scaler = fn.normalize_features(x_features=x_features, y_feature=y_feature, normalize_x_features=normalize_x_features, normalize_y_feature=normalize_y_feature)
                 x_features, y_feature = DataParser(configdict=self.configdict).get_features(dataframe=dataframe_nostrings, target_feature=y_feature)
+
+            print('after normalize')
+            print(len(x_features))
+            print(dataframe_nostrings.shape)
 
             # Perform feature selection and dimensional reduction, as specified in the input file (optional)
             if (select_features == bool(True)) and (y_feature in dataframe_nostrings.columns):
@@ -323,6 +364,9 @@ class MASTMLDriver(object):
                         if feature not in duplicate_features:
                             duplicate_features.append(feature)
 
+            print('after selection')
+            print(len(x_features))
+            print(dataframe_nostrings.shape)
 
             # Now merge dataframes
             dataframe_labeled_grouped = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe_labeled, dataframe2=dataframe_grouped)
@@ -445,20 +489,25 @@ class MASTMLDriver(object):
                 model_vals.append(model_val)
         return (model_list, model_val)
 
-    def _gather_tests(self, mastmlwrapper, configdict, data_dict, model_list, save_path, model_vals):
+    def _gather_tests(self, mastmlwrapper, configdict, data_dict, model_list, save_path, model_vals, feature_count):
         # Gather test types
         self.readme_html_tests.append("<H2>Tests</H2>\n")
         self.readme_html.append("<H2>Favorites</H2>\n")
         test_list = self.string_or_list_input_to_list(self.models_and_tests_setup['test_cases'])
         # Run the specified test cases for every model
         for test_type in test_list:
+            # Need to renew configdict each loop other issue with dictionary indexing occurs when you have multiple y_features
+            configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
             logging.info('Looking up parameters for test type %s' % test_type)
-            test_params = self.configdict["Test Parameters"][test_type]
+            test_params = configdict["Test Parameters"][test_type]
+
             # Set data lists
             training_dataset_name_list = self.string_or_list_input_to_list(test_params['training_dataset'])
             training_dataset_list = list()
+
             for dname in training_dataset_name_list:
                 training_dataset_list.append(self.data_dict[dname])
+
             test_params['training_dataset'] = training_dataset_list
             testing_dataset_name_list = self.string_or_list_input_to_list(test_params['testing_dataset'])
             testing_dataset_list = list()
@@ -468,7 +517,7 @@ class MASTMLDriver(object):
             # Run the test case for every model
             for midx, model in enumerate(self.model_list):
                 # Set save path, allowing for multiple tests and models and potentially multiple of the same model (KernelRidge rbf kernel, KernelRidge linear kernel, etc.)
-                test_folder = "%s_%s%i" % (test_type, model.__class__.__name__, midx)
+                test_folder = "%s_%s%i_%i" % (test_type, model.__class__.__name__, midx, feature_count)
                 test_save_path = os.path.join(self.save_path, test_folder)
                 self.test_save_paths.append(test_save_path)
                 if not os.path.isdir(test_save_path):
@@ -491,6 +540,7 @@ class MASTMLDriver(object):
                         print(popt_warn_line)
                     break
         return test_list
+
     def _move_log_and_input_files(self):
         cwd = os.getcwd()
         if not(self.save_path == cwd):

@@ -47,14 +47,15 @@ class DataParser(object):
 
     def get_features(self, dataframe, target_feature=None, from_input_file=False):
         if from_input_file == bool(True):
-            y_feature = self.configdict['General Setup']['target_feature']
+            y_feature_from_input = self.configdict['General Setup']['target_feature']
 
+            x_and_y_features = dataframe.columns.values.tolist()
             if self.configdict['General Setup']['input_features'] == ['Auto'] or self.configdict['General Setup']['input_features'] == 'Auto':
                 print('found auto')
-                x_and_y_features = dataframe.columns.values.tolist()
+                #x_and_y_features = dataframe.columns.values.tolist()
                 x_features = []
                 for feature in x_and_y_features:
-                    if feature != y_feature:
+                    if feature not in y_feature_from_input:
                         if 'grouping_feature' in self.configdict['General Setup'].keys():
                             if feature not in self.configdict['General Setup']['grouping_feature']:
                                 x_features.append(feature)
@@ -62,21 +63,39 @@ class DataParser(object):
                             x_features.append(feature)
             else:
                 x_features = [feature for feature in self.configdict['General Setup']['input_features']]
+
+            for feature in x_and_y_features:
+                if feature not in x_features:
+                    if feature in y_feature_from_input:
+                        y_feature = feature
+
+            print(y_feature, type(y_feature))
+
         elif from_input_file == bool(False):
             y_feature = target_feature
             if 'grouping_feature' in self.configdict['General Setup'].keys():
                 x_features = [feature for feature in dataframe.columns.values if feature not in [y_feature, self.configdict['General Setup']['grouping_feature']]]
             else:
                 x_features = [feature for feature in dataframe.columns.values if feature not in y_feature]
+
         return x_features, y_feature
 
     def get_data(self, dataframe, x_features, y_feature):
         Xdata = dataframe.loc[:, x_features]
-        if not(y_feature in dataframe.columns):
-            logging.warning("%s not in columns" % y_feature)
-            ydata = None
-        else:
-            ydata = dataframe.loc[:, y_feature]
+        #for feature in x_features:
+        #    if not(feature in dataframe.columns):
+        #        logging.warning("%s not in columns" % feature)
+        #        ydata = None
+        #if type(y_feature) is not list:
+        #    if not(y_feature in dataframe.columns):
+        #        logging.warning("%s not in columns" % feature)
+        #elif type(y_feature) is list:
+        #    for feature in y_feature:
+        #        if not(feature in dataframe.columns):
+        #            logging.warning("%s not in columns" % feature)
+        #else:
+        #    ydata = dataframe.loc[:, y_feature]
+        ydata = dataframe.loc[:, y_feature]
         return Xdata, ydata
 
 class DataframeUtilities(object):
