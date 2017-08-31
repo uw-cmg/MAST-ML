@@ -84,7 +84,7 @@ class MASTMLDriver(object):
             self.data_dict = self._create_data_dict(data_path=data_path)
 
             # Gather models
-            (self.model_list, self.model_vals) = self._gather_models()
+            (self.model_list, self.model_vals) = self._gather_models(target_feature_count=target_feature_count)
 
             # Gather tests
             test_list = self._gather_tests(mastmlwrapper=self.mastmlwrapper, configdict=self.configdict,
@@ -469,21 +469,21 @@ class MASTMLDriver(object):
                         dataframe = fs.stability_selection(number_features_to_keep=int(len(x_features)), save_to_csv=True)
         return dataframe
 
-    def _gather_models(self):
+    def _gather_models(self, target_feature_count):
         self.models_and_tests_setup = self.mastmlwrapper.process_config_keyword(keyword='Models and Tests to Run')
         model_list = []
         model_val = self.models_and_tests_setup['models']
         model_vals = list()
         if type(model_val) is str:
             logging.info('Getting model %s' % model_val)
-            ml_model = self.mastmlwrapper.get_machinelearning_model(model_type=model_val)
+            ml_model = self.mastmlwrapper.get_machinelearning_model(model_type=model_val, target_feature_count=target_feature_count)
             model_list.append(ml_model)
             logging.info('Adding model %s to queue...' % str(model_val))
             model_vals.append(model_val)
         elif type(model_val) is list:
             for model in model_val:
                 logging.info('Getting model %s' % model)
-                ml_model = self.mastmlwrapper.get_machinelearning_model(model_type=model)
+                ml_model = self.mastmlwrapper.get_machinelearning_model(model_type=model, target_feature_count=target_feature_count)
                 model_list.append(ml_model)
                 logging.info('Adding model %s to queue...' % str(model))
                 model_vals.append(model_val)
@@ -501,9 +501,10 @@ class MASTMLDriver(object):
             logging.info('Looking up parameters for test type %s' % test_type)
             test_params = configdict["Test Parameters"][test_type]
 
-            # Modify test_params to take xlabel, ylabel of specific y_feature we are fitting
-            test_params['xlabel'] = test_params['xlabel'][target_feature_count]
-            test_params['ylabel'] = test_params['ylabel'][target_feature_count]
+            # Modify test_params to take xlabel, ylabel of specific y_feature we are fitting (only if multiple y_features)
+            if type(configdict['General Setup']['target_feature']) is list:
+                test_params['xlabel'] = test_params['xlabel'][target_feature_count]
+                test_params['ylabel'] = test_params['ylabel'][target_feature_count]
 
             # Set data lists
             training_dataset_name_list = self.string_or_list_input_to_list(test_params['training_dataset'])
