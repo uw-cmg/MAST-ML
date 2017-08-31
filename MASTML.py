@@ -79,6 +79,7 @@ class MASTMLDriver(object):
             data_path_list.append(data_path)
 
         # Loop over the locations of each CSV file, where each CSV contains a y_feature to be fit.
+        target_feature_count = 0
         for data_path in data_path_list:
             self.data_dict = self._create_data_dict(data_path=data_path)
 
@@ -88,7 +89,8 @@ class MASTMLDriver(object):
             # Gather tests
             test_list = self._gather_tests(mastmlwrapper=self.mastmlwrapper, configdict=self.configdict,
                                            data_dict=self.data_dict, model_list=self.model_list,
-                                           save_path=self.save_path, model_vals = self.model_vals)
+                                           save_path=self.save_path, model_vals = self.model_vals, target_feature_count=target_feature_count)
+            target_feature_count += 1
 
         # End MASTML session
         self._move_log_and_input_files()
@@ -487,7 +489,7 @@ class MASTMLDriver(object):
                 model_vals.append(model_val)
         return (model_list, model_val)
 
-    def _gather_tests(self, mastmlwrapper, configdict, data_dict, model_list, save_path, model_vals):
+    def _gather_tests(self, mastmlwrapper, configdict, data_dict, model_list, save_path, model_vals, target_feature_count):
         # Gather test types
         self.readme_html_tests.append("<H2>Tests</H2>\n")
         self.readme_html.append("<H2>Favorites</H2>\n")
@@ -498,6 +500,10 @@ class MASTMLDriver(object):
             configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
             logging.info('Looking up parameters for test type %s' % test_type)
             test_params = configdict["Test Parameters"][test_type]
+
+            # Modify test_params to take xlabel, ylabel of specific y_feature we are fitting
+            test_params['xlabel'] = test_params['xlabel'][target_feature_count]
+            test_params['ylabel'] = test_params['ylabel'][target_feature_count]
 
             # Set data lists
             training_dataset_name_list = self.string_or_list_input_to_list(test_params['training_dataset'])
