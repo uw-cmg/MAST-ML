@@ -16,6 +16,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.ensemble import ExtraTreesRegressor
 from mlxtend.feature_selection import SequentialFeatureSelector as SFS
+from mlxtend.plotting import plot_sequential_feature_selection as plot_sfs
 import pandas as pd
 import os
 
@@ -61,7 +62,7 @@ class FeatureSelection(object):
         return self.dataframe
 
     def forward_selection(self, number_features_to_keep, save_to_csv=True):
-        sfs = SFS(KernelRidge(), k_features=number_features_to_keep, forward=True, floating=False, verbose=0, scoring='r2', cv=ShuffleSplit(n_splits=5, test_size=0.2))
+        sfs = SFS(KernelRidge(alpha=0.01, kernel='linear'), k_features=number_features_to_keep, forward=True, floating=False, verbose=0, scoring='r2', cv=ShuffleSplit(n_splits=5, test_size=0.2))
         sfs = sfs.fit(X=np.array(self.dataframe[self.x_features]), y=np.array(self.dataframe[self.y_feature]))
         Xnew = sfs.fit_transform(X=np.array(self.dataframe[self.x_features]), y=np.array(self.dataframe[self.y_feature]))
         feature_indices_selected = sfs.k_feature_idx_
@@ -75,15 +76,28 @@ class FeatureSelection(object):
         fs_dataframe = pd.DataFrame.from_dict(sfs.get_metric_dict()).T
         logging.info(("Summary of forward selection:"))
         logging.info(fs_dataframe)
+
+        # Get y_feature in this dataframe, attach it to save path
+        # Need configdict to get save path
+        configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
+        for column in dataframe.columns.values:
+            if column in configdict['General Setup']['target_feature']:
+                filetag = column
+
         if save_to_csv == bool(True):
-            # Need configdict to get save path
-            configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
-            # Get y_feature in this dataframe, attach it to save path
-            for column in dataframe.columns.values:
-                if column in configdict['General Setup']['target_feature']:
-                    filetag = column
             dataframe.to_csv(configdict['General Setup']['save_path']+"/"+'input_with_forward_selection'+'_'+str(filetag)+'.csv', index=False)
-            fs_dataframe.to_csv(configdict['General Setup']['save_path']+"/"+'foward_selection_data'+'_'+str(filetag)+'.csv', index=False)
+            fs_dataframe.to_csv(configdict['General Setup']['save_path']+"/"+'forward_selection_data'+'_'+str(filetag)+'.csv', index=False)
+
+        # Save a plot of the learning curve
+        fig1 = plot_sfs(metric_dict=sfs.get_metric_dict(), kind='std_dev')
+        plt.title('Forward selection learning curve', fontsize=18)
+        plt.ylabel('R^2 correlation', fontsize=16)
+        plt.xticks(fontsize=14)
+        plt.xlabel('Number of features', fontsize=16)
+        plt.yticks(fontsize=14)
+        plt.tight_layout()
+        plt.savefig(configdict['General Setup']['save_path']+"/"+'forward_selection_learning_curve_'+str(filetag)+'.pdf')
+
         return dataframe
 
     """

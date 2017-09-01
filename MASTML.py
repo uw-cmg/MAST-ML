@@ -265,6 +265,7 @@ class MASTMLDriver(object):
             print(len(x_features))
             print(y_feature)
             print(dataframe.shape)
+            print(dataframe)
 
             original_x_features = list(x_features)
             original_columns = list(dataframe.columns)
