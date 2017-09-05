@@ -79,18 +79,32 @@ class MASTMLDriver(object):
             data_path_list.append(data_path)
 
         # Loop over the locations of each CSV file, where each CSV contains a y_feature to be fit.
-        target_feature_count = 0
+        target_feature_regression_count = 0
+        target_feature_classification_count = 0
         for data_path in data_path_list:
             self.data_dict = self._create_data_dict(data_path=data_path)
 
+            # Get y_feature data to pass to mastmlwrapper to obtain ml models. Just use first index of Data Setup to get target_feature
+            key_count = 0
+            for key in self.data_dict.keys():
+                if key_count < 1:
+                    y_feature = self.data_dict[key].target_feature
+                    key_count += 1
+
             # Gather models
-            (self.model_list, self.model_vals) = self._gather_models(target_feature_count=target_feature_count)
+            (self.model_list, self.model_vals) = self._gather_models(y_feature=y_feature, target_feature_regression_count=target_feature_regression_count, target_feature_classification_count=target_feature_classification_count)
 
             # Gather tests
             test_list = self._gather_tests(mastmlwrapper=self.mastmlwrapper, configdict=self.configdict,
                                            data_dict=self.data_dict, model_list=self.model_list,
-                                           save_path=self.save_path, model_vals = self.model_vals, target_feature_count=target_feature_count)
-            target_feature_count += 1
+                                           save_path=self.save_path, model_vals = self.model_vals, target_feature_regression_count=target_feature_regression_count)
+            if 'regression' in y_feature:
+                target_feature_regression_count += 1
+            elif 'classification' in y_feature:
+                target_feature_classification_count += 1
+            else:
+                print('Detected a problem with naming of your y_features to fit. Need keyword "regression" or "classification" in each y_feature')
+                sys.exit()
 
         # End MASTML session
         self._move_log_and_input_files()
@@ -265,7 +279,7 @@ class MASTMLDriver(object):
             print(len(x_features))
             print(y_feature)
             print(dataframe.shape)
-            print(dataframe)
+            #print(dataframe)
 
             original_x_features = list(x_features)
             original_columns = list(dataframe.columns)
@@ -470,27 +484,34 @@ class MASTMLDriver(object):
                         dataframe = fs.stability_selection(number_features_to_keep=int(len(x_features)), save_to_csv=True)
         return dataframe
 
-    def _gather_models(self, target_feature_count):
+    def _gather_models(self, y_feature, target_feature_regression_count, target_feature_classification_count):
         self.models_and_tests_setup = self.mastmlwrapper.process_config_keyword(keyword='Models and Tests to Run')
         model_list = []
         model_val = self.models_and_tests_setup['models']
         model_vals = list()
+
         if type(model_val) is str:
             logging.info('Getting model %s' % model_val)
-            ml_model = self.mastmlwrapper.get_machinelearning_model(model_type=model_val, target_feature_count=target_feature_count)
+            ml_model = self.mastmlwrapper.get_machinelearning_model(model_type=model_val,
+                                                                    target_feature_regression_count=target_feature_regression_count,
+                                                                    target_feature_classification_count=target_feature_classification_count,
+                                                                    y_feature=y_feature)
             model_list.append(ml_model)
             logging.info('Adding model %s to queue...' % str(model_val))
             model_vals.append(model_val)
         elif type(model_val) is list:
             for model in model_val:
                 logging.info('Getting model %s' % model)
-                ml_model = self.mastmlwrapper.get_machinelearning_model(model_type=model, target_feature_count=target_feature_count)
+                ml_model = self.mastmlwrapper.get_machinelearning_model(model_type=model,
+                                                                        target_feature_regression_count=target_feature_regression_count,
+                                                                        target_feature_classification_count=target_feature_classification_count,
+                                                                        y_feature=y_feature)
                 model_list.append(ml_model)
                 logging.info('Adding model %s to queue...' % str(model))
                 model_vals.append(model_val)
         return (model_list, model_val)
 
-    def _gather_tests(self, mastmlwrapper, configdict, data_dict, model_list, save_path, model_vals, target_feature_count):
+    def _gather_tests(self, mastmlwrapper, configdict, data_dict, model_list, save_path, model_vals, target_feature_regression_count):
         # Gather test types
         self.readme_html_tests.append("<H2>Tests</H2>\n")
         self.readme_html.append("<H2>Favorites</H2>\n")
@@ -504,8 +525,8 @@ class MASTMLDriver(object):
 
             # Modify test_params to take xlabel, ylabel of specific y_feature we are fitting (only if multiple y_features)
             if type(configdict['General Setup']['target_feature']) is list:
-                test_params['xlabel'] = test_params['xlabel'][target_feature_count]
-                test_params['ylabel'] = test_params['ylabel'][target_feature_count]
+                test_params['xlabel'] = test_params['xlabel'][target_feature_regression_count]
+                test_params['ylabel'] = test_params['ylabel'][target_feature_regression_count]
 
             # Set data lists
             training_dataset_name_list = self.string_or_list_input_to_list(test_params['training_dataset'])
@@ -522,32 +543,36 @@ class MASTMLDriver(object):
             test_params['testing_dataset'] = testing_dataset_list
             # Run the test case for every model
             for midx, model in enumerate(self.model_list):
-                # Get name of target_feature for use in test_folder naming
-                for key, value in self.data_dict.items():
-                    target_feature = value.target_feature
-                # Set save path, allowing for multiple tests and models and potentially multiple of the same model (KernelRidge rbf kernel, KernelRidge linear kernel, etc.)
-                test_folder = "%s_%s%i_%s" % (test_type, model.__class__.__name__, midx, str(target_feature))
-                test_save_path = os.path.join(self.save_path, test_folder)
-                self.test_save_paths.append(test_save_path)
-                if not os.path.isdir(test_save_path):
-                    os.mkdir(test_save_path)
-                self.mastmlwrapper.get_machinelearning_test(test_type=test_type,
-                        model=model, save_path=test_save_path, **test_params)
-                logging.info('Ran test %s for your %s model' % (test_type, str(model)))
-                self.readme_html.extend(self.make_links_for_favorites(test_folder, test_save_path))
-                testrelpath = os.path.relpath(test_save_path, self.save_path)
-                self.readme_html_tests.append('<A HREF="%s">%s</A><BR>\n' % (testrelpath, test_type))
-                test_short = test_folder.split("_")[0]
-                if test_short in self.param_optimizing_tests:
-                    popt_warn = list()
-                    popt_warn.append("Last test was a parameter-optimizing test.")
-                    popt_warn.append("The test results may have specified an update of model parameters or data.")
-                    popt_warn.append("Please run a separate test.conf file with updated data and model parameters.")
-                    popt_warn.append("No further tests will be run on this file.")
-                    for popt_warn_line in popt_warn:
-                        logging.warning(popt_warn_line)
-                        print(popt_warn_line)
-                    break
+                if model is not None:
+                    # Get name of target_feature for use in test_folder naming
+                    for key, value in self.data_dict.items():
+                        target_feature = value.target_feature
+                    # Set save path, allowing for multiple tests and models and potentially multiple of the same model (KernelRidge rbf kernel, KernelRidge linear kernel, etc.)
+                    test_folder = "%s_%s%i_%s" % (test_type, model.__class__.__name__, midx, str(target_feature))
+                    test_save_path = os.path.join(self.save_path, test_folder)
+                    self.test_save_paths.append(test_save_path)
+                    if not os.path.isdir(test_save_path):
+                        os.mkdir(test_save_path)
+
+                    print('passing model', model, 'for test type', test_type)
+
+                    self.mastmlwrapper.get_machinelearning_test(test_type=test_type,
+                            model=model, save_path=test_save_path, **test_params)
+                    logging.info('Ran test %s for your %s model' % (test_type, str(model)))
+                    self.readme_html.extend(self.make_links_for_favorites(test_folder, test_save_path))
+                    testrelpath = os.path.relpath(test_save_path, self.save_path)
+                    self.readme_html_tests.append('<A HREF="%s">%s</A><BR>\n' % (testrelpath, test_type))
+                    test_short = test_folder.split("_")[0]
+                    if test_short in self.param_optimizing_tests:
+                        popt_warn = list()
+                        popt_warn.append("Last test was a parameter-optimizing test.")
+                        popt_warn.append("The test results may have specified an update of model parameters or data.")
+                        popt_warn.append("Please run a separate test.conf file with updated data and model parameters.")
+                        popt_warn.append("No further tests will be run on this file.")
+                        for popt_warn_line in popt_warn:
+                            logging.warning(popt_warn_line)
+                            print(popt_warn_line)
+                        break
         return test_list
 
     def _move_log_and_input_files(self):
