@@ -97,7 +97,9 @@ class MASTMLDriver(object):
             # Gather tests
             test_list = self._gather_tests(mastmlwrapper=self.mastmlwrapper, configdict=self.configdict,
                                            data_dict=self.data_dict, model_list=self.model_list,
-                                           save_path=self.save_path, model_vals = self.model_vals, target_feature_regression_count=target_feature_regression_count)
+                                           save_path=self.save_path, model_vals = self.model_vals,
+                                           target_feature_regression_count=target_feature_regression_count,
+                                           target_feature_classification_count=target_feature_classification_count)
             if 'regression' in y_feature:
                 target_feature_regression_count += 1
             elif 'classification' in y_feature:
@@ -511,7 +513,7 @@ class MASTMLDriver(object):
                 model_vals.append(model_val)
         return (model_list, model_val)
 
-    def _gather_tests(self, mastmlwrapper, configdict, data_dict, model_list, save_path, model_vals, target_feature_regression_count):
+    def _gather_tests(self, mastmlwrapper, configdict, data_dict, model_list, save_path, model_vals, target_feature_regression_count, target_feature_classification_count):
         # Gather test types
         self.readme_html_tests.append("<H2>Tests</H2>\n")
         self.readme_html.append("<H2>Favorites</H2>\n")
@@ -525,8 +527,8 @@ class MASTMLDriver(object):
 
             # Modify test_params to take xlabel, ylabel of specific y_feature we are fitting (only if multiple y_features)
             if type(configdict['General Setup']['target_feature']) is list:
-                test_params['xlabel'] = test_params['xlabel'][target_feature_regression_count]
-                test_params['ylabel'] = test_params['ylabel'][target_feature_regression_count]
+                test_params['xlabel'] = test_params['xlabel'][target_feature_regression_count+target_feature_classification_count]
+                test_params['ylabel'] = test_params['ylabel'][target_feature_regression_count+target_feature_classification_count]
 
             # Set data lists
             training_dataset_name_list = self.string_or_list_input_to_list(test_params['training_dataset'])

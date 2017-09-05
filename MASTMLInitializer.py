@@ -184,7 +184,6 @@ class MASTMLWrapper(object):
     # Add feature_number_index here so that can pass list of values for model parameters, one value for each feature to fit.
     # Need to also pass y_feature list here so can discern between regression and classification tasks.
     def get_machinelearning_model(self, model_type, target_feature_regression_count, target_feature_classification_count, y_feature):
-
         if 'classification' in y_feature:
             if 'classifier' in model_type:
                 print('got y_feature', y_feature)
