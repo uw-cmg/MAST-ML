@@ -209,29 +209,29 @@ class MASTMLWrapper(object):
                 print('got y_feature', y_feature)
                 print('model type is', model_type)
                 print('doing regression on', y_feature)
-                if model_type == 'linear_model':
-                    if type(self.configdict['Model Parameters']['linear_model']['fit_intercept']) is list:
-                        model = LinearRegression(fit_intercept=bool(self.configdict['Model Parameters']['linear_model']['fit_intercept'][target_feature_regression_count]))
+                if model_type == 'linear_model_regressor':
+                    if type(self.configdict['Model Parameters']['linear_model_regressor']['fit_intercept']) is list:
+                        model = LinearRegression(fit_intercept=bool(self.configdict['Model Parameters']['linear_model_regressor']['fit_intercept'][target_feature_regression_count]))
                     else:
-                        model = LinearRegression(fit_intercept=bool(self.configdict['Model Parameters']['linear_model']['fit_intercept']))
+                        model = LinearRegression(fit_intercept=bool(self.configdict['Model Parameters']['linear_model_regressor']['fit_intercept']))
                     return model
-                if model_type == 'linear_model_lasso':
-                    if type(self.configdict['Model Parameters']['linear_model_lasso']['alpha']) is list:
-                        model = Lasso(alpha=float(self.configdict['Model Parameters']['linear_model_lasso']['alpha'][target_feature_regression_count]),
-                                      fit_intercept=bool(self.configdict['Model Parameters']['linear_model_lasso']['fit_intercept'][target_feature_regression_count]))
+                if model_type == 'linear_model_lasso_regressor':
+                    if type(self.configdict['Model Parameters']['linear_model_lasso_regressor']['alpha']) is list:
+                        model = Lasso(alpha=float(self.configdict['Model Parameters']['linear_model_lasso_regressor']['alpha'][target_feature_regression_count]),
+                                      fit_intercept=bool(self.configdict['Model Parameters']['linear_model_lasso_regressor']['fit_intercept'][target_feature_regression_count]))
                     else:
-                        model = Lasso(alpha=float(self.configdict['Model Parameters']['linear_model_lasso']['alpha']),
-                                      fit_intercept=bool(self.configdict['Model Parameters']['linear_model_lasso']['fit_intercept']))
+                        model = Lasso(alpha=float(self.configdict['Model Parameters']['linear_model_lasso_regressor']['alpha']),
+                                      fit_intercept=bool(self.configdict['Model Parameters']['linear_model_lasso_regressor']['fit_intercept']))
                     return model
-                if model_type == 'lkrr_model':
-                    if type(self.configdict['Model Parameters']['gkrr_model']['alpha']) is list:
-                        model = KernelRidge(alpha = float(self.configdict['Model Parameters']['gkrr_model']['alpha'][target_feature_regression_count]),
-                                            gamma = float(self.configdict['Model Parameters']['gkrr_model']['gamma'][target_feature_regression_count]),
-                                            kernel = str(self.configdict['Model Parameters']['gkrr_model']['kernel'][target_feature_regression_count]))
+                if model_type == 'lkrr_model_regressor':
+                    if type(self.configdict['Model Parameters']['lkrr_model_regressor']['alpha']) is list:
+                        model = KernelRidge(alpha = float(self.configdict['Model Parameters']['lkrr_model_regressor']['alpha'][target_feature_regression_count]),
+                                            gamma = float(self.configdict['Model Parameters']['lkrr_model_regressor']['gamma'][target_feature_regression_count]),
+                                            kernel = str(self.configdict['Model Parameters']['lkrr_model_regressor']['kernel'][target_feature_regression_count]))
                     else:
-                        model = KernelRidge(alpha=float(self.configdict['Model Parameters']['gkrr_model']['alpha']),
-                                            gamma=float(self.configdict['Model Parameters']['gkrr_model']['gamma']),
-                                            kernel=str(self.configdict['Model Parameters']['gkrr_model']['kernel']))
+                        model = KernelRidge(alpha=float(self.configdict['Model Parameters']['lkrr_model_regressor']['alpha']),
+                                            gamma=float(self.configdict['Model Parameters']['lkrr_model_regressor']['gamma']),
+                                            kernel=str(self.configdict['Model Parameters']['lkrr_model_regressor']['kernel']))
                     return model
                 if model_type == 'gkrr_model_regressor':
                     print("found a gkrr regressor")
@@ -250,91 +250,91 @@ class MASTMLWrapper(object):
                                             kernel=str(self.configdict['Model Parameters']['gkrr_model_regressor']['kernel']),
                                             kernel_params=None)
                     return model
-                if model_type == 'decision_tree_model':
-                    if type(self.configdict['Model Parameters']['decision_tree_model']['criterion']) is list:
-                        model = DecisionTreeRegressor(criterion=str(self.configdict['Model Parameters']['decision_tree_model']['criterion'][target_feature_regression_count]),
-                                                       splitter=str(self.configdict['Model Parameters']['decision_tree_model']['splitter'][target_feature_regression_count]),
-                                                       max_depth=int(self.configdict['Model Parameters']['decision_tree_model']['max_depth'][target_feature_regression_count]),
-                                                       min_samples_leaf=int(self.configdict['Model Parameters']['decision_tree_model']['min_samples_leaf'][target_feature_regression_count]),
-                                                       min_samples_split=int(self.configdict['Model Parameters']['decision_tree_model']['min_samples_split'][target_feature_regression_count]))
+                if model_type == 'decision_tree_model_regressor':
+                    if type(self.configdict['Model Parameters']['decision_tree_model_regressor']['criterion']) is list:
+                        model = DecisionTreeRegressor(criterion=str(self.configdict['Model Parameters']['decision_tree_model_regressor']['criterion'][target_feature_regression_count]),
+                                                       splitter=str(self.configdict['Model Parameters']['decision_tree_model_regressor']['splitter'][target_feature_regression_count]),
+                                                       max_depth=int(self.configdict['Model Parameters']['decision_tree_model_regressor']['max_depth'][target_feature_regression_count]),
+                                                       min_samples_leaf=int(self.configdict['Model Parameters']['decision_tree_model_regressor']['min_samples_leaf'][target_feature_regression_count]),
+                                                       min_samples_split=int(self.configdict['Model Parameters']['decision_tree_model_regressor']['min_samples_split'][target_feature_regression_count]))
                     else:
-                        model = DecisionTreeRegressor(criterion=str(self.configdict['Model Parameters']['decision_tree_model']['criterion']),
-                                                       splitter=str(self.configdict['Model Parameters']['decision_tree_model']['splitter']),
-                                                       max_depth=int(self.configdict['Model Parameters']['decision_tree_model']['max_depth']),
-                                                       min_samples_leaf=int(self.configdict['Model Parameters']['decision_tree_model']['min_samples_leaf']),
-                                                       min_samples_split=int(self.configdict['Model Parameters']['decision_tree_model']['min_samples_split']))
+                        model = DecisionTreeRegressor(criterion=str(self.configdict['Model Parameters']['decision_tree_model_regressor']['criterion']),
+                                                       splitter=str(self.configdict['Model Parameters']['decision_tree_model_regressor']['splitter']),
+                                                       max_depth=int(self.configdict['Model Parameters']['decision_tree_model_regressor']['max_depth']),
+                                                       min_samples_leaf=int(self.configdict['Model Parameters']['decision_tree_model_regressor']['min_samples_leaf']),
+                                                       min_samples_split=int(self.configdict['Model Parameters']['decision_tree_model_regressor']['min_samples_split']))
                     return model
-                if model_type == 'extra_trees_model':
-                    if type(self.configdict['Model Parameters']['extra_trees_model']['criterion']) is list:
-                        model = ExtraTreesRegressor(criterion=str(self.configdict['Model Parameters']['extra_trees_model']['criterion'][target_feature_regression_count]),
-                                                       n_estimators=int(self.configdict['Model Parameters']['extra_trees_model']['n_estimators'][target_feature_regression_count]),
-                                                       max_depth=int(self.configdict['Model Parameters']['extra_trees_model']['max_depth'][target_feature_regression_count]),
-                                                       min_samples_leaf=int(self.configdict['Model Parameters']['extra_trees_model']['min_samples_leaf'][target_feature_regression_count]),
-                                                       min_samples_split=int(self.configdict['Model Parameters']['extra_trees_model']['min_samples_split'][target_feature_regression_count]))
+                if model_type == 'extra_trees_model_regressor':
+                    if type(self.configdict['Model Parameters']['extra_trees_model_regressor']['criterion']) is list:
+                        model = ExtraTreesRegressor(criterion=str(self.configdict['Model Parameters']['extra_trees_model_regressor']['criterion'][target_feature_regression_count]),
+                                                       n_estimators=int(self.configdict['Model Parameters']['extra_trees_model_regressor']['n_estimators'][target_feature_regression_count]),
+                                                       max_depth=int(self.configdict['Model Parameters']['extra_trees_model_regressor']['max_depth'][target_feature_regression_count]),
+                                                       min_samples_leaf=int(self.configdict['Model Parameters']['extra_trees_model_regressor']['min_samples_leaf'][target_feature_regression_count]),
+                                                       min_samples_split=int(self.configdict['Model Parameters']['extra_trees_model_regressor']['min_samples_split'][target_feature_regression_count]))
                     else:
-                        model = ExtraTreesRegressor(criterion=str(self.configdict['Model Parameters']['extra_trees_model']['criterion']),
-                                                       n_estimators=int(self.configdict['Model Parameters']['extra_trees_model']['n_estimators']),
-                                                       max_depth=int(self.configdict['Model Parameters']['extra_trees_model']['max_depth']),
-                                                       min_samples_leaf=int(self.configdict['Model Parameters']['extra_trees_model']['min_samples_leaf']),
-                                                       min_samples_split=int(self.configdict['Model Parameters']['extra_trees_model']['min_samples_split']))
+                        model = ExtraTreesRegressor(criterion=str(self.configdict['Model Parameters']['extra_trees_model_regressor']['criterion']),
+                                                       n_estimators=int(self.configdict['Model Parameters']['extra_trees_model_regressor']['n_estimators']),
+                                                       max_depth=int(self.configdict['Model Parameters']['extra_trees_model_regressor']['max_depth']),
+                                                       min_samples_leaf=int(self.configdict['Model Parameters']['extra_trees_model_regressor']['min_samples_leaf']),
+                                                       min_samples_split=int(self.configdict['Model Parameters']['extra_trees_model_regressor']['min_samples_split']))
                     return model
-                if model_type == 'randomforest_model':
-                    if type(self.configdict['Model Parameters']['randomforest_model']['criterion']) is list:
-                        model = RandomForestRegressor(criterion=str(self.configdict['Model Parameters']['randomforest_model']['criterion'][target_feature_regression_count]),
-                                                  n_estimators=int(self.configdict['Model Parameters']['randomforest_model']['n_estimators'][target_feature_regression_count]),
-                                                  max_depth=int(self.configdict['Model Parameters']['randomforest_model']['max_depth'][target_feature_regression_count]),
-                                                  min_samples_split=int(self.configdict['Model Parameters']['randomforest_model']['min_samples_split'][target_feature_regression_count]),
-                                                  min_samples_leaf=int(self.configdict['Model Parameters']['randomforest_model']['min_samples_leaf'][target_feature_regression_count]),
-                                                  max_leaf_nodes=int(self.configdict['Model Parameters']['randomforest_model']['max_leaf_nodes'][target_feature_regression_count]),
-                                                  n_jobs=int(self.configdict['Model Parameters']['randomforest_model']['n_jobs'][target_feature_regression_count]),
-                                                  warm_start=bool(self.configdict['Model Parameters']['randomforest_model']['warm_start'][target_feature_regression_count]),
+                if model_type == 'randomforest_model_regressor':
+                    if type(self.configdict['Model Parameters']['randomforest_model_regressor']['criterion']) is list:
+                        model = RandomForestRegressor(criterion=str(self.configdict['Model Parameters']['randomforest_model_regressor']['criterion'][target_feature_regression_count]),
+                                                  n_estimators=int(self.configdict['Model Parameters']['randomforest_model_regressor']['n_estimators'][target_feature_regression_count]),
+                                                  max_depth=int(self.configdict['Model Parameters']['randomforest_model_regressor']['max_depth'][target_feature_regression_count]),
+                                                  min_samples_split=int(self.configdict['Model Parameters']['randomforest_model_regressor']['min_samples_split'][target_feature_regression_count]),
+                                                  min_samples_leaf=int(self.configdict['Model Parameters']['randomforest_model_regressor']['min_samples_leaf'][target_feature_regression_count]),
+                                                  max_leaf_nodes=int(self.configdict['Model Parameters']['randomforest_model_regressor']['max_leaf_nodes'][target_feature_regression_count]),
+                                                  n_jobs=int(self.configdict['Model Parameters']['randomforest_model_regressor']['n_jobs'][target_feature_regression_count]),
+                                                  warm_start=bool(self.configdict['Model Parameters']['randomforest_model_regressor']['warm_start'][target_feature_regression_count]),
                                                   bootstrap=True)
                     else:
-                        model = RandomForestRegressor(criterion=str(self.configdict['Model Parameters']['randomforest_model']['criterion']),
-                                                  n_estimators=int(self.configdict['Model Parameters']['randomforest_model']['n_estimators']),
-                                                  max_depth=int(self.configdict['Model Parameters']['randomforest_model']['max_depth']),
-                                                  min_samples_split=int(self.configdict['Model Parameters']['randomforest_model']['min_samples_split']),
-                                                  min_samples_leaf=int(self.configdict['Model Parameters']['randomforest_model']['min_samples_leaf']),
-                                                  max_leaf_nodes=int(self.configdict['Model Parameters']['randomforest_model']['max_leaf_nodes']),
-                                                  n_jobs=int(self.configdict['Model Parameters']['randomforest_model']['n_jobs']),
-                                                  warm_start=bool(self.configdict['Model Parameters']['randomforest_model']['warm_start']),
+                        model = RandomForestRegressor(criterion=str(self.configdict['Model Parameters']['randomforest_model_regressor']['criterion']),
+                                                  n_estimators=int(self.configdict['Model Parameters']['randomforest_model_regressor']['n_estimators']),
+                                                  max_depth=int(self.configdict['Model Parameters']['randomforest_model_regressor']['max_depth']),
+                                                  min_samples_split=int(self.configdict['Model Parameters']['randomforest_model_regressor']['min_samples_split']),
+                                                  min_samples_leaf=int(self.configdict['Model Parameters']['randomforest_model_regressor']['min_samples_leaf']),
+                                                  max_leaf_nodes=int(self.configdict['Model Parameters']['randomforest_model_regressor']['max_leaf_nodes']),
+                                                  n_jobs=int(self.configdict['Model Parameters']['randomforest_model_regressor']['n_jobs']),
+                                                  warm_start=bool(self.configdict['Model Parameters']['randomforest_model_regressor']['warm_start']),
                                                   bootstrap=True)
                     return model
 
-                if model_type == 'adaboost_model':
-                    if type(self.configdict['Model Parameters']['adaboost_model']['base_estimator_max_depth']) is list:
-                        model = AdaBoostRegressor(base_estimator= DecisionTreeRegressor(max_depth=int(self.configdict['Model Parameters']['adaboost_model']['base_estimator_max_depth'][target_feature_regression_count])),
-                                                  n_estimators=int(self.configdict['Model Parameters']['adaboost_model']['n_estimators'][target_feature_regression_count]),
-                                                  learning_rate=float(self.configdict['Model Parameters']['adaboost_model']['learning_rate'][target_feature_regression_count]),
-                                                  loss=str(self.configdict['Model Parameters']['adaboost_model']['loss'][target_feature_regression_count]),
+                if model_type == 'adaboost_model_regressor':
+                    if type(self.configdict['Model Parameters']['adaboost_model_regressor']['base_estimator_max_depth']) is list:
+                        model = AdaBoostRegressor(base_estimator= DecisionTreeRegressor(max_depth=int(self.configdict['Model Parameters']['adaboost_model_regressor']['base_estimator_max_depth'][target_feature_regression_count])),
+                                                  n_estimators=int(self.configdict['Model Parameters']['adaboost_model_regressor']['n_estimators'][target_feature_regression_count]),
+                                                  learning_rate=float(self.configdict['Model Parameters']['adaboost_model_regressor']['learning_rate'][target_feature_regression_count]),
+                                                  loss=str(self.configdict['Model Parameters']['adaboost_model_regressor']['loss'][target_feature_regression_count]),
                                                   random_state=None)
                     else:
-                        model = AdaBoostRegressor(base_estimator=DecisionTreeRegressor(max_depth=int(self.configdict['Model Parameters']['adaboost_model']['base_estimator_max_depth'])),
-                                                  n_estimators=int(self.configdict['Model Parameters']['adaboost_model']['n_estimators']),
-                                                  learning_rate=float(self.configdict['Model Parameters']['adaboost_model']['learning_rate']),
-                                                  loss=str(self.configdict['Model Parameters']['adaboost_model']['loss']),
+                        model = AdaBoostRegressor(base_estimator=DecisionTreeRegressor(max_depth=int(self.configdict['Model Parameters']['adaboost_model_regressor']['base_estimator_max_depth'])),
+                                                  n_estimators=int(self.configdict['Model Parameters']['adaboost_model_regressor']['n_estimators']),
+                                                  learning_rate=float(self.configdict['Model Parameters']['adaboost_model_regressor']['learning_rate']),
+                                                  loss=str(self.configdict['Model Parameters']['adaboost_model_regressor']['loss']),
                                                   random_state=None)
                     return model
 
-                if model_type == 'nn_model':
-                    if type(self.configdict['Model Parameters']['nn_model']['hidden_layer_sizes']) is list:
-                        model = MLPRegressor(hidden_layer_sizes=int(self.configdict['Model Parameters']['nn_model']['hidden_layer_sizes'][target_feature_regression_count]),
-                                         activation=str(self.configdict['Model Parameters']['nn_model']['activation'][target_feature_regression_count]),
-                                         solver=str(self.configdict['Model Parameters']['nn_model']['solver'][target_feature_regression_count]),
-                                         alpha=float(self.configdict['Model Parameters']['nn_model']['alpha'][target_feature_regression_count]),
+                if model_type == 'nn_model_regressor':
+                    if type(self.configdict['Model Parameters']['nn_model_regressor']['hidden_layer_sizes']) is list:
+                        model = MLPRegressor(hidden_layer_sizes=int(self.configdict['Model Parameters']['nn_model_regressor']['hidden_layer_sizes'][target_feature_regression_count]),
+                                         activation=str(self.configdict['Model Parameters']['nn_model_regressor']['activation'][target_feature_regression_count]),
+                                         solver=str(self.configdict['Model Parameters']['nn_model_regressor']['solver'][target_feature_regression_count]),
+                                         alpha=float(self.configdict['Model Parameters']['nn_model_regressor']['alpha'][target_feature_regression_count]),
                                          batch_size='auto',
                                          learning_rate='constant',
-                                         max_iter=int(self.configdict['Model Parameters']['nn_model']['max_iter'][target_feature_regression_count]),
-                                         tol=float(self.configdict['Model Parameters']['nn_model']['tol'][target_feature_regression_count]))
+                                         max_iter=int(self.configdict['Model Parameters']['nn_model_regressor']['max_iter'][target_feature_regression_count]),
+                                         tol=float(self.configdict['Model Parameters']['nn_model_regressor']['tol'][target_feature_regression_count]))
                     else:
-                        model = MLPRegressor(hidden_layer_sizes=int(self.configdict['Model Parameters']['nn_model']['hidden_layer_sizes']),
-                                         activation=str(self.configdict['Model Parameters']['nn_model']['activation']),
-                                         solver=str(self.configdict['Model Parameters']['nn_model']['solver']),
-                                         alpha=float(self.configdict['Model Parameters']['nn_model']['alpha']),
+                        model = MLPRegressor(hidden_layer_sizes=int(self.configdict['Model Parameters']['nn_model_regressor']['hidden_layer_sizes']),
+                                         activation=str(self.configdict['Model Parameters']['nn_model_regressor']['activation']),
+                                         solver=str(self.configdict['Model Parameters']['nn_model_regressor']['solver']),
+                                         alpha=float(self.configdict['Model Parameters']['nn_model_regressor']['alpha']),
                                          batch_size='auto',
                                          learning_rate='constant',
-                                         max_iter=int(self.configdict['Model Parameters']['nn_model']['max_iter']),
-                                         tol=float(self.configdict['Model Parameters']['nn_model']['tol']))
+                                         max_iter=int(self.configdict['Model Parameters']['nn_model_regressor']['max_iter']),
+                                         tol=float(self.configdict['Model Parameters']['nn_model_regressor']['tol']))
                     return model
 
                 else:
