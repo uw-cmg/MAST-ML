@@ -1,18 +1,17 @@
 __author__ = 'Ryan Jacobs, Tam Mayeshiba'
 
-from configobj import ConfigObj, ConfigObjError
-from validate import Validator, VdtTypeError
 import sys
 import os
-from sklearn.kernel_ridge import KernelRidge
-from sklearn.neural_network import MLPRegressor
-from sklearn.linear_model import LinearRegression, Lasso
-from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor, AdaBoostRegressor
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.svm import SVC
 import importlib
 import logging
-import traceback
+from sklearn.kernel_ridge import KernelRidge
+from sklearn.neural_network import MLPRegressor, MLPClassifier
+from sklearn.linear_model import LinearRegression, Lasso, LogisticRegression
+from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor, AdaBoostRegressor, ExtraTreesClassifier, RandomForestClassifier, AdaBoostClassifier
+from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
+from sklearn.svm import SVC
+from configobj import ConfigObj, ConfigObjError
+from validate import Validator, VdtTypeError
 
 class ConfigFileParser(object):
     """Class to read in and parse contents of config file
@@ -189,20 +188,109 @@ class MASTMLWrapper(object):
                 print('got y_feature', y_feature)
                 print('model type is', model_type)
                 print('doing classification on', y_feature)
-                if model_type == 'support_vector_machine_classifier':
-                    if type(self.configdict['Model Parameters']['support_vector_machine_classifier']['error_penalty']) is list:
-                        model = SVC(C=float(self.configdict['Model Parameters']['support_vector_machine_classifier']['error_penalty'][target_feature_regression_count]),
-                                    kernel=str(self.configdict['Model Parameters']['support_vector_machine_classifier']['kernel'][target_feature_regression_count]),
-                                    degree=int(self.configdict['Model Parameters']['support_vector_machine_classifier']['degree'][target_feature_regression_count]),
-                                    gamma=float(self.configdict['Model Parameters']['support_vector_machine_classifier']['gamma'][target_feature_regression_count]),
-                                    coef0=float(self.configdict['Model Parameters']['support_vector_machine_classifier']['coef0'][target_feature_regression_count]))
+                if model_type == 'support_vector_machine_model_classifier':
+                    if type(self.configdict['Model Parameters']['support_vector_machine_model_classifier']['error_penalty']) is list:
+                        model = SVC(C=float(self.configdict['Model Parameters']['support_vector_machine_model_classifier']['error_penalty'][target_feature_regression_count]),
+                                    kernel=str(self.configdict['Model Parameters']['support_vector_machine_model_classifier']['kernel'][target_feature_regression_count]),
+                                    degree=int(self.configdict['Model Parameters']['support_vector_machine_model_classifier']['degree'][target_feature_regression_count]),
+                                    gamma=float(self.configdict['Model Parameters']['support_vector_machine_model_classifier']['gamma'][target_feature_regression_count]),
+                                    coef0=float(self.configdict['Model Parameters']['support_vector_machine_model_classifier']['coef0'][target_feature_regression_count]))
                     else:
-                        model = SVC(C=float(self.configdict['Model Parameters']['support_vector_machine_classifier']['error_penalty']),
-                                    kernel=str(self.configdict['Model Parameters']['support_vector_machine_classifier']['kernel']),
-                                    degree=int(self.configdict['Model Parameters']['support_vector_machine_classifier']['degree']),
-                                    gamma=float(self.configdict['Model Parameters']['support_vector_machine_classifier']['gamma']),
-                                    coef0=float(self.configdict['Model Parameters']['support_vector_machine_classifier']['coef0']))
+                        model = SVC(C=float(self.configdict['Model Parameters']['support_vector_machine_model_classifier']['error_penalty']),
+                                    kernel=str(self.configdict['Model Parameters']['support_vector_machine_model_classifier']['kernel']),
+                                    degree=int(self.configdict['Model Parameters']['support_vector_machine_model_classifier']['degree']),
+                                    gamma=float(self.configdict['Model Parameters']['support_vector_machine_model_classifier']['gamma']),
+                                    coef0=float(self.configdict['Model Parameters']['support_vector_machine_model_classifier']['coef0']))
                     return model
+                if model_type == 'logistic_regression_model_classifier':
+                    if type(self.configdict['Model Parameters']['logistic_regression_model_classifier']['penalty']) is list:
+                        model = LogisticRegression(penalty=str(self.configdict['Model Parameters']['logistic_regression_model_classifier']['penalty'][target_feature_classification_count]),
+                                                   C=float(self.configdict['Model Parameters']['logistic_regression_model_classifier']['C'][target_feature_classification_count]),
+                                                   class_weight=str(self.configdict['Model Parameters']['logistic_regression_model_classifier']['class_weight'][target_feature_classification_count]))
+                    else:
+                        model = LogisticRegression(penalty=str(self.configdict['Model Parameters']['logistic_regression_model_classifier']['penalty']),
+                                                   C=float(self.configdict['Model Parameters']['logistic_regression_model_classifier']['C']),
+                                                   class_weight=str(self.configdict['Model Parameters']['logistic_regression_model_classifier']['class_weight']))
+                    return model
+                if model_type == 'decision_tree_model_classifier':
+                    if type(self.configdict['Model Parameters']['decision_tree_model_classifier']['criterion']) is list:
+                        model = DecisionTreeClassifier(criterion=str(self.configdict['Model Parameters']['decision_tree_model_classifier']['criterion'][target_feature_classification_count]),
+                                                       splitter=str(self.configdict['Model Parameters']['decision_tree_model_classifier']['splitter'][target_feature_classification_count]),
+                                                       max_depth=int(self.configdict['Model Parameters']['decision_tree_model_classifier']['max_depth'][target_feature_classification_count]),
+                                                       min_samples_leaf=int(self.configdict['Model Parameters']['decision_tree_model_classifier']['min_samples_leaf'][target_feature_classification_count]),
+                                                       min_samples_split=int(self.configdict['Model Parameters']['decision_tree_model_classifier']['min_samples_split'][target_feature_classification_count]))
+                    else:
+                        model = DecisionTreeClassifier(criterion=str(self.configdict['Model Parameters']['decision_tree_model_classifier']['criterion']),
+                                                           splitter=str(self.configdict['Model Parameters']['decision_tree_model_classifier']['splitter']),
+                                                           max_depth=int(self.configdict['Model Parameters']['decision_tree_model_classifier']['max_depth']),
+                                                           min_samples_leaf=int(self.configdict['Model Parameters']['decision_tree_model_classifier']['min_samples_leaf']),
+                                                           min_samples_split=int(self.configdict['Model Parameters']['decision_tree_model_classifier']['min_samples_split']))
+                    return model
+                if model_type == 'random_forest_model_classifier':
+                    if type(self.configdict['Model Parameters']['random_forest_model_classifier']['criterion']) is list:
+                        model = RandomForestClassifier(criterion=str(self.configdict['Model Parameters']['random_forest_model_classifier']['criterion'][target_feature_classification_count]),
+                                                       n_estimators=int(self.configdict['Model Parameters']['random_forest_model_classifier']['n_estimators'][target_feature_classification_count]),
+                                                       max_depth=int(self.configdict['Model Parameters']['random_forest_model_classifier']['max_depth'][target_feature_classification_count]),
+                                                       min_samples_split=int(self.configdict['Model Parameters']['random_forest_model_classifier']['min_samples_split'][target_feature_classification_count]),
+                                                       min_samples_leaf=int(self.configdict['Model Parameters']['random_forest_model_classifier']['min_samples_leaf'][target_feature_classification_count]),
+                                                       max_leaf_nodes=int(self.configdict['Model Parameters']['random_forest_model_classifier']['max_leaf_nodes'][target_feature_classification_count]))
+                    else:
+                        model = RandomForestClassifier(criterion=str(self.configdict['Model Parameters']['random_forest_model_classifier']['criterion']),
+                                                       n_estimators=int(self.configdict['Model Parameters']['random_forest_model_classifier']['n_estimators']),
+                                                       max_depth=int(self.configdict['Model Parameters']['random_forest_model_classifier']['max_depth']),
+                                                       min_samples_split=int(self.configdict['Model Parameters']['random_forest_model_classifier']['min_samples_split']),
+                                                       min_samples_leaf=int(self.configdict['Model Parameters']['random_forest_model_classifier']['min_samples_leaf']),
+                                                       max_leaf_nodes=int(self.configdict['Model Parameters']['random_forest_model_classifier']['max_leaf_nodes']))
+                    return model
+                if model_type == 'extra_trees_model_classifier':
+                    if type(self.configdict['Model Parameters']['extra_trees_model_classifier']['criterion']) is list:
+                        model = ExtraTreesClassifier(criterion=str(self.configdict['Model Parameters']['extra_trees_model_classifier']['criterion'][target_feature_classification_count]),
+                                                     n_estimators=int(self.configdict['Model Parameters']['extra_trees_model_classifier']['n_estimators'][target_feature_classification_count]),
+                                                     max_depth=int(self.configdict['Model Parameters']['extra_trees_model_classifier']['max_depth'][target_feature_classification_count]),
+                                                     min_samples_split=int(self.configdict['Model Parameters']['extra_trees_model_classifier']['min_samples_split'][target_feature_classification_count]),
+                                                     min_samples_leaf=int(self.configdict['Model Parameters']['extra_trees_model_classifier']['min_samples_leaf'][target_feature_classification_count]),
+                                                     max_leaf_nodes=int(self.configdict['Model Parameters']['extra_trees_model_classifier']['max_leaf_nodes'][target_feature_classification_count]))
+                    else:
+                        model = ExtraTreesClassifier(criterion=str(self.configdict['Model Parameters']['extra_trees_model_classifier']['criterion']),
+                                                     n_estimators=int(self.configdict['Model Parameters']['extra_trees_model_classifier']['n_estimators']),
+                                                     max_depth=int(self.configdict['Model Parameters']['extra_trees_model_classifier']['max_depth']),
+                                                     min_samples_split=int(self.configdict['Model Parameters']['extra_trees_model_classifier']['min_samples_split']),
+                                                     min_samples_leaf=int(self.configdict['Model Parameters']['extra_trees_model_classifier']['min_samples_leaf']),
+                                                     max_leaf_nodes=int(self.configdict['Model Parameters']['extra_trees_model_classifier']['max_leaf_nodes']))
+                    return model
+                if model_type == 'adaboost_model_classifier':
+                    if type(self.configdict['Model Parameters']['adaboost_model_classifier']['base_estimator_max_depth']) is list:
+                        model = AdaBoostClassifier(base_estimator= DecisionTreeClassifier(max_depth=int(self.configdict['Model Parameters']['adaboost_model_classifier']['base_estimator_max_depth'][target_feature_classification_count])),
+                                                  n_estimators=int(self.configdict['Model Parameters']['adaboost_model_classifier']['n_estimators'][target_feature_classification_count]),
+                                                  learning_rate=float(self.configdict['Model Parameters']['adaboost_model_classifier']['learning_rate'][target_feature_classification_count]),
+                                                  random_state=None)
+                    else:
+                        model = AdaBoostClassifier(base_estimator= DecisionTreeClassifier(max_depth=int(self.configdict['Model Parameters']['adaboost_model_classifier']['base_estimator_max_depth'])),
+                                                  n_estimators=int(self.configdict['Model Parameters']['adaboost_model_classifier']['n_estimators']),
+                                                  learning_rate=float(self.configdict['Model Parameters']['adaboost_model_classifier']['learning_rate']),
+                                                  random_state=None)
+                    return model
+                if model_type == 'nn_model_classifier':
+                    if type(self.configdict['Model Parameters']['nn_model_classifier']['hidden_layer_sizes']) is list:
+                        model = MLPClassifier(hidden_layer_sizes=int(self.configdict['Model Parameters']['nn_model_classifier']['hidden_layer_sizes'][target_feature_regression_count]),
+                                         activation=str(self.configdict['Model Parameters']['nn_model_classifier']['activation'][target_feature_regression_count]),
+                                         solver=str(self.configdict['Model Parameters']['nn_model_classifier']['solver'][target_feature_regression_count]),
+                                         alpha=float(self.configdict['Model Parameters']['nn_model_classifier']['alpha'][target_feature_regression_count]),
+                                         batch_size='auto',
+                                         learning_rate='constant',
+                                         max_iter=int(self.configdict['Model Parameters']['nn_model_classifier']['max_iter'][target_feature_regression_count]),
+                                         tol=float(self.configdict['Model Parameters']['nn_model_classifier']['tol'][target_feature_regression_count]))
+                    else:
+                        model = MLPClassifier(hidden_layer_sizes=int(self.configdict['Model Parameters']['nn_model_classifier']['hidden_layer_sizes']),
+                                         activation=str(self.configdict['Model Parameters']['nn_model_classifier']['activation']),
+                                         solver=str(self.configdict['Model Parameters']['nn_model_classifier']['solver']),
+                                         alpha=float(self.configdict['Model Parameters']['nn_model_classifier']['alpha']),
+                                         batch_size='auto',
+                                         learning_rate='constant',
+                                         max_iter=int(self.configdict['Model Parameters']['nn_model_classifier']['max_iter']),
+                                         tol=float(self.configdict['Model Parameters']['nn_model_classifier']['tol']))
+                    return model
+
 
         if 'regression' in y_feature:
             if 'regressor' in model_type:
@@ -270,13 +358,15 @@ class MASTMLWrapper(object):
                                                        n_estimators=int(self.configdict['Model Parameters']['extra_trees_model_regressor']['n_estimators'][target_feature_regression_count]),
                                                        max_depth=int(self.configdict['Model Parameters']['extra_trees_model_regressor']['max_depth'][target_feature_regression_count]),
                                                        min_samples_leaf=int(self.configdict['Model Parameters']['extra_trees_model_regressor']['min_samples_leaf'][target_feature_regression_count]),
-                                                       min_samples_split=int(self.configdict['Model Parameters']['extra_trees_model_regressor']['min_samples_split'][target_feature_regression_count]))
+                                                       min_samples_split=int(self.configdict['Model Parameters']['extra_trees_model_regressor']['min_samples_split'][target_feature_regression_count]),
+                                                       max_leaf_nodes=int(self.configdict['Model Parameters']['extra_trees_model_regressor']['max_leaf_nodes'][target_feature_regression_count]))
                     else:
                         model = ExtraTreesRegressor(criterion=str(self.configdict['Model Parameters']['extra_trees_model_regressor']['criterion']),
                                                        n_estimators=int(self.configdict['Model Parameters']['extra_trees_model_regressor']['n_estimators']),
                                                        max_depth=int(self.configdict['Model Parameters']['extra_trees_model_regressor']['max_depth']),
                                                        min_samples_leaf=int(self.configdict['Model Parameters']['extra_trees_model_regressor']['min_samples_leaf']),
-                                                       min_samples_split=int(self.configdict['Model Parameters']['extra_trees_model_regressor']['min_samples_split']))
+                                                       min_samples_split=int(self.configdict['Model Parameters']['extra_trees_model_regressor']['min_samples_split']),
+                                                       max_leaf_nodes=int(self.configdict['Model Parameters']['extra_trees_model_regressor']['max_leaf_nodes']))
                     return model
                 if model_type == 'randomforest_model_regressor':
                     if type(self.configdict['Model Parameters']['randomforest_model_regressor']['criterion']) is list:
