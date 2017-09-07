@@ -291,7 +291,6 @@ class MASTMLWrapper(object):
                                          tol=float(self.configdict['Model Parameters']['nn_model_classifier']['tol']))
                     return model
 
-
         if 'regression' in y_feature:
             if 'regressor' in model_type:
                 print('got y_feature', y_feature)
@@ -322,7 +321,6 @@ class MASTMLWrapper(object):
                                             kernel=str(self.configdict['Model Parameters']['lkrr_model_regressor']['kernel']))
                     return model
                 if model_type == 'gkrr_model_regressor':
-                    print("found a gkrr regressor")
                     if type(self.configdict['Model Parameters']['gkrr_model_regressor']['alpha']) is list:
                         model = KernelRidge(alpha=float(self.configdict['Model Parameters']['gkrr_model_regressor']['alpha'][target_feature_regression_count]),
                                             coef0=int(self.configdict['Model Parameters']['gkrr_model_regressor']['coef0'][target_feature_regression_count]),

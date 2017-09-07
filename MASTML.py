@@ -82,14 +82,21 @@ class MASTMLDriver(object):
         target_feature_regression_count = 0
         target_feature_classification_count = 0
         for data_path in data_path_list:
+
+            print('On data path', data_path)
+
             self.data_dict = self._create_data_dict(data_path=data_path)
 
             # Get y_feature data to pass to mastmlwrapper to obtain ml models. Just use first index of Data Setup to get target_feature
             key_count = 0
             for key in self.data_dict.keys():
+                print('on key', key)
                 if key_count < 1:
+                    print('actually using key', key)
                     y_feature = self.data_dict[key].target_feature
                     key_count += 1
+
+            print(y_feature)
 
             # Gather models
             (self.model_list, self.model_vals) = self._gather_models(y_feature=y_feature, target_feature_regression_count=target_feature_regression_count, target_feature_classification_count=target_feature_classification_count)
@@ -127,7 +134,12 @@ class MASTMLDriver(object):
         dataframe_x = dataframe.loc[:, other_features]
         count = 1
         for feature in y_feature:
-            dataframe_y = dataframe.loc[:, feature]
+            try:
+                dataframe_y = dataframe.loc[:, feature]
+            except KeyError:
+                logging.info('Error detected: The feature names in the csv and input files do not match')
+                print('The feature names in the csv and input files do not match. Please fix feature names and re-run MASTML')
+                sys.exit()
             dataframe_new = DataframeUtilities._merge_dataframe_columns(dataframe1=dataframe_x, dataframe2=dataframe_y)
             # Write the new dataframe to new CSV, and update data_path_list
             data_path_split = os.path.split(self.configdict['Data Setup']['Initial']['data_path'])
@@ -277,7 +289,6 @@ class MASTMLDriver(object):
             Xdata, ydata, x_features, y_feature, dataframe = self._parse_input_data(data_path)
 
             print('after import')
-            print(data_path)
             print(len(x_features))
             print(y_feature)
             print(dataframe.shape)
