@@ -378,6 +378,8 @@ class MASTMLDriver(object):
                 dataframe_nostrings = FeatureIO(dataframe=dataframe_nostrings).remove_custom_features(features_to_remove=features_to_remove)
                 dataframe_nostrings = self._perform_feature_selection(dataframe=dataframe_nostrings, x_features=x_features, y_feature=y_feature)
                 x_features, y_feature = DataParser(configdict=self.configdict).get_features(dataframe=dataframe_nostrings, target_feature=y_feature)
+
+
             logging.debug("post-removal:%s" % dataframe_nostrings.columns)
             # Combine the input dataframe, which has undergone feature generation and normalization, with the grouped and labeled features of original dataframe
             # First, need to generate dataframe that only has the grouped and labeled features
@@ -392,9 +394,11 @@ class MASTMLDriver(object):
                         if feature not in duplicate_features:
                             duplicate_features.append(feature)
 
-            print('after selection')
-            print(len(x_features))
+            print("After feature selection:")
             print(dataframe_nostrings.shape)
+            print(len(x_features))
+            print(x_features)
+
 
             # Now merge dataframes
             dataframe_labeled_grouped = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe_labeled, dataframe2=dataframe_grouped)
