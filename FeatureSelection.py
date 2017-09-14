@@ -66,9 +66,22 @@ class FeatureSelection(object):
         sfs = sfs.fit(X=np.array(self.dataframe[self.x_features]), y=np.array(self.dataframe[self.y_feature]))
         Xnew = sfs.fit_transform(X=np.array(self.dataframe[self.x_features]), y=np.array(self.dataframe[self.y_feature]))
         feature_indices_selected = sfs.k_feature_idx_
-        dataframe = DataframeUtilities()._array_to_dataframe(array=Xnew)
+        x_features_to_keep = []
+        for index in feature_indices_selected:
+            x_features_to_keep.append(self.x_features[index])
+
+        #print('feature indices:')
+        #print(feature_indices_selected)
+        #for index in feature_indices_selected:
+        #    print('index:', index)
+        #    print('feature:', self.x_features[index])
+        #print(self.x_features)
+
+        #dataframe = DataframeUtilities()._array_to_dataframe(array=Xnew)
         feature_names_selected = MiscFeatureSelectionOperations().get_forward_selection_feature_names(feature_indices_selected=feature_indices_selected, x_features=self.x_features)
-        dataframe = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe, x_features=feature_names_selected, y_feature=self.y_feature, remove_first_row=False)
+        #dataframe = DataframeUtilities()._assign_columns_as_features(dataframe=self.dataframe, x_features=feature_names_selected, y_feature=self.y_feature, remove_first_row=False)
+        #dataframe = DataframeUtilities()._array_to_dataframe(array=Xnew)
+        dataframe = FeatureIO(dataframe=self.dataframe).keep_custom_features(features_to_keep=x_features_to_keep)
         # Add y_feature back into the dataframe
         dataframe = FeatureIO(dataframe=dataframe).add_custom_features(features_to_add=[self.y_feature],data_to_add=self.dataframe[self.y_feature])
         dataframe = dataframe.dropna()
