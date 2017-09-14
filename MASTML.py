@@ -397,7 +397,7 @@ class MASTMLDriver(object):
             print("After feature selection:")
             print(dataframe_nostrings.shape)
             print(len(x_features))
-            print(x_features)
+            #print(x_features)
 
 
             # Now merge dataframes
