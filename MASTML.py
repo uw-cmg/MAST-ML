@@ -597,11 +597,22 @@ class MASTMLDriver(object):
         if not(self.save_path == cwd):
             oldlog = os.path.join(self.save_path, "MASTMLlog.log")
             copylog = os.path.join(cwd, "MASTMLlog.log")
+
+            inputdata_name = self.configdict['Data Setup']['Initial']['data_path']
+            oldinput = os.path.join(self.save_path, inputdata_name)
+            copyinput = os.path.join(cwd, inputdata_name)
+
             if os.path.exists(oldlog):
                 os.remove(oldlog)
             shutil.move(copylog, self.save_path)
+
+            if os.path.exists(oldinput):
+                os.remove(oldinput)
+            shutil.move(copyinput, self.save_path)
+
             copyconfig = os.path.join(cwd, str(self.configfile))
             shutil.copy(copyconfig, self.save_path)
+
         return
 
     def set_favorites_dict(self):
@@ -652,5 +663,4 @@ if __name__ == '__main__':
         logging.info('Your MASTML runs are complete!')
     else:
         print('Specify the name of your MASTML input file, such as "mastmlinput.conf", and run as "python AllTests.py mastmlinput.conf" ')
-
 
