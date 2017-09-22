@@ -4,6 +4,8 @@ import pandas as pd
 import logging
 import sys
 import numpy as np
+import os
+from MASTMLInitializer import ConfigFileParser
 
 class DataParser(object):
     """Class to parse input csv file and create pandas dataframe, and extract features
@@ -141,3 +143,11 @@ class DataframeUtilities(object):
         if remove_first_row == bool(True):
             dataframe = dataframe.drop([0])  # Need to remove feature names from first row so can obtain data
         return dataframe
+
+    @classmethod
+    def _save_all_dataframe_statistics(cls, dataframe):
+        dataframe_stats = cls._get_dataframe_statistics(dataframe=dataframe)
+        # Need configdict to get save path
+        configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
+        dataframe_stats.to_csv(configdict['General Setup']['save_path'] + "/" + 'input_data_statistics.csv',index=True)
+        return
