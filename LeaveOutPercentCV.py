@@ -2,6 +2,7 @@ import os
 import numpy as np
 from sklearn.model_selection import ShuffleSplit
 from sklearn.metrics import mean_squared_error
+from sklearn.linear_model import LinearRegression
 from plot_data.PlotHelper import PlotHelper
 from SingleFit import SingleFit
 from SingleFit import timeit
@@ -81,6 +82,7 @@ class LeaveOutPercentCV(SingleFit):
         SingleFit.set_up(self)
         self.set_up_cv()
         return
+
     @timeit
     def fit(self):
         self.cv_fit_and_predict()
@@ -104,7 +106,9 @@ class LeaveOutPercentCV(SingleFit):
         notelist.append("    {:.2f} $\pm$ {:.2f}".format(self.statistics['avg_rmse'], self.statistics['std_rmse']))
         notelist.append("Mean error:")
         notelist.append("    {:.2f} $\pm$ {:.2f}".format(self.statistics['avg_mean_error'], self.statistics['std_mean_error']))
+        notelist.append("R-squared: " "{:.2f}".format(self.statistics['r2_score']))
         self.plot_best_worst_overlay(notelist=list(notelist))
+        self.plot_meancv_overlay(notelist=list(notelist))
         return
 
     def set_up_cv(self):
@@ -131,6 +135,9 @@ class LeaveOutPercentCV(SingleFit):
         for cvtest in self.cvtest_dict.keys():
             prediction_array = np.zeros(len(self.testing_dataset.target_data))
             prediction_array[:] = np.nan
+            error_array = np.zeros(len(self.testing_dataset.target_data))
+            error_array[:] = np.nan
+
             fdict = self.cvtest_dict[cvtest]
             input_train=self.testing_dataset.input_data.iloc[fdict['train_index']]
             target_train = self.testing_dataset.target_data[fdict['train_index']]
@@ -141,9 +148,11 @@ class LeaveOutPercentCV(SingleFit):
             rmse = np.sqrt(mean_squared_error(predict_test, target_test))
             merr = np.mean(predict_test - target_test)
             prediction_array[fdict['test_index']] = predict_test
+            error_array[fdict['test_index']] = predict_test - target_test
             self.cvtest_dict[cvtest]["rmse"] = rmse
             self.cvtest_dict[cvtest]["mean_error"] = merr
             self.cvtest_dict[cvtest]["prediction_array"] = prediction_array
+            self.cvtest_dict[cvtest]["error_array"] = error_array
         return
 
     def get_statistics(self):
@@ -162,6 +171,30 @@ class LeaveOutPercentCV(SingleFit):
         self.statistics['std_mean_error'] = np.std(cvtest_mean_errors)
         self.statistics['rmse_best'] = lowest_rmse
         self.statistics['rmse_worst'] = highest_rmse
+
+        # Get average CV values and errors
+        average_prediction = self.cvtest_dict[0]["prediction_array"]
+        error = self.cvtest_dict[0]["error_array"]
+        num_data = len(self.cvtest_dict[0]["error_array"].tolist())
+        for cvtest in self.cvtest_dict.keys():
+            if cvtest > 0:
+                average_prediction += self.cvtest_dict[cvtest]["prediction_array"]
+                error += self.cvtest_dict[cvtest]["error_array"]
+        average_prediction /= self.num_cvtests
+        std_err_in_mean = error/np.sqrt(num_data)
+
+        self.statistics['std_err_in_mean'] = std_err_in_mean
+        self.statistics['average_prediction'] = average_prediction
+
+        # Get R2 value for plot
+        linearmodel = LinearRegression(fit_intercept=True)
+        Xdata = np.array(self.testing_dataset.target_data.reshape(-1, 1))
+        ydata = np.array(average_prediction.reshape(-1, 1))
+        linearmodel.fit(Xdata, ydata)
+        rsquared = linearmodel.score(Xdata, ydata)
+
+        self.statistics['r2_score'] = rsquared
+
         return
 
     def print_best_worst_output_csv(self, label=""):
@@ -206,5 +239,31 @@ class LeaveOutPercentCV(SingleFit):
         myph.multiple_overlay()
         self.readme_list.append("Plot best_worst_overlay.png created,\n")
         self.readme_list.append("    showing the best and worst of %i tests.\n" % self.num_cvtests)
+        return
+
+    def plot_meancv_overlay(self, notelist=list()):
+        kwargs2 = dict()
+        kwargs2['xlabel'] = self.xlabel
+        kwargs2['ylabel'] = self.ylabel
+        kwargs2['labellist'] = ["Mean CV test"]
+        kwargs2['xdatalist'] = list([self.testing_dataset.target_data])
+        kwargs2['ydatalist'] = list([self.statistics['average_prediction']])
+        kwargs2['xerrlist'] = list([None])
+        kwargs2['yerrlist'] = list([self.statistics['std_err_in_mean']])
+        kwargs2['notelist'] = list(notelist)
+        kwargs2['guideline'] = 1
+        kwargs2['plotlabel'] = "mean_cv_overlay"
+        kwargs2['save_path'] = self.save_path
+        #kwargs2['std_err_in_mean'] = std_err_in_mean
+        if not (self.mark_outlying_points is None):
+            kwargs2['marklargest'] = self.mark_outlying_points
+            if self.testing_dataset.labeling_features is None:
+                raise ValueError("Must specify some labeling features if you want to mark the largest outlying points")
+            labels = self.testing_dataset.data[self.testing_dataset.labeling_features[0]]
+            kwargs2['mlabellist'] = list([labels,labels])
+        myph = PlotHelper(**kwargs2)
+        myph.multiple_overlay()
+        self.readme_list.append("Plot mean_cv_overlay.png created,\n")
+        self.readme_list.append("    showing the mean cv of %i tests.\n" % self.num_cvtests)
         return
 

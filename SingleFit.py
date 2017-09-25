@@ -227,7 +227,10 @@ class SingleFit():
             skeys = list(self.statistics.keys())
             skeys.sort()
             for skey in skeys:
-                self.readme_list.append("%s: %3.4f\n" % (skey, self.statistics[skey]))
+                try:
+                    self.readme_list.append("%s: %3.4f\n" % (skey, self.statistics[skey]))
+                except TypeError:
+                    continue
         return
 
     def print_output_csv(self, csvname="output_data.csv"):
