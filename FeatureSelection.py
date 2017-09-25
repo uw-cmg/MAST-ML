@@ -5,7 +5,7 @@ from DataOperations import DataframeUtilities
 from FeatureOperations import FeatureIO
 from MASTMLInitializer import ConfigFileParser
 from sklearn.model_selection import learning_curve, ShuffleSplit, cross_val_score
-from sklearn.feature_selection import SelectKBest, f_classif, f_regression
+from sklearn.feature_selection import SelectKBest, f_classif, f_regression, mutual_info_regression, mutual_info_classif
 from sklearn.svm import SVR, SVC
 from sklearn.feature_selection import RFE
 from sklearn.linear_model import RandomizedLasso, LinearRegression
@@ -47,21 +47,16 @@ class DimensionalReduction(object):
 class FeatureSelection(object):
     """Class to conduct feature selection routines to reduce the number of input features for regression and classification problems.
     """
-    def __init__(self, dataframe, x_features, y_feature, selection_type=None):
+    def __init__(self, dataframe, x_features, y_feature):
         self.dataframe = dataframe
         self.x_features = x_features
         self.y_feature = y_feature
-        #self.selection_type = selection_type
-
-        #if self.selection_type not in ['Regression', 'regression', 'Classification', 'classification']:
-        #    logging.info('ERROR: You must specify "selection_type" as either "regression" or "classification"')
-        #    sys.exit()
 
     @property
     def get_original_dataframe(self):
         return self.dataframe
 
-    def forward_selection(self, number_features_to_keep, save_to_csv=True):
+    def sequential_forward_selection(self, number_features_to_keep, save_to_csv=True):
         sfs = SFS(KernelRidge(alpha=0.01, kernel='linear'), k_features=number_features_to_keep, forward=True, floating=False, verbose=0, scoring='r2', cv=ShuffleSplit(n_splits=5, test_size=0.2))
         sfs = sfs.fit(X=np.array(self.dataframe[self.x_features]), y=np.array(self.dataframe[self.y_feature]))
         Xnew = sfs.fit_transform(X=np.array(self.dataframe[self.x_features]), y=np.array(self.dataframe[self.y_feature]))
@@ -113,33 +108,51 @@ class FeatureSelection(object):
 
         return dataframe
 
-    """
-    def univariate_feature_selection(self, number_features_to_keep, save_to_csv=True):
-        if self.selection_type == 'Regression' or self.selection_type == 'regression':
-            Fscores, pvalues = f_regression(X=self.dataframe[self.x_features], y=self.dataframe[self.y_feature])
-            print('Fscores:')
-            print(Fscores)
-            selector = SelectKBest(score_func=f_regression, k=number_features_to_keep)
-        if self.selection_type == 'Classification' or self.selection_type == 'classification':
-            selector = SelectKBest(score_func=f_classif, k=number_features_to_keep)
+    def univariate_feature_selection(self, number_features_to_keep, use_mutual_info, save_to_csv=True):
+        if 'regression' in self.y_feature:
+            selection_type = 'regression'
+        elif 'classification' in self.y_feature:
+            selection_type = 'classification'
+        else:
+            print('You must specify either "regression" or "classification" in your y_feature name')
+            sys.exit()
+
+        if use_mutual_info == False or use_mutual_info == 'False':
+            if selection_type == 'regression':
+                selector = SelectKBest(score_func=f_regression, k=number_features_to_keep)
+            elif selection_type == 'classification':
+                selector = SelectKBest(score_func=f_classif, k=number_features_to_keep)
+        elif use_mutual_info == True or use_mutual_info == 'True':
+            if selection_type == 'regression':
+                selector = SelectKBest(score_func=mutual_info_regression, k=number_features_to_keep)
+            elif selection_type == 'classification':
+                selector = SelectKBest(score_func=mutual_info_classif, k=number_features_to_keep)
 
         Xnew = selector.fit_transform(X=self.dataframe[self.x_features], y=self.dataframe[self.y_feature])
 
-        #print('feature selection scores:')
-        #print(selector.scores_)
+        print('feature selection scores:')
+        print(selector.scores_)
 
         feature_names_selected = MiscFeatureSelectionOperations().get_selector_feature_names(selector=selector, x_features=self.x_features)
         dataframe = DataframeUtilities()._array_to_dataframe(array=Xnew)
-
         dataframe = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe, x_features=feature_names_selected, y_feature=self.y_feature, remove_first_row=False)
         # Add y_feature back into the dataframe
         dataframe = FeatureIO(dataframe=dataframe).add_custom_features(features_to_add=[self.y_feature],data_to_add=self.dataframe[self.y_feature])
         if save_to_csv == bool(True):
-            dataframe.to_csv('input_with_univariate_feature_selection.csv', index=False)
+            # Need configdict to get save path
+            configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
+            for column in dataframe.columns.values:
+                if column in configdict['General Setup']['target_feature']:
+                    filetag = column
+
+            if save_to_csv == bool(True):
+                dataframe.to_csv(
+                    configdict['General Setup']['save_path'] + "/" + 'input_with_univariate_feature_selection' + '_' + str(filetag) + '.csv', index=False)
 
         dataframe = dataframe.dropna()
         return dataframe
 
+    """
     def recursive_feature_elimination(self, number_features_to_keep, save_to_csv=True):
         if self.selection_type == 'Regression' or self.selection_type == 'regression':
             estimator = SVR(kernel='linear')
@@ -174,7 +187,6 @@ class FeatureSelection(object):
         return dataframe
     """
 
-
 class MiscFeatureSelectionOperations():
 
     @classmethod
@@ -195,7 +207,6 @@ class MiscFeatureSelectionOperations():
             if i in feature_indices_selected:
                 feature_names_selected.append(x_features[i])
         return feature_names_selected
-
 
     @classmethod
     def get_ranked_feature_names(cls, selector, x_features, number_features_to_keep):
