@@ -73,43 +73,15 @@ class MASTMLDriver(object):
             if key not in data_name_list:
                 data_name_list.append(key)
 
-        # For each csv file in the data_path_list, execute all models on each dataset.
-        # Split input CSV into multiple CSVs if multiple y_features are specified in input file
-        if type(self.configdict['General Setup']['target_feature']) is list:
-                logging.info('MASTML detected multiple y_feature to fit to')
-                data_path_list = self._split_csv_file()
-        else:
-            data_path_list = []
-            logging.info('MASTML detected a single y_feature to fit to')
-            data_path = self.configdict['Data Setup']['Initial']['data_path']
-            data_path_list.append(data_path)
+        self.data_dict, y_feature = self._create_data_dict()
 
-        # Loop over the locations of each CSV file, where each CSV contains a y_feature to be fit.
-        target_feature_regression_count = 0
-        target_feature_classification_count = 0
+        # Gather models
+        (self.model_list, self.model_vals) = self._gather_models(y_feature=y_feature)
 
-        for data_path in data_path_list:
+        # Gather tests
+        test_list, test_params = self._gather_tests()
 
-            print('On data path', data_path)
-
-            self.data_dict, y_feature = self._create_data_dict(data_path=data_path)
-
-            # Gather models
-            (self.model_list, self.model_vals) = self._gather_models(y_feature=y_feature, target_feature_regression_count=target_feature_regression_count, target_feature_classification_count=target_feature_classification_count)
-
-            # Gather tests
-            test_list, test_params = self._gather_tests(target_feature_regression_count=target_feature_regression_count,
-                                           target_feature_classification_count=target_feature_classification_count)
-
-            #self._run_tests(test_list=test_list, test_params=test_params, target_feature=y_feature, run_type=run_type)
-
-            if 'regression' in y_feature:
-                target_feature_regression_count += 1
-            elif 'classification' in y_feature:
-                target_feature_classification_count += 1
-            else:
-                print('Detected a problem with naming of your y_features to fit. Need keyword "regression" or "classification" in each y_feature')
-                sys.exit()
+        #self._run_tests(test_list=test_list, test_params=test_params, target_feature=y_feature, run_type=run_type)
 
         # End MASTML session
         self._move_log_and_input_files()
@@ -236,19 +208,20 @@ class MASTMLDriver(object):
 
         return Xdata, ydata, x_features, y_feature, dataframe
 
-    def _create_data_dict(self, data_path):
+    def _create_data_dict(self):
         data_dict=dict()
         for data_name in self.data_setup.keys():
+            data_path = self.configdict['Data Setup'][data_name]['data_path']
 
             print('Creating data dict for data path', data_path, 'and data name', data_name)
 
             # Make data_path as input if parsing Initial data, otherwise change data_path to use data_path in input file
             # located under non-Initial sections
-            if data_name == "Initial":
-                print('Parsing', data_name, ' data at', data_path)
-            else:
-                data_path = self.configdict['Data Setup'][data_name]['data_path']
-                print('Parsing', data_name, ' data at', data_path)
+            #if data_name == "Initial":
+            #    print('Parsing', data_name, ' data at', data_path)
+            #else:
+            #    data_path = self.configdict['Data Setup'][data_name]['data_path']
+            #    print('Parsing', data_name, ' data at', data_path)
 
             data_weights = self.data_setup[data_name]['weights']
             if 'labeling_features' in self.general_setup.keys():
@@ -517,7 +490,7 @@ class MASTMLDriver(object):
                         dataframe = fs.stability_selection(number_features_to_keep=int(len(x_features)), save_to_csv=True)
         return dataframe
 
-    def _gather_models(self, y_feature, target_feature_regression_count, target_feature_classification_count):
+    def _gather_models(self, y_feature):
         self.models_and_tests_setup = self.mastmlwrapper.process_config_keyword(keyword='Models and Tests to Run')
         model_list = []
         model_val = self.models_and_tests_setup['models']
@@ -525,26 +498,20 @@ class MASTMLDriver(object):
 
         if type(model_val) is str:
             logging.info('Getting model %s' % model_val)
-            ml_model = self.mastmlwrapper.get_machinelearning_model(model_type=model_val,
-                                                                    target_feature_regression_count=target_feature_regression_count,
-                                                                    target_feature_classification_count=target_feature_classification_count,
-                                                                    y_feature=y_feature)
+            ml_model = self.mastmlwrapper.get_machinelearning_model(model_type=model_val, y_feature=y_feature)
             model_list.append(ml_model)
             logging.info('Adding model %s to queue...' % str(model_val))
             model_vals.append(model_val)
         elif type(model_val) is list:
             for model in model_val:
                 logging.info('Getting model %s' % model)
-                ml_model = self.mastmlwrapper.get_machinelearning_model(model_type=model,
-                                                                        target_feature_regression_count=target_feature_regression_count,
-                                                                        target_feature_classification_count=target_feature_classification_count,
-                                                                        y_feature=y_feature)
+                ml_model = self.mastmlwrapper.get_machinelearning_model(model_type=model, y_feature=y_feature)
                 model_list.append(ml_model)
                 logging.info('Adding model %s to queue...' % str(model))
                 model_vals.append(model_val)
         return (model_list, model_val)
 
-    def _gather_tests(self, target_feature_regression_count, target_feature_classification_count):
+    def _gather_tests(self):
         # Gather test types
         self.readme_html_tests.append("<H2>Tests</H2>\n")
         self.readme_html.append("<H2>Favorites</H2>\n")
@@ -555,11 +522,6 @@ class MASTMLDriver(object):
             configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
             logging.info('Looking up parameters for test type %s' % test_type)
             test_params = configdict["Test Parameters"][test_type]
-
-            # Modify test_params to take xlabel, ylabel of specific y_feature we are fitting (only if multiple y_features)
-            if type(configdict['General Setup']['target_feature']) is list:
-                test_params['xlabel'] = test_params['xlabel'][target_feature_regression_count+target_feature_classification_count]
-                test_params['ylabel'] = test_params['ylabel'][target_feature_regression_count+target_feature_classification_count]
 
             # Set data lists
             training_dataset_name_list = self.string_or_list_input_to_list(test_params['training_dataset'])
@@ -576,7 +538,6 @@ class MASTMLDriver(object):
 
             print('on test', test_type)
 
-            # Run the tests
             # Run the test case for every model
             for midx, model in enumerate(self.model_list):
                 if model is not None:
