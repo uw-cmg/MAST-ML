@@ -464,24 +464,28 @@ class MASTMLDriver(object):
             if k == 'feature_selection_algorithm':
                 logging.info('FEATURE SELECTION: Selecting features using a %s algorithm' % v)
                 fs = FeatureSelection(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
-                if v == 'forward':
+                if v == 'sequential_forward_selection':
                     if int(self.configdict['Feature Selection']['number_of_features_to_keep']) <= len(x_features):
-                        dataframe = fs.forward_selection(number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']), save_to_csv=True)
+                        dataframe = fs.sequential_forward_selection(number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']), save_to_csv=True)
                     else:
                         logging.info('Warning: you have specified to keep more features than the total number of features in your dataset. Defaulting to keep all features in feature selection')
-                        dataframe = fs.forward_selection(number_features_to_keep=int(len(x_features)), save_to_csv=True)
+                        dataframe = fs.sequential_forward_selection(number_features_to_keep=int(len(x_features)), save_to_csv=True)
                 if v == 'RFE':
                     if int(self.configdict['Feature Selection']['number_of_features_to_keep']) <= len(x_features):
                         dataframe = fs.recursive_feature_elimination(number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']), save_to_csv=True)
                     else:
                         logging.info('Warning: you have specified to keep more features than the total number of features in your dataset. Defaulting to keep all features in feature selection')
                         dataframe = fs.recursive_feature_elimination(number_features_to_keep=int(len(x_features)), save_to_csv=True)
-                if v == 'univariate':
+                if v == 'univariate_feature_selection':
                     if int(self.configdict['Feature Selection']['number_of_features_to_keep']) <= len(x_features):
-                        dataframe = fs.univariate_feature_selection(number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']), save_to_csv=True)
+                        dataframe = fs.univariate_feature_selection(number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']),
+                                                                    use_mutual_info=self.configdict['Feature Selection']['use_mutual_information'],
+                                                                    save_to_csv=True)
                     else:
                         logging.info('Warning: you have specified to keep more features than the total number of features in your dataset. Defaulting to keep all features in feature selection')
-                        dataframe = fs.univariate_feature_selection(number_features_to_keep=int(len(x_features)), save_to_csv=True)
+                        dataframe = fs.univariate_feature_selection(number_features_to_keep=int(len(x_features)),
+                                                                    use_mutual_info=self.configdict['Feature Selection']['use_mutual_information'],
+                                                                    save_to_csv=True)
                 if v == 'stability':
                     if int(self.configdict['Feature Selection']['number_of_features_to_keep']) <= len(x_features):
                         dataframe = fs.stability_selection(number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']), save_to_csv=True)
