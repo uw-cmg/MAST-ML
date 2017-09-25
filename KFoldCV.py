@@ -72,6 +72,7 @@ class KFoldCV(LeaveOutPercentCV):
         notelist.append("  {:d}-fold-average mean error:".format(self.num_folds))
         notelist.append("    {:.2f} $\pm$ {:.2f}".format(self.statistics['avg_fold_avg_mean_errors'], self.statistics['std_fold_avg_mean_errors']))
         notelist.append("R-squared:" "{:.2f}".format(self.statistics['r2_score']))
+        notelist.append("R-squared (no int): " "{:.2f}".format(self.statistics['r2_score_noint']))
         self.plot_best_worst_overlay(notelist=list(notelist))
         self.plot_meancv_overlay(notelist=list(notelist))
         return
@@ -159,14 +160,11 @@ class KFoldCV(LeaveOutPercentCV):
         self.statistics['std_err_in_mean'] = std_err_in_mean
         self.statistics['average_prediction'] = average_prediction
 
-        # Get R2 value for plot
-        linearmodel = LinearRegression(fit_intercept=True)
-        Xdata = np.array(self.testing_dataset.target_data.reshape(-1, 1))
-        ydata = np.array(average_prediction.reshape(-1, 1))
-        linearmodel.fit(Xdata, ydata)
-        rsquared = linearmodel.score(Xdata, ydata)
+        rsquared = self.get_rsquared(Xdata=self.testing_dataset.target_data, ydata=average_prediction)
+        rsquared_noint = self.get_rsquared_noint(Xdata=self.testing_dataset.target_data, ydata=average_prediction)
 
         self.statistics['r2_score'] = rsquared
+        self.statistics['r2_score_noint'] = rsquared_noint
 
         return
     

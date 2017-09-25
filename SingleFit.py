@@ -196,17 +196,25 @@ class SingleFit():
         mean_abs_err = mean_absolute_error(self.testing_dataset.target_data, self.testing_dataset.target_prediction)
         return mean_abs_err
 
-    def get_rsquared(self):
+    def get_rsquared(self, Xdata, ydata):
+        Xdata = np.array(Xdata).reshape(-1,1)
+        ydata = np.array(ydata).reshape(-1,1)
         linearmodel = LinearRegression(fit_intercept=True)
-        Xdata = np.array(self.testing_dataset.target_data.values.reshape(-1,1))
-        ydata = np.array(self.testing_dataset.target_prediction.values.reshape(-1,1))
         linearmodel.fit(Xdata, ydata)
         rsquared = linearmodel.score(Xdata, ydata)
         # WARNING: There seems to be some issue (possibly numerical) with this routine whereby it gives a negative
         # R2 value even for datasets that clearly have positive correlation. Do not use for now!!
         #rsquared_sklearn = r2_score(self.testing_dataset.target_data, self.testing_dataset.target_prediction)
         return rsquared
-    
+
+    def get_rsquared_noint(self, Xdata, ydata):
+        Xdata = np.array(Xdata).reshape(-1,1)
+        ydata = np.array(ydata).reshape(-1,1)
+        linearmodel = LinearRegression(fit_intercept=False)
+        linearmodel.fit(Xdata, ydata)
+        rsquared_noint = linearmodel.score(Xdata, ydata)
+        return rsquared_noint
+
     def get_statistics(self):
         if self.testing_dataset.target_data is None:
             logger.warning("No testing target data. Statistics will not be collected.")
@@ -214,7 +222,8 @@ class SingleFit():
         self.statistics['rmse'] = self.get_rmse()
         self.statistics['mean_error'] = self.get_mean_error()
         self.statistics['mean_absolute_error'] = self.get_mean_absolute_error()
-        self.statistics['rsquared'] = self.get_rsquared()
+        self.statistics['rsquared'] = self.get_rsquared(Xdata=self.testing_dataset.target_data, ydata=self.testing_dataset.target_prediction)
+        self.statistics['rsquared_noint'] = self.get_rsquared_noint(Xdata=self.testing_dataset.target_data, ydata=self.testing_dataset.target_prediction)
         self.plot_filter_update_statistics()
         return
 
@@ -295,6 +304,7 @@ class SingleFit():
         notelist=list()
         notelist.append("RMSE: %3.3f" % self.statistics['rmse'])
         notelist.append("R-squared: %3.3f" % self.statistics['rsquared'])
+        notelist.append("R-squared (no int): %3.3f" % self.statistics['rsquared_noint'])
         notelist.append("Mean error: %3.3f" % self.statistics['mean_error'])
         notelist.append("Mean abs error: %3.3f" % self.statistics['mean_absolute_error'])
         plot_kwargs['notelist'] = notelist
