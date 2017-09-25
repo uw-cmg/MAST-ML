@@ -17,7 +17,6 @@ import importlib
 import pandas as pd
 from SingleFit import timeit
 
-
 class MASTMLDriver(object):
 
     def __init__(self, configfile):
@@ -68,10 +67,17 @@ class MASTMLDriver(object):
         if "CSV Setup" in self.configdict.keys():
             self._perform_csv_setup()
 
+        # Get data name list
+        data_name_list = list()
+        for key in self.configdict['Data Setup'].keys():
+            if key not in data_name_list:
+                data_name_list.append(key)
+
+        # For each csv file in the data_path_list, execute all models on each dataset.
         # Split input CSV into multiple CSVs if multiple y_features are specified in input file
         if type(self.configdict['General Setup']['target_feature']) is list:
-            logging.info('MASTML detected multiple y_feature to fit to')
-            data_path_list = self._split_csv_file()
+                logging.info('MASTML detected multiple y_feature to fit to')
+                data_path_list = self._split_csv_file()
         else:
             data_path_list = []
             logging.info('MASTML detected a single y_feature to fit to')
@@ -81,32 +87,22 @@ class MASTMLDriver(object):
         # Loop over the locations of each CSV file, where each CSV contains a y_feature to be fit.
         target_feature_regression_count = 0
         target_feature_classification_count = 0
+
         for data_path in data_path_list:
 
             print('On data path', data_path)
 
-            self.data_dict = self._create_data_dict(data_path=data_path)
-
-            # Get y_feature data to pass to mastmlwrapper to obtain ml models. Just use first index of Data Setup to get target_feature
-            key_count = 0
-            for key in self.data_dict.keys():
-                print('on key', key)
-                if key_count < 1:
-                    print('actually using key', key)
-                    y_feature = self.data_dict[key].target_feature
-                    key_count += 1
-
-            print(y_feature)
+            self.data_dict, y_feature = self._create_data_dict(data_path=data_path)
 
             # Gather models
             (self.model_list, self.model_vals) = self._gather_models(y_feature=y_feature, target_feature_regression_count=target_feature_regression_count, target_feature_classification_count=target_feature_classification_count)
 
             # Gather tests
-            test_list = self._gather_tests(mastmlwrapper=self.mastmlwrapper, configdict=self.configdict,
-                                           data_dict=self.data_dict, model_list=self.model_list,
-                                           save_path=self.save_path, model_vals = self.model_vals,
-                                           target_feature_regression_count=target_feature_regression_count,
+            test_list, test_params = self._gather_tests(target_feature_regression_count=target_feature_regression_count,
                                            target_feature_classification_count=target_feature_classification_count)
+
+            #self._run_tests(test_list=test_list, test_params=test_params, target_feature=y_feature, run_type=run_type)
+
             if 'regression' in y_feature:
                 target_feature_regression_count += 1
             elif 'classification' in y_feature:
@@ -124,6 +120,7 @@ class MASTMLDriver(object):
     def _split_csv_file(self):
         # Need dataframe and x and y features so can split CSV accordingly.
         data_path_list = []
+
         dataframe = DataParser(configdict=self.configdict).import_data(datapath=self.configdict['Data Setup']['Initial']['data_path'])
         y_feature = self.configdict['General Setup']['target_feature']
         other_features = []
@@ -148,6 +145,12 @@ class MASTMLDriver(object):
             dataframe_new.to_csv(data_path, index=False)
             data_path_list.append(data_path)
             count += 1
+
+        # Last, add file data paths that are not part of original CSV file to split
+        for key in self.configdict['Data Setup'].keys():
+            if key != 'Initial':
+                data_path_list.append(self.configdict['Data Setup'][key]['data_path'])
+
         return data_path_list
 
     def _initialize_mastml_session(self):
@@ -217,8 +220,7 @@ class MASTMLDriver(object):
     def _parse_input_data(self, data_path=""):
         if not(os.path.isfile(data_path)):
             raise OSError("No file found at %s" % data_path)
-        print('parsing input data path')
-        print(data_path)
+
         Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=self.configdict).parse_fromfile(datapath=data_path, as_array=False)
         # Remove dataframe entries that contain 'NaN'
 
@@ -237,7 +239,17 @@ class MASTMLDriver(object):
     def _create_data_dict(self, data_path):
         data_dict=dict()
         for data_name in self.data_setup.keys():
-            #data_path = self.data_setup[data_name]['data_path']
+
+            print('Creating data dict for data path', data_path, 'and data name', data_name)
+
+            # Make data_path as input if parsing Initial data, otherwise change data_path to use data_path in input file
+            # located under non-Initial sections
+            if data_name == "Initial":
+                print('Parsing', data_name, ' data at', data_path)
+            else:
+                data_path = self.configdict['Data Setup'][data_name]['data_path']
+                print('Parsing', data_name, ' data at', data_path)
+
             data_weights = self.data_setup[data_name]['weights']
             if 'labeling_features' in self.general_setup.keys():
                 labeling_features = self.string_or_list_input_to_list(self.general_setup['labeling_features'])
@@ -288,10 +300,10 @@ class MASTMLDriver(object):
             # Parse input data file
             Xdata, ydata, x_features, y_feature, dataframe = self._parse_input_data(data_path)
 
-            print('after import')
-            print(len(x_features))
-            print(y_feature)
-            print(dataframe.shape)
+            #print('after import')
+            #print(len(x_features))
+            #print(y_feature)
+            #print(dataframe.shape)
             #print(dataframe)
 
             original_x_features = list(x_features)
@@ -300,10 +312,10 @@ class MASTMLDriver(object):
             # Remove any missing rows from dataframe
             #dataframe = dataframe.dropna()
 
-            print('after import and drop')
-            print(len(x_features))
-            print(dataframe.shape)
-            
+            #print('after import and drop')
+            #print(len(x_features))
+            #print(dataframe.shape)
+
             # Save off label and grouping data
             dataframe_labeled = pd.DataFrame()
             dataframe_grouped = pd.DataFrame()
@@ -319,9 +331,9 @@ class MASTMLDriver(object):
                 dataframe = self._perform_feature_generation(dataframe=dataframe)
                 # Actually, the x_features_NOUSE is required if starting from no features and doing feature generation. Not renaming for now. RJ 7/17
                 Xdata, ydata, x_features_NOUSE, y_feature, dataframe = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe, target_feature=y_feature)
-                print('after gen')
-                print(dataframe.shape)
-                print(len(x_features_NOUSE))
+                #print('after gen')
+                #print(dataframe.shape)
+                #print(len(x_features_NOUSE))
 
             else:
                 Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe, target_feature=y_feature)
@@ -336,21 +348,21 @@ class MASTMLDriver(object):
             else:
                 nonstring_x_features, dataframe_nostrings = MiscFeatureOperations(configdict=self.configdict).remove_features_containing_strings(dataframe=dataframe, x_features=x_features)
 
-            print('after string remove')
-            print(len(x_features))
-            print(dataframe_nostrings.shape)
+            #print('after string remove')
+            #print(len(x_features))
+            #print(dataframe_nostrings.shape)
 
             # Remove columns containing all entries of NaN
             dataframe_nostrings = dataframe_nostrings.dropna(axis=1, how='all')
-            print('after dropna all')
-            print(len(x_features))
-            print(dataframe_nostrings.shape)
+            #print('after dropna all')
+            #print(len(x_features))
+            #print(dataframe_nostrings.shape)
 
             # Fill spots with NaN to be empty string
             dataframe_nostrings = dataframe_nostrings.dropna(axis=1, how='any')
-            print('after dropna any')
-            print(len(x_features))
-            print(dataframe_nostrings.shape)
+            #print('after dropna any')
+            #print(len(x_features))
+            #print(dataframe_nostrings.shape)
 
             # Re-obtain x_feature list as some features may have been dropped
             Xdata, ydata, x_features, y_feature, dataframe_nostrings = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe_nostrings, target_feature=y_feature)
@@ -363,9 +375,9 @@ class MASTMLDriver(object):
                 dataframe_nostrings, scaler = fn.normalize_features(x_features=x_features, y_feature=y_feature, normalize_x_features=normalize_x_features, normalize_y_feature=normalize_y_feature)
                 x_features, y_feature = DataParser(configdict=self.configdict).get_features(dataframe=dataframe_nostrings, target_feature=y_feature)
 
-            print('after normalize')
-            print(len(x_features))
-            print(dataframe_nostrings.shape)
+            #print('after normalize')
+            #print(len(x_features))
+            #print(dataframe_nostrings.shape)
 
             # Perform feature selection and dimensional reduction, as specified in the input file (optional)
             if (select_features == bool(True)) and (y_feature in dataframe_nostrings.columns):
@@ -394,9 +406,9 @@ class MASTMLDriver(object):
                         if feature not in duplicate_features:
                             duplicate_features.append(feature)
 
-            print("After feature selection:")
-            print(dataframe_nostrings.shape)
-            print(len(x_features))
+            #print("After feature selection:")
+            #print(dataframe_nostrings.shape)
+            #print(len(x_features))
             #print(x_features)
 
 
@@ -435,7 +447,11 @@ class MASTMLDriver(object):
                                 labeling_features = labeling_features,
                                 grouping_feature = grouping_feature) #
             logging.info('Parsed the input data located under %s' % data_path)
-        return data_dict
+
+            # Get dataframe stats
+            DataframeUtilities._save_all_dataframe_statistics(dataframe=dataframe_final, data_path=data_path)
+
+        return data_dict, y_feature
 
     @timeit
     def _perform_feature_generation(self, dataframe):
@@ -528,7 +544,7 @@ class MASTMLDriver(object):
                 model_vals.append(model_val)
         return (model_list, model_val)
 
-    def _gather_tests(self, mastmlwrapper, configdict, data_dict, model_list, save_path, model_vals, target_feature_regression_count, target_feature_classification_count):
+    def _gather_tests(self, target_feature_regression_count, target_feature_classification_count):
         # Gather test types
         self.readme_html_tests.append("<H2>Tests</H2>\n")
         self.readme_html.append("<H2>Favorites</H2>\n")
@@ -548,16 +564,19 @@ class MASTMLDriver(object):
             # Set data lists
             training_dataset_name_list = self.string_or_list_input_to_list(test_params['training_dataset'])
             training_dataset_list = list()
-
             for dname in training_dataset_name_list:
                 training_dataset_list.append(self.data_dict[dname])
-
             test_params['training_dataset'] = training_dataset_list
+
             testing_dataset_name_list = self.string_or_list_input_to_list(test_params['testing_dataset'])
             testing_dataset_list = list()
             for dname in testing_dataset_name_list:
                 testing_dataset_list.append(self.data_dict[dname])
             test_params['testing_dataset'] = testing_dataset_list
+
+            print('on test', test_type)
+
+            # Run the tests
             # Run the test case for every model
             for midx, model in enumerate(self.model_list):
                 if model is not None:
@@ -571,10 +590,10 @@ class MASTMLDriver(object):
                     if not os.path.isdir(test_save_path):
                         os.mkdir(test_save_path)
 
-                    print('passing model', model, 'for test type', test_type)
+                    #print('passing model', model, 'for test type', test_type)
 
                     self.mastmlwrapper.get_machinelearning_test(test_type=test_type,
-                            model=model, save_path=test_save_path, **test_params)
+                                                                model=model, save_path=test_save_path, **test_params)
                     logging.info('Ran test %s for your %s model' % (test_type, str(model)))
                     self.readme_html.extend(self.make_links_for_favorites(test_folder, test_save_path))
                     testrelpath = os.path.relpath(test_save_path, self.save_path)
@@ -590,7 +609,67 @@ class MASTMLDriver(object):
                             logging.warning(popt_warn_line)
                             print(popt_warn_line)
                         break
-        return test_list
+
+        return test_list, test_params
+
+    def _run_tests(self, test_list, test_params, target_feature, run_type):
+        # Parse test_list into 'predict' and 'intitial' based on run_type
+        #test_list_new = list()
+        #for test_type in test_list:
+        #    if run_type == 'predict':
+        #        if 'predict' in test_type:
+        #            test_list_new.append(test_type)
+        #    elif run_type == 'initial':
+        #        if 'predict' not in test_type:
+        #            test_list_new.append(test_type)
+
+        for test_type in test_list:
+
+            #print('Running test type')
+            #print(test_type)
+            #print('Using test params summary:')
+            #for k, v in test_params.items():
+            #    if k == 'training_dataset':
+            #        print(len(v))
+            #        print(k), print(v[0].input_data.shape)
+            #    if k == 'testing_dataset':
+            #        print(len(v))
+            #        print(k), print(v[0].target_data.shape)
+            #    else:
+            #        print(k), print(v)
+
+            # Run the test case for every model
+            for midx, model in enumerate(self.model_list):
+                if model is not None:
+                    # Get name of target_feature for use in test_folder naming
+                    for key, value in self.data_dict.items():
+                        target_feature = value.target_feature
+                    # Set save path, allowing for multiple tests and models and potentially multiple of the same model (KernelRidge rbf kernel, KernelRidge linear kernel, etc.)
+                    test_folder = "%s_%s%i_%s" % (test_type, model.__class__.__name__, midx, str(target_feature))
+                    test_save_path = os.path.join(self.save_path, test_folder)
+                    self.test_save_paths.append(test_save_path)
+                    if not os.path.isdir(test_save_path):
+                        os.mkdir(test_save_path)
+
+                    #print('passing model', model, 'for test type', test_type)
+
+                    self.mastmlwrapper.get_machinelearning_test(test_type=test_type,
+                                                                model=model, save_path=test_save_path, **test_params)
+                    logging.info('Ran test %s for your %s model' % (test_type, str(model)))
+                    self.readme_html.extend(self.make_links_for_favorites(test_folder, test_save_path))
+                    testrelpath = os.path.relpath(test_save_path, self.save_path)
+                    self.readme_html_tests.append('<A HREF="%s">%s</A><BR>\n' % (testrelpath, test_type))
+                    test_short = test_folder.split("_")[0]
+                    if test_short in self.param_optimizing_tests:
+                        popt_warn = list()
+                        popt_warn.append("Last test was a parameter-optimizing test.")
+                        popt_warn.append("The test results may have specified an update of model parameters or data.")
+                        popt_warn.append("Please run a separate test.conf file with updated data and model parameters.")
+                        popt_warn.append("No further tests will be run on this file.")
+                        for popt_warn_line in popt_warn:
+                            logging.warning(popt_warn_line)
+                            print(popt_warn_line)
+                        break
 
     def _move_log_and_input_files(self):
         cwd = os.getcwd()
@@ -608,7 +687,7 @@ class MASTMLDriver(object):
 
             if os.path.exists(oldinput):
                 os.remove(oldinput)
-            shutil.move(copyinput, self.save_path)
+            shutil.copy(copyinput, self.save_path)
 
             copyconfig = os.path.join(cwd, str(self.configfile))
             shutil.copy(copyconfig, self.save_path)
