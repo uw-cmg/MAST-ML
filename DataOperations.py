@@ -71,7 +71,7 @@ class DataParser(object):
                     if feature in y_feature_from_input:
                         y_feature = feature
 
-            print(y_feature, type(y_feature))
+            #print(y_feature, type(y_feature))
 
         elif from_input_file == bool(False):
             y_feature = target_feature
@@ -145,9 +145,11 @@ class DataframeUtilities(object):
         return dataframe
 
     @classmethod
-    def _save_all_dataframe_statistics(cls, dataframe):
+    def _save_all_dataframe_statistics(cls, dataframe, data_path):
         dataframe_stats = cls._get_dataframe_statistics(dataframe=dataframe)
         # Need configdict to get save path
         configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
-        dataframe_stats.to_csv(configdict['General Setup']['save_path'] + "/" + 'input_data_statistics.csv',index=True)
+        data_path_name = data_path.split('./')[1]
+        data_path_name = data_path_name.split('.csv')[0]
+        dataframe_stats.to_csv(configdict['General Setup']['save_path'] + "/" + 'input_data_statistics_'+data_path_name+'.csv',index=True)
         return
