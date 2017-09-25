@@ -8,6 +8,7 @@ import time
 import logging
 import copy
 from sklearn.externals import joblib
+from sklearn.linear_model import LinearRegression
 logger = logging.getLogger()
 
 def timeit(method):
@@ -157,8 +158,6 @@ class SingleFit():
         self.plot_results()
         return
 
-
-
     def get_trained_model(self):
         trained_model = self.model.fit(self.training_dataset.input_data, self.training_dataset.target_data)
         self.trained_model = trained_model
@@ -198,7 +197,14 @@ class SingleFit():
         return mean_abs_err
 
     def get_rsquared(self):
-        rsquared = r2_score(self.testing_dataset.target_data, self.testing_dataset.target_prediction)
+        linearmodel = LinearRegression(fit_intercept=True)
+        Xdata = np.array(self.testing_dataset.target_data.values.reshape(-1,1))
+        ydata = np.array(self.testing_dataset.target_prediction.values.reshape(-1,1))
+        linearmodel.fit(Xdata, ydata)
+        rsquared = linearmodel.score(Xdata, ydata)
+        # WARNING: There seems to be some issue (possibly numerical) with this routine whereby it gives a negative
+        # R2 value even for datasets that clearly have positive correlation. Do not use for now!!
+        #rsquared_sklearn = r2_score(self.testing_dataset.target_data, self.testing_dataset.target_prediction)
         return rsquared
     
     def get_statistics(self):
