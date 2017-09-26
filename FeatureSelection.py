@@ -138,16 +138,9 @@ class FeatureSelection(object):
         dataframe = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe, x_features=feature_names_selected, y_feature=self.y_feature, remove_first_row=False)
         # Add y_feature back into the dataframe
         dataframe = FeatureIO(dataframe=dataframe).add_custom_features(features_to_add=[self.y_feature],data_to_add=self.dataframe[self.y_feature])
-        if save_to_csv == bool(True):
-            # Need configdict to get save path
-            configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
-            for column in dataframe.columns.values:
-                if column in configdict['General Setup']['target_feature']:
-                    filetag = column
 
-            if save_to_csv == bool(True):
-                dataframe.to_csv(
-                    configdict['General Setup']['save_path'] + "/" + 'input_with_univariate_feature_selection' + '_' + str(filetag) + '.csv', index=False)
+        if save_to_csv == bool(True):
+            MiscFeatureSelectionOperations().save_data_to_csv(dataframe=dataframe, feature_selection_str='univariate_feature_selection')
 
         dataframe = dataframe.dropna()
         return dataframe
@@ -186,6 +179,8 @@ class FeatureSelection(object):
             dataframe.to_csv('input_with_stability_feature_selection.csv', index=False)
         return dataframe
     """
+
+
 
 class MiscFeatureSelectionOperations():
 
@@ -241,3 +236,14 @@ class MiscFeatureSelectionOperations():
 
         dataframe = FeatureIO(dataframe=dataframe).remove_custom_features(features_to_remove=x_features_to_remove)
         return x_features_pruned, dataframe
+
+    @classmethod
+    def save_data_to_csv(cls, dataframe, feature_selection_str):
+        # Need configdict to get save path
+        configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
+        for column in dataframe.columns.values:
+            if column in configdict['General Setup']['target_feature']:
+                filetag = column
+
+        dataframe.to_csv(configdict['General Setup']['save_path'] + "/" + 'input_with_' + feature_selection_str + '_' + str(filetag) + '.csv', index=False)
+        return
