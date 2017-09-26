@@ -4,21 +4,22 @@ from sklearn.decomposition import PCA
 from DataOperations import DataframeUtilities
 from FeatureOperations import FeatureIO
 from MASTMLInitializer import ConfigFileParser
-from sklearn.model_selection import learning_curve, ShuffleSplit, cross_val_score
+from sklearn.model_selection import learning_curve, ShuffleSplit, KFold
 from sklearn.feature_selection import SelectKBest, f_classif, f_regression, mutual_info_regression, mutual_info_classif
 from sklearn.svm import SVR, SVC
 from sklearn.feature_selection import RFE
 from sklearn.linear_model import RandomizedLasso, LinearRegression
+from sklearn.ensemble import ExtraTreesRegressor
 from sklearn.kernel_ridge import KernelRidge
+from sklearn.metrics import mean_squared_error, make_scorer
+from matplotlib import pyplot as plt
 import sys
 import logging
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.ensemble import ExtraTreesRegressor
 from mlxtend.feature_selection import SequentialFeatureSelector as SFS
 from mlxtend.plotting import plot_sequential_feature_selection as plot_sfs
 import pandas as pd
-import os
 
 class DimensionalReduction(object):
     """Class to conduct PCA and constant feature removal for dimensional reduction of features. Mind that PCA produces linear combinations of features,
@@ -117,9 +118,9 @@ class FeatureSelection(object):
 
         Xnew = selector.fit_transform(X=self.dataframe[self.x_features], y=self.dataframe[self.y_feature])
 
-        print('feature selection scores:')
-        print(selector.scores_)
-        print(len(selector.scores_.tolist()))
+        #print('feature selection scores:')
+        #print(selector.scores_)
+        #print(len(selector.scores_.tolist()))
 
         mfso = MiscFeatureSelectionOperations()
         feature_indices_selected, feature_names_selected = mfso.get_selector_feature_names(selector=selector, x_features=self.x_features)
@@ -127,10 +128,15 @@ class FeatureSelection(object):
         dataframe = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe, x_features=feature_names_selected, y_feature=self.y_feature, remove_first_row=False)
         # Add y_feature back into the dataframe
         dataframe = FeatureIO(dataframe=dataframe).add_custom_features(features_to_add=[self.y_feature],data_to_add=self.dataframe[self.y_feature])
-
-        filetag = mfso.get_feature_filetag(configdict=self.configdict, dataframe=dataframe)
-        mfso.save_data_to_csv(configdict=self.configdict, dataframe=dataframe, feature_selection_str='input_with_univariate_feature_selection', filetag=filetag)
         dataframe = dataframe.dropna()
+
+        # Only report the features selected and save csv file when number_features_to_keep is equal to value
+        # specified in input file (so that many files aren't generated when making feature learning curve).
+        if number_features_to_keep == self.configdict['Feature Selection']['number_of_features_to_keep']:
+            filetag = mfso.get_feature_filetag(configdict=self.configdict, dataframe=dataframe)
+            mfso.save_data_to_csv(configdict=self.configdict, dataframe=dataframe,
+                                  feature_selection_str='input_with_univariate_feature_selection', filetag=filetag)
+
         return dataframe
 
     """
@@ -152,6 +158,132 @@ class FeatureSelection(object):
             dataframe.to_csv('input_with_RFE_feature_selection.csv', index=False)
         return dataframe
     """
+
+class LearningCurve(object):
+
+    def __init__(self, configdict):
+        self.configdict = configdict
+
+    def generate_feature_learning_curve(self, feature_selection_instance, feature_selection_algorithm):
+        n_features_to_keep = int(self.configdict['Feature Selection']['number_of_features_to_keep'])
+        dataframe_fs_list = list()
+        num_features_list = list()
+        train_rmse_list = list()
+        test_rmse_list = list()
+
+        # Obtain dataframes of selected features for n_features ranging from 1 to number_of_features_to_keep
+        for n_features in range(n_features_to_keep):
+            num_features_list.append(n_features + 1)
+            if feature_selection_algorithm == 'univariate_feature_selection':
+                use_mutual_info = self.configdict['Feature Selection']['use_mutual_information']
+                dataframe_fs = feature_selection_instance.univariate_feature_selection(
+                    number_features_to_keep=n_features + 1, use_mutual_info=use_mutual_info)
+                dataframe_fs_list.append(dataframe_fs)
+
+        # TODO: use general model as specified by user in input file, not just generic GKRR
+        model_orig = KernelRidge(alpha=1, kernel='rbf', gamma=0.1)
+        num_cvtests = 10
+        num_folds = 5
+        kfoldcv = KFold(n_splits=num_folds, shuffle=True, random_state=False)
+        target_feature = self.configdict['General Setup']['target_feature']
+
+        # Loop over list of feature-selected dataframes and perform CV tests using general GKRR model. Save list of average CV scores for plotting
+        for df in dataframe_fs_list:
+            print('on dataframe of size', df.shape)
+            dfcopy = df
+            cvtest_dict = dict()
+            indices = np.arange(df.shape[0])
+            num_features = df.shape[1] - 1
+            print(num_features)
+
+            # Set up CV splits for the dataframe being tested
+            for cvtest in range(num_cvtests):
+                cvtest_dict[cvtest] = dict()
+                foldidx = 0
+                for train, test in kfoldcv.split(indices):
+                    fdict = dict()
+                    fdict['train_index'] = train
+                    fdict['test_index'] = test
+                    cvtest_dict[cvtest][foldidx] = dict(fdict)
+                    foldidx += 1
+
+            # For each CV test, and each fold in each CV test, fit the model to the appropriate train and test data and get CV scores
+            for cvtest in cvtest_dict.keys():
+                fold_train_rmses = np.zeros(num_folds)
+                fold_test_rmses = np.zeros(num_folds)
+                for fold in cvtest_dict[cvtest].keys():
+                    fdict = cvtest_dict[cvtest][fold]
+                    input_train = df.iloc[fdict['train_index']]
+                    if target_feature in input_train.columns:
+                        del input_train[target_feature]
+
+                    target_train = df[target_feature][fdict['train_index']]
+                    input_test = df.iloc[fdict['test_index']]
+                    if target_feature in input_test.columns:
+                        del input_test[target_feature]
+                    target_test = df[target_feature][fdict['test_index']]
+                    model = model_orig.fit(input_train, target_train)
+                    predict_train = model.predict(input_train)
+                    predict_test = model.predict(input_test)
+
+                    rmse_test = np.sqrt(mean_squared_error(predict_test, target_test))
+                    rmse_train = np.sqrt(mean_squared_error(predict_train, target_train))
+                    fold_train_rmses[fold] = rmse_train
+                    fold_test_rmses[fold] = rmse_test
+                cvtest_dict[cvtest]["avg_train_rmse"] = np.mean(fold_train_rmses)
+                cvtest_dict[cvtest]["avg_test_rmse"] = np.mean(fold_test_rmses)
+
+            # Average rmse over all cvtests for this dataframe
+            train_rmse = 0
+            test_rmse = 0
+            for cvtest in cvtest_dict.keys():
+                train_rmse += cvtest_dict[cvtest]["avg_train_rmse"]
+                test_rmse += cvtest_dict[cvtest]["avg_test_rmse"]
+            train_rmse /= num_cvtests
+            test_rmse /= num_cvtests
+            train_rmse_list.append(train_rmse)
+            test_rmse_list.append(test_rmse)
+
+            # Get current df x and y data split
+            ydata = FeatureIO(dataframe=dfcopy).keep_custom_features(features_to_keep=target_feature)
+            Xdata = FeatureIO(dataframe=dfcopy).remove_custom_features(features_to_remove=target_feature)
+
+            # Construct learning curve plot of CVscore vs number of training data included. Only do it once max features reached
+            if num_features == n_features_to_keep:
+                self.plot_learning_curve(estimator=model_orig, title='Training data learning curve', X=Xdata, y=ydata, cv=5)
+
+        print('train rmse list', train_rmse_list)
+        print('test rmse list', test_rmse_list)
+
+        # Construct learning curve plot of RMSE vs number of features included
+
+
+        return
+
+
+    def plot_learning_curve(self, estimator, title, X, y, cv=None):
+        plt.figure()
+        plt.title(title)
+        plt.xlabel("Number of training data points")
+        plt.ylabel("RMSE")
+        train_sizes, train_scores, test_scores = learning_curve(
+            estimator, X, y, cv=cv, n_jobs=1, scoring=make_scorer(score_func=mean_squared_error),
+            train_sizes=np.linspace(0.1, 1.0, 10))
+        train_scores_mean = np.mean(np.sqrt(train_scores), axis=1)
+        train_scores_std = np.std(np.sqrt(train_scores), axis=1)
+        test_scores_mean = np.mean(np.sqrt(test_scores), axis=1)
+        test_scores_std = np.std(np.sqrt(test_scores), axis=1)
+        plt.grid()
+        plt.fill_between(train_sizes, train_scores_mean - train_scores_std, train_scores_mean + train_scores_std, alpha=0.1,
+                         color="r")
+        plt.fill_between(train_sizes, test_scores_mean - test_scores_std, test_scores_mean + test_scores_std, alpha=0.1,
+                         color="g")
+        plt.plot(train_sizes, train_scores_mean, 'o-', color="r", label="Training score")
+        plt.plot(train_sizes, test_scores_mean, 'o-', color="g", label="Cross-validation score (RMSE)")
+        plt.legend(loc="best")
+        savedir = self.configdict['General Setup']['save_path']
+        plt.savefig(savedir + "/" + "learning_curve_trainingdata.pdf")
+        return plt
 
 
 class MiscFeatureSelectionOperations():

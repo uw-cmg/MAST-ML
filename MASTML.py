@@ -6,7 +6,7 @@ from MASTMLInitializer import MASTMLWrapper, ConfigFileValidator, ConfigFilePars
 from DataOperations import DataParser, DataframeUtilities
 from FeatureGeneration import MagpieFeatureGeneration, MaterialsProjectFeatureGeneration, CitrineFeatureGeneration
 from FeatureOperations import FeatureNormalization, FeatureIO, MiscFeatureOperations
-from FeatureSelection import FeatureSelection, DimensionalReduction, MiscFeatureSelectionOperations
+from FeatureSelection import FeatureSelection, DimensionalReduction, MiscFeatureSelectionOperations, LearningCurve
 import logging
 import shutil
 import time
@@ -481,6 +481,10 @@ class MASTMLDriver(object):
                     if int(self.configdict['Feature Selection']['number_of_features_to_keep']) <= len(x_features):
                         dataframe = fs.univariate_feature_selection(number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']),
                                                                     use_mutual_info=self.configdict['Feature Selection']['use_mutual_information'])
+                        if bool(self.configdict['Feature Selection']['generate_feature_learning_curve']) == True:
+                            learningcurve = LearningCurve(configdict=self.configdict)
+                            logging.info('Generating a feature learning curve using a %s algorithm' % v)
+                            learningcurve.generate_feature_learning_curve(feature_selection_instance=fs, feature_selection_algorithm='univariate_feature_selection')
                     else:
                         logging.info('Warning: you have specified to keep more features than the total number of features in your dataset. Defaulting to keep all features in feature selection')
                         dataframe = fs.univariate_feature_selection(number_features_to_keep=int(len(x_features)),
