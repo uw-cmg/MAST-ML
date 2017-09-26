@@ -47,7 +47,8 @@ class DimensionalReduction(object):
 class FeatureSelection(object):
     """Class to conduct feature selection routines to reduce the number of input features for regression and classification problems.
     """
-    def __init__(self, dataframe, x_features, y_feature):
+    def __init__(self, configdict, dataframe, x_features, y_feature):
+        self.configdict = configdict
         self.dataframe = dataframe
         self.x_features = x_features
         self.y_feature = y_feature
@@ -56,7 +57,7 @@ class FeatureSelection(object):
     def get_original_dataframe(self):
         return self.dataframe
 
-    def sequential_forward_selection(self, number_features_to_keep, save_to_csv=True):
+    def sequential_forward_selection(self, number_features_to_keep):
         sfs = SFS(KernelRidge(alpha=0.01, kernel='linear'), k_features=number_features_to_keep, forward=True, floating=False, verbose=0, scoring='r2', cv=ShuffleSplit(n_splits=5, test_size=0.2))
         sfs = sfs.fit(X=np.array(self.dataframe[self.x_features]), y=np.array(self.dataframe[self.y_feature]))
         Xnew = sfs.fit_transform(X=np.array(self.dataframe[self.x_features]), y=np.array(self.dataframe[self.y_feature]))
@@ -81,34 +82,20 @@ class FeatureSelection(object):
         dataframe = FeatureIO(dataframe=dataframe).add_custom_features(features_to_add=[self.y_feature],data_to_add=self.dataframe[self.y_feature])
         dataframe = dataframe.dropna()
         # Get forward selection data
-        fs_dataframe = pd.DataFrame.from_dict(sfs.get_metric_dict()).T
+        metricdict = sfs.get_metric_dict()
+        fs_dataframe = pd.DataFrame.from_dict(metricdict).T
         logging.info(("Summary of forward selection:"))
         logging.info(fs_dataframe)
 
-        # Get y_feature in this dataframe, attach it to save path
-        # Need configdict to get save path
-        configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
-        for column in dataframe.columns.values:
-            if column in configdict['General Setup']['target_feature']:
-                filetag = column
-
-        if save_to_csv == bool(True):
-            dataframe.to_csv(configdict['General Setup']['save_path']+"/"+'input_with_forward_selection'+'_'+str(filetag)+'.csv', index=False)
-            fs_dataframe.to_csv(configdict['General Setup']['save_path']+"/"+'forward_selection_data'+'_'+str(filetag)+'.csv', index=False)
-
-        # Save a plot of the learning curve
-        fig1 = plot_sfs(metric_dict=sfs.get_metric_dict(), kind='std_dev')
-        plt.title('Forward selection learning curve', fontsize=18)
-        plt.ylabel('R^2 correlation', fontsize=16)
-        plt.xticks(fontsize=14)
-        plt.xlabel('Number of features', fontsize=16)
-        plt.yticks(fontsize=14)
-        plt.tight_layout()
-        plt.savefig(configdict['General Setup']['save_path']+"/"+'forward_selection_learning_curve_'+str(filetag)+'.pdf')
+        mfso = MiscFeatureSelectionOperations()
+        filetag = mfso.get_feature_filetag(configdict=self.configdict, dataframe=dataframe)
+        mfso.save_data_to_csv(configdict=self.configdict, dataframe=dataframe, feature_selection_str='input_with_sequential_forward_selection', filetag=filetag)
+        mfso.save_data_to_csv(configdict=self.configdict, dataframe=fs_dataframe, feature_selection_str='sequential_forward_selection_data', filetag=filetag)
+        mfso.get_forward_selection_learning_curve(configdict=self.configdict, metricdict=metricdict, filetag=filetag)
 
         return dataframe
 
-    def univariate_feature_selection(self, number_features_to_keep, use_mutual_info, save_to_csv=True):
+    def univariate_feature_selection(self, number_features_to_keep, use_mutual_info):
         if 'regression' in self.y_feature:
             selection_type = 'regression'
         elif 'classification' in self.y_feature:
@@ -139,8 +126,9 @@ class FeatureSelection(object):
         # Add y_feature back into the dataframe
         dataframe = FeatureIO(dataframe=dataframe).add_custom_features(features_to_add=[self.y_feature],data_to_add=self.dataframe[self.y_feature])
 
-        if save_to_csv == bool(True):
-            MiscFeatureSelectionOperations().save_data_to_csv(dataframe=dataframe, feature_selection_str='univariate_feature_selection')
+        mfso = MiscFeatureSelectionOperations()
+        filetag = mfso.get_feature_filetag(configdict=self.configdict, dataframe=dataframe)
+        mfso.save_data_to_csv(configdict=self.configdict, dataframe=dataframe, feature_selection_str='input_with_univariate_feature_selection', filetag=filetag)
 
         dataframe = dataframe.dropna()
         return dataframe
@@ -204,6 +192,31 @@ class MiscFeatureSelectionOperations():
         return feature_names_selected
 
     @classmethod
+    def get_feature_filetag(cls, configdict, dataframe):
+        foundfeature = False
+        for column in dataframe.columns.values:
+            if column in configdict['General Setup']['target_feature']:
+                filetag = column
+                foundfeature = True
+        if foundfeature == False:
+            logging.info('Error: Could not locate y_feature in your dataframe, please ensure the y_feature names match in your csv'
+                      'and input file')
+            sys.exit()
+        return filetag
+
+    @classmethod
+    def get_forward_selection_learning_curve(cls, configdict, metricdict, filetag):
+        fig1 = plot_sfs(metric_dict=metricdict, kind='std_dev')
+        plt.title('Forward selection learning curve', fontsize=18)
+        plt.ylabel('R^2 correlation', fontsize=16)
+        plt.xticks(fontsize=14)
+        plt.xlabel('Number of features', fontsize=16)
+        plt.yticks(fontsize=14)
+        plt.tight_layout()
+        plt.savefig(configdict['General Setup']['save_path']+"/"+'forward_selection_learning_curve_'+str(filetag)+'.pdf')
+        return
+
+    @classmethod
     def get_ranked_feature_names(cls, selector, x_features, number_features_to_keep):
         try:
             ranked_features = sorted(zip(selector.scores_, x_features), reverse=True)
@@ -238,12 +251,6 @@ class MiscFeatureSelectionOperations():
         return x_features_pruned, dataframe
 
     @classmethod
-    def save_data_to_csv(cls, dataframe, feature_selection_str):
-        # Need configdict to get save path
-        configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
-        for column in dataframe.columns.values:
-            if column in configdict['General Setup']['target_feature']:
-                filetag = column
-
-        dataframe.to_csv(configdict['General Setup']['save_path'] + "/" + 'input_with_' + feature_selection_str + '_' + str(filetag) + '.csv', index=False)
+    def save_data_to_csv(cls, configdict, dataframe, feature_selection_str, filetag):
+        dataframe.to_csv(configdict['General Setup']['save_path'] + "/" + feature_selection_str + '_' + str(filetag) + '.csv', index=False)
         return
