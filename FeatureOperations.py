@@ -36,12 +36,20 @@ class FeatureIO(object):
 
     def remove_custom_features(self, features_to_remove):
         dataframe = self.dataframe
+        if type(features_to_remove) is str:
+            features_to_remove_list = list()
+            features_to_remove_list.append(features_to_remove)
+            features_to_remove = features_to_remove_list
         for feature in features_to_remove:
             del dataframe[feature]
         return dataframe
 
     def keep_custom_features(self, features_to_keep, y_feature=None):
         dataframe_dict = {}
+        if type(features_to_keep) is str:
+            features_to_keep_list = list()
+            features_to_keep_list.append(features_to_keep)
+            features_to_keep = features_to_keep_list
         for feature in features_to_keep:
             dataframe_dict[feature] = self.dataframe[feature]
         if y_feature is not None:
