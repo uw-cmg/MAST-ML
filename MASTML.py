@@ -485,12 +485,6 @@ class MASTMLDriver(object):
                         logging.info('Warning: you have specified to keep more features than the total number of features in your dataset. Defaulting to keep all features in feature selection')
                         dataframe = fs.univariate_feature_selection(number_features_to_keep=int(len(x_features)),
                                                                     use_mutual_info=self.configdict['Feature Selection']['use_mutual_information'])
-                if v == 'stability':
-                    if int(self.configdict['Feature Selection']['number_of_features_to_keep']) <= len(x_features):
-                        dataframe = fs.stability_selection(number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']))
-                    else:
-                        logging.info('Warning: you have specified to keep more features than the total number of features in your dataset. Defaulting to keep all features in feature selection')
-                        dataframe = fs.stability_selection(number_features_to_keep=int(len(x_features)))
         return dataframe
 
     def _gather_models(self, y_feature):

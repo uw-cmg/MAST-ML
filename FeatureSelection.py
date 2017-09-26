@@ -119,17 +119,17 @@ class FeatureSelection(object):
 
         print('feature selection scores:')
         print(selector.scores_)
+        print(len(selector.scores_.tolist()))
 
-        feature_names_selected = MiscFeatureSelectionOperations().get_selector_feature_names(selector=selector, x_features=self.x_features)
+        mfso = MiscFeatureSelectionOperations()
+        feature_indices_selected, feature_names_selected = mfso.get_selector_feature_names(selector=selector, x_features=self.x_features)
         dataframe = DataframeUtilities()._array_to_dataframe(array=Xnew)
         dataframe = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe, x_features=feature_names_selected, y_feature=self.y_feature, remove_first_row=False)
         # Add y_feature back into the dataframe
         dataframe = FeatureIO(dataframe=dataframe).add_custom_features(features_to_add=[self.y_feature],data_to_add=self.dataframe[self.y_feature])
 
-        mfso = MiscFeatureSelectionOperations()
         filetag = mfso.get_feature_filetag(configdict=self.configdict, dataframe=dataframe)
         mfso.save_data_to_csv(configdict=self.configdict, dataframe=dataframe, feature_selection_str='input_with_univariate_feature_selection', filetag=filetag)
-
         dataframe = dataframe.dropna()
         return dataframe
 
@@ -151,23 +151,7 @@ class FeatureSelection(object):
         if save_to_csv == bool(True):
             dataframe.to_csv('input_with_RFE_feature_selection.csv', index=False)
         return dataframe
-
-    def stability_selection(self, number_features_to_keep, save_to_csv=True):
-        # First remove features containing strings before doing feature selection
-        #x_features, dataframe = MiscOperations().remove_features_containing_strings(dataframe=self.dataframe,x_features=self.x_features)
-        if self.selection_type == 'Regression' or self.selection_type == 'regression':
-            selector = RandomizedLasso()
-            selector.fit(self.dataframe[self.x_features], y=self.dataframe[self.y_feature])
-            feature_names_selected = MiscFeatureSelectionOperations().get_ranked_feature_names(selector=selector, x_features=self.x_features, number_features_to_keep=number_features_to_keep)
-            dataframe = FeatureIO(dataframe=self.dataframe).keep_custom_features(features_to_keep=feature_names_selected, y_feature=self.y_feature)
-        if self.selection_type == 'Classification' or self.selection_type == 'classification':
-            print('Stability selection is currently only configured for regression tasks')
-            sys.exit()
-        if save_to_csv == bool(True):
-            dataframe.to_csv('input_with_stability_feature_selection.csv', index=False)
-        return dataframe
     """
-
 
 
 class MiscFeatureSelectionOperations():
@@ -180,7 +164,7 @@ class MiscFeatureSelectionOperations():
         for i in range(len(x_features)):
             if i in feature_indices_selected:
                 feature_names_selected.append(x_features[i])
-        return feature_names_selected
+        return feature_indices_selected, feature_names_selected
 
     @classmethod
     def get_forward_selection_feature_names(cls, feature_indices_selected, x_features):
