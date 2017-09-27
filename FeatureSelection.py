@@ -59,7 +59,7 @@ class FeatureSelection(object):
         return self.dataframe
 
     def sequential_forward_selection(self, number_features_to_keep):
-        sfs = SFS(KernelRidge(alpha=0.01, kernel='linear'), k_features=number_features_to_keep, forward=True, floating=False, verbose=0, scoring='r2', cv=ShuffleSplit(n_splits=5, test_size=0.2))
+        sfs = SFS(KernelRidge(alpha=0.01, kernel='linear'), k_features=number_features_to_keep, forward=True, floating=False, verbose=0, scoring='neg_mean_squared_error', cv=ShuffleSplit(n_splits=10, test_size=0.2))
         sfs = sfs.fit(X=np.array(self.dataframe[self.x_features]), y=np.array(self.dataframe[self.y_feature]))
         Xnew = sfs.fit_transform(X=np.array(self.dataframe[self.x_features]), y=np.array(self.dataframe[self.y_feature]))
         feature_indices_selected = sfs.k_feature_idx_
@@ -84,6 +84,14 @@ class FeatureSelection(object):
         dataframe = dataframe.dropna()
         # Get forward selection data
         metricdict = sfs.get_metric_dict()
+
+        # Change avg_score metric_dict values to be positive RMSE (currently negative MSE by default)
+        for featurenumber, featuredict in metricdict.items():
+            for metric, metricvalue in featuredict.items():
+                if metric == 'avg_score':
+                    metricvalue = np.sqrt(-1*metricvalue)
+                    metricdict[featurenumber][metric] = metricvalue
+
         fs_dataframe = pd.DataFrame.from_dict(metricdict).T
         logging.info(("Summary of forward selection:"))
         logging.info(fs_dataframe)
@@ -92,7 +100,8 @@ class FeatureSelection(object):
         filetag = mfso.get_feature_filetag(configdict=self.configdict, dataframe=dataframe)
         mfso.save_data_to_csv(configdict=self.configdict, dataframe=dataframe, feature_selection_str='input_with_sequential_forward_selection', filetag=filetag)
         mfso.save_data_to_csv(configdict=self.configdict, dataframe=fs_dataframe, feature_selection_str='sequential_forward_selection_data', filetag=filetag)
-        mfso.get_forward_selection_learning_curve(configdict=self.configdict, metricdict=metricdict, filetag=filetag)
+        learningcurve = LearningCurve(configdict=self.configdict)
+        learningcurve.get_sequential_forward_selection_learning_curve(metricdict=metricdict, filetag=filetag)
 
         return dataframe
 
@@ -250,7 +259,7 @@ class LearningCurve(object):
 
             # Construct learning curve plot of CVscore vs number of training data included. Only do it once max features reached
             if num_features == n_features_to_keep:
-                self.plot_learning_curve(estimator=model_orig, title='Training data learning curve', X=Xdata, y=ydata, cv=5)
+                self.get_univariate_RFE_learning_curve(estimator=model_orig, title='Training data learning curve', X=Xdata, y=ydata, cv=5)
 
         print('train rmse list', train_rmse_list)
         print('test rmse list', test_rmse_list)
@@ -260,8 +269,7 @@ class LearningCurve(object):
 
         return
 
-
-    def plot_learning_curve(self, estimator, title, X, y, cv=None):
+    def get_univariate_RFE_learning_curve(self, estimator, title, X, y, cv=None):
         plt.figure()
         plt.title(title)
         plt.xlabel("Number of training data points")
@@ -285,6 +293,17 @@ class LearningCurve(object):
         plt.savefig(savedir + "/" + "learning_curve_trainingdata.pdf")
         return plt
 
+    def get_sequential_forward_selection_learning_curve(self, metricdict, filetag):
+        fig1 = plot_sfs(metric_dict=metricdict, kind='std_dev')
+        plt.title('Sequential forward selection learning curve', fontsize=18)
+        plt.ylabel('RMSE', fontsize=16)
+        plt.xticks(fontsize=14)
+        plt.xlabel('Number of features', fontsize=16)
+        plt.yticks(fontsize=14)
+        plt.tight_layout()
+        plt.savefig(self.configdict['General Setup']['save_path'] + "/" + 'sequential_forward_selection_learning_curve_' + str(
+            filetag) + '.pdf')
+        return
 
 class MiscFeatureSelectionOperations():
 
@@ -319,18 +338,6 @@ class MiscFeatureSelectionOperations():
                       'and input file')
             sys.exit()
         return filetag
-
-    @classmethod
-    def get_forward_selection_learning_curve(cls, configdict, metricdict, filetag):
-        fig1 = plot_sfs(metric_dict=metricdict, kind='std_dev')
-        plt.title('Forward selection learning curve', fontsize=18)
-        plt.ylabel('R^2 correlation', fontsize=16)
-        plt.xticks(fontsize=14)
-        plt.xlabel('Number of features', fontsize=16)
-        plt.yticks(fontsize=14)
-        plt.tight_layout()
-        plt.savefig(configdict['General Setup']['save_path']+"/"+'forward_selection_learning_curve_'+str(filetag)+'.pdf')
-        return
 
     @classmethod
     def get_ranked_feature_names(cls, selector, x_features, number_features_to_keep):
