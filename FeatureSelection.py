@@ -1,9 +1,9 @@
 __author__ = 'Ryan Jacobs'
 
 from sklearn.decomposition import PCA
-from DataOperations import DataframeUtilities
+from DataOperations import DataframeUtilities, DataParser
 from FeatureOperations import FeatureIO
-from MASTMLInitializer import ConfigFileParser
+from SingleFit import timeit
 from sklearn.model_selection import learning_curve, ShuffleSplit, KFold
 from sklearn.feature_selection import SelectKBest, f_classif, f_regression, mutual_info_regression, mutual_info_classif
 from sklearn.svm import SVR, SVC
@@ -12,7 +12,6 @@ from sklearn.linear_model import RandomizedLasso, LinearRegression
 from sklearn.ensemble import ExtraTreesRegressor
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.metrics import mean_squared_error, make_scorer
-from matplotlib import pyplot as plt
 import sys
 import logging
 import numpy as np
@@ -105,7 +104,12 @@ class FeatureSelection(object):
 
         return dataframe
 
-    def univariate_feature_selection(self, number_features_to_keep, use_mutual_info):
+    def feature_selection(self, feature_selection_type, number_features_to_keep, use_mutual_info):
+
+        print('df size in feature selection')
+        print(self.dataframe.shape)
+
+
         if 'regression' in self.y_feature:
             selection_type = 'regression'
         elif 'classification' in self.y_feature:
@@ -116,20 +120,36 @@ class FeatureSelection(object):
 
         if use_mutual_info == False or use_mutual_info == 'False':
             if selection_type == 'regression':
-                selector = SelectKBest(score_func=f_regression, k=number_features_to_keep)
+                if feature_selection_type == 'univariate_feature_selection':
+                    selector = SelectKBest(score_func=f_regression, k=number_features_to_keep)
+                elif feature_selection_type == 'recursive_feature_elimination':
+                    estimator = SVR(kernel='linear')
+                    selector = RFE(estimator=estimator, n_features_to_select=number_features_to_keep)
             elif selection_type == 'classification':
-                selector = SelectKBest(score_func=f_classif, k=number_features_to_keep)
+                if feature_selection_type == 'univariate_feature_selection':
+                    selector = SelectKBest(score_func=f_classif, k=number_features_to_keep)
+                elif feature_selection_type == 'recursive_feature_elimination':
+                    estimator = SVC(kernel='linear')
+                    selector = RFE(estimator=estimator, n_features_to_select=number_features_to_keep)
         elif use_mutual_info == True or use_mutual_info == 'True':
             if selection_type == 'regression':
-                selector = SelectKBest(score_func=mutual_info_regression, k=number_features_to_keep)
+                if feature_selection_type == 'univariate_feature_selection':
+                    selector = SelectKBest(score_func=mutual_info_regression, k=number_features_to_keep)
+                elif feature_selection_type == 'recursive_feature_elimination':
+                    logging.info('Important Note: You have specified recursive feature elimination with mutual information. '
+                                 'Mutual information is only used for univariate feature selection. Feature selection will still run OK')
+                    estimator = SVR(kernel='linear')
+                    selector = RFE(estimator=estimator, n_features_to_select=number_features_to_keep)
             elif selection_type == 'classification':
-                selector = SelectKBest(score_func=mutual_info_classif, k=number_features_to_keep)
+                if feature_selection_type == 'univariate_feature_selection':
+                    selector = SelectKBest(score_func=mutual_info_classif, k=number_features_to_keep)
+                elif feature_selection_type == 'recursive_feature_elimination':
+                    logging.info('Important Note: You have specified recursive feature elimination with mutual information. '
+                                 'Mutual information is only used for univariate feature selection. Feature selection will still run OK')
+                    estimator = SVC(kernel='linear')
+                    selector = RFE(estimator=estimator, n_features_to_select=number_features_to_keep)
 
         Xnew = selector.fit_transform(X=self.dataframe[self.x_features], y=self.dataframe[self.y_feature])
-
-        #print('feature selection scores:')
-        #print(selector.scores_)
-        #print(len(selector.scores_.tolist()))
 
         mfso = MiscFeatureSelectionOperations()
         feature_indices_selected, feature_names_selected = mfso.get_selector_feature_names(selector=selector, x_features=self.x_features)
@@ -141,38 +161,22 @@ class FeatureSelection(object):
 
         # Only report the features selected and save csv file when number_features_to_keep is equal to value
         # specified in input file (so that many files aren't generated when making feature learning curve).
-        if number_features_to_keep == self.configdict['Feature Selection']['number_of_features_to_keep']:
+        if number_features_to_keep == int(self.configdict['Feature Selection']['number_of_features_to_keep']):
             filetag = mfso.get_feature_filetag(configdict=self.configdict, dataframe=dataframe)
             mfso.save_data_to_csv(configdict=self.configdict, dataframe=dataframe,
-                                  feature_selection_str='input_with_univariate_feature_selection', filetag=filetag)
-
+                                  feature_selection_str='input_with_'+feature_selection_type, filetag=filetag)
         return dataframe
-
-    """
-    def recursive_feature_elimination(self, number_features_to_keep, save_to_csv=True):
-        if self.selection_type == 'Regression' or self.selection_type == 'regression':
-            estimator = SVR(kernel='linear')
-        if self.selection_type == 'Classification' or self.selection_type == 'classification':
-            estimator = SVC(kernel='linear')
-        selector = RFE(estimator=estimator, n_features_to_select=number_features_to_keep)
-
-        Xnew = selector.fit_transform(X=self.dataframe[self.x_features], y=self.dataframe[self.y_feature])
-        feature_names_selected = MiscFeatureSelectionOperations().get_selector_feature_names(selector=selector, x_features=self.x_features)
-        #feature_names_selected = MiscOperations().get_ranked_feature_names(selector=selector, x_features=self.x_features, number_features_to_keep=number_features_to_keep)
-        dataframe = DataframeUtilities()._array_to_dataframe(array=Xnew)
-        dataframe = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe, x_features=feature_names_selected, y_feature=self.y_feature, remove_first_row=False)
-        # Add y_feature back into the dataframe
-        dataframe = FeatureIO(dataframe=dataframe).add_custom_features(features_to_add=[self.y_feature], data_to_add=self.dataframe[self.y_feature])
-        if save_to_csv == bool(True):
-            dataframe.to_csv('input_with_RFE_feature_selection.csv', index=False)
-        return dataframe
-    """
 
 class LearningCurve(object):
 
-    def __init__(self, configdict):
+    def __init__(self, configdict, dataframe):
         self.configdict = configdict
+        self.dataframe = dataframe
+        self.x_features, self.y_feature = DataParser(configdict=self.configdict).get_features(dataframe=self.dataframe,
+                                                                              target_feature=self.configdict['General Setup']['target_feature'],
+                                                                              from_input_file=False)
 
+    @timeit
     def generate_feature_learning_curve(self, feature_selection_instance, feature_selection_algorithm):
         n_features_to_keep = int(self.configdict['Feature Selection']['number_of_features_to_keep'])
         dataframe_fs_list = list()
@@ -187,11 +191,15 @@ class LearningCurve(object):
         # Obtain dataframes of selected features for n_features ranging from 1 to number_of_features_to_keep
         for n_features in range(n_features_to_keep):
             num_features_list.append(n_features + 1)
-            if feature_selection_algorithm == 'univariate_feature_selection':
-                use_mutual_info = self.configdict['Feature Selection']['use_mutual_information']
-                dataframe_fs = feature_selection_instance.univariate_feature_selection(
-                    number_features_to_keep=n_features + 1, use_mutual_info=use_mutual_info)
-                dataframe_fs_list.append(dataframe_fs)
+            use_mutual_info = self.configdict['Feature Selection']['use_mutual_information']
+            fs = FeatureSelection(configdict=self.configdict, dataframe=self.dataframe, x_features=self.x_features, y_feature=self.y_feature)
+            #dataframe_fs = feature_selection_instance.feature_selection(feature_selection_type=feature_selection_algorithm,
+            #                                                            number_features_to_keep=n_features + 1,
+            #                                                            use_mutual_info=use_mutual_info)
+            dataframe_fs = fs.feature_selection(feature_selection_type=feature_selection_algorithm,
+                                                                        number_features_to_keep=n_features + 1,
+                                                                        use_mutual_info=use_mutual_info)
+            dataframe_fs_list.append(dataframe_fs)
 
         # TODO: use general model as specified by user in input file, not just generic GKRR
         model_orig = KernelRidge(alpha=1, kernel='rbf', gamma=0.1)
@@ -202,7 +210,6 @@ class LearningCurve(object):
 
         # Loop over list of feature-selected dataframes and perform CV tests using general GKRR model. Save list of average CV scores for plotting
         for df in dataframe_fs_list:
-            print('on dataframe of size', df.shape)
             dfcopy = df
             cvtest_dict = dict()
             indices = np.arange(df.shape[0])
@@ -261,8 +268,6 @@ class LearningCurve(object):
             avg_test_rmse_list.append(avg_test_rmse)
             train_rmse_stdev_list.append(np.mean(np.std(train_rmse_list)))
             test_rmse_stdev_list.append(np.mean(np.std(test_rmse_list)))
-            print(len(train_rmse_stdev_list))
-            print(len(avg_train_rmse_list))
 
             # Get current df x and y data split
             ydata = FeatureIO(dataframe=dfcopy).keep_custom_features(features_to_keep=target_feature)
@@ -271,14 +276,14 @@ class LearningCurve(object):
             # Construct learning curve plot of CVscore vs number of training data included. Only do it once max features reached
             if num_features == n_features_to_keep:
                 self.get_univariate_RFE_training_data_learning_curve(estimator=model_orig, title='Training data learning curve',
-                                                       Xdata=Xdata, ydata=ydata, feature_selection_type= 'univariate', cv=5)
+                                                       Xdata=Xdata, ydata=ydata, feature_selection_type= feature_selection_algorithm, cv=5)
 
         # Construct learning curve plot of RMSE vs number of features included
         ydict = {"train_rmse": avg_train_rmse_list, "test_rmse": avg_test_rmse_list}
         ydict_stdev = {"train_rmse": train_rmse_stdev_list, "test_rmse": test_rmse_stdev_list}
-        self.get_univariate_RFE_feature_learning_curve(title='Univariate feature selection learning curve',
+        self.get_univariate_RFE_feature_learning_curve(title=feature_selection_algorithm + ' learning curve',
                                                        Xdata=num_features_list, ydata=ydict, ydata_stdev=ydict_stdev,
-                                                       feature_selection_type='univariate')
+                                                       feature_selection_type=feature_selection_algorithm)
 
         return
 
