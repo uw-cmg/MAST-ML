@@ -177,8 +177,12 @@ class LearningCurve(object):
         n_features_to_keep = int(self.configdict['Feature Selection']['number_of_features_to_keep'])
         dataframe_fs_list = list()
         num_features_list = list()
+        avg_train_rmse_list = list()
+        avg_test_rmse_list = list()
         train_rmse_list = list()
         test_rmse_list = list()
+        train_rmse_stdev_list = list()
+        test_rmse_stdev_list = list()
 
         # Obtain dataframes of selected features for n_features ranging from 1 to number_of_features_to_keep
         for n_features in range(n_features_to_keep):
@@ -203,7 +207,6 @@ class LearningCurve(object):
             cvtest_dict = dict()
             indices = np.arange(df.shape[0])
             num_features = df.shape[1] - 1
-            print(num_features)
 
             # Set up CV splits for the dataframe being tested
             for cvtest in range(num_cvtests):
@@ -240,18 +243,26 @@ class LearningCurve(object):
                     fold_train_rmses[fold] = rmse_train
                     fold_test_rmses[fold] = rmse_test
                 cvtest_dict[cvtest]["avg_train_rmse"] = np.mean(fold_train_rmses)
+                cvtest_dict[cvtest]["train_rmse_stdev"] = np.std(fold_train_rmses)
                 cvtest_dict[cvtest]["avg_test_rmse"] = np.mean(fold_test_rmses)
+                cvtest_dict[cvtest]["test_rmse_stdev"] = np.std(fold_test_rmses)
 
             # Average rmse over all cvtests for this dataframe
-            train_rmse = 0
-            test_rmse = 0
+            avg_train_rmse = 0
+            avg_test_rmse = 0
             for cvtest in cvtest_dict.keys():
-                train_rmse += cvtest_dict[cvtest]["avg_train_rmse"]
-                test_rmse += cvtest_dict[cvtest]["avg_test_rmse"]
-            train_rmse /= num_cvtests
-            test_rmse /= num_cvtests
-            train_rmse_list.append(train_rmse)
-            test_rmse_list.append(test_rmse)
+                avg_train_rmse += cvtest_dict[cvtest]["avg_train_rmse"]
+                avg_test_rmse += cvtest_dict[cvtest]["avg_test_rmse"]
+                train_rmse_list.append(cvtest_dict[cvtest]["avg_train_rmse"])
+                test_rmse_list.append(cvtest_dict[cvtest]["avg_test_rmse"])
+            avg_train_rmse /= num_cvtests
+            avg_test_rmse /= num_cvtests
+            avg_train_rmse_list.append(avg_train_rmse)
+            avg_test_rmse_list.append(avg_test_rmse)
+            train_rmse_stdev_list.append(np.mean(np.std(train_rmse_list)))
+            test_rmse_stdev_list.append(np.mean(np.std(test_rmse_list)))
+            print(len(train_rmse_stdev_list))
+            print(len(avg_train_rmse_list))
 
             # Get current df x and y data split
             ydata = FeatureIO(dataframe=dfcopy).keep_custom_features(features_to_keep=target_feature)
@@ -259,56 +270,61 @@ class LearningCurve(object):
 
             # Construct learning curve plot of CVscore vs number of training data included. Only do it once max features reached
             if num_features == n_features_to_keep:
-                self.get_univariate_RFE_learning_curve(estimator=model_orig, title='Training data learning curve',
-                                                       X=Xdata, y=ydata, learning_curve_type='training_data', feature_selection_type= 'univariate', cv=5)
+                self.get_univariate_RFE_training_data_learning_curve(estimator=model_orig, title='Training data learning curve',
+                                                       Xdata=Xdata, ydata=ydata, feature_selection_type= 'univariate', cv=5)
 
         # Construct learning curve plot of RMSE vs number of features included
-        ydict = {"train_rmse": train_rmse_list, "test_rmse": test_rmse_list}
-        self.get_univariate_RFE_learning_curve(estimator=model_orig, title='Univariate feature selection learning curve',
-                                               X=num_features_list, y=ydict, learning_curve_type='feature_number', feature_selection_type='univariate', cv=None)
+        ydict = {"train_rmse": avg_train_rmse_list, "test_rmse": avg_test_rmse_list}
+        ydict_stdev = {"train_rmse": train_rmse_stdev_list, "test_rmse": test_rmse_stdev_list}
+        self.get_univariate_RFE_feature_learning_curve(title='Univariate feature selection learning curve',
+                                                       Xdata=num_features_list, ydata=ydict, ydata_stdev=ydict_stdev,
+                                                       feature_selection_type='univariate')
 
         return
 
-    def get_univariate_RFE_learning_curve(self, estimator, title, X, y, learning_curve_type= None, feature_selection_type=None, cv=None):
+    def get_univariate_RFE_training_data_learning_curve(self, estimator, title, Xdata, ydata, feature_selection_type, cv=None):
         plt.figure()
         plt.title(title)
         plt.grid()
         savedir = self.configdict['General Setup']['save_path']
+        plt.xlabel("Number of training data points")
+        plt.ylabel("RMSE")
+        train_sizes, train_scores, test_scores = learning_curve(
+            estimator, Xdata, ydata, cv=cv, n_jobs=1, scoring=make_scorer(score_func=mean_squared_error),
+            train_sizes=np.linspace(0.1, 1.0, 10))
+        train_scores_mean = np.mean(np.sqrt(train_scores), axis=1)
+        train_scores_std = np.std(np.sqrt(train_scores), axis=1)
+        test_scores_mean = np.mean(np.sqrt(test_scores), axis=1)
+        test_scores_std = np.std(np.sqrt(test_scores), axis=1)
+        plt.fill_between(train_sizes, train_scores_mean - train_scores_std, train_scores_mean + train_scores_std, alpha=0.1,
+                         color="r")
+        plt.fill_between(train_sizes, test_scores_mean - test_scores_std, test_scores_mean + test_scores_std, alpha=0.1,
+                         color="g")
+        plt.plot(train_sizes, train_scores_mean, 'o-', color="r", label="Training data score")
+        plt.plot(train_sizes, test_scores_mean, 'o-', color="g", label="Test data score")
+        plt.legend(loc="best")
+        plt.savefig(savedir + "/" + feature_selection_type + "_learning_curve_trainingdata.pdf")
+        return
 
-        if learning_curve_type == 'training_data':
-            plt.xlabel("Number of training data points")
-            plt.ylabel("RMSE")
-            train_sizes, train_scores, test_scores = learning_curve(
-                estimator, X, y, cv=cv, n_jobs=1, scoring=make_scorer(score_func=mean_squared_error),
-                train_sizes=np.linspace(0.1, 1.0, 10))
-            train_scores_mean = np.mean(np.sqrt(train_scores), axis=1)
-            train_scores_std = np.std(np.sqrt(train_scores), axis=1)
-            test_scores_mean = np.mean(np.sqrt(test_scores), axis=1)
-            test_scores_std = np.std(np.sqrt(test_scores), axis=1)
-            plt.fill_between(train_sizes, train_scores_mean - train_scores_std, train_scores_mean + train_scores_std, alpha=0.1,
-                             color="r")
-            plt.fill_between(train_sizes, test_scores_mean - test_scores_std, test_scores_mean + test_scores_std, alpha=0.1,
-                             color="g")
-            plt.plot(train_sizes, train_scores_mean, 'o-', color="r", label="Training data score")
-            plt.plot(train_sizes, test_scores_mean, 'o-', color="g", label="Test data score")
-            plt.legend(loc="best")
-            plt.savefig(savedir + "/" + feature_selection_type + "_learning_curve_trainingdata.pdf")
-        elif learning_curve_type == 'feature_number':
-            print(X)
-            print(y)
-            for ydataname, ydata in y.items():
-                if ydataname == 'train_rmse':
-                    plt.plot(X, ydata, 'o-', color='r', label='Training data score')
-                if ydataname == 'test_rmse':
-                    plt.plot(X, ydata, 'o-', color='g', label='Test data score')
-            plt.xlabel("Number of features")
-            plt.ylabel("RMSE")
-            plt.legend(loc="best")
-            plt.savefig(savedir + "/" + feature_selection_type + "_learning_curve_featurenumber.pdf")
-        else:
-            print('ERROR: you must specify either "feature_number" or "training_data" for learning_curve_type')
-            sys.exit()
-        return plt
+    def get_univariate_RFE_feature_learning_curve(self, title, Xdata, ydata, ydata_stdev, feature_selection_type=None):
+        plt.figure()
+        plt.title(title)
+        plt.grid()
+        savedir = self.configdict['General Setup']['save_path']
+        for ydataname, ydata in ydata.items():
+            if ydataname == 'train_rmse':
+                plt.plot(Xdata, ydata, 'o-', color='r', label='Training data score')
+                plt.fill_between(Xdata, np.array(ydata) - np.array(ydata_stdev[ydataname]), np.array(ydata) + np.array(ydata_stdev[ydataname]), alpha=0.1,
+                                 color="r")
+            if ydataname == 'test_rmse':
+                plt.plot(Xdata, ydata, 'o-', color='g', label='Test data score')
+                plt.fill_between(Xdata, np.array(ydata) - np.array(ydata_stdev[ydataname]), np.array(ydata) + np.array(ydata_stdev[ydataname]), alpha=0.1,
+                                color="g")
+        plt.xlabel("Number of features")
+        plt.ylabel("RMSE")
+        plt.legend(loc="best")
+        plt.savefig(savedir + "/" + feature_selection_type + "_learning_curve_featurenumber.pdf")
+        return
 
     def get_sequential_forward_selection_learning_curve(self, metricdict, filetag):
         fig1 = plot_sfs(metric_dict=metricdict, kind='std_dev')
