@@ -259,38 +259,46 @@ class LearningCurve(object):
 
             # Construct learning curve plot of CVscore vs number of training data included. Only do it once max features reached
             if num_features == n_features_to_keep:
-                self.get_univariate_RFE_learning_curve(estimator=model_orig, title='Training data learning curve', X=Xdata, y=ydata, cv=5)
+                self.get_univariate_RFE_learning_curve(estimator=model_orig, title='Training data learning curve',
+                                                       X=Xdata, y=ydata, learning_curve_type='training_data', cv=5)
 
-        print('train rmse list', train_rmse_list)
-        print('test rmse list', test_rmse_list)
+        #print('train rmse list', train_rmse_list)
+        #print('test rmse list', test_rmse_list)
 
         # Construct learning curve plot of RMSE vs number of features included
 
 
         return
 
-    def get_univariate_RFE_learning_curve(self, estimator, title, X, y, cv=None):
+    def get_univariate_RFE_learning_curve(self, estimator, title, X, y, learning_curve_type= None, cv=None):
         plt.figure()
         plt.title(title)
-        plt.xlabel("Number of training data points")
-        plt.ylabel("RMSE")
-        train_sizes, train_scores, test_scores = learning_curve(
-            estimator, X, y, cv=cv, n_jobs=1, scoring=make_scorer(score_func=mean_squared_error),
-            train_sizes=np.linspace(0.1, 1.0, 10))
-        train_scores_mean = np.mean(np.sqrt(train_scores), axis=1)
-        train_scores_std = np.std(np.sqrt(train_scores), axis=1)
-        test_scores_mean = np.mean(np.sqrt(test_scores), axis=1)
-        test_scores_std = np.std(np.sqrt(test_scores), axis=1)
-        plt.grid()
-        plt.fill_between(train_sizes, train_scores_mean - train_scores_std, train_scores_mean + train_scores_std, alpha=0.1,
-                         color="r")
-        plt.fill_between(train_sizes, test_scores_mean - test_scores_std, test_scores_mean + test_scores_std, alpha=0.1,
-                         color="g")
-        plt.plot(train_sizes, train_scores_mean, 'o-', color="r", label="Training score")
-        plt.plot(train_sizes, test_scores_mean, 'o-', color="g", label="Cross-validation score (RMSE)")
-        plt.legend(loc="best")
         savedir = self.configdict['General Setup']['save_path']
-        plt.savefig(savedir + "/" + "learning_curve_trainingdata.pdf")
+
+        if learning_curve_type == 'training_data':
+            plt.xlabel("Number of training data points")
+            plt.ylabel("RMSE")
+            train_sizes, train_scores, test_scores = learning_curve(
+                estimator, X, y, cv=cv, n_jobs=1, scoring=make_scorer(score_func=mean_squared_error),
+                train_sizes=np.linspace(0.1, 1.0, 10))
+            train_scores_mean = np.mean(np.sqrt(train_scores), axis=1)
+            train_scores_std = np.std(np.sqrt(train_scores), axis=1)
+            test_scores_mean = np.mean(np.sqrt(test_scores), axis=1)
+            test_scores_std = np.std(np.sqrt(test_scores), axis=1)
+            plt.grid()
+            plt.fill_between(train_sizes, train_scores_mean - train_scores_std, train_scores_mean + train_scores_std, alpha=0.1,
+                             color="r")
+            plt.fill_between(train_sizes, test_scores_mean - test_scores_std, test_scores_mean + test_scores_std, alpha=0.1,
+                             color="g")
+            plt.plot(train_sizes, train_scores_mean, 'o-', color="r", label="Training score")
+            plt.plot(train_sizes, test_scores_mean, 'o-', color="g", label="Cross-validation score (RMSE)")
+            plt.legend(loc="best")
+            plt.savefig(savedir + "/" + "learning_curve_trainingdata.pdf")
+        elif learning_curve_type == 'feature_number':
+            pass
+        else:
+            print('ERROR: you must specify either "feature_number" or "training_data" for learning_curve_type')
+            sys.exit()
         return plt
 
     def get_sequential_forward_selection_learning_curve(self, metricdict, filetag):
