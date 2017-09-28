@@ -480,11 +480,9 @@ class MASTMLDriver(object):
                                                            number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']),
                                                            use_mutual_info=self.configdict['Feature Selection']['use_mutual_information'])
                     if self.configdict['Feature Selection']['generate_feature_learning_curve'] == 'True':
-                        logging.info('IMPORTANT NOTE: Generating a learning curve while using recursive feature elimination is very time consuming!')
                         learningcurve = LearningCurve(configdict=self.configdict, dataframe=dataframe)
                         logging.info('Generating a feature learning curve using a %s algorithm' % v)
-                        learningcurve.generate_feature_learning_curve(feature_selection_instance=fs,
-                                                                      feature_selection_algorithm='recursive_feature_elimination')
+                        learningcurve.generate_feature_learning_curve(feature_selection_algorithm='recursive_feature_elimination')
                 if v == 'univariate_feature_selection':
                     if int(self.configdict['Feature Selection']['number_of_features_to_keep']) <= len(x_features):
                         dataframe = fs.feature_selection(feature_selection_type='univariate_feature_selection',
@@ -498,8 +496,7 @@ class MASTMLDriver(object):
                     if self.configdict['Feature Selection']['generate_feature_learning_curve'] == 'True':
                         learningcurve = LearningCurve(configdict=self.configdict, dataframe=dataframe)
                         logging.info('Generating a feature learning curve using a %s algorithm' % v)
-                        learningcurve.generate_feature_learning_curve(feature_selection_instance=fs,
-                                                                      feature_selection_algorithm='univariate_feature_selection')
+                        learningcurve.generate_feature_learning_curve(feature_selection_algorithm='univariate_feature_selection')
         return dataframe
 
     def _gather_models(self, y_feature):

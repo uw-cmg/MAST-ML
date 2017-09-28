@@ -58,7 +58,8 @@ class FeatureSelection(object):
         return self.dataframe
 
     def sequential_forward_selection(self, number_features_to_keep):
-        sfs = SFS(KernelRidge(alpha=0.01, kernel='linear'), k_features=number_features_to_keep, forward=True, floating=False, verbose=0, scoring='neg_mean_squared_error', cv=ShuffleSplit(n_splits=10, test_size=0.2))
+        sfs = SFS(KernelRidge(alpha=0.01, kernel='linear'), k_features=number_features_to_keep, forward=True,
+                  floating=False, verbose=0, scoring='neg_mean_squared_error', cv=ShuffleSplit(n_splits=10, test_size=0.2))
         sfs = sfs.fit(X=np.array(self.dataframe[self.x_features]), y=np.array(self.dataframe[self.y_feature]))
         Xnew = sfs.fit_transform(X=np.array(self.dataframe[self.x_features]), y=np.array(self.dataframe[self.y_feature]))
         feature_indices_selected = sfs.k_feature_idx_
@@ -66,20 +67,10 @@ class FeatureSelection(object):
         for index in feature_indices_selected:
             x_features_to_keep.append(self.x_features[index])
 
-        #print('feature indices:')
-        #print(feature_indices_selected)
-        #for index in feature_indices_selected:
-        #    print('index:', index)
-        #    print('feature:', self.x_features[index])
-        #print(self.x_features)
-
-        #dataframe = DataframeUtilities()._array_to_dataframe(array=Xnew)
-        feature_names_selected = MiscFeatureSelectionOperations().get_forward_selection_feature_names(feature_indices_selected=feature_indices_selected, x_features=self.x_features)
-        #dataframe = DataframeUtilities()._assign_columns_as_features(dataframe=self.dataframe, x_features=feature_names_selected, y_feature=self.y_feature, remove_first_row=False)
-        #dataframe = DataframeUtilities()._array_to_dataframe(array=Xnew)
         dataframe = FeatureIO(dataframe=self.dataframe).keep_custom_features(features_to_keep=x_features_to_keep)
         # Add y_feature back into the dataframe
-        dataframe = FeatureIO(dataframe=dataframe).add_custom_features(features_to_add=[self.y_feature],data_to_add=self.dataframe[self.y_feature])
+        dataframe = FeatureIO(dataframe=dataframe).add_custom_features(features_to_add=[self.y_feature],
+                                                                       data_to_add=self.dataframe[self.y_feature])
         dataframe = dataframe.dropna()
         # Get forward selection data
         metricdict = sfs.get_metric_dict()
@@ -97,18 +88,16 @@ class FeatureSelection(object):
 
         mfso = MiscFeatureSelectionOperations()
         filetag = mfso.get_feature_filetag(configdict=self.configdict, dataframe=dataframe)
-        mfso.save_data_to_csv(configdict=self.configdict, dataframe=dataframe, feature_selection_str='input_with_sequential_forward_selection', filetag=filetag)
-        mfso.save_data_to_csv(configdict=self.configdict, dataframe=fs_dataframe, feature_selection_str='sequential_forward_selection_data', filetag=filetag)
-        learningcurve = LearningCurve(configdict=self.configdict)
+        mfso.save_data_to_csv(configdict=self.configdict, dataframe=dataframe,
+                              feature_selection_str='input_with_sequential_forward_selection', filetag=filetag)
+        mfso.save_data_to_csv(configdict=self.configdict, dataframe=fs_dataframe,
+                              feature_selection_str='sequential_forward_selection_data', filetag=filetag)
+        learningcurve = LearningCurve(configdict=self.configdict, dataframe=dataframe)
         learningcurve.get_sequential_forward_selection_learning_curve(metricdict=metricdict, filetag=filetag)
 
         return dataframe
 
     def feature_selection(self, feature_selection_type, number_features_to_keep, use_mutual_info):
-
-        print('df size in feature selection')
-        print(self.dataframe.shape)
-
 
         if 'regression' in self.y_feature:
             selection_type = 'regression'
@@ -175,9 +164,8 @@ class LearningCurve(object):
         self.x_features, self.y_feature = DataParser(configdict=self.configdict).get_features(dataframe=self.dataframe,
                                                                               target_feature=self.configdict['General Setup']['target_feature'],
                                                                               from_input_file=False)
-
     @timeit
-    def generate_feature_learning_curve(self, feature_selection_instance, feature_selection_algorithm):
+    def generate_feature_learning_curve(self, feature_selection_algorithm):
         n_features_to_keep = int(self.configdict['Feature Selection']['number_of_features_to_keep'])
         dataframe_fs_list = list()
         num_features_list = list()
@@ -193,9 +181,6 @@ class LearningCurve(object):
             num_features_list.append(n_features + 1)
             use_mutual_info = self.configdict['Feature Selection']['use_mutual_information']
             fs = FeatureSelection(configdict=self.configdict, dataframe=self.dataframe, x_features=self.x_features, y_feature=self.y_feature)
-            #dataframe_fs = feature_selection_instance.feature_selection(feature_selection_type=feature_selection_algorithm,
-            #                                                            number_features_to_keep=n_features + 1,
-            #                                                            use_mutual_info=use_mutual_info)
             dataframe_fs = fs.feature_selection(feature_selection_type=feature_selection_algorithm,
                                                                         number_features_to_keep=n_features + 1,
                                                                         use_mutual_info=use_mutual_info)
@@ -284,7 +269,6 @@ class LearningCurve(object):
         self.get_univariate_RFE_feature_learning_curve(title=feature_selection_algorithm + ' learning curve',
                                                        Xdata=num_features_list, ydata=ydict, ydata_stdev=ydict_stdev,
                                                        feature_selection_type=feature_selection_algorithm)
-
         return
 
     def get_univariate_RFE_training_data_learning_curve(self, estimator, title, Xdata, ydata, feature_selection_type, cv=None):
@@ -294,9 +278,9 @@ class LearningCurve(object):
         savedir = self.configdict['General Setup']['save_path']
         plt.xlabel("Number of training data points")
         plt.ylabel("RMSE")
-        train_sizes, train_scores, test_scores = learning_curve(
-            estimator, Xdata, ydata, cv=cv, n_jobs=1, scoring=make_scorer(score_func=mean_squared_error),
-            train_sizes=np.linspace(0.1, 1.0, 10))
+        train_sizes, train_scores, test_scores = learning_curve(estimator, Xdata, ydata, cv=cv, n_jobs=1,
+                                                                scoring=make_scorer(score_func=mean_squared_error),
+                                                                train_sizes=np.linspace(0.1, 1.0, 10))
         train_scores_mean = np.mean(np.sqrt(train_scores), axis=1)
         train_scores_std = np.std(np.sqrt(train_scores), axis=1)
         test_scores_mean = np.mean(np.sqrt(test_scores), axis=1)
