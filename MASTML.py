@@ -2,19 +2,18 @@ __author__ = 'Ryan Jacobs, Tam Mayeshiba'
 
 import sys
 import os
+import logging
+import shutil
+import time
+import matplotlib
+import importlib
+import pandas as pd
 from MASTMLInitializer import MASTMLWrapper, ConfigFileValidator, ConfigFileParser
 from DataOperations import DataParser, DataframeUtilities
 from FeatureGeneration import MagpieFeatureGeneration, MaterialsProjectFeatureGeneration, CitrineFeatureGeneration
 from FeatureOperations import FeatureNormalization, FeatureIO, MiscFeatureOperations
-from FeatureSelection import FeatureSelection, DimensionalReduction, MiscFeatureSelectionOperations, LearningCurve
-import logging
-import shutil
-import time
-from custom_features import cf_help
-import matplotlib
+from FeatureSelection import FeatureSelection, DimensionalReduction, LearningCurve
 from DataHandler import DataHandler
-import importlib
-import pandas as pd
 from SingleFit import timeit
 
 class MASTMLDriver(object):

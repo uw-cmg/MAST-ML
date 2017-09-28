@@ -1,25 +1,22 @@
 __author__ = 'Ryan Jacobs'
 
-from sklearn.decomposition import PCA
-from DataOperations import DataframeUtilities, DataParser
-from FeatureOperations import FeatureIO
-from MASTMLInitializer import MASTMLWrapper
-from SingleFit import timeit
-from sklearn.model_selection import learning_curve, ShuffleSplit, KFold
-from sklearn.feature_selection import SelectKBest, f_classif, f_regression, mutual_info_regression, mutual_info_classif
-from sklearn.svm import SVR, SVC
-from sklearn.feature_selection import RFE
-from sklearn.linear_model import RandomizedLasso, LinearRegression
-from sklearn.ensemble import ExtraTreesRegressor
-from sklearn.kernel_ridge import KernelRidge
-from sklearn.metrics import mean_squared_error, make_scorer
 import sys
 import logging
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
+from sklearn.decomposition import PCA
+from sklearn.model_selection import learning_curve, KFold
+from sklearn.feature_selection import SelectKBest, f_classif, f_regression, mutual_info_regression, mutual_info_classif
+from sklearn.svm import SVR, SVC
+from sklearn.feature_selection import RFE
+from sklearn.metrics import mean_squared_error, make_scorer
 from mlxtend.feature_selection import SequentialFeatureSelector as SFS
 from mlxtend.plotting import plot_sequential_feature_selection as plot_sfs
-import pandas as pd
+from DataOperations import DataframeUtilities, DataParser
+from FeatureOperations import FeatureIO
+from MASTMLInitializer import MASTMLWrapper
+from SingleFit import timeit
 
 class DimensionalReduction(object):
     """Class to conduct PCA and constant feature removal for dimensional reduction of features. Mind that PCA produces linear combinations of features,

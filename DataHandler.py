@@ -1,7 +1,8 @@
+__author__ = "Tam Mayeshiba"
+
 import numpy as np
 import copy
 from FeatureOperations import FeatureIO
-__author__ = "Tam Mayeshiba"
 
 class DataHandler():
     """Data handling class

@@ -2,11 +2,11 @@ __author__ = 'Ryan Jacobs'
 
 import pandas as pd
 import numpy as np
+import sys
+import os
 from sklearn.preprocessing import StandardScaler
 from DataOperations import DataframeUtilities
 from MASTMLInitializer import ConfigFileParser
-import sys
-import os
 
 class FeatureIO(object):
     """Class to selectively filter (add/remove) features from a dataframe
