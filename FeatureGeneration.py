@@ -77,6 +77,7 @@ class MagpieFeatureGeneration(object):
         magpiedata_dict_list = [magpiedata_dict_composition_average, magpiedata_dict_arithmetic_average,
                                 magpiedata_dict_max, magpiedata_dict_min, magpiedata_dict_difference, magpiedata_dict_atomic_bysite]
 
+        dataframe = self.dataframe
         for magpiedata_dict in magpiedata_dict_list:
             dataframe_magpie = pd.DataFrame.from_dict(data=magpiedata_dict, orient='index')
             # Need to reorder compositions in new dataframe to match input dataframe
@@ -87,7 +88,7 @@ class MagpieFeatureGeneration(object):
             # Need to delete duplicate column before merging dataframes
             del dataframe_magpie['Material compositions']
             # Merge magpie feature dataframe with originally supplied dataframe
-            dataframe = DataframeUtilities()._merge_dataframe_columns(dataframe1=self.dataframe, dataframe2=dataframe_magpie)
+            dataframe = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_magpie)
 
         if save_to_csv == bool(True):
             # Get y_feature in this dataframe, attach it to save path
