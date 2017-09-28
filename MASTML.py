@@ -432,15 +432,7 @@ class MASTMLDriver(object):
             # TODO: Here, True/False are strings. Change them with validator to be bools
             if k == 'add_magpie_features' and v == 'True':
                 logging.info('FEATURE GENERATION: Adding Magpie features to your feature list')
-                if self.configdict['Feature Generation']['include_magpie_atomic_features'] == 'True':
-                    logging.info('FEATURE GENERATION: Include all atomic features: True')
-                    mfg = MagpieFeatureGeneration(dataframe=dataframe, include_atomic_features=True)
-                elif self.configdict['Feature Generation']['include_magpie_atomic_features'] == 'False':
-                    logging.info('FEATURE GENERATION: Include all atomic features: False')
-                    mfg = MagpieFeatureGeneration(dataframe=dataframe, include_atomic_features=False)
-                else:
-                    logging.info('FEATURE GENERATION: Include all atomic features: False')
-                    mfg = MagpieFeatureGeneration(dataframe=dataframe, include_atomic_features=False)
+                mfg = MagpieFeatureGeneration(dataframe=dataframe)
                 dataframe = mfg.generate_magpie_features(save_to_csv=True)
             if k == 'add_materialsproject_features' and v == 'True':
                 logging.info('FEATURE GENERATION: Adding Materials Project features to your feature list')

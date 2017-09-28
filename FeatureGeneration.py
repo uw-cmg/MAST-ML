@@ -13,9 +13,8 @@ class MagpieFeatureGeneration(object):
     """Class to generate new features using Magpie data and dataframe containing material compositions. Creates
      a dataframe and append features to existing feature dataframes
     """
-    def __init__(self, dataframe, include_atomic_features):
+    def __init__(self, dataframe):
         self.dataframe = dataframe
-        self.include_atomic_features = include_atomic_features
 
     @property
     def get_original_dataframe(self):
