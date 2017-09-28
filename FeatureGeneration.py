@@ -8,13 +8,13 @@ from pymatgen import Element, Composition
 from pymatgen.matproj.rest import MPRester
 from citrination_client import *
 from DataOperations import DataframeUtilities
-from MASTMLInitializer import ConfigFileParser
 
 class MagpieFeatureGeneration(object):
     """Class to generate new features using Magpie data and dataframe containing material compositions. Creates
      a dataframe and append features to existing feature dataframes
     """
-    def __init__(self, dataframe):
+    def __init__(self, configdict, dataframe):
+        self.configdict = configdict
         self.dataframe = dataframe
 
     @property
@@ -90,13 +90,11 @@ class MagpieFeatureGeneration(object):
             dataframe = DataframeUtilities()._merge_dataframe_columns(dataframe1=self.dataframe, dataframe2=dataframe_magpie)
 
         if save_to_csv == bool(True):
-            # Need configdict to get save path
-            configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
             # Get y_feature in this dataframe, attach it to save path
             for column in dataframe.columns.values:
-                if column in configdict['General Setup']['target_feature']:
+                if column in self.configdict['General Setup']['target_feature']:
                     filetag = column
-            dataframe.to_csv(configdict['General Setup']['save_path']+"/"+'input_with_magpie_features'+'_'+str(filetag)+'.csv', index=False)
+            dataframe.to_csv(self.configdict['General Setup']['save_path']+"/"+'input_with_magpie_features'+'_'+str(filetag)+'.csv', index=False)
 
         return dataframe
 
@@ -161,8 +159,7 @@ class MagpieFeatureGeneration(object):
 
     def _get_atomic_magpie_features(self, composition):
         # Get .table files containing feature values for each element, assign file names as feature names
-        configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
-        config_files_path = configdict['General Setup']['config_files_path']
+        config_files_path = self.configdict['General Setup']['config_files_path']
         data_path = config_files_path+'/magpiedata/magpie_elementdata'
         magpie_feature_names = []
         for f in os.listdir(data_path):

@@ -21,7 +21,7 @@ class MASTMLDriver(object):
 
     def __init__(self, configfile):
         self.configfile = configfile
-        #Set in code
+        # Set in code
         self.general_setup = None
         self.csv_setup = None
         self.data_setup = None
@@ -432,7 +432,7 @@ class MASTMLDriver(object):
             # TODO: Here, True/False are strings. Change them with validator to be bools
             if k == 'add_magpie_features' and v == 'True':
                 logging.info('FEATURE GENERATION: Adding Magpie features to your feature list')
-                mfg = MagpieFeatureGeneration(dataframe=dataframe)
+                mfg = MagpieFeatureGeneration(configdict=self.configdict, dataframe=dataframe)
                 dataframe = mfg.generate_magpie_features(save_to_csv=True)
             if k == 'add_materialsproject_features' and v == 'True':
                 logging.info('FEATURE GENERATION: Adding Materials Project features to your feature list')
