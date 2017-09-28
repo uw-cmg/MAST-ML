@@ -5,6 +5,7 @@ import logging
 import sys
 import numpy as np
 import os
+from matplotlib import pyplot
 from MASTMLInitializer import ConfigFileParser
 
 class DataParser(object):
@@ -139,4 +140,14 @@ class DataframeUtilities(object):
         data_path_name = data_path.split('./')[1]
         data_path_name = data_path_name.split('.csv')[0]
         dataframe_stats.to_csv(configdict['General Setup']['save_path'] + "/" + 'input_data_statistics_'+data_path_name+'.csv',index=True)
+        return
+
+    @classmethod
+    def _plot_dataframe_histogram(cls, configdict, dataframe, y_feature):
+        num_bins = round((dataframe.shape[0])/15, 0)
+        pyplot.hist(x=dataframe[y_feature], bins=num_bins, edgecolor='k')
+        pyplot.title('Histogram of ' + y_feature + ' values')
+        pyplot.xlabel(y_feature + ' value')
+        pyplot.ylabel('Occurrences in dataset')
+        pyplot.savefig(configdict['General Setup']['save_path'] + "/" + 'input_data_histogram.pdf')
         return

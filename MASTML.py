@@ -272,6 +272,10 @@ class MASTMLDriver(object):
             # Parse input data file
             Xdata, ydata, x_features, y_feature, dataframe = self._parse_input_data(data_path)
 
+            # Plot initial histogram of input target data
+            DataframeUtilities()._plot_dataframe_histogram(configdict=self.configdict, dataframe=dataframe,
+                                                           y_feature=y_feature)
+
             #print('after import')
             #print(len(x_features))
             #print(y_feature)
