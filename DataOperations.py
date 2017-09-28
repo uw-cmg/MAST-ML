@@ -84,19 +84,6 @@ class DataParser(object):
 
     def get_data(self, dataframe, x_features, y_feature):
         Xdata = dataframe.loc[:, x_features]
-        #for feature in x_features:
-        #    if not(feature in dataframe.columns):
-        #        logging.warning("%s not in columns" % feature)
-        #        ydata = None
-        #if type(y_feature) is not list:
-        #    if not(y_feature in dataframe.columns):
-        #        logging.warning("%s not in columns" % feature)
-        #elif type(y_feature) is list:
-        #    for feature in y_feature:
-        #        if not(feature in dataframe.columns):
-        #            logging.warning("%s not in columns" % feature)
-        #else:
-        #    ydata = dataframe.loc[:, y_feature]
         ydata = dataframe.loc[:, y_feature]
         return Xdata, ydata
 
