@@ -101,43 +101,6 @@ class MagpieFeatureGeneration(object):
 
         return dataframe
 
-    def _get_atomic_magpie_features(self, composition):
-        # Get .table files containing feature values for each element, assign file names as feature names
-        configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
-        config_files_path = configdict['General Setup']['config_files_path']
-        data_path = config_files_path+'/magpiedata/magpie_elementdata'
-        magpie_feature_names = []
-        for f in os.listdir(data_path):
-            if '.table' in f:
-                magpie_feature_names.append(f[:-6])
-
-        composition = Composition(composition)
-        element_list, atoms_per_formula_unit = self._get_element_list(composition=composition)
-
-        element_dict = {}
-        for element in element_list:
-            element_dict[element] = Element(element).Z
-
-        magpiedata_atomic = {}
-        for k, v in element_dict.items():
-            atomic_values ={}
-            for feature_name in magpie_feature_names:
-                f = open(data_path + '/' + feature_name + '.table', 'r')
-                # Get Magpie data of relevant atomic numbers for this composition
-                for line, feature_value in enumerate(f.readlines()):
-                    if line + 1 == v:
-                        if "Missing" not in feature_value and "NA" not in feature_value:
-                            if feature_name != "OxidationStates":
-                                atomic_values[feature_name] = float(feature_value.strip())
-                        if "Missing" in feature_value:
-                            atomic_values[feature_name] = 'NaN'
-                        if "NA" in feature_value:
-                            atomic_values[feature_name] = 'NaN'
-                f.close()
-            magpiedata_atomic[k] = atomic_values
-
-        return magpiedata_atomic
-
     def _get_computed_magpie_features(self, composition):
         magpiedata_composition_average = {}
         magpiedata_arithmetic_average = {}
@@ -177,26 +140,6 @@ class MagpieFeatureGeneration(object):
                         magpiedata_min[magpie_feature] = feature_value
                     # Difference features (max - min)
                     magpiedata_difference[magpie_feature] = magpiedata_max[magpie_feature] - magpiedata_min[magpie_feature]
-                #if feature_value is 'NaN':
-                #    magpiedata_composition_average[magpie_feature] = 'NaN'
-
-        # Calculate differences and ratios of atomic feature pairs
-        #magpiedata_atomic_difference = {}
-        #magpiedata_atomic_ratio = {}
-        #distinct_element_pairs = []
-        #for element in magpiedata_atomic.keys():
-        #    for element2 in magpiedata_atomic.keys():
-        #        if element2 is not element:
-        #            if ((element, element2) and (element2, element)) not in distinct_element_pairs:
-        #                distinct_element_pairs.append((element, element2))
-        #
-        #for entry in distinct_element_pairs:
-        #    for (key1, value1), (key2, value2) in zip(magpiedata_atomic[entry[0]].items(), magpiedata_atomic[entry[1]].items()):
-        #        magpiedata_atomic_difference[str(entry[0])+"_"+str(entry[1])+"_"+key1+"_difference"] = abs(float(value1) - float(value2))
-        #        try:
-        #            magpiedata_atomic_ratio[str(entry[0])+"_"+str(entry[1])+"_"+key1+"_ratio"] = float(value1) / float(value2)
-        #        except ZeroDivisionError:
-        #            pass
 
         # Change names of features to reflect each computed type of magpie feature (max, min, etc.)
         magpiedata_composition_average_renamed = {}
@@ -204,7 +147,6 @@ class MagpieFeatureGeneration(object):
         magpiedata_max_renamed = {}
         magpiedata_min_renamed = {}
         magpiedata_difference_renamed = {}
-        #magpiedata_atomic_renamed = {}
         for key in magpiedata_composition_average.keys():
             magpiedata_composition_average_renamed[key+"_composition_average"] = magpiedata_composition_average[key]
         for key in magpiedata_arithmetic_average.keys():
@@ -215,12 +157,45 @@ class MagpieFeatureGeneration(object):
             magpiedata_min_renamed[key+"_min_value"] = magpiedata_min[key]
         for key in magpiedata_difference.keys():
             magpiedata_difference_renamed[key+"_difference"] = magpiedata_difference[key]
-        #for key, value in magpiedata_atomic.items():
-        #    for key2, value2 in value.items():
-        #        magpiedata_atomic_renamed[str(key)+"_"+str(key2)] = value2
 
-        #return magpiedata_composition_average_renamed, magpiedata_arithmetic_average_renamed, magpiedata_max_renamed, magpiedata_min_renamed, magpiedata_difference_renamed, magpiedata_atomic_renamed, magpiedata_atomic_difference, magpiedata_atomic_ratio
         return magpiedata_composition_average_renamed, magpiedata_arithmetic_average_renamed, magpiedata_max_renamed, magpiedata_min_renamed, magpiedata_difference_renamed
+
+    def _get_atomic_magpie_features(self, composition):
+        # Get .table files containing feature values for each element, assign file names as feature names
+        configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
+        config_files_path = configdict['General Setup']['config_files_path']
+        data_path = config_files_path+'/magpiedata/magpie_elementdata'
+        magpie_feature_names = []
+        for f in os.listdir(data_path):
+            if '.table' in f:
+                magpie_feature_names.append(f[:-6])
+
+        composition = Composition(composition)
+        element_list, atoms_per_formula_unit = self._get_element_list(composition=composition)
+
+        element_dict = {}
+        for element in element_list:
+            element_dict[element] = Element(element).Z
+
+        magpiedata_atomic = {}
+        for k, v in element_dict.items():
+            atomic_values ={}
+            for feature_name in magpie_feature_names:
+                f = open(data_path + '/' + feature_name + '.table', 'r')
+                # Get Magpie data of relevant atomic numbers for this composition
+                for line, feature_value in enumerate(f.readlines()):
+                    if line + 1 == v:
+                        if "Missing" not in feature_value and "NA" not in feature_value:
+                            if feature_name != "OxidationStates":
+                                atomic_values[feature_name] = float(feature_value.strip())
+                        if "Missing" in feature_value:
+                            atomic_values[feature_name] = 'NaN'
+                        if "NA" in feature_value:
+                            atomic_values[feature_name] = 'NaN'
+                f.close()
+            magpiedata_atomic[k] = atomic_values
+
+        return magpiedata_atomic
 
     def _get_element_list(self, composition):
         element_amounts = composition.get_el_amt_dict()
