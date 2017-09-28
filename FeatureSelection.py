@@ -10,7 +10,7 @@ from sklearn.model_selection import learning_curve, KFold
 from sklearn.feature_selection import SelectKBest, f_classif, f_regression, mutual_info_regression, mutual_info_classif
 from sklearn.svm import SVR, SVC
 from sklearn.feature_selection import RFE
-from sklearn.metrics import mean_squared_error, make_scorer
+from sklearn.metrics import mean_squared_error, make_scorer, mean_absolute_error, r2_score
 from mlxtend.feature_selection import SequentialFeatureSelector as SFS
 from mlxtend.plotting import plot_sequential_feature_selection as plot_sfs
 from DataOperations import DataframeUtilities, DataParser
@@ -169,19 +169,41 @@ class LearningCurve(object):
         # Get model to use in feature selection
         mlw = MASTMLWrapper(configdict=self.configdict)
         self.model = mlw.get_machinelearning_model(model_type=self.model_type, y_feature=self.y_feature)
-
+        self.scoring_metric = self.configdict['Feature Selection']['scoring_metric']
 
     @timeit
     def generate_feature_learning_curve(self, feature_selection_algorithm):
         n_features_to_keep = int(self.configdict['Feature Selection']['number_of_features_to_keep'])
         dataframe_fs_list = list()
         num_features_list = list()
+
         avg_train_rmse_list = list()
         avg_test_rmse_list = list()
         train_rmse_list = list()
         test_rmse_list = list()
         train_rmse_stdev_list = list()
         test_rmse_stdev_list = list()
+
+        avg_train_mse_list = list()
+        avg_test_mse_list = list()
+        train_mse_list = list()
+        test_mse_list = list()
+        train_mse_stdev_list = list()
+        test_mse_stdev_list = list()
+
+        avg_train_mae_list = list()
+        avg_test_mae_list = list()
+        train_mae_list = list()
+        test_mae_list = list()
+        train_mae_stdev_list = list()
+        test_mae_stdev_list = list()
+
+        avg_train_r2_list = list()
+        avg_test_r2_list = list()
+        train_r2_list = list()
+        test_r2_list = list()
+        train_r2_stdev_list = list()
+        test_r2_stdev_list = list()
 
         # Obtain dataframes of selected features for n_features ranging from 1 to number_of_features_to_keep
         for n_features in range(n_features_to_keep):
@@ -221,6 +243,12 @@ class LearningCurve(object):
             for cvtest in cvtest_dict.keys():
                 fold_train_rmses = np.zeros(num_folds)
                 fold_test_rmses = np.zeros(num_folds)
+                fold_train_mses = np.zeros(num_folds)
+                fold_test_mses = np.zeros(num_folds)
+                fold_train_maes = np.zeros(num_folds)
+                fold_test_maes = np.zeros(num_folds)
+                fold_train_r2s = np.zeros(num_folds)
+                fold_test_r2s = np.zeros(num_folds)
                 for fold in cvtest_dict[cvtest].keys():
                     fdict = cvtest_dict[cvtest][fold]
                     input_train = df.iloc[fdict['train_index']]
@@ -236,29 +264,97 @@ class LearningCurve(object):
                     predict_train = self.model.predict(input_train)
                     predict_test = self.model.predict(input_test)
 
-                    rmse_test = np.sqrt(mean_squared_error(predict_test, target_test))
-                    rmse_train = np.sqrt(mean_squared_error(predict_train, target_train))
+                    mse_train = mean_squared_error(predict_train, target_train)
+                    mse_test = mean_squared_error(predict_test, target_test)
+                    rmse_test = np.sqrt(mse_test)
+                    rmse_train = np.sqrt(mse_train)
+                    mae_train = mean_absolute_error(predict_train, target_train)
+                    mae_test = mean_absolute_error(predict_test, target_test)
+                    r2_train = r2_score(predict_train, target_train)
+                    r2_test = r2_score(predict_test, target_test)
+
                     fold_train_rmses[fold] = rmse_train
                     fold_test_rmses[fold] = rmse_test
+                    fold_train_mses[fold] = mse_train
+                    fold_test_mses[fold] = mse_test
+                    fold_train_maes[fold] = mae_train
+                    fold_test_maes[fold] = mae_test
+                    fold_train_r2s[fold] = r2_train
+                    fold_test_r2s[fold] = r2_test
+
                 cvtest_dict[cvtest]["avg_train_rmse"] = np.mean(fold_train_rmses)
                 cvtest_dict[cvtest]["train_rmse_stdev"] = np.std(fold_train_rmses)
                 cvtest_dict[cvtest]["avg_test_rmse"] = np.mean(fold_test_rmses)
                 cvtest_dict[cvtest]["test_rmse_stdev"] = np.std(fold_test_rmses)
 
-            # Average rmse over all cvtests for this dataframe
+                cvtest_dict[cvtest]["avg_train_mse"] = np.mean(fold_train_mses)
+                cvtest_dict[cvtest]["train_mse_stdev"] = np.std(fold_train_mses)
+                cvtest_dict[cvtest]["avg_test_mse"] = np.mean(fold_test_mses)
+                cvtest_dict[cvtest]["test_mse_stdev"] = np.std(fold_test_mses)
+
+                cvtest_dict[cvtest]["avg_train_mae"] = np.mean(fold_train_maes)
+                cvtest_dict[cvtest]["train_mae_stdev"] = np.std(fold_train_maes)
+                cvtest_dict[cvtest]["avg_test_mae"] = np.mean(fold_test_maes)
+                cvtest_dict[cvtest]["test_mae_stdev"] = np.std(fold_test_maes)
+
+                cvtest_dict[cvtest]["avg_train_r2"] = np.mean(fold_train_r2s)
+                cvtest_dict[cvtest]["train_r2_stdev"] = np.std(fold_train_r2s)
+                cvtest_dict[cvtest]["avg_test_r2"] = np.mean(fold_test_r2s)
+                cvtest_dict[cvtest]["test_r2_stdev"] = np.std(fold_test_r2s)
+
+            # Average scoring metric (e.g. RMSE, MAE) over all cvtests for this dataframe
             avg_train_rmse = 0
             avg_test_rmse = 0
+            avg_train_mse = 0
+            avg_test_mse = 0
+            avg_train_mae = 0
+            avg_test_mae = 0
+            avg_train_rsquared = 0
+            avg_test_rsquared = 0
             for cvtest in cvtest_dict.keys():
                 avg_train_rmse += cvtest_dict[cvtest]["avg_train_rmse"]
                 avg_test_rmse += cvtest_dict[cvtest]["avg_test_rmse"]
+                avg_train_mse += cvtest_dict[cvtest]["avg_train_mse"]
+                avg_test_mse += cvtest_dict[cvtest]["avg_test_mse"]
+                avg_train_mae += cvtest_dict[cvtest]["avg_train_mae"]
+                avg_test_mae += cvtest_dict[cvtest]["avg_test_mae"]
+                avg_train_rsquared += cvtest_dict[cvtest]["avg_train_r2"]
+                avg_test_rsquared += cvtest_dict[cvtest]["avg_test_r2"]
                 train_rmse_list.append(cvtest_dict[cvtest]["avg_train_rmse"])
                 test_rmse_list.append(cvtest_dict[cvtest]["avg_test_rmse"])
+                train_mse_list.append(cvtest_dict[cvtest]["avg_train_rmse"])
+                test_mse_list.append(cvtest_dict[cvtest]["avg_test_rmse"])
+                train_mae_list.append(cvtest_dict[cvtest]["avg_train_rmse"])
+                test_mae_list.append(cvtest_dict[cvtest]["avg_test_rmse"])
+                train_r2_list.append(cvtest_dict[cvtest]["avg_train_r2"])
+                test_r2_list.append(cvtest_dict[cvtest]["avg_test_r2"])
             avg_train_rmse /= num_cvtests
             avg_test_rmse /= num_cvtests
             avg_train_rmse_list.append(avg_train_rmse)
             avg_test_rmse_list.append(avg_test_rmse)
             train_rmse_stdev_list.append(np.mean(np.std(train_rmse_list)))
             test_rmse_stdev_list.append(np.mean(np.std(test_rmse_list)))
+
+            avg_train_mse /= num_cvtests
+            avg_test_mse /= num_cvtests
+            avg_train_mse_list.append(avg_train_mse)
+            avg_test_mse_list.append(avg_test_mse)
+            train_mse_stdev_list.append(np.mean(np.std(train_mse_list)))
+            test_mse_stdev_list.append(np.mean(np.std(test_mse_list)))
+
+            avg_train_mae /= num_cvtests
+            avg_test_mae /= num_cvtests
+            avg_train_mae_list.append(avg_train_mae)
+            avg_test_mae_list.append(avg_test_mae)
+            train_mae_stdev_list.append(np.mean(np.std(train_mae_list)))
+            test_mae_stdev_list.append(np.mean(np.std(test_mae_list)))
+
+            avg_train_rsquared /= num_cvtests
+            avg_test_rsquared /= num_cvtests
+            avg_train_r2_list.append(avg_train_rsquared)
+            avg_test_r2_list.append(avg_test_rsquared)
+            train_r2_stdev_list.append(np.mean(np.std(train_r2_list)))
+            test_r2_stdev_list.append(np.mean(np.std(test_r2_list)))
 
             # Get current df x and y data split
             ydata = FeatureIO(dataframe=dfcopy).keep_custom_features(features_to_keep=target_feature)
@@ -270,8 +366,21 @@ class LearningCurve(object):
                                                        Xdata=Xdata, ydata=ydata, feature_selection_type= feature_selection_algorithm, cv=5)
 
         # Construct learning curve plot of RMSE vs number of features included
-        ydict = {"train_rmse": avg_train_rmse_list, "test_rmse": avg_test_rmse_list}
-        ydict_stdev = {"train_rmse": train_rmse_stdev_list, "test_rmse": test_rmse_stdev_list}
+        if self.scoring_metric == 'root_mean_squared_error':
+            ydict = {"train_rmse": avg_train_rmse_list, "test_rmse": avg_test_rmse_list}
+            ydict_stdev = {"train_rmse": train_rmse_stdev_list, "test_rmse": test_rmse_stdev_list}
+        elif self.scoring_metric == 'mean_squared_error':
+            ydict = {"train_mse": avg_train_mse_list, "test_mse": avg_test_mse_list}
+            ydict_stdev = {"train_mse": train_mse_stdev_list, "test_mse": test_mse_stdev_list}
+        elif self.scoring_metric == 'mean_absolute_error':
+            ydict = {"train_mae": avg_train_mae_list, "test_mae": avg_test_mae_list}
+            ydict_stdev = {"train_mae": train_mae_stdev_list, "test_mae": test_mae_stdev_list}
+        elif self.scoring_metric == 'r2_score':
+            ydict = {"train_r2": avg_train_r2_list, "test_r2": avg_test_r2_list}
+            ydict_stdev = {"train_r2": train_r2_stdev_list, "test_r2": test_r2_stdev_list}
+        else:
+            logging.info("ERROR: you must specify a valid scoring metric for feature selection!")
+            sys.exit()
         self.get_univariate_RFE_feature_learning_curve(title=feature_selection_algorithm + ' learning curve',
                                                        Xdata=num_features_list, ydata=ydict, ydata_stdev=ydict_stdev,
                                                        feature_selection_type=feature_selection_algorithm)
@@ -283,14 +392,34 @@ class LearningCurve(object):
         plt.grid()
         savedir = self.configdict['General Setup']['save_path']
         plt.xlabel("Number of training data points")
-        plt.ylabel("RMSE")
+        if self.scoring_metric == 'root_mean_squared_error':
+            plt.ylabel("RMSE")
+            score_func = mean_squared_error
+        elif self.scoring_metric == 'mean_squared_error':
+            plt.ylabel('MSE')
+            score_func = mean_squared_error
+        elif self.scoring_metric == 'mean_absolute_error':
+            plt.ylabel('MAE')
+            score_func = mean_absolute_error
+        elif self.scoring_metric == 'r2_score':
+            plt.ylabel('R^2')
+            score_func = r2_score
+
         train_sizes, train_scores, test_scores = learning_curve(estimator, Xdata, ydata, cv=cv, n_jobs=1,
-                                                                scoring=make_scorer(score_func=mean_squared_error),
+                                                                scoring=make_scorer(score_func=score_func),
                                                                 train_sizes=np.linspace(0.1, 1.0, 10))
-        train_scores_mean = np.mean(np.sqrt(train_scores), axis=1)
-        train_scores_std = np.std(np.sqrt(train_scores), axis=1)
-        test_scores_mean = np.mean(np.sqrt(test_scores), axis=1)
-        test_scores_std = np.std(np.sqrt(test_scores), axis=1)
+
+        if self.scoring_metric == 'root_mean_squared_error':
+            train_scores_mean = np.mean(np.sqrt(train_scores), axis=1)
+            train_scores_std = np.std(np.sqrt(train_scores), axis=1)
+            test_scores_mean = np.mean(np.sqrt(test_scores), axis=1)
+            test_scores_std = np.std(np.sqrt(test_scores), axis=1)
+        else:
+            train_scores_mean = np.mean(train_scores, axis=1)
+            train_scores_std = np.std(train_scores, axis=1)
+            test_scores_mean = np.mean(test_scores, axis=1)
+            test_scores_std = np.std(test_scores, axis=1)
+
         plt.fill_between(train_sizes, train_scores_mean - train_scores_std, train_scores_mean + train_scores_std, alpha=0.1,
                          color="r")
         plt.fill_between(train_sizes, test_scores_mean - test_scores_std, test_scores_mean + test_scores_std, alpha=0.1,
@@ -299,6 +428,7 @@ class LearningCurve(object):
         plt.plot(train_sizes, test_scores_mean, 'o-', color="g", label="Test data score")
         plt.legend(loc="best")
         plt.savefig(savedir + "/" + feature_selection_type + "_learning_curve_trainingdata.pdf")
+
         return
 
     def get_univariate_RFE_feature_learning_curve(self, title, Xdata, ydata, ydata_stdev, feature_selection_type=None):
@@ -307,16 +437,23 @@ class LearningCurve(object):
         plt.grid()
         savedir = self.configdict['General Setup']['save_path']
         for ydataname, ydata in ydata.items():
-            if ydataname == 'train_rmse':
+            if 'train' in ydataname:
                 plt.plot(Xdata, ydata, 'o-', color='r', label='Training data score')
                 plt.fill_between(Xdata, np.array(ydata) - np.array(ydata_stdev[ydataname]), np.array(ydata) + np.array(ydata_stdev[ydataname]), alpha=0.1,
                                  color="r")
-            if ydataname == 'test_rmse':
+            if 'test' in ydataname:
                 plt.plot(Xdata, ydata, 'o-', color='g', label='Test data score')
                 plt.fill_between(Xdata, np.array(ydata) - np.array(ydata_stdev[ydataname]), np.array(ydata) + np.array(ydata_stdev[ydataname]), alpha=0.1,
                                 color="g")
         plt.xlabel("Number of features")
-        plt.ylabel("RMSE")
+        if self.scoring_metric == 'root_mean_squared_error':
+            plt.ylabel("RMSE")
+        elif self.scoring_metric == 'mean_squared_error':
+            plt.ylabel("MSE")
+        elif self.scoring_metric == 'mean_absolute_error':
+            plt.ylabel("MAE")
+        elif self.scoring_metric == 'r2_score':
+            plt.ylabel("R^2")
         plt.legend(loc="best")
         plt.savefig(savedir + "/" + feature_selection_type + "_learning_curve_featurenumber.pdf")
         return
