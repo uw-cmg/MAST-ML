@@ -3,6 +3,7 @@ __author__ = 'Ryan Jacobs'
 from sklearn.decomposition import PCA
 from DataOperations import DataframeUtilities, DataParser
 from FeatureOperations import FeatureIO
+from MASTMLInitializer import MASTMLWrapper
 from SingleFit import timeit
 from sklearn.model_selection import learning_curve, ShuffleSplit, KFold
 from sklearn.feature_selection import SelectKBest, f_classif, f_regression, mutual_info_regression, mutual_info_classif
@@ -47,19 +48,23 @@ class DimensionalReduction(object):
 class FeatureSelection(object):
     """Class to conduct feature selection routines to reduce the number of input features for regression and classification problems.
     """
-    def __init__(self, configdict, dataframe, x_features, y_feature):
+    def __init__(self, configdict, dataframe, x_features, y_feature, model_type):
         self.configdict = configdict
         self.dataframe = dataframe
         self.x_features = x_features
         self.y_feature = y_feature
+        self.model_type = model_type
+        # Get model to use in feature selection
+        mlw = MASTMLWrapper(configdict=self.configdict)
+        self.model = mlw.get_machinelearning_model(model_type=self.model_type, y_feature=self.y_feature)
 
     @property
     def get_original_dataframe(self):
         return self.dataframe
 
     def sequential_forward_selection(self, number_features_to_keep):
-        sfs = SFS(KernelRidge(alpha=0.01, kernel='linear'), k_features=number_features_to_keep, forward=True,
-                  floating=False, verbose=0, scoring='neg_mean_squared_error', cv=ShuffleSplit(n_splits=10, test_size=0.2))
+        sfs = SFS(self.model, k_features=number_features_to_keep, forward=True,
+                  floating=False, verbose=0, scoring='neg_mean_squared_error', cv=KFold(n_splits=5, shuffle=True, random_state=False))
         sfs = sfs.fit(X=np.array(self.dataframe[self.x_features]), y=np.array(self.dataframe[self.y_feature]))
         Xnew = sfs.fit_transform(X=np.array(self.dataframe[self.x_features]), y=np.array(self.dataframe[self.y_feature]))
         feature_indices_selected = sfs.k_feature_idx_
@@ -92,13 +97,12 @@ class FeatureSelection(object):
                               feature_selection_str='input_with_sequential_forward_selection', filetag=filetag)
         mfso.save_data_to_csv(configdict=self.configdict, dataframe=fs_dataframe,
                               feature_selection_str='sequential_forward_selection_data', filetag=filetag)
-        learningcurve = LearningCurve(configdict=self.configdict, dataframe=dataframe)
+        learningcurve = LearningCurve(configdict=self.configdict, dataframe=dataframe, model_type=self.model_type)
         learningcurve.get_sequential_forward_selection_learning_curve(metricdict=metricdict, filetag=filetag)
 
         return dataframe
 
     def feature_selection(self, feature_selection_type, number_features_to_keep, use_mutual_info):
-
         if 'regression' in self.y_feature:
             selection_type = 'regression'
         elif 'classification' in self.y_feature:
@@ -158,12 +162,18 @@ class FeatureSelection(object):
 
 class LearningCurve(object):
 
-    def __init__(self, configdict, dataframe):
+    def __init__(self, configdict, dataframe, model_type):
         self.configdict = configdict
         self.dataframe = dataframe
+        self.model_type = model_type
         self.x_features, self.y_feature = DataParser(configdict=self.configdict).get_features(dataframe=self.dataframe,
-                                                                              target_feature=self.configdict['General Setup']['target_feature'],
-                                                                              from_input_file=False)
+                                                    target_feature=self.configdict['General Setup']['target_feature'],
+                                                    from_input_file=False)
+        # Get model to use in feature selection
+        mlw = MASTMLWrapper(configdict=self.configdict)
+        self.model = mlw.get_machinelearning_model(model_type=self.model_type, y_feature=self.y_feature)
+
+
     @timeit
     def generate_feature_learning_curve(self, feature_selection_algorithm):
         n_features_to_keep = int(self.configdict['Feature Selection']['number_of_features_to_keep'])
@@ -180,14 +190,13 @@ class LearningCurve(object):
         for n_features in range(n_features_to_keep):
             num_features_list.append(n_features + 1)
             use_mutual_info = self.configdict['Feature Selection']['use_mutual_information']
-            fs = FeatureSelection(configdict=self.configdict, dataframe=self.dataframe, x_features=self.x_features, y_feature=self.y_feature)
+            fs = FeatureSelection(configdict=self.configdict, dataframe=self.dataframe, x_features=self.x_features,
+                                  y_feature=self.y_feature, model_type=self.model_type)
             dataframe_fs = fs.feature_selection(feature_selection_type=feature_selection_algorithm,
                                                                         number_features_to_keep=n_features + 1,
                                                                         use_mutual_info=use_mutual_info)
             dataframe_fs_list.append(dataframe_fs)
 
-        # TODO: use general model as specified by user in input file, not just generic GKRR
-        model_orig = KernelRidge(alpha=1, kernel='rbf', gamma=0.1)
         num_cvtests = 10
         num_folds = 5
         kfoldcv = KFold(n_splits=num_folds, shuffle=True, random_state=False)
@@ -226,9 +235,9 @@ class LearningCurve(object):
                     if target_feature in input_test.columns:
                         del input_test[target_feature]
                     target_test = df[target_feature][fdict['test_index']]
-                    model = model_orig.fit(input_train, target_train)
-                    predict_train = model.predict(input_train)
-                    predict_test = model.predict(input_test)
+                    self.model = self.model.fit(input_train, target_train)
+                    predict_train = self.model.predict(input_train)
+                    predict_test = self.model.predict(input_test)
 
                     rmse_test = np.sqrt(mean_squared_error(predict_test, target_test))
                     rmse_train = np.sqrt(mean_squared_error(predict_train, target_train))
@@ -260,7 +269,7 @@ class LearningCurve(object):
 
             # Construct learning curve plot of CVscore vs number of training data included. Only do it once max features reached
             if num_features == n_features_to_keep:
-                self.get_univariate_RFE_training_data_learning_curve(estimator=model_orig, title='Training data learning curve',
+                self.get_univariate_RFE_training_data_learning_curve(estimator=self.model, title='Training data learning curve',
                                                        Xdata=Xdata, ydata=ydata, feature_selection_type= feature_selection_algorithm, cv=5)
 
         # Construct learning curve plot of RMSE vs number of features included

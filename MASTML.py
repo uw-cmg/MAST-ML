@@ -454,7 +454,8 @@ class MASTMLDriver(object):
 
             if k == 'feature_selection_algorithm':
                 logging.info('FEATURE SELECTION: Selecting features using a %s algorithm' % v)
-                fs = FeatureSelection(configdict=self.configdict, dataframe=dataframe, x_features=x_features, y_feature=y_feature)
+                model_to_use = str(self.configdict['Feature Selection']['model_to_use_for_learning_curve'])
+                fs = FeatureSelection(configdict=self.configdict, dataframe=dataframe, x_features=x_features, y_feature=y_feature, model_type=model_to_use)
                 if v == 'sequential_forward_selection':
                     if int(self.configdict['Feature Selection']['number_of_features_to_keep']) <= len(x_features):
                         dataframe = fs.sequential_forward_selection(number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']))
@@ -472,7 +473,7 @@ class MASTMLDriver(object):
                                                            number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']),
                                                            use_mutual_info=self.configdict['Feature Selection']['use_mutual_information'])
                     if self.configdict['Feature Selection']['generate_feature_learning_curve'] == 'True':
-                        learningcurve = LearningCurve(configdict=self.configdict, dataframe=dataframe)
+                        learningcurve = LearningCurve(configdict=self.configdict, dataframe=dataframe, model_type=model_to_use)
                         logging.info('Generating a feature learning curve using a %s algorithm' % v)
                         learningcurve.generate_feature_learning_curve(feature_selection_algorithm='recursive_feature_elimination')
                 if v == 'univariate_feature_selection':
@@ -486,7 +487,7 @@ class MASTMLDriver(object):
                                                          number_features_to_keep=int(len(x_features)),
                                                          use_mutual_info=self.configdict['Feature Selection']['use_mutual_information'])
                     if self.configdict['Feature Selection']['generate_feature_learning_curve'] == 'True':
-                        learningcurve = LearningCurve(configdict=self.configdict, dataframe=dataframe)
+                        learningcurve = LearningCurve(configdict=self.configdict, dataframe=dataframe, model_type=model_to_use)
                         logging.info('Generating a feature learning curve using a %s algorithm' % v)
                         learningcurve.generate_feature_learning_curve(feature_selection_algorithm='univariate_feature_selection')
         return dataframe
