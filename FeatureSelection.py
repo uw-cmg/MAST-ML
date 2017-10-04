@@ -16,6 +16,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.ensemble import ExtraTreesRegressor
 from mlxtend.feature_selection import SequentialFeatureSelector as SFS
+from mlxtend.plotting import plot_sequential_feature_selection as plot_sfs
 import pandas as pd
 import os
 
@@ -61,15 +62,53 @@ class FeatureSelection(object):
         return self.dataframe
 
     def forward_selection(self, number_features_to_keep, save_to_csv=True):
-        sfs = SFS(KernelRidge(), k_features=number_features_to_keep, forward=True, floating=False, verbose=0, scoring='r2', cv=ShuffleSplit(n_splits=5, test_size=0.2))
+        # sfs = SFS(KernelRidge(), k_features=number_features_to_keep, forward=True, floating=False, verbose=0, scoring='r2', cv=ShuffleSplit(n_splits=5, test_size=0.2))
+        # sfs = sfs.fit(X=np.array(self.dataframe[self.x_features]), y=np.array(self.dataframe[self.y_feature]))
+        # Xnew = sfs.fit_transform(X=np.array(self.dataframe[self.x_features]), y=np.array(self.dataframe[self.y_feature]))
+        # feature_indices_selected = sfs.k_feature_idx_
+        # dataframe = DataframeUtilities()._array_to_dataframe(array=Xnew)
+        # feature_names_selected = MiscFeatureSelectionOperations().get_forward_selection_feature_names(feature_indices_selected=feature_indices_selected, x_features=self.x_features)
+        # dataframe = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe, x_features=feature_names_selected, y_feature=self.y_feature, remove_first_row=False)
+        # # Add y_feature back into the dataframe
+        # dataframe = FeatureIO(dataframe=dataframe).add_custom_features(features_to_add=[self.y_feature],data_to_add=self.dataframe[self.y_feature])
+        # dataframe = dataframe.dropna()
+        # # Get forward selection data
+        # fs_dataframe = pd.DataFrame.from_dict(sfs.get_metric_dict()).T
+        # logging.info(("Summary of forward selection:"))
+        # logging.info(fs_dataframe)
+        # if save_to_csv == bool(True):
+        #     # Need configdict to get save path
+        #     configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
+        #     dataframe.to_csv(configdict['General Setup']['save_path']+"/"+'input_with_forward_selection.csv', index=False)
+        #     fs_dataframe.to_csv(configdict['General Setup']['save_path']+"/"+'foward_selection_data.csv', index=False)
+        # return dataframe
+
+        sfs = SFS(KernelRidge(alpha=0.01, kernel='linear'), k_features=number_features_to_keep, forward=True,
+                  floating=False, verbose=0, scoring='r2', cv=ShuffleSplit(n_splits=5, test_size=0.2))
         sfs = sfs.fit(X=np.array(self.dataframe[self.x_features]), y=np.array(self.dataframe[self.y_feature]))
-        Xnew = sfs.fit_transform(X=np.array(self.dataframe[self.x_features]), y=np.array(self.dataframe[self.y_feature]))
+        Xnew = sfs.fit_transform(X=np.array(self.dataframe[self.x_features]),
+                                 y=np.array(self.dataframe[self.y_feature]))
         feature_indices_selected = sfs.k_feature_idx_
-        dataframe = DataframeUtilities()._array_to_dataframe(array=Xnew)
-        feature_names_selected = MiscFeatureSelectionOperations().get_forward_selection_feature_names(feature_indices_selected=feature_indices_selected, x_features=self.x_features)
-        dataframe = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe, x_features=feature_names_selected, y_feature=self.y_feature, remove_first_row=False)
+        x_features_to_keep = []
+        for index in feature_indices_selected:
+            x_features_to_keep.append(self.x_features[index])
+
+        # print('feature indices:')
+        # print(feature_indices_selected)
+        # for index in feature_indices_selected:
+        #    print('index:', index)
+        #    print('feature:', self.x_features[index])
+        # print(self.x_features)
+
+        # dataframe = DataframeUtilities()._array_to_dataframe(array=Xnew)
+        feature_names_selected = MiscFeatureSelectionOperations().get_forward_selection_feature_names(
+            feature_indices_selected=feature_indices_selected, x_features=self.x_features)
+        # dataframe = DataframeUtilities()._assign_columns_as_features(dataframe=self.dataframe, x_features=feature_names_selected, y_feature=self.y_feature, remove_first_row=False)
+        # dataframe = DataframeUtilities()._array_to_dataframe(array=Xnew)
+        dataframe = FeatureIO(dataframe=self.dataframe).keep_custom_features(features_to_keep=x_features_to_keep)
         # Add y_feature back into the dataframe
-        dataframe = FeatureIO(dataframe=dataframe).add_custom_features(features_to_add=[self.y_feature],data_to_add=self.dataframe[self.y_feature])
+        dataframe = FeatureIO(dataframe=dataframe).add_custom_features(features_to_add=[self.y_feature],
+                                                                       data_to_add=self.dataframe[self.y_feature])
         dataframe = dataframe.dropna()
         # Get forward selection data
         fs_dataframe = pd.DataFrame.from_dict(sfs.get_metric_dict()).T
