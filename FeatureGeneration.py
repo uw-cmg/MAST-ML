@@ -5,8 +5,8 @@ import sys
 import os
 import logging
 from pymatgen import Element, Composition
-from pymatgen.matproj.rest import MPRester
-from citrination_client import *
+from pymatgen.ext.matproj import MPRester
+from citrination_client import PifQuery, SystemQuery, ChemicalFieldQuery, ChemicalFilter
 from DataOperations import DataframeUtilities
 
 class MagpieFeatureGeneration(object):
@@ -212,7 +212,8 @@ class MaterialsProjectFeatureGeneration(object):
     """Class to generate new features using the Materials Project and dataframe containing material compositions. Creates
      a dataframe and append features to existing feature dataframes
     """
-    def __init__(self, dataframe, mapi_key):
+    def __init__(self, configdict, dataframe, mapi_key):
+        self.configdict = configdict
         self.dataframe = dataframe
         self.mapi_key = mapi_key
 
@@ -239,8 +240,13 @@ class MaterialsProjectFeatureGeneration(object):
         del dataframe_mp['Material compositions']
         # Merge magpie feature dataframe with originally supplied dataframe
         dataframe = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_mp)
+
         if save_to_csv == bool(True):
-            dataframe.to_csv('input_with_materialsproject_features.csv', index=False)
+            # Get y_feature in this dataframe, attach it to save path
+            for column in dataframe.columns.values:
+                if column in self.configdict['General Setup']['target_feature']:
+                    filetag = column
+            dataframe.to_csv(self.configdict['General Setup']['save_path']+"/"+'input_with_matproj_features'+'_'+str(filetag)+'.csv', index=False)
         return dataframe
 
     def _get_data_from_materials_project(self, composition):
@@ -289,31 +295,120 @@ class MaterialsProjectFeatureGeneration(object):
         return structure_data_dict_condensed
 
 class CitrineFeatureGeneration(object):
-    """THIS CLASS IS UNDER CONSTRUCTION AS OF 5/31/17. WILL FINISH ASAP
 
-    Class to generate new features using the Citrination client and dataframe containing material compositions. Creates
-     a dataframe and append features to existing feature dataframes
-    """
-    def __init__(self, dataframe, api_key):
+    def __init__(self, configdict, dataframe, api_key):
+        self.configdict = configdict
         self.dataframe = dataframe
         self.api_key = api_key
         self.client = CitrinationClient(api_key, 'https://citrination.com')
 
     def generate_citrine_features(self, save_to_csv=True):
-        pass
+        logging.info('WARNING: You have specified generation of features from Citrine. Based on which materials you are'
+                     'interested in, there may be many records to parse through, thus this routine may take a long time to complete!')
+        compositions = self.dataframe['Material compositions'].tolist()
+        citrine_dict_property_min = dict()
+        citrine_dict_property_max = dict()
+        citrine_dict_property_avg = dict()
+        for composition in compositions:
+            pifquery = self._get_pifquery(composition=composition)
+            property_name_list, property_value_list = self._get_pifquery_property_list(pifquery=pifquery)
+            property_names_unique, parsed_property_min, parsed_property_max, parsed_property_avg = self._parse_pifquery_property_list(property_name_list=property_name_list, property_value_list=property_value_list)
+            citrine_dict_property_min[composition] = parsed_property_min
+            citrine_dict_property_max[composition] = parsed_property_max
+            citrine_dict_property_avg[composition] = parsed_property_avg
 
-    def _get_data_from_citrine(self, composition):
-        #pif_query = PifQuery(system=SystemQuery(chemical_formula=ChemicalFieldOperation(filter=ChemicalFilter(equal=formula)),
-        #                            properties=PropertyQuery(name=FieldOperation(filter=Filter(equal=property)),
-        #                            value=FieldOperation(filter=Filter(min=min_measurement, max=max_measurement)),
-        #                            data_type=FieldOperation(filter=Filter(equal=data_type))),
-        #                            references=ReferenceQuery(doi=FieldOperation(filter=Filter(equal=reference)))),
-        #                            include_datasets=[data_set_id], from_index=start, size=per_page)
+        dataframe = self.dataframe
+        citrine_dict_list = [citrine_dict_property_min, citrine_dict_property_max, citrine_dict_property_avg]
+        for citrine_dict in citrine_dict_list:
+            dataframe_citrine = pd.DataFrame.from_dict(data=citrine_dict, orient='index')
+            # Need to reorder compositions in new dataframe to match input dataframe
+            dataframe_citrine = dataframe_citrine.reindex(self.dataframe['Material compositions'].tolist())
+            # Need to make compositions the first column, instead of the row names
+            dataframe_citrine.index.name = 'Material compositions'
+            dataframe_citrine.reset_index(inplace=True)
+            # Need to delete duplicate column before merging dataframes
+            del dataframe_citrine['Material compositions']
+            # Merge magpie feature dataframe with originally supplied dataframe
+            dataframe = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_citrine)
 
-        pif_query = PifQuery(system=SystemQuery(chemical_formula=ChemicalFieldOperation(filter=ChemicalFilter(equal=composition))))
+        if save_to_csv == bool(True):
+            # Get y_feature in this dataframe, attach it to save path
+            for column in dataframe.columns.values:
+                if column in self.configdict['General Setup']['target_feature']:
+                    filetag = column
+            dataframe.to_csv(self.configdict['General Setup']['save_path']+"/"+'input_with_citrine_features'+'_'+str(filetag)+'.csv', index=False)
 
+        return dataframe
+
+    def _get_pifquery(self, composition):
+        pif_query = PifQuery(system=SystemQuery(chemical_formula=ChemicalFieldQuery(filter=ChemicalFilter(equal=composition))))
         # Check if any results found
         if 'hits' not in self.client.search(pif_query).as_dictionary():
             raise KeyError('No results found!')
-        data = self.client.search(pif_query).as_dictionary()['hits']
-        return data
+        pifquery = self.client.search(pif_query).as_dictionary()['hits']
+        return pifquery
+
+    def _get_pifquery_property_list(self, pifquery):
+        property_name_list = list()
+        property_value_list = list()
+        accepted_properties_list = ['mass', 'space group', 'band', 'Band', 'energy', 'volume', 'density', 'dielectric',
+                                    'Dielectric',
+                                    'Enthalpy', 'Convex', 'Magnetization', 'Elements', 'Modulus', 'Shear', "Poisson's",
+                                    'Elastic', 'Energy']
+        for result_number, results in enumerate(pifquery):
+            for system_heading, system_value in results.items():
+                if system_heading == 'system':
+                    # print('FOUND SYSTEM')
+                    for property_name, property_value in system_value.items():
+                        if property_name == 'properties':
+                            # print('FOUND PROPERTIES')
+                            # pprint(property_value)
+                            for list_index, list_element in enumerate(property_value):
+                                for name, value in property_value[list_index].items():
+                                    if name == 'name':
+                                        # Check that the property name is in the acceptable property list
+                                        if value != "CIF File":
+                                            for entry in accepted_properties_list:
+                                                if entry in value:
+                                                    # print('found acceptable name', entry, 'for name', value, 'with value',property_value[list_index]['scalars'][0]['value'] )
+                                                    property_name_list.append(value)
+                                                    try:
+                                                        property_value_list.append(
+                                                            float(property_value[list_index]['scalars'][0]['value']))
+                                                    except (ValueError, KeyError):
+                                                        # print('found something to remove', property_value[list_index]['scalars'][0]['value'])
+                                                        property_name_list.pop(-1)
+                                                        continue
+        return property_name_list, property_value_list
+
+    def _parse_pifquery_property_list(self, property_name_list, property_value_list):
+        parsed_property_max = dict()
+        parsed_property_min = dict()
+        parsed_property_avg = dict()
+        property_names_unique = list()
+        if len(property_name_list) != len(property_value_list):
+            print('Error! Length of property name and property value lists are not the same. There must be a bug in the _get_pifquerey_property_list method')
+            sys.exit()
+        else:
+            # Get unique property names
+            for name in property_name_list:
+                if name not in property_names_unique:
+                    property_names_unique.append(name)
+            for unique_name in property_names_unique:
+                unique_property = list()
+                unique_property_avg = 0
+                count = 0
+                for i, name in enumerate(property_name_list):
+                    # Only include property values whose name are same as those in unique_name list
+                    if name == unique_name:
+                        count += 1 # count how many instances of the same property occur
+                        unique_property_avg += property_value_list[i]
+                        unique_property.append(property_value_list[i])
+                unique_property_min = min(entry for entry in unique_property)
+                unique_property_max = max(entry for entry in unique_property)
+                unique_property_avg = unique_property_avg/count
+                parsed_property_min[str(unique_name)+"_min"] = unique_property_min
+                parsed_property_max[str(unique_name) + "_max"] = unique_property_max
+                parsed_property_avg[str(unique_name) + "_avg"] = unique_property_avg
+
+        return property_names_unique, parsed_property_min, parsed_property_max, parsed_property_avg
