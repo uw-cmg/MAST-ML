@@ -145,6 +145,8 @@ class DataframeUtilities(object):
     @classmethod
     def _plot_dataframe_histogram(cls, configdict, dataframe, y_feature):
         num_bins = round((dataframe.shape[0])/15, 0)
+        if num_bins < 1:
+            num_bins = 1
         pyplot.hist(x=dataframe[y_feature], bins=num_bins, edgecolor='k')
         pyplot.title('Histogram of ' + y_feature + ' values')
         pyplot.xlabel(y_feature + ' value')
