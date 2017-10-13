@@ -432,18 +432,20 @@ class MASTMLDriver(object):
     @timeit
     def _perform_feature_generation(self, dataframe):
         for k, v in self.configdict['Feature Generation'].items():
-            # TODO: Here, True/False are strings. Change them with validator to be bools
             if k == 'add_magpie_features' and v == 'True':
                 logging.info('FEATURE GENERATION: Adding Magpie features to your feature list')
                 mfg = MagpieFeatureGeneration(configdict=self.configdict, dataframe=dataframe)
                 dataframe = mfg.generate_magpie_features(save_to_csv=True)
+                print(dataframe.shape)
             if k == 'add_materialsproject_features' and v == 'True':
                 logging.info('FEATURE GENERATION: Adding Materials Project features to your feature list')
-                mpfg = MaterialsProjectFeatureGeneration(dataframe=dataframe, mapi_key=self.configdict['Feature Generation']['materialsproject_apikey'])
+                mpfg = MaterialsProjectFeatureGeneration(configdict=self.configdict, dataframe=dataframe, mapi_key=self.configdict['Feature Generation']['materialsproject_apikey'])
                 dataframe = mpfg.generate_materialsproject_features(save_to_csv=True)
-            #if k == 'add_citrine_features' and v is True:
-            #    cfg = CitrineFeatureGeneration(dataframe=dataframe, api_key=self.configdict['Feature Generation']['citrine_apikey'])
-            #    dataframe = cfg.generate_citrine_features()
+                print(dataframe.shape)
+            if k == 'add_citrine_features' and v == 'True':
+                cfg = CitrineFeatureGeneration(configdict=self.configdict, dataframe=dataframe, api_key=self.configdict['Feature Generation']['citrine_apikey'])
+                dataframe = cfg.generate_citrine_features(save_to_csv=True)
+                print(dataframe.shape)
         return dataframe
 
     @timeit
