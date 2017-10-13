@@ -8,6 +8,7 @@ from pymatgen import Element, Composition
 from pymatgen.ext.matproj import MPRester
 from citrination_client import PifQuery, SystemQuery, ChemicalFieldQuery, ChemicalFilter
 from DataOperations import DataframeUtilities
+from SingleFit import timeit
 
 class MagpieFeatureGeneration(object):
     """Class to generate new features using Magpie data and dataframe containing material compositions. Creates
@@ -21,6 +22,7 @@ class MagpieFeatureGeneration(object):
     def get_original_dataframe(self):
         return self.dataframe
 
+    @timeit
     def generate_magpie_features(self, save_to_csv=True):
         compositions = []
         composition_components = []
@@ -217,6 +219,7 @@ class MaterialsProjectFeatureGeneration(object):
         self.dataframe = dataframe
         self.mapi_key = mapi_key
 
+    @timeit
     def generate_materialsproject_features(self, save_to_csv=True):
         try:
             compositions = self.dataframe['Material compositions']
@@ -302,6 +305,7 @@ class CitrineFeatureGeneration(object):
         self.api_key = api_key
         self.client = CitrinationClient(api_key, 'https://citrination.com')
 
+    @timeit
     def generate_citrine_features(self, save_to_csv=True):
         logging.info('WARNING: You have specified generation of features from Citrine. Based on which materials you are'
                      'interested in, there may be many records to parse through, thus this routine may take a long time to complete!')
