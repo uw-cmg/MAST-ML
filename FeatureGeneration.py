@@ -1,4 +1,8 @@
 __author__ = 'Ryan Jacobs'
+__maintainer__ = 'Ryan Jacobs'
+__version__ = '1.0'
+__email__ = 'rjacobs3@wisc.edu'
+__date__ = 'October 14th, 2017'
 
 import pandas as pd
 import sys
@@ -6,21 +10,28 @@ import os
 import logging
 from pymatgen import Element, Composition
 from pymatgen.ext.matproj import MPRester
-from citrination_client import PifQuery, SystemQuery, ChemicalFieldQuery, ChemicalFilter
+from citrination_client import CitrinationClient, PifQuery, SystemQuery, ChemicalFieldQuery, ChemicalFilter
 from DataOperations import DataframeUtilities
 from SingleFit import timeit
 
 class MagpieFeatureGeneration(object):
-    """Class to generate new features using Magpie data and dataframe containing material compositions. Creates
-     a dataframe and append features to existing feature dataframes
+    """
+    Class to generate new features using Magpie data and dataframe containing material compositions
+
+    Attributes:
+        configdict <dict> : MASTML configfile object as dict
+        dataframe <pandas dataframe> : dataframe containing x and y data and feature names
+
+    Methods:
+        generate_magpie_features : generates magpie feature set based on compositions in dataframe
+            args:
+                save_to_csv <bool> : whether to save the magpie feature set to a csv file
+            returns:
+                dataframe <pandas dataframe> : dataframe containing magpie feature set
     """
     def __init__(self, configdict, dataframe):
         self.configdict = configdict
         self.dataframe = dataframe
-
-    @property
-    def get_original_dataframe(self):
-        return self.dataframe
 
     @timeit
     def generate_magpie_features(self, save_to_csv=True):
@@ -90,7 +101,7 @@ class MagpieFeatureGeneration(object):
             # Need to delete duplicate column before merging dataframes
             del dataframe_magpie['Material compositions']
             # Merge magpie feature dataframe with originally supplied dataframe
-            dataframe = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_magpie)
+            dataframe = DataframeUtilities().merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_magpie)
 
         if save_to_csv == bool(True):
             # Get y_feature in this dataframe, attach it to save path
@@ -211,8 +222,20 @@ class MagpieFeatureGeneration(object):
         return element_list, atoms_per_formula_unit
 
 class MaterialsProjectFeatureGeneration(object):
-    """Class to generate new features using the Materials Project and dataframe containing material compositions. Creates
-     a dataframe and append features to existing feature dataframes
+    """
+    Class to generate new features using Materials Project data and dataframe containing material compositions
+
+    Attributes:
+        configdict <dict> : MASTML configfile object as dict
+        dataframe <pandas dataframe> : dataframe containing x and y data and feature names
+        mapi_key <str> : your Materials Project API key
+
+    Methods:
+        generate_materialsproject_features : generates materials project feature set based on compositions in dataframe
+            args:
+                save_to_csv <bool> : whether to save the magpie feature set to a csv file
+            returns:
+                dataframe <pandas dataframe> : dataframe containing magpie feature set
     """
     def __init__(self, configdict, dataframe, mapi_key):
         self.configdict = configdict
@@ -242,7 +265,7 @@ class MaterialsProjectFeatureGeneration(object):
         # Need to delete duplicate column before merging dataframes
         del dataframe_mp['Material compositions']
         # Merge magpie feature dataframe with originally supplied dataframe
-        dataframe = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_mp)
+        dataframe = DataframeUtilities().merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_mp)
 
         if save_to_csv == bool(True):
             # Get y_feature in this dataframe, attach it to save path
@@ -298,7 +321,21 @@ class MaterialsProjectFeatureGeneration(object):
         return structure_data_dict_condensed
 
 class CitrineFeatureGeneration(object):
+    """
+    Class to generate new features using Citrine data and dataframe containing material compositions
 
+    Attributes:
+        configdict <dict> : MASTML configfile object as dict
+        dataframe <pandas dataframe> : dataframe containing x and y data and feature names
+        api_key <str> : your Citrination API key
+
+    Methods:
+        generate_citrine_features : generates Citrine feature set based on compositions in dataframe
+            args:
+                save_to_csv <bool> : whether to save the magpie feature set to a csv file
+            returns:
+                dataframe <pandas dataframe> : dataframe containing magpie feature set
+    """
     def __init__(self, configdict, dataframe, api_key):
         self.configdict = configdict
         self.dataframe = dataframe
@@ -333,7 +370,7 @@ class CitrineFeatureGeneration(object):
             # Need to delete duplicate column before merging dataframes
             del dataframe_citrine['Material compositions']
             # Merge magpie feature dataframe with originally supplied dataframe
-            dataframe = DataframeUtilities()._merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_citrine)
+            dataframe = DataframeUtilities().merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_citrine)
 
         if save_to_csv == bool(True):
             # Get y_feature in this dataframe, attach it to save path

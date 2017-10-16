@@ -1,4 +1,8 @@
 __author__ = 'Ryan Jacobs, Tam Mayeshiba'
+__maintainer__ = 'Ryan Jacobs'
+__version__ = '1.0'
+__email__ = 'rjacobs3@wisc.edu'
+__date__ = 'October 14th, 2017'
 
 import sys
 import os
@@ -14,7 +18,15 @@ from configobj import ConfigObj, ConfigObjError
 from validate import Validator, VdtTypeError
 
 class ConfigFileParser(object):
-    """Class to read in and parse contents of config file
+    """
+    Class to read in contents of MASTML input files
+
+    Attributes:
+        configfile <MASTML configfile object> : a MASTML input file, as a configfile object
+
+    Methods:
+        get_config_dict <dict> : returns dict representation of configfile
+            returns: configdict <dict>
     """
     def __init__(self, configfile):
         self.configfile = configfile
@@ -45,7 +57,15 @@ class ConfigFileParser(object):
             raise OSError('The input file you specified, %s, does not exist in the path %s' % (str(self.configfile), str(path_to_file)))
 
 class ConfigFileValidator(ConfigFileParser):
-    """Class to validate contents of user-specified MASTML input file and flag any errors
+    """
+    Class to validate contents of user-specified MASTML input file and flag any errors. Subclass of ConfigFileParser.
+
+    Attributes:
+        configfile <MASTML configfile object> : a MASTML input file, as a configfile object
+
+    Methods:
+        run_config_validation : checks configfile object for errors.
+            returns: configfile <MASTML configfile object>, errors_present <bool>
     """
     def __init__(self, configfile):
         super().__init__(configfile)
@@ -166,27 +186,37 @@ class ConfigFileValidator(ConfigFileParser):
         return Validator()
 
 class MASTMLWrapper(object):
-    """Class that takes parameters from parsed config file and performs calls to appropriate MASTML methods
+    """
+    Class that takes parameters from configdict (configfile as dict) and performs calls to appropriate MASTML methods
+
+    Attributes:
+        configdict <dict> : MASTML configfile object as dict
+
+    Methods:
+        get_machinelearning_model : obtains machine learning model by calling sklearn
+            args:
+                model_type <str> : keyword string indicating sklearn model name
+                y_feature <str> : name of target feature
+            returns:
+                model <sklearn model object>
+
+        get_machinelearning_test : obtains test name to conduct from configdict
+            args:
+                test_type <str> : keyword string specifying type of MASTML test to perform
+                model <sklearn model object> : sklearn model object to use in test_type
+                save_path <str> : path of save directory to store test output
+            returns:
+                None
     """
     def __init__(self, configdict):
         self.configdict = configdict
 
-    def process_config_keyword(self, keyword):
-        keywordsetup = {}
-        if not self.configdict[str(keyword)]:
-            raise IOError('This dict does not contain the relevant key, %s' % str(keyword))
-        for k, v in self.configdict[str(keyword)].items():
-            keywordsetup[k] = v
-        return keywordsetup
-
-    # This method returns relevant model object based on input file. Fitting the model is performed later
-    # Need to also pass y_feature list here so can discern between regression and classification tasks.
     def get_machinelearning_model(self, model_type, y_feature):
         if 'classification' in y_feature:
             if 'classifier' in model_type:
-                print('got y_feature', y_feature)
-                print('model type is', model_type)
-                print('doing classification on', y_feature)
+                logging.info('got y_feature', y_feature)
+                logging.info('model type is', model_type)
+                logging.info('doing classification on', y_feature)
                 if model_type == 'support_vector_machine_model_classifier':
                     model = SVC(C=float(self.configdict['Model Parameters']['support_vector_machine_model_classifier']['error_penalty']),
                                 kernel=str(self.configdict['Model Parameters']['support_vector_machine_model_classifier']['kernel']),
@@ -241,9 +271,9 @@ class MASTMLWrapper(object):
 
         if 'regression' in y_feature:
             if 'regressor' in model_type:
-                print('got y_feature', y_feature)
-                print('model type is', model_type)
-                print('doing regression on', y_feature)
+                logging.info('got y_feature', y_feature)
+                logging.info('model type is', model_type)
+                logging.info('doing regression on', y_feature)
                 if model_type == 'linear_model_regressor':
                     model = LinearRegression(fit_intercept=bool(self.configdict['Model Parameters']['linear_model_regressor']['fit_intercept']))
                     return model
@@ -330,7 +360,6 @@ class MASTMLWrapper(object):
         #else:
         #    raise TypeError('You have specified an invalid model_type name in your input file')
 
-    # This method will call the different classes corresponding to each test type, which are being organized by Tam
     def get_machinelearning_test(self, test_type, model, save_path, *args, **kwargs):
         mod_name = test_type.split("_")[0] #ex. KFoldCV_5fold goes to KFoldCV
         test_module = importlib.import_module('%s' % (mod_name))
@@ -342,3 +371,11 @@ class MASTMLWrapper(object):
                             **kwargs)
         test_class.run()
         return None
+
+    def _process_config_keyword(self, keyword):
+        keywordsetup = {}
+        if not self.configdict[str(keyword)]:
+            raise IOError('This dict does not contain the relevant key, %s' % str(keyword))
+        for k, v in self.configdict[str(keyword)].items():
+            keywordsetup[k] = v
+        return keywordsetup

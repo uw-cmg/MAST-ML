@@ -1,4 +1,8 @@
-__author__ = "Tam Mayeshiba"
+__author__ = 'Tam Mayeshiba'
+__maintainer__ = 'Ryan Jacobs'
+__version__ = '1.0'
+__email__ = 'rjacobs3@wisc.edu'
+__date__ = 'October 14th, 2017'
 
 import numpy as np
 import copy
@@ -82,7 +86,6 @@ class DataHandler():
             self.group_data = self.data[self.grouping_feature]
             self.groups = np.unique(self.group_data)
         return
-
 
     def set_up_data_from_features(self):
         """To reset data, for example, if self.data has been changed

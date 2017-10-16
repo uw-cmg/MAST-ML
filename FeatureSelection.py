@@ -1,4 +1,8 @@
 __author__ = 'Ryan Jacobs'
+__maintainer__ = 'Ryan Jacobs'
+__version__ = '1.0'
+__email__ = 'rjacobs3@wisc.edu'
+__date__ = 'October 14th, 2017'
 
 import sys
 import logging
@@ -8,7 +12,6 @@ import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.model_selection import learning_curve, KFold
 from sklearn.feature_selection import SelectKBest, f_classif, f_regression, mutual_info_regression, mutual_info_classif
-from sklearn.svm import SVR, SVC
 from sklearn.feature_selection import RFE
 from sklearn.metrics import mean_squared_error, make_scorer, mean_absolute_error, r2_score
 from mlxtend.feature_selection import SequentialFeatureSelector as SFS
@@ -19,31 +22,70 @@ from MASTMLInitializer import MASTMLWrapper
 from SingleFit import timeit
 
 class DimensionalReduction(object):
-    """Class to conduct PCA and constant feature removal for dimensional reduction of features. Mind that PCA produces linear combinations of features,
-    and thus the resulting new features don't have physical meaning.
+    """
+    Class to conduct PCA and constant feature removal for dimensional reduction of features.
+
+    Attributes:
+        dataframe <pandas dataframe> : dataframe containing x and y data and feature names
+        x_features <list> : list of x feature names
+        y_feature <str> : target feature name
+
+    Methods:
+        remove_constant_features : removes features that have the same value for all data entries
+            args:
+                None
+            returns:
+                dataframe <pandas dataframe> : dataframe with constant features removed
+
+        principal_component_analysis: uses principal component analysis to reduce size of feature space
+            args:
+                None
+            returns:
+                dataframe <pandas dataframe> : dataframe with PCA-selected features
     """
     def __init__(self, dataframe, x_features, y_feature):
         self.dataframe = dataframe
         self.x_features = x_features
         self.y_feature = y_feature
 
-    @property
-    def get_original_dataframe(self):
-        return self.dataframe
-
     def remove_constant_features(self):
         dataframe = self.dataframe.loc[:, self.dataframe.var() != 0.0]
         return dataframe
 
-    def principal_component_analysis(self, x_features, y_feature):
-        pca = PCA(n_components=len(x_features), svd_solver='auto')
-        Xnew = pca.fit_transform(X=self.dataframe[x_features])
-        dataframe = DataframeUtilities()._array_to_dataframe(array=Xnew)
-        dataframe = FeatureIO(dataframe=dataframe).add_custom_features(features_to_add=[y_feature], data_to_add=self.dataframe[y_feature])
+    def principal_component_analysis(self):
+        pca = PCA(n_components=len(self.x_features), svd_solver='auto')
+        Xnew = pca.fit_transform(X=self.dataframe[self.x_features])
+        dataframe = DataframeUtilities().array_to_dataframe(array=Xnew)
+        dataframe = FeatureIO(dataframe=dataframe).add_custom_features(features_to_add=[self.y_feature], data_to_add=self.dataframe[self.y_feature])
         return dataframe
 
 class FeatureSelection(object):
-    """Class to conduct feature selection routines to reduce the number of input features for regression and classification problems.
+    """
+    Class to conduct feature selection routines to reduce the number of input features in the feature space
+
+    Attributes:
+        configdict <dict> : MASTML configfile object as dict
+        dataframe <pandas dataframe> : dataframe containing x and y data and feature names
+        x_features <list> : list of x feature names
+        y_feature <str> : target feature name
+        model_type <kwarg> : key word model string specifying model type (obtained from input file)
+
+    Methods:
+        sequential_forward_selection :
+            args:
+                number_of_features_keep <int> : number of features to keep after feature selection
+            returns:
+                dataframe <pandas dataframe> : dataframe containing only selected features
+
+        feature_selection :
+            args:
+                feature_selection_type <kwarg> : type of feature selection algorithm to use. Must choose from either
+                    "univariate_feature_selection" or "recursive_feature_elimination"
+                number_features_to_keep <int> : number of features to keep after feature selection
+                use_mutual_info <bool> : whether or not to use mutual information between features (only applicable to
+                    univariate feature selection)
+            returns:
+                dataframe <pandas dataframe> : dataframe containing only selected features
     """
     def __init__(self, configdict, dataframe, x_features, y_feature, model_type):
         self.configdict = configdict
@@ -54,10 +96,6 @@ class FeatureSelection(object):
         # Get model to use in feature selection
         mlw = MASTMLWrapper(configdict=self.configdict)
         self.model = mlw.get_machinelearning_model(model_type=self.model_type, y_feature=self.y_feature)
-
-    @property
-    def get_original_dataframe(self):
-        return self.dataframe
 
     def sequential_forward_selection(self, number_features_to_keep):
         sfs = SFS(self.model, k_features=number_features_to_keep, forward=True,
@@ -113,14 +151,14 @@ class FeatureSelection(object):
                 if feature_selection_type == 'univariate_feature_selection':
                     selector = SelectKBest(score_func=f_regression, k=number_features_to_keep)
                 elif feature_selection_type == 'recursive_feature_elimination':
-                    estimator = SVR(kernel='linear')
-                    selector = RFE(estimator=estimator, n_features_to_select=number_features_to_keep)
+                    #estimator = SVR(kernel='linear')
+                    selector = RFE(estimator=self.model, n_features_to_select=number_features_to_keep)
             elif selection_type == 'classification':
                 if feature_selection_type == 'univariate_feature_selection':
                     selector = SelectKBest(score_func=f_classif, k=number_features_to_keep)
                 elif feature_selection_type == 'recursive_feature_elimination':
-                    estimator = SVC(kernel='linear')
-                    selector = RFE(estimator=estimator, n_features_to_select=number_features_to_keep)
+                    #estimator = SVC(kernel='linear')
+                    selector = RFE(estimator=self.model, n_features_to_select=number_features_to_keep)
         elif use_mutual_info == True or use_mutual_info == 'True':
             if selection_type == 'regression':
                 if feature_selection_type == 'univariate_feature_selection':
@@ -128,23 +166,23 @@ class FeatureSelection(object):
                 elif feature_selection_type == 'recursive_feature_elimination':
                     logging.info('Important Note: You have specified recursive feature elimination with mutual information. '
                                  'Mutual information is only used for univariate feature selection. Feature selection will still run OK')
-                    estimator = SVR(kernel='linear')
-                    selector = RFE(estimator=estimator, n_features_to_select=number_features_to_keep)
+                    #estimator = SVR(kernel='linear')
+                    selector = RFE(estimator=self.model, n_features_to_select=number_features_to_keep)
             elif selection_type == 'classification':
                 if feature_selection_type == 'univariate_feature_selection':
                     selector = SelectKBest(score_func=mutual_info_classif, k=number_features_to_keep)
                 elif feature_selection_type == 'recursive_feature_elimination':
                     logging.info('Important Note: You have specified recursive feature elimination with mutual information. '
                                  'Mutual information is only used for univariate feature selection. Feature selection will still run OK')
-                    estimator = SVC(kernel='linear')
-                    selector = RFE(estimator=estimator, n_features_to_select=number_features_to_keep)
+                    #estimator = SVC(kernel='linear')
+                    selector = RFE(estimator=self.model, n_features_to_select=number_features_to_keep)
 
         Xnew = selector.fit_transform(X=self.dataframe[self.x_features], y=self.dataframe[self.y_feature])
 
         mfso = MiscFeatureSelectionOperations()
         feature_indices_selected, feature_names_selected = mfso.get_selector_feature_names(selector=selector, x_features=self.x_features)
-        dataframe = DataframeUtilities()._array_to_dataframe(array=Xnew)
-        dataframe = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe, x_features=feature_names_selected, y_feature=self.y_feature, remove_first_row=False)
+        dataframe = DataframeUtilities().array_to_dataframe(array=Xnew)
+        dataframe = DataframeUtilities().assign_columns_as_features(dataframe=dataframe, x_features=feature_names_selected, y_feature=self.y_feature, remove_first_row=False)
         # Add y_feature back into the dataframe
         dataframe = FeatureIO(dataframe=dataframe).add_custom_features(features_to_add=[self.y_feature],data_to_add=self.dataframe[self.y_feature])
         dataframe = dataframe.dropna()
@@ -158,7 +196,49 @@ class FeatureSelection(object):
         return dataframe
 
 class LearningCurve(object):
+    """
+    Class to construct learning curves to assess feature selection choices
 
+    Attributes:
+        configdict <dict> : MASTML configfile object as dict
+        dataframe <pandas dataframe> : dataframe containing x and y data and feature names
+        model_type <kwarg> : key word model string specifying model type (obtained from input file)
+
+    Methods:
+        generate_feature_learning_curve : generates feature-based learning curve for a specific feature selection routine
+            args:
+                feature_selection_algorithm <str> : name of feature selection routine
+            returns:
+                None
+
+        get_univariate_RFE_training_data_learning_curve: generates training data learning curve for univariate or RFE
+            feature selection routine
+            args:
+                estimator <sklearn model object> : an sklearn model used to assess model accuracy
+                title <str> : Title for learning curve plot
+                Xdata <pandas dataframe> : dataframe of Xdata
+                ydata <pandas dataframe> : dataframe of ydata
+                feature_selection_type <str> : name of feature selection routine
+            returns:
+                None
+
+        get_univariate_RFE_feature_learning_curve: generates feature-based learning curve for univariate or RFE feature
+            selection routine
+            args:
+                title <str> : Title for learning curve plot
+                Xdata <pandas dataframe> : dataframe of Xdata
+                ydata <pandas dataframe> : dataframe of ydata
+                ydata_stdev <pandas dataframe> : dataframe of standard deviations of ydata
+            returns:
+                None
+
+        get_sequential_forward_selection_learning_curve: generates feature-based learning curve for SFS algorithm
+            args:
+                metricdict <dict> : dict of feature selection metrics from SFS
+                filetag <str> : name of target feature used to name save files
+            returns:
+                None
+    """
     def __init__(self, configdict, dataframe, model_type):
         self.configdict = configdict
         self.dataframe = dataframe
@@ -471,7 +551,60 @@ class LearningCurve(object):
         return
 
 class MiscFeatureSelectionOperations():
+    """
+    Class containing additional functions to help with feature selection routines
 
+    Attributes:
+        None
+
+    Methods:
+        get_selector_feature_names : obtains the feature names and indices selected by a RFE algorithm
+            args:
+                selector <sklearn RFE object> : an instance of the RFE sklearn class
+                x_features <list> : list of x feature names
+            returns:
+                feature_indices_selected <list> : list of feature index numbers selected
+                feature_names_selected <list> : list of feature names selected
+
+        get_forward_selection_feature_names : obtain feature names based on feature indices
+            args:
+                feature_indices_selected <list> : list of feature index numbers selected
+                x_features <list> : list of x feature names
+            returns:
+                feature_names_selected <list> : list of feature names selected
+
+        get_feature_filetag : obtain feature name to be used in saved file names
+            args:
+                configdict <dict> : MASTML configfile object as dict
+                dataframe <pandas dataframe> : a pandas dataframe object
+            return:
+                filetag <str> : feature name to be used in file name
+
+        get_ranked_feature_names : obtains ranked feature names from an RFE algorithm
+            args:
+                selector <sklearn RFE object> : an instance of the RFE sklearn class
+                x_features <list> : list of x feature names
+                number_features_to_keep <int> : number of features to keep in selected feature list
+            returns:
+                feature_names_selected <list> : list of feature names selected
+
+        remove_features_containing_strings : removes feature columns whose values are strings as these can't be used in regression tasks
+            args:
+                dataframe <pandas dataframe> : dataframe containing data and feature names
+                x_features <list> : list of x feature names
+            returns:
+                x_features_pruned <list> : list of x features with those features removed which contained data as strings
+                dataframe <pandas dataframe> : dataframe containing data and feature names, with string features removed
+
+        save_data_to_csv : save dataframe to csv file
+            args:
+                configdict <dict> : MASTML configfile object as dict
+                dataframe <pandas dataframe> : a pandas dataframe object
+                feature_selection_str <str> : name of feature selection routine used
+                filetag <str> : name of target feature
+            returns:
+                None
+    """
     @classmethod
     def get_selector_feature_names(cls, selector, x_features):
         feature_indices_selected = selector.get_support(indices=True)

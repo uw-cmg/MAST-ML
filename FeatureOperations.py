@@ -1,4 +1,8 @@
 __author__ = 'Ryan Jacobs'
+__maintainer__ = 'Ryan Jacobs'
+__version__ = '1.0'
+__email__ = 'rjacobs3@wisc.edu'
+__date__ = 'October 14th, 2017'
 
 import pandas as pd
 import numpy as np
@@ -9,16 +13,60 @@ from DataOperations import DataframeUtilities
 from MASTMLInitializer import ConfigFileParser
 
 class FeatureIO(object):
-    """Class to selectively filter (add/remove) features from a dataframe
+    """
+    Class to perform various input/output and manipulations of features present in dataframe
+
+    Attributes:
+        dataframe <pandas dataframe> : dataframe containing x and y data and feature names
+
+    Methods:
+        remove_duplicate_features_by_name: DEPRECATED
+
+        remove_duplicate_columns : removes features that have identical names
+            args:
+                None
+            returns:
+                dataframe <pandas dataframe> : dataframe after feature operation
+
+        remove_duplicate_features_by_values : removes features that have identical values for each data point
+            args:
+                None
+            returns:
+                dataframe <pandas dataframe> : dataframe after feature operation
+
+        remove_custom_features : remove features as specified by name
+            args:
+                features_to_remove <list> : list of feature names to remove
+            returns:
+                dataframe <pandas dataframe> : dataframe after feature operation
+
+        keep_custom_features : keep only the specified features
+            args:
+                features_to_keep <list> : list of feature names to keep
+                y_feature <str> : name of target feature (will keep if specified)
+            returns:
+                dataframe <pandas dataframe> : dataframe after feature operation
+
+        add_custom_features : add specific features by name (must also supply data)
+            args:
+                features_to_add <list> : list of feature names to add
+                data_to_add <numpy array> : array of data for each feature to add
+            returns:
+                dataframe <pandas dataframe> : dataframe after feature operation
+
+        custom_feature_filter : removes rows of data if certain arithmetic conditions are met
+            args:
+                feature <str> : name of feature to scan data of
+                operator <kwarg> : arithmetic operator (choose from <, >, =, <=, >=, <>)
+                threshold <float> : value to compare data value against for elimination
+            returns:
+                dataframe <pandas dataframe> : dataframe after feature operation
     """
     def __init__(self, dataframe):
         self.dataframe = dataframe
 
-    @property
-    def get_original_dataframe(self):
-        return self.dataframe
-
     def remove_duplicate_features_by_name(self, keep=None):
+        DeprecationWarning('This method will be removed soon, do not use!')
         # Warning: not sure if this really removes redundant columns. The remove_duplicate_columns method should work, though
         # Only removes features that have the same name, not features containing the same data vector
         dataframe = self.dataframe.drop_duplicates(keep=keep)
@@ -61,7 +109,7 @@ class FeatureIO(object):
     def add_custom_features(self, features_to_add, data_to_add):
         dataframe = self.dataframe
         for feature in features_to_add:
-            dataframe[feature] = pd.Series(data=data_to_add, index=(self.dataframe).index)
+            dataframe[feature] = pd.Series(data=data_to_add, index=self.dataframe.index)
         return dataframe
 
     def custom_feature_filter(self, feature, operator, threshold):
@@ -95,14 +143,50 @@ class FeatureIO(object):
         return dataframe
 
 class FeatureNormalization(object):
-    """This class is used to normalize and unnormalize features in a dataframe.
+    """
+    Class to normalize and unnormalize features in a dataframe.
+
+    Attributes:
+        dataframe <pandas dataframe> : dataframe containing x and y data and feature names
+
+    Methods:
+        normalize features : normalizes the specified features to have mean zero and standard deviation of unity
+            args:
+                x_features <list> : list of x feature names
+                y_feature <str> : target feature name
+                normalize_x_features <bool> : whether to normalize x features
+                normalize_y_feature <bool> : whether to normalize the target feature
+                to_csv <bool> : whether to save normalized dataframe to csv file
+            returns:
+                dataframe_normalized <pandas dataframe> : dataframe of normalized data
+                scaler <sklearn scaler object> : scaler object used to map unnormalized to normalized data
+
+        minmax_scale_single_feature : scale a single feature to a designated minimum and maximum value
+            args:
+                featurename <str> : name of feature to normalize
+                smin <float> : minimum feature value
+                smax <float> : maximum feature value
+            returns:
+                scaled_feature <pandas dataframe> : dataframe containing only the scaled feature
+
+        unnormalize_features : unnormalize the features contained in a dataframe
+            args:
+                x_features <list> : list of x feature names
+                y_feature <str> : target feature name
+                scaler <sklearn scaler object> : scaler object used to map unnormalized to normalized data
+            returns:
+                dataframe_unnormalized <pandas dataframe> : dataframe of unnormalized data
+                scaler <sklearn scaler object> : scaler object used to map unnormalized to normalized data
+
+        normalize_and_merge_with_original_dataframe : normalizes features and merges normalized dataframe with original dataframe
+            args:
+                x_features <list> : list of x feature names
+                y_feature <str> : target feature name
+            returns:
+                dataframe <pandas dataframe> : merged dataframe containing original dataframe and normalized features
     """
     def __init__(self, dataframe):
         self.dataframe = dataframe
-
-    @property
-    def get_original_dataframe(self):
-        return self.dataframe
 
     def normalize_features(self, x_features, y_feature, normalize_x_features, normalize_y_feature, to_csv=True):
         if normalize_x_features == bool(True) and normalize_y_feature == bool(False):
@@ -161,7 +245,21 @@ class FeatureNormalization(object):
         return dataframe
 
 class MiscFeatureOperations(object):
+    """
+    Class containing additional feature operations
 
+    Attributes:
+        configdict <dict> : MASTML configfile object as dict
+
+    Methods:
+        remove_features_containing_strings : removes feature columns whose values are strings as these can't be used in regression tasks
+            args:
+                dataframe <pandas dataframe> : dataframe containing data and feature names
+                x_features <list> : list of x feature names
+            returns:
+                x_features_pruned <list> : list of x features with those features removed which contained data as strings
+                dataframe <pandas dataframe> : dataframe containing data and feature names, with string features removed
+    """
     def __init__(self, configdict):
         self.configdict = configdict
 
