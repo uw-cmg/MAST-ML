@@ -204,7 +204,7 @@ class DataframeUtilities(object):
                 dataframe <pandas dataframe> : a pandas dataframe object
                 data_path <str> : file path to save dataframe statistics to
             returns:
-                None
+                fname <str> : name of file dataframe stats saved to
 
         _plot_dataframe_histogram : creates a histogram plot of target feature data and saves it to designated save path
             args:
@@ -212,7 +212,7 @@ class DataframeUtilities(object):
                 dataframe <pandas dataframe> : a pandas dataframe object
                 y_feature <str> : target feature name
             returns:
-                None
+                fname <str> : name of file dataframe histogram saved to
     """
     @classmethod
     def merge_dataframe_columns(cls, dataframe1, dataframe2):
@@ -263,13 +263,15 @@ class DataframeUtilities(object):
         # Need configdict to get save path
         if not configfile_path:
             configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
-            data_path_name = data_path.split('./')[1]
-            data_path_name = data_path_name.split('.csv')[0]
+            #data_path_name = data_path.split('./')[1]
+            #data_path_name = data_path_name.split('.csv')[0]
+            data_path_name = configdict['General Setup']['target_feature']
         else:
             configdict = ConfigFileParser(configfile=configfile_name).get_config_dict(path_to_file=configfile_path)
             data_path_name = configdict['General Setup']['target_feature']
-        dataframe_stats.to_csv(configdict['General Setup']['save_path'] + "/" + 'input_data_statistics_'+data_path_name+'.csv',index=True)
-        return
+        fname = configdict['General Setup']['save_path'] + "/" + 'input_data_statistics_'+data_path_name+'.csv'
+        dataframe_stats.to_csv(fname, index=True)
+        return fname
 
     @classmethod
     def plot_dataframe_histogram(cls, configdict, dataframe, y_feature):
@@ -280,5 +282,6 @@ class DataframeUtilities(object):
         pyplot.title('Histogram of ' + y_feature + ' values')
         pyplot.xlabel(y_feature + ' value')
         pyplot.ylabel('Occurrences in dataset')
-        pyplot.savefig(configdict['General Setup']['save_path'] + "/" + 'input_data_histogram.pdf')
-        return
+        fname = configdict['General Setup']['save_path'] + "/" + 'input_data_histogram.pdf'
+        pyplot.savefig(fname)
+        return fname
