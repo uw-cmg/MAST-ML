@@ -222,6 +222,7 @@ class DataframeUtilities(object):
     @classmethod
     def merge_dataframe_rows(cls, dataframe1, dataframe2):
         dataframe = pd.merge(left=dataframe1, right=dataframe2, how='outer')
+        #dataframe = pd.concat([dataframe1, dataframe2], axis=1, join='outer')
         return dataframe
 
     @classmethod
@@ -257,18 +258,22 @@ class DataframeUtilities(object):
         return dataframe
 
     @classmethod
-    def save_all_dataframe_statistics(cls, dataframe, data_path):
-        dataframe_stats = cls._get_dataframe_statistics(dataframe=dataframe)
+    def save_all_dataframe_statistics(cls, dataframe, data_path, configfile_name=None, configfile_path=None):
+        dataframe_stats = cls.get_dataframe_statistics(dataframe=dataframe)
         # Need configdict to get save path
-        configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
-        data_path_name = data_path.split('./')[1]
-        data_path_name = data_path_name.split('.csv')[0]
+        if not configfile_path:
+            configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
+            data_path_name = data_path.split('./')[1]
+            data_path_name = data_path_name.split('.csv')[0]
+        else:
+            configdict = ConfigFileParser(configfile=configfile_name).get_config_dict(path_to_file=configfile_path)
+            data_path_name = configdict['General Setup']['target_feature']
         dataframe_stats.to_csv(configdict['General Setup']['save_path'] + "/" + 'input_data_statistics_'+data_path_name+'.csv',index=True)
         return
 
     @classmethod
     def plot_dataframe_histogram(cls, configdict, dataframe, y_feature):
-        num_bins = round((dataframe.shape[0])/15, 0)
+        num_bins = int((dataframe.shape[0])/15)
         if num_bins < 1:
             num_bins = 1
         pyplot.hist(x=dataframe[y_feature], bins=num_bins, edgecolor='k')
