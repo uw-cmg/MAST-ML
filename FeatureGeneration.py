@@ -108,7 +108,8 @@ class MagpieFeatureGeneration(object):
             for column in dataframe.columns.values:
                 if column in self.configdict['General Setup']['target_feature']:
                     filetag = column
-            dataframe.to_csv(self.configdict['General Setup']['save_path']+"/"+'input_with_magpie_features'+'_'+str(filetag)+'.csv', index=False)
+            fname = self.configdict['General Setup']['save_path']+"/"+'input_with_magpie_features'+'_'+str(filetag)+'.csv'
+            dataframe.to_csv(fname, index=False)
 
         return dataframe
 

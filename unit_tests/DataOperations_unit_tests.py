@@ -63,12 +63,12 @@ class TestDataframeUtilities(unittest.TestCase):
 
     def test_save_all_dataframe_statistics(self):
         fname = DataframeUtilities().save_all_dataframe_statistics(dataframe=self.df1, data_path=testdir+'/'+'testcsv1.csv',
-                                                           configfile_name='test_unittest.conf', configfile_path=testdir)
+                                                           configfile_name='test_unittest_dataoperations.conf', configfile_path=testdir)
         self.files.append(fname)
         return
 
     def test_plot_dataframe_histogram(self):
-        configdict = ConfigFileParser(configfile='test_unittest.conf').get_config_dict(path_to_file=testdir)
+        configdict = ConfigFileParser(configfile='test_unittest_dataoperations.conf').get_config_dict(path_to_file=testdir)
         fname = DataframeUtilities().plot_dataframe_histogram(dataframe=self.df1, configdict=configdict, y_feature="O_pband_center_regression")
         self.files.append(fname)
         return
@@ -81,7 +81,7 @@ class TestDataframeUtilities(unittest.TestCase):
 class TestDataParser(unittest.TestCase):
 
     def setUp(self):
-        self.configdict = ConfigFileParser(configfile='test_unittest.conf').get_config_dict(path_to_file=testdir)
+        self.configdict = ConfigFileParser(configfile='test_unittest_dataoperations.conf').get_config_dict(path_to_file=testdir)
         self.datapath = testdir+'/'+'testcsv1.csv'
         self.df1 = pd.read_csv(testdir + '/' + 'testcsv1.csv')
         self.target_feature = "O_pband_center_regression"
@@ -130,7 +130,6 @@ class TestDataParser(unittest.TestCase):
     def test_get_data(self):
         Xdata, ydata = DataParser(configdict=self.configdict).get_data(dataframe=self.df1, x_features=self.x_features,
                                                                        y_feature=self.target_feature)
-        print(self.x_features)
         return
 
     def tearDown(self):
