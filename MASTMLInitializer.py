@@ -41,7 +41,7 @@ class ConfigFileParser(object):
 
     def _parse_config_file(self, path_to_file):
         if not os.path.exists(path_to_file):
-            print('You must specify a valid path')
+            logging.info('You must specify a valid path')
             sys.exit()
         if os.path.exists(path_to_file+"/"+str(self.configfile)):
             original_dir = os.getcwd()
@@ -51,7 +51,7 @@ class ConfigFileParser(object):
                 os.chdir(original_dir)
                 return config_dict
             except(ConfigObjError, IOError):
-                print('Could not read in input file %s') % str(self.configfile)
+                logging.info('Could not read in input file %s') % str(self.configfile)
                 sys.exit()
         else:
             raise OSError('The input file you specified, %s, does not exist in the path %s' % (str(self.configfile), str(path_to_file)))
