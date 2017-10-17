@@ -89,6 +89,13 @@ class MASTMLDriver(object):
 
         return
 
+    def _check_data_exists(self):
+        if os.path.exists(self.configdict['Data Setup']['Initial']['data_path']):
+            print('exists')
+        else:
+            print('gone')
+        return
+
     def _split_csv_file(self):
         # Need dataframe and x and y features so can split CSV accordingly.
         data_path_list = []
@@ -200,7 +207,7 @@ class MASTMLDriver(object):
         for data_name in self.data_setup.keys():
             data_path = self.configdict['Data Setup'][data_name]['data_path']
 
-            logging.info('Creating data dict for data path', data_path, 'and data name', data_name)
+            logging.info('Creating data dict for data path %s and data name %s' % (data_path, data_name))
 
             data_weights = self.data_setup[data_name]['weights']
             if 'labeling_features' in self.general_setup.keys():
@@ -537,7 +544,7 @@ class MASTMLDriver(object):
             oldlog = os.path.join(self.save_path, "MASTMLlog.log")
             copylog = os.path.join(cwd, "MASTMLlog.log")
 
-            inputdata_name = self.configdict['Data Setup']['Initial']['data_path']
+            inputdata_name = self.configdict['Data Setup']['Initial']['data_path'].split('/')[-1]
             oldinput = os.path.join(self.save_path, inputdata_name)
             copyinput = os.path.join(cwd, inputdata_name)
 
