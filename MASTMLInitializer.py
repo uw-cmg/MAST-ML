@@ -214,9 +214,9 @@ class MASTMLWrapper(object):
     def get_machinelearning_model(self, model_type, y_feature):
         if 'classification' in y_feature:
             if 'classifier' in model_type:
-                logging.info('got y_feature', y_feature)
-                logging.info('model type is', model_type)
-                logging.info('doing classification on', y_feature)
+                logging.info('got y_feature %s' % y_feature)
+                logging.info('model type is %s' % model_type)
+                logging.info('doing classification on %s' % y_feature)
                 if model_type == 'support_vector_machine_model_classifier':
                     model = SVC(C=float(self.configdict['Model Parameters']['support_vector_machine_model_classifier']['error_penalty']),
                                 kernel=str(self.configdict['Model Parameters']['support_vector_machine_model_classifier']['kernel']),
@@ -271,9 +271,9 @@ class MASTMLWrapper(object):
 
         if 'regression' in y_feature:
             if 'regressor' in model_type:
-                logging.info('got y_feature', y_feature)
-                logging.info('model type is', model_type)
-                logging.info('doing regression on', y_feature)
+                logging.info('got y_feature %s' % y_feature)
+                logging.info('model type %s' % model_type)
+                logging.info('doing regression on %s' % y_feature)
                 if model_type == 'linear_model_regressor':
                     model = LinearRegression(fit_intercept=bool(self.configdict['Model Parameters']['linear_model_regressor']['fit_intercept']))
                     return model
