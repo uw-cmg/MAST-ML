@@ -137,7 +137,7 @@ class ConfigFileValidator(ConfigFileParser):
                         datatype = validationdict[section_heading][k]
                         if datatype in datatypes:
                             configdict[section_heading][k] = validator.check(check=datatype, value=configdict[section_heading][k])
-                    except VdtTypeError:
+                    except (VdtTypeError, KeyError):
                         logging.info('The parameter %s in your %s section did not successfully convert to %s' % (k, section_heading, datatype))
                         errors_present = bool(True)
 
@@ -148,7 +148,7 @@ class ConfigFileValidator(ConfigFileParser):
                                 datatype = validationdict[section_heading][k][kk]
                                 if datatype in datatypes:
                                     configdict[section_heading][k][kk] = validator.check(check=datatype, value=configdict[section_heading][k][kk])
-                        except(VdtTypeError):
+                        except(VdtTypeError, KeyError):
                             logging.info('The parameter %s in your %s : %s section did not successfully convert to %s' % (section_heading, k, kk, datatype))
                             errors_present = bool(True)
 
@@ -180,7 +180,8 @@ class ConfigFileValidator(ConfigFileParser):
     def _check_for_errors(self, errors_present):
         if errors_present == bool(True):
             logging.info('Errors have been detected in your MASTML setup. Please correct the errors and re-run MASTML')
-            sys.exit()
+            #sys.exit()
+        return
 
     def _generate_validator(self):
         return Validator()
@@ -265,8 +266,8 @@ class MASTMLWrapper(object):
                                      alpha=float(self.configdict['Model Parameters']['nn_model_classifier']['alpha']),
                                      batch_size='auto',
                                      learning_rate='constant',
-                                     max_iter=int(self.configdict['Model Parameters']['nn_model_classifier']['max_iter']),
-                                     tol=float(self.configdict['Model Parameters']['nn_model_classifier']['tol']))
+                                     max_iter=int(self.configdict['Model Parameters']['nn_model_classifier']['max_iterations']),
+                                     tol=float(self.configdict['Model Parameters']['nn_model_classifier']['tolerance']))
                     return model
 
         if 'regression' in y_feature:
@@ -341,8 +342,8 @@ class MASTMLWrapper(object):
                                      alpha=float(self.configdict['Model Parameters']['nn_model_regressor']['alpha']),
                                      batch_size='auto',
                                      learning_rate='constant',
-                                     max_iter=int(self.configdict['Model Parameters']['nn_model_regressor']['max_iter']),
-                                     tol=float(self.configdict['Model Parameters']['nn_model_regressor']['tol']))
+                                     max_iter=int(self.configdict['Model Parameters']['nn_model_regressor']['max_iterations']),
+                                     tol=float(self.configdict['Model Parameters']['nn_model_regressor']['tolerance']))
                     return model
 
                 else:
@@ -367,7 +368,7 @@ class MASTMLWrapper(object):
         #else:
         #    raise TypeError('You have specified an invalid model_type name in your input file')
 
-    def get_machinelearning_test(self, test_type, model, save_path, *args, **kwargs):
+    def get_machinelearning_test(self, test_type, model, save_path, run_test=True, *args, **kwargs):
         mod_name = test_type.split("_")[0] #ex. KFoldCV_5fold goes to KFoldCV
         test_module = importlib.import_module('%s' % (mod_name))
         test_class_def = getattr(test_module, mod_name)
@@ -376,8 +377,9 @@ class MASTMLWrapper(object):
         test_class = test_class_def(model=model,
                             save_path = save_path,
                             **kwargs)
-        test_class.run()
-        return None
+        if run_test == True:
+            test_class.run()
+        return test_class
 
     def _process_config_keyword(self, keyword):
         keywordsetup = {}
