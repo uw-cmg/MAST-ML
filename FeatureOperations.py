@@ -192,23 +192,23 @@ class FeatureNormalization(object):
         if normalize_x_features == bool(True) and normalize_y_feature == bool(False):
             scaler = StandardScaler().fit(X=self.dataframe[x_features])
             array_normalized = scaler.fit_transform(X=self.dataframe[x_features])
-            array_normalized = DataframeUtilities()._concatenate_arrays(X_array=array_normalized, y_array=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
+            array_normalized = DataframeUtilities().concatenate_arrays(X_array=array_normalized, y_array=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
         elif normalize_x_features == bool(False) and normalize_y_feature == bool(True):
             scaler = StandardScaler().fit(X=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
             array_normalized = scaler.fit_transform(X=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
-            array_normalized = DataframeUtilities()._concatenate_arrays(X_array=np.asarray(self.dataframe[x_features]), y_array=array_normalized.reshape([-1, 1]))
+            array_normalized = DataframeUtilities().concatenate_arrays(X_array=np.asarray(self.dataframe[x_features]), y_array=array_normalized.reshape([-1, 1]))
         elif normalize_x_features == bool(True) and normalize_y_feature == bool(True):
             scaler_x = StandardScaler().fit(X=self.dataframe[x_features])
             scaler_y = StandardScaler().fit(X=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
             array_normalized_x = scaler_x.fit_transform(X=self.dataframe[x_features])
             array_normalized_y = scaler_y.fit_transform(X=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
-            array_normalized = DataframeUtilities()._concatenate_arrays(X_array=array_normalized_x, y_array=array_normalized_y)
+            array_normalized = DataframeUtilities().concatenate_arrays(X_array=array_normalized_x, y_array=array_normalized_y)
         else:
             "You must specify to normalize either x_features, y_feature, or both, or set perform_feature_normalization=False in the input file"
             sys.exit()
 
-        dataframe_normalized = DataframeUtilities()._array_to_dataframe(array=array_normalized)
-        dataframe_normalized = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe_normalized, x_features=x_features, y_feature=y_feature, remove_first_row=False)
+        dataframe_normalized = DataframeUtilities().array_to_dataframe(array=array_normalized)
+        dataframe_normalized = DataframeUtilities().assign_columns_as_features(dataframe=dataframe_normalized, x_features=x_features, y_feature=y_feature, remove_first_row=False)
         if to_csv == True:
             # Need configdict to get save path
             configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
