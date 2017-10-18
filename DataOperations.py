@@ -110,7 +110,7 @@ class DataParser(object):
 
             x_and_y_features = dataframe.columns.values.tolist()
             if self.configdict['General Setup']['input_features'] == ['Auto'] or self.configdict['General Setup']['input_features'] == 'Auto':
-                print('found auto')
+                logging.info('Found Auto')
                 #x_and_y_features = dataframe.columns.values.tolist()
                 x_features = []
                 for feature in x_and_y_features:
@@ -258,17 +258,17 @@ class DataframeUtilities(object):
         return dataframe
 
     @classmethod
-    def save_all_dataframe_statistics(cls, dataframe, data_path, configfile_name=None, configfile_path=None):
+    def save_all_dataframe_statistics(cls, dataframe, configdict):
         dataframe_stats = cls.get_dataframe_statistics(dataframe=dataframe)
         # Need configdict to get save path
-        if not configfile_path:
-            configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
+        #if not configfile_path:
+        #    configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
             #data_path_name = data_path.split('./')[1]
             #data_path_name = data_path_name.split('.csv')[0]
-            data_path_name = configdict['General Setup']['target_feature']
-        else:
-            configdict = ConfigFileParser(configfile=configfile_name).get_config_dict(path_to_file=configfile_path)
-            data_path_name = configdict['General Setup']['target_feature']
+        #    data_path_name = configdict['General Setup']['target_feature']
+        #else:
+        #    configdict = ConfigFileParser(configfile=configfile_name).get_config_dict(path_to_file=configfile_path)
+        data_path_name = configdict['General Setup']['target_feature']
         fname = configdict['General Setup']['save_path'] + "/" + 'input_data_statistics_'+data_path_name+'.csv'
         dataframe_stats.to_csv(fname, index=True)
         return fname
