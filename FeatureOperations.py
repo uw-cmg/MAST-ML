@@ -7,10 +7,8 @@ __date__ = 'October 14th, 2017'
 import pandas as pd
 import numpy as np
 import sys
-import os
 from sklearn.preprocessing import StandardScaler
 from DataOperations import DataframeUtilities
-from MASTMLInitializer import ConfigFileParser
 
 class FeatureIO(object):
     """
@@ -74,6 +72,8 @@ class FeatureIO(object):
 
     def remove_duplicate_columns(self):
         # Transferring from dataframe to dict removes redundant columns (i.e. keys of the dict)
+        # Do note that the new version of pandas rename duplicate columns when importing with to_csv, so there may be
+        # no duplicate columns upon import. However, may still get duplicate columns when manually appending dataframes.
         dataframe_asdict = self.dataframe.to_dict()
         dataframe = pd.DataFrame(dataframe_asdict)
         return dataframe
@@ -185,8 +185,9 @@ class FeatureNormalization(object):
             returns:
                 dataframe <pandas dataframe> : merged dataframe containing original dataframe and normalized features
     """
-    def __init__(self, dataframe):
+    def __init__(self, dataframe, configdict):
         self.dataframe = dataframe
+        self.configdict = configdict
 
     def normalize_features(self, x_features, y_feature, normalize_x_features, normalize_y_feature, to_csv=True):
         if normalize_x_features == bool(True) and normalize_y_feature == bool(False):
@@ -211,12 +212,12 @@ class FeatureNormalization(object):
         dataframe_normalized = DataframeUtilities().assign_columns_as_features(dataframe=dataframe_normalized, x_features=x_features, y_feature=y_feature, remove_first_row=False)
         if to_csv == True:
             # Need configdict to get save path
-            configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
+            #configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
             # Get y_feature in this dataframe, attach it to save path
             for column in dataframe_normalized.columns.values:
-                if column in configdict['General Setup']['target_feature']:
+                if column in self.configdict['General Setup']['target_feature']:
                     filetag = column
-            dataframe_normalized.to_csv(configdict['General Setup']['save_path']+"/"+'input_data_normalized'+'_'+str(filetag)+'.csv', index=False)
+            dataframe_normalized.to_csv(self.configdict['General Setup']['save_path']+"/"+'input_data_normalized'+'_'+str(filetag)+'.csv', index=False)
 
         if not (normalize_x_features == bool(True) and normalize_y_feature == bool(True)):
             return dataframe_normalized, scaler
@@ -234,14 +235,16 @@ class FeatureNormalization(object):
 
     def unnormalize_features(self, x_features, y_feature, scaler):
         array_unnormalized = scaler.inverse_transform(X=self.dataframe[x_features])
-        array_unnormalized = DataframeUtilities()._concatenate_arrays(X_array=array_unnormalized, y_array=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
-        dataframe_unnormalized = DataframeUtilities()._array_to_dataframe(array=array_unnormalized)
-        dataframe_unnormalized = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe_unnormalized, x_features=x_features, y_feature=y_feature, remove_first_row=False)
+        array_unnormalized = DataframeUtilities().concatenate_arrays(X_array=array_unnormalized, y_array=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
+        dataframe_unnormalized = DataframeUtilities().array_to_dataframe(array=array_unnormalized)
+        dataframe_unnormalized = DataframeUtilities().assign_columns_as_features(dataframe=dataframe_unnormalized, x_features=x_features, y_feature=y_feature, remove_first_row=False)
         return dataframe_unnormalized, scaler
 
-    def normalize_and_merge_with_original_dataframe(self, x_features, y_feature):
-        dataframe_normalized, scaler = self.normalize_features(x_features=x_features, y_feature=y_feature)
-        dataframe = DataframeUtilities()._merge_dataframe_columns(dataframe1=self.dataframe, dataframe2=dataframe_normalized)
+    def normalize_and_merge_with_original_dataframe(self, x_features, y_feature, normalize_x_features, normalize_y_feature):
+        dataframe_normalized, scaler = self.normalize_features(x_features=x_features, y_feature=y_feature,
+                                                               normalize_x_features=normalize_x_features,
+                                                               normalize_y_feature=normalize_y_feature)
+        dataframe = DataframeUtilities().merge_dataframe_columns(dataframe1=self.dataframe, dataframe2=dataframe_normalized)
         return dataframe
 
 class MiscFeatureOperations(object):
@@ -270,7 +273,6 @@ class MiscFeatureOperations(object):
             is_str = False
             for entry in dataframe[x_feature]:
                 if type(entry) is str:
-                    #print('found a string')
                     is_str = True
             if is_str == True:
                 if 'grouping_feature' in self.configdict['General Setup'].keys():
@@ -282,5 +284,5 @@ class MiscFeatureOperations(object):
             if x_feature not in x_features_to_remove:
                 x_features_pruned.append(x_feature)
 
-        dataframe = FeatureIO(dataframe=dataframe).remove_custom_features(features_to_remove=x_features_to_remove)
-        return x_features_pruned, dataframe
+        dataframe_pruned = FeatureIO(dataframe=dataframe).remove_custom_features(features_to_remove=x_features_to_remove)
+        return x_features_pruned, dataframe_pruned
