@@ -16,6 +16,8 @@ class TestDataframeUtilities(unittest.TestCase):
         self.df2 = pd.read_csv(testdir+'/'+'testcsv2.csv')
         self.arr1 = np.array(self.df1)
         self.arr2 = np.array(self.df2)
+        self.configfile = 'test_unittest_dataoperations.conf'
+        self.configdict = ConfigFileParser(configfile=self.configfile).get_config_dict(path_to_file=testdir)
         self.files = list()
         return
 
@@ -62,8 +64,7 @@ class TestDataframeUtilities(unittest.TestCase):
         return
 
     def test_save_all_dataframe_statistics(self):
-        fname = DataframeUtilities().save_all_dataframe_statistics(dataframe=self.df1, data_path=testdir+'/'+'testcsv1.csv',
-                                                           configfile_name='test_unittest_dataoperations.conf', configfile_path=testdir)
+        fname = DataframeUtilities().save_all_dataframe_statistics(dataframe=self.df1, configdict=self.configdict)
         self.files.append(fname)
         return
 

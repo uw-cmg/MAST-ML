@@ -85,8 +85,8 @@ class TestFeatureSelection(unittest.TestCase):
         return
 
     def tearDown(self):
-        for f in self.files:
-            os.remove(f)
+        #for f in self.files:
+        #    os.remove(f)
         return
 
 class TestLearningCurve(unittest.TestCase):
@@ -120,8 +120,8 @@ class TestLearningCurve(unittest.TestCase):
         return
 
     def tearDown(self):
-        for f in self.files:
-            os.remove(f)
+        #for f in self.files:
+        #    os.remove(f)
         return
 
 if __name__=='__main__':
