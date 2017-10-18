@@ -9,6 +9,8 @@ import logging
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+from sklearn.kernel_ridge import KernelRidge
+from sklearn.svm import SVR
 from sklearn.decomposition import PCA
 from sklearn.model_selection import learning_curve, KFold
 from sklearn.feature_selection import SelectKBest, f_classif, f_regression, mutual_info_regression, mutual_info_classif
@@ -93,9 +95,14 @@ class FeatureSelection(object):
         self.x_features = x_features
         self.y_feature = y_feature
         self.model_type = model_type
-        # Get model to use in feature selection
+        # Get model to use in feature selection. If specified model doesn't have feature_importances_ attribute, use SVR by default
         mlw = MASTMLWrapper(configdict=self.configdict)
-        self.model = mlw.get_machinelearning_model(model_type=self.model_type, y_feature=self.y_feature)
+        if self.model_type not in ["linear_model_regressor", "linear_model_lasso_regressor", "support_vector_machine_regressor"]:
+            self.model = SVR(kernel='linear')
+            logging.info('You have specified a model type for feature selection that does not have a feature_importances_ attribute.'
+                         'Therefore, the model type has defaulted to an SVR model. Results should still be ok.')
+        else:
+            self.model = mlw.get_machinelearning_model(model_type=self.model_type, y_feature=self.y_feature)
 
     def sequential_forward_selection(self, number_features_to_keep):
         sfs = SFS(self.model, k_features=number_features_to_keep, forward=True,
@@ -151,14 +158,16 @@ class FeatureSelection(object):
                 if feature_selection_type == 'univariate_feature_selection':
                     selector = SelectKBest(score_func=f_regression, k=number_features_to_keep)
                 elif feature_selection_type == 'recursive_feature_elimination':
-                    #estimator = SVR(kernel='linear')
                     selector = RFE(estimator=self.model, n_features_to_select=number_features_to_keep)
+                else:
+                    logging.info('You must specify feature_selection_type as either "univariate_feature_selection" or "recursive_feature_elimination"')
             elif selection_type == 'classification':
                 if feature_selection_type == 'univariate_feature_selection':
                     selector = SelectKBest(score_func=f_classif, k=number_features_to_keep)
                 elif feature_selection_type == 'recursive_feature_elimination':
-                    #estimator = SVC(kernel='linear')
                     selector = RFE(estimator=self.model, n_features_to_select=number_features_to_keep)
+                else:
+                    logging.info('You must specify feature_selection_type as either "univariate_feature_selection" or "recursive_feature_elimination"')
         elif use_mutual_info == True or use_mutual_info == 'True':
             if selection_type == 'regression':
                 if feature_selection_type == 'univariate_feature_selection':
@@ -166,16 +175,18 @@ class FeatureSelection(object):
                 elif feature_selection_type == 'recursive_feature_elimination':
                     logging.info('Important Note: You have specified recursive feature elimination with mutual information. '
                                  'Mutual information is only used for univariate feature selection. Feature selection will still run OK')
-                    #estimator = SVR(kernel='linear')
                     selector = RFE(estimator=self.model, n_features_to_select=number_features_to_keep)
+                else:
+                    logging.info('You must specify feature_selection_type as either "univariate_feature_selection" or "recursive_feature_elimination"')
             elif selection_type == 'classification':
                 if feature_selection_type == 'univariate_feature_selection':
                     selector = SelectKBest(score_func=mutual_info_classif, k=number_features_to_keep)
                 elif feature_selection_type == 'recursive_feature_elimination':
                     logging.info('Important Note: You have specified recursive feature elimination with mutual information. '
                                  'Mutual information is only used for univariate feature selection. Feature selection will still run OK')
-                    #estimator = SVC(kernel='linear')
                     selector = RFE(estimator=self.model, n_features_to_select=number_features_to_keep)
+                else:
+                    logging.info('You must specify feature_selection_type as either "univariate_feature_selection" or "recursive_feature_elimination"')
 
         Xnew = selector.fit_transform(X=self.dataframe[self.x_features], y=self.dataframe[self.y_feature])
 
