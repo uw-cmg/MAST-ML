@@ -315,7 +315,7 @@ class MASTMLDriver(object):
 
             # Normalize features (optional)
             if normalize_x_features == bool(True) or normalize_y_feature == bool(True):
-                fn = FeatureNormalization(dataframe=dataframe_nostrings)
+                fn = FeatureNormalization(dataframe=dataframe_nostrings, configdict=self.configdict)
                 dataframe_nostrings, scaler = fn.normalize_features(x_features=x_features, y_feature=y_feature, normalize_x_features=normalize_x_features, normalize_y_feature=normalize_y_feature)
                 x_features, y_feature = DataParser(configdict=self.configdict).get_features(dataframe=dataframe_nostrings, target_feature=y_feature)
 
@@ -501,7 +501,7 @@ class MASTMLDriver(object):
                 testing_dataset_list.append(self.data_dict[dname])
             test_params['testing_dataset'] = testing_dataset_list
 
-            logging.info('on test', test_type)
+            logging.info('on test %s' % test_type)
 
             # Run the test case for every model
             for midx, model in enumerate(self.model_list):
