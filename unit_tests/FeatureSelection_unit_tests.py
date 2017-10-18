@@ -44,7 +44,7 @@ class TestFeatureSelection(unittest.TestCase):
         self.model_type = 'gkrr_model_regressor'
         self.files = list()
         # Need to normalize features for feature selection
-        self.df1, scaler = FeatureNormalization(dataframe=self.df1).normalize_features(x_features=self.x_features,
+        self.df1, scaler = FeatureNormalization(dataframe=self.df1, configdict=self.configdict).normalize_features(x_features=self.x_features,
                                                                                y_feature=self.target_feature,
                                                                                normalize_x_features= True,
                                                                                normalize_y_feature= False,
@@ -99,7 +99,7 @@ class TestLearningCurve(unittest.TestCase):
         self.x_features = [f for f in self.df1.columns.values.tolist() if f != self.target_feature]
         self.model_type = 'gkrr_model_regressor'
         # Need to normalize features for feature selection
-        self.df1, scaler = FeatureNormalization(dataframe=self.df1).normalize_features(x_features=self.x_features,
+        self.df1, scaler = FeatureNormalization(dataframe=self.df1, configdict=self.configdict).normalize_features(x_features=self.x_features,
                                                                                y_feature=self.target_feature,
                                                                                normalize_x_features= True,
                                                                                normalize_y_feature= False,
