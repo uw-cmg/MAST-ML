@@ -383,7 +383,7 @@ class MASTMLDriver(object):
             logging.info('Parsed the input data located under %s' % data_path)
 
             # Get dataframe stats
-            DataframeUtilities.save_all_dataframe_statistics(dataframe=dataframe_final, data_path=data_path)
+            DataframeUtilities.save_all_dataframe_statistics(dataframe=dataframe_final, configdict=self.configdict)
 
         return data_dict, y_feature
 
@@ -394,16 +394,16 @@ class MASTMLDriver(object):
                 logging.info('FEATURE GENERATION: Adding Magpie features to your feature list')
                 mfg = MagpieFeatureGeneration(configdict=self.configdict, dataframe=dataframe)
                 dataframe = mfg.generate_magpie_features(save_to_csv=True)
-                print(dataframe.shape)
+                #print(dataframe.shape)
             if k == 'add_materialsproject_features' and v == 'True':
                 logging.info('FEATURE GENERATION: Adding Materials Project features to your feature list')
                 mpfg = MaterialsProjectFeatureGeneration(configdict=self.configdict, dataframe=dataframe, mapi_key=self.configdict['Feature Generation']['materialsproject_apikey'])
                 dataframe = mpfg.generate_materialsproject_features(save_to_csv=True)
-                print(dataframe.shape)
+                #print(dataframe.shape)
             if k == 'add_citrine_features' and v == 'True':
                 cfg = CitrineFeatureGeneration(configdict=self.configdict, dataframe=dataframe, api_key=self.configdict['Feature Generation']['citrine_apikey'])
                 dataframe = cfg.generate_citrine_features(save_to_csv=True)
-                print(dataframe.shape)
+                #print(dataframe.shape)
         return dataframe
 
     @timeit
@@ -484,9 +484,9 @@ class MASTMLDriver(object):
         # Run the specified test cases for every model
         for test_type in test_list:
             # Need to renew configdict each loop other issue with dictionary indexing occurs when you have multiple y_features
-            configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
+            #configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
             logging.info('Looking up parameters for test type %s' % test_type)
-            test_params = configdict["Test Parameters"][test_type]
+            test_params = self.configdict["Test Parameters"][test_type]
 
             # Set data lists
             training_dataset_name_list = self._string_or_list_input_to_list(test_params['training_dataset'])
