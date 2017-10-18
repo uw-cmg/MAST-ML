@@ -13,7 +13,7 @@ from sklearn.neural_network import MLPRegressor, MLPClassifier
 from sklearn.linear_model import LinearRegression, Lasso, LogisticRegression
 from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor, AdaBoostRegressor, ExtraTreesClassifier, RandomForestClassifier, AdaBoostClassifier
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
-from sklearn.svm import SVC
+from sklearn.svm import SVC, SVR
 from configobj import ConfigObj, ConfigObjError
 from validate import Validator, VdtTypeError
 
@@ -280,6 +280,13 @@ class MASTMLWrapper(object):
                 if model_type == 'linear_model_lasso_regressor':
                     model = Lasso(alpha=float(self.configdict['Model Parameters']['linear_model_lasso_regressor']['alpha']),
                                   fit_intercept=bool(self.configdict['Model Parameters']['linear_model_lasso_regressor']['fit_intercept']))
+                    return model
+                if model_type == 'support_vector_machine_model_regressor':
+                    model = SVR(C=float(self.configdict['Model Parameters']['support_vector_machine_model_classifier']['error_penalty']),
+                                kernel=str(self.configdict['Model Parameters']['support_vector_machine_model_classifier']['kernel']),
+                                degree=int(self.configdict['Model Parameters']['support_vector_machine_model_classifier']['degree']),
+                                gamma=float(self.configdict['Model Parameters']['support_vector_machine_model_classifier']['gamma']),
+                                coef0=float(self.configdict['Model Parameters']['support_vector_machine_model_classifier']['coef0']))
                     return model
                 if model_type == 'lkrr_model_regressor':
                     model = KernelRidge(alpha=float(self.configdict['Model Parameters']['lkrr_model_regressor']['alpha']),
