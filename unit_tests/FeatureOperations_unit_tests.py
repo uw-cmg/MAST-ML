@@ -89,6 +89,22 @@ class TestFeatureNormalization(unittest.TestCase):
                                                                                  to_csv=True)
         self.assertTrue(np.mean(df['AtomicNumber_composition_average']) < 10**-8)
         self.assertTrue(np.std(df['AtomicNumber_composition_average']) == 1.0)
+        df, scaler = FeatureNormalization(dataframe=self.df1, configdict=self.configdict).normalize_features(x_features=self.x_features,
+                                                                                 y_feature=self.target_feature,
+                                                                                 normalize_x_features=True,
+                                                                                 normalize_y_feature=True,
+                                                                                 to_csv=True)
+        self.assertTrue(np.mean(df['AtomicNumber_composition_average']) < 10**-8)
+        self.assertTrue(np.std(df['AtomicNumber_composition_average']) == 1.0)
+        self.assertTrue(np.std(df['O_pband_center_regression']) == 1.0)
+        df, scaler = FeatureNormalization(dataframe=self.df1, configdict=self.configdict).normalize_features(x_features=self.x_features,
+                                                                                 y_feature=self.target_feature,
+                                                                                 normalize_x_features=False,
+                                                                                 normalize_y_feature=True,
+                                                                                 to_csv=True)
+        self.assertTrue(np.mean(df['AtomicNumber_composition_average']) > 10**-8)
+        self.assertTrue(np.std(df['AtomicNumber_composition_average']) != 1.0)
+        self.assertTrue(np.std(df['O_pband_center_regression']) == 1.0)
         self.files.append('input_data_normalized_O_pband_center_regression.csv')
         return
 
