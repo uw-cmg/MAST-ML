@@ -12,7 +12,7 @@ import time
 import matplotlib
 import importlib
 import pandas as pd
-from MASTMLInitializer import MASTMLWrapper, ConfigFileValidator, ConfigFileParser
+from MASTMLInitializer import MASTMLWrapper, ConfigFileValidator
 from DataOperations import DataParser, DataframeUtilities
 from FeatureGeneration import MagpieFeatureGeneration, MaterialsProjectFeatureGeneration, CitrineFeatureGeneration
 from FeatureOperations import FeatureNormalization, FeatureIO, MiscFeatureOperations
@@ -279,7 +279,7 @@ class MASTMLDriver(object):
             if not (labeling_features is None):
                 dataframe_labeled = FeatureIO(dataframe=dataframe).keep_custom_features(features_to_keep=labeling_features, y_feature=y_feature)
                 if normalize_x_features == bool(True):
-                    dataframe_labeled, scaler = FeatureNormalization(dataframe=dataframe_labeled).normalize_features(x_features=labeling_features, y_feature=y_feature)
+                    dataframe_labeled, scaler = FeatureNormalization(dataframe=dataframe_labeled, configdict=self.configdict).normalize_features(x_features=labeling_features, y_feature=y_feature)
             if not (grouping_feature is None):
                 dataframe_grouped = FeatureIO(dataframe=dataframe).keep_custom_features(features_to_keep=[grouping_feature], y_feature=y_feature)
 
