@@ -17,21 +17,22 @@ class PredictionVsFeature(SingleFit):
         xlabel,
         ylabel,
         plot_filter_out, see parent class.
-        feature_plot_xlabel <str>: x-axis label for per-group plots of predicted and
+        feature_plot_xlabel (str): x-axis label for per-group plots of predicted and
                                 measured y data versus data from field of
                                 numeric_field_name
-        feature_plot_ylabel <str>: y-axis label for per-group plots
-        feature_plot_feature <str>: feature for per-group feature plots
-        markers <str>: comma-delimited marker list for split plots
-        outlines <str>: comma-delimited color list for split plots
-        linestyles <str>: comma-delimited list of line styles for split plots
-        data_labels <str>: comma-delimited list of testing dataset labels for split plots
+        feature_plot_ylabel (str): y-axis label for per-group plots
+        feature_plot_feature (str): feature for per-group feature plots
+        markers (str): comma-delimited marker list for split plots
+        outlines (str): comma-delimited color list for split plots
+        linestyles (str): comma-delimited list of line styles for split plots
+        sizes (str): comma-delimited list of sizes for split plots
+        data_labels (str): comma-delimited list of testing dataset labels for split plots
 
     Returns:
         Analysis in save_path folder
 
     Raises:
-        ValueError if feature_plot_feature is not set
+        ValueError: if feature_plot_feature is not set
     """
     def __init__(self, 
         training_dataset=None,

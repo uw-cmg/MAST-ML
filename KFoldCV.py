@@ -17,15 +17,15 @@ class KFoldCV(LeaveOutPercentCV):
         xlabel, 
         ylabel,
         mark_outlying_points,
-        num_cvtests,
-        fix_random_for_testing, see parent class.
-        num_folds <int>: Number of folds for KFold CV
+        num_cvtests, (each test contains K folds)
+        fix_random_for_testing: see parent class.
+        num_folds (int): Number of folds for KFold CV
  
     Returns:
         Analysis in the save_path folder
         Plots results in a predicted vs. measured square plot.
     Raises:
-        ValueError if testing target data is None; CV must have
+        ValueError: if testing target data is None; CV must have
                 testing target data
     """
     def __init__(self, 

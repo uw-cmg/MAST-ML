@@ -8,25 +8,17 @@ Single fits
 
    4_1_singlefit
    4_2_singlefitgrouped
+   4_3_predvsfeat
 
 -----------------------------------
 Cross validation
 -----------------------------------
 .. toctree::
 
-   4_1_singlefit
-
-.. .. autoclass:: KFoldCV.KFoldCV
-..    :members:
-
-.. .. autoclass:: LeaveOneOutCV.LeaveOneOutCV
-..    :members:
-
-.. .. autoclass:: LeaveOutPercentCV.LeaveOutPercentCV
-..    :members:
-
-.. .. autoclass:: LeaveOutGroupCV.LeaveOutGroupCV
-..    :members:
+   4_cv1_loperc
+   4_cv2_kfold
+   4_cv3_loo
+   4_cv4_logroup
 
 ------------------------------------
 Hyperparameter optimization
@@ -37,12 +29,10 @@ Hyperparameter optimization
    4_p1_paramgridsearch
    4_p2_paramoptga
 
-.. .. autoclass:: ParamOptGA.ParamOptGA
-..    :members:
-
 ------------------------------------
 Other
 ------------------------------------
 
-.. .. autoclass:: PlotNoAnalysis.PlotNoAnalysis
-..    :members:
+.. toctree::
+
+   4_o1_plotnoanalysis

@@ -1,0 +1,21 @@
+Tue Aug 29 17:07:03 2017
+----- Model ----------------
+Class: <class 'sklearn.kernel_ridge.KernelRidge'>
+Name: KernelRidge
+----- Model parameters -----
+alpha: 0.001
+coef0: 1
+kernel: rbf
+gamma: 0.25
+kernel_params: None
+degree: 3
+----- Fitting and prediction -----
+See results per dataset in subfolders
+  Initial
+----- Plotting -----
+See plots in subfolders:
+  feature_plot_group_None
+  feature_plot_group_A
+  feature_plot_group_B
+  feature_plot_group_C
+  feature_plot_group_D
