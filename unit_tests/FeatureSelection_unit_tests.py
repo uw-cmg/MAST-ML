@@ -2,6 +2,7 @@ import unittest
 import pandas as pd
 import os
 import sys
+import warnings
 testdir = os.path.realpath(os.path.dirname(sys.argv[0]))
 moduledir = '/Users/ryanjacobs/PycharmProjects/MASTML/'
 sys.path.append(moduledir)
@@ -85,8 +86,8 @@ class TestFeatureSelection(unittest.TestCase):
         return
 
     def tearDown(self):
-        #for f in self.files:
-        #    os.remove(f)
+        for f in self.files:
+            os.remove(f)
         return
 
 class TestLearningCurve(unittest.TestCase):
@@ -120,9 +121,9 @@ class TestLearningCurve(unittest.TestCase):
         return
 
     def tearDown(self):
-        #for f in self.files:
-        #    os.remove(f)
+        for f in self.files:
+            os.remove(f)
         return
 
 if __name__=='__main__':
-    unittest.main()
+        unittest.main()
