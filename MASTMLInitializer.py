@@ -283,11 +283,11 @@ class MASTMLWrapper(object):
                                   fit_intercept=bool(self.configdict['Model Parameters']['linear_model_lasso_regressor']['fit_intercept']))
                     return model
                 if model_type == 'support_vector_machine_model_regressor':
-                    model = SVR(C=float(self.configdict['Model Parameters']['support_vector_machine_model_classifier']['error_penalty']),
-                                kernel=str(self.configdict['Model Parameters']['support_vector_machine_model_classifier']['kernel']),
-                                degree=int(self.configdict['Model Parameters']['support_vector_machine_model_classifier']['degree']),
-                                gamma=float(self.configdict['Model Parameters']['support_vector_machine_model_classifier']['gamma']),
-                                coef0=float(self.configdict['Model Parameters']['support_vector_machine_model_classifier']['coef0']))
+                    model = SVR(C=float(self.configdict['Model Parameters']['support_vector_machine_model_regressor']['error_penalty']),
+                                kernel=str(self.configdict['Model Parameters']['support_vector_machine_model_regressor']['kernel']),
+                                degree=int(self.configdict['Model Parameters']['support_vector_machine_model_regressor']['degree']),
+                                gamma=float(self.configdict['Model Parameters']['support_vector_machine_model_regressor']['gamma']),
+                                coef0=float(self.configdict['Model Parameters']['support_vector_machine_model_regressor']['coef0']))
                     return model
                 if model_type == 'lkrr_model_regressor':
                     model = KernelRidge(alpha=float(self.configdict['Model Parameters']['lkrr_model_regressor']['alpha']),
