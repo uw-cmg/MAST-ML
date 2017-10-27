@@ -16,6 +16,7 @@ from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 from sklearn.svm import SVC, SVR
 from configobj import ConfigObj, ConfigObjError
 from validate import Validator, VdtTypeError
+import distutils.util as du
 
 class ConfigFileParser(object):
     """
@@ -276,11 +277,11 @@ class MASTMLWrapper(object):
                 logging.info('model type %s' % model_type)
                 logging.info('doing regression on %s' % y_feature)
                 if model_type == 'linear_model_regressor':
-                    model = LinearRegression(fit_intercept=bool(self.configdict['Model Parameters']['linear_model_regressor']['fit_intercept']))
+                    model = LinearRegression(fit_intercept=bool(du.strtobool(self.configdict['Model Parameters']['linear_model_regressor']['fit_intercept'])))
                     return model
                 if model_type == 'linear_model_lasso_regressor':
                     model = Lasso(alpha=float(self.configdict['Model Parameters']['linear_model_lasso_regressor']['alpha']),
-                                  fit_intercept=bool(self.configdict['Model Parameters']['linear_model_lasso_regressor']['fit_intercept']))
+                                  fit_intercept=bool(du.strtobool(self.configdict['Model Parameters']['linear_model_lasso_regressor']['fit_intercept'])))
                     return model
                 if model_type == 'support_vector_machine_model_regressor':
                     model = SVR(C=float(self.configdict['Model Parameters']['support_vector_machine_model_regressor']['error_penalty']),
@@ -325,7 +326,7 @@ class MASTMLWrapper(object):
                                               min_samples_leaf=int(self.configdict['Model Parameters']['randomforest_model_regressor']['min_samples_leaf']),
                                               max_leaf_nodes=int(self.configdict['Model Parameters']['randomforest_model_regressor']['max_leaf_nodes']),
                                               n_jobs=int(self.configdict['Model Parameters']['randomforest_model_regressor']['n_jobs']),
-                                              warm_start=bool(self.configdict['Model Parameters']['randomforest_model_regressor']['warm_start']),
+                                              warm_start=bool(du.strtobool(self.configdict['Model Parameters']['randomforest_model_regressor']['warm_start'])),
                                               bootstrap=True)
                     return model
                 if model_type == 'adaboost_model_regressor':
