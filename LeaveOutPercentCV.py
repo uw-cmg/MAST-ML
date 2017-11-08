@@ -7,6 +7,7 @@ from plot_data.PlotHelper import PlotHelper
 from SingleFit import SingleFit
 from SingleFit import timeit
 
+
 class LeaveOutPercentCV(SingleFit):
     """Leave out percent cross validation
    
@@ -176,20 +177,33 @@ class LeaveOutPercentCV(SingleFit):
 
         # Get average CV values and errors
         average_prediction = self.cvtest_dict[0]["prediction_array"]
+        average_prediction_count = ~np.isnan(average_prediction)
+        average_prediction_count = average_prediction_count.astype(int)
         error = self.cvtest_dict[0]["error_array"]
-        num_data = len(self.cvtest_dict[0]["error_array"].tolist())
+        error_count = ~np.isnan(error)
+        error_count = error_count.astype(int)
         for cvtest in self.cvtest_dict.keys():
             if cvtest > 0:
-                average_prediction += self.cvtest_dict[cvtest]["prediction_array"]
-                error += self.cvtest_dict[cvtest]["error_array"]
-        average_prediction /= self.num_cvtests
-        std_err_in_mean = error/np.sqrt(num_data)
+                for idx in range(len(average_prediction)):
+                    if not np.isnan(self.cvtest_dict[cvtest]["prediction_array"][idx]):
+                        average_prediction_count[idx] += 1
+                    if not np.isnan(self.cvtest_dict[cvtest]["error_array"][idx]):
+                        error_count[idx] += 1
+                average_prediction = np.nansum(np.dstack((average_prediction,self.cvtest_dict[cvtest]["prediction_array"])),2)[0]
+                error = np.vstack((error,self.cvtest_dict[cvtest]["error_array"]))
+        average_prediction = average_prediction/average_prediction_count
+        std_err_in_mean = np.nanstd(error, axis=0, ddof=1)/np.sqrt(error_count)
 
         self.statistics['std_err_in_mean'] = std_err_in_mean
         self.statistics['average_prediction'] = average_prediction
 
-        rsquared = self.get_rsquared(Xdata=self.testing_dataset.target_data, ydata=average_prediction)
-        rsquared_noint = self.get_rsquared_noint(Xdata=self.testing_dataset.target_data, ydata=average_prediction)
+        # remove any nan from average_prediction and target data. These are points that by chance weren't ever
+        # picked to be in the testing group for the CV. This is likely to happen for low number of CV tests
+        stack = np.vstack((self.testing_dataset.target_data,average_prediction)).T
+        stack_no_nan_columns = stack[~np.isnan(stack).any(axis=1)].T
+
+        rsquared = self.get_rsquared(Xdata=stack_no_nan_columns[0], ydata=stack_no_nan_columns[1])
+        rsquared_noint = self.get_rsquared_noint(Xdata=stack_no_nan_columns[0], ydata=stack_no_nan_columns[1])
 
         self.statistics['r2_score'] = rsquared
         self.statistics['r2_score_noint'] = rsquared_noint
