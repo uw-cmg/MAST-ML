@@ -179,7 +179,11 @@ class SingleFit():
         return
 
     def get_prediction(self):
-        target_prediction = self.trained_model.predict(self.testing_dataset.input_data)
+        if self.trained_model.__class__.__name__=="GaussianProcessRegressor":
+            target_prediction,target_prediction_sigma = self.trained_model.predict(self.testing_dataset.input_data,return_std=True)
+            self.testing_dataset.add_prediction_sigma(target_prediction_sigma)
+        else:
+            target_prediction = self.trained_model.predict(self.testing_dataset.input_data)
         self.testing_dataset.add_prediction(target_prediction)
         return
 
@@ -327,7 +331,10 @@ class SingleFit():
             plot_kwargs['xerrlist'] = [None]
         else:
             plot_kwargs['xerrlist'] = [self.testing_dataset.target_error_data]
-        plot_kwargs['yerrlist']=[None]
+        if self.trained_model.__class__.__name__ == "GaussianProcessRegressor":
+            plot_kwargs['yerrlist']= [self.testing_dataset.target_prediction_sigma]
+        else:
+            plot_kwargs['yerrlist']=[None]
         plot_kwargs['labellist'] = ["predicted_vs_measured"]
         myph = PlotHelper(**plot_kwargs)
         myph.multiple_overlay()

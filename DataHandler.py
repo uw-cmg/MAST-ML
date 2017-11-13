@@ -52,6 +52,7 @@ class DataHandler():
             #Set in code
             self.target_error_data <dataframe>
             self.target_prediction <dataframe>
+            self.target_prediction_sigma <dataframe>
             self.groups <list>: list of groups from self.grouping_feature
             self.group_data <dataframe>: Grouping data feature
         """
@@ -73,6 +74,7 @@ class DataHandler():
         #Set in code
         self.target_error_data = None
         self.target_prediction = None
+        self.target_prediction_sigma = None
         self.group_data = None
         self.groups = None
         #Run upon initialization
@@ -97,12 +99,20 @@ class DataHandler():
             self.target_data = self.data[self.target_feature]
         if "Prediction" in self.data.columns:
             self.target_prediction = self.data["Prediction"]
+        if "Prediction Sigma" in self.data.columns:
+            self.target_prediction_sigma = self.data["Prediction Sigma"]
         return
 
     def add_prediction(self, prediction_data):
         fio = FeatureIO(self.data)
         self.data = fio.add_custom_features(["Prediction"], prediction_data)
         self.target_prediction = self.data["Prediction"]
+        return
+
+    def add_prediction_sigma(self, prediction_data_sigma):
+        fio = FeatureIO(self.data)
+        self.data = fio.add_custom_features(["Prediction Sigma"], prediction_data_sigma)
+        self.target_prediction_sigma = self.data["Prediction Sigma"]
         return
 
     def add_feature(self, feature_name, feature_data):
@@ -133,6 +143,8 @@ class DataHandler():
             cols.append(self.target_error_feature)
         if not self.target_prediction is None:
             cols.append("Prediction")
+        if not self.target_prediction_sigma is None:
+            cols.append("Prediction Sigma")
         cols.extend(addl_cols)
         self.data.to_csv(csvname,
                         columns=list(cols))

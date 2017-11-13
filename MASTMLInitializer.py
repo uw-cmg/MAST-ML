@@ -17,6 +17,8 @@ from sklearn.svm import SVC, SVR
 from configobj import ConfigObj, ConfigObjError
 from validate import Validator, VdtTypeError
 import distutils.util as du
+import sklearn.gaussian_process.kernels as skkernel
+from sklearn.gaussian_process import GaussianProcessRegressor
 
 class ConfigFileParser(object):
     """
@@ -346,7 +348,20 @@ class MASTMLWrapper(object):
                                      max_iter=int(self.configdict['Model Parameters']['nn_model_regressor']['max_iterations']),
                                      tol=float(self.configdict['Model Parameters']['nn_model_regressor']['tolerance']))
                     return model
-
+                if model_type == 'gaussianprocess_model_regressor':
+                    test_kernel = None
+                    if str(self.configdict['Model Parameters']['gaussianprocess_model_regressor']['kernel']) == 'RBF':
+                        test_kernel = skkernel.ConstantKernel(1.0, (1e-5, 1e5)) * skkernel.RBF(length_scale=float(
+                            self.configdict['Model Parameters']['gaussianprocess_model_regressor']['RBF_length_scale']),
+                            length_scale_bounds=tuple(float(i) for i in self.configdict['Model Parameters']['gaussianprocess_model_regressor']['RBF_length_scale_bounds']))
+                    model = GaussianProcessRegressor(kernel=test_kernel,
+                                                    alpha=float(self.configdict['Model Parameters']['gaussianprocess_model_regressor']['alpha']),
+                                                    optimizer=str(self.configdict['Model Parameters']['gaussianprocess_model_regressor']['optimizer']),
+                                                    n_restarts_optimizer=int(self.configdict['Model Parameters']['gaussianprocess_model_regressor']['n_restarts_optimizer']),
+                                                    normalize_y=bool(self.configdict['Model Parameters']['gaussianprocess_model_regressor']['normalize_y']),
+                                                    copy_X_train=True)  # bool(self.configdict['Model Parameters']['gaussianprocess_model']['copy_X_train']),
+                                                    # int(self.configdict['Model Parameters']['gaussianprocess_model']['random_state']
+                    return model
                 else:
                     model = None
                     return model
