@@ -131,19 +131,18 @@ class DataHandler():
 
     def print_data(self, csvname="data.csv", addl_cols = list()):
         cols = list()
-        if not self.labeling_features is None:
+        if self.labeling_features is not None:
             cols.extend(self.labeling_features)
-        if not self.grouping_feature is None:
-            if not (self.grouping_feature in self.labeling_features):
-                cols.extend(self.grouping_feature)
+        if self.grouping_feature is not None and self.grouping_feature not in self.labeling_features:
+            cols.extend(self.grouping_feature)
         cols.extend(self.input_features)
-        if not self.target_data is None:
+        if self.target_data is not None:
             cols.append(self.target_feature)
-        if not self.target_error_feature is None:
+        if self.target_error_feature is not None:
             cols.append(self.target_error_feature)
-        if not self.target_prediction is None:
+        if self.target_prediction is not None:
             cols.append("Prediction")
-        if not self.target_prediction_sigma is None:
+        if self.target_prediction_sigma is not None:
             cols.append("Prediction Sigma")
         cols.extend(addl_cols)
         self.data.to_csv(csvname,
