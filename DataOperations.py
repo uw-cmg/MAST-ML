@@ -67,9 +67,10 @@ class DataParser(object):
                 Xdata <pandas dataframe> : dataframe of x data only
                 ydata <pandas dataframe> : dataframe of y data only
     """
+    @classmethod
     def __init__(self, configdict=None):
         self.configdict = configdict
-
+    @classmethod
     def parse_fromfile(self, datapath, as_array=False):
         if self.configdict is not None:
             dataframe = self.import_data(datapath=datapath)
@@ -84,7 +85,7 @@ class DataParser(object):
             raise OSError('You must specify a configdict as input to use the parse_fromfile method')
 
         return Xdata, ydata, x_features, y_feature, dataframe
-
+    @classmethod
     def parse_fromdataframe(self, dataframe, target_feature, as_array=False):
         x_features, y_feature = self.get_features(dataframe=dataframe, target_feature=target_feature, from_input_file=False)
         Xdata, ydata = self.get_data(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
@@ -94,7 +95,7 @@ class DataParser(object):
             ydata = np.asarray(ydata)
 
         return Xdata, ydata, x_features, y_feature, dataframe
-
+    @classmethod
     def import_data(self, datapath):
         try:
             dataframe = pd.read_csv(datapath, header=0)
@@ -103,7 +104,7 @@ class DataParser(object):
             logging.info('Error reading in your input data file, specify a valid path to your input data')
             sys.exit()
         return dataframe
-
+    @classmethod
     def get_features(self, dataframe, target_feature=None, from_input_file=False):
         if from_input_file == bool(True):
             y_feature_from_input = self.configdict['General Setup']['target_feature']
@@ -123,10 +124,8 @@ class DataParser(object):
             else:
                 x_features = [feature for feature in self.configdict['General Setup']['input_features']]
 
-            for feature in x_and_y_features:
-                if feature not in x_features:
-                    if feature in y_feature_from_input:
-                        y_feature = feature
+            for feature in x_and_y_features and feature not in x_features and feature in y_feature_from_input:
+                y_feature = feature
 
             #print(y_feature, type(y_feature))
 
@@ -138,7 +137,7 @@ class DataParser(object):
                 x_features = [feature for feature in dataframe.columns.values if feature not in y_feature]
 
         return x_features, y_feature
-
+    @classmethod
     def get_data(self, dataframe, x_features, y_feature):
         Xdata = dataframe.loc[:, x_features]
         ydata = dataframe.loc[:, y_feature]
