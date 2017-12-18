@@ -539,10 +539,8 @@ class ParamGridSearch(SingleFit):
         location=col.split(".")[0]
         param=col.split(".")[1]
         for init_param in self.param_strings.values():
-            if location in init_param:
-                if param in init_param:
-                    if 'log' in init_param:
-                        return True
+            if location in init_param and param in init_param and 'log' in init_param:
+                return True
         return False
     
     def plot_3d_rmse_heatmap(self, cols):
