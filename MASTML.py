@@ -342,9 +342,8 @@ class MASTMLDriver(object):
             if 'labeling_features' in self.configdict['General Setup'].keys():
                 for feature in labeling_features:
                     grouping_and_labeling_features.append(feature)
-                    if feature in x_features:
-                        if feature not in duplicate_features:
-                            duplicate_features.append(feature)
+                    if feature in x_features and feature not in duplicate_features:
+                        duplicate_features.append(feature)
 
             # Now merge dataframes
             dataframe_labeled_grouped = DataframeUtilities().merge_dataframe_columns(dataframe1=dataframe_labeled, dataframe2=dataframe_grouped)
