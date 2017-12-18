@@ -196,9 +196,8 @@ class MagpieFeatureGeneration(object):
                 # Get Magpie data of relevant atomic numbers for this composition
                 for line, feature_value in enumerate(f.readlines()):
                     if line + 1 == v:
-                        if "Missing" not in feature_value and "NA" not in feature_value:
-                            if feature_name != "OxidationStates":
-                                atomic_values[feature_name] = float(feature_value.strip())
+                        if feature_name != "OxidationStates" and "Missing" not in feature_value and "NA" not in feature_value:    
+                            atomic_values[feature_name] = float(feature_value.strip())
                         if "Missing" in feature_value:
                             atomic_values[feature_name] = 'NaN'
                         if "NA" in feature_value:
@@ -407,20 +406,18 @@ class CitrineFeatureGeneration(object):
                             # pprint(property_value)
                             for list_index, list_element in enumerate(property_value):
                                 for name, value in property_value[list_index].items():
-                                    if name == 'name':
-                                        # Check that the property name is in the acceptable property list
-                                        if value != "CIF File":
-                                            for entry in accepted_properties_list:
-                                                if entry in value:
-                                                    # print('found acceptable name', entry, 'for name', value, 'with value',property_value[list_index]['scalars'][0]['value'] )
-                                                    property_name_list.append(value)
-                                                    try:
-                                                        property_value_list.append(
-                                                            float(property_value[list_index]['scalars'][0]['value']))
-                                                    except (ValueError, KeyError):
-                                                        # print('found something to remove', property_value[list_index]['scalars'][0]['value'])
-                                                        property_name_list.pop(-1)
-                                                        continue
+                                    if name == 'name' and value != "CIF File":
+                                        for entry in accepted_properties_list:
+                                            if entry in value:
+                                                # print('found acceptable name', entry, 'for name', value, 'with value',property_value[list_index]['scalars'][0]['value'] )
+                                                property_name_list.append(value)
+                                                try:
+                                                    property_value_list.append(
+                                                        float(property_value[list_index]['scalars'][0]['value']))
+                                                except (ValueError, KeyError):
+                                                    # print('found something to remove', property_value[list_index]['scalars'][0]['value'])
+                                                    property_name_list.pop(-1)
+                                                    continue
         return property_name_list, property_value_list
 
     def _parse_pifquery_property_list(self, property_name_list, property_value_list):
