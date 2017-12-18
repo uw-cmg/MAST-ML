@@ -100,9 +100,8 @@ class FeatureIO(object):
             features_to_keep = features_to_keep_list
         for feature in features_to_keep:
             dataframe_dict[feature] = self.dataframe[feature]
-        if y_feature is not None:
-            if y_feature in self.dataframe.columns:
-                dataframe_dict[y_feature] = self.dataframe[y_feature]
+        if y_feature is not None and y_feature in self.dataframe.columns:
+            dataframe_dict[y_feature] = self.dataframe[y_feature]
         dataframe = pd.DataFrame(dataframe_dict)
         return dataframe
 
@@ -121,24 +120,18 @@ class FeatureIO(object):
                 fdata = float(fdata)
             except ValueError:
                 fdata = fdata
-            if operator == '<':
-                if fdata < threshold:
-                    rows_to_remove.append(i)
-            if operator == '>':
-                if fdata > threshold:
-                    rows_to_remove.append(i)
-            if operator == '=':
-                if fdata == threshold:
-                    rows_to_remove.append(i)
-            if operator == '<=':
-                if fdata <= threshold:
-                    rows_to_remove.append(i)
-            if operator == '>=':
-                if fdata >= threshold:
-                    rows_to_remove.append(i)
-            if operator == '<>':
-                if not(fdata == threshold):
-                    rows_to_remove.append(i)
+            if operator == '<' and fdata < threshold:
+                rows_to_remove.append(i)
+            if operator == '>' and fdata > threshold:
+                rows_to_remove.append(i)
+            if operator == '=' and fdata == threshold:
+                rows_to_remove.append(i)
+            if operator == '<='and fdata <= threshold:
+                rows_to_remove.append(i)
+            if operator == '>='and fdata >= threshold:
+                rows_to_remove.append(i)
+            if operator == '<>' and fdata != threshold:
+                rows_to_remove.append(i)
         dataframe = self.dataframe.drop(self.dataframe.index[rows_to_remove])
         return dataframe
 
