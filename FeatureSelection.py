@@ -97,12 +97,8 @@ class FeatureSelection(object):
         self.model_type = model_type
         # Get model to use in feature selection. If specified model doesn't have feature_importances_ attribute, use SVR by default
         mlw = MASTMLWrapper(configdict=self.configdict)
-        if self.model_type not in ["linear_model_regressor", "linear_model_lasso_regressor", "support_vector_machine_regressor"]:
-            self.model = SVR(kernel='linear')
-            logging.info('You have specified a model type for feature selection that does not have a feature_importances_ attribute.'
-                         'Therefore, the model type has defaulted to an SVR model. Results should still be ok.')
-        else:
-            self.model = mlw.get_machinelearning_model(model_type=self.model_type, y_feature=self.y_feature)
+        self.model = mlw.get_machinelearning_model(model_type=self.model_type, y_feature=self.y_feature)
+
 
     def sequential_forward_selection(self, number_features_to_keep):
         sfs = SFS(self.model, k_features=number_features_to_keep, forward=True,
@@ -152,6 +148,16 @@ class FeatureSelection(object):
         else:
             print('You must specify either "regression" or "classification" in your y_feature name')
             sys.exit()
+
+        mlw = MASTMLWrapper(configdict=self.configdict)
+        if feature_selection_type == 'recursive_feature_elimination' and self.model_type not in \
+                ["linear_model_regressor", "linear_model_lasso_regressor", "support_vector_machine_regressor", "randomforest_model_regressor"]:
+            self.model = SVR(kernel='linear')
+            logging.info('You have specified a model type for feature selection that does not have a feature_importances_ or coef_ attribute.'
+                         'The RFE method requires one of these to function.'
+                         'Therefore, the model type has defaulted to an SVR model. Results should still be ok.')
+        else:
+            self.model = mlw.get_machinelearning_model(model_type=self.model_type, y_feature=self.y_feature)
 
         if use_mutual_info == False or use_mutual_info == 'False':
             if selection_type == 'regression':
