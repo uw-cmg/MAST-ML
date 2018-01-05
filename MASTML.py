@@ -137,7 +137,8 @@ class MASTMLDriver(object):
         envlevel = os.getenv("MASTML_LOGLEVEL")
         if not envlevel is None:
             level = envlevel
-        logging.basicConfig(filename='MASTMLlog.log', level=level)
+        logfilename = 'MASTMLlog%s.log' % self.configfile.replace('.conf','').replace('.','-').replace('\\','').replace('/','-')
+        logging.basicConfig(filename=logfilename, level=level)
         current_time = time.strftime('%Y'+'-'+'%m'+'-'+'%d'+', '+'%H'+' hours, '+'%M'+' minutes, '+'and '+'%S'+' seconds')
         logging.info('Initiated new MASTML session at: %s' % current_time)
         self.start_time = time.strftime("%Y-%m-%d, %H:%M:%S")
