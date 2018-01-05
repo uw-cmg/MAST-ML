@@ -15,6 +15,8 @@ General
 Sections
 *********
 
+.. _general-setup:
+
 ================
 General Setup
 ================
@@ -27,9 +29,11 @@ Example::
         save_path = ./
         input_features = x1, x2, x3
         target_feature = y_feature
-                target_error_feature = error
-                labeling_features = group, group_num
-                grouping_feature = group
+        target_error_feature = error
+        labeling_features = group, group_num
+        grouping_feature = group
+        config_files_path = ../MASTML_config_files
+        normalize_features = True
 
 * **save_path** is the root save path for all of the tests in the input file.
 
@@ -42,6 +46,10 @@ Example::
 * **grouping_feature** is the feature to create groups on for any of the group tests.
  
 * **input_features** are all the other features that should be used in the prediction. Use ``input_features = Auto`` to make everything except target feature into input_features.
+
+* **config_files_path** is the path to the general configuration files for MASTML 
+
+* **normalize_features** indicates whether to automatically normalize the input features.
 
 ======================
 CSV Setup (optional)
@@ -59,9 +67,11 @@ Example::
 
 * All following keywords will be passed to the class __init__() method as a kwargs dictionary.
 
-===============
+.. _data-setup:
+
+====================
 Data Setup
-===============
+====================
 Example::
 
     [Data Setup]
@@ -198,6 +208,8 @@ Common Test Parameter options
 The feature name can be any feature from your data.
  
 * **mark_outlying_groups**: This a numeric value of the number of groups to write notations for on the output plots starting with the groups that performed worst.
+
+.. _model-parameters:
 
 =========================
 Model Parameters

@@ -19,19 +19,23 @@ import os
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('../../'))
-autodoc_mock_imports=['numpy','scipy',
+autodoc_mock_imports=['numpy',
+                        'scipy',
                         'sklearn',
-                        'sklearn.metrics',
-                        'sklearn.model_selection',
-                        'sklearn.kernel_ridge',
-                        'sklearn.feature_selection',
-                        'sklearn.preprocessing',
-                        'sklearn.externals',
                         'matplotlib',
-                        'matplotlib.pyplot',
-                        'matplotlib.dates',
                         'pandas',
                         ]
+#Below from http://docs.readthedocs.io/en/latest/faq.html#i-get-import-errors-on-libraries-that-depend-on-c-modules 
+import sys
+from unittest.mock import MagicMock
+
+class Mock(MagicMock):
+    @classmethod
+    def __getattr__(cls, name):
+            return MagicMock()
+
+MOCK_MODULES = ['scipy', 'numpy', 'pandas', 'sklearn', 'matplotlib']
+sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 # -- General configuration ------------------------------------------------
 
@@ -44,6 +48,7 @@ autodoc_mock_imports=['numpy','scipy',
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
+    'sphinx.ext.napoleon', #Google-style docstrings
 ]
 
 # Add any paths that contain templates here, relative to this directory.

@@ -2,6 +2,7 @@ import os
 import numpy as np
 from sklearn.model_selection import KFold
 from sklearn.metrics import mean_squared_error
+from sklearn.linear_model import LinearRegression
 from LeaveOutPercentCV import LeaveOutPercentCV
 from SingleFit import timeit
 
@@ -16,15 +17,15 @@ class KFoldCV(LeaveOutPercentCV):
         xlabel, 
         ylabel,
         mark_outlying_points,
-        num_cvtests,
-        fix_random_for_testing, see parent class.
-        num_folds <int>: Number of folds for KFold CV
+        num_cvtests, (each test contains K folds)
+        fix_random_for_testing: see parent class.
+        num_folds (int): Number of folds for KFold CV
  
     Returns:
         Analysis in the save_path folder
         Plots results in a predicted vs. measured square plot.
     Raises:
-        ValueError if testing target data is None; CV must have
+        ValueError: if testing target data is None; CV must have
                 testing target data
     """
     def __init__(self, 
@@ -70,7 +71,10 @@ class KFoldCV(LeaveOutPercentCV):
         notelist.append("    {:.2f} $\pm$ {:.2f}".format(self.statistics['avg_fold_avg_rmses'], self.statistics['std_fold_avg_rmses']))
         notelist.append("  {:d}-fold-average mean error:".format(self.num_folds))
         notelist.append("    {:.2f} $\pm$ {:.2f}".format(self.statistics['avg_fold_avg_mean_errors'], self.statistics['std_fold_avg_mean_errors']))
+        notelist.append("R-squared:" "{:.2f}".format(self.statistics['r2_score']))
+        notelist.append("R-squared (no int): " "{:.2f}".format(self.statistics['r2_score_noint']))
         self.plot_best_worst_overlay(notelist=list(notelist))
+        self.plot_meancv_overlay(notelist=list(notelist))
         return
 
     def set_up_cv(self):
@@ -100,6 +104,7 @@ class KFoldCV(LeaveOutPercentCV):
             fold_mean_errors = np.zeros(self.num_folds)
             fold_array = np.zeros(len(self.testing_dataset.target_data))
             prediction_array = np.zeros(len(self.testing_dataset.target_data))
+            error_array = np.zeros(len(self.testing_dataset.target_data))
             for fold in self.cvtest_dict[cvtest].keys():
                 fdict = self.cvtest_dict[cvtest][fold]
                 input_train = self.testing_dataset.input_data.iloc[fdict['train_index']]
@@ -114,12 +119,14 @@ class KFoldCV(LeaveOutPercentCV):
                 fold_mean_errors[fold] = merr
                 fold_array[fdict['test_index']] = fold
                 prediction_array[fdict['test_index']] = predict_test
+                error_array[fdict['test_index']] = predict_test - target_test
             self.cvtest_dict[cvtest]["avg_rmse"] = np.mean(fold_rmses)
             self.cvtest_dict[cvtest]["std_rmse"] = np.std(fold_rmses)
             self.cvtest_dict[cvtest]["avg_mean_error"] = np.mean(fold_mean_errors)
             self.cvtest_dict[cvtest]["std_mean_error"] = np.std(fold_mean_errors)
             self.cvtest_dict[cvtest]["fold_array"] = fold_array
             self.cvtest_dict[cvtest]["prediction_array"] = prediction_array
+            self.cvtest_dict[cvtest]["error_array"] = error_array
         return
 
     def get_statistics(self):
@@ -138,6 +145,27 @@ class KFoldCV(LeaveOutPercentCV):
         self.statistics['std_fold_avg_mean_errors'] = np.std(cvtest_avg_mean_errors)
         self.statistics['fold_avg_rmse_best'] = lowest_rmse
         self.statistics['fold_avg_rmse_worst'] = highest_rmse
+
+        # Get average CV values and errors
+        average_prediction = self.cvtest_dict[0]["prediction_array"]
+        error = self.cvtest_dict[0]["error_array"]
+        num_data = len(self.cvtest_dict[0]["error_array"].tolist())
+        for cvtest in self.cvtest_dict.keys():
+            if cvtest > 0:
+                average_prediction += self.cvtest_dict[cvtest]["prediction_array"]
+                error = np.vstack((error, self.cvtest_dict[cvtest]["error_array"]))
+        average_prediction /= self.num_cvtests
+        std_err_in_mean = np.nanstd(error, axis=0, ddof=1) / np.sqrt(self.num_cvtests)
+
+        self.statistics['std_err_in_mean'] = std_err_in_mean
+        self.statistics['average_prediction'] = average_prediction
+
+        rsquared = self.get_rsquared(Xdata=self.testing_dataset.target_data, ydata=average_prediction)
+        rsquared_noint = self.get_rsquared_noint(Xdata=self.testing_dataset.target_data, ydata=average_prediction)
+
+        self.statistics['r2_score'] = rsquared
+        self.statistics['r2_score_noint'] = rsquared_noint
+
         return
     
     def print_best_worst_output_csv(self, label=""):

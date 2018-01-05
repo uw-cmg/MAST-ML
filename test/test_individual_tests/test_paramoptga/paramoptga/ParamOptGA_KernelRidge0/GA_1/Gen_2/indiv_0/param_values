@@ -1,0 +1,6 @@
+Testing.subtraction;col1;Operator
+Testing.subtraction;num1;0.7
+Testing.subtraction;col2;Time
+Testing.subtraction;num2;10.0
+model;alpha;1e-05
+model;gamma;0.001

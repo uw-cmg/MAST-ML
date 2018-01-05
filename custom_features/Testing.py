@@ -30,35 +30,16 @@ class Testing():
         self.df = copy.deepcopy(dataframe)
         return
 
-    def calculate_EffectiveFluence(self, params=dict(), ref_flux = 3e10, flux_feature="",fluence_feature="", scale_min = 1e17, scale_max = 1e25):
-        """Calculate effective fluence
-            params[0]: p value
-        """
-        pvalue = params[0]
-        fluence = self.df[fluence_feature]
-        flux = self.df[flux_feature]
-
-        EFl = fluence * (ref_flux / flux) ** pvalue
-        EFl = np.log10(EFl)
-        fio = FeatureIO(self.df)
-        new_df = fio.add_custom_features(["EFl"],EFl)
-        fnorm = FeatureNormalization(new_df)
-        N_EFl = fnorm.minmax_scale_single_feature("EFl", 
-                                            smin = scale_min,
-                                            smax = scale_max)
-
-        return N_EFl
-
-    def subtraction(self, params=dict(), col1="",col2=""):
+    def subtraction(self, col1="", col2="", num1="", num2="", **params):
         """Testing function.
-            params[0]: first parameter
-            params[1]: second parameter
             col1 <str>: first feature name
             col2 <str>: second feature name
+            num1 <float>: number to multiply col1 by
+            num2 <float>: number to subtract
         """
         col1_data = self.df[col1]
         col2_data = self.df[col2]
-        new_data = (col1_data * params[0]) - col2_data + params[1]
+        new_data = (col1_data * num1) - col2_data + num2
         fio = FeatureIO(self.df)
         new_df = fio.add_custom_features(["Subtraction_test"],new_data)
         fnorm = FeatureNormalization(new_df)

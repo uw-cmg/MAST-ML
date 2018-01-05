@@ -1,0 +1,59 @@
+Tue Aug 29 16:41:43 2017
+----- CV setup -----
+4 CV tests,
+leaving out Lot groups.
+----- Statistics -----
+avg_mean_error: 6.7758
+avg_rmse: 364.7321
+rmse_best: 319.6049
+rmse_worst: 427.7206
+std_mean_error: 121.6478
+std_rmse: 42.2048
+Statistics by group:
+  A: mean_error: -105.571
+  A: rmse: 319.605
+  B: mean_error: -121.546
+  B: rmse: 427.721
+  C: mean_error: 103.197
+  C: rmse: 333.876
+  D: mean_error: 151.023
+  D: rmse: 377.727
+----- Output data -----
+A_test_data.csv file created with columns:
+    Lot
+    Description
+    Comp A
+    Operator
+    Time
+    Observation
+    Obs Error
+    Group Prediction
+B_test_data.csv file created with columns:
+    Lot
+    Description
+    Comp A
+    Operator
+    Time
+    Observation
+    Obs Error
+    Group Prediction
+C_test_data.csv file created with columns:
+    Lot
+    Description
+    Comp A
+    Operator
+    Time
+    Observation
+    Obs Error
+    Group Prediction
+D_test_data.csv file created with columns:
+    Lot
+    Description
+    Comp A
+    Operator
+    Time
+    Observation
+    Obs Error
+    Group Prediction
+----- Plotting -----
+Plot leave_out_group.png created.

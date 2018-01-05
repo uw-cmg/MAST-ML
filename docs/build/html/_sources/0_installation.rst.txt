@@ -29,32 +29,31 @@ For Python and MAST-ml package installation, see:
 
 :doc:`0_2_windows_installation`
 
+Note that in some situations, you may also need to change the
+matplotlib backend in order for plotting to work
+(see :ref:`Matplotlib backend <matplotlib-backend>`).
+
 *******************
 Startup
 *******************
 
-==================
-Set up a folder
-==================
-#. Make a folder (let’s call it my_test)
+===========================
+Locate the examples folder
+===========================
 
-#. Copy basic_test_data.csv into this folder.
+In the MASTML code directory, navigate to the ``examples`` folder.
 
-#. Copy the mastmlvalidation*.conf files (both of them) into this folder. In the General Setup section, these mastmlvalidation*.conf files should read save_path = string (etc; keyword and then type)
-
-#. Copy basicinput.conf into this folder
-
-#. Change directories to be in this folder (cd my_test)
+The file ``example_input.conf`` will use ``basic_test_data.csv`` to run an example.
 
 ========================
 Run the MASTML command
 ========================
 
-Format is ``python <path to MASTML>/MASTML.py <config file name>``
+The format is ``python <path to MASTML>/MASTML.py <config file name>``
 
-For example::
+For example, from inside the ``examples`` folder::
     
-    python MAST-ml-private/MASTML.py basicinput.conf
+    python ../MASTML.py example_input.conf
 
 This is a terminal command. 
 For Windows, assuming setup has been followed
@@ -65,7 +64,7 @@ click the green arrow button, and Open terminal.
 Check output
 ================
 
-``index.html`` should be created, linking to certain representative plots for each test. (see test/main_test/index.html for an example)
+``index.html`` should be created, linking to certain representative plots for each test
 
-Output will be located in subfolders in your test folder (e.g. “my_test/SingleFit…”) and should also be available as links in index.html
+Output will be located in subfolders in the test folder given by save_path in the :ref:`General Setup <general-setup>` section of the input file.
 

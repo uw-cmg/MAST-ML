@@ -24,18 +24,18 @@ class ParamOptGA(ParamGridSearch):
         percent_leave_out,
         mark_outlying_points,
         processors,
-        num_bests, see parent class.
-        population_size <int>: Number of individuals in each generation's
+        num_bests: see parent class.
+        population_size (int): Number of individuals in each generation's
                                 population
-        convergence_generations <int>: Number of generations where the
+        convergence_generations (int): Number of generations where the
                                         genome must stay constant in order to
                                         establish convergence
-        max_generations <int>: Maximum number of generations
-        num_gas <int>: Number of GAs to run
-        crossover_prob <float>: Crossover probability (float < 1.00)
-        mutation_prob <float>: Mutation probability (float < 1.00)
-        shift_prob <float>: Shift probability (float < 1.00)
-        gen_tol <float>: Generation-to-generation RMSE tolerance for considering
+        max_generations (int): Maximum number of generations
+        num_gas (int): Number of GAs to run
+        crossover_prob (float): Crossover probability (float < 1.00)
+        mutation_prob (float): Mutation probability (float < 1.00)
+        shift_prob (float): Shift probability (float < 1.00)
+        gen_tol (float): Generation-to-generation RMSE tolerance for considering
                             RMSEs to be equal (absolute float tolerance)
 
     Returns:
@@ -124,9 +124,9 @@ class ParamOptGA(ParamGridSearch):
         gen_kwargs = dict()
         for param_ct in self.param_strings.keys():
             gen_kwargs["param_%i" % param_ct] = self.param_strings[param_ct]
-        mygen =ParamGridSearch(training_dataset=self.training_dataset, 
+        mygen =ParamGridSearch(training_dataset=self.training_dataset,
             testing_dataset=self.training_dataset, #ONLY TRAIN is used
-            model=self.model, 
+            model=self.model,
             save_path = gen_save_path,
             fix_random_for_testing = self.fix_random_for_testing,
             num_cvtests = self.num_cvtests,
@@ -208,7 +208,7 @@ class ParamOptGA(ParamGridSearch):
         return pop_params
 
     def check_convergence(self, results, best_rmse, best_params):
-        """Check convergence. 
+        """Check convergence.
             Args:
                 results <list of (RMSE, parameter dictionary) entries>
                 best_rmse <float>: best RMSE to this point
@@ -251,6 +251,7 @@ class ParamOptGA(ParamGridSearch):
                 logger.info("RMSE convergence is true, but generation parameters are not all the same.")
         return (converged, best_rmse, best_params)
 
+    @timeit
     def run_ga(self):
         self.ga_dict[self.gact] = dict()
         self.ga_dict[self.gact]['generations'] = dict()

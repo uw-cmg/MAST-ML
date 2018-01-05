@@ -1,37 +1,39 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Installing MASTML &mdash; MAST-ml 1.0 documentation</title>
-    
+    <title>Installing MASTML &#8212; MAST-ml 1.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
         VERSION:     '1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="MAST-ml 1.0 documentation" href="index.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Troubleshooting" href="1_troubleshooting.html" />
     <link rel="prev" title="MASTML Documentation" href="index.html" />
    
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body role="document">  
+  <body>
+  
 
     <div class="document">
       <div class="documentwrapper">
@@ -57,29 +59,24 @@
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
 <p>For Python and MAST-ml package installation, see:</p>
-<p><a class="reference internal" href="0_1_terminal_installation.html"><em>Terminal installation (Linux or linux-like terminal on Mac)</em></a> OR</p>
-<p><a class="reference internal" href="0_2_windows_installation.html"><em>Windows installation</em></a></p>
+<p><a class="reference internal" href="0_1_terminal_installation.html"><span class="doc">Terminal installation (Linux or linux-like terminal on Mac)</span></a> OR</p>
+<p><a class="reference internal" href="0_2_windows_installation.html"><span class="doc">Windows installation</span></a></p>
 <p>Note that in some situations, you may also need to change the
 matplotlib backend in order for plotting to work
-(see <a class="reference internal" href="1_troubleshooting.html#matplotlib-backend"><span>Matplotlib backend</span></a>).</p>
+(see <a class="reference internal" href="1_troubleshooting.html#matplotlib-backend"><span class="std std-ref">Matplotlib backend</span></a>).</p>
 </div>
 <div class="section" id="startup">
 <h2>Startup<a class="headerlink" href="#startup" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="set-up-a-folder">
-<h3>Set up a folder<a class="headerlink" href="#set-up-a-folder" title="Permalink to this headline">¶</a></h3>
-<ol class="arabic simple">
-<li>Make a folder (let’s call it my_test)</li>
-<li>Copy basic_test_data.csv into this folder.</li>
-<li>Copy the mastmlvalidation*.conf files (both of them) into this folder. In the General Setup section, these mastmlvalidation*.conf files should read save_path = string (etc; keyword and then type)</li>
-<li>Copy basicinput.conf into this folder</li>
-<li>Change directories to be in this folder (cd my_test)</li>
-</ol>
+<div class="section" id="locate-the-examples-folder">
+<h3>Locate the examples folder<a class="headerlink" href="#locate-the-examples-folder" title="Permalink to this headline">¶</a></h3>
+<p>In the MASTML code directory, navigate to the <code class="docutils literal"><span class="pre">examples</span></code> folder.</p>
+<p>The file <code class="docutils literal"><span class="pre">example_input.conf</span></code> will use <code class="docutils literal"><span class="pre">basic_test_data.csv</span></code> to run an example.</p>
 </div>
 <div class="section" id="run-the-mastml-command">
 <h3>Run the MASTML command<a class="headerlink" href="#run-the-mastml-command" title="Permalink to this headline">¶</a></h3>
-<p>Format is <code class="docutils literal"><span class="pre">python</span> <span class="pre">&lt;path</span> <span class="pre">to</span> <span class="pre">MASTML&gt;/MASTML.py</span> <span class="pre">&lt;config</span> <span class="pre">file</span> <span class="pre">name&gt;</span></code></p>
-<p>For example:</p>
-<div class="highlight-python"><div class="highlight"><pre>python MAST-ml-private/MASTML.py basicinput.conf
+<p>The format is <code class="docutils literal"><span class="pre">python</span> <span class="pre">&lt;path</span> <span class="pre">to</span> <span class="pre">MASTML&gt;/MASTML.py</span> <span class="pre">&lt;config</span> <span class="pre">file</span> <span class="pre">name&gt;</span></code></p>
+<p>For example, from inside the <code class="docutils literal"><span class="pre">examples</span></code> folder:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">../</span><span class="n">MASTML</span><span class="o">.</span><span class="n">py</span> <span class="n">example_input</span><span class="o">.</span><span class="n">conf</span>
 </pre></div>
 </div>
 <p>This is a terminal command.
@@ -89,8 +86,8 @@ click the green arrow button, and Open terminal.</p>
 </div>
 <div class="section" id="check-output">
 <h3>Check output<a class="headerlink" href="#check-output" title="Permalink to this headline">¶</a></h3>
-<p><code class="docutils literal"><span class="pre">index.html</span></code> should be created, linking to certain representative plots for each test. (see test/main_test/index.html for an example)</p>
-<p>Output will be located in subfolders in your test folder (e.g. “my_test/SingleFit…”) and should also be available as links in index.html</p>
+<p><code class="docutils literal"><span class="pre">index.html</span></code> should be created, linking to certain representative plots for each test</p>
+<p>Output will be located in subfolders in the test folder given by save_path in the <a class="reference internal" href="2_input_file.html#general-setup"><span class="std std-ref">General Setup</span></a> section of the input file.</p>
 </div>
 </div>
 </div>
@@ -111,7 +108,7 @@ click the green arrow button, and Open terminal.</p>
 </li>
 <li><a class="reference internal" href="#installation">Installation</a></li>
 <li><a class="reference internal" href="#startup">Startup</a><ul>
-<li><a class="reference internal" href="#set-up-a-folder">Set up a folder</a></li>
+<li><a class="reference internal" href="#locate-the-examples-folder">Locate the examples folder</a></li>
 <li><a class="reference internal" href="#run-the-mastml-command">Run the MASTML command</a></li>
 <li><a class="reference internal" href="#check-output">Check output</a></li>
 </ul>
@@ -131,21 +128,18 @@ click the green arrow button, and Open terminal.</p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/0_installation.txt"
+      <li><a href="_sources/0_installation.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -156,11 +150,11 @@ click the green arrow button, and Open terminal.</p>
       &copy;2017, UW-Madison Computational Materials Group.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.5</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
-      <a href="_sources/0_installation.txt"
+      <a href="_sources/0_installation.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 

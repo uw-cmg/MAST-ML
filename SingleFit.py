@@ -8,6 +8,7 @@ import time
 import logging
 import copy
 from sklearn.externals import joblib
+from sklearn.linear_model import LinearRegression
 logger = logging.getLogger()
 
 def timeit(method):
@@ -40,20 +41,20 @@ class SingleFit():
     to do meta-analysis.
 
     Args:
-        training_dataset <DataHandler object>: Training dataset handler
-        testing_dataset <DataHandler object>: Testing dataset handler
-        model <sklearn model>: Machine-learning model
-        save_path <str>: Save path
-        xlabel <str>: Label for full-fit x-axis (default "Measured")
-        ylabel <str>: Label for full-fit y-axis (default "Predicted")
-        plot_filter_out <list>: List of semicolon-delimited strings with
+        training_dataset (DataHandler object): Training dataset handler
+        testing_dataset (DataHandler object): Testing dataset handler
+        model (sklearn model): Machine-learning model
+        save_path (str): Save path
+        xlabel (str): Label for full-fit x-axis (default "Measured")
+        ylabel (str): Label for full-fit y-axis (default "Predicted")
+        plot_filter_out (list): List of semicolon-delimited strings with
                             feature;operator;value for filtering out
                             values for plotting.
     Returns:
         Analysis in the path marked by save_path
 
     Raises:
-        ValueError if the following are not set:
+        ValueError: if the following are not set:
                     training_dataset, testing_dataset,
                     input_features, target_feature,
                     model
@@ -157,8 +158,6 @@ class SingleFit():
         self.plot_results()
         return
 
-
-
     def get_trained_model(self):
         trained_model = self.model.fit(self.training_dataset.input_data, self.training_dataset.target_data)
         self.trained_model = trained_model
@@ -180,7 +179,11 @@ class SingleFit():
         return
 
     def get_prediction(self):
-        target_prediction = self.trained_model.predict(self.testing_dataset.input_data)
+        if self.trained_model.__class__.__name__=="GaussianProcessRegressor":
+            target_prediction,target_prediction_sigma = self.trained_model.predict(self.testing_dataset.input_data,return_std=True)
+            self.testing_dataset.add_prediction_sigma(target_prediction_sigma)
+        else:
+            target_prediction = self.trained_model.predict(self.testing_dataset.input_data)
         self.testing_dataset.add_prediction(target_prediction)
         return
 
@@ -197,10 +200,25 @@ class SingleFit():
         mean_abs_err = mean_absolute_error(self.testing_dataset.target_data, self.testing_dataset.target_prediction)
         return mean_abs_err
 
-    def get_rsquared(self):
-        rsquared = r2_score(self.testing_dataset.target_data, self.testing_dataset.target_prediction)
+    def get_rsquared(self, Xdata, ydata):
+        Xdata = np.array(Xdata).reshape(-1,1)
+        ydata = np.array(ydata).reshape(-1,1)
+        linearmodel = LinearRegression(fit_intercept=True)
+        linearmodel.fit(Xdata, ydata)
+        rsquared = linearmodel.score(Xdata, ydata)
+        # WARNING: There seems to be some issue (possibly numerical) with this routine whereby it gives a negative
+        # R2 value even for datasets that clearly have positive correlation. Do not use for now!!
+        #rsquared_sklearn = r2_score(self.testing_dataset.target_data, self.testing_dataset.target_prediction)
         return rsquared
-    
+
+    def get_rsquared_noint(self, Xdata, ydata):
+        Xdata = np.array(Xdata).reshape(-1,1)
+        ydata = np.array(ydata).reshape(-1,1)
+        linearmodel = LinearRegression(fit_intercept=False)
+        linearmodel.fit(Xdata, ydata)
+        rsquared_noint = linearmodel.score(Xdata, ydata)
+        return rsquared_noint
+
     def get_statistics(self):
         if self.testing_dataset.target_data is None:
             logger.warning("No testing target data. Statistics will not be collected.")
@@ -208,7 +226,8 @@ class SingleFit():
         self.statistics['rmse'] = self.get_rmse()
         self.statistics['mean_error'] = self.get_mean_error()
         self.statistics['mean_absolute_error'] = self.get_mean_absolute_error()
-        self.statistics['rsquared'] = self.get_rsquared()
+        self.statistics['rsquared'] = self.get_rsquared(Xdata=self.testing_dataset.target_data, ydata=self.testing_dataset.target_prediction)
+        self.statistics['rsquared_noint'] = self.get_rsquared_noint(Xdata=self.testing_dataset.target_data, ydata=self.testing_dataset.target_prediction)
         self.plot_filter_update_statistics()
         return
 
@@ -221,7 +240,10 @@ class SingleFit():
             skeys = list(self.statistics.keys())
             skeys.sort()
             for skey in skeys:
-                self.readme_list.append("%s: %3.4f\n" % (skey, self.statistics[skey]))
+                try:
+                    self.readme_list.append("%s: %3.4f\n" % (skey, self.statistics[skey]))
+                except TypeError:
+                    continue
         return
 
     def print_output_csv(self, csvname="output_data.csv"):
@@ -286,6 +308,7 @@ class SingleFit():
         notelist=list()
         notelist.append("RMSE: %3.3f" % self.statistics['rmse'])
         notelist.append("R-squared: %3.3f" % self.statistics['rsquared'])
+        notelist.append("R-squared (no int): %3.3f" % self.statistics['rsquared_noint'])
         notelist.append("Mean error: %3.3f" % self.statistics['mean_error'])
         notelist.append("Mean abs error: %3.3f" % self.statistics['mean_absolute_error'])
         plot_kwargs['notelist'] = notelist
@@ -308,7 +331,10 @@ class SingleFit():
             plot_kwargs['xerrlist'] = [None]
         else:
             plot_kwargs['xerrlist'] = [self.testing_dataset.target_error_data]
-        plot_kwargs['yerrlist']=[None]
+        if self.trained_model.__class__.__name__ == "GaussianProcessRegressor":
+            plot_kwargs['yerrlist']= [self.testing_dataset.target_prediction_sigma]
+        else:
+            plot_kwargs['yerrlist']=[None]
         plot_kwargs['labellist'] = ["predicted_vs_measured"]
         myph = PlotHelper(**plot_kwargs)
         myph.multiple_overlay()

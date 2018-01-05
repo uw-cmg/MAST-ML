@@ -1,0 +1,37 @@
+Mon Aug 21 16:32:21 2017
+----- Model ----------------
+Class: <class 'sklearn.kernel_ridge.KernelRidge'>
+Name: KernelRidge
+----- Model parameters -----
+gamma: 0.25
+alpha: 0.001
+coef0: 1
+degree: 3
+kernel_params: None
+kernel: rbf
+----- Output data -----
+output_data.csv file created with columns:
+    Lot
+    Description
+    Comp A
+    Operator
+    Time
+    Observation
+    Obs Error
+    Prediction
+----- Statistics -----
+mean_absolute_error: 29.0194
+mean_error: -0.0498
+rmse: 47.8267
+rsquared: 0.9088
+Per-group RMSEs from overall fit:
+    A: rmse: 48.518
+    B: rmse: 36.539
+    C: rmse: 52.246
+    D: rmse: 52.257
+----- Plotting -----
+Plot single_fit.png created.
+    Plotted data is in the data_... csv file.
+    Error column of all zeros indicates no error.
+Plot in subfolder per_group_info created
+    labeling outlying groups and their RMSEs.
