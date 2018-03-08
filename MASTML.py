@@ -50,6 +50,7 @@ class MASTMLDriver(object):
         self.start_time = None
         self.favorites_dict = dict()
         self.test_save_paths = list()
+        self.logfilename = None
         return
 
     def run_MASTML(self):
@@ -137,8 +138,9 @@ class MASTMLDriver(object):
         envlevel = os.getenv("MASTML_LOGLEVEL")
         if not envlevel is None:
             level = envlevel
-        logfilename = 'MASTMLlog.log'
-        logging.basicConfig(filename=logfilename, level=level)
+        testname = str(self.configfile).split('.')[0]
+        self.logfilename = "MASTMLlog_" + str(testname) + ".log"
+        logging.basicConfig(filename=self.logfilename, level=level)
         current_time = time.strftime('%Y'+'-'+'%m'+'-'+'%d'+', '+'%H'+' hours, '+'%M'+' minutes, '+'and '+'%S'+' seconds')
         logging.info('Initiated new MASTML session at: %s' % current_time)
         self.start_time = time.strftime("%Y-%m-%d, %H:%M:%S")
@@ -541,27 +543,20 @@ class MASTMLDriver(object):
 
     def _move_log_and_input_files(self):
         cwd = os.getcwd()
-        testname = str(self.configfile).split('.')[0]
-        newlogname = "MASTMLlog_" + str(testname) + ".log"
         if self.save_path != cwd:
-            log_old_location = os.path.join(cwd, "MASTMLlog.log")
+            log_old_location = os.path.join(cwd, self.logfilename)
 
             inputdata_name = self.configdict['Data Setup']['Initial']['data_path'].split('/')[-1]
             data_old_location = os.path.join(cwd, inputdata_name)
 
             if os.path.exists(log_old_location):
-                shutil.copy("MASTMLlog.log", self.save_path)
-                shutil.move(self.save_path + '/' + 'MASTMLlog.log', self.save_path + '/' + newlogname)
-                os.remove(log_old_location)
+                shutil.move(self.logfilename, self.save_path)
 
             if os.path.exists(data_old_location):
                 shutil.copy(data_old_location, self.save_path)
 
             copyconfig = os.path.join(cwd, str(self.configfile))
             shutil.copy(copyconfig, self.save_path)
-
-        else:
-            shutil.move(cwd + 'MASTMLlog.log', cwd + newlogname)
 
         return
 
