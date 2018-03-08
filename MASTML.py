@@ -137,7 +137,7 @@ class MASTMLDriver(object):
         envlevel = os.getenv("MASTML_LOGLEVEL")
         if not envlevel is None:
             level = envlevel
-        logfilename = 'MASTMLlog%s.log' % self.configfile.replace('.conf','').replace('.','-').replace('\\','').replace('/','-')
+        logfilename = 'MASTMLlog.log'
         logging.basicConfig(filename=logfilename, level=level)
         current_time = time.strftime('%Y'+'-'+'%m'+'-'+'%d'+', '+'%H'+' hours, '+'%M'+' minutes, '+'and '+'%S'+' seconds')
         logging.info('Initiated new MASTML session at: %s' % current_time)
@@ -541,24 +541,28 @@ class MASTMLDriver(object):
 
     def _move_log_and_input_files(self):
         cwd = os.getcwd()
-        if not(self.save_path == cwd):
-            oldlog = os.path.join(self.save_path, "MASTMLlog.log")
-            copylog = os.path.join(cwd, "MASTMLlog.log")
+        testname = str(self.configfile).split('.')[0]
+        newlogname = "MASTMLlog_" + str(testname) + ".log"
+        if self.save_path != cwd:
+            log_old_location = os.path.join(cwd, "MASTMLlog.log")
 
             inputdata_name = self.configdict['Data Setup']['Initial']['data_path'].split('/')[-1]
-            oldinput = os.path.join(self.save_path, inputdata_name)
-            copyinput = os.path.join(cwd, inputdata_name)
+            data_old_location = os.path.join(cwd, inputdata_name)
 
-            if os.path.exists(oldlog):
-                os.remove(oldlog)
-            shutil.move(copylog, self.save_path)
+            if os.path.exists(log_old_location):
+                shutil.copy("MASTMLlog.log", self.save_path)
+                shutil.move(self.save_path + '/' + 'MASTMLlog.log', self.save_path + '/' + newlogname)
+                os.remove(log_old_location)
 
-            if os.path.exists(oldinput):
-                os.remove(oldinput)
-            shutil.copy(copyinput, self.save_path)
+            if os.path.exists(data_old_location):
+                shutil.copy(data_old_location, self.save_path)
 
             copyconfig = os.path.join(cwd, str(self.configfile))
             shutil.copy(copyconfig, self.save_path)
+
+        else:
+            shutil.move(cwd + 'MASTMLlog.log', cwd + newlogname)
+
         return
 
     def _set_favorites_dict(self):
