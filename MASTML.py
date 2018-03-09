@@ -549,8 +549,9 @@ class MASTMLDriver(object):
             inputdata_name = self.configdict['Data Setup']['Initial']['data_path'].split('/')[-1]
             data_old_location = os.path.join(cwd, inputdata_name)
 
+            shutil.copy(self.logfilename, self.save_path)
             if os.path.exists(log_old_location):
-                shutil.move(self.logfilename, self.save_path)
+                os.remove(log_old_location)
 
             if os.path.exists(data_old_location):
                 shutil.copy(data_old_location, self.save_path)
