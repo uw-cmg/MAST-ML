@@ -246,6 +246,17 @@ class DataframeUtilities(object):
         return array
 
     @classmethod
+    def remove_dataframe_rows_by_index(cls, dataframe, rows):
+        dataframe = dataframe.drop(dataframe.index[rows])
+        return dataframe
+
+    @classmethod
+    def get_dataframe_nan_indices(cls, dataframe):
+        df_isna = pd.isna(dataframe)
+        na_indices = [i for i in df_isna.index.values if df_isna[i] == True]
+        return na_indices
+
+    @classmethod
     def assign_columns_as_features(cls, dataframe, x_features, y_feature, remove_first_row=True):
         column_dict = {}
         x_and_y_features = [feature for feature in x_features]
@@ -275,6 +286,11 @@ class DataframeUtilities(object):
 
     @classmethod
     def plot_dataframe_histogram(cls, configdict, dataframe, y_feature):
+        # First remove any missing y-values, otherwise error will occur
+        df_y = dataframe[y_feature]
+        na_indices = cls.get_dataframe_nan_indices(dataframe=df_y)
+        df_y = cls.remove_dataframe_rows_by_index(dataframe=df_y, rows=na_indices)
+
         bin_dividers = np.linspace(dataframe.shape[0], int(0.05*dataframe.shape[0]), dataframe.shape[0])
         bin_list = list()
         for divider in bin_dividers:
@@ -285,7 +301,7 @@ class DataframeUtilities(object):
             num_bins = max(bin_list)
         else:
             num_bins = 10
-        pyplot.hist(x=dataframe[y_feature], bins=num_bins, edgecolor='k')
+        pyplot.hist(x=df_y, bins=num_bins, edgecolor='k')
         pyplot.title('Histogram of ' + y_feature + ' values')
         pyplot.xlabel(y_feature + ' value')
         pyplot.ylabel('Occurrences in dataset')
