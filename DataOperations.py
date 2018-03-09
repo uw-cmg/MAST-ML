@@ -271,14 +271,6 @@ class DataframeUtilities(object):
     @classmethod
     def save_all_dataframe_statistics(cls, dataframe, configdict):
         dataframe_stats = cls.get_dataframe_statistics(dataframe=dataframe)
-        # Need configdict to get save path
-        #if not configfile_path:
-        #    configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
-            #data_path_name = data_path.split('./')[1]
-            #data_path_name = data_path_name.split('.csv')[0]
-        #    data_path_name = configdict['General Setup']['target_feature']
-        #else:
-        #    configdict = ConfigFileParser(configfile=configfile_name).get_config_dict(path_to_file=configfile_path)
         data_path_name = configdict['General Setup']['target_feature']
         fname = configdict['General Setup']['save_path'] + "/" + 'input_data_statistics_'+data_path_name+'.csv'
         dataframe_stats.to_csv(fname, index=True)
