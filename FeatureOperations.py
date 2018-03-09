@@ -7,7 +7,7 @@ __date__ = 'October 14th, 2017'
 import pandas as pd
 import numpy as np
 import sys
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from DataOperations import DataframeUtilities
 
 class FeatureIO(object):
@@ -189,23 +189,42 @@ class FeatureNormalization(object):
         self.dataframe = dataframe
         self.configdict = configdict
 
-    def normalize_features(self, x_features, y_feature, normalize_x_features, normalize_y_feature, to_csv=True):
+    def normalize_features(self, x_features, y_feature, normalize_x_features, normalize_y_feature, feature_normalization_type, feature_scale_min = 0, feature_scale_max = 1, to_csv=True):
         if normalize_x_features == bool(True) and normalize_y_feature == bool(False):
-            scaler = StandardScaler().fit(X=self.dataframe[x_features])
+            if feature_normalization_type == 'standardize':
+                scaler = StandardScaler().fit(X=self.dataframe[x_features])
+            elif feature_normalization_type == 'normalize':
+                scaler = MinMaxScaler(feature_range=(feature_scale_min, feature_scale_max)).fit(X=self.dataframe[x_features])
+            else:
+                print('Error! For feature normalization, you must select either "standardize" or "normalize" for the "feature_normalization_type" option')
+                sys.exit()
             array_normalized = scaler.fit_transform(X=self.dataframe[x_features])
             array_normalized = DataframeUtilities().concatenate_arrays(X_array=array_normalized, y_array=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
         elif normalize_x_features == bool(False) and normalize_y_feature == bool(True):
-            scaler = StandardScaler().fit(X=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
+            if feature_normalization_type == 'standardize':
+                scaler = StandardScaler().fit(X=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
+            elif feature_normalization_type == 'normalize':
+                scaler = MinMaxScaler(feature_range=(feature_scale_min, feature_scale_max)).fit(X=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
+            else:
+                print('Error! For feature normalization, you must select either "standardize" or "normalize" for the "feature_normalization_type" option')
+                sys.exit()
             array_normalized = scaler.fit_transform(X=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
             array_normalized = DataframeUtilities().concatenate_arrays(X_array=np.asarray(self.dataframe[x_features]), y_array=array_normalized.reshape([-1, 1]))
         elif normalize_x_features == bool(True) and normalize_y_feature == bool(True):
-            scaler_x = StandardScaler().fit(X=self.dataframe[x_features])
-            scaler_y = StandardScaler().fit(X=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
+            if feature_normalization_type == 'standardize':
+                scaler_x = StandardScaler().fit(X=self.dataframe[x_features])
+                scaler_y = StandardScaler().fit(X=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
+            elif feature_normalization_type == 'normalize':
+                scaler_x = MinMaxScaler(feature_range=(feature_scale_min, feature_scale_max)).fit(X=self.dataframe[x_features])
+                scaler_y = MinMaxScaler(feature_range=(feature_scale_min, feature_scale_max)).fit(X=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
+            else:
+                print('Error! For feature normalization, you must select either "standardize" or "normalize" for the "feature_normalization_type" option')
+                sys.exit()
             array_normalized_x = scaler_x.fit_transform(X=self.dataframe[x_features])
             array_normalized_y = scaler_y.fit_transform(X=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
             array_normalized = DataframeUtilities().concatenate_arrays(X_array=array_normalized_x, y_array=array_normalized_y)
         else:
-            "You must specify to normalize either x_features, y_feature, or both, or set perform_feature_normalization=False in the input file"
+            print("You must specify to normalize either x_features, y_feature, or both, or set perform_feature_normalization=False in the input file")
             sys.exit()
 
         dataframe_normalized = DataframeUtilities().array_to_dataframe(array=array_normalized)
