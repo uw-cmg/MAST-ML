@@ -275,9 +275,16 @@ class DataframeUtilities(object):
 
     @classmethod
     def plot_dataframe_histogram(cls, configdict, dataframe, y_feature):
-        num_bins = int((dataframe.shape[0])/15)
-        if num_bins < 1:
-            num_bins = 1
+        bin_dividers = np.linspace(dataframe.shape[0], int(0.05*dataframe.shape[0]), dataframe.shape[0])
+        bin_list = list()
+        for divider in bin_dividers:
+            bins = int((dataframe.shape[0])/divider)
+            if bins < dataframe.shape[0]/2:
+                bin_list.append(bins)
+        if len(bin_list) > 0:
+            num_bins = max(bin_list)
+        else:
+            num_bins = 10
         pyplot.hist(x=dataframe[y_feature], bins=num_bins, edgecolor='k')
         pyplot.title('Histogram of ' + y_feature + ' values')
         pyplot.xlabel(y_feature + ' value')
