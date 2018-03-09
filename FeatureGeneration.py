@@ -10,7 +10,7 @@ import os
 import logging
 from pymatgen import Element, Composition
 from pymatgen.ext.matproj import MPRester
-from citrination_client import CitrinationClient, PifQuery, SystemQuery, ChemicalFieldQuery, ChemicalFilter
+from citrination_client import CitrinationClient, PifSystemQuery, DataQuery, ChemicalFieldQuery, ChemicalFilter, PifSystemReturningQuery
 from DataOperations import DataframeUtilities
 from SingleFit import timeit
 
@@ -45,7 +45,7 @@ class MagpieFeatureGeneration(object):
                 composition_components.append(self.dataframe[column].tolist())
 
         if len(composition_components) < 1:
-            logging.info('ERROR: No column with "Material composition xx" was found in the supplied dataframe')
+            logging.info('Error! No column named "Material compositions" found in your input data file. To use this feature generation routine, you must supply a material composition for each data point')
             sys.exit()
 
         row = 0
@@ -248,7 +248,7 @@ class MaterialsProjectFeatureGeneration(object):
         try:
             compositions = self.dataframe['Material compositions']
         except KeyError:
-            print('No column called "Material compositions" exists in the supplied dataframe.')
+            logging.info('Error! No column named "Material compositions" found in your input data file. To use this feature generation routine, you must supply a material composition for each data point')
             sys.exit()
 
         mpdata_dict_composition = {}
@@ -347,7 +347,11 @@ class CitrineFeatureGeneration(object):
     def generate_citrine_features(self, save_to_csv=True):
         logging.info('WARNING: You have specified generation of features from Citrine. Based on which materials you are'
                      'interested in, there may be many records to parse through, thus this routine may take a long time to complete!')
-        compositions = self.dataframe['Material compositions'].tolist()
+        try:
+            compositions = self.dataframe['Material compositions'].tolist()
+        except KeyError:
+            logging.info('Error! No column named "Material compositions" found in your input data file. To use this feature generation routine, you must supply a material composition for each data point')
+            sys.exit()
         citrine_dict_property_min = dict()
         citrine_dict_property_max = dict()
         citrine_dict_property_avg = dict()
@@ -383,11 +387,13 @@ class CitrineFeatureGeneration(object):
         return dataframe
 
     def _get_pifquery(self, composition):
-        pif_query = PifQuery(system=SystemQuery(chemical_formula=ChemicalFieldQuery(filter=ChemicalFilter(equal=composition))))
+        pif_query = PifSystemQuery(chemical_formula=ChemicalFieldQuery(filter=ChemicalFilter(equal=composition)))
+        data_query = DataQuery(system=pif_query)
+        pifquery = PifSystemReturningQuery(query=data_query)
         # Check if any results found
-        if 'hits' not in self.client.search(pif_query).as_dictionary():
-            raise KeyError('No results found!')
-        pifquery = self.client.search(pif_query).as_dictionary()['hits']
+        #if 'hits' not in self.client.search(pifquery).as_dictionary():
+        #    raise KeyError('No results found!')
+        print(self.client.search(pifquery).as_dictionary())
         return pifquery
 
     def _get_pifquery_property_list(self, pifquery):
