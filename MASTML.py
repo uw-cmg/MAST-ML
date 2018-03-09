@@ -412,6 +412,8 @@ class MASTMLDriver(object):
                 dataframe = mpfg.generate_materialsproject_features(save_to_csv=True)
                 #print(dataframe.shape)
             if k == 'add_citrine_features' and v == 'True':
+                logging.info('Currently CitrineFeatureGeneration is not supported due to compatibility issues. Please disable citrine feature generation in your input file')
+                sys.exit()
                 cfg = CitrineFeatureGeneration(configdict=self.configdict, dataframe=dataframe, api_key=self.configdict['Feature Generation']['citrine_apikey'])
                 dataframe = cfg.generate_citrine_features(save_to_csv=True)
                 #print(dataframe.shape)
