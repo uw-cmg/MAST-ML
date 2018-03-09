@@ -183,8 +183,13 @@ class MASTMLDriver(object):
     def _perform_general_setup(self):
         self.general_setup = self.mastmlwrapper._process_config_keyword(keyword='General Setup')
         self.save_path = os.path.abspath(self.general_setup['save_path'])
+        if os.path.exists(self.save_path):
+            logging.info('Your specified save path already exists. Creating a new save path appended with the date/time of this MASTML run')
+            current_time = time.strftime('%Y' + '-' + '%m' + '-' + '%d' + '-' + '%H' + '%M' + '%S')
+            self.save_path = self.save_path+'_'+current_time
         if not os.path.isdir(self.save_path):
             os.mkdir(self.save_path)
+        self.configdict['General Setup']['save_path'] = self.save_path
         return self.save_path
 
     def _perform_csv_setup(self):
