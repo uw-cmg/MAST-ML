@@ -324,7 +324,10 @@ class MASTMLDriver(object):
             # Normalize features (optional)
             if normalize_x_features == bool(True) or normalize_y_feature == bool(True):
                 fn = FeatureNormalization(dataframe=dataframe_nostrings, configdict=self.configdict)
-                dataframe_nostrings, scaler = fn.normalize_features(x_features=x_features, y_feature=y_feature, normalize_x_features=normalize_x_features, normalize_y_feature=normalize_y_feature)
+                feature_normalization_type = self.configdict['Feature Normalization']['feature_normalization_type']
+                feature_scale_min = int(self.configdict['Feature Normalization']['feature_scale_min'])
+                feature_scale_max = int(self.configdict['Feature Normalization']['feature_scale_max'])
+                dataframe_nostrings, scaler = fn.normalize_features(x_features=x_features, y_feature=y_feature, normalize_x_features=normalize_x_features, normalize_y_feature=normalize_y_feature, feature_normalization_type=feature_normalization_type, feature_scale_min=feature_scale_min, feature_scale_max=feature_scale_max)
                 x_features, y_feature = DataParser(configdict=self.configdict).get_features(dataframe=dataframe_nostrings, target_feature=y_feature)
 
             # Perform feature selection and dimensional reduction, as specified in the input file (optional)
