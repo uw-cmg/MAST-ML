@@ -308,8 +308,8 @@ class MASTMLDriver(object):
             # Remove columns containing all entries of NaN
             dataframe_nostrings = dataframe_nostrings.dropna(axis=1, how='all')
 
-            # Fill spots with NaN to be empty string
-            dataframe_nostrings = dataframe_nostrings.dropna(axis=1, how='any')
+            # Remove rows containing a single NaN value. This will handle removing a row with missing y-data, for example
+            dataframe_nostrings = dataframe_nostrings.dropna(axis=0, how='any')
 
             # Re-obtain x_feature list as some features may have been dropped
             Xdata, ydata, x_features, y_feature, dataframe_nostrings = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe_nostrings, target_feature=y_feature)
