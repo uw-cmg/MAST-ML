@@ -259,7 +259,7 @@ class SingleFit():
         return
 
     def get_plot_filter(self, plot_filter_out):
-        if plot_filter_out is None:
+        if (plot_filter_out is None or plot_filter_out == 'None' or plot_filter_out == ''):
             self.plot_filter_out = None
             return
         pf_tuple_list = list()
