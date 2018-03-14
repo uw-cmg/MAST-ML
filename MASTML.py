@@ -12,7 +12,7 @@ import time
 import matplotlib
 import importlib
 import pandas as pd
-from MASTMLInitializer import MASTMLWrapper, ConfigFileValidator
+from MASTMLInitializer import ModelTestConstructor, ConfigFileValidator
 from DataOperations import DataParser, DataframeUtilities
 from FeatureGeneration import MagpieFeatureGeneration, MaterialsProjectFeatureGeneration, CitrineFeatureGeneration
 from FeatureOperations import FeatureNormalization, FeatureIO, MiscFeatureOperations
@@ -39,7 +39,7 @@ class MASTMLDriver(object):
         self.data_setup = None
         self.models_and_tests_setup = None
         self.configdict = None
-        self.mastmlwrapper = None
+        self.modeltestconstructor = None
         self.save_path = None #top-level save path
         self.data_dict = dict() #Data dictionary
         self.model_list = list() #list of actual models
@@ -60,8 +60,8 @@ class MASTMLDriver(object):
         self._set_favorites_dict()
 
         # Parse MASTML input file
-        self.mastmlwrapper, self.configdict, errors_present = self._generate_mastml_wrapper()
-        self.data_setup = self.mastmlwrapper._process_config_keyword(keyword='Data Setup')
+        self.modeltestconstructor, self.configdict, errors_present = self._generate_mastml_wrapper()
+        self.data_setup = self.modeltestconstructor._process_config_keyword(keyword='Data Setup')
 
         # General setup
         self._perform_general_setup()
@@ -160,7 +160,7 @@ class MASTMLDriver(object):
     def _end_html(self):
         self.readme_html.append("<HR>\n")
         self.readme_html.append("<H2>Setup</H2>\n")
-        logpath = os.path.join(self.save_path, "MASTMLlog.log")
+        logpath = os.path.join(self.save_path, self.logfilename)
         logpath = os.path.relpath(logpath, self.save_path)
         self.readme_html.append('<A HREF="%s">Log file</A><BR>\n' % logpath)
         confpath = os.path.join(self.save_path, str(self.configfile))
@@ -176,12 +176,12 @@ class MASTMLDriver(object):
 
     def _generate_mastml_wrapper(self):
         configdict, errors_present = ConfigFileValidator(configfile=self.configfile).run_config_validation()
-        mastmlwrapper = MASTMLWrapper(configdict=configdict)
+        modeltestconstructor = ModelTestConstructor(configdict=configdict)
         logging.info('Successfully read in and parsed your MASTML input file, %s' % str(self.configfile))
-        return mastmlwrapper, configdict, errors_present
+        return modeltestconstructor, configdict, errors_present
 
     def _perform_general_setup(self):
-        self.general_setup = self.mastmlwrapper._process_config_keyword(keyword='General Setup')
+        self.general_setup = self.modeltestconstructor._process_config_keyword(keyword='General Setup')
         self.save_path = os.path.abspath(self.general_setup['save_path'])
         if os.path.exists(self.save_path):
             logging.info('Your specified save path already exists. Creating a new save path appended with the date/time of this MASTML run')
@@ -193,7 +193,7 @@ class MASTMLDriver(object):
         return self.save_path
 
     def _perform_csv_setup(self):
-        self.csv_setup = self.mastmlwrapper._process_config_keyword(keyword = "CSV Setup")
+        self.csv_setup = self.modeltestconstructor._process_config_keyword(keyword = "CSV Setup")
         setup_class = self.csv_setup.pop("setup_class") #also remove from dict
         class_name = setup_class.split(".")[-1]
         test_module = importlib.import_module('%s' % (setup_class))
@@ -469,21 +469,21 @@ class MASTMLDriver(object):
         return dataframe
 
     def _gather_models(self, y_feature):
-        self.models_and_tests_setup = self.mastmlwrapper._process_config_keyword(keyword='Models and Tests to Run')
+        self.models_and_tests_setup = self.modeltestconstructor._process_config_keyword(keyword='Models and Tests to Run')
         model_list = []
         model_val = self.models_and_tests_setup['models']
         model_vals = list()
 
         if type(model_val) is str:
             logging.info('Getting model %s' % model_val)
-            ml_model = self.mastmlwrapper.get_machinelearning_model(model_type=model_val, y_feature=y_feature)
+            ml_model = self.modeltestconstructor.get_machinelearning_model(model_type=model_val, y_feature=y_feature)
             model_list.append(ml_model)
             logging.info('Adding model %s to queue...' % str(model_val))
             model_vals.append(model_val)
         elif type(model_val) is list:
             for model in model_val:
                 logging.info('Getting model %s' % model)
-                ml_model = self.mastmlwrapper.get_machinelearning_model(model_type=model, y_feature=y_feature)
+                ml_model = self.modeltestconstructor.get_machinelearning_model(model_type=model, y_feature=y_feature)
                 model_list.append(ml_model)
                 logging.info('Adding model %s to queue...' % str(model))
                 model_vals.append(model_val)
@@ -531,7 +531,7 @@ class MASTMLDriver(object):
 
                     #print('passing model', model, 'for test type', test_type)
 
-                    self.mastmlwrapper.get_machinelearning_test(test_type=test_type,
+                    self.modeltestconstructor.get_machinelearning_test(test_type=test_type,
                                                                 model=model, save_path=test_save_path, **test_params)
                     logging.info('Ran test %s for your %s model' % (test_type, str(model)))
                     self.readme_html.extend(self._make_links_for_favorites(test_folder, test_save_path))
@@ -553,6 +553,7 @@ class MASTMLDriver(object):
 
     def _move_log_and_input_files(self):
         cwd = os.getcwd()
+        logging.info('Your MASTML runs have completed successfully! Wrapping up MASTML session...')
         if self.save_path != cwd:
             log_old_location = os.path.join(cwd, self.logfilename)
 
@@ -568,7 +569,6 @@ class MASTMLDriver(object):
 
             copyconfig = os.path.join(cwd, str(self.configfile))
             shutil.copy(copyconfig, self.save_path)
-
         return
 
     def _set_favorites_dict(self):
@@ -625,7 +625,6 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         mastml = MASTMLDriver(configfile=sys.argv[1])
         mastml.run_MASTML()
-        logging.info('Your MASTML runs are complete!')
     else:
         logging.info('Specify the name of your MASTML input file, such as "mastmlinput.conf", and run as "python AllTests.py mastmlinput.conf" ')
         sys.exit()
