@@ -391,7 +391,7 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
     def _generate_validator(self):
         return Validator()
 
-class MASTMLWrapper(object):
+class ModelTestConstructor(object):
     """
     Class that takes parameters from configdict (configfile as dict) and performs calls to appropriate MASTML methods
 
