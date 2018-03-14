@@ -59,7 +59,200 @@ class ConfigFileParser(object):
         else:
             raise OSError('The input file you specified, %s, does not exist in the path %s' % (str(self.configfile), str(path_to_file)))
 
-class ConfigFileValidator(ConfigFileParser):
+class ConfigFileConstructor(ConfigFileParser):
+
+    def __init__(self, configfile):
+        super().__init__(configfile=configfile)
+        self.configtemplate = dict()
+
+    def get_config_template(self):
+        self._general_setup()
+        self._data_setup()
+        self._feature_normalization()
+        self._feature_generation()
+        self._feature_selection()
+        self._models_and_tests_to_run()
+        self._test_parameters()
+        self._model_parameters()
+        return self.configtemplate
+
+    def _general_setup(self):
+        self.configtemplate['General Setup'] = dict()
+        self.configtemplate['General Setup']['save_path'] = 'string'
+        self.configtemplate['General Setup']['input_features'] = ['string', 'string_list', 'Auto']
+        self.configtemplate['General Setup']['target_feature'] = 'string'
+        return
+
+    def _data_setup(self):
+        self.configtemplate['Data Setup'] = dict()
+        self.configtemplate['Data Setup']['Initial'] = dict()
+        self.configtemplate['Data Setup']['Initial']['data_path'] = 'string'
+        self.configtemplate['Data Setup']['Initial']['weights'] = 'bool'
+        return
+
+    def _feature_normalization(self):
+        self.configtemplate['Feature Normalization'] = dict()
+        self.configtemplate['Feature Normalization']['normalize_x_features'] = 'bool'
+        self.configtemplate['Feature Normalization']['normalize_y_features'] = 'bool'
+        self.configtemplate['Feature Normalization']['feature_normalization_type'] = ['standardize', 'normalize']
+        self.configtemplate['Feature Normalization']['feature_scale_min'] = 'float'
+        self.configtemplate['Feature Normalization']['feature_scale_max'] = 'float'
+        return
+
+    def _feature_generation(self):
+        self.configtemplate['Feature Generation'] = dict()
+        self.configtemplate['Feature Generation']['perform_feature_generation'] = 'bool'
+        self.configtemplate['Feature Generation']['add_magpie_features'] = 'bool'
+        self.configtemplate['Feature Generation']['add_materialsproject_features'] = 'bool'
+        self.configtemplate['Feature Generation']['add_citrine_features'] = 'bool'
+        self.configtemplate['Feature Generation']['materialsproject_apikey'] = 'string'
+        self.configtemplate['Feature Generation']['citrine_apikey'] = 'string'
+        return
+
+    def _feature_selection(self):
+        self.configtemplate['Feature Selection'] = dict()
+        self.configtemplate['Feature Selection']['perform_feature_selection'] = 'bool'
+        self.configtemplate['Feature Selection']['remove_constant_features'] = 'bool'
+        self.configtemplate['Feature Selection']['feature_selection_algorithm'] = ['univariate_feature_selection',
+                                                                                   'recursive_feature_elimination',
+                                                                                   'sequential_forward_selection']
+        self.configtemplate['Feature Selection']['use_mutual_information'] = 'bool'
+        self.configtemplate['Feature Selection']['number_of_features_to_keep'] = 'integer'
+        self.configtemplate['Feature Selection']['scoring_metric'] = ['mean_squared_error', 'mean_absolute_error',
+                                                                      'root_mean_squared_error', 'r2_score']
+        self.configtemplate['Feature Selection']['generate_feature_learning_curve'] = 'bool'
+        self.configtemplate['Feature Selection']['model_to_use_for_learning_curve'] = ['linear_model_regressor',
+                                                                                       'linear_model_lasso_regressor',
+                                                                                       'lkrr_model_regressor',
+                                                                                       'gkrr_model_regressor',
+                                                                                       'support_vector_machine_model_regressor',
+                                                                                       'decision_tree_model_regressor',
+                                                                                       'extra_trees_model_regressor',
+                                                                                       'randomforest_model_regressor',
+                                                                                       'adaboost_model_regressor',
+                                                                                       'nn_model_regressor',
+                                                                                       'gaussianprocess_model_regressor']
+
+        return
+
+    def _models_and_tests_to_run(self):
+        self.configtemplate['Models and Tests to Run'] = dict()
+        self.configtemplate['Models and Tests to Run']['models'] = ['linear_model_regressor', 'linear_model_lasso_regressor',
+                                                                    'lkrr_model_regressor',
+                                                                    'gkrr_model_regressor',
+                                                                    'support_vector_machine_model_regressor',
+                                                                    'decision_tree_model_regressor',
+                                                                    'extra_trees_model_regressor',
+                                                                    'randomforest_model_regressor',
+                                                                    'adaboost_model_regressor',
+                                                                    'nn_model_regressor',
+                                                                    'gaussianprocess_model_regressor']
+        self.configtemplate['Models and Tests to Run']['test_cases'] = ['SingleFit', 'SingleFitPerGroup', 'SingleFitGrouped',
+                                                                        'KFoldCV', 'LeaveOneOutCV', 'LeaveOutPercentCV',
+                                                                        'LeaveOutGroupCV', 'PredictionVsFeature',
+                                                                        'PlotNoAnalysis', 'ParamGridSearch', 'ParamOptGA']
+        return
+
+    def _test_parameters(self):
+        self.configtemplate['Test Parameters'] = dict()
+        for test_case in self.configtemplate['Models and Tests to Run']['test_cases']:
+            self.configtemplate['Test Parameters'][test_case] = dict()
+        for k in self.configtemplate['Test Parameters'].keys():
+            if k in ['SingleFit', 'SingleFitPerGroup', 'SingleFitGrouped', 'KFoldCV', 'LeaveOneOutCV', 'LeaveOutPercentCV',
+                     'LeaveOutGroupCV', 'PlotNoAnalysis']:
+                self.configtemplate['Test Parameters'][k]['training_dataset'] = 'string'
+                self.configtemplate['Test Parameters'][k]['testing_dataset'] = 'string'
+                self.configtemplate['Test Parameters'][k]['xlabel'] = 'string'
+                self.configtemplate['Test Parameters'][k]['ylabel'] = 'string'
+            if k == 'PlotNoAnalysis':
+                self.configtemplate['Test Parameters'][k]['feature_plot_feature'] = 'string'
+                self.configtemplate['Test Parameters'][k]['plot_filter_out'] = 'string'
+                self.configtemplate['Test Parameters'][k]['data_labels'] = 'string'
+            if k == 'SingleFit':
+                self.configtemplate['Test Parameters'][k]['plot_filter_out'] = 'string'
+            if k == 'SingleFitPerGroup':
+                self.configtemplate['Test Parameters'][k]['plot_filter_out'] = 'string'
+            if k == 'SingleFitGrouped':
+                self.configtemplate['Test Parameters'][k]['plot_filter_out'] = 'string'
+            if k in ['KFoldCV', 'LeaveOneOutCV', 'LeaveOutPercentCV', 'LeaveOutGroupCV']:
+                self.configtemplate['Test Parameters'][k]['num_cvtests'] = 'integer'
+                self.configtemplate['Test Parameters'][k]['mark_outlying_points'] = 'integer'
+            if k == 'KFoldCV':
+                self.configtemplate['Test Parameters'][k]['num_folds'] = 'integer'
+            if k == 'LeaveOutPercentCV':
+                self.configtemplate['Test Parameters'][k]['percent_leave_out'] = 'float'
+            if k in ['ParamOptGA', 'ParamGridSearch']:
+                self.configtemplate['Test Parameters'][k]['training_dataset'] = 'string'
+                self.configtemplate['Test Parameters'][k]['testing_dataset'] = 'string'
+                self.configtemplate['Test Parameters'][k]['num_folds'] = 'integer'
+                self.configtemplate['Test Parameters'][k]['num_cvtests'] = 'integer'
+                self.configtemplate['Test Parameters'][k]['percent_leave_out'] = 'float'
+                self.configtemplate['Test Parameters'][k]['pop_upper_limit'] = 'integer'
+                for i in range(5):
+                    self.configtemplate['Test Parameters'][k]['param_%s' % str(i+1)] = 'string'
+        return
+
+    def _model_parameters(self):
+        self.configtemplate['Model Parameters'] = dict()
+        models = [k for k in self.configtemplate['Models and Tests to Run']['models']]
+        for model in models:
+            self.configtemplate['Model Parameters'][model] = dict()
+        for k in self.configtemplate['Model Parameters'].keys():
+            if k in ['linear_model_regressor', 'linear_model_lasso_regressor']:
+                self.configtemplate['Model Parameters'][k]['fit_intercept'] = 'bool'
+            if k == 'linear_model_lasso_regressor':
+                self.configtemplate['Model Parameters'][k]['alpha'] = 'float'
+            if k == 'gkrr_model_regressor':
+                self.configtemplate['Model Parameters'][k]['alpha'] = 'float'
+                self.configtemplate['Model Parameters'][k]['gamma'] = 'float'
+                self.configtemplate['Model Parameters'][k]['coef0'] = 'float'
+                self.configtemplate['Model Parameters'][k]['degree'] = 'integer'
+                self.configtemplate['Model Parameters'][k]['kernel'] = ['linear', 'cosine', 'polynomial', 'sigmoid', 'rbf', 'laplacian']
+            if k == 'support_vector_machine_regressor':
+                self.configtemplate['Model Parameters'][k]['error_penalty'] = 'float'
+                self.configtemplate['Model Parameters'][k]['gamma'] = 'float'
+                self.configtemplate['Model Parameters'][k]['coef0'] = 'float'
+                self.configtemplate['Model Parameters'][k]['degree'] = 'integer'
+                self.configtemplate['Model Parameters'][k]['kernel'] = ['linear', 'cosine', 'polynomial', 'sigmoid', 'rbf', 'laplacian']
+            if k == 'decision_tree_model_regressor':
+                self.configtemplate['Model Parameters'][k]['criterion'] = ['mae', 'mse', 'friedman_mse']
+                self.configtemplate['Model Parameters'][k]['splitter'] = ['random', 'best']
+                self.configtemplate['Model Parameters'][k]['max_depth'] = 'integer'
+                self.configtemplate['Model Parameters'][k]['min_samples_leaf'] = 'integer'
+                self.configtemplate['Model Parameters'][k]['min_samples_split'] = 'integer'
+            if k in ['extra_trees_model_regressor', 'randomforest_model_regressor']:
+                self.configtemplate['Model Parameters'][k]['criterion'] = ['mse', 'mae']
+                self.configtemplate['Model Parameters'][k]['n_estimators'] = 'integer'
+                self.configtemplate['Model Parameters'][k]['max_depth'] = 'integer'
+                self.configtemplate['Model Parameters'][k]['min_samples_leaf'] = 'integer'
+                self.configtemplate['Model Parameters'][k]['min_samples_split'] = 'integer'
+                self.configtemplate['Model Parameters'][k]['max_leaf_nodes'] = 'integer'
+            if k == 'randomforest_model_regressor':
+                self.configtemplate['Model Parameters'][k]['n_jobs'] = 'integer'
+                self.configtemplate['Model Parameters'][k]['warm_start'] = 'bool'
+            if k == 'adaboost_model_regressor':
+                self.configtemplate['Model Parameters'][k]['base_estimator_max_depth'] = 'integer'
+                self.configtemplate['Model Parameters'][k]['n_estimators'] = 'integer'
+                self.configtemplate['Model Parameters'][k]['learning_rate'] = 'float'
+                self.configtemplate['Model Parameters'][k]['loss'] = ['linear' 'square', 'exponential']
+            if k == 'nn_model_regressor':
+                self.configtemplate['Model Parameters'][k]['hidden_layer_sizes'] = 'tuple'
+                self.configtemplate['Model Parameters'][k]['activation'] = ['identity', 'logistic', 'tanh', 'relu']
+                self.configtemplate['Model Parameters'][k]['solver'] = ['lbfgs', 'sgd', 'adam']
+                self.configtemplate['Model Parameters'][k]['alpha'] = 'float'
+                self.configtemplate['Model Parameters'][k]['max_iterations'] = 'integer'
+                self.configtemplate['Model Parameters'][k]['tolerance'] = 'float'
+            if k == 'gaussianprocess_model_regressor':
+                self.configtemplate['Model Parameters'][k]['kernel'] = ['rbf']
+                self.configtemplate['Model Parameters'][k]['RBF_length_scale'] = 'float'
+                self.configtemplate['Model Parameters'][k]['RBF_length_scale_bounds'] = 'tuple'
+                self.configtemplate['Model Parameters'][k]['alpha'] = 'float'
+                self.configtemplate['Model Parameters'][k]['optimizer'] = ['fmin_l_bfgs_b']
+                self.configtemplate['Model Parameters'][k]['n_restarts_optimizer'] = 'integer'
+                self.configtemplate['Model Parameters'][k]['normalize_y'] = 'bool'
+        return
+
+class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
     """
     Class to validate contents of user-specified MASTML input file and flag any errors. Subclass of ConfigFileParser.
 
@@ -72,6 +265,7 @@ class ConfigFileValidator(ConfigFileParser):
     """
     def __init__(self, configfile):
         super().__init__(configfile)
+        self.get_config_template()
 
     def run_config_validation(self):
         errors_present = False
@@ -82,6 +276,7 @@ class ConfigFileValidator(ConfigFileParser):
         validationdict_types = ConfigFileParser(configfile='mastmlinputvalidationtypes.conf').get_config_dict(path_to_file=config_files_path)
         #validationdict_names = ConfigFileParser(configfile='mastmlinputvalidationnames.conf').get_config_dict(path_to_file=None)
         #validationdict_types = ConfigFileParser(configfile='mastmlinputvalidationtypes.conf').get_config_dict(path_to_file=None)
+
         logging.info('MASTML is checking that the section names of your input file are valid...')
         configdict, errors_present = self._check_config_headings(configdict=configdict, validationdict=validationdict_names,
                                                                  validator=validator, errors_present=errors_present)
@@ -109,6 +304,13 @@ class ConfigFileValidator(ConfigFileParser):
             if k not in configdict.keys():
                 logging.info('You are missing the %s section in your input file' % str(k))
                 errors_present = bool(True)
+
+        #for k in configdict.keys():
+        #    #print(k)
+        #    if k not in self.configtemplate.keys():
+        #        print('not in', k)
+        #        logging.info('You are missing the %s section in your input file' % str(k))
+        #        errors_present = bool(True)
 
         return configdict, errors_present
 
@@ -350,7 +552,7 @@ class MASTMLWrapper(object):
                     return model
                 if model_type == 'gaussianprocess_model_regressor':
                     test_kernel = None
-                    if str(self.configdict['Model Parameters']['gaussianprocess_model_regressor']['kernel']) == 'RBF':
+                    if str(self.configdict['Model Parameters']['gaussianprocess_model_regressor']['kernel']) == 'rbf':
                         test_kernel = skkernel.ConstantKernel(1.0, (1e-5, 1e5)) * skkernel.RBF(length_scale=float(
                             self.configdict['Model Parameters']['gaussianprocess_model_regressor']['RBF_length_scale']),
                             length_scale_bounds=tuple(float(i) for i in self.configdict['Model Parameters']['gaussianprocess_model_regressor']['RBF_length_scale_bounds']))
