@@ -626,5 +626,5 @@ if __name__ == '__main__':
         mastml = MASTMLDriver(configfile=sys.argv[1])
         mastml.run_MASTML()
     else:
-        logging.info('Specify the name of your MASTML input file, such as "mastmlinput.conf", and run as "python AllTests.py mastmlinput.conf" ')
+        logging.info('Specify the name of your MASTML input file, such as "mastmlinput.conf", and run as "python MASTML.py mastmlinput.conf" ')
         sys.exit()
