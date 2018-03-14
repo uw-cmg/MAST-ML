@@ -10,7 +10,11 @@ import os
 import logging
 from pymatgen import Element, Composition
 from pymatgen.ext.matproj import MPRester
-from citrination_client import CitrinationClient, PifSystemQuery, DataQuery, ChemicalFieldQuery, ChemicalFilter, PifSystemReturningQuery
+try:
+    from citrination_client import CitrinationClient, PifQuery, SystemQuery, ChemicalFieldQuery, ChemicalFilter
+except ImportError:
+    print('You have installed an incompatible version of citrination_client. Please install version 2.1.0, via "pip install citrination_client=="2.1.0""')
+    sys.exit()
 from DataOperations import DataframeUtilities
 from SingleFit import timeit
 
@@ -387,13 +391,11 @@ class CitrineFeatureGeneration(object):
         return dataframe
 
     def _get_pifquery(self, composition):
-        pif_query = PifSystemQuery(chemical_formula=ChemicalFieldQuery(filter=ChemicalFilter(equal=composition)))
-        data_query = DataQuery(system=pif_query)
-        pifquery = PifSystemReturningQuery(query=data_query)
+        pif_query = PifQuery(system=SystemQuery(chemical_formula=ChemicalFieldQuery(filter=ChemicalFilter(equal=composition))))
         # Check if any results found
-        #if 'hits' not in self.client.search(pifquery).as_dictionary():
-        #    raise KeyError('No results found!')
-        print(self.client.search(pifquery).as_dictionary())
+        if 'hits' not in self.client.search(pif_query).as_dictionary():
+            raise KeyError('No results found!')
+        pifquery = self.client.search(pif_query).as_dictionary()['hits']
         return pifquery
 
     def _get_pifquery_property_list(self, pifquery):
