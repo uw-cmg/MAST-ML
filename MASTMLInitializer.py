@@ -17,7 +17,6 @@ from sklearn.svm import SVC, SVR
 import sklearn.gaussian_process.kernels as skkernel
 from sklearn.gaussian_process import GaussianProcessRegressor
 from configobj import ConfigObj, ConfigObjError
-from validate import Validator, VdtTypeError
 import distutils.util as du
 
 class ConfigFileParser(object):
@@ -282,10 +281,15 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
         self._check_for_errors(errors_present=errors_present)
         logging.info('MASTML input file subsection names are valid')
 
-        #logging.info('MASTML is converting the datatypes of values in your input file...')
-        #for section_heading in section_headings:
-        #configdict, errors_present = self._check_section_datatypes(configdict=configdict, validator=validator, errors_present=errors_present)
+        logging.info('MASTML is checking your subsection parameter values and converting the datatypes of values in your input file...')
+        configdict, errors_present = self._check_config_subsection_values(configdict=configdict, errors_present=errors_present)
         self._check_for_errors(errors_present=errors_present)
+        logging.info('MASTML subsection parameter values converted to correct datatypes, and parameter keywords are valid')
+
+        logging.info('MASTML is cross-checking model and test_case names in your input file...')
+        configdict, errors_present = self._check_config_heading_compatibility(configdict=configdict, errors_present=errors_present)
+        self._check_for_errors(errors_present=errors_present)
+        logging.info('MASTML model and test_case names are valid')
 
         return configdict, errors_present
 
@@ -293,13 +297,13 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
         # Check if extra sections are in input file that shouldn't be
         for k in configdict.keys():
             if k not in self.configtemplate.keys():
-                logging.info('You have an extra section called %s in your input file. To correct this issue, remove this extra section.' % str(k))
+                logging.info('Error: You have an extra section called %s in your input file. To correct this issue, remove this extra section.' % str(k))
                 errors_present = bool(True)
 
         # Check if any sections are missing from input file
         for k in self.configtemplate.keys():
             if k not in configdict.keys():
-                logging.info('You are missing the section called %s in your input file. To correct this issue, add this section to your input file.' % str(k))
+                logging.info('Error: You are missing the section called %s in your input file. To correct this issue, add this section to your input file.' % str(k))
                 errors_present = bool(True)
 
         return configdict, errors_present
@@ -311,12 +315,12 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
                 # Check that required subsections are present for each section in user's input file.
                 for section_key in self.configtemplate[section].keys():
                     if section_key not in configdict[section].keys():
-                        logging.info('Your input file is missing section key %s, which is part of the %s section. Please include this section key in your input file.' % (section_key, section))
+                        logging.info('Error: Your input file is missing section key %s, which is part of the %s section. Please include this section key in your input file.' % (section_key, section))
                         errors_present = bool(True)
                 # Check that user's input file does not have any extra section keys that would later throw errors
                 for section_key in configdict[section].keys():
                     if section_key not in self.configtemplate[section].keys():
-                        logging.info('Your input file contains an extra section key or misspelled section key: %s in the %s section. Please correct this section key in your input file.' % (section_key, section))
+                        logging.info('Error: Your input file contains an extra section key or misspelled section key: %s in the %s section. Please correct this section key in your input file.' % (section_key, section))
                         errors_present = bool(True)
             if depth == 2:
                 # Check that all subsections in input file are appropriately named. Note that not all subsections in template need to be present in input file
@@ -327,15 +331,15 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
                     if section == 'Test Parameters':
                         if '_' in subsection_key:
                             if not (subsection_key.split('_')[0] in self.configtemplate[section]):
-                                logging.info('Your input file contains an improper subsection key name: %s.' % subsection_key)
+                                logging.info('Error: Your input file contains an improper subsection key name: %s.' % subsection_key)
                                 errors_present = bool(True)
                         else:
                             if not (subsection_key in self.configtemplate[section]):
-                                logging.info('Your input file contains an improper subsection key name: %s.' % subsection_key)
+                                logging.info('Error: Your input file contains an improper subsection key name: %s.' % subsection_key)
                                 errors_present = bool(True)
                     if section == 'Model Parameters':
                         if not (subsection_key in self.configtemplate[section]):
-                            logging.info('Your input file contains an improper subsection key name: %s.' % subsection_key)
+                            logging.info('Error: Your input file contains an improper subsection key name: %s.' % subsection_key)
                             errors_present = bool(True)
 
                     for subsection_param in configdict[section][subsection_key]:
@@ -344,8 +348,12 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
                         if section == 'Test Parameters':
                             if '_' in subsection_key:
                                 subsection_key = subsection_key.split('_')[0]
-                        if not (subsection_param in self.configtemplate[section][subsection_key]):
-                            logging.info('Your input file contains an improper subsection parameter name: %s.' % subsection_param)
+                        try:
+                            if not (subsection_param in self.configtemplate[section][subsection_key]):
+                                logging.info('Error: Your input file contains an improper subsection parameter name: %s.' % subsection_param)
+                                errors_present = bool(True)
+                        except KeyError:
+                            logging.info('Error: Your input file contains an improper subsection key name: %s.' % subsection_key)
                             errors_present = bool(True)
 
             elif depth > 2:
@@ -353,52 +361,65 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
                 errors_present = bool(True)
 
         self._check_for_errors(errors_present=errors_present)
-        # Check that listed test_cases coincide with subsection names in Test_Parameters and Model_Parameters, and flag test cases that won't be run
-        cases = ['models', 'test_cases']
-        params = ['Model Parameters', 'Test Parameters']
-        for param, case in zip(params, cases):
-            test_cases = configdict['Models and Tests to Run'][case]
-            test_parameter_subsections = configdict[param].keys()
-            tests_being_run = list()
-            if type(test_cases) is list:
-                for test_case in test_cases:
-                    if test_case not in test_parameter_subsections:
-                        logging.info('You have listed test_case %s, which does not coincide with the corresponding subsection name in the Test Parameters section. These two names need to be the same' % test_case)
-                        errors_present = bool(True)
-                        self._check_for_errors(errors_present=errors_present)
-                    else:
-                        tests_being_run.append(test_case)
-            elif type(test_cases) is str:
-                if test_cases not in test_parameter_subsections:
-                    logging.info('You have listed test_case %s, which does not coincide with the corresponding subsection name in the Test Parameters section. These two names need to be the same' % test_case)
-                    errors_present = bool(True)
-                    self._check_for_errors(errors_present=errors_present)
-                else:
-                    tests_being_run.append(test_cases)
-            for test_case in test_parameter_subsections:
-                if test_case not in tests_being_run:
-                    logging.info('Note to user: you have specified the test %s, which is not listed in your test_cases section. MASTML will run fine, but this test will not be performed' % test_case)
 
         return errors_present
 
-    def _check_section_datatypes(self, configdict, validationdict, validator, errors_present, section_heading):
-        # First do some manual cleanup for values that can be string or string_list, because of issue with configobj
-        if section_heading == 'General Setup':
-            if type(configdict['General Setup']['input_features']) is str:
-                templist = []
-                templist.append(configdict['General Setup']['input_features'])
-                configdict['General Setup']['input_features'] = templist
+    def _check_config_subsection_values(self, configdict, errors_present):
+        # First do some manual cleanup for values that can be string or list
+        def string_to_list(configdict):
+            for section_heading in configdict.keys():
+                if section_heading == 'General Setup':
+                    if type(configdict[section_heading]['input_features']) is str:
+                        templist = list()
+                        templist.append(configdict[section_heading]['input_features'])
+                        configdict[section_heading]['input_features'] = templist
+                if section_heading == 'Models and Tests to Run':
+                    if type(configdict[section_heading]['models']) is str:
+                        templist = list()
+                        templist.append(configdict[section_heading]['models'])
+                        configdict[section_heading]['models'] = templist
+                    if type(configdict[section_heading]['test_cases']) is str:
+                        templist = list()
+                        templist.append(configdict[section_heading]['test_cases'])
+                        configdict[section_heading]['test_cases'] = templist
+            return configdict
 
-        if section_heading == 'Models and Tests to Run':
-            if type(configdict['Models and Tests to Run']['models']) is str:
-                templist = []
-                templist.append(configdict['Models and Tests to Run']['models'])
-                configdict['Models and Tests to Run']['models'] = templist
-            if type(configdict['Models and Tests to Run']['test_cases']) is str:
-                templist = []
-                templist.append(configdict['Models and Tests to Run']['test_cases'])
-                configdict['Models and Tests to Run']['test_cases'] = templist
+        configdict = string_to_list(configdict=configdict)
+        for section in configdict.keys():
+            depth = self._get_config_dict_depth(test_dict=configdict[section])
+            if depth == 1:
+                for section_key in configdict[section].keys():
+                    if type(self.configtemplate[section][section_key]) is str:
+                        if self.configtemplate[section][section_key] == 'string':
+                            configdict[section][section_key] = str(configdict[section][section_key])
+                        elif self.configtemplate[section][section_key] == 'bool':
+                            configdict[section][section_key] = bool(configdict[section][section_key])
+                        elif self.configtemplate[section][section_key] == 'integer':
+                            configdict[section][section_key] = int(configdict[section][section_key])
+                        elif self.configtemplate[section][section_key] == 'float':
+                            configdict[section][section_key] = float(configdict[section][section_key])
+                        else:
+                            logging.info('Error: Unrecognized data type encountered in input file template')
+                            sys.exit()
+                    elif type(self.configtemplate[section][section_key]) is list:
+                        if type(configdict[section][section_key]) is str:
+                            if configdict[section][section_key] not in self.configtemplate[section][section_key]:
 
+                                logging.info('Error: Your input file contains an incorrect parameter keyword: %s' % str(configdict[section][section_key]))
+                                errors_present = bool(True)
+                        if type(configdict[section][section_key]) is list:
+                            for param_value in configdict[section][section_key]:
+                                if section_key == 'test_cases':
+                                    if '_' in param_value:
+                                        param_value = param_value.split('_')[0]
+                                if param_value not in self.configtemplate[section][section_key]:
+                                    logging.info('Error: Your input file contains an incorrect parameter keyword: %s' % param_value)
+                                    errors_present = bool(True)
+
+            if depth == 2:
+                for subsection_key in configdict[section].keys():
+                    pass
+        """
         # Check the data type of section and subsection headings and values
         configdict_depth = self._get_config_dict_depth(test_dict=configdict[section_heading])
         datatypes = ['string', 'integer', 'float', 'boolean', 'string_list', 'int_list', 'float_list']
@@ -422,8 +443,37 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
                                     configdict[section_heading][k][kk] = validator.check(check=datatype, value=configdict[section_heading][k][kk])
                         except(VdtTypeError, KeyError):
                             logging.info('The parameter %s in your %s : %s section did not successfully convert to %s' % (section_heading, k, kk, datatype))
-                            errors_present = bool(True)
+                            errors_present = bool(True)        
+        """
 
+        return configdict, errors_present
+
+    def _check_config_heading_compatibility(self, configdict, errors_present):
+        # Check that listed test_cases coincide with subsection names in Test_Parameters and Model_Parameters, and flag test cases that won't be run
+        cases = ['models', 'test_cases']
+        params = ['Model Parameters', 'Test Parameters']
+        for param, case in zip(params, cases):
+            test_cases = configdict['Models and Tests to Run'][case]
+            test_parameter_subsections = configdict[param].keys()
+            tests_being_run = list()
+            if type(test_cases) is list:
+                for test_case in test_cases:
+                    if test_case not in test_parameter_subsections:
+                        logging.info('Error: You have listed test case/model %s, which does not coincide with the corresponding subsection name in the Test Parameters/Model Parameters section. These two names need to be the same, and the keyword must be correct' % test_case)
+                        errors_present = bool(True)
+                        self._check_for_errors(errors_present=errors_present)
+                    else:
+                        tests_being_run.append(test_case)
+            elif type(test_cases) is str:
+                if test_cases not in test_parameter_subsections:
+                    logging.info('Error: You have listed test case/model %s, which does not coincide with the corresponding subsection name in the Test Parameters/Model Parameters section. These two names need to be the same, and the keyword must be correct' % test_cases)
+                    errors_present = bool(True)
+                    self._check_for_errors(errors_present=errors_present)
+                else:
+                    tests_being_run.append(test_cases)
+            for test_case in test_parameter_subsections:
+                if test_case not in tests_being_run:
+                    logging.info('Note to user: you have specified the test/model %s, which is not listed in your test_cases/models section. MASTML will run fine, but this test will not be performed' % test_case)
         return configdict, errors_present
 
     def _check_for_errors(self, errors_present):
