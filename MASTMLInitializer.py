@@ -393,7 +393,7 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
                         if self.configtemplate[section][section_key] == 'string':
                             configdict[section][section_key] = str(configdict[section][section_key])
                         elif self.configtemplate[section][section_key] == 'bool':
-                            configdict[section][section_key] = bool(configdict[section][section_key])
+                            configdict[section][section_key] = bool(du.strtobool(configdict[section][section_key]))
                         elif self.configtemplate[section][section_key] == 'integer':
                             configdict[section][section_key] = int(configdict[section][section_key])
                         elif self.configtemplate[section][section_key] == 'float':
@@ -415,37 +415,24 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
                                 if param_value not in self.configtemplate[section][section_key]:
                                     logging.info('Error: Your input file contains an incorrect parameter keyword: %s' % param_value)
                                     errors_present = bool(True)
-
             if depth == 2:
                 for subsection_key in configdict[section].keys():
-                    pass
-        """
-        # Check the data type of section and subsection headings and values
-        configdict_depth = self._get_config_dict_depth(test_dict=configdict[section_heading])
-        datatypes = ['string', 'integer', 'float', 'boolean', 'string_list', 'int_list', 'float_list']
-        if section_heading in ['General Setup', 'Data Setup', 'Models and Tests to Run', 'Model Parameters']:
-            for k in configdict[section_heading].keys():
-                if configdict_depth == 1:
-                    try:
-                        datatype = validationdict[section_heading][k]
-                        if datatype in datatypes:
-                            configdict[section_heading][k] = validator.check(check=datatype, value=configdict[section_heading][k])
-                    except (VdtTypeError, KeyError):
-                        logging.info('The parameter %s in your %s section did not successfully convert to %s' % (k, section_heading, datatype))
-                        errors_present = bool(True)
-
-                if configdict_depth > 1:
-                    for kk in configdict[section_heading][k].keys():
-                        try:
-                            if k in validationdict[section_heading]:
-                                datatype = validationdict[section_heading][k][kk]
-                                if datatype in datatypes:
-                                    configdict[section_heading][k][kk] = validator.check(check=datatype, value=configdict[section_heading][k][kk])
-                        except(VdtTypeError, KeyError):
-                            logging.info('The parameter %s in your %s : %s section did not successfully convert to %s' % (section_heading, k, kk, datatype))
-                            errors_present = bool(True)        
-        """
-
+                    for param_name in configdict[section][subsection_key].keys():
+                        subsection_key_template = subsection_key
+                        if section == 'Data Setup':
+                            subsection_key_template = 'string'
+                        elif section == 'Test Parameters':
+                            if '_' in subsection_key:
+                                subsection_key_template = subsection_key.split('_')[0]
+                        if type(self.configtemplate[section][subsection_key_template][param_name]) is str:
+                            if self.configtemplate[section][subsection_key_template][param_name] == 'string':
+                                configdict[section][subsection_key][param_name] = str(configdict[section][subsection_key][param_name])
+                            if self.configtemplate[section][subsection_key_template][param_name] == 'bool':
+                                configdict[section][subsection_key][param_name] = bool(du.strtobool(configdict[section][subsection_key][param_name]))
+                            if self.configtemplate[section][subsection_key_template][param_name] == 'integer':
+                                configdict[section][subsection_key][param_name] = int(configdict[section][subsection_key][param_name])
+                            if self.configtemplate[section][subsection_key_template][param_name] == 'float':
+                                configdict[section][subsection_key][param_name] = float(configdict[section][subsection_key][param_name])
         return configdict, errors_present
 
     def _check_config_heading_compatibility(self, configdict, errors_present):
