@@ -217,7 +217,7 @@ class MASTMLDriver(object):
 
             logging.info('Creating data dict for data path %s and data name %s' % (data_path, data_name))
 
-            data_weights = self.data_setup[data_name]['weights']
+            #data_weights = self.data_setup[data_name]['weights']
             if 'labeling_features' in self.general_setup.keys():
                 labeling_features = self._string_or_list_input_to_list(self.general_setup['labeling_features'])
             else:
