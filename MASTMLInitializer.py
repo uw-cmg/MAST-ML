@@ -291,6 +291,11 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
         self._check_for_errors(errors_present=errors_present)
         logging.info('MASTML model and test_case names are valid')
 
+        logging.info('MASTML is checking that your target feature name is formatted correctly...')
+        configdict, errors_present = self._check_target_feature(configdict=configdict, errors_present=errors_present)
+        self._check_for_errors(errors_present=errors_present)
+        logging.info('MASTML target feature name is valid')
+
         return configdict, errors_present
 
     def _check_config_section_names(self, configdict, errors_present):
@@ -461,6 +466,13 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
             for test_case in test_parameter_subsections:
                 if test_case not in tests_being_run:
                     logging.info('Note to user: you have specified the test/model %s, which is not listed in your test_cases/models section. MASTML will run fine, but this test will not be performed' % test_case)
+        return configdict, errors_present
+
+    def _check_target_feature(self, configdict, errors_present):
+        target_feature_name = configdict['General Setup']['target_feature']
+        if ('regression' or 'classification') not in target_feature_name:
+            logging.info('Error: You must include the designation "regression" or "classification" in your target feature name in your input file and data file. For example: "my_target_feature_regression"')
+            errors_present = bool(True)
         return configdict, errors_present
 
     def _check_for_errors(self, errors_present):
