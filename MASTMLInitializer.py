@@ -268,34 +268,19 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
 
     def run_config_validation(self):
         errors_present = False
-        #validator = self._generate_validator()
         configdict = self.get_config_dict(path_to_file=os.getcwd())
-        #try:
-        #    config_files_path = configdict['General Setup']['config_files_path']
-        #except KeyError:
-        #    logging.info('The input file section %s could not be found. It is either missing or there is a typo in your input file.' % str('General Setup'))
-        #    sys.exit()
-        #validationdict_names = ConfigFileParser(configfile='mastmlinputvalidationnames.conf').get_config_dict(path_to_file=config_files_path)
-        #validationdict_types = ConfigFileParser(configfile='mastmlinputvalidationtypes.conf').get_config_dict(path_to_file=config_files_path)
-        #validationdict_names = ConfigFileParser(configfile='mastmlinputvalidationnames.conf').get_config_dict(path_to_file=None)
-        #validationdict_types = ConfigFileParser(configfile='mastmlinputvalidationtypes.conf').get_config_dict(path_to_file=None)
 
         # Check section names
         logging.info('MASTML is checking that the section names of your input file are valid...')
         configdict, errors_present = self._check_config_section_names(configdict=configdict, errors_present=errors_present)
         self._check_for_errors(errors_present=errors_present)
         logging.info('MASTML input file section names are valid')
-        #section_headings = [k for k in validationdict_names.keys()]
 
         # Check subsection names
         logging.info('MASTML is checking that the subsection names and values in your input file are valid...')
         errors_present = self._check_config_subsection_names(configdict=configdict, errors_present=errors_present)
         self._check_for_errors(errors_present=errors_present)
         logging.info('MASTML input file subsection names are valid')
-        #for section_heading in section_headings:
-        #    errors_present = self._check_section_names(configdict=configdict, validationdict=validationdict_names,
-        #                                               errors_present=errors_present, section_heading=section_heading)
-        #    self._check_for_errors(errors_present=errors_present)
 
         #logging.info('MASTML is converting the datatypes of values in your input file...')
         #for section_heading in section_headings:
@@ -393,6 +378,7 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
             for test_case in test_parameter_subsections:
                 if test_case not in tests_being_run:
                     logging.info('Note to user: you have specified the test %s, which is not listed in your test_cases section. MASTML will run fine, but this test will not be performed' % test_case)
+
         return errors_present
 
     def _check_section_datatypes(self, configdict, validationdict, validator, errors_present, section_heading):
@@ -445,9 +431,6 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
             logging.info('Errors have been detected in your MASTML setup. Please correct the errors and re-run MASTML')
             sys.exit()
         return
-
-    #def _generate_validator(self):
-    #    return Validator()
 
 class ModelTestConstructor(object):
     """
