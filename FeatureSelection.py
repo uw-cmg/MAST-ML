@@ -36,14 +36,12 @@ class DimensionalReduction(object):
 
     Methods:
         remove_constant_features : removes features that have the same value for all data entries
-            Args:
-                None
+
             Returns:
                 pandas dataframe : dataframe with constant features removed
 
         principal_component_analysis: uses principal component analysis to reduce size of feature space
-            Args:
-                None
+
             Returns:
                 pandas dataframe : dataframe with PCA-selected features
     """
@@ -76,18 +74,22 @@ class FeatureSelection(object):
 
     Methods:
         sequential_forward_selection :
+
             Args:
                 number_of_features_keep (int) : number of features to keep after feature selection
+
             Returns:
                 pandas dataframe : dataframe containing only selected features
 
         feature_selection :
+
             Args:
                 feature_selection_type (kwarg) : type of feature selection algorithm to use. Must choose from either
                     "univariate_feature_selection", "recursive_feature_elimination", "basic_foward_selection", or "sequential_feature_selection"
                 number_features_to_keep (int) : number of features to keep after feature selection
                 use_mutual_info (bool) : whether or not to use mutual information between features (only applicable to
                     univariate feature selection)
+
             Returns:
                 pandas dataframe : dataframe containing only selected features
     """
@@ -240,8 +242,7 @@ class BasicForwardSelection(object):
 
     Methods:
         run_basic_forward_selection : performs the basic forward selection routine and generates a learning curve
-            Args:
-                None
+
             Returns:
                 pandas dataframe : a dataframe containing X and y data and feature names of the feature-selected data set
     """
@@ -386,38 +387,35 @@ class LearningCurve(object):
 
     Methods:
         generate_feature_learning_curve : generates feature-based learning curve for a specific feature selection routine
+
             Args:
                 feature_selection_algorithm (kwarg) : name of feature selection routine
-            Returns:
-                None
 
         get_univariate_RFE_training_data_learning_curve: generates training data learning curve for univariate or RFE
             feature selection routine
+
             Args:
                 estimator (sklearn model object) : an sklearn model used to assess model accuracy
                 title (str) : Title for learning curve plot
                 Xdata (pandas dataframe) : dataframe of Xdata
                 ydata (pandas dataframe) : dataframe of ydata
                 feature_selection_type (kwarg) : name of feature selection routine
-            Returns:
-                None
 
         get_univariate_RFE_feature_learning_curve: generates feature-based learning curve for univariate or RFE feature
             selection routine
+
             Args:
                 title (str) : Title for learning curve plot
                 Xdata (pandas dataframe) : dataframe of Xdata
                 ydata (pandas dataframe) : dataframe of ydata
                 ydata_stdev (pandas dataframe) : dataframe of standard deviations of ydata
-            Returns:
-                None
 
         get_sequential_forward_selection_learning_curve: generates feature-based learning curve for SFS algorithm
+
             Args:
                 metricdict (dict) : dict of feature selection metrics from SFS
                 filetag (str) : name of target feature used to name save files
-            Returns:
-                None
+
     """
     def __init__(self, configdict, dataframe, model_type):
         self.configdict = configdict
@@ -749,56 +747,63 @@ class MiscFeatureSelectionOperations():
     """
     Class containing additional functions to help with feature selection routines
 
-    Attributes:
-        None
-
     Methods:
         get_selector_feature_names : obtains the feature names and indices selected by a RFE algorithm
-            args:
-                selector <sklearn RFE object> : an instance of the RFE sklearn class
-                x_features <list> : list of x feature names
-            returns:
-                feature_indices_selected <list> : list of feature index numbers selected
-                feature_names_selected <list> : list of feature names selected
+
+            Args:
+                selector (sklearn RFE object) : an instance of the RFE sklearn class
+                x_features (list) : list of x feature names
+
+            Returns:
+                list : list of feature index numbers selected
+                list : list of feature names selected
 
         get_forward_selection_feature_names : obtain feature names based on feature indices
-            args:
-                feature_indices_selected <list> : list of feature index numbers selected
-                x_features <list> : list of x feature names
-            returns:
-                feature_names_selected <list> : list of feature names selected
+
+            Args:
+                feature_indices_selected (list) : list of feature index numbers selected
+                x_features (list) : list of x feature names
+
+            Returns:
+                list : list of feature names selected
 
         get_feature_filetag : obtain feature name to be used in saved file names
-            args:
-                configdict <dict> : MASTML configfile object as dict
-                dataframe <pandas dataframe> : a pandas dataframe object
-            return:
-                filetag <str> : feature name to be used in file name
+
+            Args:
+                configdict (dict) : MASTML configfile object as dict
+                dataframe (pandas dataframe) : a pandas dataframe object
+
+            Returns:
+                str : feature name to be used in file name
 
         get_ranked_feature_names : obtains ranked feature names from an RFE algorithm
-            args:
-                selector <sklearn RFE object> : an instance of the RFE sklearn class
-                x_features <list> : list of x feature names
-                number_features_to_keep <int> : number of features to keep in selected feature list
-            returns:
-                feature_names_selected <list> : list of feature names selected
+
+            Args:
+                selector (sklearn RFE object) : an instance of the RFE sklearn class
+                x_features (list) : list of x feature names
+                number_features_to_keep (int) : number of features to keep in selected feature list
+
+            Returns:
+                list : list of feature names selected
 
         remove_features_containing_strings : removes feature columns whose values are strings as these can't be used in regression tasks
-            args:
-                dataframe <pandas dataframe> : dataframe containing data and feature names
-                x_features <list> : list of x feature names
-            returns:
-                x_features_pruned <list> : list of x features with those features removed which contained data as strings
-                dataframe <pandas dataframe> : dataframe containing data and feature names, with string features removed
+
+            Args:
+                dataframe (pandas dataframe) : dataframe containing data and feature names
+                x_features (list) : list of x feature names
+
+            Returns:
+                list : list of x features with those features removed which contained data as strings
+                pandas dataframe : dataframe containing data and feature names, with string features removed
 
         save_data_to_csv : save dataframe to csv file
-            args:
-                configdict <dict> : MASTML configfile object as dict
-                dataframe <pandas dataframe> : a pandas dataframe object
-                feature_selection_str <str> : name of feature selection routine used
-                filetag <str> : name of target feature
-            returns:
-                None
+
+            Args:
+                configdict (dict) : MASTML configfile object as dict
+                dataframe (pandas dataframe) : a pandas dataframe object
+                feature_selection_str (str) : name of feature selection routine used
+                filetag (str) : name of target feature
+
     """
     @classmethod
     def get_selector_feature_names(cls, selector, x_features):
