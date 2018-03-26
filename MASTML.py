@@ -24,12 +24,15 @@ class MASTMLDriver(object):
     """
     Class responsible for organizing and executing a MASTML workflow
 
-    Attributes:
-        configfile <MASTML configfile object> : a MASTML input file, as a configfile object
+    Args:
+        configfile (MASTML configfile object) : a MASTML input file, as a configfile object
 
     Methods:
         run_MASTML : executes the MASTML workflow
-            returns: None
+            Args:
+                None
+            Returns:
+                None
     """
     def __init__(self, configfile):
         self.configfile = configfile
