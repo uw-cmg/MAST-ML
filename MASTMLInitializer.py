@@ -113,7 +113,8 @@ class ConfigFileConstructor(ConfigFileParser):
         self.configtemplate['Feature Selection']['remove_constant_features'] = 'bool'
         self.configtemplate['Feature Selection']['feature_selection_algorithm'] = ['univariate_feature_selection',
                                                                                    'recursive_feature_elimination',
-                                                                                   'sequential_forward_selection']
+                                                                                   'sequential_forward_selection',
+                                                                                   'basic_forward_selection']
         self.configtemplate['Feature Selection']['use_mutual_information'] = 'bool'
         self.configtemplate['Feature Selection']['number_of_features_to_keep'] = 'integer'
         self.configtemplate['Feature Selection']['scoring_metric'] = ['mean_squared_error', 'mean_absolute_error',
