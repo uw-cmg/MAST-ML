@@ -4,6 +4,7 @@ from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import r2_score
 from plot_data.PlotHelper import PlotHelper
 import os
+import sys
 import time
 import logging
 import copy
@@ -91,6 +92,7 @@ class SingleFit():
             self.training_dataset= copy.deepcopy(training_dataset[0]) #first item
         else:
             self.training_dataset = copy.deepcopy(training_dataset)
+
         # testing csv
         if testing_dataset is None:
             raise ValueError("testing_dataset is not set")
@@ -98,6 +100,15 @@ class SingleFit():
             self.testing_dataset = copy.deepcopy(testing_dataset[0])
         else:
             self.testing_dataset=copy.deepcopy(testing_dataset)
+
+        # reformat input data if only a single feature
+        self.reformatted_data = False
+        try:
+            self.training_dataset.input_data.shape[1]
+        except:
+            self.training_dataset.input_data = self.training_dataset.input_data.values.reshape(-1, 1)
+            self.testing_dataset.input_data = self.testing_dataset.input_data.values.reshape(-1, 1)
+            self.reformatted_data = True
         # model
         if model is None:
             raise ValueError("No model.")
@@ -148,7 +159,8 @@ class SingleFit():
     @timeit
     def predict(self):
         self.get_prediction()
-        self.print_output_csv()
+        if self.reformatted_data == False:
+            self.print_output_csv()
         self.get_statistics()
         self.print_statistics()
         return
