@@ -232,8 +232,7 @@ class MASTMLDriver(object):
                 grouping_feature = None
 
             if 'Feature Generation' in self.configdict.keys():
-                if self.configdict['Feature Generation']['perform_feature_generation'] == bool(True) or \
-                                self.configdict['Feature Generation']['perform_feature_generation'] == "True":
+                if self.configdict['Feature Generation']['perform_feature_generation'] == True:
                     generate_features = True
                 else:
                     generate_features = False
@@ -241,13 +240,11 @@ class MASTMLDriver(object):
                 generate_features = False
 
             if 'Feature Normalization' in self.configdict.keys():
-                if self.configdict['Feature Normalization']['normalize_x_features'] == bool(True) or \
-                                self.configdict['Feature Normalization']['normalize_x_features'] == "True":
+                if self.configdict['Feature Normalization']['normalize_x_features'] == True:
                     normalize_x_features = True
                 else:
                     normalize_x_features = False
-                if self.configdict['Feature Normalization']['normalize_y_feature'] == bool(True) or \
-                                self.configdict['Feature Normalization']['normalize_y_feature'] == "True":
+                if self.configdict['Feature Normalization']['normalize_y_feature'] == True:
                     normalize_y_feature = True
                 else:
                     normalize_y_feature = False
@@ -256,8 +253,8 @@ class MASTMLDriver(object):
                 normalize_y_feature = False
 
             if 'Feature Selection' in self.configdict.keys():
-                if self.configdict['Feature Selection']['perform_feature_selection'] == bool(True) or \
-                                self.configdict['Feature Selection']['perform_feature_selection'] == "True":
+                print(type(self.configdict['Feature Selection']['perform_feature_selection']))
+                if self.configdict['Feature Selection']['perform_feature_selection'] == True:
                     select_features = True
                 else:
                     select_features = False
@@ -286,7 +283,7 @@ class MASTMLDriver(object):
             dataframe_grouped = pd.DataFrame()
             if not (labeling_features is None):
                 dataframe_labeled = FeatureIO(dataframe=dataframe).keep_custom_features(features_to_keep=labeling_features, y_feature=y_feature)
-                if normalize_x_features == bool(True):
+                if normalize_x_features == True:
                     dataframe_labeled, scaler = FeatureNormalization(dataframe=dataframe_labeled, configdict=self.configdict).normalize_features(x_features=labeling_features, y_feature=y_feature)
             if not (grouping_feature is None):
                 dataframe_grouped = FeatureIO(dataframe=dataframe).keep_custom_features(features_to_keep=[grouping_feature], y_feature=y_feature)
@@ -301,7 +298,7 @@ class MASTMLDriver(object):
                 Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe, target_feature=y_feature)
 
             # First remove features containing strings before doing feature normalization or other operations, but don't remove grouping features
-            if generate_features == bool(True):
+            if generate_features == True:
                 nonstring_x_features, dataframe_nostrings = MiscFeatureOperations(configdict=self.configdict).remove_features_containing_strings(dataframe=dataframe, x_features=x_features_NOUSE)
                 #Remove columns containing all entries of NaN
                 dataframe_nostrings = dataframe_nostrings.dropna(axis=1, how='all')
@@ -322,16 +319,16 @@ class MASTMLDriver(object):
             logging.debug("pre-changes:%s" % dataframe_nostrings.columns)
 
             # Normalize features (optional)
-            if normalize_x_features == bool(True) or normalize_y_feature == bool(True):
+            if normalize_x_features == True or normalize_y_feature == True:
                 fn = FeatureNormalization(dataframe=dataframe_nostrings, configdict=self.configdict)
                 feature_normalization_type = self.configdict['Feature Normalization']['feature_normalization_type']
-                feature_scale_min = int(self.configdict['Feature Normalization']['feature_scale_min'])
-                feature_scale_max = int(self.configdict['Feature Normalization']['feature_scale_max'])
+                feature_scale_min = self.configdict['Feature Normalization']['feature_scale_min']
+                feature_scale_max = self.configdict['Feature Normalization']['feature_scale_max']
                 dataframe_nostrings, scaler = fn.normalize_features(x_features=x_features, y_feature=y_feature, normalize_x_features=normalize_x_features, normalize_y_feature=normalize_y_feature, feature_normalization_type=feature_normalization_type, feature_scale_min=feature_scale_min, feature_scale_max=feature_scale_max)
                 x_features, y_feature = DataParser(configdict=self.configdict).get_features(dataframe=dataframe_nostrings, target_feature=y_feature)
 
             # Perform feature selection and dimensional reduction, as specified in the input file (optional)
-            if (select_features == bool(True)) and (y_feature in dataframe_nostrings.columns):
+            if (select_features == True) and (y_feature in dataframe_nostrings.columns):
                 # Remove any additional columns that are not x_features using to be fit to data
                 features = dataframe_nostrings.columns.values.tolist()
                 features_to_remove = []
@@ -422,7 +419,8 @@ class MASTMLDriver(object):
     @timeit
     def _perform_feature_selection(self, dataframe, x_features, y_feature):
         for k, v in self.configdict['Feature Selection'].items():
-            if k == 'remove_constant_features' and v == 'True':
+            print(k, v, type(v))
+            if k == 'remove_constant_features' and v == True:
                 logging.info('FEATURE SELECTION: Removing constant features from your feature list')
                 dr = DimensionalReduction(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
                 dataframe = dr.remove_constant_features()
@@ -452,7 +450,7 @@ class MASTMLDriver(object):
                         dataframe = fs.feature_selection(feature_selection_type = 'recursive_feature_elimination',
                                                            number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']),
                                                            use_mutual_info=self.configdict['Feature Selection']['use_mutual_information'])
-                    if self.configdict['Feature Selection']['generate_feature_learning_curve'] == 'True':
+                    if self.configdict['Feature Selection']['generate_feature_learning_curve'] == True:
                         learningcurve = LearningCurve(configdict=self.configdict, dataframe=dataframe, model_type=model_to_use)
                         logging.info('Generating a feature learning curve using a %s algorithm' % v)
                         learningcurve.generate_feature_learning_curve(feature_selection_algorithm='recursive_feature_elimination')
@@ -466,7 +464,7 @@ class MASTMLDriver(object):
                         dataframe = fs.feature_selection(feature_selection_type='univariate_feature_selection',
                                                          number_features_to_keep=int(len(x_features)),
                                                          use_mutual_info=self.configdict['Feature Selection']['use_mutual_information'])
-                    if self.configdict['Feature Selection']['generate_feature_learning_curve'] == 'True':
+                    if self.configdict['Feature Selection']['generate_feature_learning_curve'] == True:
                         learningcurve = LearningCurve(configdict=self.configdict, dataframe=dataframe, model_type=model_to_use)
                         logging.info('Generating a feature learning curve using a %s algorithm' % v)
                         learningcurve.generate_feature_learning_curve(feature_selection_algorithm='univariate_feature_selection')
