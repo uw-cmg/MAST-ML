@@ -22,16 +22,16 @@ class MagpieFeatureGeneration(object):
     """
     Class to generate new features using Magpie data and dataframe containing material compositions
 
-    Attributes:
-        configdict <dict> : MASTML configfile object as dict
-        dataframe <pandas dataframe> : dataframe containing x and y data and feature names
+    Args:
+        configdict (dict) : MASTML configfile object as dict
+        dataframe (pandas dataframe) : dataframe containing x and y data and feature names
 
     Methods:
         generate_magpie_features : generates magpie feature set based on compositions in dataframe
-            args:
-                save_to_csv <bool> : whether to save the magpie feature set to a csv file
-            returns:
-                dataframe <pandas dataframe> : dataframe containing magpie feature set
+            Args:
+                save_to_csv (bool) : whether to save the magpie feature set to a csv file
+            Returns:
+                pandas dataframe : dataframe containing magpie feature set
     """
     def __init__(self, configdict, dataframe):
         self.configdict = configdict
@@ -230,17 +230,17 @@ class MaterialsProjectFeatureGeneration(object):
     """
     Class to generate new features using Materials Project data and dataframe containing material compositions
 
-    Attributes:
-        configdict <dict> : MASTML configfile object as dict
-        dataframe <pandas dataframe> : dataframe containing x and y data and feature names
-        mapi_key <str> : your Materials Project API key
+    Args:
+        configdict (dict) : MASTML configfile object as dict
+        dataframe (pandas dataframe) : dataframe containing x and y data and feature names
+        mapi_key (str) : your Materials Project API key
 
     Methods:
         generate_materialsproject_features : generates materials project feature set based on compositions in dataframe
-            args:
-                save_to_csv <bool> : whether to save the magpie feature set to a csv file
-            returns:
-                dataframe <pandas dataframe> : dataframe containing magpie feature set
+            Args:
+                save_to_csv (bool) : whether to save the magpie feature set to a csv file
+            Returns:
+                pandas dataframe : dataframe containing magpie feature set
     """
     def __init__(self, configdict, dataframe, mapi_key):
         self.configdict = configdict
@@ -329,17 +329,17 @@ class CitrineFeatureGeneration(object):
     """
     Class to generate new features using Citrine data and dataframe containing material compositions
 
-    Attributes:
-        configdict <dict> : MASTML configfile object as dict
-        dataframe <pandas dataframe> : dataframe containing x and y data and feature names
-        api_key <str> : your Citrination API key
+    Args:
+        configdict (dict) : MASTML configfile object as dict
+        dataframe (pandas dataframe) : dataframe containing x and y data and feature names
+        api_key (str) : your Citrination API key
 
     Methods:
         generate_citrine_features : generates Citrine feature set based on compositions in dataframe
-            args:
-                save_to_csv <bool> : whether to save the magpie feature set to a csv file
-            returns:
-                dataframe <pandas dataframe> : dataframe containing magpie feature set
+            Args:
+                save_to_csv (bool) : whether to save the magpie feature set to a csv file
+            Returns:
+                pandas dataframe : dataframe containing magpie feature set
     """
     def __init__(self, configdict, dataframe, api_key):
         self.configdict = configdict
