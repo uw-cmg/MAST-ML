@@ -99,7 +99,7 @@ class DataParser(object):
         try:
             if '.csv' in datapath.split('/')[-1]:
                 dataframe = pd.read_csv(datapath, header=0)
-            if '.xlsx' or '.xls' in datapath.split('/')[-1]:
+            elif '.xlsx' or '.xls' in datapath.split('/')[-1]:
                 dataframe = pd.read_excel(datapath, header=0)
         except IOError:
             logging.info('Error reading in your input data file, specify a valid path to your input data')

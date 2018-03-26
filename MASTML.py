@@ -253,7 +253,6 @@ class MASTMLDriver(object):
                 normalize_y_feature = False
 
             if 'Feature Selection' in self.configdict.keys():
-                print(type(self.configdict['Feature Selection']['perform_feature_selection']))
                 if self.configdict['Feature Selection']['perform_feature_selection'] == True:
                     select_features = True
                 else:
@@ -419,7 +418,6 @@ class MASTMLDriver(object):
     @timeit
     def _perform_feature_selection(self, dataframe, x_features, y_feature):
         for k, v in self.configdict['Feature Selection'].items():
-            print(k, v, type(v))
             if k == 'remove_constant_features' and v == True:
                 logging.info('FEATURE SELECTION: Removing constant features from your feature list')
                 dr = DimensionalReduction(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
