@@ -14,51 +14,51 @@ class FeatureIO(object):
     """
     Class to perform various input/output and manipulations of features present in dataframe
 
-    Attributes:
-        dataframe <pandas dataframe> : dataframe containing x and y data and feature names
+    Args:
+        dataframe (pandas dataframe) : dataframe containing x and y data and feature names
 
     Methods:
         remove_duplicate_features_by_name: DEPRECATED
 
         remove_duplicate_columns : removes features that have identical names
-            args:
+            Args:
                 None
-            returns:
-                dataframe <pandas dataframe> : dataframe after feature operation
+            Returns:
+                pandas dataframe : dataframe after feature operation
 
         remove_duplicate_features_by_values : removes features that have identical values for each data point
-            args:
+            Args:
                 None
-            returns:
-                dataframe <pandas dataframe> : dataframe after feature operation
+            Returns:
+                pandas dataframe : dataframe after feature operation
 
         remove_custom_features : remove features as specified by name
-            args:
-                features_to_remove <list> : list of feature names to remove
-            returns:
-                dataframe <pandas dataframe> : dataframe after feature operation
+            Args:
+                features_to_remove (list) : list of feature names to remove
+            Returns:
+                pandas dataframe : dataframe after feature operation
 
         keep_custom_features : keep only the specified features
-            args:
-                features_to_keep <list> : list of feature names to keep
-                y_feature <str> : name of target feature (will keep if specified)
-            returns:
-                dataframe <pandas dataframe> : dataframe after feature operation
+            Args:
+                features_to_keep (list) : list of feature names to keep
+                y_feature (str) : name of target feature (will keep if specified)
+            Returns:
+                pandas dataframe : dataframe after feature operation
 
         add_custom_features : add specific features by name (must also supply data)
-            args:
-                features_to_add <list> : list of feature names to add
-                data_to_add <numpy array> : array of data for each feature to add
-            returns:
-                dataframe <pandas dataframe> : dataframe after feature operation
+            Args:
+                features_to_add (list) : list of feature names to add
+                data_to_add (numpy array) : array of data for each feature to add
+            Returns:
+                pandas dataframe : dataframe after feature operation
 
         custom_feature_filter : removes rows of data if certain arithmetic conditions are met
-            args:
-                feature <str> : name of feature to scan data of
-                operator <kwarg> : arithmetic operator (choose from <, >, =, <=, >=, <>)
-                threshold <float> : value to compare data value against for elimination
-            returns:
-                dataframe <pandas dataframe> : dataframe after feature operation
+            Args:
+                feature (str) : name of feature to scan data of
+                operator (kwarg) : arithmetic operator (choose from <, >, =, <=, >=, <>)
+                threshold (float) : value to compare data value against for elimination
+            Returns:
+                pandas dataframe : dataframe after feature operation
     """
     def __init__(self, dataframe):
         self.dataframe = dataframe
@@ -146,44 +146,44 @@ class FeatureNormalization(object):
     """
     Class to normalize and unnormalize features in a dataframe.
 
-    Attributes:
-        dataframe <pandas dataframe> : dataframe containing x and y data and feature names
+    Args
+        dataframe (pandas dataframe) : dataframe containing x and y data and feature names
 
     Methods:
         normalize features : normalizes the specified features to have mean zero and standard deviation of unity
-            args:
-                x_features <list> : list of x feature names
-                y_feature <str> : target feature name
-                normalize_x_features <bool> : whether to normalize x features
-                normalize_y_feature <bool> : whether to normalize the target feature
-                to_csv <bool> : whether to save normalized dataframe to csv file
-            returns:
-                dataframe_normalized <pandas dataframe> : dataframe of normalized data
-                scaler <sklearn scaler object> : scaler object used to map unnormalized to normalized data
+            Args:
+                x_features (list) : list of x feature names
+                y_feature (str) : target feature name
+                normalize_x_features (bool) : whether to normalize x features
+                normalize_y_feature (bool) : whether to normalize the target feature
+                to_csv (bool) : whether to save normalized dataframe to csv file
+            Returns:
+                pandas dataframe : dataframe of normalized data
+                sklearn scaler object : scaler object used to map unnormalized to normalized data
 
         minmax_scale_single_feature : scale a single feature to a designated minimum and maximum value
-            args:
-                featurename <str> : name of feature to normalize
-                smin <float> : minimum feature value
-                smax <float> : maximum feature value
-            returns:
-                scaled_feature <pandas dataframe> : dataframe containing only the scaled feature
+            Args:
+                featurename (str) : name of feature to normalize
+                smin (float) : minimum feature value
+                smax (float) : maximum feature value
+            Returns:
+                pandas dataframe : dataframe containing only the scaled feature
 
         unnormalize_features : unnormalize the features contained in a dataframe
-            args:
-                x_features <list> : list of x feature names
-                y_feature <str> : target feature name
-                scaler <sklearn scaler object> : scaler object used to map unnormalized to normalized data
-            returns:
-                dataframe_unnormalized <pandas dataframe> : dataframe of unnormalized data
-                scaler <sklearn scaler object> : scaler object used to map unnormalized to normalized data
+            Args:
+                x_features (list) : list of x feature names
+                y_feature (str) : target feature name
+                scaler (sklearn scaler object) : scaler object used to map unnormalized to normalized data
+            Returns:
+                pandas dataframe : dataframe of unnormalized data
+                sklearn scaler object : scaler object used to map unnormalized to normalized data
 
         normalize_and_merge_with_original_dataframe : normalizes features and merges normalized dataframe with original dataframe
-            args:
-                x_features <list> : list of x feature names
-                y_feature <str> : target feature name
-            returns:
-                dataframe <pandas dataframe> : merged dataframe containing original dataframe and normalized features
+            Args:
+                x_features (list) : list of x feature names
+                y_feature (str) : target feature name
+            Returns:
+                pandas dataframe : merged dataframe containing original dataframe and normalized features
     """
     def __init__(self, dataframe, configdict):
         self.dataframe = dataframe
@@ -270,17 +270,17 @@ class MiscFeatureOperations(object):
     """
     Class containing additional feature operations
 
-    Attributes:
-        configdict <dict> : MASTML configfile object as dict
+    Args:
+        configdict (dict) : MASTML configfile object as dict
 
     Methods:
         remove_features_containing_strings : removes feature columns whose values are strings as these can't be used in regression tasks
-            args:
-                dataframe <pandas dataframe> : dataframe containing data and feature names
-                x_features <list> : list of x feature names
-            returns:
-                x_features_pruned <list> : list of x features with those features removed which contained data as strings
-                dataframe <pandas dataframe> : dataframe containing data and feature names, with string features removed
+            Args:
+                dataframe (pandas dataframe) : dataframe containing data and feature names
+                x_features (list) : list of x feature names
+            Returns:
+                list : list of x features with those features removed which contained data as strings
+                pandas dataframe : dataframe containing data and feature names, with string features removed
     """
     def __init__(self, configdict):
         self.configdict = configdict
