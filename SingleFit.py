@@ -103,9 +103,7 @@ class SingleFit():
 
         # reformat input data if only a single feature
         self.reformatted_data = False
-        try:
-            self.training_dataset.input_data.shape[1]
-        except:
+        if self.training_dataset.input_data.shape[1] == 1:
             self.training_dataset.input_data = self.training_dataset.input_data.values.reshape(-1, 1)
             self.testing_dataset.input_data = self.testing_dataset.input_data.values.reshape(-1, 1)
             self.reformatted_data = True
