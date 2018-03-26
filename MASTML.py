@@ -432,6 +432,10 @@ class MASTMLDriver(object):
                 logging.info('FEATURE SELECTION: Selecting features using a %s algorithm' % v)
                 model_to_use = str(self.configdict['Feature Selection']['model_to_use_for_learning_curve'])
                 fs = FeatureSelection(configdict=self.configdict, dataframe=dataframe, x_features=x_features, y_feature=y_feature, model_type=model_to_use)
+                if v == 'basic_forward_selection':
+                    dataframe = fs.feature_selection(feature_selection_type='basic_forward_selection',
+                                                     number_features_to_keep=self.configdict['Feature Selection']['number_of_features_to_keep'],
+                                                     use_mutual_info=self.configdict['Feature Selection']['use_mutual_information'])
                 if v == 'sequential_forward_selection':
                     if int(self.configdict['Feature Selection']['number_of_features_to_keep']) <= len(x_features):
                         dataframe = fs.sequential_forward_selection(number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']))
