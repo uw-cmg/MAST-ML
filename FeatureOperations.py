@@ -21,42 +21,48 @@ class FeatureIO(object):
         remove_duplicate_features_by_name: DEPRECATED
 
         remove_duplicate_columns : removes features that have identical names
-            Args:
-                None
+
             Returns:
                 pandas dataframe : dataframe after feature operation
 
         remove_duplicate_features_by_values : removes features that have identical values for each data point
-            Args:
-                None
+
             Returns:
                 pandas dataframe : dataframe after feature operation
 
         remove_custom_features : remove features as specified by name
+
             Args:
                 features_to_remove (list) : list of feature names to remove
+
             Returns:
                 pandas dataframe : dataframe after feature operation
 
         keep_custom_features : keep only the specified features
+
             Args:
                 features_to_keep (list) : list of feature names to keep
                 y_feature (str) : name of target feature (will keep if specified)
+
             Returns:
                 pandas dataframe : dataframe after feature operation
 
         add_custom_features : add specific features by name (must also supply data)
+
             Args:
                 features_to_add (list) : list of feature names to add
                 data_to_add (numpy array) : array of data for each feature to add
+
             Returns:
                 pandas dataframe : dataframe after feature operation
 
         custom_feature_filter : removes rows of data if certain arithmetic conditions are met
+
             Args:
                 feature (str) : name of feature to scan data of
                 operator (kwarg) : arithmetic operator (choose from <, >, =, <=, >=, <>)
                 threshold (float) : value to compare data value against for elimination
+
             Returns:
                 pandas dataframe : dataframe after feature operation
     """
@@ -151,37 +157,45 @@ class FeatureNormalization(object):
 
     Methods:
         normalize features : normalizes the specified features to have mean zero and standard deviation of unity
+
             Args:
                 x_features (list) : list of x feature names
                 y_feature (str) : target feature name
                 normalize_x_features (bool) : whether to normalize x features
                 normalize_y_feature (bool) : whether to normalize the target feature
                 to_csv (bool) : whether to save normalized dataframe to csv file
+
             Returns:
                 pandas dataframe : dataframe of normalized data
                 sklearn scaler object : scaler object used to map unnormalized to normalized data
 
         minmax_scale_single_feature : scale a single feature to a designated minimum and maximum value
+
             Args:
                 featurename (str) : name of feature to normalize
                 smin (float) : minimum feature value
                 smax (float) : maximum feature value
+
             Returns:
                 pandas dataframe : dataframe containing only the scaled feature
 
         unnormalize_features : unnormalize the features contained in a dataframe
+
             Args:
                 x_features (list) : list of x feature names
                 y_feature (str) : target feature name
                 scaler (sklearn scaler object) : scaler object used to map unnormalized to normalized data
+
             Returns:
                 pandas dataframe : dataframe of unnormalized data
                 sklearn scaler object : scaler object used to map unnormalized to normalized data
 
         normalize_and_merge_with_original_dataframe : normalizes features and merges normalized dataframe with original dataframe
+
             Args:
                 x_features (list) : list of x feature names
                 y_feature (str) : target feature name
+
             Returns:
                 pandas dataframe : merged dataframe containing original dataframe and normalized features
     """
@@ -275,9 +289,11 @@ class MiscFeatureOperations(object):
 
     Methods:
         remove_features_containing_strings : removes feature columns whose values are strings as these can't be used in regression tasks
+
             Args:
                 dataframe (pandas dataframe) : dataframe containing data and feature names
                 x_features (list) : list of x feature names
+
             Returns:
                 list : list of x features with those features removed which contained data as strings
                 pandas dataframe : dataframe containing data and feature names, with string features removed
