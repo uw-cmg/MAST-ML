@@ -27,25 +27,25 @@ from DataHandler import DataHandler
 
 class DimensionalReduction(object):
     """
-    Class to conduct PCA and constant feature removal for dimensional reduction of features.
+    Class to conduct principal component analysis (PCA) and constant feature removal for dimensional reduction of features.
 
-    Attributes:
-        dataframe <pandas dataframe> : dataframe containing x and y data and feature names
-        x_features <list> : list of x feature names
-        y_feature <str> : target feature name
+    Args:
+        dataframe (pandas dataframe) : dataframe containing x and y data and feature names
+        x_features (list) : list of x feature names
+        y_feature (str) : target feature name
 
     Methods:
         remove_constant_features : removes features that have the same value for all data entries
-            args:
+            Args:
                 None
-            returns:
-                dataframe <pandas dataframe> : dataframe with constant features removed
+            Returns:
+                pandas dataframe : dataframe with constant features removed
 
         principal_component_analysis: uses principal component analysis to reduce size of feature space
-            args:
+            Args:
                 None
-            returns:
-                dataframe <pandas dataframe> : dataframe with PCA-selected features
+            Returns:
+                pandas dataframe : dataframe with PCA-selected features
     """
     def __init__(self, dataframe, x_features, y_feature):
         self.dataframe = dataframe
@@ -67,29 +67,29 @@ class FeatureSelection(object):
     """
     Class to conduct feature selection routines to reduce the number of input features in the feature space
 
-    Attributes:
-        configdict <dict> : MASTML configfile object as dict
-        dataframe <pandas dataframe> : dataframe containing x and y data and feature names
-        x_features <list> : list of x feature names
-        y_feature <str> : target feature name
-        model_type <kwarg> : key word model string specifying model type (obtained from input file)
+    Args:
+        configdict (dict) : MASTML configfile object as dict
+        dataframe (pandas dataframe) : dataframe containing x and y data and feature names
+        x_features (list) : list of x feature names
+        y_feature (str) : target feature name
+        model_type (kwarg) : key word model string specifying model type (obtained from input file)
 
     Methods:
         sequential_forward_selection :
-            args:
-                number_of_features_keep <int> : number of features to keep after feature selection
-            returns:
-                dataframe <pandas dataframe> : dataframe containing only selected features
+            Args:
+                number_of_features_keep (int) : number of features to keep after feature selection
+            Returns:
+                pandas dataframe : dataframe containing only selected features
 
         feature_selection :
-            args:
-                feature_selection_type <kwarg> : type of feature selection algorithm to use. Must choose from either
-                    "univariate_feature_selection" or "recursive_feature_elimination"
-                number_features_to_keep <int> : number of features to keep after feature selection
-                use_mutual_info <bool> : whether or not to use mutual information between features (only applicable to
+            Args:
+                feature_selection_type (kwarg) : type of feature selection algorithm to use. Must choose from either
+                    "univariate_feature_selection", "recursive_feature_elimination", "basic_foward_selection", or "sequential_feature_selection"
+                number_features_to_keep (int) : number of features to keep after feature selection
+                use_mutual_info (bool) : whether or not to use mutual information between features (only applicable to
                     univariate feature selection)
-            returns:
-                dataframe <pandas dataframe> : dataframe containing only selected features
+            Returns:
+                pandas dataframe : dataframe containing only selected features
     """
     def __init__(self, configdict, dataframe, x_features, y_feature, model_type):
         self.configdict = configdict
@@ -227,7 +227,24 @@ class FeatureSelection(object):
         return dataframe
 
 class BasicForwardSelection(object):
+    """
+    Class to perform a basic forward selection routine
 
+    Args:
+        dataframe (pandas dataframe) : dataframe containing x and y data and feature names
+        x_features (list) : list of x_feature names
+        y_feature (str) : target feature name
+        model (sklearn model object) : a scikit-learn model object
+        number_features_to_keep (int) : the final number of features to keep
+        configdict (dict) : MASTML configfile object as dict
+
+    Methods:
+        run_basic_forward_selection : performs the basic forward selection routine and generates a learning curve
+            Args:
+                None
+            Returns:
+                pandas dataframe : a dataframe containing X and y data and feature names of the feature-selected data set
+    """
     def __init__(self, dataframe, x_features, y_feature, model, number_features_to_keep, configdict):
         self.dataframe = dataframe
         self.x_features = x_features
@@ -359,44 +376,44 @@ class LearningCurve(object):
     """
     Class to construct learning curves to assess feature selection choices
 
-    Attributes:
-        configdict <dict> : MASTML configfile object as dict
-        dataframe <pandas dataframe> : dataframe containing x and y data and feature names
-        model_type <kwarg> : key word model string specifying model type (obtained from input file)
+    Args:
+        configdict (dict) : MASTML configfile object as dict
+        dataframe (pandas dataframe) : dataframe containing x and y data and feature names
+        model_type (kwarg) : key word model string specifying model type (obtained from input file)
 
     Methods:
         generate_feature_learning_curve : generates feature-based learning curve for a specific feature selection routine
-            args:
-                feature_selection_algorithm <str> : name of feature selection routine
-            returns:
+            Args:
+                feature_selection_algorithm (kwarg) : name of feature selection routine
+            Returns:
                 None
 
         get_univariate_RFE_training_data_learning_curve: generates training data learning curve for univariate or RFE
             feature selection routine
-            args:
-                estimator <sklearn model object> : an sklearn model used to assess model accuracy
-                title <str> : Title for learning curve plot
-                Xdata <pandas dataframe> : dataframe of Xdata
-                ydata <pandas dataframe> : dataframe of ydata
-                feature_selection_type <str> : name of feature selection routine
-            returns:
+            Args:
+                estimator (sklearn model object) : an sklearn model used to assess model accuracy
+                title (str) : Title for learning curve plot
+                Xdata (pandas dataframe) : dataframe of Xdata
+                ydata (pandas dataframe) : dataframe of ydata
+                feature_selection_type (kwarg) : name of feature selection routine
+            Returns:
                 None
 
         get_univariate_RFE_feature_learning_curve: generates feature-based learning curve for univariate or RFE feature
             selection routine
-            args:
-                title <str> : Title for learning curve plot
-                Xdata <pandas dataframe> : dataframe of Xdata
-                ydata <pandas dataframe> : dataframe of ydata
-                ydata_stdev <pandas dataframe> : dataframe of standard deviations of ydata
-            returns:
+            Args:
+                title (str) : Title for learning curve plot
+                Xdata (pandas dataframe) : dataframe of Xdata
+                ydata (pandas dataframe) : dataframe of ydata
+                ydata_stdev (pandas dataframe) : dataframe of standard deviations of ydata
+            Returns:
                 None
 
         get_sequential_forward_selection_learning_curve: generates feature-based learning curve for SFS algorithm
-            args:
-                metricdict <dict> : dict of feature selection metrics from SFS
-                filetag <str> : name of target feature used to name save files
-            returns:
+            Args:
+                metricdict (dict) : dict of feature selection metrics from SFS
+                filetag (str) : name of target feature used to name save files
+            Returns:
                 None
     """
     def __init__(self, configdict, dataframe, model_type):
