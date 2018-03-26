@@ -28,8 +28,10 @@ class MagpieFeatureGeneration(object):
 
     Methods:
         generate_magpie_features : generates magpie feature set based on compositions in dataframe
+
             Args:
                 save_to_csv (bool) : whether to save the magpie feature set to a csv file
+
             Returns:
                 pandas dataframe : dataframe containing magpie feature set
     """
@@ -237,8 +239,10 @@ class MaterialsProjectFeatureGeneration(object):
 
     Methods:
         generate_materialsproject_features : generates materials project feature set based on compositions in dataframe
+
             Args:
                 save_to_csv (bool) : whether to save the magpie feature set to a csv file
+
             Returns:
                 pandas dataframe : dataframe containing magpie feature set
     """
@@ -336,8 +340,10 @@ class CitrineFeatureGeneration(object):
 
     Methods:
         generate_citrine_features : generates Citrine feature set based on compositions in dataframe
+
             Args:
                 save_to_csv (bool) : whether to save the magpie feature set to a csv file
+
             Returns:
                 pandas dataframe : dataframe containing magpie feature set
     """
