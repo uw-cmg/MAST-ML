@@ -260,6 +260,9 @@ class BasicForwardSelection(object):
         basic_forward_selection_dict = dict()
         num_features_selected = 0
         x_features = self.x_features
+        if self.number_features_to_keep >= len(x_features):
+            logging.info('MASTML has detected you want to select more features than are available in your dataset. Setting number of features to keep equal to total number of features!')
+            self.number_features_to_keep = len(x_features)
         while num_features_selected < self.number_features_to_keep:
             # Catch pandas warnings here
             with warnings.catch_warnings():
