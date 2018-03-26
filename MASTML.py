@@ -29,10 +29,7 @@ class MASTMLDriver(object):
 
     Methods:
         run_MASTML : executes the MASTML workflow
-            Args:
-                None
-            Returns:
-                None
+
     """
     def __init__(self, configfile):
         self.configfile = configfile
