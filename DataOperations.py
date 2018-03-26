@@ -21,9 +21,11 @@ class DataParser(object):
 
     Methods:
         parse_fromfile : parses data and features from input file
+
             Args:
                 datapath (str) : path of location of input data csv file
                 as_array (bool) : whether to return data in form of numpy array
+
             Returns:
                 pandas dataframe or numpy array : feature data matrix
                 pandas dataframe or numpy array : target data vector
@@ -32,10 +34,12 @@ class DataParser(object):
                 pandas dataframe : dataframe containing data and feature names
 
         parse_fromdataframe : parses data and features from pandas dataframe
+
             Args:
                 dataframe (pandas dataframe) : dataframe containing data and feature names
                 target_feature (str) : target feature name
                 as_array (bool) : whether to return data in form of numpy array
+
             Returns:
                 pandas dataframe or numpy array : feature data matrix
                 pandas dataframe or numpy array : target data vector
@@ -44,25 +48,31 @@ class DataParser(object):
                 pandas dataframe : dataframe containing data and feature names
 
         import_data : reads in csv file from supplied data path
+
             Args:
                 datapath (str) : string of path to csv file
+
             Returns:
                 pandas dataframe : dataframe representation of csv contents
 
         get_features : obtains x and y features of input data based on user-supplied input file
+
             Args:
                 dataframe (pandas dataframe) : dataframe representation of csv contents
                 target_feature (str) : target feature name
                 from_input_file (bool) : whether to read-in data from input file path. If False, reads from dataframe
+
             Returns:
                 list : list of x feature names
                 str : target feature name
 
         get_data : obtains X and y data from dataframe
+
             Args:
                 dataframe (pandas dataframe) : a pandas dataframe object containg X and y data to read in
                 x_features (list) : list of x feature names
                 y_feature (str) : target feature name
+
             Returns:
                 pandas dataframe : dataframe of x data only
                 pandas dataframe : dataframe of y data only
@@ -150,69 +160,84 @@ class DataframeUtilities(object):
     """
     Class of basic utilities for dataframe manipulation, and exchanging between dataframes and numpy arrays
 
-    Args:
-        None
-
     Methods:
         merge_dataframe_columns : merge two dataframes by concatenating the column names (duplicate columns omitted)
+
             Args:
                 dataframe1 (pandas dataframe) : a pandas dataframe object
                 dataframe2 (pandas dataframe) : a pandas dataframe object
+
             Returns:
                 pandas dataframe : merged dataframe
 
         merge_dataframe_rows : merge two dataframes by concatenating the row contents (duplicate rows omitted)
+
             Args:
                 dataframe1 (pandas dataframe) : a pandas dataframe object
                 dataframe2 (pandas dataframe) : a pandas dataframe object
+
             Returns:
                 pandas dataframe : merged dataframe
 
         get_dataframe_statistics : obtain basic statistics about data contained in the dataframe
+
             Args:
                 dataframe (pandas dataframe) : a pandas dataframe object
+
             Returns:
                 pandas dataframe : dataframe containing input dataframe statistics
 
         dataframe_to_array : transform a pandas dataframe to a numpy array
+
             Args:
                 dataframe (pandas dataframe) : a pandas dataframe object
+
             Returns:
                 numpy array : a numpy array representation of the inputted dataframe
 
         array_to_dataframe : transform a numpy array to a pandas dataframe
+
             Args:
                 array (numpy array) : a numpy array object
+
             Returns:
                 pandas dataframe : a pandas dataframe representation of the inputted numpy array
 
         concatenate_arrays : merge two numpy arrays by concatenating along the columns
+
             Args:
                 Xarray (numpy array) : a numpy array object
                 yarray (numpy array) : a numpy array object
+
             Returns:
                 numpy array : a numpy array merging the two input arrays
 
         assign_columns_as_features : adds column names to dataframe based on the x and y feature names
+
             Args:
                 dataframe (pandas dataframe) : a pandas dataframe object
                 x_features (list) : list containing x feature names
                 y_feature (str) : target feature name
+
             Returns:
                 pandas dataframe : dataframe containing same data as input, with columns labeled with features
 
         save_all_dataframe_statistics : obtain dataframe statistics and save it to a csv file
+
             Args:
                 dataframe (pandas dataframe) : a pandas dataframe object
                 data_path (str) : file path to save dataframe statistics to
+
             Returns:
                 str : name of file dataframe stats saved to
 
         plot_dataframe_histogram : creates a histogram plot of target feature data and saves it to designated save path
+
             Args:
                 configdict (dict) : MASTML configfile object as dict
                 dataframe (pandas dataframe) : a pandas dataframe object
                 y_feature (str) : target feature name
+
             Returns:
                 str : name of file dataframe histogram saved to
     """
