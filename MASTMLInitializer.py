@@ -23,12 +23,17 @@ class ConfigFileParser(object):
     """
     Class to read in contents of MASTML input files
 
-    Attributes:
-        configfile <MASTML configfile object> : a MASTML input file, as a configfile object
+    Args:
+        configfile (MASTML configfile object) : a MASTML input file, as a configfile object
 
     Methods:
-        get_config_dict <dict> : returns dict representation of configfile
-            returns: configdict <dict>
+        get_config_dict : returns dict representation of configfile
+
+            Args:
+                path_to_file (str) : path indicating where config file is stored
+
+            Returns:
+                dict : configdict of parsed input file
     """
     def __init__(self, configfile):
         self.configfile = configfile
@@ -59,7 +64,18 @@ class ConfigFileParser(object):
             raise OSError('The input file you specified, %s, does not exist in the path %s' % (str(self.configfile), str(path_to_file)))
 
 class ConfigFileConstructor(ConfigFileParser):
+    """
+    Constructor class to build input file template. Used for input file validation and data type casting.
 
+    Args:
+        configfile (MASTML configfile object) : a MASTML input file, as a configfile object
+
+    Methods:
+        get_config_template : returns template of input file for validation
+
+            Returns:
+                dict : configdict of template input file
+    """
     def __init__(self, configfile):
         super().__init__(configfile=configfile)
         self.configtemplate = dict()
@@ -253,14 +269,17 @@ class ConfigFileConstructor(ConfigFileParser):
 
 class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
     """
-    Class to validate contents of user-specified MASTML input file and flag any errors. Subclass of ConfigFileParser.
+    Class to validate contents of user-specified MASTML input file and flag any errors
 
-    Attributes:
-        configfile <MASTML configfile object> : a MASTML input file, as a configfile object
+    Args:
+        configfile (MASTML configfile object) : a MASTML input file, as a configfile object
 
     Methods:
-        run_config_validation : checks configfile object for errors.
-            returns: configfile <MASTML configfile object>, errors_present <bool>
+        run_config_validation : checks configfile object for errors
+
+            Returns:
+                dict : configdict of parsed input file
+                bool : whether any errors occurred parsing the input file
     """
     def __init__(self, configfile):
         super().__init__(configfile)
@@ -486,24 +505,26 @@ class ModelTestConstructor(object):
     """
     Class that takes parameters from configdict (configfile as dict) and performs calls to appropriate MASTML methods
 
-    Attributes:
-        configdict <dict> : MASTML configfile object as dict
+    Args:
+        configfile (MASTML configfile object) : a MASTML input file, as a configfile object
 
     Methods:
         get_machinelearning_model : obtains machine learning model by calling sklearn
-            args:
-                model_type <str> : keyword string indicating sklearn model name
-                y_feature <str> : name of target feature
-            returns:
-                model <sklearn model object>
+
+            Args:
+                model_type (str) : keyword string indicating sklearn model name
+                y_feature (str) : name of target feature
+
+            Returns:
+                sklearn model object : an sklearn model object for fitting to data
 
         get_machinelearning_test : obtains test name to conduct from configdict
-            args:
-                test_type <str> : keyword string specifying type of MASTML test to perform
-                model <sklearn model object> : sklearn model object to use in test_type
-                save_path <str> : path of save directory to store test output
-            returns:
-                None
+
+            Args:
+                test_type (str) : keyword string specifying type of MASTML test to perform
+                model (sklearn model object) : sklearn model object to use in test_type
+                save_path (str) : path of save directory to store test output
+
     """
     def __init__(self, configdict):
         self.configdict = configdict
