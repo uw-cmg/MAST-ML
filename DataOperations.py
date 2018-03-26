@@ -16,56 +16,56 @@ class DataParser(object):
     """
     Class to parse input csv file and create pandas dataframe, and extract features and data
 
-    Attributes:
-        configdict <dict> : MASTML configfile object as dict
+    Args:
+        configdict (dict) : MASTML configfile object as dict
 
     Methods:
         parse_fromfile : parses data and features from input file
-            args:
-                datapath <str> : path of location of input data csv file
-                as_array <bool> : whether to return data in form of numpy array
-            returns:
-                Xdata <pandas dataframe or numpy array> : feature data matrix
-                ydata <pandas dataframe or numpy array> : target data vector
-                x_features <list> : list of x feature names
-                y_feature <str> : target feature name
-                dataframe <pandas dataframe> : dataframe containing data and feature names
+            Args:
+                datapath (str) : path of location of input data csv file
+                as_array (bool) : whether to return data in form of numpy array
+            Returns:
+                pandas dataframe or numpy array : feature data matrix
+                pandas dataframe or numpy array : target data vector
+                list : list of x feature names
+                str : target feature name
+                pandas dataframe : dataframe containing data and feature names
 
         parse_fromdataframe : parses data and features from pandas dataframe
-            args:
-                dataframe <pandas dataframe> : dataframe containing data and feature names
-                target_feature <str> : target feature name
-                as_array <bool> : whether to return data in form of numpy array
-            returns:
-                Xdata <pandas dataframe or numpy array> : feature data matrix
-                ydata <pandas dataframe or numpy array> : target data vector
-                x_features <list> : list of x feature names
-                y_feature <str> : target feature name
-                dataframe <pandas dataframe> : dataframe containing data and feature names
+            Args:
+                dataframe (pandas dataframe) : dataframe containing data and feature names
+                target_feature (str) : target feature name
+                as_array (bool) : whether to return data in form of numpy array
+            Returns:
+                pandas dataframe or numpy array : feature data matrix
+                pandas dataframe or numpy array : target data vector
+                list : list of x feature names
+                str : target feature name
+                pandas dataframe : dataframe containing data and feature names
 
         import_data : reads in csv file from supplied data path
-            args:
-                datapath <str> : string of path to csv file
-            returns:
-                dataframe <pandas dataframe> : dataframe representation of csv contents
+            Args:
+                datapath (str) : string of path to csv file
+            Returns:
+                pandas dataframe : dataframe representation of csv contents
 
         get_features : obtains x and y features of input data based on user-supplied input file
-            args:
-                dataframe <pandas dataframe> : dataframe representation of csv contents
-                target_feature <str> : target feature name
-                from_input_file <bool> : whether to read-in data from input file path. If False, reads from dataframe
-            returns:
-                x_features <list> : list of x feature names
-                y_feature <str> : target feature name
+            Args:
+                dataframe (pandas dataframe) : dataframe representation of csv contents
+                target_feature (str) : target feature name
+                from_input_file (bool) : whether to read-in data from input file path. If False, reads from dataframe
+            Returns:
+                list : list of x feature names
+                str : target feature name
 
         get_data : obtains X and y data from dataframe
-            args:
-                dataframe <pandas dataframe> : a pandas dataframe object containg X and y data to read in
-                x_features <list> : list of x feature names
-                y_feature <str> : target feature name
-            returns:
-                Xdata <pandas dataframe> : dataframe of x data only
-                ydata <pandas dataframe> : dataframe of y data only
+            Args:
+                dataframe (pandas dataframe) : a pandas dataframe object containg X and y data to read in
+                x_features (list) : list of x feature names
+                y_feature (str) : target feature name
+            Returns:
+                pandas dataframe : dataframe of x data only
+                pandas dataframe : dataframe of y data only
     """
     def __init__(self, configdict=None):
         self.configdict = configdict
@@ -150,71 +150,71 @@ class DataframeUtilities(object):
     """
     Class of basic utilities for dataframe manipulation, and exchanging between dataframes and numpy arrays
 
-    Attributes:
+    Args:
         None
 
     Methods:
-        _merge_dataframe_columns : merge two dataframes by concatenating the column names (duplicate columns omitted)
-            args:
-                dataframe1 <pandas dataframe> : a pandas dataframe object
-                dataframe2 <pandas dataframe> : a pandas dataframe object
-            returns:
-                dataframe <pandas dataframe> : merged dataframe
+        merge_dataframe_columns : merge two dataframes by concatenating the column names (duplicate columns omitted)
+            Args:
+                dataframe1 (pandas dataframe) : a pandas dataframe object
+                dataframe2 (pandas dataframe) : a pandas dataframe object
+            Returns:
+                pandas dataframe : merged dataframe
 
-        _merge_dataframe_rows : merge two dataframes by concatenating the row contents (duplicate rows omitted)
-            args:
-                dataframe1 <pandas dataframe> : a pandas dataframe object
-                dataframe2 <pandas dataframe> : a pandas dataframe object
-            returns:
-                dataframe <pandas dataframe> : merged dataframe
+        merge_dataframe_rows : merge two dataframes by concatenating the row contents (duplicate rows omitted)
+            Args:
+                dataframe1 (pandas dataframe) : a pandas dataframe object
+                dataframe2 (pandas dataframe) : a pandas dataframe object
+            Returns:
+                pandas dataframe : merged dataframe
 
-        _get_dataframe_statistics : obtain basic statistics about data contained in the dataframe
-            args:
-                dataframe <pandas dataframe> : a pandas dataframe object
-            returns:
-                dataframe_stats <pandas dataframe> : dataframe containing input dataframe statistics
+        get_dataframe_statistics : obtain basic statistics about data contained in the dataframe
+            Args:
+                dataframe (pandas dataframe) : a pandas dataframe object
+            Returns:
+                pandas dataframe : dataframe containing input dataframe statistics
 
-        _dataframe_to_array : transform a pandas dataframe to a numpy array
-            args:
-                dataframe <pandas dataframe> : a pandas dataframe object
-            returns:
-                array <numpy array> : a numpy array representation of the inputted dataframe
+        dataframe_to_array : transform a pandas dataframe to a numpy array
+            Args:
+                dataframe (pandas dataframe) : a pandas dataframe object
+            Returns:
+                numpy array : a numpy array representation of the inputted dataframe
 
-        _array_to_dataframe : transform a numpy array to a pandas dataframe
-            args:
-                array <numpy array> : a numpy array object
-            returns:
-                dataframe <pandas dataframe> : a pandas dataframe representation of the inputted numpy array
+        array_to_dataframe : transform a numpy array to a pandas dataframe
+            Args:
+                array (numpy array) : a numpy array object
+            Returns:
+                pandas dataframe : a pandas dataframe representation of the inputted numpy array
 
-        _concatenate_arrays : merge two numpy arrays by concatenating along the columns
-            args:
-                Xarray <numpy array> : a numpy array object
-                yarray <numpy array> : a numpy array object
-            returns:
-                array <numpy array> : a numpy array merging the two input arrays
+        concatenate_arrays : merge two numpy arrays by concatenating along the columns
+            Args:
+                Xarray (numpy array) : a numpy array object
+                yarray (numpy array) : a numpy array object
+            Returns:
+                numpy array : a numpy array merging the two input arrays
 
-        _assign_columns_as_features : adds column names to dataframe based on the x and y feature names
-            args:
-                dataframe <pandas dataframe> : a pandas dataframe object
-                x_features <list> : list containing x feature names
-                y_feature <str> : target feature name
-            returns:
-                dataframe <pandas dataframe> : dataframe containing same data as input, with columns labeled with features
+        assign_columns_as_features : adds column names to dataframe based on the x and y feature names
+            Args:
+                dataframe (pandas dataframe) : a pandas dataframe object
+                x_features (list) : list containing x feature names
+                y_feature (str) : target feature name
+            Returns:
+                pandas dataframe : dataframe containing same data as input, with columns labeled with features
 
-        _save_all_dataframe_statistics : obtain dataframe statistics and save it to a csv file
-            args:
-                dataframe <pandas dataframe> : a pandas dataframe object
-                data_path <str> : file path to save dataframe statistics to
-            returns:
-                fname <str> : name of file dataframe stats saved to
+        save_all_dataframe_statistics : obtain dataframe statistics and save it to a csv file
+            Args:
+                dataframe (pandas dataframe) : a pandas dataframe object
+                data_path (str) : file path to save dataframe statistics to
+            Returns:
+                str : name of file dataframe stats saved to
 
-        _plot_dataframe_histogram : creates a histogram plot of target feature data and saves it to designated save path
-            args:
-                configdict <dict> : MASTML configfile object as dict
-                dataframe <pandas dataframe> : a pandas dataframe object
-                y_feature <str> : target feature name
-            returns:
-                fname <str> : name of file dataframe histogram saved to
+        plot_dataframe_histogram : creates a histogram plot of target feature data and saves it to designated save path
+            Args:
+                configdict (dict) : MASTML configfile object as dict
+                dataframe (pandas dataframe) : a pandas dataframe object
+                y_feature (str) : target feature name
+            Returns:
+                str : name of file dataframe histogram saved to
     """
     @classmethod
     def merge_dataframe_columns(cls, dataframe1, dataframe2):
