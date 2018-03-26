@@ -699,7 +699,22 @@ class LearningCurve(object):
         return
 
     def get_sequential_forward_selection_learning_curve(self, metricdict, filetag):
-        fig1 = plot_sfs(metric_dict=metricdict, kind='std_dev')
+        Xdata = list()
+        ydata = list()
+        ydata_stdev = list()
+        for k, v in metricdict.items():
+            Xdata.append(k)
+            for kk, vv in v.items():
+                if kk == 'avg_score':
+                    ydata.append(vv)
+                if kk == 'std_dev':
+                    ydata_stdev.append(vv)
+        plt.figure()
+        plt.grid()
+        plt.plot(Xdata, ydata, '-o', color='r')
+        plt.fill_between(Xdata, np.array(ydata) - np.array(ydata_stdev),
+                         np.array(ydata) + np.array(ydata_stdev), alpha=0.1,
+                         color="r")
         plt.title('Sequential forward selection learning curve', fontsize=18)
         plt.ylabel('RMSE', fontsize=16)
         plt.xticks(fontsize=14)
