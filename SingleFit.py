@@ -101,12 +101,6 @@ class SingleFit():
         else:
             self.testing_dataset=copy.deepcopy(testing_dataset)
 
-        # reformat input data if only a single feature
-        self.reformatted_data = False
-        if self.training_dataset.input_data.shape[1] == 1:
-            self.training_dataset.input_data = self.training_dataset.input_data.values.reshape(-1, 1)
-            self.testing_dataset.input_data = self.testing_dataset.input_data.values.reshape(-1, 1)
-            self.reformatted_data = True
         # model
         if model is None:
             raise ValueError("No model.")
@@ -157,8 +151,7 @@ class SingleFit():
     @timeit
     def predict(self):
         self.get_prediction()
-        if self.reformatted_data == False:
-            self.print_output_csv()
+        self.print_output_csv()
         self.get_statistics()
         self.print_statistics()
         return
