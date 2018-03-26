@@ -9,21 +9,22 @@ import copy
 from FeatureOperations import FeatureIO
 
 class DataHandler():
-    """Data handling class
-        (Combines old data_parser functionality with new DataParser methods)
+    """
+    Constructor class to organize aspects of a pandas dataframe, such as which fields are input vs. target data,
+    list of features, etc.
 
     Args:
-        data <pandas dataframe>
-        input_data <pandas dataframe>: X data (input data)
-        target_data <pandas dataframe>: y data (target data)
-        input_features <list of str>: x features (input features)
-        target_feature <str>: y feature (target feature)
-                (the above five as parsed from DataParser)
-        target_error_feature <str>: error in y feature (target error feature)
-        labeling_features <list of str>: features to help identify data in
-                                            plots
+        data (pandas dataframe) : dataframe containing x and y data and feature names
+        input_data (pandas dataframe) : X data (input data)
+        target_data <pandas dataframe> : y data (target data)
+        input_features (list of str) : x features (input features)
+        target_feature (str) : y feature (target feature)
+        target_error_feature (str) : error in y feature (target error feature)
+        labeling_features (list of str) : features to help identify data in plots
 
     Returns:
+        DataHandler object : a DataHandler object
+
     Raises:
         ValueError if dataframe is None
     """
