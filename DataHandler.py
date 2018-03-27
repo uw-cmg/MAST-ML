@@ -76,6 +76,7 @@ class DataHandler():
         self.target_error_data = None
         self.target_prediction = None
         self.target_prediction_sigma = None
+        self.target_residuals = None
         self.group_data = None
         self.groups = None
         #Run upon initialization
@@ -108,6 +109,12 @@ class DataHandler():
         fio = FeatureIO(self.data)
         self.data = fio.add_custom_features(["Prediction"], prediction_data)
         self.target_prediction = self.data["Prediction"]
+        return
+
+    def add_residuals(self, residual_data):
+        fio = FeatureIO(self.data)
+        self.data = fio.add_custom_features(["Residuals"], residual_data)
+        self.target_residuals = self.data["Residuals"]
         return
 
     def add_prediction_sigma(self, prediction_data_sigma):
@@ -146,6 +153,8 @@ class DataHandler():
             cols.append("Prediction")
         if not self.target_prediction_sigma is None:
             cols.append("Prediction Sigma")
+        if not self.target_residuals is None:
+            cols.append("Residuals")
         cols.extend(addl_cols)
         self.data.to_csv(csvname,
                         columns=list(cols))
