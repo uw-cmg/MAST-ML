@@ -1,3 +1,9 @@
+__author__ = 'Tam Mayeshiba'
+__maintainer__ = 'Ryan Jacobs'
+__version__ = '1.0'
+__email__ = 'rjacobs3@wisc.edu'
+__date__ = 'October 14th, 2017'
+
 import os
 import numpy as np
 from sklearn.model_selection import ShuffleSplit
@@ -7,18 +13,18 @@ from plot_data.PlotHelper import PlotHelper
 from SingleFit import SingleFit
 from SingleFit import timeit
 
-
 class LeaveOutPercentCV(SingleFit):
-    """Leave out percent cross validation
+    """Class to conduct leave out x% cross-validation analysis
    
     Args:
-        training_dataset, (Should be the same as testing_dataset)
-        testing_dataset, (Should be the same as training_dataset)
-        model,
-        save_path,
-        xlabel, 
-        ylabel: see parent class.
+        training_dataset (DataHandler object): Training dataset handler
+        testing_dataset (DataHandler object): Testing dataset handler
+        model (sklearn model object): sklearn model
+        save_path (str): Save path
+        xlabel (str): Label for full-fit x-axis (default "Measured")
+        ylabel (str): Label for full-fit y-axis (default "Predicted")
         mark_outlying_points (list of int): Number of outlying points to mark in best and worst tests, e.g. [0,3]
+
         percent_leave_out (int): Percent to leave out
         num_cvtests (int): Number of CV tests
         fix_random_for_testing (int): 
@@ -28,21 +34,13 @@ class LeaveOutPercentCV(SingleFit):
     Returns:
         Analysis in the save_path folder
         Plots results in a predicted vs. measured square plot.
+
     Raises:
-        ValueError: if testing target data is None; CV must have
-                testing target data
+        ValueError: if testing target data is None; CV must have testing target data
+
     """
-    def __init__(self, 
-        training_dataset=None,
-        testing_dataset=None,
-        model=None,
-        save_path=None,
-        xlabel="Measured",
-        ylabel="Predicted",
-        mark_outlying_points=None,
-        percent_leave_out=20,
-        num_cvtests=10,
-        fix_random_for_testing=0,
+    def __init__(self, training_dataset=None, testing_dataset=None, model=None, save_path=None, xlabel="Measured",
+        ylabel="Predicted", mark_outlying_points=None, percent_leave_out=20, num_cvtests=10, fix_random_for_testing=0,
         *args, **kwargs):
         """
         Additional class attributes to parent class:
