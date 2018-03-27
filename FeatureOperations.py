@@ -273,10 +273,11 @@ class FeatureNormalization(object):
         dataframe_unnormalized = DataframeUtilities().assign_columns_as_features(dataframe=dataframe_unnormalized, x_features=x_features, y_feature=y_feature, remove_first_row=False)
         return dataframe_unnormalized, scaler
 
-    def normalize_and_merge_with_original_dataframe(self, x_features, y_feature, normalize_x_features, normalize_y_feature):
+    def normalize_and_merge_with_original_dataframe(self, x_features, y_feature, normalize_x_features, normalize_y_feature, feature_normalization_type):
         dataframe_normalized, scaler = self.normalize_features(x_features=x_features, y_feature=y_feature,
                                                                normalize_x_features=normalize_x_features,
-                                                               normalize_y_feature=normalize_y_feature)
+                                                               normalize_y_feature=normalize_y_feature,
+                                                                feature_normalization_type = feature_normalization_type)
         dataframe = DataframeUtilities().merge_dataframe_columns(dataframe1=self.dataframe, dataframe2=dataframe_normalized)
         return dataframe
 
