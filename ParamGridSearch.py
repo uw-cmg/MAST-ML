@@ -1,3 +1,9 @@
+__author__ = 'Tam Mayeshiba'
+__maintainer__ = 'Ryan Jacobs'
+__version__ = '1.0'
+__email__ = 'rjacobs3@wisc.edu'
+__date__ = 'October 14th, 2017'
+
 import os
 import numpy as np
 from sklearn.metrics import mean_squared_error
@@ -17,77 +23,58 @@ import logging
 logger = logging.getLogger()
 
 class ParamGridSearch(SingleFit):
-    """Parameter optimization by grid search
-        Only 4 parameters may be optimized at a time.
+    """Class to perform parameter optimization by grid search. Only up to 4 parameters may be optimized at a time.
    
     Args:
-        training_dataset, (Should be the same as testing_dataset)
-        testing_dataset, (Should be the same as training_dataset)
-        model,
-        save_path, see parent class.
+        training_dataset (DataHandler object): Training dataset handler
+        testing_dataset (DataHandler object): Testing dataset handler
+        model (sklearn model object): sklearn model
+        save_path (str): Save path
+
         param_1 (str): parameter string made up of semicolon-delimited pieces
-            Piece 1: The word 'model' or a custom feature class.method string, 
-                        e.g. DBTT.calculate_EffectiveFluence,
-                        where the custom module has the same name as the 
-                        custom class, and resides inside 
-                        the custom_features folder
+
+            Piece 1: The word 'model' or a custom feature class.method string, e.g. DBTT.calculate_EffectiveFluence,
+            where the custom module has the same name as the custom class, and resides inside the custom_features folder
+
             Piece 2: The parameter name
-            Piece 3: The parameter type. Use only:
-                        'int', 'float', 'bool', 'str'
-                        (Some sklearn model
-                        hyperparameters are type-sensitive)
+
+            Piece 3: The parameter type. Use only: 'int', 'float', 'bool', 'str' (Some sklearn model hyperparameters are type-sensitive)
+
             Piece 4: The series type. Use:
-                        'discrete': List will be given in piece 5
-                                'bool' and 'str' MUST use 'discrete'
-                        'continuous': Range and step will be given in piece 5
-                        'continuous-log: Range and step will be given in piece 5
-            Piece 5: A colon-delimited list of 
-                    (a) a discrete list of values to grid over, OR
-                    (b) start, end, number of points: 
-                        numpy's np.linspace or np.logspace
-                        function will be used to generate this list,
-                        using an inclusive start and inclusive end
-                    A parameter with only one discrete value will not be
-                    considered as an 'optimized' parameter.
-        param_2 (str) etc. 
+            'discrete': List will be given in piece 5
+            'bool' and 'str' MUST use 'discrete'
+            'continuous': Range and step will be given in piece 5
+            'continuous-log: Range and step will be given in piece 5
+
+            Piece 5: A colon-delimited list of
+            (a) a discrete list of values to grid over, OR
+            (b) start, end, number of points: numpy's np.linspace or np.logspace function will be used to generate this list,
+            using an inclusive start and inclusive end. A parameter with only one discrete value will not be considered as an 'optimized' parameter.
+
+        param_2 (str): See param_1. Can have up to 4 parameters, i.e. param_4
         fix_random_for_testing (int): 0 - use random numbers
                                       1 - fix randomizer for testing
         num_cvtests (int): Number of CV tests for each validation step
-        num_folds (int): Number of folds for K-fold cross validation;
-                            leave blank to use LO% CV
-        percent_leave_out (int): Percentage to leave out for LO% CV; 
-                                    leave blank to use K-fold CV
-        mark_outlying_points (int): See KFoldCV
+        num_folds (int): Number of folds for K-fold cross validation; leave blank to use LO% CV
+        percent_leave_out (int): Percentage to leave out for LO% CV; leave blank to use K-fold CV
+        mark_outlying_points (list of int): Number of outlying points to mark in best and worst tests, e.g. [0,3]
         num_bests (int): Number of best individuals to track
-        processors (int): Number of processors to use
-                            1 - single processor (serial)
-                            2 - use multiprocessing with this many processors,
-                                all on a SINGLE node
+        processors (int): Number of processors to use 1 - single processor (serial); 2 - use multiprocessing with this many processors, all on a SINGLE node
         pop_upper_limit (int): Upper limit for population size.
+
     Returns:
         Analysis in the save_path folder
         Plots results in a predicted vs. measured square plot.
+
     Raises:
-        ValueError if testing target data is None; CV must have
-                testing target data
+        ValueError if testing target data is None; CV must have testing target data
+
     """
-    def __init__(self, 
-        training_dataset=None,
-        testing_dataset=None,
-        model=None,
-        save_path=None,
-        xlabel="Measured",
+    def __init__(self, training_dataset=None, testing_dataset=None, model=None, save_path=None, xlabel="Measured",
         ylabel="Predicted",
         #param_1 and as many param_xxx as necessary are given through **kwargs
-        fix_random_for_testing=0,
-        num_cvtests=5,
-        mark_outlying_points='0,3',
-        num_folds=None,
-        percent_leave_out=None,
-        processors=1,
-        pop_upper_limit=1000000,
-        num_bests=10,
-        *args, **kwargs):
+        fix_random_for_testing=0, num_cvtests=5, mark_outlying_points='0,3', num_folds=None, percent_leave_out=None,
+        processors=1, pop_upper_limit=1000000, num_bests=10, *args, **kwargs):
         """
         Additional class attributes to parent class:
             Set by keyword:
