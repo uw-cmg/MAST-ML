@@ -309,7 +309,17 @@ class DataframeUtilities(object):
         df_y = dataframe[y_feature]
         na_indices = cls.get_dataframe_nan_indices(dataframe=df_y)
         df_y = cls.remove_dataframe_rows_by_index(dataframe=df_y, rows=na_indices)
+        num_bins = cls.get_histogram_bins(dataframe=dataframe)
+        pyplot.hist(x=df_y, bins=num_bins, edgecolor='k')
+        pyplot.title('Histogram of ' + y_feature + ' values')
+        pyplot.xlabel(y_feature + ' value')
+        pyplot.ylabel('Occurrences in dataset')
+        fname = configdict['General Setup']['save_path'] + "/" + 'input_data_histogram.pdf'
+        pyplot.savefig(fname)
+        return fname
 
+    @classmethod
+    def get_histogram_bins(cls, dataframe):
         bin_dividers = np.linspace(dataframe.shape[0], int(0.05*dataframe.shape[0]), dataframe.shape[0])
         bin_list = list()
         for divider in bin_dividers:
@@ -320,10 +330,4 @@ class DataframeUtilities(object):
             num_bins = max(bin_list)
         else:
             num_bins = 10
-        pyplot.hist(x=df_y, bins=num_bins, edgecolor='k')
-        pyplot.title('Histogram of ' + y_feature + ' values')
-        pyplot.xlabel(y_feature + ' value')
-        pyplot.ylabel('Occurrences in dataset')
-        fname = configdict['General Setup']['save_path'] + "/" + 'input_data_histogram.pdf'
-        pyplot.savefig(fname)
-        return fname
+        return num_bins
