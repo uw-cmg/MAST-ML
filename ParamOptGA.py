@@ -1,3 +1,9 @@
+__author__ = 'Tam Mayeshiba'
+__maintainer__ = 'Ryan Jacobs'
+__version__ = '1.0'
+__email__ = 'rjacobs3@wisc.edu'
+__date__ = 'October 14th, 2017'
+
 import numpy as np
 import copy
 import os
@@ -8,61 +14,62 @@ import time
 from custom_features import cf_help
 
 class ParamOptGA(ParamGridSearch):
-    """Search for paramters using GA.
-        Allows custom features.
+    """Class to perform parameter optimization by genetic algorithm. Allows custom features.
+
     Args:
-        training_dataset, (Should be the same as the testing set.)
-        testing_dataset, ONLY THE TRAINING DATASET will be used.
-        model,
-        save_path,
-        xlabel,
-        ylabel,
-        param_1 and other param_xxx,
-        fix_random_for_testing,
-        num_cvtests,
-        num_folds,
-        percent_leave_out,
-        mark_outlying_points,
-        processors,
-        num_bests: see parent class.
-        population_size (int): Number of individuals in each generation's
-                                population
-        convergence_generations (int): Number of generations where the
-                                        genome must stay constant in order to
-                                        establish convergence
+        training_dataset (DataHandler object): Training dataset handler
+        testing_dataset (DataHandler object): Testing dataset handler
+        model (sklearn model object): sklearn model
+        save_path (str): Save path
+
+        param_1 (str): parameter string made up of semicolon-delimited pieces
+
+            Piece 1: The word 'model' or a custom feature class.method string, e.g. DBTT.calculate_EffectiveFluence,
+            where the custom module has the same name as the custom class, and resides inside the custom_features folder
+
+            Piece 2: The parameter name
+
+            Piece 3: The parameter type. Use only: 'int', 'float', 'bool', 'str' (Some sklearn model hyperparameters are type-sensitive)
+
+            Piece 4: The series type. Use:
+            'discrete': List will be given in piece 5
+            'bool' and 'str' MUST use 'discrete'
+            'continuous': Range and step will be given in piece 5
+            'continuous-log: Range and step will be given in piece 5
+
+            Piece 5: A colon-delimited list of
+            (a) a discrete list of values to grid over, OR
+            (b) start, end, number of points: numpy's np.linspace or np.logspace function will be used to generate this list,
+            using an inclusive start and inclusive end. A parameter with only one discrete value will not be considered as an 'optimized' parameter.
+
+        param_2 (str): See param_1. Can have up to 4 parameters, i.e. param_4
+        fix_random_for_testing (int): 0 - use random numbers
+                                      1 - fix randomizer for testing
+        num_cvtests (int): Number of CV tests for each validation step
+        num_folds (int): Number of folds for K-fold cross validation; leave blank to use LO% CV
+        percent_leave_out (int): Percentage to leave out for LO% CV; leave blank to use K-fold CV
+        mark_outlying_points (list of int): Number of outlying points to mark in best and worst tests, e.g. [0,3]
+        num_bests (int): Number of best individuals to track
+        processors (int): Number of processors to use 1 - single processor (serial); 2 - use multiprocessing with this many processors, all on a SINGLE node
+        population_size (int): Number of individuals in each generation's population
+        convergence_generations (int): Number of generations where the genome must stay constant in order to establish convergence
         max_generations (int): Maximum number of generations
         num_gas (int): Number of GAs to run
         crossover_prob (float): Crossover probability (float < 1.00)
         mutation_prob (float): Mutation probability (float < 1.00)
         shift_prob (float): Shift probability (float < 1.00)
-        gen_tol (float): Generation-to-generation RMSE tolerance for considering
-                            RMSEs to be equal (absolute float tolerance)
+        gen_tol (float): Generation-to-generation RMSE tolerance for considering RMSEs to be equal (absolute float tolerance)
 
     Returns:
         Analysis in save_path folder
+
     Raises:
+
     """
-    def __init__(self, 
-        training_dataset=None,
-        testing_dataset=None,
-        model=None,
-        save_path=None,
-        num_folds=None,
-        percent_leave_out=None,
-        num_cvtests=20,
-        mark_outlying_points='0,3',
-        num_bests=10,
-        fix_random_for_testing=0,
-        processors=1,
-        pop_upper_limit=1000000,
-        num_gas=1,
-        ga_pop_size=50,
-        convergence_generations=30,
-        max_generations=200,
-        crossover_prob = 0.5,
-        mutation_prob = 0.1,
-        shift_prob = 0.5,
-        gen_tol = 0.00000001,
+    def __init__(self, training_dataset=None, testing_dataset=None, model=None, save_path=None, num_folds=None,
+        percent_leave_out=None, num_cvtests=20, mark_outlying_points='0,3', num_bests=10, fix_random_for_testing=0,
+        processors=1, pop_upper_limit=1000000, num_gas=1, ga_pop_size=50, convergence_generations=30,
+        max_generations=200, crossover_prob = 0.5, mutation_prob = 0.1, shift_prob = 0.5, gen_tol = 0.00000001,
         *args, **kwargs):
         """
             Additional class attributes not in parent class:
