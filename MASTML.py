@@ -418,55 +418,56 @@ class MASTMLDriver(object):
 
     @timeit
     def _perform_feature_selection(self, dataframe, x_features, y_feature):
-        for k, v in self.configdict['Feature Selection'].items():
-            if k == 'remove_constant_features' and v == True:
-                logging.info('FEATURE SELECTION: Removing constant features from your feature list')
-                dr = DimensionalReduction(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
-                dataframe = dr.remove_constant_features()
-                x_features, y_feature = DataParser(configdict=self.configdict).get_features(dataframe=dataframe, target_feature=y_feature)
-
-            if k == 'feature_selection_algorithm':
-                logging.info('FEATURE SELECTION: Selecting features using a %s algorithm' % v)
-                model_to_use = str(self.configdict['Feature Selection']['model_to_use_for_learning_curve'])
-                fs = FeatureSelection(configdict=self.configdict, dataframe=dataframe, x_features=x_features, y_feature=y_feature, model_type=model_to_use)
-                if v == 'basic_forward_selection':
-                    dataframe = fs.feature_selection(feature_selection_type='basic_forward_selection',
-                                                     number_features_to_keep=self.configdict['Feature Selection']['number_of_features_to_keep'],
-                                                     use_mutual_info=self.configdict['Feature Selection']['use_mutual_information'])
-                if v == 'sequential_forward_selection':
-                    if int(self.configdict['Feature Selection']['number_of_features_to_keep']) <= len(x_features):
-                        dataframe = fs.sequential_forward_selection(number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']))
-                    else:
-                        logging.info('Warning: you have specified to keep more features than the total number of features in your dataset. Defaulting to keep all features in feature selection')
-                        dataframe = fs.sequential_forward_selection(number_features_to_keep=int(len(x_features)))
-                if v == 'recursive_feature_elimination':
-                    if int(self.configdict['Feature Selection']['number_of_features_to_keep']) <= len(x_features):
-                        dataframe = fs.feature_selection(feature_selection_type = 'recursive_feature_elimination',
-                                                           number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']),
-                                                           use_mutual_info=self.configdict['Feature Selection']['use_mutual_information'])
-                    else:
-                        logging.info('Warning: you have specified to keep more features than the total number of features in your dataset. Defaulting to keep all features in feature selection')
-                        dataframe = fs.feature_selection(feature_selection_type = 'recursive_feature_elimination',
-                                                           number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']),
-                                                           use_mutual_info=self.configdict['Feature Selection']['use_mutual_information'])
-                    if self.configdict['Feature Selection']['generate_feature_learning_curve'] == True:
-                        learningcurve = LearningCurve(configdict=self.configdict, dataframe=dataframe, model_type=model_to_use)
-                        logging.info('Generating a feature learning curve using a %s algorithm' % v)
-                        learningcurve.generate_feature_learning_curve(feature_selection_algorithm='recursive_feature_elimination')
-                if v == 'univariate_feature_selection':
-                    if int(self.configdict['Feature Selection']['number_of_features_to_keep']) <= len(x_features):
-                        dataframe = fs.feature_selection(feature_selection_type='univariate_feature_selection',
-                                                         number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']),
-                                                         use_mutual_info=self.configdict['Feature Selection']['use_mutual_information'])
-                    else:
-                        logging.info('Warning: you have specified to keep more features than the total number of features in your dataset. Defaulting to keep all features in feature selection')
-                        dataframe = fs.feature_selection(feature_selection_type='univariate_feature_selection',
-                                                         number_features_to_keep=int(len(x_features)),
-                                                         use_mutual_info=self.configdict['Feature Selection']['use_mutual_information'])
-                    if self.configdict['Feature Selection']['generate_feature_learning_curve'] == True:
-                        learningcurve = LearningCurve(configdict=self.configdict, dataframe=dataframe, model_type=model_to_use)
-                        logging.info('Generating a feature learning curve using a %s algorithm' % v)
-                        learningcurve.generate_feature_learning_curve(feature_selection_algorithm='univariate_feature_selection')
+        #for k, v in self.configdict['Feature Selection'].items():
+            #if k == 'remove_constant_features' and v == True:
+        if self.configdict['Feature Selection']['remove_constant_features'] == True:
+            logging.info('FEATURE SELECTION: Removing constant features from your feature list')
+            dr = DimensionalReduction(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
+            dataframe = dr.remove_constant_features()
+            x_features, y_feature = DataParser(configdict=self.configdict).get_features(dataframe=dataframe, target_feature=y_feature)
+        #for v in self.configdict['Feature Selection']['feature_selection_algorithm'].values():
+            #if k == 'feature_selection_algorithm':
+        logging.info('FEATURE SELECTION: Selecting features using a %s algorithm' % str(self.configdict['Feature Selection']['feature_selection_algorithm']))
+        model_to_use = str(self.configdict['Feature Selection']['model_to_use_for_learning_curve'])
+        fs = FeatureSelection(configdict=self.configdict, dataframe=dataframe, x_features=x_features, y_feature=y_feature, model_type=model_to_use)
+        if self.configdict['Feature Selection']['feature_selection_algorithm'] == 'basic_forward_selection':
+            dataframe = fs.feature_selection(feature_selection_type='basic_forward_selection',
+                                             number_features_to_keep=self.configdict['Feature Selection']['number_of_features_to_keep'],
+                                             use_mutual_info=self.configdict['Feature Selection']['use_mutual_information'])
+        if self.configdict['Feature Selection']['feature_selection_algorithm'] == 'sequential_forward_selection':
+            if int(self.configdict['Feature Selection']['number_of_features_to_keep']) <= len(x_features):
+                dataframe = fs.sequential_forward_selection(number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']))
+            else:
+                logging.info('Warning: you have specified to keep more features than the total number of features in your dataset. Defaulting to keep all features in feature selection')
+                dataframe = fs.sequential_forward_selection(number_features_to_keep=int(len(x_features)))
+        if self.configdict['Feature Selection']['feature_selection_algorithm'] == 'recursive_feature_elimination':
+            if int(self.configdict['Feature Selection']['number_of_features_to_keep']) <= len(x_features):
+                dataframe = fs.feature_selection(feature_selection_type = 'recursive_feature_elimination',
+                                                   number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']),
+                                                   use_mutual_info=self.configdict['Feature Selection']['use_mutual_information'])
+            else:
+                logging.info('Warning: you have specified to keep more features than the total number of features in your dataset. Defaulting to keep all features in feature selection')
+                dataframe = fs.feature_selection(feature_selection_type = 'recursive_feature_elimination',
+                                                   number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']),
+                                                   use_mutual_info=self.configdict['Feature Selection']['use_mutual_information'])
+            if self.configdict['Feature Selection']['generate_feature_learning_curve'] == True:
+                learningcurve = LearningCurve(configdict=self.configdict, dataframe=dataframe, model_type=model_to_use)
+                logging.info('Generating a feature learning curve using a %s algorithm' % str(self.configdict['Feature Selection']['feature_selection_algorithm']))
+                learningcurve.generate_feature_learning_curve(feature_selection_algorithm='recursive_feature_elimination')
+        if self.configdict['Feature Selection']['feature_selection_algorithm'] == 'univariate_feature_selection':
+            if int(self.configdict['Feature Selection']['number_of_features_to_keep']) <= len(x_features):
+                dataframe = fs.feature_selection(feature_selection_type='univariate_feature_selection',
+                                                 number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']),
+                                                 use_mutual_info=self.configdict['Feature Selection']['use_mutual_information'])
+            else:
+                logging.info('Warning: you have specified to keep more features than the total number of features in your dataset. Defaulting to keep all features in feature selection')
+                dataframe = fs.feature_selection(feature_selection_type='univariate_feature_selection',
+                                                 number_features_to_keep=int(len(x_features)),
+                                                 use_mutual_info=self.configdict['Feature Selection']['use_mutual_information'])
+            if self.configdict['Feature Selection']['generate_feature_learning_curve'] == True:
+                learningcurve = LearningCurve(configdict=self.configdict, dataframe=dataframe, model_type=model_to_use)
+                logging.info('Generating a feature learning curve using a %s algorithm' % str(self.configdict['Feature Selection']['feature_selection_algorithm']))
+                learningcurve.generate_feature_learning_curve(feature_selection_algorithm='univariate_feature_selection')
         return dataframe
 
     def _gather_models(self, y_feature):
