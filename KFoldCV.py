@@ -85,6 +85,7 @@ class KFoldCV(LeaveOutPercentCV):
         notelist.append("R-squared (no int): " "{:.2f}".format(self.statistics['r2_score_noint']))
         self.plot_best_worst_overlay(notelist=list(notelist))
         self.plot_meancv_overlay(notelist=list(notelist))
+        self.plot_residuals_histogram()
         return
 
     def set_up_cv(self):
@@ -155,6 +156,7 @@ class KFoldCV(LeaveOutPercentCV):
         self.statistics['std_fold_avg_mean_errors'] = np.std(cvtest_avg_mean_errors)
         self.statistics['fold_avg_rmse_best'] = lowest_rmse
         self.statistics['fold_avg_rmse_worst'] = highest_rmse
+        self.statistics['residuals'] = self.get_cv_residuals()
 
         # Get average CV values and errors
         average_prediction = self.cvtest_dict[0]["prediction_array"]
