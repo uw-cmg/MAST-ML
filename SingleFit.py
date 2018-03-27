@@ -1,3 +1,9 @@
+__author__ = 'Tam Mayeshiba'
+__maintainer__ = 'Ryan Jacobs'
+__version__ = '1.0'
+__email__ = 'rjacobs3@wisc.edu'
+__date__ = 'October 14th, 2017'
+
 import numpy as np
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import mean_absolute_error
@@ -36,21 +42,18 @@ def timeit(method):
     return timed
 
 class SingleFit():
-    """This is the basic analysis class.
-
-    This class provides a template for other classes. Combine many classes 
-    to do meta-analysis.
+    """
+    This is the basic analysis class. Serves as a parent class for more specific analysis classes.
 
     Args:
         training_dataset (DataHandler object): Training dataset handler
         testing_dataset (DataHandler object): Testing dataset handler
-        model (sklearn model): Machine-learning model
+        model (sklearn model object): sklearn model
         save_path (str): Save path
         xlabel (str): Label for full-fit x-axis (default "Measured")
         ylabel (str): Label for full-fit y-axis (default "Predicted")
-        plot_filter_out (list): List of semicolon-delimited strings with
-                            feature;operator;value for filtering out
-                            values for plotting.
+        plot_filter_out (list): List of semicolon-delimited strings with feature;operator;value for leaving out specific values for plotting.
+
     Returns:
         Analysis in the path marked by save_path
 
@@ -60,15 +63,8 @@ class SingleFit():
                     input_features, target_feature,
                     model
     """
-    def __init__(self, 
-        training_dataset=None,
-        testing_dataset=None,
-        model=None,
-        save_path=None,
-        xlabel="Measured",
-        ylabel="Predicted",
-        plot_filter_out=None,
-        *args, **kwargs):
+    def __init__(self, training_dataset=None, testing_dataset=None, model=None, save_path=None, xlabel="Measured",
+        ylabel="Predicted", plot_filter_out=None, *args, **kwargs):
         """Initialize class.
             Attributes that can be set through keywords:
                 self.training_dataset
