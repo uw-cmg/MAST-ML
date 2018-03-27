@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[2]:
+# In[3]:
 
 
 import pandas as pd
@@ -10,122 +10,84 @@ from sklearn.preprocessing import Imputer
 
 
 # ## 1. Imputer() Implementation
-# 
-# Selection: 
-# * Mean
-# * Median
 
-# In[4]:
+# In[17]:
 
 
-"""
-Needs a file i/o function. 
-"""
 class imputation(object):
-    def __init__(self, df, strategy):
-        self.df = df
+    def __init__(self, dataframe, strategy):
+        self.dataframe = dataframe
         self.strategy = strategy
-        return
     
     def imputer(self):
-            df = pd.DataFrame(np.random.randn(15,6))
-            # df = pd.read_excel('')
-
-            imp = Imputer(missing_values='NaN', strategy = self.strategy, axis=0)
+            # axis 0 = impute by column 
+            # axis 1 = impute by row
+            # strategy takes "mean", "median", or "most_frequent" 
+            imp = Imputer(missing_values='NaN', strategy=self.strategy, axis=0)
 
             # transformed dataset after imputation 
-            # new_df = imp.fit_transform(df)
-            # print "This is the dataset with missing fields" 
-            # print df 
-            # print '\n'
-            # print "This is the transformed dataset with missing fields filled." 
-            # print new_df
+            new_df = imp.fit_transform(self.dataframe)
 
-            return
-
-    dff = pd.DataFrame(np.random.randn(11,2))
-    imputer(dff)
+            return self
 
 
 # ##  2. Zeroth Order Categorical Drop
 
-# ### Sample criteria for method selection
-# 
-# Pseudo code for checking when to drop the column. 
-# * If there are roughly 90% (estimate) of minimal required n, then use mean/median imputation. 
-# * If there are 50% of minimal required n missing, then use machine learning techniques.
-# * If there are 20% of minimal required n missing, then drop the whole row/column. 
-# 
-# Default assumptions for minimal sample size determination (should be adjustable based on user preference): 
-# * 95% confidence level ($\alpha$) is desired across the board for any analysis --> z-score of 1.96
-# * margin of error(MoE): +/-5%
-# * Population mean is unknown
-# * Sample standard deviation ($s$) can be determined by available fields within that column
-# 
-# Equation a: $ n = (t_{df,\frac{\alpha}{2}} * \frac{s}{MoE})^2$. 
-# 
-# Equation b (minimal viable percentage): $ p = \frac{count(missing)}{n} $
-# 
-# **for** every row in the spreadsheet:  
-#     count the number of NaN cells in that particular column  
-#     **if** (total fields - number of NaN) < n:  
-#         perform below drop sequences accordingly  
-#     **end**  
-# **end**  
-#     
+# In[21]:
+
+
+class drop(object):
+    def __init__(self, dataframe, axis, how, method, value):
+        self.dataframe = dataframe
+        self.axis = axis
+        self.how = how
+        self.method = method
+        self.value = value
+
+        # check for null in dataset. Returns boolean
+        def naCheck(outcome1):
+            outcome1 = self.dataframe.isnull()
+            return outcome1
+
+        # drops row
+        def dropNArow(outcome2): 
+            # how --> any : if any NA values are present, drop that label
+            # how --> all : if all values are NA, drop that label
+            outcome2 = self.dataframe.dropna(axis=1, how=self.how, thresh=None, subset=None, inplace=False)
+            return outcome2
+
+        # drops column
+        def dropNAcol(outcome3):
+            # any : if any NA values are present, drop that label
+            # all : if all values are NA, drop that label
+            outcome3 = self.dataframe.dropna(axis=0, how=self.how, thresh=None, subset=None, inplace=False)
+            return outcome3
+
+        # value : scalar or dict
+        # Value to use to fill holes (e.g. 0), alternately a dict of values specifying which value to use for each column (columns not in the dict will not be filled)
+        def fillNAzero(outcome4):
+            outcome4 = self.dataframe.fillna(value=self.value, method=self.method, axis=self.axis, inplace=False, limit=None, downcast=None)
+            return outcome4
+
+
+# ## 3. PCA
 
 # In[ ]:
 
 
-n = (t * s / MOE)^2
+class pca(object):
+    def __init__(self, dataframe, x_features, y_feature):
+        self.dataframe = dataframe
+        self.x_features = x_features
+        self.y_feature = y_feature
+        
+    def principal_component_analysis(self):
+        pca = PCA(n_components=len(self.x_features), svd_solver='auto')
+        Xnew = pca.fit_transform(X=self.dataframe[self.x_features])
+        dataframe = DataframeUtilities().array_to_dataframe(array=Xnew)
+        dataframe = FeatureIO(dataframe=dataframe).add_custom_features(features_to_add=[self.y_feature], data_to_add=self.dataframe[self.y_feature])
+        return dataframe
 
-
-# In[1]:
-
-
-"""
-Needs a file i/o function and user input prompt.
-"""
-
-def dropCheck():
-    # Implement the above pseudo code
-
-class naCheck():
-    # dff = pd.read_excel('')
-    
-    # check for null in dataset. Returns boolean
-    def naCheck(outcome1):
-        outcome1 = dff.isnull()
-        return outcome1
-
-class dropNArow():
-    # df = pd.read_excel('')
-    # drops full row that contains NA by default.
-    def dropNArow(outcome2): 
-        outcome2 = dff.dropna()
-        return outcome2
-
-class dropNAcol():
-    # df = pd.read_excel('')
-    # drops column instead
-    def dropNAcol(outcome3):
-        outcome3 = dff.dropna(axis = 'columns')
-        return outcome3
-
-class fillNAzero():
-    # fill NA fields with 0. Can be further customized to fill based on user input. 
-    # df = pd.read_excel('')
-    def fillNAzero(outcome4):
-        outcome4 = dff.fillna()
-        return outcome4
-
-    #naCheck(dff)
-    #dropNArow(dff)
-    dropNAcol(dff)
-    #fillNAzero(dff)
-
-
-# ## PCA
 
 # ## 4. Machine Learning Methods
 
