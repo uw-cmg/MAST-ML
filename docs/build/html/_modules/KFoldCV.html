@@ -39,34 +39,45 @@
           <div class="body" role="main">
             
   <h1>Source code for KFoldCV</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span></span><span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Tam Mayeshiba&#39;</span>
+<span class="n">__maintainer__</span> <span class="o">=</span> <span class="s1">&#39;Ryan Jacobs&#39;</span>
+<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;1.0&#39;</span>
+<span class="n">__email__</span> <span class="o">=</span> <span class="s1">&#39;rjacobs3@wisc.edu&#39;</span>
+<span class="n">__date__</span> <span class="o">=</span> <span class="s1">&#39;October 14th, 2017&#39;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <span class="n">KFold</span>
 <span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="k">import</span> <span class="n">mean_squared_error</span>
+<span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="k">import</span> <span class="n">LinearRegression</span>
 <span class="kn">from</span> <span class="nn">LeaveOutPercentCV</span> <span class="k">import</span> <span class="n">LeaveOutPercentCV</span>
 <span class="kn">from</span> <span class="nn">SingleFit</span> <span class="k">import</span> <span class="n">timeit</span>
 
 <div class="viewcode-block" id="KFoldCV"><a class="viewcode-back" href="../4_cv2_kfold.html#KFoldCV.KFoldCV">[docs]</a><span class="k">class</span> <span class="nc">KFoldCV</span><span class="p">(</span><span class="n">LeaveOutPercentCV</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;KFold cross validation</span>
+    <span class="sd">&quot;&quot;&quot;Class to conduct k-fold cross-validation analysis</span>
 <span class="sd">   </span>
 <span class="sd">    Args:</span>
-<span class="sd">        training_dataset, (Should be the same as testing_dataset)</span>
-<span class="sd">        testing_dataset, (Should be the same as training_dataset)</span>
-<span class="sd">        model,</span>
-<span class="sd">        save_path,</span>
-<span class="sd">        xlabel, </span>
-<span class="sd">        ylabel,</span>
-<span class="sd">        mark_outlying_points,</span>
-<span class="sd">        num_cvtests, (each test contains K folds)</span>
-<span class="sd">        fix_random_for_testing: see parent class.</span>
+<span class="sd">        training_dataset (DataHandler object): Training dataset handler</span>
+<span class="sd">        testing_dataset (DataHandler object): Testing dataset handler</span>
+<span class="sd">        model (sklearn model object): sklearn model</span>
+<span class="sd">        save_path (str): Save path</span>
+<span class="sd">        xlabel (str): Label for full-fit x-axis (default &quot;Measured&quot;)</span>
+<span class="sd">        ylabel (str): Label for full-fit y-axis (default &quot;Predicted&quot;)</span>
+<span class="sd">        mark_outlying_points (list of int): Number of outlying points to mark in best and worst tests, e.g. [0,3]</span>
+
+<span class="sd">        num_cvtests (int): number of CV tests to perform. Each CV test contains K folds as set by num_folds</span>
+<span class="sd">        fix_random_for_testing (int):</span>
+<span class="sd">                1 - fix random shuffle for testing purposes</span>
+<span class="sd">                0 (default) Use random shuffle.</span>
 <span class="sd">        num_folds (int): Number of folds for KFold CV</span>
 <span class="sd"> </span>
 <span class="sd">    Returns:</span>
 <span class="sd">        Analysis in the save_path folder</span>
 <span class="sd">        Plots results in a predicted vs. measured square plot.</span>
+
 <span class="sd">    Raises:</span>
-<span class="sd">        ValueError: if testing target data is None; CV must have</span>
-<span class="sd">                testing target data</span>
+<span class="sd">        ValueError: if testing target data is None; CV must have testing target data</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
         <span class="n">training_dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -111,7 +122,10 @@
         <span class="n">notelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;    </span><span class="si">{:.2f}</span><span class="s2"> $\pm$ </span><span class="si">{:.2f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;avg_fold_avg_rmses&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;std_fold_avg_rmses&#39;</span><span class="p">]))</span>
         <span class="n">notelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;  </span><span class="si">{:d}</span><span class="s2">-fold-average mean error:&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_folds</span><span class="p">))</span>
         <span class="n">notelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;    </span><span class="si">{:.2f}</span><span class="s2"> $\pm$ </span><span class="si">{:.2f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;avg_fold_avg_mean_errors&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;std_fold_avg_mean_errors&#39;</span><span class="p">]))</span>
+        <span class="n">notelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;R-squared:&quot;</span> <span class="s2">&quot;</span><span class="si">{:.2f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;r2_score&#39;</span><span class="p">]))</span>
+        <span class="n">notelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;R-squared (no int): &quot;</span> <span class="s2">&quot;</span><span class="si">{:.2f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;r2_score_noint&#39;</span><span class="p">]))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">plot_best_worst_overlay</span><span class="p">(</span><span class="n">notelist</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">notelist</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot_meancv_overlay</span><span class="p">(</span><span class="n">notelist</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">notelist</span><span class="p">))</span>
         <span class="k">return</span>
 
     <span class="k">def</span> <span class="nf">set_up_cv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -141,6 +155,7 @@
             <span class="n">fold_mean_errors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_folds</span><span class="p">)</span>
             <span class="n">fold_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_data</span><span class="p">))</span>
             <span class="n">prediction_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_data</span><span class="p">))</span>
+            <span class="n">error_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_data</span><span class="p">))</span>
             <span class="k">for</span> <span class="n">fold</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
                 <span class="n">fdict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="n">fold</span><span class="p">]</span>
                 <span class="n">input_train</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">input_data</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">fdict</span><span class="p">[</span><span class="s1">&#39;train_index&#39;</span><span class="p">]]</span>
@@ -155,12 +170,14 @@
                 <span class="n">fold_mean_errors</span><span class="p">[</span><span class="n">fold</span><span class="p">]</span> <span class="o">=</span> <span class="n">merr</span>
                 <span class="n">fold_array</span><span class="p">[</span><span class="n">fdict</span><span class="p">[</span><span class="s1">&#39;test_index&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">fold</span>
                 <span class="n">prediction_array</span><span class="p">[</span><span class="n">fdict</span><span class="p">[</span><span class="s1">&#39;test_index&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">predict_test</span>
+                <span class="n">error_array</span><span class="p">[</span><span class="n">fdict</span><span class="p">[</span><span class="s1">&#39;test_index&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">predict_test</span> <span class="o">-</span> <span class="n">target_test</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;avg_rmse&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">fold_rmses</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;std_rmse&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">fold_rmses</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;avg_mean_error&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">fold_mean_errors</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;std_mean_error&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">fold_mean_errors</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;fold_array&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fold_array</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;prediction_array&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prediction_array</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;error_array&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">error_array</span>
         <span class="k">return</span>
 
     <span class="k">def</span> <span class="nf">get_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -179,6 +196,27 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;std_fold_avg_mean_errors&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">cvtest_avg_mean_errors</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;fold_avg_rmse_best&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lowest_rmse</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;fold_avg_rmse_worst&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">highest_rmse</span>
+
+        <span class="c1"># Get average CV values and errors</span>
+        <span class="n">average_prediction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cvtest_dict</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;prediction_array&quot;</span><span class="p">]</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cvtest_dict</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;error_array&quot;</span><span class="p">]</span>
+        <span class="n">num_data</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cvtest_dict</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;error_array&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">cvtest</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cvtest_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">cvtest</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">average_prediction</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;prediction_array&quot;</span><span class="p">]</span>
+                <span class="n">error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">error</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;error_array&quot;</span><span class="p">]))</span>
+        <span class="n">average_prediction</span> <span class="o">/=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_cvtests</span>
+        <span class="n">std_err_in_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanstd</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_cvtests</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;std_err_in_mean&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">std_err_in_mean</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;average_prediction&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">average_prediction</span>
+
+        <span class="n">rsquared</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_rsquared</span><span class="p">(</span><span class="n">Xdata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_data</span><span class="p">,</span> <span class="n">ydata</span><span class="o">=</span><span class="n">average_prediction</span><span class="p">)</span>
+        <span class="n">rsquared_noint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_rsquared_noint</span><span class="p">(</span><span class="n">Xdata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_data</span><span class="p">,</span> <span class="n">ydata</span><span class="o">=</span><span class="n">average_prediction</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;r2_score&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rsquared</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;r2_score_noint&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rsquared_noint</span>
+
         <span class="k">return</span>
     
     <span class="k">def</span> <span class="nf">print_best_worst_output_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>

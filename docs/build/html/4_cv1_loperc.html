@@ -24,7 +24,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="KFoldCV" href="4_cv2_kfold.html" />
-    <link rel="prev" title="PredictionVsFeature" href="4_3_predvsfeat.html" />
+    <link rel="prev" title="PredictionVsFeature" href="4_4_predvsfeat.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -74,18 +74,18 @@
 <dl class="class">
 <dt id="LeaveOutPercentCV.LeaveOutPercentCV">
 <em class="property">class </em><code class="descclassname">LeaveOutPercentCV.</code><code class="descname">LeaveOutPercentCV</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='Measured'</em>, <em>ylabel='Predicted'</em>, <em>mark_outlying_points=None</em>, <em>percent_leave_out=20</em>, <em>num_cvtests=10</em>, <em>fix_random_for_testing=0</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LeaveOutPercentCV.html#LeaveOutPercentCV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LeaveOutPercentCV.LeaveOutPercentCV" title="Permalink to this definition">¶</a></dt>
-<dd><p>Leave out percent cross validation</p>
+<dd><p>Class to conduct leave out x% cross-validation analysis</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>training_dataset</strong><strong>,</strong> (<em>Should be the same as testing_dataset</em>) – </li>
-<li><strong>testing_dataset</strong><strong>,</strong> (<em>Should be the same as training_dataset</em>) – </li>
-<li><strong>model</strong><strong>,</strong> – </li>
-<li><strong>save_path</strong><strong>,</strong> – </li>
-<li><strong>xlabel</strong><strong>,</strong> – </li>
-<li><strong>ylabel</strong> – see parent class.</li>
+<li><strong>training_dataset</strong> (<em>DataHandler object</em>) – Training dataset handler</li>
+<li><strong>testing_dataset</strong> (<em>DataHandler object</em>) – Testing dataset handler</li>
+<li><strong>model</strong> (<em>sklearn model object</em>) – sklearn model</li>
+<li><strong>save_path</strong> (<em>str</em>) – Save path</li>
+<li><strong>xlabel</strong> (<em>str</em>) – Label for full-fit x-axis (default “Measured”)</li>
+<li><strong>ylabel</strong> (<em>str</em>) – Label for full-fit y-axis (default “Predicted”)</li>
 <li><strong>mark_outlying_points</strong> (<em>list of int</em>) – Number of outlying points to mark in best and worst tests, e.g. [0,3]</li>
 <li><strong>percent_leave_out</strong> (<em>int</em>) – Percent to leave out</li>
 <li><strong>num_cvtests</strong> (<em>int</em>) – Number of CV tests</li>
@@ -98,8 +98,7 @@
 Plots results in a predicted vs. measured square plot.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> – if testing target data is None; CV must have
-testing target data</p>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> – if testing target data is None; CV must have testing target data</p>
 </td>
 </tr>
 </tbody>
@@ -128,7 +127,7 @@ testing target data</p>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="4_tests.html">Tests</a><ul>
-      <li>Previous: <a href="4_3_predvsfeat.html" title="previous chapter">PredictionVsFeature</a></li>
+      <li>Previous: <a href="4_4_predvsfeat.html" title="previous chapter">PredictionVsFeature</a></li>
       <li>Next: <a href="4_cv2_kfold.html" title="next chapter">KFoldCV</a></li>
   </ul></li>
   </ul></li>

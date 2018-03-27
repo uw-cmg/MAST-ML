@@ -1,0 +1,413 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>DataOperations &#8212; MAST-ml 1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for DataOperations</h1><div class="highlight"><pre>
+<span></span><span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Ryan Jacobs&#39;</span>
+<span class="n">__maintainer__</span> <span class="o">=</span> <span class="s1">&#39;Ryan Jacobs&#39;</span>
+<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;1.0&#39;</span>
+<span class="n">__email__</span> <span class="o">=</span> <span class="s1">&#39;rjacobs3@wisc.edu&#39;</span>
+<span class="n">__date__</span> <span class="o">=</span> <span class="s1">&#39;October 14th, 2017&#39;</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="k">import</span> <span class="n">pyplot</span>
+<span class="kn">from</span> <span class="nn">MASTMLInitializer</span> <span class="k">import</span> <span class="n">ConfigFileParser</span>
+
+<div class="viewcode-block" id="DataParser"><a class="viewcode-back" href="../6_2_dataoperations.html#DataOperations.DataParser">[docs]</a><span class="k">class</span> <span class="nc">DataParser</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to parse input csv file and create pandas dataframe, and extract features and data</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        configdict (dict) : MASTML configfile object as dict</span>
+
+<span class="sd">    Methods:</span>
+<span class="sd">        parse_fromfile : parses data and features from input file</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                datapath (str) : path of location of input data csv file</span>
+<span class="sd">                as_array (bool) : whether to return data in form of numpy array</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                pandas dataframe or numpy array : feature data matrix</span>
+<span class="sd">                pandas dataframe or numpy array : target data vector</span>
+<span class="sd">                list : list of x feature names</span>
+<span class="sd">                str : target feature name</span>
+<span class="sd">                pandas dataframe : dataframe containing data and feature names</span>
+
+<span class="sd">        parse_fromdataframe : parses data and features from pandas dataframe</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                dataframe (pandas dataframe) : dataframe containing data and feature names</span>
+<span class="sd">                target_feature (str) : target feature name</span>
+<span class="sd">                as_array (bool) : whether to return data in form of numpy array</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                pandas dataframe or numpy array : feature data matrix</span>
+<span class="sd">                pandas dataframe or numpy array : target data vector</span>
+<span class="sd">                list : list of x feature names</span>
+<span class="sd">                str : target feature name</span>
+<span class="sd">                pandas dataframe : dataframe containing data and feature names</span>
+
+<span class="sd">        import_data : reads in csv file from supplied data path</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                datapath (str) : string of path to csv file</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                pandas dataframe : dataframe representation of csv contents</span>
+
+<span class="sd">        get_features : obtains x and y features of input data based on user-supplied input file</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                dataframe (pandas dataframe) : dataframe representation of csv contents</span>
+<span class="sd">                target_feature (str) : target feature name</span>
+<span class="sd">                from_input_file (bool) : whether to read-in data from input file path. If False, reads from dataframe</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                list : list of x feature names</span>
+<span class="sd">                str : target feature name</span>
+
+<span class="sd">        get_data : obtains X and y data from dataframe</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                dataframe (pandas dataframe) : a pandas dataframe object containg X and y data to read in</span>
+<span class="sd">                x_features (list) : list of x feature names</span>
+<span class="sd">                y_feature (str) : target feature name</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                pandas dataframe : dataframe of x data only</span>
+<span class="sd">                pandas dataframe : dataframe of y data only</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">configdict</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">configdict</span> <span class="o">=</span> <span class="n">configdict</span>
+
+    <span class="k">def</span> <span class="nf">parse_fromfile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">as_array</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">configdict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dataframe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">import_data</span><span class="p">(</span><span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">)</span>
+            <span class="n">x_features</span><span class="p">,</span> <span class="n">y_feature</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_features</span><span class="p">(</span><span class="n">dataframe</span><span class="o">=</span><span class="n">dataframe</span><span class="p">,</span> <span class="n">target_feature</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">from_input_file</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="c1">#dataframe = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe, x_features=x_features, y_feature=y_feature, column_names=column_names, remove_first_row=True)</span>
+            <span class="n">Xdata</span><span class="p">,</span> <span class="n">ydata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">dataframe</span><span class="o">=</span><span class="n">dataframe</span><span class="p">,</span> <span class="n">x_features</span><span class="o">=</span><span class="n">x_features</span><span class="p">,</span> <span class="n">y_feature</span><span class="o">=</span><span class="n">y_feature</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">as_array</span> <span class="o">==</span> <span class="nb">bool</span><span class="p">(</span><span class="kc">True</span><span class="p">):</span>
+                <span class="n">Xdata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">Xdata</span><span class="p">)</span>
+                <span class="n">ydata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ydata</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">OSError</span><span class="p">(</span><span class="s1">&#39;You must specify a configdict as input to use the parse_fromfile method&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">Xdata</span><span class="p">,</span> <span class="n">ydata</span><span class="p">,</span> <span class="n">x_features</span><span class="p">,</span> <span class="n">y_feature</span><span class="p">,</span> <span class="n">dataframe</span>
+
+    <span class="k">def</span> <span class="nf">parse_fromdataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataframe</span><span class="p">,</span> <span class="n">target_feature</span><span class="p">,</span> <span class="n">as_array</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">x_features</span><span class="p">,</span> <span class="n">y_feature</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_features</span><span class="p">(</span><span class="n">dataframe</span><span class="o">=</span><span class="n">dataframe</span><span class="p">,</span> <span class="n">target_feature</span><span class="o">=</span><span class="n">target_feature</span><span class="p">,</span> <span class="n">from_input_file</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">Xdata</span><span class="p">,</span> <span class="n">ydata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">dataframe</span><span class="o">=</span><span class="n">dataframe</span><span class="p">,</span> <span class="n">x_features</span><span class="o">=</span><span class="n">x_features</span><span class="p">,</span> <span class="n">y_feature</span><span class="o">=</span><span class="n">y_feature</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">as_array</span> <span class="o">==</span> <span class="nb">bool</span><span class="p">(</span><span class="kc">True</span><span class="p">):</span>
+            <span class="n">Xdata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">Xdata</span><span class="p">)</span>
+            <span class="n">ydata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ydata</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">Xdata</span><span class="p">,</span> <span class="n">ydata</span><span class="p">,</span> <span class="n">x_features</span><span class="p">,</span> <span class="n">y_feature</span><span class="p">,</span> <span class="n">dataframe</span>
+
+    <span class="k">def</span> <span class="nf">import_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;.csv&#39;</span> <span class="ow">in</span> <span class="n">datapath</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">dataframe</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="s1">&#39;.xlsx&#39;</span> <span class="ow">or</span> <span class="s1">&#39;.xls&#39;</span> <span class="ow">in</span> <span class="n">datapath</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">dataframe</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Error reading in your input data file, specify a valid path to your input data&#39;</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">dataframe</span>
+
+    <span class="k">def</span> <span class="nf">get_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataframe</span><span class="p">,</span> <span class="n">target_feature</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">from_input_file</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">from_input_file</span> <span class="o">==</span> <span class="nb">bool</span><span class="p">(</span><span class="kc">True</span><span class="p">):</span>
+            <span class="n">y_feature_from_input</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">configdict</span><span class="p">[</span><span class="s1">&#39;General Setup&#39;</span><span class="p">][</span><span class="s1">&#39;target_feature&#39;</span><span class="p">]</span>
+
+            <span class="n">x_and_y_features</span> <span class="o">=</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">configdict</span><span class="p">[</span><span class="s1">&#39;General Setup&#39;</span><span class="p">][</span><span class="s1">&#39;input_features&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;Auto&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">configdict</span><span class="p">[</span><span class="s1">&#39;General Setup&#39;</span><span class="p">][</span><span class="s1">&#39;input_features&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Auto&#39;</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Found Auto&#39;</span><span class="p">)</span>
+                <span class="c1">#x_and_y_features = dataframe.columns.values.tolist()</span>
+                <span class="n">x_features</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">x_and_y_features</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">feature</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">y_feature_from_input</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="s1">&#39;grouping_feature&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">configdict</span><span class="p">[</span><span class="s1">&#39;General Setup&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                            <span class="k">if</span> <span class="n">feature</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">configdict</span><span class="p">[</span><span class="s1">&#39;General Setup&#39;</span><span class="p">][</span><span class="s1">&#39;grouping_feature&#39;</span><span class="p">]:</span>
+                                <span class="n">x_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">x_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">x_features</span> <span class="o">=</span> <span class="p">[</span><span class="n">feature</span> <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">configdict</span><span class="p">[</span><span class="s1">&#39;General Setup&#39;</span><span class="p">][</span><span class="s1">&#39;input_features&#39;</span><span class="p">]]</span>
+
+            <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">x_and_y_features</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">feature</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">x_features</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">y_feature_from_input</span><span class="p">:</span>
+                        <span class="n">y_feature</span> <span class="o">=</span> <span class="n">feature</span>
+
+            <span class="c1">#print(y_feature, type(y_feature))</span>
+
+        <span class="k">elif</span> <span class="n">from_input_file</span> <span class="o">==</span> <span class="nb">bool</span><span class="p">(</span><span class="kc">False</span><span class="p">):</span>
+            <span class="n">y_feature</span> <span class="o">=</span> <span class="n">target_feature</span>
+            <span class="k">if</span> <span class="s1">&#39;grouping_feature&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">configdict</span><span class="p">[</span><span class="s1">&#39;General Setup&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">x_features</span> <span class="o">=</span> <span class="p">[</span><span class="n">feature</span> <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span> <span class="k">if</span> <span class="n">feature</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">y_feature</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">configdict</span><span class="p">[</span><span class="s1">&#39;General Setup&#39;</span><span class="p">][</span><span class="s1">&#39;grouping_feature&#39;</span><span class="p">]]]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">x_features</span> <span class="o">=</span> <span class="p">[</span><span class="n">feature</span> <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span> <span class="k">if</span> <span class="n">feature</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">y_feature</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">x_features</span><span class="p">,</span> <span class="n">y_feature</span>
+
+    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataframe</span><span class="p">,</span> <span class="n">x_features</span><span class="p">,</span> <span class="n">y_feature</span><span class="p">):</span>
+        <span class="n">Xdata</span> <span class="o">=</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">x_features</span><span class="p">]</span>
+        <span class="n">ydata</span> <span class="o">=</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">y_feature</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">Xdata</span><span class="p">,</span> <span class="n">ydata</span></div>
+
+<div class="viewcode-block" id="DataframeUtilities"><a class="viewcode-back" href="../6_2_dataoperations.html#DataOperations.DataframeUtilities">[docs]</a><span class="k">class</span> <span class="nc">DataframeUtilities</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class of basic utilities for dataframe manipulation, and exchanging between dataframes and numpy arrays</span>
+
+<span class="sd">    Methods:</span>
+<span class="sd">        merge_dataframe_columns : merge two dataframes by concatenating the column names (duplicate columns omitted)</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                dataframe1 (pandas dataframe) : a pandas dataframe object</span>
+<span class="sd">                dataframe2 (pandas dataframe) : a pandas dataframe object</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                pandas dataframe : merged dataframe</span>
+
+<span class="sd">        merge_dataframe_rows : merge two dataframes by concatenating the row contents (duplicate rows omitted)</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                dataframe1 (pandas dataframe) : a pandas dataframe object</span>
+<span class="sd">                dataframe2 (pandas dataframe) : a pandas dataframe object</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                pandas dataframe : merged dataframe</span>
+
+<span class="sd">        get_dataframe_statistics : obtain basic statistics about data contained in the dataframe</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                dataframe (pandas dataframe) : a pandas dataframe object</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                pandas dataframe : dataframe containing input dataframe statistics</span>
+
+<span class="sd">        dataframe_to_array : transform a pandas dataframe to a numpy array</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                dataframe (pandas dataframe) : a pandas dataframe object</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                numpy array : a numpy array representation of the inputted dataframe</span>
+
+<span class="sd">        array_to_dataframe : transform a numpy array to a pandas dataframe</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                array (numpy array) : a numpy array object</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                pandas dataframe : a pandas dataframe representation of the inputted numpy array</span>
+
+<span class="sd">        concatenate_arrays : merge two numpy arrays by concatenating along the columns</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                Xarray (numpy array) : a numpy array object</span>
+<span class="sd">                yarray (numpy array) : a numpy array object</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                numpy array : a numpy array merging the two input arrays</span>
+
+<span class="sd">        assign_columns_as_features : adds column names to dataframe based on the x and y feature names</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                dataframe (pandas dataframe) : a pandas dataframe object</span>
+<span class="sd">                x_features (list) : list containing x feature names</span>
+<span class="sd">                y_feature (str) : target feature name</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                pandas dataframe : dataframe containing same data as input, with columns labeled with features</span>
+
+<span class="sd">        save_all_dataframe_statistics : obtain dataframe statistics and save it to a csv file</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                dataframe (pandas dataframe) : a pandas dataframe object</span>
+<span class="sd">                data_path (str) : file path to save dataframe statistics to</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                str : name of file dataframe stats saved to</span>
+
+<span class="sd">        plot_dataframe_histogram : creates a histogram plot of target feature data and saves it to designated save path</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                configdict (dict) : MASTML configfile object as dict</span>
+<span class="sd">                dataframe (pandas dataframe) : a pandas dataframe object</span>
+<span class="sd">                y_feature (str) : target feature name</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                str : name of file dataframe histogram saved to</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">merge_dataframe_columns</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">dataframe1</span><span class="p">,</span> <span class="n">dataframe2</span><span class="p">):</span>
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">dataframe1</span><span class="p">,</span> <span class="n">dataframe2</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">join</span><span class="o">=</span><span class="s1">&#39;outer&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dataframe</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">merge_dataframe_rows</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">dataframe1</span><span class="p">,</span> <span class="n">dataframe2</span><span class="p">):</span>
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="n">dataframe1</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="n">dataframe2</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;outer&#39;</span><span class="p">)</span>
+        <span class="c1">#dataframe = pd.concat([dataframe1, dataframe2], axis=1, join=&#39;outer&#39;)</span>
+        <span class="k">return</span> <span class="n">dataframe</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_dataframe_statistics</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">dataframe</span><span class="p">):</span>
+        <span class="n">dataframe_stats</span> <span class="o">=</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">describe</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dataframe_stats</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">dataframe_to_array</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">dataframe</span><span class="p">):</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dataframe</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">array</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">array_to_dataframe</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">array</span><span class="p">):</span>
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">array</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">dataframe</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">concatenate_arrays</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">X_array</span><span class="p">,</span> <span class="n">y_array</span><span class="p">):</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">X_array</span><span class="p">,</span> <span class="n">y_array</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">array</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">remove_dataframe_rows_by_index</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">dataframe</span><span class="p">,</span> <span class="n">rows</span><span class="p">):</span>
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">dataframe</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">rows</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">dataframe</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_dataframe_nan_indices</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">dataframe</span><span class="p">):</span>
+        <span class="n">df_isna</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">dataframe</span><span class="p">)</span>
+        <span class="n">na_indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">df_isna</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span> <span class="k">if</span> <span class="n">df_isna</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="kc">True</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">na_indices</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">assign_columns_as_features</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">dataframe</span><span class="p">,</span> <span class="n">x_features</span><span class="p">,</span> <span class="n">y_feature</span><span class="p">,</span> <span class="n">remove_first_row</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">column_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">x_and_y_features</span> <span class="o">=</span> <span class="p">[</span><span class="n">feature</span> <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">x_features</span><span class="p">]</span>
+        <span class="n">x_and_y_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y_feature</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">feature</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">x_and_y_features</span><span class="p">):</span>
+            <span class="n">column_dict</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">feature</span>
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">column_dict</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">remove_first_row</span> <span class="o">==</span> <span class="nb">bool</span><span class="p">(</span><span class="kc">True</span><span class="p">):</span>
+            <span class="n">dataframe</span> <span class="o">=</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># Need to remove feature names from first row so can obtain data</span>
+        <span class="k">return</span> <span class="n">dataframe</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">save_all_dataframe_statistics</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">dataframe</span><span class="p">,</span> <span class="n">configdict</span><span class="p">):</span>
+        <span class="n">dataframe_stats</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">get_dataframe_statistics</span><span class="p">(</span><span class="n">dataframe</span><span class="o">=</span><span class="n">dataframe</span><span class="p">)</span>
+        <span class="n">data_path_name</span> <span class="o">=</span> <span class="n">configdict</span><span class="p">[</span><span class="s1">&#39;General Setup&#39;</span><span class="p">][</span><span class="s1">&#39;target_feature&#39;</span><span class="p">]</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">configdict</span><span class="p">[</span><span class="s1">&#39;General Setup&#39;</span><span class="p">][</span><span class="s1">&#39;save_path&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="s1">&#39;input_data_statistics_&#39;</span><span class="o">+</span><span class="n">data_path_name</span><span class="o">+</span><span class="s1">&#39;.csv&#39;</span>
+        <span class="n">dataframe_stats</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">fname</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">plot_dataframe_histogram</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">configdict</span><span class="p">,</span> <span class="n">dataframe</span><span class="p">,</span> <span class="n">y_feature</span><span class="p">):</span>
+        <span class="c1"># First remove any missing y-values, otherwise error will occur</span>
+        <span class="n">df_y</span> <span class="o">=</span> <span class="n">dataframe</span><span class="p">[</span><span class="n">y_feature</span><span class="p">]</span>
+        <span class="n">na_indices</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">get_dataframe_nan_indices</span><span class="p">(</span><span class="n">dataframe</span><span class="o">=</span><span class="n">df_y</span><span class="p">)</span>
+        <span class="n">df_y</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">remove_dataframe_rows_by_index</span><span class="p">(</span><span class="n">dataframe</span><span class="o">=</span><span class="n">df_y</span><span class="p">,</span> <span class="n">rows</span><span class="o">=</span><span class="n">na_indices</span><span class="p">)</span>
+
+        <span class="n">bin_dividers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">dataframe</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="mf">0.05</span><span class="o">*</span><span class="n">dataframe</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">bin_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">divider</span> <span class="ow">in</span> <span class="n">bin_dividers</span><span class="p">:</span>
+            <span class="n">bins</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">dataframe</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="n">divider</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">bins</span> <span class="o">&lt;</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span><span class="p">:</span>
+                <span class="n">bin_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bins</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">bin_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">num_bins</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">bin_list</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">num_bins</span> <span class="o">=</span> <span class="mi">10</span>
+        <span class="n">pyplot</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">df_y</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">num_bins</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+        <span class="n">pyplot</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Histogram of &#39;</span> <span class="o">+</span> <span class="n">y_feature</span> <span class="o">+</span> <span class="s1">&#39; values&#39;</span><span class="p">)</span>
+        <span class="n">pyplot</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="n">y_feature</span> <span class="o">+</span> <span class="s1">&#39; value&#39;</span><span class="p">)</span>
+        <span class="n">pyplot</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Occurrences in dataset&#39;</span><span class="p">)</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">configdict</span><span class="p">[</span><span class="s1">&#39;General Setup&#39;</span><span class="p">][</span><span class="s1">&#39;save_path&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="s1">&#39;input_data_histogram.pdf&#39;</span>
+        <span class="n">pyplot</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">fname</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, UW-Madison Computational Materials Group.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

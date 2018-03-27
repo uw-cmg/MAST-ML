@@ -23,6 +23,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="SingleFitGrouped" href="4_2_singlefitgrouped.html" />
     <link rel="prev" title="Tests" href="4_tests.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -70,9 +71,7 @@ versus target data.</p>
 <dl class="class">
 <dt id="SingleFit.SingleFit">
 <em class="property">class </em><code class="descclassname">SingleFit.</code><code class="descname">SingleFit</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='Measured'</em>, <em>ylabel='Predicted'</em>, <em>plot_filter_out=None</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SingleFit.html#SingleFit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#SingleFit.SingleFit" title="Permalink to this definition">¶</a></dt>
-<dd><p>This is the basic analysis class.</p>
-<p>This class provides a template for other classes. Combine many classes
-to do meta-analysis.</p>
+<dd><p>This is the basic analysis class. Serves as a parent class for more specific analysis classes.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -80,13 +79,11 @@ to do meta-analysis.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>training_dataset</strong> (<em>DataHandler object</em>) – Training dataset handler</li>
 <li><strong>testing_dataset</strong> (<em>DataHandler object</em>) – Testing dataset handler</li>
-<li><strong>model</strong> (<em>sklearn model</em>) – Machine-learning model</li>
+<li><strong>model</strong> (<em>sklearn model object</em>) – sklearn model</li>
 <li><strong>save_path</strong> (<em>str</em>) – Save path</li>
 <li><strong>xlabel</strong> (<em>str</em>) – Label for full-fit x-axis (default “Measured”)</li>
 <li><strong>ylabel</strong> (<em>str</em>) – Label for full-fit y-axis (default “Predicted”)</li>
-<li><strong>plot_filter_out</strong> (<em>list</em>) – List of semicolon-delimited strings with
-feature;operator;value for filtering out
-values for plotting.</li>
+<li><strong>plot_filter_out</strong> (<em>list</em>) – List of semicolon-delimited strings with feature;operator;value for leaving out specific values for plotting.</li>
 </ul>
 </td>
 </tr>
@@ -126,6 +123,7 @@ model</p>
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="4_tests.html">Tests</a><ul>
       <li>Previous: <a href="4_tests.html" title="previous chapter">Tests</a></li>
+      <li>Next: <a href="4_2_singlefitgrouped.html" title="next chapter">SingleFitGrouped</a></li>
   </ul></li>
   </ul></li>
 </ul>
