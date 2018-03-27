@@ -152,7 +152,7 @@ class FeatureNormalization(object):
     """
     Class to normalize and unnormalize features in a dataframe.
 
-    Args
+    Args:
         dataframe (pandas dataframe) : dataframe containing x and y data and feature names
 
     Methods:
