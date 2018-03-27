@@ -9,6 +9,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import r2_score
 from plot_data.PlotHelper import PlotHelper
+from DataOperations import DataframeUtilities
 import os
 import sys
 import time
@@ -147,14 +148,15 @@ class SingleFit():
     @timeit
     def predict(self):
         self.get_prediction()
-        self.print_output_csv()
         self.get_statistics()
+        self.print_output_csv()
         self.print_statistics()
         return
 
     @timeit
     def plot(self):
         self.plot_results()
+        self.plot_residuals_histogram()
         return
 
     def get_trained_model(self):
@@ -199,6 +201,11 @@ class SingleFit():
         mean_abs_err = mean_absolute_error(self.testing_dataset.target_data, self.testing_dataset.target_prediction)
         return mean_abs_err
 
+    def get_residuals(self):
+        residuals = self.testing_dataset.target_prediction-self.testing_dataset.target_data
+        self.testing_dataset.add_residuals(residual_data=residuals)
+        return residuals
+
     def get_rsquared(self, Xdata, ydata):
         Xdata = np.array(Xdata).reshape(-1,1)
         ydata = np.array(ydata).reshape(-1,1)
@@ -227,6 +234,7 @@ class SingleFit():
         self.statistics['mean_absolute_error'] = self.get_mean_absolute_error()
         self.statistics['rsquared'] = self.get_rsquared(Xdata=self.testing_dataset.target_data, ydata=self.testing_dataset.target_prediction)
         self.statistics['rsquared_noint'] = self.get_rsquared_noint(Xdata=self.testing_dataset.target_data, ydata=self.testing_dataset.target_prediction)
+        self.statistics['residuals'] = self.get_residuals()
         self.plot_filter_update_statistics()
         return
 
@@ -340,6 +348,12 @@ class SingleFit():
         self.readme_list.append("Plot single_fit.png created.\n")
         self.readme_list.append("    Plotted data is in the data_... csv file.\n")
         self.readme_list.append("    Error column of all zeros indicates no error.\n")
+        return
+
+    def plot_residuals_histogram(self):
+        DataframeUtilities.plot_dataframe_histogram(dataframe=self.statistics['residuals'], title='Histogram of residuals',
+                                                          xlabel='Residuals', ylabel='Number of occurrences',
+                                                          save_path=self.save_path, file_name='histogram_residuals.png')
         return
 
     @timeit
