@@ -108,6 +108,7 @@ class LeaveOneOutCV(KFoldCV):
         notelist.append("Mean error:")
         notelist.append("    {:.2f} $\pm$ {:.2f}".format(self.cvtest_dict[0]['avg_mean_error'], self.cvtest_dict[0]['std_mean_error']))
         self.plot_results(notelist=list(notelist))
+        self.plot_residuals_histogram()
         return
     
     def plot_results(self, notelist=list()):
