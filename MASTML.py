@@ -268,8 +268,9 @@ class MASTMLDriver(object):
             Xdata, ydata, x_features, y_feature, dataframe = self._parse_input_data(data_path)
 
             # Plot initial histogram of input target data
-            DataframeUtilities().plot_dataframe_histogram(configdict=self.configdict, dataframe=dataframe,
-                                                           y_feature=y_feature)
+            DataframeUtilities().plot_dataframe_histogram(dataframe=dataframe[y_feature], title='Histogram of input data',
+                                                          xlabel=y_feature, ylabel='Number of occurrences',
+                                                          save_path=self.configdict['General Setup']['save_path'], file_name='input_data_histogram.png')
 
             original_x_features = list(x_features)
             original_columns = list(dataframe.columns)
