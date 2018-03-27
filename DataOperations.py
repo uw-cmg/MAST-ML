@@ -9,7 +9,7 @@ import logging
 import sys
 import numpy as np
 import os
-from matplotlib import pyplot
+from matplotlib import pyplot as plt
 from MASTMLInitializer import ConfigFileParser
 
 class DataParser(object):
@@ -304,19 +304,19 @@ class DataframeUtilities(object):
         return fname
 
     @classmethod
-    def plot_dataframe_histogram(cls, configdict, dataframe, y_feature):
-        # First remove any missing y-values, otherwise error will occur
-        df_y = dataframe[y_feature]
-        na_indices = cls.get_dataframe_nan_indices(dataframe=df_y)
-        df_y = cls.remove_dataframe_rows_by_index(dataframe=df_y, rows=na_indices)
+    def plot_dataframe_histogram(cls, dataframe, title, xlabel, ylabel, save_path, file_name):
+        na_indices = cls.get_dataframe_nan_indices(dataframe=dataframe)
+        df_y = cls.remove_dataframe_rows_by_index(dataframe=dataframe, rows=na_indices)
         num_bins = cls.get_histogram_bins(dataframe=dataframe)
-        pyplot.hist(x=df_y, bins=num_bins, edgecolor='k')
-        pyplot.title('Histogram of ' + y_feature + ' values')
-        pyplot.xlabel(y_feature + ' value')
-        pyplot.ylabel('Occurrences in dataset')
-        fname = configdict['General Setup']['save_path'] + "/" + 'input_data_histogram.pdf'
-        pyplot.savefig(fname)
-        return fname
+        plt.figure()
+        plt.hist(x=df_y, bins=num_bins, edgecolor='k')
+        plt.title(title)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        fpath = save_path+'/'+file_name
+        plt.tight_layout()
+        plt.savefig(fpath)
+        return fpath
 
     @classmethod
     def get_histogram_bins(cls, dataframe):
