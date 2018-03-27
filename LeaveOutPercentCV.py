@@ -6,6 +6,7 @@ __date__ = 'October 14th, 2017'
 
 import os
 import numpy as np
+import pandas as pd
 from sklearn.model_selection import ShuffleSplit
 from sklearn.metrics import mean_squared_error
 from sklearn.linear_model import LinearRegression
@@ -110,6 +111,7 @@ class LeaveOutPercentCV(SingleFit):
         notelist.append("R-squared (no int): " "{:.2f}".format(self.statistics['r2_score_noint']))
         self.plot_best_worst_overlay(notelist=list(notelist))
         self.plot_meancv_overlay(notelist=list(notelist))
+        self.plot_residuals_histogram()
         return
 
     def set_up_cv(self):
@@ -156,6 +158,16 @@ class LeaveOutPercentCV(SingleFit):
             self.cvtest_dict[cvtest]["error_array"] = error_array
         return
 
+    def get_cv_residuals(self):
+        residuals = list()
+        for cvtest in self.cvtest_dict.keys():
+            error_list = self.cvtest_dict[cvtest]["error_array"].tolist()
+            for error in error_list:
+                if not np.isnan(error):
+                    residuals.append(error)
+        residuals = pd.DataFrame(residuals)[0]
+        return residuals
+
     def get_statistics(self):
         cvtest_rmses = list()
         cvtest_mean_errors = list()
@@ -172,6 +184,7 @@ class LeaveOutPercentCV(SingleFit):
         self.statistics['std_mean_error'] = np.std(cvtest_mean_errors)
         self.statistics['rmse_best'] = lowest_rmse
         self.statistics['rmse_worst'] = highest_rmse
+        self.statistics['residuals'] = self.get_cv_residuals()
 
         # Get average CV values and errors
         average_prediction = self.cvtest_dict[0]["prediction_array"]
@@ -222,7 +235,6 @@ class LeaveOutPercentCV(SingleFit):
         for col in cols:
             self.readme_list.append("    %s\n" % col)
         return
-
 
     def plot_best_worst_overlay(self, notelist=list()):
         kwargs2 = dict()
