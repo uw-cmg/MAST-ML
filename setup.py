@@ -4,6 +4,7 @@
 # Maintainer: Tam Mayeshiba
 # Last updated: 2017-05-23
 ########################################################################
+from __future__ import print_function
 from setuptools.command.install import install
 from setuptools import setup, find_packages
 import sys
@@ -13,8 +14,8 @@ import re
 ###Python version check
 #print "Python version detected: %s" % sys.version_info
 if sys.version_info[0] < 3:
-    print "Python Version %d.%d.%d found" % (sys.version_info[0], sys.version_info[1], sys.version_info[2])
-    print "Python version >= 3 needed!"
+    print('Python Version %d.%d.%d found' % (sys.version_info[0], sys.version_info[1], sys.version_info[2]))
+    print('Python version >= 3 needed!')
     sys.exit(0)
 
 ###Version load, adapted from http://stackoverflow.com/questions/2058802/how-can-i-get-the-version-defined-in-setup-py-setuptools-in-my-package/3619714#3619714
@@ -31,7 +32,7 @@ else:
     if mo:
         verstr = mo.group(1)
     else:
-        print "unable to find version in %s" % (VERSIONFILE,)
+        print('unable to find version in %s' % (VERSIONFILE,))
         raise RuntimeError("if %s.py exists, it is required to be well-formed" % (VERSIONFILE,))
 
 setup(
@@ -43,13 +44,11 @@ setup(
                 "pandas>=0.19.2",
                 "matplotlib>=1.5.3",
                 "configobj>=5.0.6",
-                #"validator",
-                #"matminer>=0.0.9",
                 "scikit-learn>=0.18.1",
                 "pymongo>=3.4.0",
-                "pymatgen>=4.6.0",
+                "pymatgen==2017.9.23",
                 "PeakUtils>=1.0.3",
-                "citrination-client",
+                "citrination-client==2.1.0",
                 "mlxtend",
                 ],
         author="MAST Development Team, University of Wisconsin-Madison Computational Materials Group",
