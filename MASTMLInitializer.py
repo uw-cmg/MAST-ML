@@ -429,7 +429,6 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
                     elif type(self.configtemplate[section][section_key]) is list:
                         if type(configdict[section][section_key]) is str:
                             if configdict[section][section_key] not in self.configtemplate[section][section_key]:
-
                                 logging.info('Error: Your input file contains an incorrect parameter keyword: %s' % str(configdict[section][section_key]))
                                 errors_present = bool(True)
                         if type(configdict[section][section_key]) is list:
@@ -437,9 +436,9 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
                                 if section_key == 'test_cases':
                                     if '_' in param_value:
                                         param_value = param_value.split('_')[0]
-                                if param_value not in self.configtemplate[section][section_key]:
-                                    logging.info('Error: Your input file contains an incorrect parameter keyword: %s' % param_value)
-                                    errors_present = bool(True)
+                                    if param_value not in self.configtemplate[section][section_key]:
+                                        logging.info('Error: Your input file contains an incorrect parameter keyword: %s' % param_value)
+                                        errors_present = bool(True)
             if depth == 2:
                 for subsection_key in configdict[section].keys():
                     for param_name in configdict[section][subsection_key].keys():
