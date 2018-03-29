@@ -43,7 +43,7 @@ Git clone the repository, for example::
     OR
     git clone ssh://git@github.com/uw-cmg/MAST-ml-private --branch dev
 
-Clone from “master” or "dev"
+Clone from “master” unless instructed specifically to use another branch.
 Ask for access if you cannot find this code.
 
 Check status.github.com for issues if you believe github may be malfunctioning
@@ -55,20 +55,21 @@ Run::
 (inside the MAST-ml-private folder) (might not work)
 If “SyntaxError: Invalid syntax” occurs at lines 16, 17, or 34 try wrapping prints in () for windows [e.g. print ("Python Version %d.%d.%d found" % (sys.version_info[0], sys.version_info[1], sys.version_info[2])) ]
 
-If setup.py didn’t work, dependencies you need are:      
+If setup.py didn’t work, dependencies you need are::
 
-numpy>=1.11.2
-scipy>=0.18.1
-pandas>=0.19.2
-matplotlib>=1.5.3
-configobj>=5.0.6
-validator
-scikit-learn>=0.18.1
-pymongo>=3.4.0
-pymatgen>=4.6.0
-PeakUtils>=1.0.3
-mlxtend
-nbformat
+    numpy>=1.11.2
+    scipy>=0.18.1
+    pandas>=0.19.2
+    matplotlib>=1.5.3
+    configobj>=5.0.6
+    validator
+    scikit-learn>=0.18.1
+    pymongo>=3.4.0
+    pymatgen>=4.6.0
+    PeakUtils>=1.0.3
+    mlxtend
+    nbformat
+    citrination_client==2.1.0
 
 -------------------------
 imports that don’t work 

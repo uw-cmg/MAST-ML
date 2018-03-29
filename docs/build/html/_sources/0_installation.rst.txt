@@ -17,6 +17,8 @@ Data
 
 * Numeric data in a CSV file. There must be at least some target feature data, so that models can be fit.
 
+* First row of each column should have a text name which is how columns will be referenced later in the input file.
+
 * (Advanced: Data in a database with an associated python class that can extract the data to a CSV file.)
 
 **************
@@ -29,8 +31,7 @@ For Python and MAST-ml package installation, see:
 
 :doc:`0_2_windows_installation`
 
-Note that in some situations, you may also need to change the
-matplotlib backend in order for plotting to work
+Note that in some situations such as running on a computer without a local display, you may also need to change the matplotlib backend in order for plotting to work
 (see :ref:`Matplotlib backend <matplotlib-backend>`).
 
 *******************
