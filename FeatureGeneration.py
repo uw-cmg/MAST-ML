@@ -180,8 +180,9 @@ class MagpieFeatureGeneration(object):
 
     def _get_atomic_magpie_features(self, composition):
         # Get .table files containing feature values for each element, assign file names as feature names
-        config_files_path = self.configdict['General Setup']['config_files_path']
-        data_path = config_files_path+'/magpiedata/magpie_elementdata'
+        #config_files_path = self.configdict['General Setup']['config_files_path']
+        #data_path = config_files_path+'/magpiedata/magpie_elementdata'
+        data_path = os.path.abspath('MASTML_config_files/magpiedata/magpie_elementdata')
         magpie_feature_names = []
         for f in os.listdir(data_path):
             if '.table' in f:
