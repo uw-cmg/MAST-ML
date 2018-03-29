@@ -24,7 +24,9 @@ autodoc_mock_imports=['numpy',
                         'sklearn',
                         'matplotlib',
                         'pandas',
-                        'pymatgen'
+                        'pymatgen',
+                        'configobj',
+                        'mlxtend'
                         ]
 #Below from http://docs.readthedocs.io/en/latest/faq.html#i-get-import-errors-on-libraries-that-depend-on-c-modules 
 import sys

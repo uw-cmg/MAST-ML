@@ -36,7 +36,7 @@ Search for and select the following packages::
     configobj
     pymongo
     scikit-learn
-    pymatgen 
+    pymatgen
     
 Click on "Apply" at the bottom to install all of the packages.
 
@@ -46,9 +46,10 @@ button, and select Open terminal.
 
 From the terminal::
 
-    pip install citrination-client
+    pip install citrination-client==2.1.0
     pip install PeakUtils
     pip install mlxtend
+    pip install validator
 
 -------------------------------------------------
 Set up the Spyder IDE and Jupyter notebooks
