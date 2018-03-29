@@ -25,11 +25,12 @@ Data
 Installation
 **************
 
-For Python and MAST-ml package installation, see:
+Follow the following instructions for either a Windows install or a Terminal install.
 
-:doc:`0_1_terminal_installation` OR
+.. toctree::
 
-:doc:`0_2_windows_installation`
+    0_1_terminal_installation
+    0_2_windows_installation
 
 Note that in some situations such as running on a computer without a local display, you may also need to change the matplotlib backend in order for plotting to work
 (see :ref:`Matplotlib backend <matplotlib-backend>`).

@@ -37,8 +37,7 @@
 <h2>General<a class="headerlink" href="#general" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="check-the-mastmllog-log-file">
 <h3>Check the MASTMLlog.log file<a class="headerlink" href="#check-the-mastmllog-log-file" title="Permalink to this headline">¶</a></h3>
-<p>If you do not get a message like “Successfully read in and parsed your MASTML input file, test.conf” then something is wrong with the configuration file.</p>
-<p>Note that in early development, your config file may be correct, but your mastmlvalidationnames.conf and/or mastmlvaliddationtypes.conf files may not be up to date; may not include all class names.</p>
+<p>If you do not get a message like “Successfully read in and parsed your MASTML input file, test.conf” then your run did not complete successfully.</p>
 <ul class="simple">
 <li>Get those mastml*.conf files from test/main_test</li>
 <li>Put them in your working directory with your .conf file and data csv(s).</li>
@@ -52,8 +51,15 @@
 </div>
 <div class="section" id="keyerror">
 <h2>KeyError<a class="headerlink" href="#keyerror" title="Permalink to this headline">¶</a></h2>
-<p>Generally KeyError’s come from not matching test_cases in the [models and tests to run] section with tests in the [Test Parameters} section</p>
-<p>They can also be caused by not having updated the mastmlvalidationnames.conf and mastmlvalidationtypes.conf files.</p>
+<p>Generally KeyError’s come from strings not matching between various locations in the input configuration file and the data.</p>
+<p>Common areas that this mismatch can occur are:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">test_cases</span> <span class="ow">in</span> <span class="n">the</span> <span class="p">[</span><span class="n">models</span> <span class="ow">and</span> <span class="n">tests</span> <span class="n">to</span> <span class="n">run</span><span class="p">]</span> <span class="n">section</span> <span class="n">doesn</span><span class="s1">&#39;t match with tests in the [Test Parameters} section</span>
+
+<span class="n">Data</span> <span class="n">names</span> <span class="ow">in</span> <span class="n">the</span> <span class="p">[</span><span class="n">Data</span> <span class="n">Setup</span><span class="p">]</span> <span class="n">section</span> <span class="n">don</span><span class="s1">&#39;t match their calls in [Test Parameters]</span>
+
+<span class="n">The</span> <span class="n">target_feature</span> <span class="ow">or</span> <span class="n">input_features</span> <span class="ow">in</span> <span class="p">[</span><span class="n">General</span> <span class="n">Setup</span><span class="p">]</span> <span class="n">doesn</span><span class="s1">&#39;t match with a column in the data file</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="qxcbconnection-could-not-connect-to-display">
 <span id="matplotlib-backend"></span><h2>QXcbConnection: Could not connect to display<a class="headerlink" href="#qxcbconnection-could-not-connect-to-display" title="Permalink to this headline">¶</a></h2>
