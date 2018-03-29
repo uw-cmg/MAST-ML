@@ -34,78 +34,6 @@
   <div class="section" id="paramoptga">
 <h1>ParamOptGA<a class="headerlink" href="#paramoptga" title="Permalink to this headline">¶</a></h1>
 <p>Optimize hyperparameter values using a genetic algorithm (GA).</p>
-<div class="section" id="input-keywords">
-<h2>Input keywords<a class="headerlink" href="#input-keywords" title="Permalink to this headline">¶</a></h2>
-<p>See <a class="reference internal" href="4_p1_paramgridsearch.html"><span class="doc">ParamGridSearch</span></a> for the following keywords:</p>
-<ul class="simple">
-<li>training_dataset</li>
-<li>testing_dataset</li>
-<li>param_1, param_2, etc.</li>
-<li>fix_random_for_testing</li>
-<li>num_cvtests</li>
-<li>num_folds</li>
-<li>percent_leave_out</li>
-<li>num_bests</li>
-<li>processors</li>
-<li>pop_upper_limit</li>
-</ul>
-<p>Additional keywords:</p>
-<ul class="simple">
-<li>num_gas: Number of independent GAs to run (default 1)</li>
-<li><dl class="first docutils">
-<dt>ga_pop_size: Population size for each GA (default 50)</dt>
-<dd><ul class="first last">
-<li>For each GA, the initial population of ga_pop_size will be drawn randomly from a total population spanning all hyperparameter values given in param_1, param_2, etc.</li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>convergence_generations: Number of convergence generations (default 30)</dt>
-<dd><ul class="first last">
-<li>This is the number of successive generations where the RMSE must be similar (see keyword <code class="docutils literal notranslate"><span class="pre">gen_tol</span></code>) for the GA to be considered converged.</li>
-</ul>
-</dd>
-</dl>
-</li>
-<li>max_generations: Maximum number of generations for each GA (default 200)</li>
-<li><dl class="first docutils">
-<dt>crossover_prob: Probability of inheriting from parent 1 as opposed to parent 2 (default 0.5)</dt>
-<dd><ul class="first last">
-<li>For each individual, two distinct parents are drawn randomly from the <code class="docutils literal notranslate"><span class="pre">num_bests</span></code> best individuals of the previous generation.</li>
-<li>Crossover is determined separately for each hyperparameter of each individual.</li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>mutation_prob: Probability that the hyperparameter (‘gene’) for an individual will randomly mutate (default 0.1)</dt>
-<dd><ul class="first last">
-<li>The mutation is the adoption of a random value from the given range for that hyperparameter, regardless of any value that might have been assigned through crossover (supersedes any parental value).</li>
-<li>Mutation is determined separately for each hyperparameter of each individual.</li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>shift_prob: Probability that the hyperparameter value (evaluated first for crossover and then for mutation) will shift (default 0.5)</dt>
-<dd><ul class="first last">
-<li>The shift is a random amount of -2, -1, 0, 1, or 2 spaces along the given resolution for the given range in the hyperparameter.</li>
-<li>Shifts stop at the lowest and highest value for that hyperparameter (no wraparound).</li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>gen_tol: Tolerance for considering RMSEs between generations to be equal (default 0.00000001)</dt>
-<dd><ul class="first last">
-<li>This value should be chosen based on the units of the target feature and any knowledge about the expected accuracy in measurement or prediction of the target feature.</li>
-</ul>
-</dd>
-</dl>
-</li>
-</ul>
-</div>
 <div class="section" id="code">
 <h2>Code<a class="headerlink" href="#code" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
@@ -176,7 +104,6 @@ using an inclusive start and inclusive end. A parameter with only one discrete v
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">ParamOptGA</a><ul>
-<li><a class="reference internal" href="#input-keywords">Input keywords</a></li>
 <li><a class="reference internal" href="#code">Code</a></li>
 </ul>
 </li>

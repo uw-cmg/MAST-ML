@@ -36,22 +36,6 @@
 <p>Plots target data for each testing dataset versus a selected feature.
 Data is also split out by a grouping feature set in the <a class="reference internal" href="2_input_file.html#general-setup"><span class="std std-ref">General Setup</span></a> section of the input file.</p>
 <p>This test does no analysis or model fitting and is meant for double-checking data.</p>
-<div class="section" id="input-keywords">
-<h2>Input keywords<a class="headerlink" href="#input-keywords" title="Permalink to this headline">¶</a></h2>
-<p>See <a class="reference internal" href="4_1_singlefit.html"><span class="doc">SingleFit</span></a>:</p>
-<ul class="simple">
-<li>training_dataset: for compatibility; only testing_dataset is used</li>
-<li>testing_dataset: multiple testing datasets are allowed</li>
-<li>plot_filter_out</li>
-</ul>
-<p>Additional keywords:</p>
-<ul class="simple">
-<li>xlabel: x-axis label for selected feature</li>
-<li>ylabel: y-axis label for target feature</li>
-<li>feature_plot_feature: Feature to plot on x-axis, against target feature data</li>
-<li>data_labels: List of dataset labels, one for each dataset in testing_dataset</li>
-</ul>
-</div>
 <div class="section" id="code">
 <h2>Code<a class="headerlink" href="#code" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
@@ -100,7 +84,6 @@ data_labels is None</p>
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">PlotNoAnalysis</a><ul>
-<li><a class="reference internal" href="#input-keywords">Input keywords</a></li>
 <li><a class="reference internal" href="#code">Code</a></li>
 </ul>
 </li>

@@ -36,20 +36,6 @@
 <p>Perform leave-out-group cross validation.</p>
 <p>Data points are assigned to groups based on the <code class="docutils literal notranslate"><span class="pre">grouping_feature</span></code> in the <a class="reference internal" href="2_input_file.html#general-setup"><span class="std std-ref">General Setup</span></a> section of the input file.</p>
 <p>Each group is left out in turn, the model is trained on the remaining data, and then the model predicts data for the left-out group.</p>
-<div class="section" id="input-keywords">
-<h2>Input keywords<a class="headerlink" href="#input-keywords" title="Permalink to this headline">¶</a></h2>
-<p>See <a class="reference internal" href="4_1_singlefit.html"><span class="doc">SingleFit</span></a>:</p>
-<ul class="simple">
-<li>training_dataset (Should be the same as testing_dataset)</li>
-<li>testing_dataset (Should be the same as training_dataset)</li>
-</ul>
-<p>Additional keywords:</p>
-<ul class="simple">
-<li>xlabel: Label for the groups along the x-axis</li>
-<li>ylabel: Label for the average RMSE of each group along the y-axis</li>
-<li>mark_outlying_points: Number of outlying points (one point for each group) to label</li>
-</ul>
-</div>
 <div class="section" id="code">
 <h2>Code<a class="headerlink" href="#code" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
@@ -97,7 +83,6 @@ Plots results in a predicted vs. measured square plot.</p>
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">LeaveOutGroupCV</a><ul>
-<li><a class="reference internal" href="#input-keywords">Input keywords</a></li>
 <li><a class="reference internal" href="#code">Code</a></li>
 </ul>
 </li>

@@ -34,127 +34,6 @@
   <div class="section" id="paramgridsearch">
 <h1>ParamGridSearch<a class="headerlink" href="#paramgridsearch" title="Permalink to this headline">¶</a></h1>
 <p>Perform a grid search over hyperparameter values.</p>
-<div class="section" id="input-keywords">
-<h2>Input keywords<a class="headerlink" href="#input-keywords" title="Permalink to this headline">¶</a></h2>
-<p>See <a class="reference internal" href="4_1_singlefit.html"><span class="doc">SingleFit</span></a> for the following keywords:</p>
-<ul class="simple">
-<li>training_dataset</li>
-<li>testing_dataset: Should be the same as training_dataset</li>
-</ul>
-<p>Additional keywords:</p>
-<ul>
-<li><p class="first">param_1, param_2, param_3, etc.: hyperparameter optimization instructions, made up of semicolon-delimited pieces as follows:</p>
-<blockquote>
-<div><ul>
-<li><dl class="first docutils">
-<dt>Piece 1: the word ‘model’ or a custom feature class.method string,</dt>
-<dd><dl class="first last docutils">
-<dt>e.g. DBTT.calculate_EffectiveFluence, for a class and method</dt>
-<dd><ul class="first last simple">
-<li>The custom module file (.py file) must reside in the <code class="docutils literal notranslate"><span class="pre">custom_features</span></code> folder</li>
-<li>The custom module file must have the same name as the custom class (e.g. DBTT.py for class DBTT)</li>
-</ul>
-</dd>
-</dl>
-</dd>
-</dl>
-</li>
-<li><p class="first">Piece 2: the parameter name</p>
-</li>
-<li><dl class="first docutils">
-<dt>Piece 3: the parameter type.</dt>
-<dd><ul class="first last simple">
-<li>Use only ‘int’, ‘float’, ‘bool’, or ‘str’.</li>
-<li>Some sklearn model hyperparameters may be type-sensitive</li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>Piece 4: the series type:</dt>
-<dd><ul class="first last simple">
-<li>‘discrete’: Grid will use values given in Piece 5</li>
-<li>‘continuous’: Grid will be defined by a range given in Piece 5</li>
-<li>‘continuous-log’: Grid will be defined by a log10 range given in Piece 5</li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>Piece 5: grid values, given by:</dt>
-<dd><ul class="first last simple">
-<li><dl class="first docutils">
-<dt>A colon-delimited list of values, if Piece 4 is ‘discrete’</dt>
-<dd><ul class="first last">
-<li><dl class="first docutils">
-<dt>A parameter with only one discrete value will be considered</dt>
-<dd>a non-optimized parameter, and can be used to define
-parameters of custom features.</dd>
-</dl>
-</li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>Colon-delimited values for the starting value, ending value, and number of points in the range, if Piece 4 is ‘continuous’ or ‘continuous-log’</dt>
-<dd><ul class="first last">
-<li>The range will be given using numpy’s linspace for ‘continous’ and numpy’s logspace for ‘continuous-log’.</li>
-<li>The start and end value are inclusive.</li>
-</ul>
-</dd>
-</dl>
-</li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><p class="first">Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">param_1</span><span class="o">=</span> <span class="n">model</span><span class="p">;</span><span class="n">alpha</span><span class="p">;</span><span class="nb">float</span><span class="p">;</span><span class="n">continuous</span><span class="o">-</span><span class="n">log</span><span class="p">;</span><span class="o">-</span><span class="mi">10</span><span class="p">:</span><span class="mi">10</span><span class="p">:</span><span class="mi">21</span>
-<span class="n">param_2</span><span class="o">=</span> <span class="n">model</span><span class="p">;</span><span class="n">gamma</span><span class="p">;</span><span class="nb">float</span><span class="p">;</span><span class="n">continuous</span><span class="o">-</span><span class="n">log</span><span class="p">;</span><span class="o">-</span><span class="mi">5</span><span class="p">:</span><span class="mi">5</span><span class="p">:</span><span class="mi">21</span>
-<span class="n">param_3</span><span class="o">=</span> <span class="n">DBTT</span><span class="o">.</span><span class="n">calculate_EffectiveFluence</span><span class="p">;</span><span class="n">pvalue</span><span class="p">;</span><span class="nb">float</span><span class="p">;</span><span class="n">discrete</span><span class="p">;</span><span class="mf">0.2</span>
-<span class="n">param_4</span><span class="o">=</span> <span class="n">DBTT</span><span class="o">.</span><span class="n">calculate_EffectiveFluence</span><span class="p">;</span><span class="n">flux_feature</span><span class="p">;</span><span class="nb">str</span><span class="p">;</span><span class="n">discrete</span><span class="p">;</span><span class="n">flux_n_cm2_sec</span>
-<span class="n">param_5</span><span class="o">=</span> <span class="n">DBTT</span><span class="o">.</span><span class="n">calculate_EffectiveFluence</span><span class="p">;</span><span class="n">fluence_feature</span><span class="p">;</span><span class="nb">str</span><span class="p">;</span><span class="n">discrete</span><span class="p">;</span><span class="n">fluence_n_cm2</span>
-</pre></div>
-</div>
-</li>
-</ul>
-</div></blockquote>
-</li>
-<li><dl class="first docutils">
-<dt>fix_random_for_testing:</dt>
-<dd><ul class="first last simple">
-<li>0 - use random numbers (default)</li>
-<li>1 - fix the randomizer for testing purposes</li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><p class="first">num_cvtests: The number of cross-validation (CV) tests to use for evaluating every grid point</p>
-</li>
-<li><p class="first">num_folds: The number of folds for K-fold CV; leave blank to use leave-out-percent CV</p>
-</li>
-<li><p class="first">percent_leave_out: Percent to leave out for leave-out-percent CV; leave blank to use K-fold CV</p>
-</li>
-<li><p class="first">num_bests: Number of best individuals to track (default 10)</p>
-</li>
-<li><dl class="first docutils">
-<dt>processors: Number of processors to use.</dt>
-<dd><ul class="first last simple">
-<li>1 - use one processor (default)</li>
-<li>2 or higher - use this many processors, all on a SINGLE node (using the multiprocessing module)</li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>pop_upper_limit: Upper limit for population size. Raises an error if the</dt>
-<dd><p class="first last">grid contains more than this many individuals. (default 1000000)</p>
-</dd>
-</dl>
-</li>
-</ul>
-</div>
 <div class="section" id="code">
 <h2>Code<a class="headerlink" href="#code" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
@@ -221,7 +100,6 @@ Plots results in a predicted vs. measured square plot.</p>
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">ParamGridSearch</a><ul>
-<li><a class="reference internal" href="#input-keywords">Input keywords</a></li>
 <li><a class="reference internal" href="#code">Code</a></li>
 </ul>
 </li>

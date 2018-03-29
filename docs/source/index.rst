@@ -22,3 +22,5 @@ Contents:
     6_datamanipulations.rst
 
     7_mastmlpipeline.rst
+
+    8_custom_additions.rst

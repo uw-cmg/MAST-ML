@@ -35,20 +35,6 @@
 <h1>LeaveOneOutCV<a class="headerlink" href="#leaveoneoutcv" title="Permalink to this headline">¶</a></h1>
 <p>Perform leave-one-out (LOO) cross validation.</p>
 <p>LOO cross validation can be considered a special case of <a class="reference internal" href="4_cv2_kfold.html"><span class="doc">KFoldCV</span></a>, where the number of folds N is equal to the number of data points, and there is only a single N-fold test containing N subtests.</p>
-<div class="section" id="input-keywords">
-<h2>Input keywords<a class="headerlink" href="#input-keywords" title="Permalink to this headline">¶</a></h2>
-<p>See <a class="reference internal" href="4_cv2_kfold.html"><span class="doc">KFoldCV</span></a>:</p>
-<ul class="simple">
-<li>training_dataset (Should be the same as testing_dataset)</li>
-<li>testing_dataset (Should be the same as training_dataset)</li>
-<li>xlabel</li>
-<li>ylabel</li>
-</ul>
-<p>Additional keywords:</p>
-<ul class="simple">
-<li>mark_outlying_points: Number of outlying points to mark. Use only one number.</li>
-</ul>
-</div>
 <div class="section" id="code">
 <h2>Code<a class="headerlink" href="#code" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
@@ -93,7 +79,6 @@ Plots results in a predicted vs. measured square plot.</p>
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">LeaveOneOutCV</a><ul>
-<li><a class="reference internal" href="#input-keywords">Input keywords</a></li>
 <li><a class="reference internal" href="#code">Code</a></li>
 </ul>
 </li>

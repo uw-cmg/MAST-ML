@@ -70,3 +70,11 @@ Check output
 
 Output will be located in subfolders in the test folder given by save_path in the :ref:`General Setup <general-setup>` section of the input file.
 
+Check the following to see if the run completed successfully::
+
+    A .log file is generated and the last line contains the phrase "Your MASTML runs have completed successfully!"
+    A .png and .csv file that start with "input_data_". These files give information about the data.
+    An index.html file that gives some summary plots from all the tests that were run
+    A /SingleFit_xxxx directory with the individual test results for the Single Fit specified in the input configuration file.
+
+You can compare all of these files with those given in the /example_results/ directory which should match.

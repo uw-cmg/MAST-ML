@@ -35,32 +35,6 @@
 <h1>KFoldCV<a class="headerlink" href="#kfoldcv" title="Permalink to this headline">¶</a></h1>
 <p>Perform K-fold cross validation.</p>
 <p>In plots, predictions for all K folds are plotted.</p>
-<div class="section" id="input-keywords">
-<h2>Input keywords<a class="headerlink" href="#input-keywords" title="Permalink to this headline">¶</a></h2>
-<p>See <a class="reference internal" href="4_cv1_loperc.html"><span class="doc">LeaveOutPercentCV</span></a>:</p>
-<ul class="simple">
-<li>training_dataset (Should be the same as testing_dataset)</li>
-<li>testing_dataset (Should be the same as training_dataset)</li>
-<li>xlabel</li>
-<li>ylabel</li>
-<li>mark_outlying_points</li>
-<li>num_cvtests</li>
-<li>fix_random_for_testing: Whether to fix the random seed for testing</li>
-</ul>
-<p>Additional keywords:</p>
-<ul class="simple">
-<li><dl class="first docutils">
-<dt>num_folds: Number of folds to use</dt>
-<dd><ul class="first last">
-<li>Data is split into this many folds. A new split is used for each CV test.</li>
-<li>Each CV test consists of this many subtests, where each fold in turn is left out, the model is trained on all of the remaining data, and then the model makes predictions for the observations in the left-out fold.</li>
-<li>Typical values are 2 and 5.</li>
-</ul>
-</dd>
-</dl>
-</li>
-</ul>
-</div>
 <div class="section" id="code">
 <h2>Code<a class="headerlink" href="#code" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
@@ -109,7 +83,6 @@ Plots results in a predicted vs. measured square plot.</p>
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">KFoldCV</a><ul>
-<li><a class="reference internal" href="#input-keywords">Input keywords</a></li>
 <li><a class="reference internal" href="#code">Code</a></li>
 </ul>
 </li>

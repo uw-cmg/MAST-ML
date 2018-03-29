@@ -36,37 +36,6 @@
 <p>Like <a class="reference internal" href="4_1_singlefit.html"><span class="doc">SingleFit</span></a>, but also splits data by a grouping feature,
 and reports statistics and plots data by groups.</p>
 <p>A grouping feature must be set in the <a class="reference internal" href="2_input_file.html#general-setup"><span class="std std-ref">General Setup</span></a> section of the input file.</p>
-<div class="section" id="input-keywords">
-<h2>Input keywords<a class="headerlink" href="#input-keywords" title="Permalink to this headline">¶</a></h2>
-<p>See <a class="reference internal" href="4_1_singlefit.html"><span class="doc">SingleFit</span></a>:</p>
-<ul class="simple">
-<li>training_dataset</li>
-<li>testing_dataset</li>
-<li>xlabel</li>
-<li>ylabel</li>
-<li>plot_filter_out</li>
-</ul>
-<p>Additional keywords:</p>
-<ul class="simple">
-<li><dl class="first docutils">
-<dt>mark_outlying_groups: Number of outlying groups (groups with the largest predictive RMSEs) to plot separately</dt>
-<dd><ul class="first last">
-<li>This number should typically be 1, 2, or 3.</li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>fit_only_on_matched_groups:</dt>
-<dd><ul class="first last">
-<li>0: Fit on all data in the training dataset (default)</li>
-<li>1: Fit only on data in the training dataset where the testing dataset also contains some data with the same value of the grouping feature (that is, if the grouping feature is Alloy, and there are no Alloy X’s in the testing dataset, then do not use any Alloy X data when training)</li>
-</ul>
-</dd>
-</dl>
-</li>
-</ul>
-</div>
 <div class="section" id="code">
 <h2>Code<a class="headerlink" href="#code" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
@@ -117,7 +86,6 @@ Plots results in a predicted vs. measured square plot.</p>
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">SingleFitGrouped</a><ul>
-<li><a class="reference internal" href="#input-keywords">Input keywords</a></li>
 <li><a class="reference internal" href="#code">Code</a></li>
 </ul>
 </li>

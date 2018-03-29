@@ -35,31 +35,6 @@
 <h1>LeaveOutPercentCV<a class="headerlink" href="#leaveoutpercentcv" title="Permalink to this headline">¶</a></h1>
 <p>Perform leave-out-percent cross validation.</p>
 <p>Percentages are determined randomly for each test. If it is necessary to ensure that all data is used, <a class="reference internal" href="4_cv2_kfold.html"><span class="doc">KFoldCV</span></a> may be more appropriate.</p>
-<div class="section" id="input-keywords">
-<h2>Input keywords<a class="headerlink" href="#input-keywords" title="Permalink to this headline">¶</a></h2>
-<p>See <a class="reference internal" href="4_1_singlefit.html"><span class="doc">SingleFit</span></a>:</p>
-<ul class="simple">
-<li>training_dataset (Should be the same as testing_dataset)</li>
-<li>testing_dataset (Should be the same as training_dataset)</li>
-<li>xlabel</li>
-<li>ylabel</li>
-</ul>
-<p>Additional keywords:</p>
-<ul class="simple">
-<li>mark_outlying_points: Comma-separated pair of the number of outlying points to mark in the best and worst tests, respectively, e.g. <code class="docutils literal notranslate"><span class="pre">0,3</span></code></li>
-<li>percent_leave_out: Percentage of data to leave out in each CV test</li>
-<li>num_cvtests: Number of CV tests to perform</li>
-<li><dl class="first docutils">
-<dt>fix_random_for_testing: Whether to fix the random seed for testing so that repeated test case runs will be identical</dt>
-<dd><ul class="first last">
-<li>1 - fix the random seed</li>
-<li>0 (default) - do not fix the random seed</li>
-</ul>
-</dd>
-</dl>
-</li>
-</ul>
-</div>
 <div class="section" id="code">
 <h2>Code<a class="headerlink" href="#code" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
@@ -108,7 +83,6 @@ Plots results in a predicted vs. measured square plot.</p>
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">LeaveOutPercentCV</a><ul>
-<li><a class="reference internal" href="#input-keywords">Input keywords</a></li>
 <li><a class="reference internal" href="#code">Code</a></li>
 </ul>
 </li>
