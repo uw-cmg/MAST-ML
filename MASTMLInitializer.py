@@ -174,12 +174,12 @@ class ConfigFileConstructor(ConfigFileParser):
             self.configtemplate['Test Parameters'][test_case] = dict()
         for k in self.configtemplate['Test Parameters'].keys():
             if k in ['SingleFit', 'SingleFitPerGroup', 'SingleFitGrouped', 'KFoldCV', 'LeaveOneOutCV', 'LeaveOutPercentCV',
-                     'LeaveOutGroupCV', 'PlotNoAnalysis']:
+                     'LeaveOutGroupCV', 'PlotNoAnalysis', 'PredictionVsFeature']:
                 self.configtemplate['Test Parameters'][k]['training_dataset'] = 'string'
                 self.configtemplate['Test Parameters'][k]['testing_dataset'] = 'string'
                 self.configtemplate['Test Parameters'][k]['xlabel'] = 'string'
                 self.configtemplate['Test Parameters'][k]['ylabel'] = 'string'
-            if k == 'PlotNoAnalysis':
+            if k in ['PlotNoAnalysis', 'PredictionVsFeature']:
                 self.configtemplate['Test Parameters'][k]['feature_plot_feature'] = 'string'
                 self.configtemplate['Test Parameters'][k]['plot_filter_out'] = 'string'
                 self.configtemplate['Test Parameters'][k]['data_labels'] = 'string'
