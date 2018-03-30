@@ -96,6 +96,8 @@ class ConfigFileConstructor(ConfigFileParser):
         self.configtemplate['General Setup']['save_path'] = 'string'
         self.configtemplate['General Setup']['input_features'] = ['string', 'string_list', 'Auto']
         self.configtemplate['General Setup']['target_feature'] = 'string'
+        self.configtemplate['General Setup']['grouping_feature'] = 'string'
+        self.configtemplate['General Setup']['labeling_features'] = ['string']
         return
 
     def _data_setup(self):
@@ -398,6 +400,10 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
                         templist = list()
                         templist.append(configdict[section_heading]['input_features'])
                         configdict[section_heading]['input_features'] = templist
+                    if type(configdict[section_heading]['labeling_features']) is str:
+                        templist = list()
+                        templist.append(configdict[section_heading]['labeling_features'])
+                        configdict[section_heading]['labeling_features'] = templist
                 if section_heading == 'Models and Tests to Run':
                     if type(configdict[section_heading]['models']) is str:
                         templist = list()
