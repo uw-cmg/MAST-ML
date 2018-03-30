@@ -220,6 +220,8 @@ class MASTMLDriver(object):
             #data_weights = self.data_setup[data_name]['weights']
             if 'labeling_features' in self.general_setup.keys():
                 labeling_features = self._string_or_list_input_to_list(self.general_setup['labeling_features'])
+                if labeling_features[0] == 'None':
+                    labeling_features = None
             else:
                 labeling_features = None
             if 'target_error_feature' in self.general_setup.keys():
@@ -228,6 +230,8 @@ class MASTMLDriver(object):
                 target_error_feature = None
             if 'grouping_feature' in self.general_setup.keys():
                 grouping_feature = self.general_setup['grouping_feature']
+                if grouping_feature == 'None':
+                    grouping_feature = None
             else:
                 grouping_feature = None
 
@@ -284,7 +288,17 @@ class MASTMLDriver(object):
             if not (labeling_features is None):
                 dataframe_labeled = FeatureIO(dataframe=dataframe).keep_custom_features(features_to_keep=labeling_features, y_feature=y_feature)
                 if normalize_x_features == True:
-                    dataframe_labeled, scaler = FeatureNormalization(dataframe=dataframe_labeled, configdict=self.configdict).normalize_features(x_features=labeling_features, y_feature=y_feature)
+                    feature_normalization_type = self.configdict['Feature Normalization']['feature_normalization_type']
+                    feature_scale_min = self.configdict['Feature Normalization']['feature_scale_min']
+                    feature_scale_max = self.configdict['Feature Normalization']['feature_scale_max']
+                    dataframe_labeled, scaler = FeatureNormalization(dataframe=dataframe_labeled,
+                                                                     configdict=self.configdict).normalize_features(x_features=labeling_features,
+                                                                                                                    y_feature=y_feature,
+                                                                                                                    normalize_x_features=normalize_x_features,
+                                                                                                                    normalize_y_feature=normalize_y_feature,
+                                                                                                                    feature_normalization_type=feature_normalization_type,
+                                                                                                                    feature_scale_min=feature_scale_min,
+                                                                                                                    feature_scale_max=feature_scale_max)
             if not (grouping_feature is None):
                 dataframe_grouped = FeatureIO(dataframe=dataframe).keep_custom_features(features_to_keep=[grouping_feature], y_feature=y_feature)
 
@@ -346,13 +360,15 @@ class MASTMLDriver(object):
             grouping_and_labeling_features = []
             duplicate_features = []
             if 'grouping_feature' in self.configdict['General Setup'].keys():
-                grouping_and_labeling_features.append(grouping_feature)
+                if not grouping_feature == None:
+                    grouping_and_labeling_features.append(grouping_feature)
             if 'labeling_features' in self.configdict['General Setup'].keys():
-                for feature in labeling_features:
-                    grouping_and_labeling_features.append(feature)
-                    if feature in x_features:
-                        if feature not in duplicate_features:
-                            duplicate_features.append(feature)
+                if not labeling_features == None:
+                    for feature in labeling_features:
+                        grouping_and_labeling_features.append(feature)
+                        if feature in x_features:
+                            if feature not in duplicate_features:
+                                duplicate_features.append(feature)
 
             # Now merge dataframes
             dataframe_labeled_grouped = DataframeUtilities().merge_dataframe_columns(dataframe1=dataframe_labeled, dataframe2=dataframe_grouped)
