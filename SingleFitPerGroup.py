@@ -111,8 +111,10 @@ class SingleFitPerGroup(SingleFitGrouped):
                 val = self.per_group_statistics[group][skey]
                 if type(val) is None:
                     self.readme_list.append("    %s: %s: None\n" % (group, skey))
-                else:
+                if type(val) is float():
                     self.readme_list.append("    %s: %s: %3.3f\n" % (group, skey, val))
+                if type(val) is str():
+                    self.readme_list.append("    %s: %s: %s\n" % (group, skey, val))
         return
 
     def plot_results(self):
