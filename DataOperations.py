@@ -320,7 +320,7 @@ class DataframeUtilities(object):
 
     @classmethod
     def get_histogram_bins(cls, dataframe):
-        bin_dividers = np.linspace(dataframe.shape[0], int(0.05*dataframe.shape[0]), dataframe.shape[0])
+        bin_dividers = np.linspace(dataframe.shape[0], round(0.05*dataframe.shape[0]), dataframe.shape[0])
         bin_list = list()
         for divider in bin_dividers:
             bins = int((dataframe.shape[0])/divider)
