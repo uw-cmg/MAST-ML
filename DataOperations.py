@@ -140,14 +140,23 @@ class DataParser(object):
                     if feature in y_feature_from_input:
                         y_feature = feature
 
-            #print(y_feature, type(y_feature))
-
         elif from_input_file == bool(False):
             y_feature = target_feature
             if 'grouping_feature' in self.configdict['General Setup'].keys():
                 x_features = [feature for feature in dataframe.columns.values if feature not in [y_feature, self.configdict['General Setup']['grouping_feature']]]
             else:
                 x_features = [feature for feature in dataframe.columns.values if feature not in y_feature]
+
+        try:
+            y_feature
+        except UnboundLocalError:
+            y_feature = self.configdict['General Setup']['target_feature']
+            dataframe[y_feature] = np.zeros(shape=dataframe.shape[0])
+            logging.info('MASTML has detected that a data file has been supplied that does not contain the designated '
+                         'y_feature name (probably because you are doing a PREDICTION run)! By default, this feature '
+                         'column has been assigned a value of 0 for each data instance (as the true values are not known). '
+                         'Mind that the SingleFit and residuals plot for your prediction will be meaningless, but your predicted '
+                         'values are still accurate!')
 
         return x_features, y_feature
 
