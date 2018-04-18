@@ -72,10 +72,10 @@ class MagpieFeatureGeneration(object):
         magpiedata_dict_min = {}
         magpiedata_dict_difference = {}
         magpiedata_dict_atomic_bysite = {}
-
+        data_path = self._find_mastml_install()
         for composition in compositions:
-            magpiedata_composition_average, magpiedata_arithmetic_average, magpiedata_max, magpiedata_min, magpiedata_difference = self._get_computed_magpie_features(composition=composition)
-            magpiedata_atomic_notparsed = self._get_atomic_magpie_features(composition=composition)
+            magpiedata_composition_average, magpiedata_arithmetic_average, magpiedata_max, magpiedata_min, magpiedata_difference = self._get_computed_magpie_features(composition=composition, data_path=data_path)
+            magpiedata_atomic_notparsed = self._get_atomic_magpie_features(composition=composition, data_path=data_path)
 
             magpiedata_dict_composition_average[composition] = magpiedata_composition_average
             magpiedata_dict_arithmetic_average[composition] = magpiedata_arithmetic_average
@@ -119,13 +119,30 @@ class MagpieFeatureGeneration(object):
 
         return dataframe
 
-    def _get_computed_magpie_features(self, composition):
+    def _find_mastml_install(self):
+        basepath = '/'+os.getcwd().split('/')[1]+'/'
+        for folder, subfolders, file in os.walk(basepath):
+            if "MASTML" in subfolders:
+                for subfolder in subfolders:
+                    if "MASTML" in subfolder:
+                        path = folder + '/' + subfolder
+                        if os.path.exists(path + '/' + 'MASTML_config_files/magpiedata/magpie_elementdata'):
+                            data_path = path + '/' + 'MASTML_config_files/magpiedata/magpie_elementdata'
+                            break
+        try:
+            data_path
+        except NameError:
+            logging.info('Error: Could not find elemental property database files. Please check that the files exist under your MASTML installation directory')
+            sys.exit()
+        return data_path
+
+    def _get_computed_magpie_features(self, composition, data_path):
         magpiedata_composition_average = {}
         magpiedata_arithmetic_average = {}
         magpiedata_max = {}
         magpiedata_min = {}
         magpiedata_difference = {}
-        magpiedata_atomic = self._get_atomic_magpie_features(composition=composition)
+        magpiedata_atomic = self._get_atomic_magpie_features(composition=composition, data_path=data_path)
         composition = Composition(composition)
         element_list, atoms_per_formula_unit = self._get_element_list(composition=composition)
 
@@ -178,11 +195,8 @@ class MagpieFeatureGeneration(object):
 
         return magpiedata_composition_average_renamed, magpiedata_arithmetic_average_renamed, magpiedata_max_renamed, magpiedata_min_renamed, magpiedata_difference_renamed
 
-    def _get_atomic_magpie_features(self, composition):
+    def _get_atomic_magpie_features(self, composition, data_path):
         # Get .table files containing feature values for each element, assign file names as feature names
-        #config_files_path = self.configdict['General Setup']['config_files_path']
-        #data_path = config_files_path+'/magpiedata/magpie_elementdata'
-        data_path = os.path.abspath('MASTML_config_files/magpiedata/magpie_elementdata')
         magpie_feature_names = []
         for f in os.listdir(data_path):
             if '.table' in f:
