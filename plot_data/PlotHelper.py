@@ -82,7 +82,7 @@ class PlotHelper():
             self.sizes=np.array(self.sizes.split(","),'float')
         else:
             self.sizes = np.array(self.sizes, 'float') #make sure they are floats
-        print(self.marklargest)
+        #print(self.marklargest)
         #if self.marklargest == 0:
         #    print('found zero', self.marklargest)
 
