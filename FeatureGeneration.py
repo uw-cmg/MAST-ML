@@ -122,9 +122,9 @@ class MagpieFeatureGeneration(object):
     def _find_mastml_install(self):
         basepath = '/'+os.getcwd().split('/')[1]+'/'
         for folder, subfolders, file in os.walk(basepath):
-            if "MASTML" in subfolders:
+            if ("MASTML" in subfolders or "MAST-ML" in subfolders):
                 for subfolder in subfolders:
-                    if "MASTML" in subfolder:
+                    if ("MASTML" in subfolder or "MAST-ML" in subfolder):
                         path = folder + '/' + subfolder
                         if os.path.exists(path + '/' + 'MASTML_config_files/magpiedata/magpie_elementdata'):
                             data_path = path + '/' + 'MASTML_config_files/magpiedata/magpie_elementdata'
