@@ -51,6 +51,7 @@ class MASTMLDriver(object):
         self.favorites_dict = dict()
         self.test_save_paths = list()
         self.logfilename = None
+        self.mastml_install_directory = os.path.dirname(os.path.realpath(sys.argv[0]))
         return
 
     def run_MASTML(self):
@@ -416,7 +417,7 @@ class MASTMLDriver(object):
         for k, v in self.configdict['Feature Generation'].items():
             if k == 'add_magpie_features' and v == True:
                 logging.info('FEATURE GENERATION: Adding Magpie features to your feature list')
-                mfg = MagpieFeatureGeneration(configdict=self.configdict, dataframe=dataframe)
+                mfg = MagpieFeatureGeneration(configdict=self.configdict, dataframe=dataframe, mastml_install_directory=self.mastml_install_directory)
                 dataframe = mfg.generate_magpie_features(save_to_csv=True)
             if k == 'add_materialsproject_features' and v == True:
                 logging.info('FEATURE GENERATION: Adding Materials Project features to your feature list')

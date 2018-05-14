@@ -26,6 +26,7 @@ class MagpieFeatureGeneration(object):
     Args:
         configdict (dict) : MASTML configfile object as dict
         dataframe (pandas dataframe) : dataframe containing x and y data and feature names
+        mastml_install_directory (string) : string containing the MASTML code absolute path
 
     Methods:
         generate_magpie_features : generates magpie feature set based on compositions in dataframe
@@ -36,9 +37,10 @@ class MagpieFeatureGeneration(object):
             Returns:
                 pandas dataframe : dataframe containing magpie feature set
     """
-    def __init__(self, configdict, dataframe):
+    def __init__(self, configdict, dataframe, mastml_install_directory):
         self.configdict = configdict
         self.dataframe = dataframe
+        self.mastml_install_directory = mastml_install_directory
 
     @timeit
     def generate_magpie_features(self, save_to_csv=True):
@@ -125,21 +127,11 @@ class MagpieFeatureGeneration(object):
         return dataframe
 
     def _find_mastml_install(self):
-        basepath = '/'+os.getcwd().split('/')[1]+'/'
-        for folder, subfolders, file in os.walk(basepath):
-            if ("MASTML" in subfolders or "MAST-ML" in subfolders):
-                for subfolder in subfolders:
-                    if ("MASTML" in subfolder or "MAST-ML" in subfolder):
-                        path = folder + '/' + subfolder
-                        if os.path.exists(path + '/' + 'MASTML_config_files/magpiedata/magpie_elementdata'):
-                            data_path = path + '/' + 'MASTML_config_files/magpiedata/magpie_elementdata'
-                            break
-        try:
-            data_path
-        except NameError:
-            logging.info('Error: Could not find elemental property database files. Please check that the files exist under your MASTML installation directory')
-            sys.exit()
+
+        mastml_install_path = self.mastml_install_directory
+        data_path = os.path.join(mastml_install_path,'MASTML_config_files','magpiedata','magpie_elementdata')
         return data_path
+
 
     def _get_computed_magpie_features(self, composition, data_path):
         magpiedata_composition_average = {}
