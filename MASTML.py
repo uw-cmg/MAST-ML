@@ -575,6 +575,7 @@ class MASTMLDriver(object):
             data_old_location = os.path.join(cwd, inputdata_name)
 
             shutil.copy(self.logfilename, self.save_path)
+            logging.shutdown()
             if os.path.exists(log_old_location):
                 os.remove(log_old_location)
 
