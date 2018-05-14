@@ -203,9 +203,11 @@ class LeaveOutPercentCV(SingleFit):
                 average_prediction = np.nansum(np.dstack((average_prediction,self.cvtest_dict[cvtest]["prediction_array"])),2)[0]
                 error = np.vstack((error,self.cvtest_dict[cvtest]["error_array"]))
         average_prediction = average_prediction/average_prediction_count
-        std_err_in_mean = np.nanstd(error, axis=0, ddof=1)/np.sqrt(error_count)
+        stand_err_in_mean_err = np.nanstd(error, axis=0, ddof=1)/np.sqrt(error_count)
+        std_err = np.nanstd(error, axis=0, ddof=1)
 
-        self.statistics['std_err_in_mean'] = std_err_in_mean
+        self.statistics['stand_err_in_mean_err'] = stand_err_in_mean_err
+        self.statistics['std_err'] = std_err
         self.statistics['average_prediction'] = average_prediction
 
         # remove any nan from average_prediction and target data. These are points that by chance weren't ever
@@ -272,7 +274,7 @@ class LeaveOutPercentCV(SingleFit):
         kwargs2['xdatalist'] = list([self.testing_dataset.target_data])
         kwargs2['ydatalist'] = list([self.statistics['average_prediction']])
         kwargs2['xerrlist'] = list([None])
-        kwargs2['yerrlist'] = list([self.statistics['std_err_in_mean']])
+        kwargs2['yerrlist'] = list([self.statistics['std_err']])
         kwargs2['notelist'] = list(notelist)
         kwargs2['guideline'] = 1
         kwargs2['plotlabel'] = "mean_cv_overlay"
