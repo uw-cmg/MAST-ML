@@ -8,6 +8,7 @@ import pandas as pd
 import sys
 import os
 import logging
+import math
 from pymatgen import Element, Composition
 from pymatgen.ext.matproj import MPRester
 try:
@@ -71,10 +72,12 @@ class MagpieFeatureGeneration(object):
         magpiedata_dict_max = {}
         magpiedata_dict_min = {}
         magpiedata_dict_difference = {}
+        magpiedata_dict_ratio_max_min = {}
+        magpiedata_dict_ratio_min_max = {}
         magpiedata_dict_atomic_bysite = {}
         data_path = self._find_mastml_install()
         for composition in compositions:
-            magpiedata_composition_average, magpiedata_arithmetic_average, magpiedata_max, magpiedata_min, magpiedata_difference = self._get_computed_magpie_features(composition=composition, data_path=data_path)
+            magpiedata_composition_average, magpiedata_arithmetic_average, magpiedata_max, magpiedata_min, magpiedata_difference, magpiedata_ratio_max_min, magpiedata_ratio_min_max = self._get_computed_magpie_features(composition=composition, data_path=data_path)
             magpiedata_atomic_notparsed = self._get_atomic_magpie_features(composition=composition, data_path=data_path)
 
             magpiedata_dict_composition_average[composition] = magpiedata_composition_average
@@ -82,6 +85,8 @@ class MagpieFeatureGeneration(object):
             magpiedata_dict_max[composition] = magpiedata_max
             magpiedata_dict_min[composition] = magpiedata_min
             magpiedata_dict_difference[composition] = magpiedata_difference
+            magpiedata_dict_ratio_max_min[composition] = magpiedata_ratio_max_min
+            magpiedata_dict_ratio_min_max[composition] = magpiedata_ratio_min_max
 
             # Add site-specific elemental features
             count = 1
@@ -94,7 +99,7 @@ class MagpieFeatureGeneration(object):
             magpiedata_dict_atomic_bysite[composition] = magpiedata_atomic_bysite
 
         magpiedata_dict_list = [magpiedata_dict_composition_average, magpiedata_dict_arithmetic_average,
-                                magpiedata_dict_max, magpiedata_dict_min, magpiedata_dict_difference, magpiedata_dict_atomic_bysite]
+                                magpiedata_dict_max, magpiedata_dict_min, magpiedata_dict_difference, magpiedata_dict_ratio_max_min, magpiedata_dict_ratio_min_max, magpiedata_dict_atomic_bysite]
 
         dataframe = self.dataframe
         for magpiedata_dict in magpiedata_dict_list:
@@ -142,6 +147,8 @@ class MagpieFeatureGeneration(object):
         magpiedata_max = {}
         magpiedata_min = {}
         magpiedata_difference = {}
+        magpiedata_ratio_max_min = {}
+        magpiedata_ratio_min_max = {}
         magpiedata_atomic = self._get_atomic_magpie_features(composition=composition, data_path=data_path)
         composition = Composition(composition)
         element_list, atoms_per_formula_unit = self._get_element_list(composition=composition)
@@ -153,6 +160,8 @@ class MagpieFeatureGeneration(object):
             magpiedata_max[magpie_feature] = 0
             magpiedata_min[magpie_feature] = 0
             magpiedata_difference[magpie_feature] = 0
+            magpiedata_ratio_max_min[magpie_feature] = 0
+            magpiedata_ratio_min_max[magpie_feature] = 0
 
         for element in magpiedata_atomic.keys():
             for magpie_feature, feature_value in magpiedata_atomic[element].items():
@@ -175,6 +184,17 @@ class MagpieFeatureGeneration(object):
                         magpiedata_min[magpie_feature] = feature_value
                     # Difference features (max - min)
                     magpiedata_difference[magpie_feature] = magpiedata_max[magpie_feature] - magpiedata_min[magpie_feature]
+                    # ratio max/min
+                    if magpiedata_min[magpie_feature] == 0:
+                        magpiedata_ratio_max_min[magpie_feature] = float('nan')
+                    else:
+                        magpiedata_ratio_max_min[magpie_feature] = magpiedata_max[magpie_feature]/magpiedata_min[magpie_feature]
+                    #ratio min/max
+                    if magpiedata_max[magpie_feature] == 0:
+                        magpiedata_ratio_min_max[magpie_feature] = float('nan')
+                    else:
+                        magpiedata_ratio_min_max[magpie_feature] = magpiedata_min[magpie_feature]/magpiedata_max[magpie_feature]
+
 
         # Change names of features to reflect each computed type of magpie feature (max, min, etc.)
         magpiedata_composition_average_renamed = {}
@@ -182,6 +202,8 @@ class MagpieFeatureGeneration(object):
         magpiedata_max_renamed = {}
         magpiedata_min_renamed = {}
         magpiedata_difference_renamed = {}
+        magpiedata_ratio_max_min_renamed = {}
+        magpiedata_ratio_min_max_renamed = {}
         for key in magpiedata_composition_average.keys():
             magpiedata_composition_average_renamed[key+"_composition_average"] = magpiedata_composition_average[key]
         for key in magpiedata_arithmetic_average.keys():
@@ -192,8 +214,12 @@ class MagpieFeatureGeneration(object):
             magpiedata_min_renamed[key+"_min_value"] = magpiedata_min[key]
         for key in magpiedata_difference.keys():
             magpiedata_difference_renamed[key+"_difference"] = magpiedata_difference[key]
+        for key in magpiedata_ratio_max_min.keys():
+            magpiedata_ratio_max_min_renamed[key+"_ratio_max_min"] = magpiedata_ratio_max_min[key]
+        for key in magpiedata_ratio_min_max.keys():
+            magpiedata_ratio_min_max_renamed[key+"_ratio_min_max"] = magpiedata_ratio_min_max[key]
 
-        return magpiedata_composition_average_renamed, magpiedata_arithmetic_average_renamed, magpiedata_max_renamed, magpiedata_min_renamed, magpiedata_difference_renamed
+        return magpiedata_composition_average_renamed, magpiedata_arithmetic_average_renamed, magpiedata_max_renamed, magpiedata_min_renamed, magpiedata_difference_renamed, magpiedata_ratio_max_min_renamed, magpiedata_ratio_min_max_renamed
 
     def _get_atomic_magpie_features(self, composition, data_path):
         # Get .table files containing feature values for each element, assign file names as feature names
