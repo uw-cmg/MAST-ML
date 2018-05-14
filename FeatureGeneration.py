@@ -116,6 +116,12 @@ class MagpieFeatureGeneration(object):
             # Merge magpie feature dataframe with originally supplied dataframe
             dataframe = DataframeUtilities().merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_magpie)
 
+        #Perform an initial filtering of ratio features to get rid of columns that have any missing data (when there was a 0 in denominator
+        dataframe_ratios = dataframe.filter(like='ratio')
+        dataframe_noratios = dataframe_ratios.dropna(axis=1, how='any')
+        dataframe = dataframe[dataframe.columns.drop(list(dataframe.filter(like='ratio')))]
+        dataframe = DataframeUtilities().merge_dataframe_columns(dataframe1=dataframe,dataframe2=dataframe_noratios)
+
         if save_to_csv == bool(True):
             # Get y_feature in this dataframe, attach it to save path
             for column in dataframe.columns.values:
