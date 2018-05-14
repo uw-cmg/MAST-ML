@@ -155,9 +155,11 @@ class KFoldCV(LeaveOutPercentCV):
                 average_prediction += self.cvtest_dict[cvtest]["prediction_array"]
                 error = np.vstack((error, self.cvtest_dict[cvtest]["error_array"]))
         average_prediction /= self.num_cvtests
-        std_err_in_mean = np.nanstd(error, axis=0, ddof=1) / np.sqrt(self.num_cvtests)
+        stand_err_in_mean_err = np.nanstd(error, axis=0, ddof=1) / np.sqrt(self.num_cvtests)
+        std_err = np.nanstd(error, axis=0, ddof=1)
 
-        self.statistics['std_err_in_mean'] = std_err_in_mean
+        self.statistics['stand_err_in_mean_err'] = stand_err_in_mean_err
+        self.statistics['std_err'] = std_err
         self.statistics['average_prediction'] = average_prediction
 
         rsquared = self.get_rsquared(Xdata=self.testing_dataset.target_data, ydata=average_prediction)
