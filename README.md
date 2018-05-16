@@ -3,6 +3,7 @@
 ## Documentation and install instructions
 
 Full documentation starts in `docs/build/html/index.html`.
+
 Clone the repository and open `index.html` with your browser.
 
 ## Contributors
