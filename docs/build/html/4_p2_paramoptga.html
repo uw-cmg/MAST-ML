@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>ParamOptGA &#8212; MAST-ml 1.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
@@ -31,8 +23,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
@@ -72,7 +63,7 @@
 <li><dl class="first docutils">
 <dt>convergence_generations: Number of convergence generations (default 30)</dt>
 <dd><ul class="first last">
-<li>This is the number of successive generations where the RMSE must be similar (see keyword <code class="docutils literal"><span class="pre">gen_tol</span></code>) for the GA to be considered converged.</li>
+<li>This is the number of successive generations where the RMSE must be similar (see keyword <code class="docutils literal notranslate"><span class="pre">gen_tol</span></code>) for the GA to be considered converged.</li>
 </ul>
 </dd>
 </dl>
@@ -81,7 +72,7 @@
 <li><dl class="first docutils">
 <dt>crossover_prob: Probability of inheriting from parent 1 as opposed to parent 2 (default 0.5)</dt>
 <dd><ul class="first last">
-<li>For each individual, two distinct parents are drawn randomly from the <code class="docutils literal"><span class="pre">num_bests</span></code> best individuals of the previous generation.</li>
+<li>For each individual, two distinct parents are drawn randomly from the <code class="docutils literal notranslate"><span class="pre">num_bests</span></code> best individuals of the previous generation.</li>
 <li>Crossover is determined separately for each hyperparameter of each individual.</li>
 </ul>
 </dd>
@@ -117,62 +108,6 @@
 </div>
 <div class="section" id="code">
 <h2>Code<a class="headerlink" href="#code" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="ParamOptGA.ParamOptGA">
-<em class="property">class </em><code class="descclassname">ParamOptGA.</code><code class="descname">ParamOptGA</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>num_folds=None</em>, <em>percent_leave_out=None</em>, <em>num_cvtests=20</em>, <em>mark_outlying_points='0</em>, <em>3'</em>, <em>num_bests=10</em>, <em>fix_random_for_testing=0</em>, <em>processors=1</em>, <em>pop_upper_limit=1000000</em>, <em>num_gas=1</em>, <em>ga_pop_size=50</em>, <em>convergence_generations=30</em>, <em>max_generations=200</em>, <em>crossover_prob=0.5</em>, <em>mutation_prob=0.1</em>, <em>shift_prob=0.5</em>, <em>gen_tol=1e-08</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ParamOptGA.html#ParamOptGA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ParamOptGA.ParamOptGA" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class to perform parameter optimization by genetic algorithm. Allows custom features.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>training_dataset</strong> (<em>DataHandler object</em>) – Training dataset handler</li>
-<li><strong>testing_dataset</strong> (<em>DataHandler object</em>) – Testing dataset handler</li>
-<li><strong>model</strong> (<em>sklearn model object</em>) – sklearn model</li>
-<li><strong>save_path</strong> (<em>str</em>) – Save path</li>
-<li><strong>param_1</strong> (<em>str</em>) – <p>parameter string made up of semicolon-delimited pieces</p>
-<p>Piece 1: The word ‘model’ or a custom feature class.method string, e.g. DBTT.calculate_EffectiveFluence,
-where the custom module has the same name as the custom class, and resides inside the custom_features folder</p>
-<p>Piece 2: The parameter name</p>
-<p>Piece 3: The parameter type. Use only: ‘int’, ‘float’, ‘bool’, ‘str’ (Some sklearn model hyperparameters are type-sensitive)</p>
-<p>Piece 4: The series type. Use:
-‘discrete’: List will be given in piece 5
-‘bool’ and ‘str’ MUST use ‘discrete’
-‘continuous’: Range and step will be given in piece 5
-‘continuous-log: Range and step will be given in piece 5</p>
-<p>Piece 5: A colon-delimited list of
-(a) a discrete list of values to grid over, OR
-(b) start, end, number of points: numpy’s np.linspace or np.logspace function will be used to generate this list,
-using an inclusive start and inclusive end. A parameter with only one discrete value will not be considered as an ‘optimized’ parameter.</p>
-</li>
-<li><strong>param_2</strong> (<em>str</em>) – See param_1. Can have up to 4 parameters, i.e. param_4</li>
-<li><strong>fix_random_for_testing</strong> (<em>int</em>) – 0 - use random numbers
-1 - fix randomizer for testing</li>
-<li><strong>num_cvtests</strong> (<em>int</em>) – Number of CV tests for each validation step</li>
-<li><strong>num_folds</strong> (<em>int</em>) – Number of folds for K-fold cross validation; leave blank to use LO% CV</li>
-<li><strong>percent_leave_out</strong> (<em>int</em>) – Percentage to leave out for LO% CV; leave blank to use K-fold CV</li>
-<li><strong>mark_outlying_points</strong> (<em>list of int</em>) – Number of outlying points to mark in best and worst tests, e.g. [0,3]</li>
-<li><strong>num_bests</strong> (<em>int</em>) – Number of best individuals to track</li>
-<li><strong>processors</strong> (<em>int</em>) – Number of processors to use 1 - single processor (serial); 2 - use multiprocessing with this many processors, all on a SINGLE node</li>
-<li><strong>population_size</strong> (<em>int</em>) – Number of individuals in each generation’s population</li>
-<li><strong>convergence_generations</strong> (<em>int</em>) – Number of generations where the genome must stay constant in order to establish convergence</li>
-<li><strong>max_generations</strong> (<em>int</em>) – Maximum number of generations</li>
-<li><strong>num_gas</strong> (<em>int</em>) – Number of GAs to run</li>
-<li><strong>crossover_prob</strong> (<em>float</em>) – Crossover probability (float &lt; 1.00)</li>
-<li><strong>mutation_prob</strong> (<em>float</em>) – Mutation probability (float &lt; 1.00)</li>
-<li><strong>shift_prob</strong> (<em>float</em>) – Shift probability (float &lt; 1.00)</li>
-<li><strong>gen_tol</strong> (<em>float</em>) – Generation-to-generation RMSE tolerance for considering RMSEs to be equal (absolute float tolerance)</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Analysis in save_path folder</p>
-</td>
-</tr>
-</tbody>
-</table>
-<p>Raises:</p>
-</dd></dl>
-
 </div>
 </div>
 
@@ -210,12 +145,14 @@ using an inclusive start and inclusive end. A parameter with only one discrete v
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -226,7 +163,7 @@ using an inclusive start and inclusive end. A parameter with only one discrete v
       &copy;2017, UW-Madison Computational Materials Group.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.4</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |

@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>LeaveOneOutCV &#8212; MAST-ml 1.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
@@ -31,8 +23,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
@@ -60,36 +51,6 @@
 </div>
 <div class="section" id="code">
 <h2>Code<a class="headerlink" href="#code" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="LeaveOneOutCV.LeaveOneOutCV">
-<em class="property">class </em><code class="descclassname">LeaveOneOutCV.</code><code class="descname">LeaveOneOutCV</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='Measured'</em>, <em>ylabel='Predicted'</em>, <em>mark_outlying_points=None</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LeaveOneOutCV.html#LeaveOneOutCV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LeaveOneOutCV.LeaveOneOutCV" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class to conduct leave-one-out cross-validation analysis</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>training_dataset</strong> (<em>DataHandler object</em>) – Training dataset handler</li>
-<li><strong>testing_dataset</strong> (<em>DataHandler object</em>) – Testing dataset handler</li>
-<li><strong>model</strong> (<em>sklearn model object</em>) – sklearn model</li>
-<li><strong>save_path</strong> (<em>str</em>) – Save path</li>
-<li><strong>xlabel</strong> (<em>str</em>) – Label for full-fit x-axis (default “Measured”)</li>
-<li><strong>ylabel</strong> (<em>str</em>) – Label for full-fit y-axis (default “Predicted”)</li>
-<li><strong>mark_outlying_points</strong> (<em>int</em>) – Number of outlying points to mark in best and worst tests, e.g. 3</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Analysis in the save_path folder
-Plots results in a predicted vs. measured square plot.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> – if testing target data is None; CV must have testing target data</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
 </div>
 </div>
 
@@ -127,12 +88,14 @@ Plots results in a predicted vs. measured square plot.</p>
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -143,7 +106,7 @@ Plots results in a predicted vs. measured square plot.</p>
       &copy;2017, UW-Madison Computational Materials Group.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.4</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |

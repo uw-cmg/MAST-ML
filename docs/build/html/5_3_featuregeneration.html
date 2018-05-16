@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Feature Generation &#8212; MAST-ml 1.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
@@ -31,8 +23,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
@@ -48,80 +39,6 @@
 <p><em>CitrineFeatureGeneration</em>: Class to generate new features using Citrine data and dataframe containing material compositions</p>
 <div class="section" id="code">
 <h2>Code<a class="headerlink" href="#code" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="FeatureGeneration.MaterialsProjectFeatureGeneration">
-<em class="property">class </em><code class="descclassname">FeatureGeneration.</code><code class="descname">MaterialsProjectFeatureGeneration</code><span class="sig-paren">(</span><em>configdict</em>, <em>dataframe</em>, <em>mapi_key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/FeatureGeneration.html#MaterialsProjectFeatureGeneration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#FeatureGeneration.MaterialsProjectFeatureGeneration" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class to generate new features using Materials Project data and dataframe containing material compositions</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>configdict</strong> (<em>dict</em>) – MASTML configfile object as dict</li>
-<li><strong>dataframe</strong> (<em>pandas dataframe</em>) – dataframe containing x and y data and feature names</li>
-<li><strong>mapi_key</strong> (<em>str</em>) – your Materials Project API key</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<dl class="method">
-<dt id="MaterialsProjectFeatureGeneration.generate_materialsproject_features">
-<code class="descname">generate_materialsproject_features</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#MaterialsProjectFeatureGeneration.generate_materialsproject_features" title="Permalink to this definition">¶</a></dt>
-<dd><p>generates materials project feature set based on compositions in dataframe</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>save_to_csv</strong> (<em>bool</em>) – whether to save the magpie feature set to a csv file</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">dataframe containing magpie feature set</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">pandas dataframe</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="FeatureGeneration.CitrineFeatureGeneration">
-<em class="property">class </em><code class="descclassname">FeatureGeneration.</code><code class="descname">CitrineFeatureGeneration</code><span class="sig-paren">(</span><em>configdict</em>, <em>dataframe</em>, <em>api_key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/FeatureGeneration.html#CitrineFeatureGeneration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#FeatureGeneration.CitrineFeatureGeneration" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class to generate new features using Citrine data and dataframe containing material compositions</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>configdict</strong> (<em>dict</em>) – MASTML configfile object as dict</li>
-<li><strong>dataframe</strong> (<em>pandas dataframe</em>) – dataframe containing x and y data and feature names</li>
-<li><strong>api_key</strong> (<em>str</em>) – your Citrination API key</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<dl class="method">
-<dt id="CitrineFeatureGeneration.generate_citrine_features">
-<code class="descname">generate_citrine_features</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CitrineFeatureGeneration.generate_citrine_features" title="Permalink to this definition">¶</a></dt>
-<dd><p>generates Citrine feature set based on compositions in dataframe</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>save_to_csv</strong> (<em>bool</em>) – whether to save the magpie feature set to a csv file</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">dataframe containing magpie feature set</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">pandas dataframe</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</dd></dl>
-
 </div>
 </div>
 
@@ -158,12 +75,14 @@
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -174,7 +93,7 @@
       &copy;2017, UW-Madison Computational Materials Group.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.4</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |

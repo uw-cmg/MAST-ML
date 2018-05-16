@@ -1,80 +1,19 @@
-******************************************************************
-Terminal installation (Linux or linux-like terminal on Mac)
-******************************************************************
+********************************************
+Linux or Mac Shell Installation Instructions
+********************************************
 
-===============
-Install Python3
-===============
+1. Install conda: ``https://www.anaconda.com/download/``
+2. Make an empty environment: ``conda create --name testml``
+3. Enter the environment (bash required): ``source activate testml``
+4. Use a local python environment: ``conda install python nbformat``
+5. Run ``python --version`` to make sure it's 3 not 2
+6. Download repo: ``git clone https://github.com/uw-cmg/mast-ml mastml``
+7. ``cd mastml``
+8. Checkout a good branch: ``git checkout ryan_updates_2018-03-08`` or whatever boss says
+9. If you're on MacOS, then make file ``~/.matplotlib/matplotlibrc`` with contents ``backend: TkAgg``
+10. ``python setup.py build``
+11. ``python setup.py install``
+12. ``cd examples``
+13. ``python ../MASTML.py example_input.conf``
+14. Open ``example_results/index.html`` in your browser and see your pretty plot!
 
-Install Python 3: for easier installation of numpy and scipy dependencies,
-download Anaconda from https://www.continuum.io/downloads
-
----------------------------------
-Create a conda environment
----------------------------------
-
-Create an environment::
-
-    conda create --name TEST_ML numpy scipy matplotlib pandas pymongo configobj nbformat scikit-learn 
-    source activate TEST_ML
-    conda install --channel matsci pymatgen
-    
-(may also be the "materials" channel for pymatgen)
-(may also need conda create --name TEST_ML python=3.5 numpy scipy...etc. if pymatgen requires python 3.5)
-
------------------------------
-Set up Juptyer notebooks
------------------------------
-There is no separate setup for Jupyter notebooks necessary;
-once MASTML has been run and created a notebook, then in the terminal,
-navigate to a directory housing the notebook and type::
-
-    jupyter notebook
-    
-and a browser window with the notebook should appear.
-
-=====================================
-Install the MAST-ml-private package
-=====================================
-
-Git clone the repository, for example::
-
-    git clone ssh://git@github.com/uw-cmg/MAST-ml-private
-    OR
-    git clone ssh://git@github.com/uw-cmg/MAST-ml-private --branch dev
-
-Clone from “master” or "dev"
-Ask for access if you cannot find this code.
-
-Check status.github.com for issues if you believe github may be malfunctioning
-
-Run::
-
-    python setup.py install
-
-(inside the MAST-ml-private folder) (might not work)
-If “SyntaxError: Invalid syntax” occurs at lines 16, 17, or 34 try wrapping prints in () for windows [e.g. print ("Python Version %d.%d.%d found" % (sys.version_info[0], sys.version_info[1], sys.version_info[2])) ]
-
-If setup.py didn’t work, dependencies you need are:      
-
-numpy>=1.11.2
-scipy>=0.18.1
-pandas>=0.19.2
-matplotlib>=1.5.3
-configobj>=5.0.6
-validator
-scikit-learn>=0.18.1
-pymongo>=3.4.0
-pymatgen>=4.6.0
-PeakUtils>=1.0.3
-mlxtend
-nbformat
-
--------------------------
-imports that don’t work 
--------------------------
-First try anaconda install, and if that gives errors try pip install
-Example: conda install numpy , or pip install numpy
-Put MAST-ml-private’s folder in your PYTHONPATH if it isn’t already
-Adding to PYTHONPATH and getting it to stay there
-If you get a missing import error, go ahead and install any other missing packages and submit a github ticket.
