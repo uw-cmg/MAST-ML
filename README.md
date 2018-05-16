@@ -1,11 +1,4 @@
-# MAST-ml-private
-MAST machine learning incubator - for direct scientific use - not intended for public yet
-
-*   NOTE: Use Python 3
-
-For usage on existing csv files, see for example `test/classtest_mastml/test.conf`::
-    
-    python /path/to/MASTML.py test.conf
+# MAterial Science Tools - Machine Learning 
 
 Original code 4/12/17 pulled from the DBTT Skunkworks project.
 
@@ -30,4 +23,3 @@ CMG group members:
 
 Advisor:
 *   Professor Dane Morgan
-
