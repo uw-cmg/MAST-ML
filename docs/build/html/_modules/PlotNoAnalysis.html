@@ -39,48 +39,44 @@
           <div class="body" role="main">
             
   <h1>Source code for PlotNoAnalysis</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span></span><span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Tam Mayeshiba&#39;</span>
+<span class="n">__maintainer__</span> <span class="o">=</span> <span class="s1">&#39;Ryan Jacobs&#39;</span>
+<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;1.0&#39;</span>
+<span class="n">__email__</span> <span class="o">=</span> <span class="s1">&#39;rjacobs3@wisc.edu&#39;</span>
+<span class="n">__date__</span> <span class="o">=</span> <span class="s1">&#39;October 14th, 2017&#39;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">plot_data.PlotHelper</span> <span class="k">import</span> <span class="n">PlotHelper</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">SingleFit</span> <span class="k">import</span> <span class="n">SingleFit</span>
 <span class="kn">from</span> <span class="nn">SingleFit</span> <span class="k">import</span> <span class="n">timeit</span>
-<span class="c1">###########</span>
-<span class="c1"># Just plotting, no analysis</span>
-<span class="c1"># Tam Mayeshiba 2017-03-24</span>
-<span class="c1">###########</span>
 
 <div class="viewcode-block" id="PlotNoAnalysis"><a class="viewcode-back" href="../4_o1_plotnoanalysis.html#PlotNoAnalysis.PlotNoAnalysis">[docs]</a><span class="k">class</span> <span class="nc">PlotNoAnalysis</span><span class="p">(</span><span class="n">SingleFit</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Plotting without analysis</span>
+    <span class="sd">&quot;&quot;&quot;Class to conduct data plotting, but no data analysis</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        training_dataset: for compatibility; only testing dataset is used</span>
-<span class="sd">        testing_dataset: multiple sets are allowed</span>
-<span class="sd">        model, (not used)</span>
-<span class="sd">        save_path,</span>
-<span class="sd">        xlabel,</span>
-<span class="sd">        ylabel,</span>
-<span class="sd">        plot_filter_out: see parent class.</span>
+<span class="sd">        training_dataset (DataHandler object): Training dataset handler</span>
+<span class="sd">        testing_dataset (DataHandler object): Testing dataset handler</span>
+<span class="sd">        model (sklearn model object): sklearn model</span>
+<span class="sd">        save_path (str): Save path</span>
+<span class="sd">        xlabel (str): Label for full-fit x-axis (default &quot;Measured&quot;)</span>
+<span class="sd">        ylabel (str): Label for full-fit y-axis (default &quot;Predicted&quot;)</span>
+<span class="sd">        plot_filter_out (list): List of semicolon-delimited strings with feature;operator;value for leaving out specific values for plotting.</span>
 <span class="sd">        feature_plot_feature (str): Feature to plot on x-axis, against target feature</span>
 <span class="sd">        data_labels (list of str): Dataset labels</span>
+
 <span class="sd">    Returns:</span>
-<span class="sd">        Plots target data against feature data, by group if a grouping feature</span>
-<span class="sd">            is set</span>
+<span class="sd">        Plots target data against feature data, by group if a grouping feature is set</span>
+
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: if</span>
 <span class="sd">            feature_plot_feature is None</span>
 <span class="sd">            there is no testing target data</span>
 <span class="sd">            data_labels is None</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-            <span class="n">training_dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">testing_dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">save_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;X&quot;</span><span class="p">,</span>
-            <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span>
-            <span class="n">plot_filter_out</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">feature_plot_feature</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">data_labels</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">training_dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">testing_dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">save_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;X&quot;</span><span class="p">,</span>
+            <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="n">plot_filter_out</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">feature_plot_feature</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data_labels</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Additional attributes to parent class:</span>
 <span class="sd">            self.testing_datasets &lt;list&gt;: List of testing datasets which</span>

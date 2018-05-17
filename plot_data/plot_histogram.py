@@ -1,11 +1,11 @@
 import os
 import matplotlib
 import numpy as np
-import data_parser
+#import data_parser
 import matplotlib.pyplot as plt
 import matplotlib.mlab as mlab
-from mean_error import mean_error
-import data_analysis.printout_tools as ptools
+#from mean_error import mean_error
+#import data_analysis.printout_tools as ptools
 import time
 
 def simple_histogram(xvals,
@@ -60,7 +60,7 @@ def simple_histogram(xvals,
         blist = np.array(bin_list.split(","),'float')
     fig, axh = plt.subplots()
     n_per_bin, bins, patches = axh.hist(xvals, bins=blist, normed=0,
-                facecolor='blue', alpha=0.75)
+                facecolor='blue', edgecolor='black', alpha=0.75)
     if int(guideline) > 0:
         from scipy.stats import norm
         import matplotlib.mlab as mlab
@@ -146,6 +146,6 @@ def simple_histogram(xvals,
     n_per_bin = np.array(n_per_bin, 'float')
     myarray = np.array([bins, n_per_bin]).transpose()
     csvname = os.path.join(savepath, "%s.csv" % savestr)
-    ptools.array_to_csv(csvname, headerline, myarray)
+    #ptools.array_to_csv(csvname, headerline, myarray)
     return
 

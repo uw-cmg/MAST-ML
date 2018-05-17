@@ -3,7 +3,8 @@ import pandas as pd
 import os
 import sys
 testdir = os.path.realpath(os.path.dirname(sys.argv[0]))
-moduledir = '/Users/ryanjacobs/PycharmProjects/MASTML/'
+print(testdir)
+moduledir = '/Users/ryanjacobs/PycharmProjects/MASTML_2018-03-08/MAST-ml-private/'
 sys.path.append(moduledir)
 from FeatureGeneration import MagpieFeatureGeneration, MaterialsProjectFeatureGeneration, CitrineFeatureGeneration
 from MASTMLInitializer import ConfigFileParser

@@ -1,3 +1,9 @@
+__author__ = 'Tam Mayeshiba'
+__maintainer__ = 'Ryan Jacobs'
+__version__ = '1.0'
+__email__ = 'rjacobs3@wisc.edu'
+__date__ = 'October 14th, 2017'
+
 import numpy as np
 import os
 from SingleFit import timeit
@@ -7,21 +13,20 @@ import copy
 import logging
 
 class PredictionVsFeature(SingleFit):
-    """Make prediction vs. feature plots from a single fit.
+    """Class used to make plots of predicted values versus a specific feature, using a single fit.
 
     Args:
-        training_dataset,
-        testing_dataset, (Multiple testing datasets are allowed as a list.)
-        model,
-        save_path,
-        xlabel,
-        ylabel,
-        plot_filter_out, see parent class.
-        feature_plot_xlabel (str): x-axis label for per-group plots of predicted and
-                                measured y data versus data from field of
-                                numeric_field_name
-        feature_plot_ylabel (str): y-axis label for per-group plots
+        training_dataset (DataHandler object): Training dataset handler
+        testing_dataset (DataHandler object): Testing dataset handler
+        model (sklearn model object): sklearn model
+        save_path (str): Save path
+        xlabel (str): Label for full-fit x-axis (default "Measured")
+        ylabel (str): Label for full-fit y-axis (default "Predicted")
+        plot_filter_out (list): List of semicolon-delimited strings with feature;operator;value for leaving out specific values for plotting.
+
         feature_plot_feature (str): feature for per-group feature plots
+        feature_plot_xlabel (str): x-axis label for per-group plots of predicted and measured y data versus data from field of numeric_field_name
+        feature_plot_ylabel (str): y-axis label for per-group plots
         markers (str): comma-delimited marker list for split plots
         outlines (str): comma-delimited color list for split plots
         linestyles (str): comma-delimited list of line styles for split plots
@@ -33,25 +38,12 @@ class PredictionVsFeature(SingleFit):
 
     Raises:
         ValueError: if feature_plot_feature is not set
+
     """
-    def __init__(self, 
-        training_dataset=None,
-        testing_dataset=None,
-        model=None,
-        save_path=None,
-        xlabel="Measured",
-        ylabel="Predicted",
-        plot_filter_out = "",
-        feature_plot_xlabel = "X",
-        feature_plot_ylabel = "Prediction",
-        feature_plot_feature = None,
-        markers="",
-        outlines="",
-        data_labels="",
-        linestyles="",
-        legendloc=None,
-        sizes="",
-        *args, **kwargs):
+    def __init__(self, training_dataset=None, testing_dataset=None, model=None, save_path=None, xlabel="Measured",
+        ylabel="Predicted", plot_filter_out = "", feature_plot_xlabel = "X", feature_plot_ylabel = "Prediction",
+        feature_plot_feature = None, markers="", outlines="", data_labels="", linestyles="", legendloc=None,
+        sizes="", *args, **kwargs):
         """
             Additional class attributes not in parent class:
            

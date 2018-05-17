@@ -12,7 +12,7 @@ import time
 import matplotlib
 import importlib
 import pandas as pd
-from MASTMLInitializer import MASTMLWrapper, ConfigFileValidator
+from MASTMLInitializer import ModelTestConstructor, ConfigFileValidator
 from DataOperations import DataParser, DataframeUtilities
 from FeatureGeneration import MagpieFeatureGeneration, MaterialsProjectFeatureGeneration, CitrineFeatureGeneration
 from FeatureOperations import FeatureNormalization, FeatureIO, MiscFeatureOperations
@@ -24,12 +24,12 @@ class MASTMLDriver(object):
     """
     Class responsible for organizing and executing a MASTML workflow
 
-    Attributes:
-        configfile <MASTML configfile object> : a MASTML input file, as a configfile object
+    Args:
+        configfile (MASTML configfile object) : a MASTML input file, as a configfile object
 
     Methods:
         run_MASTML : executes the MASTML workflow
-            returns: None
+
     """
     def __init__(self, configfile):
         self.configfile = configfile
@@ -39,7 +39,7 @@ class MASTMLDriver(object):
         self.data_setup = None
         self.models_and_tests_setup = None
         self.configdict = None
-        self.mastmlwrapper = None
+        self.modeltestconstructor = None
         self.save_path = None #top-level save path
         self.data_dict = dict() #Data dictionary
         self.model_list = list() #list of actual models
@@ -50,6 +50,8 @@ class MASTMLDriver(object):
         self.start_time = None
         self.favorites_dict = dict()
         self.test_save_paths = list()
+        self.logfilename = None
+        self.mastml_install_directory = os.path.dirname(os.path.realpath(sys.argv[0]))
         return
 
     def run_MASTML(self):
@@ -59,8 +61,8 @@ class MASTMLDriver(object):
         self._set_favorites_dict()
 
         # Parse MASTML input file
-        self.mastmlwrapper, self.configdict, errors_present = self._generate_mastml_wrapper()
-        self.data_setup = self.mastmlwrapper._process_config_keyword(keyword='Data Setup')
+        self.modeltestconstructor, self.configdict, errors_present = self._generate_mastml_wrapper()
+        self.data_setup = self.modeltestconstructor._process_config_keyword(keyword='Data Setup')
 
         # General setup
         self._perform_general_setup()
@@ -137,8 +139,9 @@ class MASTMLDriver(object):
         envlevel = os.getenv("MASTML_LOGLEVEL")
         if not envlevel is None:
             level = envlevel
-        logfilename = 'MASTMLlog%s.log' % self.configfile.replace('.conf','').replace('.','-').replace('\\','').replace('/','-')
-        logging.basicConfig(filename=logfilename, level=level)
+        testname = str(self.configfile).split('.')[0]
+        self.logfilename = "MASTMLlog_" + str(testname) + ".log"
+        logging.basicConfig(filename=self.logfilename, level=level)
         current_time = time.strftime('%Y'+'-'+'%m'+'-'+'%d'+', '+'%H'+' hours, '+'%M'+' minutes, '+'and '+'%S'+' seconds')
         logging.info('Initiated new MASTML session at: %s' % current_time)
         self.start_time = time.strftime("%Y-%m-%d, %H:%M:%S")
@@ -158,7 +161,7 @@ class MASTMLDriver(object):
     def _end_html(self):
         self.readme_html.append("<HR>\n")
         self.readme_html.append("<H2>Setup</H2>\n")
-        logpath = os.path.join(self.save_path, "MASTMLlog.log")
+        logpath = os.path.join(self.save_path, self.logfilename)
         logpath = os.path.relpath(logpath, self.save_path)
         self.readme_html.append('<A HREF="%s">Log file</A><BR>\n' % logpath)
         confpath = os.path.join(self.save_path, str(self.configfile))
@@ -174,19 +177,24 @@ class MASTMLDriver(object):
 
     def _generate_mastml_wrapper(self):
         configdict, errors_present = ConfigFileValidator(configfile=self.configfile).run_config_validation()
-        mastmlwrapper = MASTMLWrapper(configdict=configdict)
+        modeltestconstructor = ModelTestConstructor(configdict=configdict)
         logging.info('Successfully read in and parsed your MASTML input file, %s' % str(self.configfile))
-        return mastmlwrapper, configdict, errors_present
+        return modeltestconstructor, configdict, errors_present
 
     def _perform_general_setup(self):
-        self.general_setup = self.mastmlwrapper._process_config_keyword(keyword='General Setup')
+        self.general_setup = self.modeltestconstructor._process_config_keyword(keyword='General Setup')
         self.save_path = os.path.abspath(self.general_setup['save_path'])
+        if os.path.exists(self.save_path):
+            logging.info('Your specified save path already exists. Creating a new save path appended with the date/time of this MASTML run')
+            current_time = time.strftime('%Y' + '-' + '%m' + '-' + '%d' + '-' + '%H' + '%M' + '%S')
+            self.save_path = self.save_path+'_'+current_time
         if not os.path.isdir(self.save_path):
             os.mkdir(self.save_path)
+        self.configdict['General Setup']['save_path'] = self.save_path
         return self.save_path
 
     def _perform_csv_setup(self):
-        self.csv_setup = self.mastmlwrapper._process_config_keyword(keyword = "CSV Setup")
+        self.csv_setup = self.modeltestconstructor._process_config_keyword(keyword = "CSV Setup")
         setup_class = self.csv_setup.pop("setup_class") #also remove from dict
         class_name = setup_class.split(".")[-1]
         test_module = importlib.import_module('%s' % (setup_class))
@@ -210,9 +218,11 @@ class MASTMLDriver(object):
 
             logging.info('Creating data dict for data path %s and data name %s' % (data_path, data_name))
 
-            data_weights = self.data_setup[data_name]['weights']
+            #data_weights = self.data_setup[data_name]['weights']
             if 'labeling_features' in self.general_setup.keys():
                 labeling_features = self._string_or_list_input_to_list(self.general_setup['labeling_features'])
+                if labeling_features[0] == 'None':
+                    labeling_features = None
             else:
                 labeling_features = None
             if 'target_error_feature' in self.general_setup.keys():
@@ -221,12 +231,13 @@ class MASTMLDriver(object):
                 target_error_feature = None
             if 'grouping_feature' in self.general_setup.keys():
                 grouping_feature = self.general_setup['grouping_feature']
+                if grouping_feature == 'None':
+                    grouping_feature = None
             else:
                 grouping_feature = None
 
             if 'Feature Generation' in self.configdict.keys():
-                if self.configdict['Feature Generation']['perform_feature_generation'] == bool(True) or \
-                                self.configdict['Feature Generation']['perform_feature_generation'] == "True":
+                if self.configdict['Feature Generation']['perform_feature_generation'] == True:
                     generate_features = True
                 else:
                     generate_features = False
@@ -234,13 +245,11 @@ class MASTMLDriver(object):
                 generate_features = False
 
             if 'Feature Normalization' in self.configdict.keys():
-                if self.configdict['Feature Normalization']['normalize_x_features'] == bool(True) or \
-                                self.configdict['Feature Normalization']['normalize_x_features'] == "True":
+                if self.configdict['Feature Normalization']['normalize_x_features'] == True:
                     normalize_x_features = True
                 else:
                     normalize_x_features = False
-                if self.configdict['Feature Normalization']['normalize_y_feature'] == bool(True) or \
-                                self.configdict['Feature Normalization']['normalize_y_feature'] == "True":
+                if self.configdict['Feature Normalization']['normalize_y_feature'] == True:
                     normalize_y_feature = True
                 else:
                     normalize_y_feature = False
@@ -249,8 +258,7 @@ class MASTMLDriver(object):
                 normalize_y_feature = False
 
             if 'Feature Selection' in self.configdict.keys():
-                if self.configdict['Feature Selection']['perform_feature_selection'] == bool(True) or \
-                                self.configdict['Feature Selection']['perform_feature_selection'] == "True":
+                if self.configdict['Feature Selection']['perform_feature_selection'] == True:
                     select_features = True
                 else:
                     select_features = False
@@ -265,8 +273,9 @@ class MASTMLDriver(object):
             Xdata, ydata, x_features, y_feature, dataframe = self._parse_input_data(data_path)
 
             # Plot initial histogram of input target data
-            DataframeUtilities().plot_dataframe_histogram(configdict=self.configdict, dataframe=dataframe,
-                                                           y_feature=y_feature)
+            DataframeUtilities().plot_dataframe_histogram(dataframe=dataframe[y_feature], title='Histogram of input data',
+                                                          xlabel=y_feature, ylabel='Number of occurrences',
+                                                          save_path=self.configdict['General Setup']['save_path'], file_name='input_data_histogram.png')
 
             original_x_features = list(x_features)
             original_columns = list(dataframe.columns)
@@ -279,8 +288,18 @@ class MASTMLDriver(object):
             dataframe_grouped = pd.DataFrame()
             if not (labeling_features is None):
                 dataframe_labeled = FeatureIO(dataframe=dataframe).keep_custom_features(features_to_keep=labeling_features, y_feature=y_feature)
-                if normalize_x_features == bool(True):
-                    dataframe_labeled, scaler = FeatureNormalization(dataframe=dataframe_labeled, configdict=self.configdict).normalize_features(x_features=labeling_features, y_feature=y_feature)
+                if normalize_x_features == True:
+                    feature_normalization_type = self.configdict['Feature Normalization']['feature_normalization_type']
+                    feature_scale_min = self.configdict['Feature Normalization']['feature_scale_min']
+                    feature_scale_max = self.configdict['Feature Normalization']['feature_scale_max']
+                    dataframe_labeled, scaler = FeatureNormalization(dataframe=dataframe_labeled,
+                                                                     configdict=self.configdict).normalize_features(x_features=labeling_features,
+                                                                                                                    y_feature=y_feature,
+                                                                                                                    normalize_x_features=normalize_x_features,
+                                                                                                                    normalize_y_feature=normalize_y_feature,
+                                                                                                                    feature_normalization_type=feature_normalization_type,
+                                                                                                                    feature_scale_min=feature_scale_min,
+                                                                                                                    feature_scale_max=feature_scale_max)
             if not (grouping_feature is None):
                 dataframe_grouped = FeatureIO(dataframe=dataframe).keep_custom_features(features_to_keep=[grouping_feature], y_feature=y_feature)
 
@@ -294,7 +313,7 @@ class MASTMLDriver(object):
                 Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe, target_feature=y_feature)
 
             # First remove features containing strings before doing feature normalization or other operations, but don't remove grouping features
-            if generate_features == bool(True):
+            if generate_features == True:
                 nonstring_x_features, dataframe_nostrings = MiscFeatureOperations(configdict=self.configdict).remove_features_containing_strings(dataframe=dataframe, x_features=x_features_NOUSE)
                 #Remove columns containing all entries of NaN
                 dataframe_nostrings = dataframe_nostrings.dropna(axis=1, how='all')
@@ -306,8 +325,8 @@ class MASTMLDriver(object):
             # Remove columns containing all entries of NaN
             dataframe_nostrings = dataframe_nostrings.dropna(axis=1, how='all')
 
-            # Fill spots with NaN to be empty string
-            dataframe_nostrings = dataframe_nostrings.dropna(axis=1, how='any')
+            # Remove rows containing a single NaN value. This will handle removing a row with missing y-data, for example
+            dataframe_nostrings = dataframe_nostrings.dropna(axis=0, how='any')
 
             # Re-obtain x_feature list as some features may have been dropped
             Xdata, ydata, x_features, y_feature, dataframe_nostrings = DataParser(configdict=self.configdict).parse_fromdataframe(dataframe=dataframe_nostrings, target_feature=y_feature)
@@ -315,13 +334,16 @@ class MASTMLDriver(object):
             logging.debug("pre-changes:%s" % dataframe_nostrings.columns)
 
             # Normalize features (optional)
-            if normalize_x_features == bool(True) or normalize_y_feature == bool(True):
+            if normalize_x_features == True or normalize_y_feature == True:
                 fn = FeatureNormalization(dataframe=dataframe_nostrings, configdict=self.configdict)
-                dataframe_nostrings, scaler = fn.normalize_features(x_features=x_features, y_feature=y_feature, normalize_x_features=normalize_x_features, normalize_y_feature=normalize_y_feature)
+                feature_normalization_type = self.configdict['Feature Normalization']['feature_normalization_type']
+                feature_scale_min = self.configdict['Feature Normalization']['feature_scale_min']
+                feature_scale_max = self.configdict['Feature Normalization']['feature_scale_max']
+                dataframe_nostrings, scaler = fn.normalize_features(x_features=x_features, y_feature=y_feature, normalize_x_features=normalize_x_features, normalize_y_feature=normalize_y_feature, feature_normalization_type=feature_normalization_type, feature_scale_min=feature_scale_min, feature_scale_max=feature_scale_max)
                 x_features, y_feature = DataParser(configdict=self.configdict).get_features(dataframe=dataframe_nostrings, target_feature=y_feature)
 
             # Perform feature selection and dimensional reduction, as specified in the input file (optional)
-            if (select_features == bool(True)) and (y_feature in dataframe_nostrings.columns):
+            if (select_features == True) and (y_feature in dataframe_nostrings.columns):
                 # Remove any additional columns that are not x_features using to be fit to data
                 features = dataframe_nostrings.columns.values.tolist()
                 features_to_remove = []
@@ -339,13 +361,15 @@ class MASTMLDriver(object):
             grouping_and_labeling_features = []
             duplicate_features = []
             if 'grouping_feature' in self.configdict['General Setup'].keys():
-                grouping_and_labeling_features.append(grouping_feature)
+                if not grouping_feature == None:
+                    grouping_and_labeling_features.append(grouping_feature)
             if 'labeling_features' in self.configdict['General Setup'].keys():
-                for feature in labeling_features:
-                    grouping_and_labeling_features.append(feature)
-                    if feature in x_features:
-                        if feature not in duplicate_features:
-                            duplicate_features.append(feature)
+                if not labeling_features == None:
+                    for feature in labeling_features:
+                        grouping_and_labeling_features.append(feature)
+                        if feature in x_features:
+                            if feature not in duplicate_features:
+                                duplicate_features.append(feature)
 
             # Now merge dataframes
             dataframe_labeled_grouped = DataframeUtilities().merge_dataframe_columns(dataframe1=dataframe_labeled, dataframe2=dataframe_grouped)
@@ -391,87 +415,90 @@ class MASTMLDriver(object):
     @timeit
     def _perform_feature_generation(self, dataframe):
         for k, v in self.configdict['Feature Generation'].items():
-            if k == 'add_magpie_features' and v == 'True':
+            if k == 'add_magpie_features' and v == True:
                 logging.info('FEATURE GENERATION: Adding Magpie features to your feature list')
-                mfg = MagpieFeatureGeneration(configdict=self.configdict, dataframe=dataframe)
+                mfg = MagpieFeatureGeneration(configdict=self.configdict, dataframe=dataframe, mastml_install_directory=self.mastml_install_directory)
                 dataframe = mfg.generate_magpie_features(save_to_csv=True)
-                #print(dataframe.shape)
-            if k == 'add_materialsproject_features' and v == 'True':
+            if k == 'add_materialsproject_features' and v == True:
                 logging.info('FEATURE GENERATION: Adding Materials Project features to your feature list')
                 mpfg = MaterialsProjectFeatureGeneration(configdict=self.configdict, dataframe=dataframe, mapi_key=self.configdict['Feature Generation']['materialsproject_apikey'])
                 dataframe = mpfg.generate_materialsproject_features(save_to_csv=True)
-                #print(dataframe.shape)
-            if k == 'add_citrine_features' and v == 'True':
+            if k == 'add_citrine_features' and v == True:
+                logging.info('FEATURE GENERATION: Adding Citrine features to your feature list')
                 cfg = CitrineFeatureGeneration(configdict=self.configdict, dataframe=dataframe, api_key=self.configdict['Feature Generation']['citrine_apikey'])
                 dataframe = cfg.generate_citrine_features(save_to_csv=True)
-                #print(dataframe.shape)
         return dataframe
 
     @timeit
     def _perform_feature_selection(self, dataframe, x_features, y_feature):
-        for k, v in self.configdict['Feature Selection'].items():
-            if k == 'remove_constant_features' and v == 'True':
-                logging.info('FEATURE SELECTION: Removing constant features from your feature list')
-                dr = DimensionalReduction(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
-                dataframe = dr.remove_constant_features()
-                x_features, y_feature = DataParser(configdict=self.configdict).get_features(dataframe=dataframe, target_feature=y_feature)
-
-            if k == 'feature_selection_algorithm':
-                logging.info('FEATURE SELECTION: Selecting features using a %s algorithm' % v)
-                model_to_use = str(self.configdict['Feature Selection']['model_to_use_for_learning_curve'])
-                fs = FeatureSelection(configdict=self.configdict, dataframe=dataframe, x_features=x_features, y_feature=y_feature, model_type=model_to_use)
-                if v == 'sequential_forward_selection':
-                    if int(self.configdict['Feature Selection']['number_of_features_to_keep']) <= len(x_features):
-                        dataframe = fs.sequential_forward_selection(number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']))
-                    else:
-                        logging.info('Warning: you have specified to keep more features than the total number of features in your dataset. Defaulting to keep all features in feature selection')
-                        dataframe = fs.sequential_forward_selection(number_features_to_keep=int(len(x_features)))
-                if v == 'recursive_feature_elimination':
-                    if int(self.configdict['Feature Selection']['number_of_features_to_keep']) <= len(x_features):
-                        dataframe = fs.feature_selection(feature_selection_type = 'recursive_feature_elimination',
-                                                           number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']),
-                                                           use_mutual_info=self.configdict['Feature Selection']['use_mutual_information'])
-                    else:
-                        logging.info('Warning: you have specified to keep more features than the total number of features in your dataset. Defaulting to keep all features in feature selection')
-                        dataframe = fs.feature_selection(feature_selection_type = 'recursive_feature_elimination',
-                                                           number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']),
-                                                           use_mutual_info=self.configdict['Feature Selection']['use_mutual_information'])
-                    if self.configdict['Feature Selection']['generate_feature_learning_curve'] == 'True':
-                        learningcurve = LearningCurve(configdict=self.configdict, dataframe=dataframe, model_type=model_to_use)
-                        logging.info('Generating a feature learning curve using a %s algorithm' % v)
-                        learningcurve.generate_feature_learning_curve(feature_selection_algorithm='recursive_feature_elimination')
-                if v == 'univariate_feature_selection':
-                    if int(self.configdict['Feature Selection']['number_of_features_to_keep']) <= len(x_features):
-                        dataframe = fs.feature_selection(feature_selection_type='univariate_feature_selection',
-                                                         number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']),
-                                                         use_mutual_info=self.configdict['Feature Selection']['use_mutual_information'])
-                    else:
-                        logging.info('Warning: you have specified to keep more features than the total number of features in your dataset. Defaulting to keep all features in feature selection')
-                        dataframe = fs.feature_selection(feature_selection_type='univariate_feature_selection',
-                                                         number_features_to_keep=int(len(x_features)),
-                                                         use_mutual_info=self.configdict['Feature Selection']['use_mutual_information'])
-                    if self.configdict['Feature Selection']['generate_feature_learning_curve'] == 'True':
-                        learningcurve = LearningCurve(configdict=self.configdict, dataframe=dataframe, model_type=model_to_use)
-                        logging.info('Generating a feature learning curve using a %s algorithm' % v)
-                        learningcurve.generate_feature_learning_curve(feature_selection_algorithm='univariate_feature_selection')
+        #for k, v in self.configdict['Feature Selection'].items():
+            #if k == 'remove_constant_features' and v == True:
+        if self.configdict['Feature Selection']['remove_constant_features'] == True:
+            logging.info('FEATURE SELECTION: Removing constant features from your feature list')
+            dr = DimensionalReduction(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
+            dataframe = dr.remove_constant_features()
+            x_features, y_feature = DataParser(configdict=self.configdict).get_features(dataframe=dataframe, target_feature=y_feature)
+        #for v in self.configdict['Feature Selection']['feature_selection_algorithm'].values():
+            #if k == 'feature_selection_algorithm':
+        logging.info('FEATURE SELECTION: Selecting features using a %s algorithm' % str(self.configdict['Feature Selection']['feature_selection_algorithm']))
+        model_to_use = str(self.configdict['Feature Selection']['model_to_use_for_learning_curve'])
+        fs = FeatureSelection(configdict=self.configdict, dataframe=dataframe, x_features=x_features, y_feature=y_feature, model_type=model_to_use)
+        if self.configdict['Feature Selection']['feature_selection_algorithm'] == 'basic_forward_selection':
+            dataframe = fs.feature_selection(feature_selection_type='basic_forward_selection',
+                                             number_features_to_keep=self.configdict['Feature Selection']['number_of_features_to_keep'],
+                                             use_mutual_info=self.configdict['Feature Selection']['use_mutual_information'])
+        if self.configdict['Feature Selection']['feature_selection_algorithm'] == 'sequential_forward_selection':
+            if int(self.configdict['Feature Selection']['number_of_features_to_keep']) <= len(x_features):
+                dataframe = fs.sequential_forward_selection(number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']))
+            else:
+                logging.info('Warning: you have specified to keep more features than the total number of features in your dataset. Defaulting to keep all features in feature selection')
+                dataframe = fs.sequential_forward_selection(number_features_to_keep=int(len(x_features)))
+        if self.configdict['Feature Selection']['feature_selection_algorithm'] == 'recursive_feature_elimination':
+            if int(self.configdict['Feature Selection']['number_of_features_to_keep']) <= len(x_features):
+                dataframe = fs.feature_selection(feature_selection_type = 'recursive_feature_elimination',
+                                                   number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']),
+                                                   use_mutual_info=self.configdict['Feature Selection']['use_mutual_information'])
+            else:
+                logging.info('Warning: you have specified to keep more features than the total number of features in your dataset. Defaulting to keep all features in feature selection')
+                dataframe = fs.feature_selection(feature_selection_type = 'recursive_feature_elimination',
+                                                   number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']),
+                                                   use_mutual_info=self.configdict['Feature Selection']['use_mutual_information'])
+            if self.configdict['Feature Selection']['generate_feature_learning_curve'] == True:
+                learningcurve = LearningCurve(configdict=self.configdict, dataframe=dataframe, model_type=model_to_use)
+                logging.info('Generating a feature learning curve using a %s algorithm' % str(self.configdict['Feature Selection']['feature_selection_algorithm']))
+                learningcurve.generate_feature_learning_curve(feature_selection_algorithm='recursive_feature_elimination')
+        if self.configdict['Feature Selection']['feature_selection_algorithm'] == 'univariate_feature_selection':
+            if int(self.configdict['Feature Selection']['number_of_features_to_keep']) <= len(x_features):
+                dataframe = fs.feature_selection(feature_selection_type='univariate_feature_selection',
+                                                 number_features_to_keep=int(self.configdict['Feature Selection']['number_of_features_to_keep']),
+                                                 use_mutual_info=self.configdict['Feature Selection']['use_mutual_information'])
+            else:
+                logging.info('Warning: you have specified to keep more features than the total number of features in your dataset. Defaulting to keep all features in feature selection')
+                dataframe = fs.feature_selection(feature_selection_type='univariate_feature_selection',
+                                                 number_features_to_keep=int(len(x_features)),
+                                                 use_mutual_info=self.configdict['Feature Selection']['use_mutual_information'])
+            if self.configdict['Feature Selection']['generate_feature_learning_curve'] == True:
+                learningcurve = LearningCurve(configdict=self.configdict, dataframe=dataframe, model_type=model_to_use)
+                logging.info('Generating a feature learning curve using a %s algorithm' % str(self.configdict['Feature Selection']['feature_selection_algorithm']))
+                learningcurve.generate_feature_learning_curve(feature_selection_algorithm='univariate_feature_selection')
         return dataframe
 
     def _gather_models(self, y_feature):
-        self.models_and_tests_setup = self.mastmlwrapper._process_config_keyword(keyword='Models and Tests to Run')
+        self.models_and_tests_setup = self.modeltestconstructor._process_config_keyword(keyword='Models and Tests to Run')
         model_list = []
         model_val = self.models_and_tests_setup['models']
         model_vals = list()
 
         if type(model_val) is str:
             logging.info('Getting model %s' % model_val)
-            ml_model = self.mastmlwrapper.get_machinelearning_model(model_type=model_val, y_feature=y_feature)
+            ml_model = self.modeltestconstructor.get_machinelearning_model(model_type=model_val, y_feature=y_feature)
             model_list.append(ml_model)
             logging.info('Adding model %s to queue...' % str(model_val))
             model_vals.append(model_val)
         elif type(model_val) is list:
             for model in model_val:
                 logging.info('Getting model %s' % model)
-                ml_model = self.mastmlwrapper.get_machinelearning_model(model_type=model, y_feature=y_feature)
+                ml_model = self.modeltestconstructor.get_machinelearning_model(model_type=model, y_feature=y_feature)
                 model_list.append(ml_model)
                 logging.info('Adding model %s to queue...' % str(model))
                 model_vals.append(model_val)
@@ -519,7 +546,7 @@ class MASTMLDriver(object):
 
                     #print('passing model', model, 'for test type', test_type)
 
-                    self.mastmlwrapper.get_machinelearning_test(test_type=test_type,
+                    self.modeltestconstructor.get_machinelearning_test(test_type=test_type,
                                                                 model=model, save_path=test_save_path, **test_params)
                     logging.info('Ran test %s for your %s model' % (test_type, str(model)))
                     self.readme_html.extend(self._make_links_for_favorites(test_folder, test_save_path))
@@ -541,21 +568,20 @@ class MASTMLDriver(object):
 
     def _move_log_and_input_files(self):
         cwd = os.getcwd()
-        if not(self.save_path == cwd):
-            oldlog = os.path.join(self.save_path, "MASTMLlog.log")
-            copylog = os.path.join(cwd, "MASTMLlog.log")
+        logging.info('Your MASTML runs have completed successfully! Wrapping up MASTML session...')
+        if self.save_path != cwd:
+            log_old_location = os.path.join(cwd, self.logfilename)
 
             inputdata_name = self.configdict['Data Setup']['Initial']['data_path'].split('/')[-1]
-            oldinput = os.path.join(self.save_path, inputdata_name)
-            copyinput = os.path.join(cwd, inputdata_name)
+            data_old_location = os.path.join(cwd, inputdata_name)
 
-            if os.path.exists(oldlog):
-                os.remove(oldlog)
-            shutil.move(copylog, self.save_path)
+            shutil.copy(self.logfilename, self.save_path)
+            logging.shutdown()
+            if os.path.exists(log_old_location):
+                os.remove(log_old_location)
 
-            if os.path.exists(oldinput):
-                os.remove(oldinput)
-            shutil.copy(copyinput, self.save_path)
+            if os.path.exists(data_old_location):
+                shutil.copy(data_old_location, self.save_path)
 
             copyconfig = os.path.join(cwd, str(self.configfile))
             shutil.copy(copyconfig, self.save_path)
@@ -615,7 +641,6 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         mastml = MASTMLDriver(configfile=sys.argv[1])
         mastml.run_MASTML()
-        logging.info('Your MASTML runs are complete!')
     else:
-        logging.info('Specify the name of your MASTML input file, such as "mastmlinput.conf", and run as "python AllTests.py mastmlinput.conf" ')
+        logging.info('Specify the name of your MASTML input file, such as "mastmlinput.conf", and run as "python MASTML.py mastmlinput.conf" ')
         sys.exit()

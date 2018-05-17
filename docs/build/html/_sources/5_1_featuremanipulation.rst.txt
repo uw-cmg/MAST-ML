@@ -1,0 +1,19 @@
+===================
+Feature Selection
+===================
+
+test text
+
+----------------
+Code
+----------------
+
+.. autoclass:: FeatureSelection.DimensionalReduction
+
+.. autoclass:: FeatureSelection.FeatureSelection
+
+.. autoclass:: FeatureSelection.BasicForwardSelection
+
+.. autoclass:: FeatureSelection.LearningCurve
+
+.. autoclass:: FeatureSelection.MiscFeatureSelectionOperations

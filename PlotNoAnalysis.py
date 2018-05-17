@@ -1,45 +1,41 @@
+__author__ = 'Tam Mayeshiba'
+__maintainer__ = 'Ryan Jacobs'
+__version__ = '1.0'
+__email__ = 'rjacobs3@wisc.edu'
+__date__ = 'October 14th, 2017'
+
 import numpy as np
 from plot_data.PlotHelper import PlotHelper
 import os
 from SingleFit import SingleFit
 from SingleFit import timeit
-###########
-# Just plotting, no analysis
-# Tam Mayeshiba 2017-03-24
-###########
 
 class PlotNoAnalysis(SingleFit):
-    """Plotting without analysis
+    """Class to conduct data plotting, but no data analysis
 
     Args:
-        training_dataset: for compatibility; only testing dataset is used
-        testing_dataset: multiple sets are allowed
-        model, (not used)
-        save_path,
-        xlabel,
-        ylabel,
-        plot_filter_out: see parent class.
+        training_dataset (DataHandler object): Training dataset handler
+        testing_dataset (DataHandler object): Testing dataset handler
+        model (sklearn model object): sklearn model
+        save_path (str): Save path
+        xlabel (str): Label for full-fit x-axis (default "Measured")
+        ylabel (str): Label for full-fit y-axis (default "Predicted")
+        plot_filter_out (list): List of semicolon-delimited strings with feature;operator;value for leaving out specific values for plotting.
         feature_plot_feature (str): Feature to plot on x-axis, against target feature
         data_labels (list of str): Dataset labels
+
     Returns:
-        Plots target data against feature data, by group if a grouping feature
-            is set
+        Plots target data against feature data, by group if a grouping feature is set
+
     Raises:
         ValueError: if
             feature_plot_feature is None
             there is no testing target data
             data_labels is None
+
     """
-    def __init__(self,
-            training_dataset=None,
-            testing_dataset=None,
-            model=None,
-            save_path=None,
-            xlabel="X",
-            ylabel="Y",
-            plot_filter_out=None,
-            feature_plot_feature=None,
-            data_labels=None):
+    def __init__(self, training_dataset=None, testing_dataset=None, model=None, save_path=None, xlabel="X",
+            ylabel="Y", plot_filter_out=None, feature_plot_feature=None, data_labels=None):
         """
         Additional attributes to parent class:
             self.testing_datasets <list>: List of testing datasets which

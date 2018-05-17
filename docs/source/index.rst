@@ -17,4 +17,8 @@ Contents:
 
     4_tests.rst
 
-    5_custom_additions.rst
+    5_featuremanipulations.rst
+
+    6_datamanipulations.rst
+
+    7_mastmlpipeline.rst

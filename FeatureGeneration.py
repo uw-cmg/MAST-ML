@@ -8,9 +8,14 @@ import pandas as pd
 import sys
 import os
 import logging
+import math
 from pymatgen import Element, Composition
 from pymatgen.ext.matproj import MPRester
-from citrination_client import CitrinationClient, PifQuery, SystemQuery, ChemicalFieldQuery, ChemicalFilter
+try:
+    from citrination_client import CitrinationClient, PifQuery, SystemQuery, ChemicalFieldQuery, ChemicalFilter
+except ImportError:
+    print('You have installed an incompatible version of citrination_client. Please install version 2.1.0, via "pip install citrination_client=="2.1.0""')
+    sys.exit()
 from DataOperations import DataframeUtilities
 from SingleFit import timeit
 
@@ -18,20 +23,24 @@ class MagpieFeatureGeneration(object):
     """
     Class to generate new features using Magpie data and dataframe containing material compositions
 
-    Attributes:
-        configdict <dict> : MASTML configfile object as dict
-        dataframe <pandas dataframe> : dataframe containing x and y data and feature names
+    Args:
+        configdict (dict) : MASTML configfile object as dict
+        dataframe (pandas dataframe) : dataframe containing x and y data and feature names
+        mastml_install_directory (string) : string containing the MASTML code absolute path
 
     Methods:
         generate_magpie_features : generates magpie feature set based on compositions in dataframe
-            args:
-                save_to_csv <bool> : whether to save the magpie feature set to a csv file
-            returns:
-                dataframe <pandas dataframe> : dataframe containing magpie feature set
+
+            Args:
+                save_to_csv (bool) : whether to save the magpie feature set to a csv file
+
+            Returns:
+                pandas dataframe : dataframe containing magpie feature set
     """
-    def __init__(self, configdict, dataframe):
+    def __init__(self, configdict, dataframe, mastml_install_directory):
         self.configdict = configdict
         self.dataframe = dataframe
+        self.mastml_install_directory = mastml_install_directory
 
     @timeit
     def generate_magpie_features(self, save_to_csv=True):
@@ -45,7 +54,7 @@ class MagpieFeatureGeneration(object):
                 composition_components.append(self.dataframe[column].tolist())
 
         if len(composition_components) < 1:
-            logging.info('ERROR: No column with "Material composition xx" was found in the supplied dataframe')
+            logging.info('Error! No column named "Material compositions" found in your input data file. To use this feature generation routine, you must supply a material composition for each data point')
             sys.exit()
 
         row = 0
@@ -65,17 +74,21 @@ class MagpieFeatureGeneration(object):
         magpiedata_dict_max = {}
         magpiedata_dict_min = {}
         magpiedata_dict_difference = {}
+        magpiedata_dict_ratio_max_min = {}
+        magpiedata_dict_ratio_min_max = {}
         magpiedata_dict_atomic_bysite = {}
-
+        data_path = self._find_mastml_install()
         for composition in compositions:
-            magpiedata_composition_average, magpiedata_arithmetic_average, magpiedata_max, magpiedata_min, magpiedata_difference = self._get_computed_magpie_features(composition=composition)
-            magpiedata_atomic_notparsed = self._get_atomic_magpie_features(composition=composition)
+            magpiedata_composition_average, magpiedata_arithmetic_average, magpiedata_max, magpiedata_min, magpiedata_difference, magpiedata_ratio_max_min, magpiedata_ratio_min_max = self._get_computed_magpie_features(composition=composition, data_path=data_path)
+            magpiedata_atomic_notparsed = self._get_atomic_magpie_features(composition=composition, data_path=data_path)
 
             magpiedata_dict_composition_average[composition] = magpiedata_composition_average
             magpiedata_dict_arithmetic_average[composition] = magpiedata_arithmetic_average
             magpiedata_dict_max[composition] = magpiedata_max
             magpiedata_dict_min[composition] = magpiedata_min
             magpiedata_dict_difference[composition] = magpiedata_difference
+            magpiedata_dict_ratio_max_min[composition] = magpiedata_ratio_max_min
+            magpiedata_dict_ratio_min_max[composition] = magpiedata_ratio_min_max
 
             # Add site-specific elemental features
             count = 1
@@ -88,7 +101,7 @@ class MagpieFeatureGeneration(object):
             magpiedata_dict_atomic_bysite[composition] = magpiedata_atomic_bysite
 
         magpiedata_dict_list = [magpiedata_dict_composition_average, magpiedata_dict_arithmetic_average,
-                                magpiedata_dict_max, magpiedata_dict_min, magpiedata_dict_difference, magpiedata_dict_atomic_bysite]
+                                magpiedata_dict_max, magpiedata_dict_min, magpiedata_dict_difference, magpiedata_dict_ratio_max_min, magpiedata_dict_ratio_min_max, magpiedata_dict_atomic_bysite]
 
         dataframe = self.dataframe
         for magpiedata_dict in magpiedata_dict_list:
@@ -103,6 +116,12 @@ class MagpieFeatureGeneration(object):
             # Merge magpie feature dataframe with originally supplied dataframe
             dataframe = DataframeUtilities().merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_magpie)
 
+        #Perform an initial filtering of ratio features to get rid of columns that have any missing data (when there was a 0 in denominator
+        dataframe_ratios = dataframe.filter(like='ratio')
+        dataframe_noratios = dataframe_ratios.dropna(axis=1, how='any')
+        dataframe = dataframe[dataframe.columns.drop(list(dataframe.filter(like='ratio')))]
+        dataframe = DataframeUtilities().merge_dataframe_columns(dataframe1=dataframe,dataframe2=dataframe_noratios)
+
         if save_to_csv == bool(True):
             # Get y_feature in this dataframe, attach it to save path
             for column in dataframe.columns.values:
@@ -113,13 +132,22 @@ class MagpieFeatureGeneration(object):
 
         return dataframe
 
-    def _get_computed_magpie_features(self, composition):
+    def _find_mastml_install(self):
+
+        mastml_install_path = self.mastml_install_directory
+        data_path = os.path.join(mastml_install_path,'MASTML_config_files','magpiedata','magpie_elementdata')
+        return data_path
+
+
+    def _get_computed_magpie_features(self, composition, data_path):
         magpiedata_composition_average = {}
         magpiedata_arithmetic_average = {}
         magpiedata_max = {}
         magpiedata_min = {}
         magpiedata_difference = {}
-        magpiedata_atomic = self._get_atomic_magpie_features(composition=composition)
+        magpiedata_ratio_max_min = {}
+        magpiedata_ratio_min_max = {}
+        magpiedata_atomic = self._get_atomic_magpie_features(composition=composition, data_path=data_path)
         composition = Composition(composition)
         element_list, atoms_per_formula_unit = self._get_element_list(composition=composition)
 
@@ -130,6 +158,8 @@ class MagpieFeatureGeneration(object):
             magpiedata_max[magpie_feature] = 0
             magpiedata_min[magpie_feature] = 0
             magpiedata_difference[magpie_feature] = 0
+            magpiedata_ratio_max_min[magpie_feature] = 0
+            magpiedata_ratio_min_max[magpie_feature] = 0
 
         for element in magpiedata_atomic.keys():
             for magpie_feature, feature_value in magpiedata_atomic[element].items():
@@ -152,6 +182,17 @@ class MagpieFeatureGeneration(object):
                         magpiedata_min[magpie_feature] = feature_value
                     # Difference features (max - min)
                     magpiedata_difference[magpie_feature] = magpiedata_max[magpie_feature] - magpiedata_min[magpie_feature]
+                    # ratio max/min
+                    if magpiedata_min[magpie_feature] == 0:
+                        magpiedata_ratio_max_min[magpie_feature] = float('nan')
+                    else:
+                        magpiedata_ratio_max_min[magpie_feature] = magpiedata_max[magpie_feature]/magpiedata_min[magpie_feature]
+                    #ratio min/max
+                    if magpiedata_max[magpie_feature] == 0:
+                        magpiedata_ratio_min_max[magpie_feature] = float('nan')
+                    else:
+                        magpiedata_ratio_min_max[magpie_feature] = magpiedata_min[magpie_feature]/magpiedata_max[magpie_feature]
+
 
         # Change names of features to reflect each computed type of magpie feature (max, min, etc.)
         magpiedata_composition_average_renamed = {}
@@ -159,6 +200,8 @@ class MagpieFeatureGeneration(object):
         magpiedata_max_renamed = {}
         magpiedata_min_renamed = {}
         magpiedata_difference_renamed = {}
+        magpiedata_ratio_max_min_renamed = {}
+        magpiedata_ratio_min_max_renamed = {}
         for key in magpiedata_composition_average.keys():
             magpiedata_composition_average_renamed[key+"_composition_average"] = magpiedata_composition_average[key]
         for key in magpiedata_arithmetic_average.keys():
@@ -169,13 +212,15 @@ class MagpieFeatureGeneration(object):
             magpiedata_min_renamed[key+"_min_value"] = magpiedata_min[key]
         for key in magpiedata_difference.keys():
             magpiedata_difference_renamed[key+"_difference"] = magpiedata_difference[key]
+        for key in magpiedata_ratio_max_min.keys():
+            magpiedata_ratio_max_min_renamed[key+"_ratio_max_min"] = magpiedata_ratio_max_min[key]
+        for key in magpiedata_ratio_min_max.keys():
+            magpiedata_ratio_min_max_renamed[key+"_ratio_min_max"] = magpiedata_ratio_min_max[key]
 
-        return magpiedata_composition_average_renamed, magpiedata_arithmetic_average_renamed, magpiedata_max_renamed, magpiedata_min_renamed, magpiedata_difference_renamed
+        return magpiedata_composition_average_renamed, magpiedata_arithmetic_average_renamed, magpiedata_max_renamed, magpiedata_min_renamed, magpiedata_difference_renamed, magpiedata_ratio_max_min_renamed, magpiedata_ratio_min_max_renamed
 
-    def _get_atomic_magpie_features(self, composition):
+    def _get_atomic_magpie_features(self, composition, data_path):
         # Get .table files containing feature values for each element, assign file names as feature names
-        config_files_path = self.configdict['General Setup']['config_files_path']
-        data_path = config_files_path+'/magpiedata/magpie_elementdata'
         magpie_feature_names = []
         for f in os.listdir(data_path):
             if '.table' in f:
@@ -226,17 +271,19 @@ class MaterialsProjectFeatureGeneration(object):
     """
     Class to generate new features using Materials Project data and dataframe containing material compositions
 
-    Attributes:
-        configdict <dict> : MASTML configfile object as dict
-        dataframe <pandas dataframe> : dataframe containing x and y data and feature names
-        mapi_key <str> : your Materials Project API key
+    Args:
+        configdict (dict) : MASTML configfile object as dict
+        dataframe (pandas dataframe) : dataframe containing x and y data and feature names
+        mapi_key (str) : your Materials Project API key
 
     Methods:
         generate_materialsproject_features : generates materials project feature set based on compositions in dataframe
-            args:
-                save_to_csv <bool> : whether to save the magpie feature set to a csv file
-            returns:
-                dataframe <pandas dataframe> : dataframe containing magpie feature set
+
+            Args:
+                save_to_csv (bool) : whether to save the magpie feature set to a csv file
+
+            Returns:
+                pandas dataframe : dataframe containing magpie feature set
     """
     def __init__(self, configdict, dataframe, mapi_key):
         self.configdict = configdict
@@ -248,7 +295,7 @@ class MaterialsProjectFeatureGeneration(object):
         try:
             compositions = self.dataframe['Material compositions']
         except KeyError:
-            print('No column called "Material compositions" exists in the supplied dataframe.')
+            logging.info('Error! No column named "Material compositions" found in your input data file. To use this feature generation routine, you must supply a material composition for each data point')
             sys.exit()
 
         mpdata_dict_composition = {}
@@ -325,17 +372,19 @@ class CitrineFeatureGeneration(object):
     """
     Class to generate new features using Citrine data and dataframe containing material compositions
 
-    Attributes:
-        configdict <dict> : MASTML configfile object as dict
-        dataframe <pandas dataframe> : dataframe containing x and y data and feature names
-        api_key <str> : your Citrination API key
+    Args:
+        configdict (dict) : MASTML configfile object as dict
+        dataframe (pandas dataframe) : dataframe containing x and y data and feature names
+        api_key (str) : your Citrination API key
 
     Methods:
         generate_citrine_features : generates Citrine feature set based on compositions in dataframe
-            args:
-                save_to_csv <bool> : whether to save the magpie feature set to a csv file
-            returns:
-                dataframe <pandas dataframe> : dataframe containing magpie feature set
+
+            Args:
+                save_to_csv (bool) : whether to save the magpie feature set to a csv file
+
+            Returns:
+                pandas dataframe : dataframe containing magpie feature set
     """
     def __init__(self, configdict, dataframe, api_key):
         self.configdict = configdict
@@ -347,7 +396,11 @@ class CitrineFeatureGeneration(object):
     def generate_citrine_features(self, save_to_csv=True):
         logging.info('WARNING: You have specified generation of features from Citrine. Based on which materials you are'
                      'interested in, there may be many records to parse through, thus this routine may take a long time to complete!')
-        compositions = self.dataframe['Material compositions'].tolist()
+        try:
+            compositions = self.dataframe['Material compositions'].tolist()
+        except KeyError:
+            logging.info('Error! No column named "Material compositions" found in your input data file. To use this feature generation routine, you must supply a material composition for each data point')
+            sys.exit()
         citrine_dict_property_min = dict()
         citrine_dict_property_max = dict()
         citrine_dict_property_avg = dict()

@@ -9,21 +9,22 @@ import copy
 from FeatureOperations import FeatureIO
 
 class DataHandler():
-    """Data handling class
-        (Combines old data_parser functionality with new DataParser methods)
+    """
+    Constructor class to organize aspects of a pandas dataframe, such as which fields are input vs. target data,
+    list of features, etc.
 
     Args:
-        data <pandas dataframe>
-        input_data <pandas dataframe>: X data (input data)
-        target_data <pandas dataframe>: y data (target data)
-        input_features <list of str>: x features (input features)
-        target_feature <str>: y feature (target feature)
-                (the above five as parsed from DataParser)
-        target_error_feature <str>: error in y feature (target error feature)
-        labeling_features <list of str>: features to help identify data in
-                                            plots
+        data (pandas dataframe) : dataframe containing x and y data and feature names
+        input_data (pandas dataframe) : X data (input data)
+        target_data <pandas dataframe> : y data (target data)
+        input_features (list of str) : x features (input features)
+        target_feature (str) : y feature (target feature)
+        target_error_feature (str) : error in y feature (target error feature)
+        labeling_features (list of str) : features to help identify data in plots
 
     Returns:
+        DataHandler object : a DataHandler object
+
     Raises:
         ValueError if dataframe is None
     """
@@ -75,6 +76,7 @@ class DataHandler():
         self.target_error_data = None
         self.target_prediction = None
         self.target_prediction_sigma = None
+        self.target_residuals = None
         self.group_data = None
         self.groups = None
         #Run upon initialization
@@ -107,6 +109,12 @@ class DataHandler():
         fio = FeatureIO(self.data)
         self.data = fio.add_custom_features(["Prediction"], prediction_data)
         self.target_prediction = self.data["Prediction"]
+        return
+
+    def add_residuals(self, residual_data):
+        fio = FeatureIO(self.data)
+        self.data = fio.add_custom_features(["Residuals"], residual_data)
+        self.target_residuals = self.data["Residuals"]
         return
 
     def add_prediction_sigma(self, prediction_data_sigma):
@@ -145,6 +153,8 @@ class DataHandler():
             cols.append("Prediction")
         if not self.target_prediction_sigma is None:
             cols.append("Prediction Sigma")
+        if not self.target_residuals is None:
+            cols.append("Residuals")
         cols.extend(addl_cols)
         self.data.to_csv(csvname,
                         columns=list(cols))

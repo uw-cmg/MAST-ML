@@ -28,8 +28,8 @@ class PlotHelper():
         self.save_path=""
         self.plotlabel="multiple_overlay"
         self.guideline=0
-        self.notelist=list() 
-        self.marklargest="0,0,0,0,0,0"
+        self.notelist=list()
+        self.marklargest="0,0,0,0,0,0,0,0,0,0,0"
         self.mlabellist=None
         self.markers="o,o,s,d,^,v"
         self.linestyles="None,None,None,None,None,None"
@@ -56,6 +56,8 @@ class PlotHelper():
         return
 
     def verify(self):
+        if self.marklargest is None:
+            self.marklargest="0,0,0,0,0,0,0,0,0,0,0"
         self.guideline=int(self.guideline)
         self.numlines=len(self.xdatalist)
         if self.numlines > 6:
@@ -80,6 +82,10 @@ class PlotHelper():
             self.sizes=np.array(self.sizes.split(","),'float')
         else:
             self.sizes = np.array(self.sizes, 'float') #make sure they are floats
+        #print(self.marklargest)
+        #if self.marklargest == 0:
+        #    print('found zero', self.marklargest)
+
         if type(self.marklargest) is str:
             self.marklargest = np.array(self.marklargest.split(","),'int')
         elif (isinstance(self.marklargest, list) or isinstance(self.marklargest, np.ndarray)):

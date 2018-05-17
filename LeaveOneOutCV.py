@@ -1,3 +1,9 @@
+__author__ = 'Tam Mayeshiba'
+__maintainer__ = 'Ryan Jacobs'
+__version__ = '1.0'
+__email__ = 'rjacobs3@wisc.edu'
+__date__ = 'October 14th, 2017'
+
 import os
 import numpy as np
 from sklearn.model_selection import LeaveOneOut
@@ -6,23 +12,24 @@ from KFoldCV import KFoldCV
 from SingleFit import timeit
 
 class LeaveOneOutCV(KFoldCV):
-    """leave-one-out cross validation
+    """Class to conduct leave-one-out cross-validation analysis
    
     Args:
-        training_dataset, (Should be the same as testing_dataset)
-        testing_dataset, (Should be the same as training_dataset)
-        model,
-        save_path,
-        xlabel, 
-        ylabel,
-        mark_outlying_points (Use only 1 number): see parent class.
+        training_dataset (DataHandler object): Training dataset handler
+        testing_dataset (DataHandler object): Testing dataset handler
+        model (sklearn model object): sklearn model
+        save_path (str): Save path
+        xlabel (str): Label for full-fit x-axis (default "Measured")
+        ylabel (str): Label for full-fit y-axis (default "Predicted")
+        mark_outlying_points (int): Number of outlying points to mark in best and worst tests, e.g. 3
  
     Returns:
         Analysis in the save_path folder
         Plots results in a predicted vs. measured square plot.
+
     Raises:
-        ValueError: if testing target data is None; CV must have
-                testing target data
+        ValueError: if testing target data is None; CV must have testing target data
+
     """
     def __init__(self, 
         training_dataset=None,
@@ -101,6 +108,7 @@ class LeaveOneOutCV(KFoldCV):
         notelist.append("Mean error:")
         notelist.append("    {:.2f} $\pm$ {:.2f}".format(self.cvtest_dict[0]['avg_mean_error'], self.cvtest_dict[0]['std_mean_error']))
         self.plot_results(notelist=list(notelist))
+        self.plot_residuals_histogram()
         return
     
     def plot_results(self, notelist=list()):

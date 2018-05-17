@@ -7,58 +7,64 @@ __date__ = 'October 14th, 2017'
 import pandas as pd
 import numpy as np
 import sys
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from DataOperations import DataframeUtilities
 
 class FeatureIO(object):
     """
     Class to perform various input/output and manipulations of features present in dataframe
 
-    Attributes:
-        dataframe <pandas dataframe> : dataframe containing x and y data and feature names
+    Args:
+        dataframe (pandas dataframe) : dataframe containing x and y data and feature names
 
     Methods:
         remove_duplicate_features_by_name: DEPRECATED
 
         remove_duplicate_columns : removes features that have identical names
-            args:
-                None
-            returns:
-                dataframe <pandas dataframe> : dataframe after feature operation
+
+            Returns:
+                pandas dataframe : dataframe after feature operation
 
         remove_duplicate_features_by_values : removes features that have identical values for each data point
-            args:
-                None
-            returns:
-                dataframe <pandas dataframe> : dataframe after feature operation
+
+            Returns:
+                pandas dataframe : dataframe after feature operation
 
         remove_custom_features : remove features as specified by name
-            args:
-                features_to_remove <list> : list of feature names to remove
-            returns:
-                dataframe <pandas dataframe> : dataframe after feature operation
+
+            Args:
+                features_to_remove (list) : list of feature names to remove
+
+            Returns:
+                pandas dataframe : dataframe after feature operation
 
         keep_custom_features : keep only the specified features
-            args:
-                features_to_keep <list> : list of feature names to keep
-                y_feature <str> : name of target feature (will keep if specified)
-            returns:
-                dataframe <pandas dataframe> : dataframe after feature operation
+
+            Args:
+                features_to_keep (list) : list of feature names to keep
+                y_feature (str) : name of target feature (will keep if specified)
+
+            Returns:
+                pandas dataframe : dataframe after feature operation
 
         add_custom_features : add specific features by name (must also supply data)
-            args:
-                features_to_add <list> : list of feature names to add
-                data_to_add <numpy array> : array of data for each feature to add
-            returns:
-                dataframe <pandas dataframe> : dataframe after feature operation
+
+            Args:
+                features_to_add (list) : list of feature names to add
+                data_to_add (numpy array) : array of data for each feature to add
+
+            Returns:
+                pandas dataframe : dataframe after feature operation
 
         custom_feature_filter : removes rows of data if certain arithmetic conditions are met
-            args:
-                feature <str> : name of feature to scan data of
-                operator <kwarg> : arithmetic operator (choose from <, >, =, <=, >=, <>)
-                threshold <float> : value to compare data value against for elimination
-            returns:
-                dataframe <pandas dataframe> : dataframe after feature operation
+
+            Args:
+                feature (str) : name of feature to scan data of
+                operator (kwarg) : arithmetic operator (choose from <, >, =, <=, >=, <>)
+                threshold (float) : value to compare data value against for elimination
+
+            Returns:
+                pandas dataframe : dataframe after feature operation
     """
     def __init__(self, dataframe):
         self.dataframe = dataframe
@@ -146,66 +152,93 @@ class FeatureNormalization(object):
     """
     Class to normalize and unnormalize features in a dataframe.
 
-    Attributes:
-        dataframe <pandas dataframe> : dataframe containing x and y data and feature names
+    Args:
+        dataframe (pandas dataframe) : dataframe containing x and y data and feature names
 
     Methods:
         normalize features : normalizes the specified features to have mean zero and standard deviation of unity
-            args:
-                x_features <list> : list of x feature names
-                y_feature <str> : target feature name
-                normalize_x_features <bool> : whether to normalize x features
-                normalize_y_feature <bool> : whether to normalize the target feature
-                to_csv <bool> : whether to save normalized dataframe to csv file
-            returns:
-                dataframe_normalized <pandas dataframe> : dataframe of normalized data
-                scaler <sklearn scaler object> : scaler object used to map unnormalized to normalized data
+
+            Args:
+                x_features (list) : list of x feature names
+                y_feature (str) : target feature name
+                normalize_x_features (bool) : whether to normalize x features
+                normalize_y_feature (bool) : whether to normalize the target feature
+                to_csv (bool) : whether to save normalized dataframe to csv file
+
+            Returns:
+                pandas dataframe : dataframe of normalized data
+                sklearn scaler object : scaler object used to map unnormalized to normalized data
 
         minmax_scale_single_feature : scale a single feature to a designated minimum and maximum value
-            args:
-                featurename <str> : name of feature to normalize
-                smin <float> : minimum feature value
-                smax <float> : maximum feature value
-            returns:
-                scaled_feature <pandas dataframe> : dataframe containing only the scaled feature
+
+            Args:
+                featurename (str) : name of feature to normalize
+                smin (float) : minimum feature value
+                smax (float) : maximum feature value
+
+            Returns:
+                pandas dataframe : dataframe containing only the scaled feature
 
         unnormalize_features : unnormalize the features contained in a dataframe
-            args:
-                x_features <list> : list of x feature names
-                y_feature <str> : target feature name
-                scaler <sklearn scaler object> : scaler object used to map unnormalized to normalized data
-            returns:
-                dataframe_unnormalized <pandas dataframe> : dataframe of unnormalized data
-                scaler <sklearn scaler object> : scaler object used to map unnormalized to normalized data
+
+            Args:
+                x_features (list) : list of x feature names
+                y_feature (str) : target feature name
+                scaler (sklearn scaler object) : scaler object used to map unnormalized to normalized data
+
+            Returns:
+                pandas dataframe : dataframe of unnormalized data
+                sklearn scaler object : scaler object used to map unnormalized to normalized data
 
         normalize_and_merge_with_original_dataframe : normalizes features and merges normalized dataframe with original dataframe
-            args:
-                x_features <list> : list of x feature names
-                y_feature <str> : target feature name
-            returns:
-                dataframe <pandas dataframe> : merged dataframe containing original dataframe and normalized features
+
+            Args:
+                x_features (list) : list of x feature names
+                y_feature (str) : target feature name
+
+            Returns:
+                pandas dataframe : merged dataframe containing original dataframe and normalized features
     """
     def __init__(self, dataframe, configdict):
         self.dataframe = dataframe
         self.configdict = configdict
 
-    def normalize_features(self, x_features, y_feature, normalize_x_features, normalize_y_feature, to_csv=True):
+    def normalize_features(self, x_features, y_feature, normalize_x_features, normalize_y_feature, feature_normalization_type, feature_scale_min = 0, feature_scale_max = 1, to_csv=True):
         if normalize_x_features == bool(True) and normalize_y_feature == bool(False):
-            scaler = StandardScaler().fit(X=self.dataframe[x_features])
+            if feature_normalization_type == 'standardize':
+                scaler = StandardScaler().fit(X=self.dataframe[x_features])
+            elif feature_normalization_type == 'normalize':
+                scaler = MinMaxScaler(feature_range=(feature_scale_min, feature_scale_max)).fit(X=self.dataframe[x_features])
+            else:
+                print('Error! For feature normalization, you must select either "standardize" or "normalize" for the "feature_normalization_type" option')
+                sys.exit()
             array_normalized = scaler.fit_transform(X=self.dataframe[x_features])
             array_normalized = DataframeUtilities().concatenate_arrays(X_array=array_normalized, y_array=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
         elif normalize_x_features == bool(False) and normalize_y_feature == bool(True):
-            scaler = StandardScaler().fit(X=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
+            if feature_normalization_type == 'standardize':
+                scaler = StandardScaler().fit(X=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
+            elif feature_normalization_type == 'normalize':
+                scaler = MinMaxScaler(feature_range=(feature_scale_min, feature_scale_max)).fit(X=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
+            else:
+                print('Error! For feature normalization, you must select either "standardize" or "normalize" for the "feature_normalization_type" option')
+                sys.exit()
             array_normalized = scaler.fit_transform(X=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
             array_normalized = DataframeUtilities().concatenate_arrays(X_array=np.asarray(self.dataframe[x_features]), y_array=array_normalized.reshape([-1, 1]))
         elif normalize_x_features == bool(True) and normalize_y_feature == bool(True):
-            scaler_x = StandardScaler().fit(X=self.dataframe[x_features])
-            scaler_y = StandardScaler().fit(X=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
+            if feature_normalization_type == 'standardize':
+                scaler_x = StandardScaler().fit(X=self.dataframe[x_features])
+                scaler_y = StandardScaler().fit(X=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
+            elif feature_normalization_type == 'normalize':
+                scaler_x = MinMaxScaler(feature_range=(feature_scale_min, feature_scale_max)).fit(X=self.dataframe[x_features])
+                scaler_y = MinMaxScaler(feature_range=(feature_scale_min, feature_scale_max)).fit(X=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
+            else:
+                print('Error! For feature normalization, you must select either "standardize" or "normalize" for the "feature_normalization_type" option')
+                sys.exit()
             array_normalized_x = scaler_x.fit_transform(X=self.dataframe[x_features])
             array_normalized_y = scaler_y.fit_transform(X=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
             array_normalized = DataframeUtilities().concatenate_arrays(X_array=array_normalized_x, y_array=array_normalized_y)
         else:
-            "You must specify to normalize either x_features, y_feature, or both, or set perform_feature_normalization=False in the input file"
+            print("You must specify to normalize either x_features, y_feature, or both, or set perform_feature_normalization=False in the input file")
             sys.exit()
 
         dataframe_normalized = DataframeUtilities().array_to_dataframe(array=array_normalized)
@@ -240,10 +273,11 @@ class FeatureNormalization(object):
         dataframe_unnormalized = DataframeUtilities().assign_columns_as_features(dataframe=dataframe_unnormalized, x_features=x_features, y_feature=y_feature, remove_first_row=False)
         return dataframe_unnormalized, scaler
 
-    def normalize_and_merge_with_original_dataframe(self, x_features, y_feature, normalize_x_features, normalize_y_feature):
+    def normalize_and_merge_with_original_dataframe(self, x_features, y_feature, normalize_x_features, normalize_y_feature, feature_normalization_type):
         dataframe_normalized, scaler = self.normalize_features(x_features=x_features, y_feature=y_feature,
                                                                normalize_x_features=normalize_x_features,
-                                                               normalize_y_feature=normalize_y_feature)
+                                                               normalize_y_feature=normalize_y_feature,
+                                                                feature_normalization_type = feature_normalization_type)
         dataframe = DataframeUtilities().merge_dataframe_columns(dataframe1=self.dataframe, dataframe2=dataframe_normalized)
         return dataframe
 
@@ -251,17 +285,19 @@ class MiscFeatureOperations(object):
     """
     Class containing additional feature operations
 
-    Attributes:
-        configdict <dict> : MASTML configfile object as dict
+    Args:
+        configdict (dict) : MASTML configfile object as dict
 
     Methods:
         remove_features_containing_strings : removes feature columns whose values are strings as these can't be used in regression tasks
-            args:
-                dataframe <pandas dataframe> : dataframe containing data and feature names
-                x_features <list> : list of x feature names
-            returns:
-                x_features_pruned <list> : list of x features with those features removed which contained data as strings
-                dataframe <pandas dataframe> : dataframe containing data and feature names, with string features removed
+
+            Args:
+                dataframe (pandas dataframe) : dataframe containing data and feature names
+                x_features (list) : list of x feature names
+
+            Returns:
+                list : list of x features with those features removed which contained data as strings
+                pandas dataframe : dataframe containing data and feature names, with string features removed
     """
     def __init__(self, configdict):
         self.configdict = configdict

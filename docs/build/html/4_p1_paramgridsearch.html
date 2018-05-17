@@ -24,7 +24,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="ParamOptGA" href="4_p2_paramoptga.html" />
-    <link rel="prev" title="SingleFitGrouped" href="4_2_singlefitgrouped.html" />
+    <link rel="prev" title="LeaveOutGroupCV" href="4_cv4_logroup.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -169,70 +169,40 @@ parameters of custom features.</dd>
 <dl class="class">
 <dt id="ParamGridSearch.ParamGridSearch">
 <em class="property">class </em><code class="descclassname">ParamGridSearch.</code><code class="descname">ParamGridSearch</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='Measured'</em>, <em>ylabel='Predicted'</em>, <em>fix_random_for_testing=0</em>, <em>num_cvtests=5</em>, <em>mark_outlying_points='0</em>, <em>3'</em>, <em>num_folds=None</em>, <em>percent_leave_out=None</em>, <em>processors=1</em>, <em>pop_upper_limit=1000000</em>, <em>num_bests=10</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ParamGridSearch.html#ParamGridSearch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ParamGridSearch.ParamGridSearch" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>Parameter optimization by grid search</dt>
-<dd>Only 4 parameters may be optimized at a time.</dd>
-</dl>
+<dd><p>Class to perform parameter optimization by grid search. Only up to 4 parameters may be optimized at a time.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>training_dataset</strong><strong>,</strong> (<em>Should be the same as testing_dataset</em>) – </li>
-<li><strong>testing_dataset</strong><strong>,</strong> (<em>Should be the same as training_dataset</em>) – </li>
-<li><strong>model</strong><strong>,</strong> – </li>
-<li><strong>see parent class.</strong> (<em>save_path</em><em>,</em>) – </li>
-<li><strong>param_1</strong> (<em>str</em>) – <p>parameter string made up of semicolon-delimited pieces
-Piece 1: The word ‘model’ or a custom feature class.method string,</p>
-<blockquote>
-<div>e.g. DBTT.calculate_EffectiveFluence,
-where the custom module has the same name as the
-custom class, and resides inside
-the custom_features folder</div></blockquote>
-<p>Piece 2: The parameter name
-Piece 3: The parameter type. Use only:</p>
-<blockquote>
-<div>’int’, ‘float’, ‘bool’, ‘str’
-(Some sklearn model
-hyperparameters are type-sensitive)</div></blockquote>
-<dl class="docutils">
-<dt>Piece 4: The series type. Use:</dt>
-<dd><dl class="first docutils">
-<dt>’discrete’: List will be given in piece 5</dt>
-<dd>’bool’ and ‘str’ MUST use ‘discrete’</dd>
-</dl>
-<p class="last">’continuous’: Range and step will be given in piece 5
+<li><strong>training_dataset</strong> (<em>DataHandler object</em>) – Training dataset handler</li>
+<li><strong>testing_dataset</strong> (<em>DataHandler object</em>) – Testing dataset handler</li>
+<li><strong>model</strong> (<em>sklearn model object</em>) – sklearn model</li>
+<li><strong>save_path</strong> (<em>str</em>) – Save path</li>
+<li><strong>param_1</strong> (<em>str</em>) – <p>parameter string made up of semicolon-delimited pieces</p>
+<p>Piece 1: The word ‘model’ or a custom feature class.method string, e.g. DBTT.calculate_EffectiveFluence,
+where the custom module has the same name as the custom class, and resides inside the custom_features folder</p>
+<p>Piece 2: The parameter name</p>
+<p>Piece 3: The parameter type. Use only: ‘int’, ‘float’, ‘bool’, ‘str’ (Some sklearn model hyperparameters are type-sensitive)</p>
+<p>Piece 4: The series type. Use:
+‘discrete’: List will be given in piece 5
+‘bool’ and ‘str’ MUST use ‘discrete’
+‘continuous’: Range and step will be given in piece 5
 ‘continuous-log: Range and step will be given in piece 5</p>
-</dd>
-<dt>Piece 5: A colon-delimited list of</dt>
-<dd><ol class="first loweralpha">
-<li>a discrete list of values to grid over, OR</li>
-<li>start, end, number of points:
-numpy’s np.linspace or np.logspace
-function will be used to generate this list,
-using an inclusive start and inclusive end</li>
-</ol>
-<p class="last">A parameter with only one discrete value will not be
-considered as an ‘optimized’ parameter.</p>
-</dd>
-</dl>
+<p>Piece 5: A colon-delimited list of
+(a) a discrete list of values to grid over, OR
+(b) start, end, number of points: numpy’s np.linspace or np.logspace function will be used to generate this list,
+using an inclusive start and inclusive end. A parameter with only one discrete value will not be considered as an ‘optimized’ parameter.</p>
 </li>
-<li><strong>param_2</strong> (<em>str</em>) – </li>
+<li><strong>param_2</strong> (<em>str</em>) – See param_1. Can have up to 4 parameters, i.e. param_4</li>
 <li><strong>fix_random_for_testing</strong> (<em>int</em>) – 0 - use random numbers
 1 - fix randomizer for testing</li>
 <li><strong>num_cvtests</strong> (<em>int</em>) – Number of CV tests for each validation step</li>
-<li><strong>num_folds</strong> (<em>int</em>) – Number of folds for K-fold cross validation;
-leave blank to use LO% CV</li>
-<li><strong>percent_leave_out</strong> (<em>int</em>) – Percentage to leave out for LO% CV;
-leave blank to use K-fold CV</li>
-<li><strong>mark_outlying_points</strong> (<em>int</em>) – See KFoldCV</li>
+<li><strong>num_folds</strong> (<em>int</em>) – Number of folds for K-fold cross validation; leave blank to use LO% CV</li>
+<li><strong>percent_leave_out</strong> (<em>int</em>) – Percentage to leave out for LO% CV; leave blank to use K-fold CV</li>
+<li><strong>mark_outlying_points</strong> (<em>list of int</em>) – Number of outlying points to mark in best and worst tests, e.g. [0,3]</li>
 <li><strong>num_bests</strong> (<em>int</em>) – Number of best individuals to track</li>
-<li><strong>processors</strong> (<em>int</em>) – <p>Number of processors to use
-1 - single processor (serial)
-2 - use multiprocessing with this many processors,</p>
-<blockquote>
-<div>all on a SINGLE node</div></blockquote>
-</li>
+<li><strong>processors</strong> (<em>int</em>) – Number of processors to use 1 - single processor (serial); 2 - use multiprocessing with this many processors, all on a SINGLE node</li>
 <li><strong>pop_upper_limit</strong> (<em>int</em>) – Upper limit for population size.</li>
 </ul>
 </td>
@@ -241,7 +211,7 @@ leave blank to use K-fold CV</li>
 Plots results in a predicted vs. measured square plot.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><em>ValueError if testing target data is None; CV must have</em> – testing target data</p>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last">ValueError if testing target data is None; CV must have testing target data</p>
 </td>
 </tr>
 </tbody>
@@ -270,7 +240,7 @@ Plots results in a predicted vs. measured square plot.</p>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="4_tests.html">Tests</a><ul>
-      <li>Previous: <a href="4_2_singlefitgrouped.html" title="previous chapter">SingleFitGrouped</a></li>
+      <li>Previous: <a href="4_cv4_logroup.html" title="previous chapter">LeaveOutGroupCV</a></li>
       <li>Next: <a href="4_p2_paramoptga.html" title="next chapter">ParamOptGA</a></li>
   </ul></li>
   </ul></li>
