@@ -157,6 +157,7 @@ class ConfigFileConstructor(ConfigFileParser):
         self.configtemplate['Models and Tests to Run']['models'] = ['linear_model_regressor',
                                                                     'linear_model_lasso_regressor',
                                                                     'gkrr_model_regressor',
+                                                                    'dummy_model',
                                                                     'support_vector_machine_model_regressor',
                                                                     'decision_tree_model_regressor',
                                                                     'extra_trees_model_regressor',
@@ -681,6 +682,9 @@ class ModelTestConstructor(object):
                                                     normalize_y=self.configdict['Model Parameters']['gaussianprocess_model_regressor']['normalize_y'],
                                                     copy_X_train=True)  # bool(self.configdict['Model Parameters']['gaussianprocess_model']['copy_X_train']),
                                                     # int(self.configdict['Model Parameters']['gaussianprocess_model']['random_state']
+                    return model
+                if model_type == 'dummy_model':
+                    model = None # model doesn't do anything
                     return model
                 else:
                     model = None

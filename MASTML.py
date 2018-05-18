@@ -642,3 +642,4 @@ if __name__ == '__main__':
     else:
         logging.info('Specify the name of your MASTML input file, such as "mastmlinput.conf", and run as "python MASTML.py mastmlinput.conf" ')
         sys.exit()
+
