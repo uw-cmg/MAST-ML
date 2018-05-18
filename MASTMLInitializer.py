@@ -175,39 +175,39 @@ class ConfigFileConstructor(ConfigFileParser):
         self.configtemplate['Test Parameters'] = dict()
         for test_case in self.configtemplate['Models and Tests to Run']['test_cases']:
             self.configtemplate['Test Parameters'][test_case] = dict()
-        for k in self.configtemplate['Test Parameters'].keys():
+        for k, param in self.configtemplate['Test Parameters'].items():
             if k in ['SingleFit', 'SingleFitPerGroup', 'SingleFitGrouped', 'KFoldCV', 'LeaveOneOutCV', 'LeaveOutPercentCV',
                      'LeaveOutGroupCV', 'PlotNoAnalysis', 'PredictionVsFeature']:
-                self.configtemplate['Test Parameters'][k]['training_dataset'] = 'string'
-                self.configtemplate['Test Parameters'][k]['testing_dataset'] = 'string'
-                self.configtemplate['Test Parameters'][k]['xlabel'] = 'string'
-                self.configtemplate['Test Parameters'][k]['ylabel'] = 'string'
+                param['training_dataset'] = 'string'
+                param['testing_dataset'] = 'string'
+                param['xlabel'] = 'string'
+                param['ylabel'] = 'string'
             if k in ['PlotNoAnalysis', 'PredictionVsFeature']:
-                self.configtemplate['Test Parameters'][k]['feature_plot_feature'] = 'string'
-                self.configtemplate['Test Parameters'][k]['plot_filter_out'] = 'string'
-                self.configtemplate['Test Parameters'][k]['data_labels'] = 'string'
+                param['feature_plot_feature'] = 'string'
+                param['plot_filter_out'] = 'string'
+                param['data_labels'] = 'string'
             if k == 'SingleFit':
-                self.configtemplate['Test Parameters'][k]['plot_filter_out'] = 'string'
+                param['plot_filter_out'] = 'string'
             if k == 'SingleFitPerGroup':
-                self.configtemplate['Test Parameters'][k]['plot_filter_out'] = 'string'
+                param['plot_filter_out'] = 'string'
             if k == 'SingleFitGrouped':
-                self.configtemplate['Test Parameters'][k]['plot_filter_out'] = 'string'
+                param['plot_filter_out'] = 'string'
             if k in ['KFoldCV', 'LeaveOneOutCV', 'LeaveOutPercentCV', 'LeaveOutGroupCV']:
-                self.configtemplate['Test Parameters'][k]['num_cvtests'] = 'integer'
-                self.configtemplate['Test Parameters'][k]['mark_outlying_points'] = 'integer'
+                param['num_cvtests'] = 'integer'
+                param['mark_outlying_points'] = 'integer'
             if k == 'KFoldCV':
-                self.configtemplate['Test Parameters'][k]['num_folds'] = 'integer'
+                param['num_folds'] = 'integer'
             if k == 'LeaveOutPercentCV':
-                self.configtemplate['Test Parameters'][k]['percent_leave_out'] = 'float'
+                param['percent_leave_out'] = 'float'
             if k in ['ParamOptGA', 'ParamGridSearch']:
-                self.configtemplate['Test Parameters'][k]['training_dataset'] = 'string'
-                self.configtemplate['Test Parameters'][k]['testing_dataset'] = 'string'
-                self.configtemplate['Test Parameters'][k]['num_folds'] = 'integer'
-                self.configtemplate['Test Parameters'][k]['num_cvtests'] = 'integer'
-                self.configtemplate['Test Parameters'][k]['percent_leave_out'] = 'float'
-                self.configtemplate['Test Parameters'][k]['pop_upper_limit'] = 'integer'
+                param['training_dataset'] = 'string'
+                param['testing_dataset'] = 'string'
+                param['num_folds'] = 'integer'
+                param['num_cvtests'] = 'integer'
+                param['percent_leave_out'] = 'float'
+                param['pop_upper_limit'] = 'integer'
                 for i in range(5):
-                    self.configtemplate['Test Parameters'][k]['param_%s' % str(i+1)] = 'string'
+                    param['param_%s' % str(i+1)] = 'string'
         return
 
     def _model_parameters(self):
@@ -215,59 +215,59 @@ class ConfigFileConstructor(ConfigFileParser):
         models = [k for k in self.configtemplate['Models and Tests to Run']['models']]
         for model in models:
             self.configtemplate['Model Parameters'][model] = dict()
-        for k in self.configtemplate['Model Parameters'].keys():
+        for k, param in self.configtemplate['Model Parameters'].items():
             if k in ['linear_model_regressor', 'linear_model_lasso_regressor']:
-                self.configtemplate['Model Parameters'][k]['fit_intercept'] = 'bool'
+                param['fit_intercept'] = 'bool'
             if k == 'linear_model_lasso_regressor':
-                self.configtemplate['Model Parameters'][k]['alpha'] = 'float'
+                param['alpha'] = 'float'
             if k == 'gkrr_model_regressor':
-                self.configtemplate['Model Parameters'][k]['alpha'] = 'float'
-                self.configtemplate['Model Parameters'][k]['gamma'] = 'float'
-                self.configtemplate['Model Parameters'][k]['coef0'] = 'float'
-                self.configtemplate['Model Parameters'][k]['degree'] = 'integer'
-                self.configtemplate['Model Parameters'][k]['kernel'] = ['linear', 'cosine', 'polynomial', 'sigmoid', 'rbf', 'laplacian']
+                param['alpha'] = 'float'
+                param['gamma'] = 'float'
+                param['coef0'] = 'float'
+                param['degree'] = 'integer'
+                param['kernel'] = ['linear', 'cosine', 'polynomial', 'sigmoid', 'rbf', 'laplacian']
             if k == 'support_vector_machine_model_regressor':
-                self.configtemplate['Model Parameters'][k]['error_penalty'] = 'float'
-                self.configtemplate['Model Parameters'][k]['gamma'] = 'float'
-                self.configtemplate['Model Parameters'][k]['coef0'] = 'float'
-                self.configtemplate['Model Parameters'][k]['degree'] = 'integer'
-                self.configtemplate['Model Parameters'][k]['kernel'] = ['linear', 'cosine', 'polynomial', 'sigmoid', 'rbf', 'laplacian']
+                param['error_penalty'] = 'float'
+                param['gamma'] = 'float'
+                param['coef0'] = 'float'
+                param['degree'] = 'integer'
+                param['kernel'] = ['linear', 'cosine', 'polynomial', 'sigmoid', 'rbf', 'laplacian']
             if k == 'decision_tree_model_regressor':
-                self.configtemplate['Model Parameters'][k]['criterion'] = ['mae', 'mse', 'friedman_mse']
-                self.configtemplate['Model Parameters'][k]['splitter'] = ['random', 'best']
-                self.configtemplate['Model Parameters'][k]['max_depth'] = 'integer'
-                self.configtemplate['Model Parameters'][k]['min_samples_leaf'] = 'integer'
-                self.configtemplate['Model Parameters'][k]['min_samples_split'] = 'integer'
+                param['criterion'] = ['mae', 'mse', 'friedman_mse']
+                param['splitter'] = ['random', 'best']
+                param['max_depth'] = 'integer'
+                param['min_samples_leaf'] = 'integer'
+                param['min_samples_split'] = 'integer'
             if k in ['extra_trees_model_regressor', 'randomforest_model_regressor']:
-                self.configtemplate['Model Parameters'][k]['criterion'] = ['mse', 'mae']
-                self.configtemplate['Model Parameters'][k]['n_estimators'] = 'integer'
-                self.configtemplate['Model Parameters'][k]['max_depth'] = 'integer'
-                self.configtemplate['Model Parameters'][k]['min_samples_leaf'] = 'integer'
-                self.configtemplate['Model Parameters'][k]['min_samples_split'] = 'integer'
-                self.configtemplate['Model Parameters'][k]['max_leaf_nodes'] = 'integer'
+                param['criterion'] = ['mse', 'mae']
+                param['n_estimators'] = 'integer'
+                param['max_depth'] = 'integer'
+                param['min_samples_leaf'] = 'integer'
+                param['min_samples_split'] = 'integer'
+                param['max_leaf_nodes'] = 'integer'
             if k == 'randomforest_model_regressor':
-                self.configtemplate['Model Parameters'][k]['n_jobs'] = 'integer'
-                self.configtemplate['Model Parameters'][k]['warm_start'] = 'bool'
+                param['n_jobs'] = 'integer'
+                param['warm_start'] = 'bool'
             if k == 'adaboost_model_regressor':
-                self.configtemplate['Model Parameters'][k]['base_estimator_max_depth'] = 'integer'
-                self.configtemplate['Model Parameters'][k]['n_estimators'] = 'integer'
-                self.configtemplate['Model Parameters'][k]['learning_rate'] = 'float'
-                self.configtemplate['Model Parameters'][k]['loss'] = ['linear' 'square', 'exponential']
+                param['base_estimator_max_depth'] = 'integer'
+                param['n_estimators'] = 'integer'
+                param['learning_rate'] = 'float'
+                param['loss'] = ['linear' 'square', 'exponential']
             if k == 'nn_model_regressor':
-                self.configtemplate['Model Parameters'][k]['hidden_layer_sizes'] = 'tuple'
-                self.configtemplate['Model Parameters'][k]['activation'] = ['identity', 'logistic', 'tanh', 'relu']
-                self.configtemplate['Model Parameters'][k]['solver'] = ['lbfgs', 'sgd', 'adam']
-                self.configtemplate['Model Parameters'][k]['alpha'] = 'float'
-                self.configtemplate['Model Parameters'][k]['max_iterations'] = 'integer'
-                self.configtemplate['Model Parameters'][k]['tolerance'] = 'float'
+                param['hidden_layer_sizes'] = 'tuple'
+                param['activation'] = ['identity', 'logistic', 'tanh', 'relu']
+                param['solver'] = ['lbfgs', 'sgd', 'adam']
+                param['alpha'] = 'float'
+                param['max_iterations'] = 'integer'
+                param['tolerance'] = 'float'
             if k == 'gaussianprocess_model_regressor':
-                self.configtemplate['Model Parameters'][k]['kernel'] = ['rbf']
-                self.configtemplate['Model Parameters'][k]['RBF_length_scale'] = 'float'
-                self.configtemplate['Model Parameters'][k]['RBF_length_scale_bounds'] = 'tuple'
-                self.configtemplate['Model Parameters'][k]['alpha'] = 'float'
-                self.configtemplate['Model Parameters'][k]['optimizer'] = ['fmin_l_bfgs_b']
-                self.configtemplate['Model Parameters'][k]['n_restarts_optimizer'] = 'integer'
-                self.configtemplate['Model Parameters'][k]['normalize_y'] = 'bool'
+                param['kernel'] = ['rbf']
+                param['RBF_length_scale'] = 'float'
+                param['RBF_length_scale_bounds'] = 'tuple'
+                param['alpha'] = 'float'
+                param['optimizer'] = ['fmin_l_bfgs_b']
+                param['n_restarts_optimizer'] = 'integer'
+                param['normalize_y'] = 'bool'
         return
 
 class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
@@ -326,13 +326,13 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
         for k in configdict.keys():
             if k not in self.configtemplate.keys():
                 logging.info('Error: You have an extra section called %s in your input file. To correct this issue, remove this extra section.' % str(k))
-                errors_present = bool(True)
+                errors_present = True
 
         # Check if any sections are missing from input file
         for k in self.configtemplate.keys():
             if k not in configdict.keys():
                 logging.info('Error: You are missing the section called %s in your input file. To correct this issue, add this section to your input file.' % str(k))
-                errors_present = bool(True)
+                errors_present = True
 
         return configdict, errors_present
 
@@ -344,31 +344,31 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
                 for section_key in self.configtemplate[section].keys():
                     if section_key not in configdict[section].keys():
                         logging.info('Error: Your input file is missing section key %s, which is part of the %s section. Please include this section key in your input file.' % (section_key, section))
-                        errors_present = bool(True)
+                        errors_present = True
                 # Check that user's input file does not have any extra section keys that would later throw errors
                 for section_key in configdict[section].keys():
                     if section_key not in self.configtemplate[section].keys():
                         logging.info('Error: Your input file contains an extra section key or misspelled section key: %s in the %s section. Please correct this section key in your input file.' % (section_key, section))
-                        errors_present = bool(True)
+                        errors_present = True
             if depth == 2:
                 # Check that all subsections in input file are appropriately named. Note that not all subsections in template need to be present in input file
                 for subsection_key in configdict[section].keys():
                     if section == 'Data Setup':
                         if not (type(subsection_key) == str):
-                            errors_present = bool(True)
+                            errors_present = True
                     if section == 'Test Parameters':
                         if '_' in subsection_key:
                             if not (subsection_key.split('_')[0] in self.configtemplate[section]):
                                 logging.info('Error: Your input file contains an improper subsection key name: %s.' % subsection_key)
-                                errors_present = bool(True)
+                                errors_present = True
                         else:
                             if not (subsection_key in self.configtemplate[section]):
                                 logging.info('Error: Your input file contains an improper subsection key name: %s.' % subsection_key)
-                                errors_present = bool(True)
+                                errors_present = True
                     if section == 'Model Parameters':
                         if not (subsection_key in self.configtemplate[section]):
                             logging.info('Error: Your input file contains an improper subsection key name: %s.' % subsection_key)
-                            errors_present = bool(True)
+                            errors_present = True
 
                     for subsection_param in configdict[section][subsection_key]:
                         if section == 'Data Setup':
@@ -379,42 +379,46 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
                         try:
                             if not (subsection_param in self.configtemplate[section][subsection_key]):
                                 logging.info('Error: Your input file contains an improper subsection parameter name: %s.' % subsection_param)
-                                errors_present = bool(True)
+                                errors_present = True
                         except KeyError:
                             logging.info('Error: Your input file contains an improper subsection key name: %s.' % subsection_key)
-                            errors_present = bool(True)
+                            errors_present = True
 
             elif depth > 2:
                 logging.info('There is an error in your input file setup: too many subsections.')
-                errors_present = bool(True)
+                errors_present = True
 
         self._check_for_errors(errors_present=errors_present)
 
         return errors_present
 
     def _check_config_subsection_values(self, configdict, errors_present):
+        """
+        Iterates recursively through `configdict` alongside `self.configtemplate`
+        and typecasts each entry of `configdict` to the types contained in
+        `self.configtemplate`. 
+        """
+
         # First do some manual cleanup for values that can be string or list
         def string_to_list(configdict):
-            for section_heading in configdict.keys():
+            for section_heading, subsect in configdict.items():
                 if section_heading == 'General Setup':
-                    if type(configdict[section_heading]['input_features']) is str:
-                        templist = list()
-                        templist.append(configdict[section_heading]['input_features'])
-                        configdict[section_heading]['input_features'] = templist
-                    if type(configdict[section_heading]['labeling_features']) is str:
-                        templist = list()
-                        templist.append(configdict[section_heading]['labeling_features'])
-                        configdict[section_heading]['labeling_features'] = templist
+                    if type(subsect['input_features']) is str:
+                        subsect['input_features'] = [subsect['input_features'],]
+                    if type(subsect['labeling_features']) is str:
+                        subsect['labeling_features'] = [subsect['labeling_features'],]
+
                 if section_heading == 'Models and Tests to Run':
-                    if type(configdict[section_heading]['models']) is str:
-                        templist = list()
-                        templist.append(configdict[section_heading]['models'])
-                        configdict[section_heading]['models'] = templist
-                    if type(configdict[section_heading]['test_cases']) is str:
-                        templist = list()
-                        templist.append(configdict[section_heading]['test_cases'])
-                        configdict[section_heading]['test_cases'] = templist
+                    if type(subsect['models']) is str:
+                        subsect['models'] = [subsect['models'],]
+                    if type(subsect['test_cases']) is str:
+                        subsect['test_cases'] = [subsect['test_cases'],]
+
             return configdict
+        
+        def typify(dictionary):
+            for key,val in dictionary.items():
+                if key == string:
 
         configdict = string_to_list(configdict=configdict)
         for section in configdict.keys():
@@ -446,6 +450,7 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
                                     if param_value not in self.configtemplate[section][section_key]:
                                         logging.info('Error: Your input file contains an incorrect parameter keyword: %s' % param_value)
                                         errors_present = bool(True)
+
             if depth == 2:
                 for subsection_key in configdict[section].keys():
                     for param_name in configdict[section][subsection_key].keys():
@@ -478,14 +483,14 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
                 for test_case in test_cases:
                     if test_case not in test_parameter_subsections:
                         logging.info('Error: You have listed test case/model %s, which does not coincide with the corresponding subsection name in the Test Parameters/Model Parameters section. These two names need to be the same, and the keyword must be correct' % test_case)
-                        errors_present = bool(True)
+                        errors_present = True
                         self._check_for_errors(errors_present=errors_present)
                     else:
                         tests_being_run.append(test_case)
             elif type(test_cases) is str:
                 if test_cases not in test_parameter_subsections:
                     logging.info('Error: You have listed test case/model %s, which does not coincide with the corresponding subsection name in the Test Parameters/Model Parameters section. These two names need to be the same, and the keyword must be correct' % test_cases)
-                    errors_present = bool(True)
+                    errors_present = True
                     self._check_for_errors(errors_present=errors_present)
                 else:
                     tests_being_run.append(test_cases)
@@ -498,11 +503,11 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
         target_feature_name = configdict['General Setup']['target_feature']
         if ('regression' or 'classification') not in target_feature_name:
             logging.info('Error: You must include the designation "regression" or "classification" in your target feature name in your input file and data file. For example: "my_target_feature_regression"')
-            errors_present = bool(True)
+            errors_present = True
         return configdict, errors_present
 
     def _check_for_errors(self, errors_present):
-        if errors_present == bool(True):
+        if errors_present == True:
             logging.info('Errors have been detected in your MASTML setup. Please correct the errors and re-run MASTML')
             sys.exit()
         return
