@@ -1,2 +1,9 @@
 *.pyc
 *.ipynb_checkpoints*
+docs/build/
+*.swp
+.DS_Store
+MASTML.egg-info/
+build/
+dist/
+examples/*results*/
