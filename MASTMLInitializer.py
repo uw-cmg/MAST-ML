@@ -92,83 +92,106 @@ class ConfigFileConstructor(ConfigFileParser):
         return self.configtemplate
 
     def _general_setup(self):
-        self.configtemplate['General Setup'] = dict()
-        self.configtemplate['General Setup']['save_path'] = 'string'
-        self.configtemplate['General Setup']['input_features'] = ['string', 'string_list', 'Auto']
-        self.configtemplate['General Setup']['target_feature'] = 'string'
-        self.configtemplate['General Setup']['grouping_feature'] = 'string'
-        self.configtemplate['General Setup']['labeling_features'] = ['string']
+        self.configtemplate['General Setup'] = {
+            'save_path': 'string',
+            'input_features': ['string', 'string_list', 'Auto'],
+            'target_feature': 'string',
+            'grouping_feature': 'string',
+            'labeling_features': ['string'],
+        }
         return
 
     def _data_setup(self):
-        self.configtemplate['Data Setup'] = dict()
-        self.configtemplate['Data Setup']['string'] = dict()
-        self.configtemplate['Data Setup']['string']['data_path'] = 'string'
+        self.configtemplate['Data Setup'] {
+            'string': {'data_path': 'string'},
+        }
         return
 
     def _feature_normalization(self):
-        self.configtemplate['Feature Normalization'] = dict()
-        self.configtemplate['Feature Normalization']['normalize_x_features'] = 'bool'
-        self.configtemplate['Feature Normalization']['normalize_y_feature'] = 'bool'
-        self.configtemplate['Feature Normalization']['feature_normalization_type'] = ['standardize', 'normalize']
-        self.configtemplate['Feature Normalization']['feature_scale_min'] = 'float'
-        self.configtemplate['Feature Normalization']['feature_scale_max'] = 'float'
+        self.configtemplate['Feature Normalization'] = {
+            'normalize_x_features': 'bool',
+            'normalize_y_features': 'bool',
+            'feature_normalization_type': ['standardize', 'normalize'],
+            'feature_scale_min': 'float',
+            'feature_scale_max': 'float',
+        }
         return
 
     def _feature_generation(self):
-        self.configtemplate['Feature Generation'] = dict()
-        self.configtemplate['Feature Generation']['perform_feature_generation'] = 'bool'
-        self.configtemplate['Feature Generation']['add_magpie_features'] = 'bool'
-        self.configtemplate['Feature Generation']['add_materialsproject_features'] = 'bool'
-        self.configtemplate['Feature Generation']['add_citrine_features'] = 'bool'
-        self.configtemplate['Feature Generation']['materialsproject_apikey'] = 'string'
-        self.configtemplate['Feature Generation']['citrine_apikey'] = 'string'
+        self.configtemplate['Feature Generation'] = {
+            'perform_feature_generation': 'bool',
+            'add_magpie_features': 'bool',
+            'add_materialsproject_features': 'bool',
+            'add_citrine_features': 'bool',
+            'materialsproject_apikey': 'string',
+            'citrine_apikey': 'string',
+        }
         return
 
     def _feature_selection(self):
-        self.configtemplate['Feature Selection'] = dict()
-        self.configtemplate['Feature Selection']['perform_feature_selection'] = 'bool'
-        self.configtemplate['Feature Selection']['remove_constant_features'] = 'bool'
-        self.configtemplate['Feature Selection']['feature_selection_algorithm'] = ['univariate_feature_selection',
-                                                                                   'recursive_feature_elimination',
-                                                                                   'sequential_forward_selection',
-                                                                                   'basic_forward_selection']
-        self.configtemplate['Feature Selection']['use_mutual_information'] = 'bool'
-        self.configtemplate['Feature Selection']['number_of_features_to_keep'] = 'integer'
-        self.configtemplate['Feature Selection']['scoring_metric'] = ['mean_squared_error', 'mean_absolute_error',
-                                                                      'root_mean_squared_error', 'r2_score']
-        self.configtemplate['Feature Selection']['generate_feature_learning_curve'] = 'bool'
-        self.configtemplate['Feature Selection']['model_to_use_for_learning_curve'] = ['linear_model_regressor',
-                                                                                       'linear_model_lasso_regressor',
-                                                                                       'lkrr_model_regressor',
-                                                                                       'gkrr_model_regressor',
-                                                                                       'support_vector_machine_model_regressor',
-                                                                                       'decision_tree_model_regressor',
-                                                                                       'extra_trees_model_regressor',
-                                                                                       'randomforest_model_regressor',
-                                                                                       'adaboost_model_regressor',
-                                                                                       'nn_model_regressor',
-                                                                                       'gaussianprocess_model_regressor']
+        self.configtemplate['Feature Selection'] {
+            'perform_feature_selection': 'bool',
+            'remove_constant_features': 'bool',
+            'feature_selection_algorithm': [
+                'univariate_feature_selection',
+                'recursive_feature_elimination',
+                'sequential_forward_selection',
+                'basic_forward_selection',
+                ],
+            'use_mutual_information':  'bool',
+            'number_of_features_to_keep':  'integer',
+            'scoring_metric':  [
+                'mean_squared_error',
+                'mean_absolute_error',
+                'root_mean_squared_error',
+                'r2_score',
+            ],
+            'generate_feature_learning_curve': 'bool',
+            'model_to_use_for_learning_curve': [
+                'linear_model_regressor',
+                'linear_model_lasso_regressor',
+                'lkrr_model_regressor',
+                'gkrr_model_regressor',
+                'support_vector_machine_model_regressor',
+                'decision_tree_model_regressor',
+                'extra_trees_model_regressor',
+                'randomforest_model_regressor',
+                'adaboost_model_regressor',
+                'nn_model_regressor',
+                'gaussianprocess_model_regressor',
+            ],
+        }
 
         return
 
     def _models_and_tests_to_run(self):
-        self.configtemplate['Models and Tests to Run'] = dict()
-        self.configtemplate['Models and Tests to Run']['models'] = ['linear_model_regressor',
-                                                                    'linear_model_lasso_regressor',
-                                                                    'gkrr_model_regressor',
-                                                                    'dummy_model',
-                                                                    'support_vector_machine_model_regressor',
-                                                                    'decision_tree_model_regressor',
-                                                                    'extra_trees_model_regressor',
-                                                                    'randomforest_model_regressor',
-                                                                    'adaboost_model_regressor',
-                                                                    'nn_model_regressor',
-                                                                    'gaussianprocess_model_regressor']
-        self.configtemplate['Models and Tests to Run']['test_cases'] = ['SingleFit', 'SingleFitPerGroup', 'SingleFitGrouped',
-                                                                        'KFoldCV', 'LeaveOneOutCV', 'LeaveOutPercentCV',
-                                                                        'LeaveOutGroupCV', 'PredictionVsFeature',
-                                                                        'PlotNoAnalysis', 'ParamGridSearch', 'ParamOptGA']
+        self.configtemplate['Models and Tests to Run'] {
+            'models': [
+                'linear_model_regressor',
+                'linear_model_lasso_regressor',
+                'gkrr_model_regressor',
+                'dummy_model',
+                'support_vector_machine_model_regressor',
+                'decision_tree_model_regressor',
+                'extra_trees_model_regressor',
+                'randomforest_model_regressor',
+                'adaboost_model_regressor',
+                'nn_model_regressor',
+                'gaussianprocess_model_regressor',
+            ],
+            'test_cases': [
+                'SingleFit',
+                'SingleFitPerGroup',
+                'SingleFitGrouped',
+                'KFoldCV',
+                'LeaveOneOutCV',
+                'LeaveOutPercentCV',
+                'LeaveOutGroupCV',
+                'PredictionVsFeature',
+                'PlotNoAnalysis',
+                'ParamGridSearch',
+                'ParamOptGA',
+            ],
         return
 
     def _test_parameters(self):
@@ -176,8 +199,9 @@ class ConfigFileConstructor(ConfigFileParser):
         for test_case in self.configtemplate['Models and Tests to Run']['test_cases']:
             self.configtemplate['Test Parameters'][test_case] = dict()
         for k, param in self.configtemplate['Test Parameters'].items():
-            if k in ['SingleFit', 'SingleFitPerGroup', 'SingleFitGrouped', 'KFoldCV', 'LeaveOneOutCV', 'LeaveOutPercentCV',
-                     'LeaveOutGroupCV', 'PlotNoAnalysis', 'PredictionVsFeature']:
+            if k in ['SingleFit', 'SingleFitPerGroup', 'SingleFitGrouped',
+                     'KFoldCV', 'LeaveOneOutCV', 'LeaveOutPercentCV', 'LeaveOutGroupCV',
+                     'PlotNoAnalysis', 'PredictionVsFeature']:
                 param['training_dataset'] = 'string'
                 param['testing_dataset'] = 'string'
                 param['xlabel'] = 'string'
