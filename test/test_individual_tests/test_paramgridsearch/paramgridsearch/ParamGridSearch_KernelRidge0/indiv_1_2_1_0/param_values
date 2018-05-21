@@ -1,6 +1,0 @@
-model;gamma;0.1
-model;alpha;3.16227766017e-08
-Testing.subtraction;col1;Operator
-Testing.subtraction;num2;10.0
-Testing.subtraction;num1;1.0
-Testing.subtraction;col2;Time
