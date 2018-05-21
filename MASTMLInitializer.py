@@ -638,86 +638,85 @@ class ModelTestConstructor(object):
                     return model
                 if model_type == 'support_vector_machine_model_regressor':
                     d = self.configdict['Model Parameters']['support_vector_machine_model_regressor']
-                    model = SVR(C=d['error_penalty'],
-                                kernel=d['kernel'],
-                                degree=d['degree'],
-                                gamma=d['gamma'],
-                                coef0=d['coef0'])
+                    return SVR(C=d['error_penalty'],
+                               kernel=d['kernel'],
+                               degree=d['degree'],
+                               gamma=d['gamma'],
+                               coef0=d['coef0'])
                 if model_type == 'lkrr_model_regressor':
                     d = self.configdict['Model Parameters']['lkrr_model_regressor']
-                    model = KernelRidge(alpha=d['alpha'],
-                                        gamma=d['gamma'],
-                                        kernel=d['kernel'])
+                    return KernelRidge(alpha=d['alpha'],
+                                       gamma=d['gamma'],
+                                       kernel=d['kernel'])
                 if model_type == 'gkrr_model_regressor':
                     d = self.configdict['Model Parameters']['gkrr_model_regressor']
-                    model = KernelRidge(alpha=d['alpha'],
-                                        coef0=d['coef0'],
-                                        degree=d['degree'],
-                                        gamma=d['gamma'],
-                                        kernel=d['kernel'],
-                                        kernel_params=None)
+                    return KernelRidge(alpha=d['alpha'],
+                                       coef0=d['coef0'],
+                                       degree=d['degree'],
+                                       gamma=d['gamma'],
+                                       kernel=d['kernel'],
+                                       kernel_params=None)
                 if model_type == 'decision_tree_model_regressor':
                     d = self.configdict['Model Parameters']['decision_tree_model_regressor']
-                    model = DecisionTreeRegressor(criterion=d['criterion'],
-                                                   splitter=d['splitter'],
-                                                   max_depth=d['max_depth'],
-                                                   min_samples_leaf=d['min_samples_leaf'],
-                                                   min_samples_split=d['min_samples_split'])
+                    return DecisionTreeRegressor(criterion=d['criterion'],
+                                                 splitter=d['splitter'],
+                                                 max_depth=d['max_depth'],
+                                                 min_samples_leaf=d['min_samples_leaf'],
+                                                 min_samples_split=d['min_samples_split'])
                 if model_type == 'extra_trees_model_regressor':
                     d = self.configdict['Model Parameters']['extra_trees_model_regressor']
-                    model = ExtraTreesRegressor(criterion=d['criterion'],
-                                                   n_estimators=d['n_estimators'],
-                                                   max_depth=d['max_depth'],
-                                                   min_samples_leaf=d['min_samples_leaf'],
-                                                   min_samples_split=d['min_samples_split'],
-                                                   max_leaf_nodes=d['max_leaf_nodes'])
+                    return ExtraTreesRegressor(criterion=d['criterion'],
+                                               n_estimators=d['n_estimators'],
+                                               max_depth=d['max_depth'],
+                                               min_samples_leaf=d['min_samples_leaf'],
+                                               min_samples_split=d['min_samples_split'],
+                                               max_leaf_nodes=d['max_leaf_nodes'])
                 if model_type == 'randomforest_model_regressor':
                     d = self.configdict['Model Parameters']['randomforest_model_regressor']
-                    model = RandomForestRegressor(criterion=d['criterion'],
-                                              n_estimators=d['n_estimators'],
-                                              max_depth=d['max_depth'],
-                                              min_samples_split=d['min_samples_split'],
-                                              min_samples_leaf=d['min_samples_leaf'],
-                                              max_leaf_nodes=d['max_leaf_nodes'],
-                                              n_jobs=d['n_jobs'],
-                                              warm_start=d['warm_start'],
-                                              bootstrap=True)
+                    return RandomForestRegressor(criterion=d['criterion'],
+                                                 n_estimators=d['n_estimators'],
+                                                 max_depth=d['max_depth'],
+                                                 min_samples_split=d['min_samples_split'],
+                                                 min_samples_leaf=d['min_samples_leaf'],
+                                                 max_leaf_nodes=d['max_leaf_nodes'],
+                                                 n_jobs=d['n_jobs'],
+                                                 warm_start=d['warm_start'],
+                                                 bootstrap=True)
                 if model_type == 'adaboost_model_regressor':
                     d = DecisionTreeRegressor(max_depth=self.configdict['Model Parameters']['adaboost_model_regressor']
-                    model = AdaBoostRegressor(base_estimator=d['base_estimator_max_depth']),
-                                              n_estimators=d['n_estimators'],
-                                              learning_rate=d['learning_rate'],
-                                              loss=d['loss'],
-                                              random_state=None)
+                    return AdaBoostRegressor(base_estimator=d['base_estimator_max_depth']),
+                                             n_estimators=d['n_estimators'],
+                                             learning_rate=d['learning_rate'],
+                                             loss=d['loss'],
+                                             random_state=None)
                 if model_type == 'nn_model_regressor':
                     d = self.configdict['Model Parameters']['nn_model_regressor']
-                    model = MLPRegressor(hidden_layer_sizes=d['hidden_layer_sizes'],
-                                     activation=d['activation'],
-                                     solver=d['solver'],
-                                     alpha=d['alpha'],
-                                     batch_size='auto',
-                                     learning_rate='constant',
-                                     max_iter=d['max_iterations'],
-                                     tol=d['tolerance'])
+                    return MLPRegressor(hidden_layer_sizes=d['hidden_layer_sizes'],
+                                        activation=d['activation'],
+                                        solver=d['solver'],
+                                        alpha=d['alpha'],
+                                        batch_size='auto',
+                                        learning_rate='constant',
+                                        max_iter=d['max_iterations'],
+                                        tol=d['tolerance'])
                 if model_type == 'gaussianprocess_model_regressor':
                     d = self.configdict['Model Parameters']['gaussianprocess_model_regressor']
                     test_kernel = None
                     if d['kernel'] == 'rbf':
                         test_kernel = skkernel.ConstantKernel(1.0, (1e-5, 1e5)) * skkernel.RBF(length_scale=d['RBF_length_scale'],
                             length_scale_bounds=tuple(float(i) for i in d['RBF_length_scale_bounds']))
-                    model = GaussianProcessRegressor(kernel=test_kernel,
+                    return GaussianProcessRegressor(kernel=test_kernel,
                                                     alpha=d['alpha'],
                                                     optimizer=d['optimizer'],
                                                     n_restarts_optimizer=d['n_restarts_optimizer'],
                                                     normalize_y=d['normalize_y'],
                                                     copy_X_train=True)  # bool(self.configdict['Model Parameters']['gaussianprocess_model']['copy_X_train']),
                                                     # int(self.configdict['Model Parameters']['gaussianprocess_model']['random_state']
-                    return model
                 if model_type == 'dummy_model':
                     model = None # model doesn't do anything
                     return model
                 else:
-                    model = None
+                    model = None # TODO: make this throw an error
                     return model
 
         elif model_type == 'custom_model':
