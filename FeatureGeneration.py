@@ -422,35 +422,25 @@ class CitrineFeatureGeneration(object):
     def _get_pifquery_property_list(self, pifquery):
         property_name_list = list()
         property_value_list = list()
-        accepted_properties_list = ['mass', 'space group', 'band', 'Band', 'energy', 'volume', 'density', 'dielectric',
-                                    'Dielectric',
-                                    'Enthalpy', 'Convex', 'Magnetization', 'Elements', 'Modulus', 'Shear', "Poisson's",
-                                    'Elastic', 'Energy']
+        accepted_properties_list = ['mass', 'space group', 'band', 'Band',
+            'energy', 'volume', 'density', 'dielectric', 'Dielectric', 'Enthalpy',
+            'Convex', 'Magnetization', 'Elements', 'Modulus', 'Shear', "Poisson's",
+            'Elastic', 'Energy']
+
         for result_number, results in enumerate(pifquery):
-            for system_heading, system_value in results.items():
-                if system_heading == 'system':
-                    # print('FOUND SYSTEM')
-                    for property_name, property_value in system_value.items():
-                        if property_name == 'properties':
-                            # print('FOUND PROPERTIES')
-                            # pprint(property_value)
-                            for list_index, list_element in enumerate(property_value):
-                                for name, value in property_value[list_index].items():
-                                    if name == 'name':
-                                        # Check that the property name is in the acceptable property list
-                                        if value != "CIF File":
-                                            for entry in accepted_properties_list:
-                                                if entry in value:
-                                                    # print('found acceptable name', entry, 'for name', value, 'with value',property_value[list_index]['scalars'][0]['value'] )
-                                                    property_name_list.append(value)
-                                                    try:
-                                                        property_value_list.append(
-                                                            float(property_value[list_index]['scalars'][0]['value']))
-                                                    except (ValueError, KeyError):
-                                                        # print('found something to remove', property_value[list_index]['scalars'][0]['value'])
-                                                        property_name_list.pop(-1)
-                                                        continue
+            for i, dictionary in enumerate(results['system']['properties']):
+                if 'name' not in dictionary or dictionary[name] == "CIF File": continue
+                for entry in accepted_properties_list:
+                    if entry not in value: continue
+                    property_name_list.append(value)
+                    try:
+                        property_value_list.append(
+                            float(dictionary['scalars'][0]['value']))
+                    except (ValueError, KeyError):
+                        property_name_list.pop(-1)
+                        continue
         return property_name_list, property_value_list
+
 
     def _parse_pifquery_property_list(self, property_name_list, property_value_list):
         parsed_property_max = dict()
