@@ -99,10 +99,9 @@ class ConfigFileConstructor(ConfigFileParser):
             'grouping_feature': 'string',
             'labeling_features': ['string'],
         }
-        return
 
     def _data_setup(self):
-        self.configtemplate['Data Setup'] {
+        self.configtemplate['Data Setup'] = {
             'string': {'data_path': 'string'},
         }
         return
@@ -165,7 +164,7 @@ class ConfigFileConstructor(ConfigFileParser):
         return
 
     def _models_and_tests_to_run(self):
-        self.configtemplate['Models and Tests to Run'] {
+        self.configtemplate['Models and Tests to Run'] = {
             'models': [
                 'linear_model_regressor',
                 'linear_model_lasso_regressor',
