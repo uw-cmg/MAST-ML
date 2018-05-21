@@ -81,17 +81,7 @@ class ConfigFileConstructor(ConfigFileParser):
         self.configtemplate = dict()
 
     def get_config_template(self):
-        self._general_setup()
-        self._data_setup()
-        self._feature_normalization()
-        self._feature_generation()
-        self._feature_selection()
-        self._models_and_tests_to_run()
-        self._test_parameters()
-        self._model_parameters()
-        return self.configtemplate
 
-    def _general_setup(self):
         self.configtemplate['General Setup'] = {
             'save_path': 'string',
             'input_features': ['string', 'string_list', 'Auto'],
@@ -100,13 +90,10 @@ class ConfigFileConstructor(ConfigFileParser):
             'labeling_features': ['string'],
         }
 
-    def _data_setup(self):
         self.configtemplate['Data Setup'] = {
             'string': {'data_path': 'string'},
         }
-        return
 
-    def _feature_normalization(self):
         self.configtemplate['Feature Normalization'] = {
             'normalize_x_features': 'bool',
             'normalize_y_features': 'bool',
@@ -114,9 +101,7 @@ class ConfigFileConstructor(ConfigFileParser):
             'feature_scale_min': 'float',
             'feature_scale_max': 'float',
         }
-        return
 
-    def _feature_generation(self):
         self.configtemplate['Feature Generation'] = {
             'perform_feature_generation': 'bool',
             'add_magpie_features': 'bool',
@@ -125,10 +110,8 @@ class ConfigFileConstructor(ConfigFileParser):
             'materialsproject_apikey': 'string',
             'citrine_apikey': 'string',
         }
-        return
 
-    def _feature_selection(self):
-        self.configtemplate['Feature Selection'] {
+        self.configtemplate['Feature Selection'] = {
             'perform_feature_selection': 'bool',
             'remove_constant_features': 'bool',
             'feature_selection_algorithm': [
@@ -161,9 +144,6 @@ class ConfigFileConstructor(ConfigFileParser):
             ],
         }
 
-        return
-
-    def _models_and_tests_to_run(self):
         self.configtemplate['Models and Tests to Run'] = {
             'models': [
                 'linear_model_regressor',
@@ -191,9 +171,8 @@ class ConfigFileConstructor(ConfigFileParser):
                 'ParamGridSearch',
                 'ParamOptGA',
             ],
-        return
+        }
 
-    def _test_parameters(self):
         self.configtemplate['Test Parameters'] = dict()
         for test_case in self.configtemplate['Models and Tests to Run']['test_cases']:
             self.configtemplate['Test Parameters'][test_case] = dict()
@@ -231,9 +210,7 @@ class ConfigFileConstructor(ConfigFileParser):
                 param['pop_upper_limit'] = 'integer'
                 for i in range(5):
                     param['param_%s' % str(i+1)] = 'string'
-        return
 
-    def _model_parameters(self):
         self.configtemplate['Model Parameters'] = dict()
         models = [k for k in self.configtemplate['Models and Tests to Run']['models']]
         for model in models:
@@ -291,7 +268,8 @@ class ConfigFileConstructor(ConfigFileParser):
                 param['optimizer'] = ['fmin_l_bfgs_b']
                 param['n_restarts_optimizer'] = 'integer'
                 param['normalize_y'] = 'bool'
-        return
+
+        return self.configtemplate
 
 class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
     """
