@@ -4,8 +4,10 @@ import os
 import sys
 import warnings
 testdir = os.path.realpath(os.path.dirname(sys.argv[0]))
-moduledir = '/Users/ryanjacobs/PycharmProjects/MASTML/'
+
+moduledir = '../'
 sys.path.append(moduledir)
+
 from FeatureSelection import DimensionalReduction, FeatureSelection, LearningCurve
 from MASTMLInitializer import ConfigFileParser
 from FeatureOperations import FeatureNormalization
@@ -45,11 +47,14 @@ class TestFeatureSelection(unittest.TestCase):
         self.model_type = 'gkrr_model_regressor'
         self.files = list()
         # Need to normalize features for feature selection
-        self.df1, scaler = FeatureNormalization(dataframe=self.df1, configdict=self.configdict).normalize_features(x_features=self.x_features,
-                                                                               y_feature=self.target_feature,
-                                                                               normalize_x_features= True,
-                                                                               normalize_y_feature= False,
-                                                                               to_csv=False)
+        self.df1, scaler = (FeatureNormalization(dataframe=self.df1, configdict=self.configdict)
+                               .normalize_features(
+                                           feature_normalization_type = 'normalize',
+                                           x_features = self.x_features,
+                                           y_feature = self.target_feature,
+                                           normalize_x_features = True,
+                                           normalize_y_feature = False,
+                                           to_csv = False))
         return
 
     def test_sequential_forward_selection(self):
@@ -100,11 +105,13 @@ class TestLearningCurve(unittest.TestCase):
         self.x_features = [f for f in self.df1.columns.values.tolist() if f != self.target_feature]
         self.model_type = 'gkrr_model_regressor'
         # Need to normalize features for feature selection
-        self.df1, scaler = FeatureNormalization(dataframe=self.df1, configdict=self.configdict).normalize_features(x_features=self.x_features,
-                                                                               y_feature=self.target_feature,
-                                                                               normalize_x_features= True,
-                                                                               normalize_y_feature= False,
-                                                                               to_csv=False)
+        self.df1, scaler = (FeatureNormalization(dataframe=self.df1, configdict=self.configdict).
+                               normalize_features(x_features=self.x_features,
+                                   feature_normalization_type = 'normalize',
+                                   y_feature=self.target_feature,
+                                   normalize_x_features= True,
+                                   normalize_y_feature= False,
+                                   to_csv=False))
         self.files = list()
         return
 

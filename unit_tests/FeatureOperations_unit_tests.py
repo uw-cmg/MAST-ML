@@ -4,8 +4,10 @@ import os
 import sys
 import numpy as np
 testdir = os.path.realpath(os.path.dirname(sys.argv[0]))
-moduledir = '/Users/ryanjacobs/PycharmProjects/MASTML/'
+
+moduledir = '../'
 sys.path.append(moduledir)
+
 from MASTMLInitializer import ConfigFileParser
 from FeatureOperations import FeatureNormalization, FeatureIO, MiscFeatureOperations
 

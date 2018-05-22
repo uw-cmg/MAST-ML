@@ -2,9 +2,9 @@ import unittest
 import os
 import sys
 import shutil
-testdir = os.path.realpath(os.path.dirname(sys.argv[0]))
-moduledir = '/Users/ryanjacobs/PycharmProjects/MASTML_2018-03-8/'
-sys.path.append(moduledir)
+
+sys.path.append('../')
+
 from MASTML import MASTMLDriver
 
 class TestMASTML(unittest.TestCase):

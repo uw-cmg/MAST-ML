@@ -3,9 +3,11 @@ import pandas as pd
 import os
 import sys
 testdir = os.path.realpath(os.path.dirname(sys.argv[0]))
-moduledir = '/Users/ryanjacobs/PycharmProjects/MASTML/'
-sys.path.append(moduledir)
-from MASTMLInitializer import ConfigFileParser, ConfigFileValidator, MASTMLWrapper
+
+sys.path.append('../')
+
+from MASTMLInitializer import ConfigFileParser, ConfigFileValidator
+from MASTMLInitializer import ModelTestConstructor as MASTMLWrapper
 from DataHandler import DataHandler
 import configobj
 
@@ -84,4 +86,4 @@ class TestMASTMLInitializer(unittest.TestCase):
         return
 
 if __name__=='__main__':
-    unittest.main()
+    unittest.main(argv=['first-arg-is-ignored'], exit=False)

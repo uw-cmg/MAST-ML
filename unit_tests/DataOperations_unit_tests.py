@@ -3,8 +3,10 @@ import pandas as pd
 import numpy as np
 import os
 import sys
+
 testdir = os.path.realpath(os.path.dirname(sys.argv[0]))
-moduledir = '/Users/ryanjacobs/PycharmProjects/MASTML/'
+moduledir = '../'
+
 sys.path.append(moduledir)
 from DataOperations import DataframeUtilities, DataParser
 from MASTMLInitializer import ConfigFileParser

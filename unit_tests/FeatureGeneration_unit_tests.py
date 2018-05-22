@@ -4,8 +4,10 @@ import os
 import sys
 testdir = os.path.realpath(os.path.dirname(sys.argv[0]))
 print(testdir)
-moduledir = '/Users/ryanjacobs/PycharmProjects/MASTML_2018-03-08/MAST-ml-private/'
+
+moduledir = '../'
 sys.path.append(moduledir)
+
 from FeatureGeneration import MagpieFeatureGeneration, MaterialsProjectFeatureGeneration, CitrineFeatureGeneration
 from MASTMLInitializer import ConfigFileParser
 
