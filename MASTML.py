@@ -29,6 +29,12 @@ if DEBUG_MODE:
     sys.exit = do_nothing
     import pdb
 
+def _resetlogging():
+    """ Remove all handlers associated with the root logger object.
+        From SO: https://stackoverflow.com/a/12158233
+    """
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
 
 class MASTMLDriver(object):
     """
@@ -150,6 +156,7 @@ class MASTMLDriver(object):
             level = envlevel
         testname = str(self.configfile).split('.')[0]
         self.logfilename = "MASTMLlog_" + str(testname) + ".log"
+        _resetlogging() # needed for multiple runs when used as a library
         logging.basicConfig(filename=self.logfilename, level=level)
         print("log file save to: ", self.logfilename)
         current_time = time.strftime('%Y'+'-'+'%m'+'-'+'%d'+', '+'%H'+' hours, '+'%M'+' minutes, '+'and '+'%S'+' seconds')
@@ -580,7 +587,6 @@ class MASTMLDriver(object):
         cwd = os.getcwd()
         logging.info('Your MASTML runs have completed successfully! Wrapping up MASTML session...')
         if self.save_path != cwd:
-            pdb.set_trace()
             log_old_location = os.path.join(cwd, self.logfilename)
 
             inputdata_name = self.configdict['Data Setup']['Initial']['data_path'].split('/')[-1]
