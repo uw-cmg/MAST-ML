@@ -20,14 +20,14 @@ from FeatureSelection import FeatureSelection, DimensionalReduction, LearningCur
 from DataHandler import DataHandler
 from SingleFit import timeit
 
-
 # to disable sys.exit ruining the debugger printout ;o
 DEBUG_MODE = True
 
 def do_nothing(*args):
-    pass
+    print("sys.exit was attempted with args", *args)
 if DEBUG_MODE:
     sys.exit = do_nothing
+    import pdb
 
 
 class MASTMLDriver(object):
@@ -580,6 +580,7 @@ class MASTMLDriver(object):
         cwd = os.getcwd()
         logging.info('Your MASTML runs have completed successfully! Wrapping up MASTML session...')
         if self.save_path != cwd:
+            pdb.set_trace()
             log_old_location = os.path.join(cwd, self.logfilename)
 
             inputdata_name = self.configdict['Data Setup']['Initial']['data_path'].split('/')[-1]
@@ -588,7 +589,6 @@ class MASTMLDriver(object):
             shutil.copy(self.logfilename, self.save_path)
             print("self.save_path: ", self.save_path)
             if os.path.exists(log_old_location):
-                print("removing ye olde log")
                 os.remove(log_old_location)
 
             if os.path.exists(data_old_location):
