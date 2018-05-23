@@ -283,7 +283,7 @@ class BasicForwardSelection(object):
                 'Stdev RMSE using top features': top_feature_std_rmse,
             }
             num_features_selected += 1
-        basic_forward_selection_dict[str(self.number_features_to_keep-1)] {
+        basic_forward_selection_dict[str(self.number_features_to_keep-1)] = {
             'Full feature set Names': selected_feature_names,
             'Full feature set Avg RMSEs': selected_feature_avg_rmses,
             'Full feature set Stdev RMSEs': selected_feature_std_rmses,

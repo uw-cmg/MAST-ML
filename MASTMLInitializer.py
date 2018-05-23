@@ -96,7 +96,7 @@ class ConfigFileConstructor(ConfigFileParser):
 
         self.configtemplate['Feature Normalization'] = {
             'normalize_x_features': 'bool',
-            'normalize_y_features': 'bool',
+            'normalize_y_feature': 'bool',
             'feature_normalization_type': ['standardize', 'normalize'],
             'feature_scale_min': 'float',
             'feature_scale_max': 'float',
