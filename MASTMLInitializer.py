@@ -416,10 +416,6 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
                         subsect['test_cases'] = [subsect['test_cases'],]
 
             return configdict
-        
-        def typify(dictionary):
-            for key,val in dictionary.items():
-                if key == string:
 
         configdict = string_to_list(configdict=configdict)
         for section in configdict.keys():
@@ -473,6 +469,7 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
                                 configdict[section][subsection_key][param_name] = float(configdict[section][subsection_key][param_name])
         return configdict, errors_present
 
+        
     def _check_config_heading_compatibility(self, configdict, errors_present):
         # Check that listed test_cases coincide with subsection names in Test_Parameters and Model_Parameters, and flag test cases that won't be run
         cases = ['models', 'test_cases']
@@ -661,8 +658,8 @@ class ModelTestConstructor(object):
                                                  warm_start=d['warm_start'],
                                                  bootstrap=True)
                 if model_type == 'adaboost_model_regressor':
-                    d = DecisionTreeRegressor(max_depth=self.configdict['Model Parameters']['adaboost_model_regressor']
-                    return AdaBoostRegressor(base_estimator=d['base_estimator_max_depth']),
+                    d = DecisionTreeRegressor(max_depth=self.configdict['Model Parameters']['adaboost_model_regressor'])
+                    return AdaBoostRegressor(base_estimator=d['base_estimator_max_depth'],
                                              n_estimators=d['n_estimators'],
                                              learning_rate=d['learning_rate'],
                                              loss=d['loss'],
