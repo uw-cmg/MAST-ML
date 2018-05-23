@@ -276,15 +276,18 @@ class BasicForwardSelection(object):
             selected_feature_std_rmses.append(top_feature_std_rmse)
 
             x_features.remove(top_feature_name)
-            basic_forward_selection_dict[str(num_features_selected)] = dict()
-            basic_forward_selection_dict[str(num_features_selected)]['Number of features selected'] = num_features_selected+1
-            basic_forward_selection_dict[str(num_features_selected)]['Top feature added this iteration'] = top_feature_name
-            basic_forward_selection_dict[str(num_features_selected)]['Avg RMSE using top features'] = top_feature_avg_rmse
-            basic_forward_selection_dict[str(num_features_selected)]['Stdev RMSE using top features'] = top_feature_std_rmse
+            basic_forward_selection_dict[str(num_features_selected)] = {
+                'Number of features selected': num_features_selected+1,
+                'Top feature added this iteration': top_feature_name,
+                'Avg RMSE using top features': top_feature_avg_rmse,
+                'Stdev RMSE using top features': top_feature_std_rmse,
+            }
             num_features_selected += 1
-        basic_forward_selection_dict[str(self.number_features_to_keep-1)]['Full feature set Names'] = selected_feature_names
-        basic_forward_selection_dict[str(self.number_features_to_keep - 1)]['Full feature set Avg RMSEs'] = selected_feature_avg_rmses
-        basic_forward_selection_dict[str(self.number_features_to_keep - 1)]['Full feature set Stdev RMSEs'] = selected_feature_std_rmses
+        basic_forward_selection_dict[str(self.number_features_to_keep-1)] {
+            'Full feature set Names': selected_feature_names,
+            'Full feature set Avg RMSEs': selected_feature_avg_rmses,
+            'Full feature set Stdev RMSEs': selected_feature_std_rmses,
+        }
         self._save_featureselected_data(basic_forward_selection_dict=basic_forward_selection_dict)
         self._plot_featureselected_learningcurve(selected_feature_avg_rmses=selected_feature_avg_rmses, selected_feature_std_rmses=selected_feature_std_rmses)
         dataframe = self._get_featureselected_dataframe(selected_feature_names=selected_feature_names)

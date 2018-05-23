@@ -6,3 +6,12 @@ build/
 dist/
 *.log
 unit_tests/example_results*
+
+
+docs/build/
+*.swp
+.DS_Store
+MASTML.egg-info/
+build/
+dist/
+examples/*results*/
