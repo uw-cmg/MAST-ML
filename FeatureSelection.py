@@ -122,11 +122,9 @@ class FeatureSelection(object):
         metricdict = sfs.get_metric_dict()
 
         # Change avg_score metric_dict values to be positive RMSE (currently negative MSE by default)
-        for featurenumber, featuredict in metricdict.items():
-            for metric, metricvalue in featuredict.items():
-                if metric == 'avg_score':
-                    metricvalue = np.sqrt(-1*metricvalue)
-                    metricdict[featurenumber][metric] = metricvalue
+        for featurenumber,featuredict in metricdict.items():
+            if 'avg_score' in featuredict:
+                featuredict['avg_score'] = np.sqrt(-featuredict['avg_score'])
 
         fs_dataframe = pd.DataFrame.from_dict(metricdict).T
         logging.info(("Summary of forward selection:"))
@@ -330,11 +328,10 @@ class BasicForwardSelection(object):
         # Make dict of ranked features into list for sorting
         for k, v in ranked_features.items():
             feature_names.append(k)
-            for kk, vv in v.items():
-                if kk == 'avg_rmse':
-                    feature_avg_rmses.append(vv)
-                if kk == 'std_rmse':
-                    feature_std_rmses.append(vv)
+            if 'avg_rmse' in v: # TODO: Is this check necessary?
+                feature_avg_rmses.append(v['avg_rmse'])
+            if 'std_rmse' in v:
+                feature_std_rmses.append(v['std_rmse'])
 
         # Sort feature lists so RMSE goes from min to max
         feature_avg_rmses_sorted = sorted(feature_avg_rmses)
@@ -725,11 +722,10 @@ class LearningCurve(object):
         ydata_stdev = list()
         for k, v in metricdict.items():
             Xdata.append(k)
-            for kk, vv in v.items():
-                if kk == 'avg_score':
-                    ydata.append(vv)
-                if kk == 'std_dev':
-                    ydata_stdev.append(vv)
+            if 'avg_score' in v: # TODO: is this check necessary?
+                ydata.append(v['avg_score'])
+            if 'std_dev' in v:
+                ydata.append(v['std_dev'])
         plt.figure()
         plt.grid()
         plt.plot(Xdata, ydata, '-o', color='r')
