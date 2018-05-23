@@ -20,6 +20,16 @@ from FeatureSelection import FeatureSelection, DimensionalReduction, LearningCur
 from DataHandler import DataHandler
 from SingleFit import timeit
 
+
+# to disable sys.exit ruining the debugger printout ;o
+DEBUG_MODE = True
+
+def do_nothing(*args):
+    pass
+if DEBUG_MODE:
+    sys.exit = do_nothing
+
+
 class MASTMLDriver(object):
     """
     Class responsible for organizing and executing a MASTML workflow
@@ -141,6 +151,7 @@ class MASTMLDriver(object):
         testname = str(self.configfile).split('.')[0]
         self.logfilename = "MASTMLlog_" + str(testname) + ".log"
         logging.basicConfig(filename=self.logfilename, level=level)
+        print("log file save to: ", self.logfilename)
         current_time = time.strftime('%Y'+'-'+'%m'+'-'+'%d'+', '+'%H'+' hours, '+'%M'+' minutes, '+'and '+'%S'+' seconds')
         logging.info('Initiated new MASTML session at: %s' % current_time)
         self.start_time = time.strftime("%Y-%m-%d, %H:%M:%S")
@@ -575,7 +586,9 @@ class MASTMLDriver(object):
             data_old_location = os.path.join(cwd, inputdata_name)
 
             shutil.copy(self.logfilename, self.save_path)
+            print("self.save_path: ", self.save_path)
             if os.path.exists(log_old_location):
+                print("removing ye olde log")
                 os.remove(log_old_location)
 
             if os.path.exists(data_old_location):
