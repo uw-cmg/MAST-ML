@@ -12,20 +12,28 @@ from MASTML import MASTMLDriver
 class TestMASTML(unittest.TestCase):
 
     def setUp(self):
-        self.configfile = 'example_input.conf'
 
         self.folders = list()
         return
 
-    def mastml_basic_example(self):
-        warnings.simplefilter("ignore")
-        MASTMLDriver(configfile=self.configfile).run_MASTML()
+    def test_mastml_basic_example(self):
+        configfile = 'example_input.conf'
+        warnings.simplefilter('ignore')
+        MASTMLDriver(configfile=configfile).run_MASTML()
         self.folders.append('example_results')
+        return
+
+    def test_mastml_full_run(self):
+        configfile = 'full_run.conf'
+        warnings.simplefilter('ignore')
+        MASTMLDriver(configfile=configfile).run_MASTML()
+        self.folders.append('full_run')
         return
 
     def tearDown(self):
         for f in self.folders:
-            shutil.rmtree(f)
+            pass
+            #shutil.rmtree(f)
         return
 
 if __name__=='__main__':
