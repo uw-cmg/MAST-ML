@@ -5,7 +5,7 @@ MASTML.egg-info/
 build/
 dist/
 *.log
-unit_tests/example_results*
+unit_tests/results/*
 
 
 docs/build/

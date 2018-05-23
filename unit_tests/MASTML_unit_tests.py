@@ -3,6 +3,7 @@ import os
 import sys
 import shutil
 import warnings
+import pdb
 
 # so we can find MASTML package
 sys.path.append('../')
@@ -16,18 +17,25 @@ class TestMASTML(unittest.TestCase):
         self.folders = list()
         return
 
-    def test_mastml_basic_example(self):
+    def test_basic_example(self):
         configfile = 'example_input.conf'
         warnings.simplefilter('ignore')
         MASTMLDriver(configfile=configfile).run_MASTML()
-        self.folders.append('example_results')
+        self.folders.append('results/example_results')
         return
 
-    def test_mastml_full_run(self):
+    def test_full_run(self):
         configfile = 'full_run.conf'
         warnings.simplefilter('ignore')
         MASTMLDriver(configfile=configfile).run_MASTML()
-        self.folders.append('full_run')
+        self.folders.append('results/full_run')
+        return
+
+    def nota_test_classifiers(self):
+        configfile = 'classifiers.conf'
+        warnings.simplefilter('ignore')
+        MASTMLDriver(configfile=configfile).run_MASTML()
+        self.folders.append('results/classifiers')
         return
 
     def tearDown(self):
