@@ -148,6 +148,7 @@ class ConfigFileConstructor(ConfigFileParser):
             'models': [
                 'linear_model_regressor',
                 'linear_model_lasso_regressor',
+                'lkrr_model_regressor',
                 'gkrr_model_regressor',
                 'dummy_model',
                 'support_vector_machine_model_regressor',
@@ -221,6 +222,12 @@ class ConfigFileConstructor(ConfigFileParser):
             if key == 'linear_model_lasso_regressor':
                 param['alpha'] = 'float'
             if key == 'gkrr_model_regressor':
+                param['alpha'] = 'float'
+                param['gamma'] = 'float'
+                param['coef0'] = 'float'
+                param['degree'] = 'integer'
+                param['kernel'] = ['linear', 'cosine', 'polynomial', 'sigmoid', 'rbf', 'laplacian']
+            if key == 'lkrr_model_regressor': #TODO
                 param['alpha'] = 'float'
                 param['gamma'] = 'float'
                 param['coef0'] = 'float'
@@ -461,7 +468,6 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
                             if self.configtemplate[section][subsection_key_template][param_name] == 'string':
                                 configdict[section][subsection_key][param_name] = str(configdict[section][subsection_key][param_name])
                             if self.configtemplate[section][subsection_key_template][param_name] == 'bool':
-                                print("param_name: (psyche not a name...) a vale?...)", configdict[section][subsection_key][param_name])
                                 configdict[section][subsection_key][param_name] = bool(du.strtobool(configdict[section][subsection_key][param_name]))
                             if self.configtemplate[section][subsection_key_template][param_name] == 'integer':
                                 configdict[section][subsection_key][param_name] = int(configdict[section][subsection_key][param_name])
@@ -658,7 +664,7 @@ class ModelTestConstructor(object):
                                                  warm_start=d['warm_start'],
                                                  bootstrap=True)
                 if model_type == 'adaboost_model_regressor':
-                    d = DecisionTreeRegressor(max_depth=self.configdict['Model Parameters']['adaboost_model_regressor'])
+                    d = self.configdict['Model Parameters']['adaboost_model_regressor']
                     return AdaBoostRegressor(base_estimator=d['base_estimator_max_depth'],
                                              n_estimators=d['n_estimators'],
                                              learning_rate=d['learning_rate'],
