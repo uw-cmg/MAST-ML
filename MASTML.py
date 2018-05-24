@@ -76,7 +76,7 @@ class MASTMLDriver(object):
         self._set_favorites_dict()
 
         # Parse MASTML input file
-        self.modeltestconstructor, self.configdict, errors_present = self._generate_mastml_wrapper()
+        self.modeltestconstructor, self.configdict = self._generate_mastml_wrapper()
         self.data_setup = self.modeltestconstructor._process_config_keyword(keyword='Data Setup')
 
         # General setup
@@ -193,10 +193,10 @@ class MASTMLDriver(object):
         return
 
     def _generate_mastml_wrapper(self):
-        configdict, errors_present = ConfigFileValidator(configfile=self.configfile).run_config_validation()
+        configdict = ConfigFileValidator(configfile=self.configfile).run_config_validation()
         modeltestconstructor = ModelTestConstructor(configdict=configdict)
         logging.info('Successfully read in and parsed your MASTML input file, %s' % str(self.configfile))
-        return modeltestconstructor, configdict, errors_present
+        return modeltestconstructor, configdict
 
     def _perform_general_setup(self):
         self.general_setup = self.modeltestconstructor._process_config_keyword(keyword='General Setup')
