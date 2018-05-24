@@ -11,6 +11,10 @@ sys.path.append('../')
 import MASTML
 import MASTMLInitializer
 
+# pipe program stdout into a log file so we can read 
+# unittest prinout more easily
+sys.stdout = open(os.devnull, 'w')
+
 class SmokeTest(unittest.TestCase):
 
     def setUp(self):
