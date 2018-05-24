@@ -25,13 +25,13 @@ class SmokeTest(unittest.TestCase):
     def test_basic_example(self):
         configfile = 'example_input.conf'
         warnings.simplefilter('ignore')
-        MASTMLDriver(configfile=configfile).run_MASTML()
+        MASTML.MASTMLDriver(configfile=configfile).run_MASTML()
         self.folders.append('results/example_results')
 
     def test_classifiers(self):
         configfile = 'classifiers.conf'
         warnings.simplefilter('ignore')
-        MASTMLDriver(configfile=configfile).run_MASTML()
+        MASTML.MASTMLDriver(configfile=configfile).run_MASTML()
         self.folders.append('results/classifiers')
 
     def tearDown(self):
@@ -39,6 +39,7 @@ class SmokeTest(unittest.TestCase):
             pass
             # uncomment for no leftover folders:
             #shutil.rmtree(f)
+
 def leaves_of_dict(dictt):
     """ 
     Returns non-dict elements of dict recursively, as a generator
@@ -70,7 +71,8 @@ class ParseTemplate(unittest.TestCase):
                              all(isinstance(x, str) for x in leaf))
 
  
-    def test_type_checking_template
+    def _nota_test_type_checking_template(self):
+        pass
 
     def tearDown(self):
         pass
