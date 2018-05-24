@@ -3,6 +3,14 @@
 ## Project Standards:
 
 * Wrap lines to 100 chars
+* `Pylint` to check code style
+
+## Large scale TODO items:
+
+* Refactor code
+* Add unit tests
+* Write classification routines
+* Improve html and inline documentation
 
 ## Documentation and install instructions
 
