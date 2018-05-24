@@ -15,3 +15,5 @@ MASTML.egg-info/
 build/
 dist/
 examples/*results*/
+
+*.png
