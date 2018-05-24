@@ -4,12 +4,11 @@ __version__ = '1.0'
 __email__ = 'rjacobs3@wisc.edu'
 __date__ = 'October 14th, 2017'
 
-import sys
+import warnings
 import logging
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-import warnings
 from sklearn.svm import SVR
 from sklearn.decomposition import PCA
 from sklearn.model_selection import learning_curve, KFold
@@ -17,11 +16,10 @@ from sklearn.feature_selection import SelectKBest, f_classif, f_regression, mutu
 from sklearn.feature_selection import RFE
 from sklearn.metrics import mean_squared_error, make_scorer, mean_absolute_error, r2_score
 from mlxtend.feature_selection import SequentialFeatureSelector as SFS
-from mlxtend.plotting import plot_sequential_feature_selection as plot_sfs
 from DataOperations import DataframeUtilities, DataParser
 from FeatureOperations import FeatureIO
 from MASTMLInitializer import ModelTestConstructor
-from SingleFit import timeit, SingleFit
+from SingleFit import timeit
 from KFoldCV import KFoldCV
 from DataHandler import DataHandler
 
@@ -112,13 +110,16 @@ class FeatureSelection(object):
         self.model = mtc.get_machinelearning_model(model_type=self.model_type, y_feature=self.y_feature)
 
     def sequential_forward_selection(self, number_features_to_keep):
-        """ 
+        """
         Does forward selection
         """ # TODO: write better docstring
-        sfs = SFS(self.model, k_features=number_features_to_keep, forward=True,
-                  floating=False, verbose=0, scoring='neg_mean_squared_error', cv=KFold(n_splits=5, shuffle=True, random_state=False))
-        sfs = sfs.fit(X=np.array(self.dataframe[self.x_features]), y=np.array(self.dataframe[self.y_feature]))
-        sfs.fit_transform(X=np.array(self.dataframe[self.x_features]), y=np.array(self.dataframe[self.y_feature]))
+        sfs = SFS(self.model, k_features=number_features_to_keep, forward=True, floating=False,
+                  verbose=0, scoring='neg_mean_squared_error', cv=KFold(n_splits=5, shuffle=True,
+                  random_state=False))
+        sfs = sfs.fit(X=np.array(self.dataframe[self.x_features]),
+                      y=np.array(self.dataframe[self.y_feature]))
+        sfs.fit_transform(X=np.array(self.dataframe[self.x_features]),
+                          y=np.array(self.dataframe[self.y_feature]))
         feature_indices_selected = sfs.k_feature_idx_
         x_features_to_keep = []
         for index in feature_indices_selected:
@@ -126,8 +127,9 @@ class FeatureSelection(object):
 
         dataframe = FeatureIO(dataframe=self.dataframe).keep_custom_features(features_to_keep=x_features_to_keep)
         # Add y_feature back into the dataframe
-        dataframe = FeatureIO(dataframe=dataframe).add_custom_features(features_to_add=[self.y_feature],
-                                                                       data_to_add=self.dataframe[self.y_feature])
+        dataframe = FeatureIO(dataframe=dataframe)\
+            .add_custom_features(features_to_add=[self.y_feature],
+                                 data_to_add=self.dataframe[self.y_feature])
         dataframe = dataframe.dropna()
         # Get forward selection data
         metricdict = sfs.get_metric_dict()
@@ -143,12 +145,16 @@ class FeatureSelection(object):
 
         mfso = MiscFeatureSelectionOperations()
         filetag = mfso.get_feature_filetag(configdict=self.configdict, dataframe=dataframe)
-        mfso.save_data_to_csv(configdict=self.configdict, dataframe=dataframe,
-                              feature_selection_str='input_with_sequential_forward_selection', filetag=filetag)
-        mfso.save_data_to_csv(configdict=self.configdict, dataframe=fs_dataframe,
-                              feature_selection_str='sequential_forward_selection_data', filetag=filetag)
-        learningcurve = LearningCurve(configdict=self.configdict, dataframe=dataframe, model_type=self.model_type)
-        learningcurve.get_sequential_forward_selection_learning_curve(metricdict=metricdict, filetag=filetag)
+        mfso.save_data_to_csv(
+            configdict=self.configdict, dataframe=dataframe,
+            feature_selection_str='input_with_sequential_forward_selection', filetag=filetag)
+        mfso.save_data_to_csv(
+            configdict=self.configdict, dataframe=fs_dataframe,
+            feature_selection_str='sequential_forward_selection_data', filetag=filetag)
+        learningcurve = LearningCurve(
+            configdict=self.configdict, dataframe=dataframe, model_type=self.model_type)
+        learningcurve.get_sequential_forward_selection_learning_curve(
+            metricdict=metricdict, filetag=filetag)
 
         return dataframe
 
@@ -158,16 +164,18 @@ class FeatureSelection(object):
         """
 
         def log_warning():
-            logging.info('Important Note: You have specified' + feature_selection_type +  'with'
-                          'mutual information. Mutual information is only used for univariate '
-                         ' feature selection Feature selection will still run OK')
+            logging.info('Important Note: You have specified %s with mutual information. Mutual'
+                         ' information is only used for univariate feature selection Feature'
+                         ' selection will still run OK',
+                         feature_selection_type)
 
         if 'regression' in self.y_feature:
             selection_type = 'regression'
         elif 'classification' in self.y_feature:
             selection_type = 'classification'
         else:
-            print('You must specify either "regression" or "classification" in your y_feature name')
+            logging.info('Error: You must specify either "regression" or "classification" in'
+                         ' your y_feature name')
             raise KeyError('invalid key: ' + selection_type)
 
         mtc = ModelTestConstructor(configdict=self.configdict)
@@ -255,6 +263,9 @@ class BasicForwardSelection(object):
         self.configdict = configdict
 
     def run_basic_forward_selection(self):
+        """
+        What does this do?
+        """ # TODO
         selected_feature_names = list()
         selected_feature_avg_rmses = list()
         selected_feature_std_rmses = list()
@@ -269,7 +280,7 @@ class BasicForwardSelection(object):
             with warnings.catch_warnings():
                 warnings.simplefilter('ignore')
                 ranked_features = self._rank_features(x_features=x_features, other_features_to_keep=selected_feature_names)
-                top_feature_name, top_feature_avg_rmse, top_feature_std_rmse = self._choose_top_feature(ranked_features=ranked_features)
+                top_feature_name, top_feature_avg_rmse, top_feature_std_rmse = _choose_top_feature(ranked_features=ranked_features)
 
             selected_feature_names.append(top_feature_name)
             selected_feature_avg_rmses.append(top_feature_avg_rmse)
@@ -321,33 +332,6 @@ class BasicForwardSelection(object):
 
         return ranked_features
 
-    def _choose_top_feature(self, ranked_features):
-        feature_names = list()
-        feature_avg_rmses = list()
-        feature_std_rmses = list()
-        feature_names_sorted = list()
-        feature_std_rmses_sorted = list()
-        # Make dict of ranked features into list for sorting
-        for k, v in ranked_features.items():
-            feature_names.append(k)
-            if 'avg_rmse' in v: # TODO: Is this check necessary?
-                feature_avg_rmses.append(v['avg_rmse'])
-            if 'std_rmse' in v:
-                feature_std_rmses.append(v['std_rmse'])
-
-        # Sort feature lists so RMSE goes from min to max
-        feature_avg_rmses_sorted = sorted(feature_avg_rmses)
-        for feature_avg_rmse in feature_avg_rmses_sorted:
-            for k, v in ranked_features.items():
-                if v['avg_rmse'] == feature_avg_rmse:
-                    feature_names_sorted.append(k)
-                    feature_std_rmses_sorted.append(v['std_rmse'])
-
-        top_feature_name = feature_names_sorted[0]
-        top_feature_avg_rmse = feature_avg_rmses_sorted[0]
-        top_feature_std_rmse = feature_std_rmses_sorted[0]
-
-        return top_feature_name, top_feature_avg_rmse, top_feature_std_rmse
 
     def _get_featureselected_dataframe(self, selected_feature_names):
         # Return dataframe containing only selected features
@@ -379,44 +363,8 @@ class BasicForwardSelection(object):
 class LearningCurve(object):
     """
     Class to construct learning curves to assess feature selection choices
-
-    Args:
-        configdict (dict) : MASTML configfile object as dict
-        dataframe (pandas dataframe) : dataframe containing x and y data and feature names
-        model_type (kwarg) : key word model string specifying model type (obtained from input file)
-
-    Methods:
-        generate_feature_learning_curve : generates feature-based learning curve for a specific feature selection routine
-
-            Args:
-                feature_selection_algorithm (kwarg) : name of feature selection routine
-
-        get_univariate_RFE_training_data_learning_curve: generates training data learning curve for univariate or RFE
-            feature selection routine
-
-            Args:
-                estimator (sklearn model object) : an sklearn model used to assess model accuracy
-                title (str) : Title for learning curve plot
-                Xdata (pandas dataframe) : dataframe of Xdata
-                ydata (pandas dataframe) : dataframe of ydata
-                feature_selection_type (kwarg) : name of feature selection routine
-
-        get_univariate_RFE_feature_learning_curve: generates feature-based learning curve for univariate or RFE feature
-            selection routine
-
-            Args:
-                title (str) : Title for learning curve plot
-                Xdata (pandas dataframe) : dataframe of Xdata
-                ydata (pandas dataframe) : dataframe of ydata
-                ydata_stdev (pandas dataframe) : dataframe of standard deviations of ydata
-
-        get_sequential_forward_selection_learning_curve: generates feature-based learning curve for SFS algorithm
-
-            Args:
-                metricdict (dict) : dict of feature selection metrics from SFS
-                filetag (str) : name of target feature used to name save files
-
     """
+
     def __init__(self, configdict, dataframe, model_type):
         self.configdict = configdict
         self.dataframe = dataframe
@@ -432,6 +380,15 @@ class LearningCurve(object):
 
     @timeit
     def generate_feature_learning_curve(self, feature_selection_algorithm):
+        """
+        generates feature-based learning curve for a specific feature selection routine
+        Args:
+            feature_selection_algorithm (kwarg) : name of feature selection routine
+        """
+        # TODO:
+        # + Reduce local variable count and line count by packing them into lists of vars
+        # + Simplify branching logic
+
         n_features_to_keep = int(self.configdict['Feature Selection']['number_of_features_to_keep'])
         dataframe_fs_list = list()
         num_features_list = list()
@@ -499,7 +456,7 @@ class LearningCurve(object):
                     foldidx += 1
 
             # For each CV test, and each fold in each CV test, fit the model to the appropriate train and test data and get CV scores
-            for cvtest in cvtest_dict.keys():
+            for cvtest in cvtest_dict:
                 fold_train_rmses = np.zeros(num_folds)
                 fold_test_rmses = np.zeros(num_folds)
                 fold_train_mses = np.zeros(num_folds)
@@ -508,7 +465,7 @@ class LearningCurve(object):
                 fold_test_maes = np.zeros(num_folds)
                 fold_train_r2s = np.zeros(num_folds)
                 fold_test_r2s = np.zeros(num_folds)
-                for fold in cvtest_dict[cvtest].keys():
+                for fold in cvtest_dict[cvtest]:
                     fdict = cvtest_dict[cvtest][fold]
                     input_train = df.iloc[fdict['train_index']]
                     if target_feature in input_train.columns:
@@ -570,7 +527,7 @@ class LearningCurve(object):
             avg_test_mae = 0
             avg_train_rsquared = 0
             avg_test_rsquared = 0
-            for cvtest in cvtest_dict.keys():
+            for cvtest in cvtest_dict:
                 avg_train_rmse += cvtest_dict[cvtest]["avg_train_rmse"]
                 avg_test_rmse += cvtest_dict[cvtest]["avg_test_rmse"]
                 avg_train_mse += cvtest_dict[cvtest]["avg_train_mse"]
@@ -621,12 +578,9 @@ class LearningCurve(object):
 
             # Construct learning curve plot of CVscore vs number of training data included. Only do it once max features reached
             if num_features == n_features_to_keep:
-                self.get_univariate_RFE_training_data_learning_curve(estimator=self.model,
-                                                                     title='Training data learning curve',
-                                                                     Xdata=Xdata,
-                                                                     ydata=ydata,
-                                                                     feature_selection_type=feature_selection_algorithm,
-                                                                     cv=5)
+                self.get_univariate_rfe_training_data_learning_curve(
+                    estimator=self.model, title='Training data learning curve', Xdata=Xdata,
+                    ydata=ydata, feature_selection_type=feature_selection_algorithm, cv=5)
 
         # Construct learning curve plot of RMSE vs number of features included
         if self.scoring_metric == 'root_mean_squared_error':
@@ -644,59 +598,77 @@ class LearningCurve(object):
         else:
             logging.info("ERROR: you must specify a valid scoring metric for feature selection!")
             raise KeyError('invalid key: ' + self.scoring_metric)
-        self.get_univariate_RFE_feature_learning_curve(title=feature_selection_algorithm + ' learning curve',
+        self.get_univariate_rfe_feature_learning_curve(title=feature_selection_algorithm + ' learning curve',
                                                        Xdata=num_features_list, ydata=ydict, ydata_stdev=ydict_stdev,
                                                        feature_selection_type=feature_selection_algorithm)
 
-    def get_univariate_RFE_training_data_learning_curve(self, estimator, title, Xdata, ydata, feature_selection_type, cv=None):
+    def get_univariate_rfe_training_data_learning_curve(self, estimator, title, Xdata, ydata, feature_selection_type, cv=None):
+        """
+        Generates training data learning curve for univariate or RFE feature selection routine
+         and saves as PDF
+        Args:
+            estimator (sklearn model object) : an sklearn model used to assess model accuracy
+            title (str) : Title for learning curve plot
+            Xdata (pandas dataframe) : dataframe of Xdata
+            ydata (pandas dataframe) : dataframe of ydata
+            feature_selection_type (kwarg) : name of feature selection routine
+        """
+
+        try:
+            ylabel, score_func = {
+                'root_mean_squared_error':  ('RMSE', mean_squared_error),
+                 'mean_squared_error':      ('MSE',  mean_squared_error),
+                 'mean_absolute_error':     ('MAE',  mean_absolute_error),
+                 'r2_score':                ('R^2',  r2_score)
+                 }[self.scoring_metric]
+        except KeyError as e:
+            logging.info("ERROR: invalid scoring_metric: " + str(self.scoring_metric))
+            raise e
+
+        train_sizes, train_scores, test_scores = learning_curve(
+            estimator, Xdata, ydata, cv=cv, n_jobs=1, scoring=make_scorer(score_func=score_func),
+            train_sizes=np.linspace(0.1, 1.0, 10))
+
+        if self.scoring_metric == 'root_mean_squared_error':
+            train_scores, test_scores = np.sqrt([train_scores, test_scores])
+
+        train_scores_mean = np.mean(train_scores, axis=1)
+        train_scores_std  = np.std( train_scores, axis=1)
+        test_scores_mean  = np.mean(test_scores,  axis=1)
+        test_scores_std   = np.std( test_scores,  axis=1)
+
         plt.figure()
-        plt.title(title)
+
         plt.grid()
-        savedir = self.configdict['General Setup']['save_path']
-        plt.xlabel("Number of training data points")
-        if self.scoring_metric == 'root_mean_squared_error':
-            plt.ylabel("RMSE")
-            score_func = mean_squared_error
-        elif self.scoring_metric == 'mean_squared_error':
-            plt.ylabel('MSE')
-            score_func = mean_squared_error
-        elif self.scoring_metric == 'mean_absolute_error':
-            plt.ylabel('MAE')
-            score_func = mean_absolute_error
-        elif self.scoring_metric == 'r2_score':
-            plt.ylabel('R^2')
-            score_func = r2_score
 
-        train_sizes, train_scores, test_scores = learning_curve(estimator, Xdata, ydata, cv=cv, n_jobs=1,
-                                                                scoring=make_scorer(score_func=score_func),
-                                                                train_sizes=np.linspace(0.1, 1.0, 10))
-
-        if self.scoring_metric == 'root_mean_squared_error':
-            train_scores_mean = np.mean(np.sqrt(train_scores), axis=1)
-            train_scores_std = np.std(np.sqrt(train_scores), axis=1)
-            test_scores_mean = np.mean(np.sqrt(test_scores), axis=1)
-            test_scores_std = np.std(np.sqrt(test_scores), axis=1)
-        else:
-            train_scores_mean = np.mean(train_scores, axis=1)
-            train_scores_std = np.std(train_scores, axis=1)
-            test_scores_mean = np.mean(test_scores, axis=1)
-            test_scores_std = np.std(test_scores, axis=1)
-
-        plt.fill_between(train_sizes, train_scores_mean - train_scores_std, train_scores_mean + train_scores_std, alpha=0.1,
-                         color="r")
-        plt.fill_between(train_sizes, test_scores_mean - test_scores_std, test_scores_mean + test_scores_std, alpha=0.1,
-                         color="g")
+        plt.fill_between(train_sizes, train_scores_mean - train_scores_std,
+                         train_scores_mean + train_scores_std, alpha=0.1, color="r")
+        plt.fill_between(train_sizes, test_scores_mean - test_scores_std,
+                         test_scores_mean + test_scores_std, alpha=0.1, color="g")
         plt.plot(train_sizes, train_scores_mean, 'o-', color="r", label="Training data score")
-        plt.plot(train_sizes, test_scores_mean, 'o-', color="g", label="Test data score")
-        plt.legend(loc="best")
-        plt.savefig(savedir + "/" + feature_selection_type + "_learning_curve_trainingdata.pdf")
+        plt.plot(train_sizes, test_scores_mean, 'o-',  color="g", label="Test data score")
 
-    def get_univariate_RFE_feature_learning_curve(self, title, Xdata, ydata, ydata_stdev, feature_selection_type=None):
-        plt.figure()
+        plt.legend(loc="best")
         plt.title(title)
-        plt.grid()
-        savedir = self.configdict['General Setup']['save_path']
-        for ydataname, ydata in ydata.items():
+        plt.xlabel("Number of training data points")
+        ply.ylabel(ylabel)
+
+        plt.savefig(self.configdict['General Setup']['save_path'] + "/" + feature_selection_type + "_learning_curve_trainingdata.pdf")
+
+    def get_univariate_rfe_feature_learning_curve(self, title, Xdata, ydata, ydata_stdev, feature_selection_type=None):
+        """
+        generates feature-based learning curve for univariate or RFE feature selection routine and
+          saves PDF
+        Args:
+            title (str) : Title for learning curve plot
+            Xdata (pandas dataframe) : dataframe of Xdata
+            ydata (pandas dataframe) : dataframe of ydata
+            ydata_stdev (pandas dataframe) : dataframe of standard deviations of ydata
+        """
+
+        plt.figure()
+
+        for ydataname, ydata in ydata.items(): # TODO: fix name overwrite
             difference = np.array(ydata) - np.array(ydata_stdev[ydataname])
             total = np.array(ydata) + np.array(ydata_stdev[ydataname])
             if 'train' in ydataname:
@@ -705,19 +677,26 @@ class LearningCurve(object):
             if 'test' in ydataname:
                 plt.plot(Xdata, ydata, 'o-', color='g', label='Test data score')
                 plt.fill_between(Xdata, difference, total, alpha=0.1, color="g")
+
+        plt.title(title)
+        plt.grid()
         plt.xlabel("Number of features")
-        if self.scoring_metric == 'root_mean_squared_error':
-            plt.ylabel("RMSE")
-        elif self.scoring_metric == 'mean_squared_error':
-            plt.ylabel("MSE")
-        elif self.scoring_metric == 'mean_absolute_error':
-            plt.ylabel("MAE")
-        elif self.scoring_metric == 'r2_score':
-            plt.ylabel("R^2")
+        plt.ylabel({'root_mean_squared_error': 'RMSE',
+                    'mean_squared_error': 'MSE',
+                    'mean_absolute_error': 'MAE',
+                    'r2_score': 'R^2'}[self.scoring_metric])
         plt.legend(loc="best")
+
         plt.savefig(savedir + "/" + feature_selection_type + "_learning_curve_featurenumber.pdf")
 
     def get_sequential_forward_selection_learning_curve(self, metricdict, filetag):
+        """
+        generates feature-based learning curve for SFS algorithm and saves PDF
+        Args:
+            metricdict (dict) : dict of feature selection metrics from SFS
+            filetag (str) : name of target feature used to name save files
+        """
+
         Xdata = list()
         ydata = list()
         ydata_stdev = list()
@@ -745,77 +724,35 @@ class LearningCurve(object):
 class MiscFeatureSelectionOperations():
     """
     Class containing additional functions to help with feature selection routines
-
-    Methods:
-        get_selector_feature_names : obtains the feature names and indices selected by a RFE algorithm
-
-            Args:
-                selector (sklearn RFE object) : an instance of the RFE sklearn class
-                x_features (list) : list of x feature names
-
-            Returns:
-                list : list of feature index numbers selected
-                list : list of feature names selected
-
-        get_forward_selection_feature_names : obtain feature names based on feature indices
-
-            Args:
-                feature_indices_selected (list) : list of feature index numbers selected
-                x_features (list) : list of x feature names
-
-            Returns:
-                list : list of feature names selected
-
-        get_feature_filetag : obtain feature name to be used in saved file names
-
-            Args:
-                configdict (dict) : MASTML configfile object as dict
-                dataframe (pandas dataframe) : a pandas dataframe object
-
-            Returns:
-                str : feature name to be used in file name
-
-        get_ranked_feature_names : obtains ranked feature names from an RFE algorithm
-
-            Args:
-                selector (sklearn RFE object) : an instance of the RFE sklearn class
-                x_features (list) : list of x feature names
-                number_features_to_keep (int) : number of features to keep in selected feature list
-
-            Returns:
-                list : list of feature names selected
-
-        remove_features_containing_strings : removes feature columns whose values are strings as these can't be used in regression tasks
-
-            Args:
-                dataframe (pandas dataframe) : dataframe containing data and feature names
-                x_features (list) : list of x feature names
-
-            Returns:
-                list : list of x features with those features removed which contained data as strings
-                pandas dataframe : dataframe containing data and feature names, with string features removed
-
-        save_data_to_csv : save dataframe to csv file
-
-            Args:
-                configdict (dict) : MASTML configfile object as dict
-                dataframe (pandas dataframe) : a pandas dataframe object
-                feature_selection_str (str) : name of feature selection routine used
-                filetag (str) : name of target feature
-
     """
+
     @classmethod
     def get_selector_feature_names(cls, selector, x_features):
+        """
+        obtains the feature names and indices selected by a RFE algorithm
+        Args:
+            selector (sklearn RFE object) : an instance of the RFE sklearn class
+            x_features (list) : list of x feature names
+        Returns:
+            feature_indices_selected : list of feature index numbers selected
+            feature_names_selected : list of feature names selected
+        """
+
         feature_indices_selected = selector.get_support(indices=True)
-        # Get the names of the features based on their indices, for features selected from feature selection
-        feature_names_selected = []
-        for i in range(len(x_features)):
-            if i in feature_indices_selected:
-                feature_names_selected.append(x_features[i])
+        feature_names_selected = [x_features[i] for i in feature_indices_selected]
         return feature_indices_selected, feature_names_selected
 
     @classmethod
     def get_forward_selection_feature_names(cls, feature_indices_selected, x_features):
+        """
+        obtain feature names based on feature indices
+        Args:
+            feature_indices_selected (list) : list of feature index numbers selected
+            x_features (list) : list of x feature names
+        Returns:
+            feature_names_selected : list of feature names selected
+        """
+
         # Get the names of the features based on their indices, for features selected from feature selection
         feature_names_selected = []
         for i in range(len(x_features)):
@@ -825,50 +762,98 @@ class MiscFeatureSelectionOperations():
 
     @classmethod
     def get_feature_filetag(cls, configdict, dataframe):
-        foundfeature = False
+        """
+        obtain feature name to be used in saved file names
+        Args:
+            configdict (dict) : MASTML configfile object as dict
+            dataframe (pandas dataframe) : a pandas dataframe object
+        Returns:
+            filetag (str): feature name to be used in file name
+        """
+
         for column in dataframe.columns.values:
             if column in configdict['General Setup']['target_feature']:
-                filetag = column
-                foundfeature = True
-        if foundfeature == False:
-            logging.info('Error: Could not locate y_feature in your dataframe, please ensure the y_feature names match in your csv and input file')
-            raise KeyError('not found: ' + column)
-        return filetag
+                return column
+        logging.info('Error: Could not locate y_feature in your dataframe, please ensure the y_feature names match in your csv and input file')
+        raise KeyError('dataframe columns do not contain target feature')
+
 
     @classmethod
     def get_ranked_feature_names(cls, selector, x_features, number_features_to_keep):
+        """
+        obtains ranked feature names from an RFE algorithm
+        Args:
+            selector (sklearn RFE object) : an instance of the RFE sklearn class
+            x_features (list) : list of x feature names
+            number_features_to_keep (int) : number of features to keep in selected feature list
+        Returns:
+            list : list of feature names selected
+        """
         try:
             ranked_features = sorted(zip(selector.scores_, x_features), reverse=True)
         except AttributeError:
             ranked_features = sorted(zip(selector.ranking_, x_features))
-        feature_names_selected = []
-        count = 0
-        for i in range(len(ranked_features)):
-            if count < number_features_to_keep:
-                feature_names_selected.append(ranked_features[i][1])
-                count += 1
-        return feature_names_selected
+
+        if number_features_to_keep > len(ranked_features):
+            raise IndexError("number_features_to_keep exceeds len(ranked_features)")
+        return [ranked_features[i][1] for i in range(number_features_to_keep)] 
 
     @classmethod
     def remove_features_containing_strings(cls, dataframe, x_features):
-        x_features_pruned = []
-        x_features_to_remove = []
-        for x_feature in x_features:
-            is_str = False
-            for entry in dataframe[x_feature]:
-                if type(entry) is str:
-                    #print('found a string')
-                    is_str = True
-            if is_str == True:
-                x_features_to_remove.append(x_feature)
+        """
+        removes feature columns whose values are strings as these can't be used in regression tasks
+        Args:
+            dataframe (pandas dataframe) : dataframe containing data and feature names
+            x_features (list) : list of x feature names
+        Returns:
+            list : list of x features with those features removed which contained data as strings
+            pandas dataframe : dataframe containing data and feature names, with string features removed
+        """
 
-        for x_feature in x_features:
-            if x_feature not in x_features_to_remove:
-                x_features_pruned.append(x_feature)
+        x_features_to_remove = [x_feature for x_feature in x_features
+                                if any(isinstance(entry, str) for entry in dataframe[x_feature])]
+        x_features_pruned = list(set(x_features) - set(x_features_to_remove))
 
         dataframe = FeatureIO(dataframe=dataframe).remove_custom_features(features_to_remove=x_features_to_remove)
         return x_features_pruned, dataframe
 
     @classmethod
     def save_data_to_csv(cls, configdict, dataframe, feature_selection_str, filetag):
+        """
+        save dataframe to csv file
+            Args:
+                configdict (dict) : MASTML configfile object as dict
+                dataframe (pandas dataframe) : a pandas dataframe object
+                feature_selection_str (str) : name of feature selection routine used
+                filetag (str) : name of target feature
+        """
         dataframe.to_csv(configdict['General Setup']['save_path'] + "/" + feature_selection_str + '_' + str(filetag) + '.csv', index=False)
+
+def _choose_top_feature(ranked_features):
+    # TODO: add docstring
+    feature_names = list()
+    feature_avg_rmses = list()
+    feature_std_rmses = list()
+    feature_names_sorted = list()
+    feature_std_rmses_sorted = list()
+    # Make dict of ranked features into list for sorting
+    for k, v in ranked_features.items():
+        feature_names.append(k)
+        if 'avg_rmse' in v: # TODO: Is this check necessary?
+            feature_avg_rmses.append(v['avg_rmse'])
+        if 'std_rmse' in v:
+            feature_std_rmses.append(v['std_rmse'])
+
+    # Sort feature lists so RMSE goes from min to max
+    feature_avg_rmses_sorted = sorted(feature_avg_rmses)
+    for feature_avg_rmse in feature_avg_rmses_sorted:
+        for k, v in ranked_features.items():
+            if v['avg_rmse'] == feature_avg_rmse:
+                feature_names_sorted.append(k)
+                feature_std_rmses_sorted.append(v['std_rmse'])
+
+    top_feature_name = feature_names_sorted[0]
+    top_feature_avg_rmse = feature_avg_rmses_sorted[0]
+    top_feature_std_rmse = feature_std_rmses_sorted[0]
+
+    return top_feature_name, top_feature_avg_rmse, top_feature_std_rmse
