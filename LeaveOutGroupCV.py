@@ -62,7 +62,6 @@ class LeaveOutGroupCV(LeaveOutPercentCV):
             )
         if self.testing_dataset.grouping_feature is None:
             raise ValueError("grouping feature must be set.")
-        return 
 
     def predict(self):
         #Predictions themselves are covered in self.fit()
@@ -71,7 +70,6 @@ class LeaveOutGroupCV(LeaveOutPercentCV):
         self.readme_list.append("----- Output data -----\n")
         for cvtest in self.cvtest_dict.keys():
             self.print_output_csv(label=self.cvtest_dict[cvtest]['group'], cvtest_entry=self.cvtest_dict[cvtest])
-        return
 
     @timeit
     def plot(self):
@@ -101,7 +99,6 @@ class LeaveOutGroupCV(LeaveOutPercentCV):
         myph = PlotHelper(**kwargs)
         myph.plot_rmse_vs_text()
         self.readme_list.append("Plot leave_out_group.png created.\n")
-        return
 
     def set_up_cv(self):
         if self.testing_dataset.target_data is None:
@@ -122,7 +119,6 @@ class LeaveOutGroupCV(LeaveOutPercentCV):
             self.cvtest_dict[cvtest]['test_index'] = test
             self.cvtest_dict[cvtest]['group'] = group #keep track of group
             cvtest=cvtest + 1
-        return
 
     def print_statistics(self):
         LeaveOutPercentCV.print_statistics(self)
@@ -134,7 +130,6 @@ class LeaveOutGroupCV(LeaveOutPercentCV):
         statlist.sort() #sorts by group
         for stat in statlist:
             self.readme_list.append(stat)
-        return
 
     def print_output_csv(self, label="", cvtest_entry=None):
         """
@@ -149,5 +144,4 @@ class LeaveOutGroupCV(LeaveOutPercentCV):
         self.readme_list.append("%s file created with columns:\n" % olabel)
         for col in cols:
             self.readme_list.append("    %s\n" % col)
-        return
 

@@ -69,7 +69,6 @@ class SingleFitGrouped(SingleFit):
         self.per_group_statistics = dict()
         self.outlying_groups = list()
         self.plotting_dict = dict()
-        return
 
     @timeit 
     def set_up(self):
@@ -84,7 +83,6 @@ class SingleFitGrouped(SingleFit):
             filter_list.append((self.training_dataset.grouping_feature,"=",group))
         self.training_dataset.add_filters(filter_list)
         self.training_dataset.set_up_data_from_features() #reset all data
-        return
 
     def get_statistics(self):
         self.get_per_group_statistics(preface="")
@@ -92,7 +90,6 @@ class SingleFitGrouped(SingleFit):
         if not(self.plot_filter_out is None):
             self.get_per_group_statistics(preface="filtered_")
         self.get_outlying_groups()
-        return
 
     def print_statistics(self):
         SingleFit.print_statistics(self)
@@ -104,7 +101,6 @@ class SingleFitGrouped(SingleFit):
             skeys.sort()
             for skey in skeys:
                 self.readme_list.append("    %s: %s: %3.3f\n" % (group, skey, self.per_group_statistics[group][skey]))
-        return
 
     def plot_results(self):
         SingleFit.plot_results(self)
@@ -123,7 +119,6 @@ class SingleFitGrouped(SingleFit):
         self.plot_group_splits_with_outliers(group_dict=dict(self.plotting_dict), outlying_groups=list(self.outlying_groups), label="per_group_info", group_notelist=list(group_notelist))
         self.readme_list.append("Plot in subfolder per_group_info created\n")
         self.readme_list.append("    labeling outlying groups and their RMSEs.\n")
-        return
     
     def get_per_group_statistics(self, preface=""):
         gfeat = self.testing_dataset.grouping_feature
@@ -135,7 +130,6 @@ class SingleFitGrouped(SingleFit):
             if not (group in self.per_group_statistics.keys()):
                 self.per_group_statistics[group] = dict()
             self.per_group_statistics[group]['%srmse' % preface] = g_rmse
-        return
 
     def get_outlying_groups(self):
         self.outlying_groups = list()
@@ -157,7 +151,6 @@ class SingleFitGrouped(SingleFit):
         logging.debug("Highest %s list: %s" % (criterion, highest_rmses))
         for high_rmse in highest_rmses:
             self.outlying_groups.append(high_rmse[1])
-        return
 
     def get_plotting_dict(self):
         plot_dict=dict()
@@ -182,7 +175,6 @@ class SingleFitGrouped(SingleFit):
             else:
                 plot_dict[group]['rmse'] = None
         self.plotting_dict=dict(plot_dict)
-        return
 
     @timeit
     def plot_group_splits_with_outliers(self, group_dict=None, outlying_groups=list(), label="group_splits", group_notelist=list()):
@@ -197,5 +189,4 @@ class SingleFitGrouped(SingleFit):
         addl_kwargs['notelist'] = list(group_notelist)
         myph = PlotHelper(**addl_kwargs)
         myph.plot_group_splits_with_outliers()
-        return
     

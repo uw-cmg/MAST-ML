@@ -122,7 +122,6 @@ class SingleFit():
         #
         logger.info("-------- %s --------" % self.analysis_name)
         logger.info("Starting analysis at %s" % time.asctime())
-        return
    
     @timeit
     def run(self):
@@ -131,19 +130,16 @@ class SingleFit():
         self.predict()
         self.plot()
         self.print_readme()
-        return
 
     @timeit
     def set_up(self):
         self.readme_list.append("%s\n" % time.asctime())
-        return
 
     @timeit
     def fit(self):
         self.get_trained_model()
         self.print_model()
         self.save_model()
-        return
    
     @timeit
     def predict(self):
@@ -151,18 +147,15 @@ class SingleFit():
         self.get_statistics()
         self.print_output_csv()
         self.print_statistics()
-        return
 
     @timeit
     def plot(self):
         self.plot_results()
         self.plot_residuals_histogram()
-        return
 
     def get_trained_model(self):
         trained_model = self.model.fit(self.training_dataset.input_data, self.training_dataset.target_data)
         self.trained_model = trained_model
-        return
     
     def print_model(self):
         self.readme_list.append("----- Model ----------------\n")
@@ -171,13 +164,11 @@ class SingleFit():
         self.readme_list.append("----- Model parameters -----\n")
         for param, paramval in self.trained_model.get_params().items():
             self.readme_list.append("%s: %s\n" % (param, paramval))
-        return
 
     def save_model(self):
         pname = os.path.join(self.save_path, "model.pickle")
         with open(pname,'wb') as pfile:
             joblib.dump(self.model, pfile) 
-        return
 
     def get_prediction(self):
         if self.trained_model.__class__.__name__=="GaussianProcessRegressor":
@@ -186,7 +177,6 @@ class SingleFit():
         else:
             target_prediction = self.trained_model.predict(self.testing_dataset.input_data)
         self.testing_dataset.add_prediction(target_prediction)
-        return
 
     def get_rmse(self):
         rmse = np.sqrt(mean_squared_error(self.testing_dataset.target_data, self.testing_dataset.target_prediction))        
@@ -236,7 +226,6 @@ class SingleFit():
         self.statistics['rsquared_noint'] = self.get_rsquared_noint(Xdata=self.testing_dataset.target_data, ydata=self.testing_dataset.target_prediction)
         self.statistics['residuals'] = self.get_residuals()
         self.plot_filter_update_statistics()
-        return
 
     def print_statistics(self):
         self.readme_list.append("----- Statistics -----\n")
@@ -251,7 +240,6 @@ class SingleFit():
                     self.readme_list.append("%s: %3.4f\n" % (skey, self.statistics[skey]))
                 except TypeError:
                     continue
-        return
 
     def print_output_csv(self, csvname="output_data.csv"):
         """
@@ -263,7 +251,6 @@ class SingleFit():
         self.readme_list.append("%s file created with columns:\n" % csvname)
         for col in cols_printed:
             self.readme_list.append("    %s\n" % col)
-        return
 
     def get_plot_filter(self, plot_filter_out):
         if (plot_filter_out is None or plot_filter_out == 'None' or plot_filter_out == ''):
@@ -298,7 +285,6 @@ class SingleFit():
         self.print_output_csv("output_data_filtered.csv")
         rmse_pfo = np.sqrt(mean_squared_error(self.testing_dataset.target_prediction, self.testing_dataset.target_data)) 
         self.statistics['filtered_rmse'] = rmse_pfo
-        return
     
     def plot_results(self, addl_plot_kwargs=None):
         self.readme_list.append("----- Plotting -----\n")
@@ -348,19 +334,17 @@ class SingleFit():
         self.readme_list.append("Plot single_fit.png created.\n")
         self.readme_list.append("    Plotted data is in the data_... csv file.\n")
         self.readme_list.append("    Error column of all zeros indicates no error.\n")
-        return
 
     def plot_residuals_histogram(self):
-        DataframeUtilities.plot_dataframe_histogram(dataframe=self.statistics['residuals'], title='Histogram of residuals',
-                                                          xlabel='Residuals', ylabel='Number of occurrences',
-                                                          save_path=self.save_path, file_name='histogram_residuals.png')
-        return
+        DataframeUtilities.plot_dataframe_histogram(
+            dataframe=self.statistics['residuals'], title='Histogram of residuals',
+            xlabel='Residuals', ylabel='Number of occurrences', save_path=self.save_path,
+            file_name='histogram_residuals.png')
 
     @timeit
     def print_readme(self):
         with open(os.path.join(self.save_path,"README"), 'w') as rfile:
             rfile.writelines(self.readme_list)
-        return
 
     def __enter__(self):
         """enter method is for with...as construction

@@ -118,7 +118,7 @@ class FeatureSelection(object):
         sfs = SFS(self.model, k_features=number_features_to_keep, forward=True,
                   floating=False, verbose=0, scoring='neg_mean_squared_error', cv=KFold(n_splits=5, shuffle=True, random_state=False))
         sfs = sfs.fit(X=np.array(self.dataframe[self.x_features]), y=np.array(self.dataframe[self.y_feature]))
-        X_new = sfs.fit_transform(X=np.array(self.dataframe[self.x_features]), y=np.array(self.dataframe[self.y_feature]))
+        sfs.fit_transform(X=np.array(self.dataframe[self.x_features]), y=np.array(self.dataframe[self.y_feature]))
         feature_indices_selected = sfs.k_feature_idx_
         x_features_to_keep = []
         for index in feature_indices_selected:
@@ -156,34 +156,38 @@ class FeatureSelection(object):
         """
         Returns the reduced dataframe
         """
+
+        def log_warning():
+            logging.info('Important Note: You have specified' + feature_selection_type +  'with'
+                          'mutual information. Mutual information is only used for univariate '
+                         ' feature selection Feature selection will still run OK')
+
         if 'regression' in self.y_feature:
             selection_type = 'regression'
         elif 'classification' in self.y_feature:
             selection_type = 'classification'
         else:
             print('You must specify either "regression" or "classification" in your y_feature name')
-            raise KeyError('invalid key: ' + y_feature)
+            raise KeyError('invalid key: ' + selection_type)
 
         mtc = ModelTestConstructor(configdict=self.configdict)
         if feature_selection_type == 'recursive_feature_elimination' and self.model_type not in \
-                ["linear_model_regressor", "linear_model_lasso_regressor", "support_vector_machine_regressor", "randomforest_model_regressor"]:
+                ["linear_model_regressor", "linear_model_lasso_regressor",
+                "support_vector_machine_regressor", "randomforest_model_regressor"]:
             self.model = SVR(kernel='linear')
-            logging.info('You have specified a model type for feature selection that does not have a feature_importances_ or coef_ attribute.'
-                         'The RFE method requires one of these to function.'
-                         'Therefore, the model type has defaulted to an SVR model. Results should still be ok.')
+            logging.info('You have specified a model type for feature selection that does not have'
+                         ' a feature_importances_ or coef_ attribute. The RFE method requires one of'
+                         ' these to function. Therefore, the model type has defaulted to an SVR'
+                         ' model. Results should still be ok.')
         else:
-            self.model = mtc.get_machinelearning_model(model_type=self.model_type, y_feature=self.y_feature)
-
-        def log_warning(feature_selection_type):
-            logging.info('Important Note: You have specified ' + feature_selection_type + ' with mutual'
-                         'information. Mutual information is only used for univariate feature selection'
-                         'Feature selection will still run OK')
+            self.model = mtc.get_machinelearning_model(model_type=self.model_type,
+                                                       y_feature=self.y_feature)
 
         use_mutual_info = (use_mutual_info in [True, 'True'])
 
         if feature_selection_type == 'recursive_feature_elimination':
             selector = RFE(estimator=self.model, n_features_to_select=number_features_to_keep)
-            if use_mutual_info: log_warning(feature_selection_type)
+            if use_mutual_info: log_warning()
 
         elif feature_selection_type == 'basic_forward_selection':
             bfs = BasicForwardSelection(
@@ -191,7 +195,7 @@ class FeatureSelection(object):
                 model=self.model, number_features_to_keep=number_features_to_keep,
                 configdict=self.configdict)
             dataframe = bfs.run_basic_forward_selection()
-            if use_mutual_info: log_warning(feature_selection_type)
+            if use_mutual_info: log_warning()
 
         elif feature_selection_type == 'univariate_feature_selection':
             score_func = {
@@ -204,7 +208,6 @@ class FeatureSelection(object):
 
         else:
             logging.info("Invalid selection type: " + str(selection_type))
-
 
         mfso = MiscFeatureSelectionOperations()
         if feature_selection_type != 'basic_forward_selection':
@@ -355,7 +358,6 @@ class BasicForwardSelection(object):
     def _save_featureselected_data(self, basic_forward_selection_dict):
         dataframe = pd.DataFrame(basic_forward_selection_dict)
         dataframe.to_csv(self.configdict['General Setup']['save_path']+'/'+'output_basic_forward_selection.csv')
-        return
 
     def _plot_featureselected_learningcurve(self, selected_feature_avg_rmses, selected_feature_std_rmses):
         plt.figure()
@@ -373,7 +375,6 @@ class BasicForwardSelection(object):
         plt.ylabel("RMSE")
         plt.legend(loc="best")
         plt.savefig(savedir + "/" + "basic_forwards_selection_learning_curve_featurenumber.pdf")
-        return
 
 class LearningCurve(object):
     """
@@ -646,7 +647,6 @@ class LearningCurve(object):
         self.get_univariate_RFE_feature_learning_curve(title=feature_selection_algorithm + ' learning curve',
                                                        Xdata=num_features_list, ydata=ydict, ydata_stdev=ydict_stdev,
                                                        feature_selection_type=feature_selection_algorithm)
-        return
 
     def get_univariate_RFE_training_data_learning_curve(self, estimator, title, Xdata, ydata, feature_selection_type, cv=None):
         plt.figure()
@@ -691,8 +691,6 @@ class LearningCurve(object):
         plt.legend(loc="best")
         plt.savefig(savedir + "/" + feature_selection_type + "_learning_curve_trainingdata.pdf")
 
-        return
-
     def get_univariate_RFE_feature_learning_curve(self, title, Xdata, ydata, ydata_stdev, feature_selection_type=None):
         plt.figure()
         plt.title(title)
@@ -718,7 +716,6 @@ class LearningCurve(object):
             plt.ylabel("R^2")
         plt.legend(loc="best")
         plt.savefig(savedir + "/" + feature_selection_type + "_learning_curve_featurenumber.pdf")
-        return
 
     def get_sequential_forward_selection_learning_curve(self, metricdict, filetag):
         Xdata = list()
@@ -744,7 +741,6 @@ class LearningCurve(object):
         plt.tight_layout()
         plt.savefig(self.configdict['General Setup']['save_path'] + "/" + 'sequential_forward_selection_learning_curve_' + str(
             filetag) + '.pdf')
-        return
 
 class MiscFeatureSelectionOperations():
     """
@@ -876,4 +872,3 @@ class MiscFeatureSelectionOperations():
     @classmethod
     def save_data_to_csv(cls, configdict, dataframe, feature_selection_str, filetag):
         dataframe.to_csv(configdict['General Setup']['save_path'] + "/" + feature_selection_str + '_' + str(filetag) + '.csv', index=False)
-        return

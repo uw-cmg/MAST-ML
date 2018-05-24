@@ -147,7 +147,6 @@ class ParamGridSearch(SingleFit):
         self.print_results()
         self.plot()
         self.print_readme()
-        return
 
     @timeit
     def print_results(self):
@@ -155,7 +154,6 @@ class ParamGridSearch(SingleFit):
         self.save_best_model()
         self.print_best_dataframe()
         self.flatten_results()
-        return
 
     @timeit
     def set_up(self):
@@ -163,7 +161,6 @@ class ParamGridSearch(SingleFit):
         self.set_up_pop_params()
         #logger.debug("Population: %s" % self.pop_params)
         logger.debug("Population size: %i" % len(self.pop_params))
-        return
 
     def set_up_prior_to_population(self):
         SingleFit.set_up(self)
@@ -171,7 +168,6 @@ class ParamGridSearch(SingleFit):
         logger.debug("opt dict: %s" % self.opt_dict)
         logger.debug("opt param list: %s" % self.opt_param_list)
         logger.debug("nonopt param list: %s" % self.nonopt_param_list)
-        return
     
 
 
@@ -222,7 +218,6 @@ class ParamGridSearch(SingleFit):
                     indiv_p.join()
             self.pop_stats = pop_stats_dict
             self.pop_rmses = pop_rmses_dict
-        return
 
     def evaluate_indiv_multiprocessing(self, indiv_params, indiv_key, pop_stats_dict, pop_rmses_dict, pop_done):
         [indiv_rmse, indiv_stats] = self.evaluate_indiv(indiv_params, indiv_key)
@@ -230,7 +225,6 @@ class ParamGridSearch(SingleFit):
         pop_rmses_dict[indiv_key] = indiv_rmse
         pop_done.value += 1
         print("Individual %s done (multiprocessing), %i/%i" % (indiv_key, pop_done.value, self.pop_size))
-        return
 
     def evaluate_indiv(self, indiv_params, indiv_key):
         """Evaluate an individual
@@ -315,13 +309,11 @@ class ParamGridSearch(SingleFit):
         self.readme_list.append("-----------------------\n")
         self.best_indivs = lowest
         self.best_params = self.best_indivs[0][2] #first index, third col
-        return
 
     def print_best_params(self):
         bplist = self.print_params(self.best_params)
         with open(os.path.join(self.save_path,"OPTIMIZED_PARAMS"),'w') as pfile:
             pfile.writelines(bplist)
-        return
 
     def print_params(self, param_dict):
         param_list =list()
@@ -335,7 +327,6 @@ class ParamGridSearch(SingleFit):
     def save_best_model(self):
         self.model.set_params(**self.best_params['model'])
         self.save_model()
-        return
 
     def print_best_dataframe(self):
         best_dh = copy.deepcopy(self.testing_dataset)
@@ -344,7 +335,6 @@ class ParamGridSearch(SingleFit):
         updated_name = os.path.join(self.save_path,namestr)
         best_df.to_csv(updated_name)
         self.readme_list.append("Updated dataframe printed as %s\n" % namestr)
-        return
 
     def get_afm_updated_dataset(self, indiv_df, indiv_params):
         """Update dataframe with additional feature methods
@@ -439,7 +429,6 @@ class ParamGridSearch(SingleFit):
             self.pop_params = self.grow_param_dict(self.pop_params, opt_param)
         for nonopt_param in self.nonopt_param_list:
             self.pop_params = self.grow_param_dict_nonopt(self.pop_params, nonopt_param)
-        return
 
     def set_up_opt_dict(self):
         """Set up parameter value dictionary based on parameter strings, into
@@ -505,7 +494,6 @@ class ParamGridSearch(SingleFit):
             if pop_size > self.pop_upper_limit:
                 raise ValueError("Population size has reached the upper limit of %i. Exiting." % self.pop_upper_limit)
         self.pop_size = pop_size
-        return
 
 
     @timeit
@@ -518,7 +506,6 @@ class ParamGridSearch(SingleFit):
             self.plot_2d_rmse_heatmap(self.opt_param_list)
         elif len(self.opt_param_list) == 3:
             self.plot_3d_rmse_heatmap(self.opt_param_list)
-        return
 
     def is_log_param(self, col):
         """Check to see if flattened column was a log parameter
@@ -569,7 +556,6 @@ class ParamGridSearch(SingleFit):
         myph = PlotHelper(**kwargs)
         myph.plot_3d_rmse_heatmap()
         self.readme_list.append("Plot %s.png created\n" % plotlabel)
-        return
 
     def plot_2d_rmse_heatmap(self, cols):
         #adjust for log params if necessary
@@ -603,7 +589,6 @@ class ParamGridSearch(SingleFit):
         myph = PlotHelper(**kwargs)
         myph.plot_2d_rmse_heatmap()
         self.readme_list.append("Plot %s.png created\n" % plotlabel)
-        return
 
     def plot_single_rmse(self, col):
         #adjust for log params if necessary
@@ -631,7 +616,6 @@ class ParamGridSearch(SingleFit):
         myph = PlotHelper(**kwargs)
         myph.multiple_overlay()
         self.readme_list.append("Plot %s.png created\n" % plotlabel)
-        return
 
 
     def flatten_results(self):
@@ -658,6 +642,5 @@ class ParamGridSearch(SingleFit):
         flat_results.to_csv(os.path.join(self.save_path, "results.csv"))
         self.readme_list.append("Printed RMSE results to results.csv\n")
         self.flat_results = flat_results
-        return
 
 

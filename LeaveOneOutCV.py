@@ -61,13 +61,11 @@ class LeaveOneOutCV(KFoldCV):
             fix_random_for_testing = 0, #no randomization in this test
             )
         self.all_pred_array=None
-        return 
 
     def set_up_cv(self):
         self.num_folds = len(self.testing_dataset.target_data) 
         KFoldCV.set_up_cv(self)
         self.readme_list.append("Equivalent to %i leave-one-out CV tests\n" % self.num_folds)
-        return
 
     @timeit
     def predict(self):
@@ -76,14 +74,12 @@ class LeaveOneOutCV(KFoldCV):
         self.print_statistics()
         self.readme_list.append("----- Output data -----\n")
         self.print_output_csv(label="loo", cvtest_entry=self.cvtest_dict[0])
-        return
 
     def print_statistics(self):
         self.readme_list.append("----- Statistics -----\n")
         statlist=['avg_rmse','std_rmse','avg_mean_error','std_mean_error']
         for key in statlist:
             self.readme_list.append("%s: %3.3f\n" % (key,self.cvtest_dict[0][key]))
-        return
     
     def print_output_csv(self, label="", cvtest_entry=None):
         """
@@ -96,7 +92,6 @@ class LeaveOneOutCV(KFoldCV):
         self.readme_list.append("%s file created with columns:\n" % olabel)
         for col in cols:
             self.readme_list.append("    %s\n" % col)
-        return
 
     @timeit
     def plot(self):
@@ -109,7 +104,6 @@ class LeaveOneOutCV(KFoldCV):
         notelist.append("    {:.2f} $\pm$ {:.2f}".format(self.cvtest_dict[0]['avg_mean_error'], self.cvtest_dict[0]['std_mean_error']))
         self.plot_results(notelist=list(notelist))
         self.plot_residuals_histogram()
-        return
     
     def plot_results(self, notelist=list()):
         kwargs2 = dict()
@@ -135,5 +129,4 @@ class LeaveOneOutCV(KFoldCV):
         myph.multiple_overlay()
         self.readme_list.append("Plot loo_results.png created,\n")
         self.readme_list.append("    showing results of all LOO tests.\n")
-        return
 

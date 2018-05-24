@@ -58,7 +58,6 @@ class MASTMLDriver(object):
         self.favorites_dict = dict()
         self.test_save_paths = list()
         self.logfilename = None
-        return
 
     def run_MASTML(self):
         # Begin MASTML session
@@ -95,14 +94,12 @@ class MASTMLDriver(object):
         self._move_log_and_input_files()
         self._end_html()
 
-        return
 
     def _check_data_exists(self):
         if os.path.exists(self.configdict['Data Setup']['Initial']['data_path']):
             print('exists')
         else:
             print('gone')
-        return
 
     def _split_csv_file(self):
         # Need dataframe and x and y features so can split CSV accordingly.
@@ -155,7 +152,6 @@ class MASTMLDriver(object):
         self.start_time = time.strftime("%Y-%m-%d, %H:%M:%S")
         logging.info("Using matplotlib backend %s" % matplotlib.get_backend())
         logging.info("Matplotlib defaults from %s" % matplotlib.matplotlib_fname())
-        return
 
     def _initialize_html(self):
         self.readme_html.append("<HTML>\n")
@@ -164,7 +160,6 @@ class MASTMLDriver(object):
         self.readme_html.append("<H1>%s</H1>\n" % "MAST Machine Learning Output")
         self.readme_html.append("%s<BR>\n" % self.start_time)
         self.readme_html.append("<HR>\n")
-        return
 
     def _end_html(self):
         self.readme_html.append("<HR>\n")
@@ -181,7 +176,6 @@ class MASTMLDriver(object):
         with open(os.path.join(self.save_path, "index.html"),"w") as hfile:
             hfile.writelines(self.readme_html)
             hfile.writelines(self.readme_html_tests)
-        return
 
     def _generate_mastml_wrapper(self):
         configdict, errors_present = ConfigFileValidator(configfile=self.configfile).run_config_validation()
@@ -211,7 +205,6 @@ class MASTMLDriver(object):
         logging.debug(self.csv_setup)
         test_class = test_class_def(**self.csv_setup)
         test_class.run() 
-        return
 
     def _parse_input_data(self, data_path=""):
         if not(os.path.isfile(data_path)):
@@ -593,7 +586,6 @@ class MASTMLDriver(object):
 
             copyconfig = os.path.join(cwd, str(self.configfile))
             shutil.copy(copyconfig, self.save_path)
-        return
 
     def _set_favorites_dict(self):
         fdict = dict()
@@ -608,7 +600,6 @@ class MASTMLDriver(object):
         fdict["ParamGridSearch"] = ["OPTIMIZED_PARAMS","rmse_heatmap.png","rmse_heatmap_3d.png"]
         fdict["PredictionVsFeature"] = [] #not sure
         self.favorites_dict=dict(fdict)
-        return
 
     def _make_links_for_favorites(self, test_folder, test_save_path):
         linklist=list()

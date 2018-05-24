@@ -81,7 +81,6 @@ class DataHandler():
         self.groups = None
         #Run upon initialization
         self.set_up_data()
-        return
 
     def set_up_data(self):
         if not (self.target_error_feature is None):
@@ -89,7 +88,6 @@ class DataHandler():
         if not (self.grouping_feature is None):
             self.group_data = self.data[self.grouping_feature]
             self.groups = np.unique(self.group_data)
-        return
 
     def set_up_data_from_features(self):
         """To reset data, for example, if self.data has been changed
@@ -103,30 +101,25 @@ class DataHandler():
             self.target_prediction = self.data["Prediction"]
         if "Prediction Sigma" in self.data.columns:
             self.target_prediction_sigma = self.data["Prediction Sigma"]
-        return
 
     def add_prediction(self, prediction_data):
         fio = FeatureIO(self.data)
         self.data = fio.add_custom_features(["Prediction"], prediction_data)
         self.target_prediction = self.data["Prediction"]
-        return
 
     def add_residuals(self, residual_data):
         fio = FeatureIO(self.data)
         self.data = fio.add_custom_features(["Residuals"], residual_data)
         self.target_residuals = self.data["Residuals"]
-        return
 
     def add_prediction_sigma(self, prediction_data_sigma):
         fio = FeatureIO(self.data)
         self.data = fio.add_custom_features(["Prediction Sigma"], prediction_data_sigma)
         self.target_prediction_sigma = self.data["Prediction Sigma"]
-        return
 
     def add_feature(self, feature_name, feature_data):
         fio = FeatureIO(self.data)
         self.data = fio.add_custom_features([feature_name], feature_data)
-        return
 
     def add_filters(self, filter_list):
         if filter_list is None:
@@ -135,7 +128,6 @@ class DataHandler():
             fio = FeatureIO(self.data)
             self.data= fio.custom_feature_filter(feature,operator,threshold)
         self.set_up_data_from_features()
-        return
 
     def print_data(self, csvname="data.csv", addl_cols = list()):
         cols = list()

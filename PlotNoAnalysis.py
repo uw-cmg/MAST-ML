@@ -66,7 +66,6 @@ class PlotNoAnalysis(SingleFit):
             self.data_labels = [data_labels]
         elif type(data_labels) is list:
             self.data_labels = data_labels
-        return
 
     @timeit
     def run(self):
@@ -74,7 +73,6 @@ class PlotNoAnalysis(SingleFit):
         self.plot()
         self.print_readme()
         self.print_output_csv()
-        return
     
     @timeit
     def print_output_csv(self):
@@ -87,7 +85,6 @@ class PlotNoAnalysis(SingleFit):
             self.readme_list.append("%s file created with columns:\n" % csvname)
             for col in cols_printed:
                 self.readme_list.append("    %s\n" % col)
-        return
 
     @timeit
     def plot(self):
@@ -100,13 +97,11 @@ class PlotNoAnalysis(SingleFit):
             return
         for group in self.testing_dataset.groups:
             self.one_plot(group=group)
-        return
 
     @timeit
     def set_up(self):
         for testing_dataset in self.testing_datasets:
             testing_dataset.add_filters(self.plot_filter_out)
-        return
 
     def one_plot(self, group=None):
         xdatalist=list()
@@ -157,4 +152,3 @@ class PlotNoAnalysis(SingleFit):
         myph.multiple_overlay()
         #if do_fft == 1:
         #    plotxy.single(xdata, fft(ydata), **kwargs)
-        return

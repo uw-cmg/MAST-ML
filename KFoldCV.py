@@ -86,7 +86,6 @@ class KFoldCV(LeaveOutPercentCV):
         self.plot_best_worst_overlay(notelist=list(notelist))
         self.plot_meancv_overlay(notelist=list(notelist))
         self.plot_residuals_histogram()
-        return
 
     def set_up_cv(self):
         if self.testing_dataset.target_data is None:
@@ -107,7 +106,6 @@ class KFoldCV(LeaveOutPercentCV):
                 fdict['test_index'] = test
                 self.cvtest_dict[cvtest][foldidx] = dict(fdict)
                 foldidx = foldidx + 1
-        return
     
     def cv_fit_and_predict(self):
         for cvtest in self.cvtest_dict.keys():
@@ -138,7 +136,6 @@ class KFoldCV(LeaveOutPercentCV):
             self.cvtest_dict[cvtest]["fold_array"] = fold_array
             self.cvtest_dict[cvtest]["prediction_array"] = prediction_array
             self.cvtest_dict[cvtest]["error_array"] = error_array
-        return
 
     def get_statistics(self):
         cvtest_avg_rmses = list()
@@ -177,8 +174,6 @@ class KFoldCV(LeaveOutPercentCV):
 
         self.statistics['r2_score'] = rsquared
         self.statistics['r2_score_noint'] = rsquared_noint
-
-        return
     
     def print_best_worst_output_csv(self, label=""):
         """
@@ -202,4 +197,3 @@ class KFoldCV(LeaveOutPercentCV):
         self.readme_list.append("%s file created with columns:\n" % olabel)
         for col in cols:
             self.readme_list.append("    %s\n" % col)
-        return

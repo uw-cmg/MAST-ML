@@ -121,7 +121,6 @@ class ParamOptGA(ParamGridSearch):
         #
         self.ga_dict = dict()
         self.gact = 0
-        return
 
     def set_up_generation(self, genct=0):
         ga_dir = os.path.join(self.save_path, "GA_%i" % self.gact)
@@ -307,7 +306,6 @@ class ParamOptGA(ParamGridSearch):
         self.ga_dict[self.gact]['converged'] = ga_converged
         self.ga_dict[self.gact]['gen_bests'] = gen_bests
         self.gact = self.gact + 1
-        return
 
     def print_ga(self, ga=""):
         self.readme_list.append("----- GA %i -----\n" % ga)
@@ -317,7 +315,6 @@ class ParamOptGA(ParamGridSearch):
         printlist = self.print_params(self.ga_dict[ga]['best_genome'])
         for printitem in printlist:
             self.readme_list.append("%s" % printitem)
-        return
 
     @timeit
     def run(self):
@@ -328,19 +325,16 @@ class ParamOptGA(ParamGridSearch):
             self.print_ga(ga)
         self.select_final_best()
         self.print_final_results()
-        return
     
     def print_final_results(self):
         self.print_best_params()
         self.save_best_model()
         self.print_best_dataframe()
         self.print_readme()
-        return
 
     @timeit
     def set_up(self):
         ParamGridSearch.set_up(self)
-        return
 
     def select_final_best(self):
         ga_final_rmse_list = list()
@@ -354,4 +348,3 @@ class ParamOptGA(ParamGridSearch):
         printlist = self.print_params(self.best_params)
         for printitem in printlist:
             self.readme_list.append(printitem)
-        return

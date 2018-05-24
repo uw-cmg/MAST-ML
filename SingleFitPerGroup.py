@@ -56,19 +56,16 @@ class SingleFitPerGroup(SingleFitGrouped):
             fit_only_on_matched_groups = 0)
         # Sets later in code
         self.per_group_singlefits = dict()
-        return
     
     @timeit
     def predict(self):
         self.get_group_predictions()
         self.get_statistics()
         self.print_statistics()
-        return
 
     @timeit
     def plot(self):
         self.plot_results()
-        return
 
     def get_group_predictions(self):
         for group in self.testing_dataset.groups:
@@ -91,13 +88,11 @@ class SingleFitPerGroup(SingleFitGrouped):
                     ylabel = self.ylabel,
                     plot_filter_out = self.plot_filter_out)
             self.per_group_singlefits[group].run()
-        return
 
 
     def get_statistics(self):
         self.get_per_group_statistics()
         self.get_outlying_groups()
-        return
 
     def print_statistics(self):
         self.readme_list.append("----- Statistics -----\n")
@@ -115,7 +110,6 @@ class SingleFitPerGroup(SingleFitGrouped):
                     self.readme_list.append("    %s: %s: %3.3f\n" % (group, skey, val))
                 if type(val) is str():
                     self.readme_list.append("    %s: %s: %s\n" % (group, skey, val))
-        return
 
     def plot_results(self):
         self.get_plotting_dict()
@@ -135,12 +129,10 @@ class SingleFitPerGroup(SingleFitGrouped):
         self.readme_list.append("----- Plotting -----\n")
         self.readme_list.append("Plot in subfolder per_group_fits_overlay created,\n")
         self.readme_list.append("    labeling worst-fitting groups and their RMSEs.\n")
-        return
     
     def get_per_group_statistics(self):
         for group in self.per_group_singlefits.keys(): 
             self.per_group_statistics[group] = dict(self.per_group_singlefits[group].statistics)
-        return
 
     def get_plotting_dict(self):
         plot_dict=dict()
@@ -162,4 +154,3 @@ class SingleFitPerGroup(SingleFitGrouped):
             plot_dict[group]['ydata'] = g_ypredict
             plot_dict[group]['rmse'] = g_singlefit.statistics[criterion]
         self.plotting_dict=dict(plot_dict)
-        return

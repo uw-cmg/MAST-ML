@@ -515,7 +515,6 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
         if errors_present == True:
             logging.info('Errors have been detected in your MASTML setup. Please correct the errors and re-run MASTML')
             raise Exception('Errors detected. Check log file.')
-        return
 
 class ModelTestConstructor(object):
     """

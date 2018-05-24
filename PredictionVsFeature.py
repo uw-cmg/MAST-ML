@@ -86,17 +86,14 @@ class PredictionVsFeature(SingleFit):
         self.sizes = sizes
         #Sets in code
         self.sf_dict = dict()
-        return
    
     @timeit
     def set_up(self):
         SingleFit.set_up(self)
-        return
 
     @timeit
     def predict(self):
         self.get_singlefits()
-        return
 
     def get_singlefits(self):
         """Get SingleFit for each testing dataset.
@@ -117,7 +114,6 @@ class PredictionVsFeature(SingleFit):
                 ylabel=self.ylabel,
                 plot_filter_out = self.plot_filter_out)
             self.sf_dict[testset].run()
-        return
 
     @timeit
     def plot(self):
@@ -137,7 +133,6 @@ class PredictionVsFeature(SingleFit):
                 self.sf_dict[testset].testing_dataset.add_filters(self.plot_filter_out) #filters will not have been added by SingleFit yet
         for group in allgroups:
             self.make_series_feature_plot(group=group)
-        return
 
     @timeit
     def make_series_feature_plot(self, group=None):
@@ -212,5 +207,4 @@ class PredictionVsFeature(SingleFit):
         addl_kwargs['notelist'] = list(group_notelist)
         myph = PlotHelper(**addl_kwargs)
         myph.plot_group_splits_with_outliers()
-        return
 

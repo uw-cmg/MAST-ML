@@ -82,12 +82,10 @@ class LeaveOutPercentCV(SingleFit):
     def set_up(self):
         SingleFit.set_up(self)
         self.set_up_cv()
-        return
 
     @timeit
     def fit(self):
         self.cv_fit_and_predict()
-        return
 
     @timeit
     def predict(self):
@@ -96,7 +94,6 @@ class LeaveOutPercentCV(SingleFit):
         self.print_statistics()
         self.readme_list.append("----- Output data -----\n")
         self.print_best_worst_output_csv("best_and_worst")
-        return
 
     @timeit
     def plot(self):
@@ -112,7 +109,6 @@ class LeaveOutPercentCV(SingleFit):
         self.plot_best_worst_overlay(notelist=list(notelist))
         self.plot_meancv_overlay(notelist=list(notelist))
         self.plot_residuals_histogram()
-        return
 
     def set_up_cv(self):
         if self.testing_dataset.target_data is None:
@@ -132,7 +128,6 @@ class LeaveOutPercentCV(SingleFit):
                 fdict['train_index'] = train
                 fdict['test_index'] = test
                 self.cvtest_dict[cvtest]= dict(fdict)
-        return
     
     def cv_fit_and_predict(self):
         for cvtest in self.cvtest_dict.keys():
@@ -156,7 +151,6 @@ class LeaveOutPercentCV(SingleFit):
             self.cvtest_dict[cvtest]["mean_error"] = merr
             self.cvtest_dict[cvtest]["prediction_array"] = prediction_array
             self.cvtest_dict[cvtest]["error_array"] = error_array
-        return
 
     def get_cv_residuals(self):
         residuals = list()
@@ -219,8 +213,6 @@ class LeaveOutPercentCV(SingleFit):
         self.statistics['r2_score'] = rsquared
         self.statistics['r2_score_noint'] = rsquared_noint
 
-        return
-
     def print_best_worst_output_csv(self, label=""):
         """
         """
@@ -234,7 +226,6 @@ class LeaveOutPercentCV(SingleFit):
         self.readme_list.append("%s file created with columns:\n" % olabel)
         for col in cols:
             self.readme_list.append("    %s\n" % col)
-        return
 
     def plot_best_worst_overlay(self, notelist=list()):
         kwargs2 = dict()
@@ -262,7 +253,6 @@ class LeaveOutPercentCV(SingleFit):
         myph.multiple_overlay()
         self.readme_list.append("Plot best_worst_overlay.png created,\n")
         self.readme_list.append("    showing the best and worst of %i tests.\n" % self.num_cvtests)
-        return
 
     def plot_meancv_overlay(self, notelist=list()):
         kwargs2 = dict()
@@ -288,5 +278,4 @@ class LeaveOutPercentCV(SingleFit):
         myph.multiple_overlay()
         self.readme_list.append("Plot mean_cv_overlay.png created,\n")
         self.readme_list.append("    showing the mean cv of %i tests.\n" % self.num_cvtests)
-        return
 
