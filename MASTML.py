@@ -20,15 +20,6 @@ from FeatureSelection import FeatureSelection, DimensionalReduction, LearningCur
 from DataHandler import DataHandler
 from SingleFit import timeit
 
-# to disable sys.exit ruining the debugger printout ;o
-DEBUG_MODE = True
-
-def do_nothing(*args):
-    print("sys.exit was attempted with args", *args)
-if DEBUG_MODE:
-    sys.exit = do_nothing
-    import pdb
-
 def _resetlogging():
     """ Remove all handlers associated with the root logger object.
         From SO: https://stackoverflow.com/a/12158233
@@ -129,10 +120,10 @@ class MASTMLDriver(object):
         for feature in y_feature:
             try:
                 dataframe_y = dataframe.loc[:, feature]
-            except KeyError:
+            except KeyError as e:
                 logging.info('Error detected: The feature names in the csv and input files do not match')
                 print('The feature names in the csv and input files do not match. Please fix feature names and re-run MASTML')
-                sys.exit()
+                raise e
             dataframe_new = DataframeUtilities.merge_dataframe_columns(dataframe1=dataframe_x, dataframe2=dataframe_y)
             # Write the new dataframe to new CSV, and update data_path_list
             data_path_split = os.path.split(self.configdict['Data Setup']['Initial']['data_path'])
@@ -660,4 +651,4 @@ if __name__ == '__main__':
         mastml.run_MASTML()
     else:
         logging.info('Specify the name of your MASTML input file, such as "mastmlinput.conf", and run as "python MASTML.py mastmlinput.conf" ')
-        sys.exit()
+        raise ValueError('Specify the name of your MASTML input file, such as "mastmlinput.conf", and run as "python MASTML.py mastmlinput.conf"')

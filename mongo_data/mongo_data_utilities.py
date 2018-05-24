@@ -333,4 +333,3 @@ def duplicate_time_field_as_numeric(db, newcname, oldfieldname, newfieldname, fo
 
 if __name__=="__main__":
     print("Use from DataImportAndExport.py. Exiting.")
-    sys.exit()

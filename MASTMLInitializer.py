@@ -49,7 +49,7 @@ class ConfigFileParser(object):
     def _parse_config_file(self, path_to_file):
         if not os.path.exists(path_to_file):
             logging.info('You must specify a valid path')
-            sys.exit()
+            raise OSError('You must specify a valid path')
         if os.path.exists(path_to_file+"/"+str(self.configfile)):
             original_dir = os.getcwd()
             os.chdir(path_to_file)
@@ -57,9 +57,9 @@ class ConfigFileParser(object):
                 config_dict = ConfigObj(self.configfile)
                 os.chdir(original_dir)
                 return config_dict
-            except(ConfigObjError, IOError):
+            except(ConfigObjError, IOError) as e:
                 logging.info('Could not read in input file %s') % str(self.configfile)
-                sys.exit()
+                raise e
         else:
             raise OSError('The input file you specified, %s, does not exist in the path %s' % (str(self.configfile), str(path_to_file)))
 
@@ -440,7 +440,7 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
                             configdict[section][section_key] = float(configdict[section][section_key])
                         else:
                             logging.info('Error: Unrecognized data type encountered in input file template')
-                            sys.exit()
+                            raise TypeError('Type of: ' + str(configdict[section][section_key]))
                     elif type(self.configtemplate[section][section_key]) is list:
                         if type(configdict[section][section_key]) is str:
                             if configdict[section][section_key] not in self.configtemplate[section][section_key]:
@@ -514,7 +514,7 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
     def _check_for_errors(self, errors_present):
         if errors_present == True:
             logging.info('Errors have been detected in your MASTML setup. Please correct the errors and re-run MASTML')
-            sys.exit()
+            raise Exception('Errors detected. Check log file.')
         return
 
 class ModelTestConstructor(object):
@@ -548,7 +548,7 @@ class ModelTestConstructor(object):
     def get_machinelearning_model(self, model_type, y_feature):
         if 'classification' in y_feature:
             logging.info('Error: Currently, MASTML only supports regression models. Classification models and metrics are under development')
-            sys.exit()
+            raise NotImplementedError('Error: Currently, MASTML only supports regression models. Classification models and metrics are under development')
             if 'classifier' in model_type:
                 logging.info('got y_feature %s' % y_feature)
                 logging.info('model type is %s' % model_type)
@@ -715,8 +715,8 @@ class ModelTestConstructor(object):
             from sklearn.externals import joblib
             model = joblib.load(model_location)
             return model
-        #else:
-        #    raise TypeError('You have specified an invalid model_type name in your input file')
+        else: # TODO: Is this reachable?
+            raise TypeError('You have specified an invalid model_type name in your input file')
 
     def get_machinelearning_test(self, test_type, model, save_path, run_test=True, *args, **kwargs):
         mod_name = test_type.split("_")[0] #ex. KFoldCV_5fold goes to KFoldCV

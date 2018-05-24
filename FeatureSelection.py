@@ -162,7 +162,7 @@ class FeatureSelection(object):
             selection_type = 'classification'
         else:
             print('You must specify either "regression" or "classification" in your y_feature name')
-            sys.exit()
+            raise KeyError('invalid key: ' + y_feature)
 
         mtc = ModelTestConstructor(configdict=self.configdict)
         if feature_selection_type == 'recursive_feature_elimination' and self.model_type not in \
@@ -642,7 +642,7 @@ class LearningCurve(object):
             ydict_stdev = {"train_r2": train_r2_stdev_list, "test_r2": test_r2_stdev_list}
         else:
             logging.info("ERROR: you must specify a valid scoring metric for feature selection!")
-            sys.exit()
+            raise KeyError('invalid key: ' + self.scoring_metric)
         self.get_univariate_RFE_feature_learning_curve(title=feature_selection_algorithm + ' learning curve',
                                                        Xdata=num_features_list, ydata=ydict, ydata_stdev=ydict_stdev,
                                                        feature_selection_type=feature_selection_algorithm)
@@ -836,7 +836,7 @@ class MiscFeatureSelectionOperations():
                 foundfeature = True
         if foundfeature == False:
             logging.info('Error: Could not locate y_feature in your dataframe, please ensure the y_feature names match in your csv and input file')
-            sys.exit()
+            raise KeyError('not found: ' + column)
         return filetag
 
     @classmethod

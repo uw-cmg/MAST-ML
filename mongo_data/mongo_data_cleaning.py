@@ -58,8 +58,8 @@ def flag_for_ignore(db, cname, id_list, reason_list, verbose=1):
 
 if __name__=="__main__":
     print("Use from DataImportAndExport.py. Exiting.")
-    sys.exit()
-    from pymongo import MongoClient
-    dbname="dbtt"
-    client = MongoClient('localhost', 27017)
-    db = client[dbname]
+
+    #from pymongo import MongoClient
+    #dbname="dbtt"
+    #client = MongoClient('localhost', 27017)
+    #db = client[dbname]

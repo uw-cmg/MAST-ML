@@ -211,7 +211,7 @@ class FeatureNormalization(object):
                 scaler = MinMaxScaler(feature_range=(feature_scale_min, feature_scale_max)).fit(X=self.dataframe[x_features])
             else:
                 print('Error! For feature normalization, you must select either "standardize" or "normalize" for the "feature_normalization_type" option')
-                sys.exit()
+                raise KeyError('invalid key: ' + feature_normalization_type)
             array_normalized = scaler.fit_transform(X=self.dataframe[x_features])
             array_normalized = DataframeUtilities().concatenate_arrays(X_array=array_normalized, y_array=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
         elif normalize_x_features == bool(False) and normalize_y_feature == bool(True):
@@ -221,7 +221,7 @@ class FeatureNormalization(object):
                 scaler = MinMaxScaler(feature_range=(feature_scale_min, feature_scale_max)).fit(X=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
             else:
                 print('Error! For feature normalization, you must select either "standardize" or "normalize" for the "feature_normalization_type" option')
-                sys.exit()
+                raise KeyError('invalid key: ' + feature_normalization_type)
             array_normalized = scaler.fit_transform(X=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
             array_normalized = DataframeUtilities().concatenate_arrays(X_array=np.asarray(self.dataframe[x_features]), y_array=array_normalized.reshape([-1, 1]))
         elif normalize_x_features == bool(True) and normalize_y_feature == bool(True):
@@ -233,13 +233,13 @@ class FeatureNormalization(object):
                 scaler_y = MinMaxScaler(feature_range=(feature_scale_min, feature_scale_max)).fit(X=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
             else:
                 print('Error! For feature normalization, you must select either "standardize" or "normalize" for the "feature_normalization_type" option')
-                sys.exit()
+                raise KeyError('invalid key: ' + feature_normalization_type)
             array_normalized_x = scaler_x.fit_transform(X=self.dataframe[x_features])
             array_normalized_y = scaler_y.fit_transform(X=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
             array_normalized = DataframeUtilities().concatenate_arrays(X_array=array_normalized_x, y_array=array_normalized_y)
         else:
             print("You must specify to normalize either x_features, y_feature, or both, or set perform_feature_normalization=False in the input file")
-            sys.exit()
+            raise KeyError('invalid key: ' + feature_normalization_type)
 
         dataframe_normalized = DataframeUtilities().array_to_dataframe(array=array_normalized)
         dataframe_normalized = DataframeUtilities().assign_columns_as_features(dataframe=dataframe_normalized, x_features=x_features, y_feature=y_feature, remove_first_row=False)

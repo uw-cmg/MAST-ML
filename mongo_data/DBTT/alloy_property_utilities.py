@@ -128,4 +128,3 @@ def look_up_name_or_number(db, ival="",itype="name", verbose=0):
 
 if __name__=="__main__":
     print("Use from DataImportAndExport.py. Exiting.")
-    sys.exit()

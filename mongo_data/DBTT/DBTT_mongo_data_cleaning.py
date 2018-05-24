@@ -234,8 +234,8 @@ def get_empty_flux_or_fluence_removal_ids(db, cname, verbose=1):
 
 if __name__=="__main__":
     print("Use from DataImportAndExport.py. Exiting.")
-    sys.exit()
-    from pymongo import MongoClient
-    dbname="dbtt"
-    client = MongoClient('localhost', 27017)
-    db = client[dbname]
+
+    #from pymongo import MongoClient
+    #dbname="dbtt"
+    #client = MongoClient('localhost', 27017)
+    #db = client[dbname]

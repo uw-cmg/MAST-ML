@@ -111,9 +111,9 @@ class DataParser(object):
                 dataframe = pd.read_csv(datapath, header=0)
             elif '.xlsx' or '.xls' in datapath.split('/')[-1]:
                 dataframe = pd.read_excel(datapath, header=0)
-        except IOError:
+        except IOError as e:
             logging.info('Error reading in your input data file, specify a valid path to your input data')
-            sys.exit()
+            raise e
         return dataframe
 
     def get_features(self, dataframe, target_feature=None, from_input_file=False):
