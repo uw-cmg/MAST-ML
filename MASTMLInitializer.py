@@ -19,6 +19,12 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from configobj import ConfigObj, ConfigObjError
 import distutils.util as du
 
+import Classifier
+
+class ConfigFileError(Exception):
+    """ Raised when conf file is incorrect """
+    pass
+
 class ConfigFileParser(object):
     """
     Class to read in contents of MASTML input files
@@ -158,8 +164,10 @@ class ConfigFileConstructor(ConfigFileParser):
                 'adaboost_model_regressor',
                 'nn_model_regressor',
                 'gaussianprocess_model_regressor',
+                'k_nearest_neighbors_classifier',
             ],
             'test_cases': [
+                'MultiClass',
                 'SingleFit',
                 'SingleFitPerGroup',
                 'SingleFitGrouped',
@@ -178,9 +186,9 @@ class ConfigFileConstructor(ConfigFileParser):
         for test_case in self.configtemplate['Models and Tests to Run']['test_cases']:
             self.configtemplate['Test Parameters'][test_case] = dict()
         for key, param in self.configtemplate['Test Parameters'].items():
-            if key in ['SingleFit', 'SingleFitPerGroup', 'SingleFitGrouped',
+            if key in ['MultiClass', 'SingleFit', 'SingleFitPerGroup', 'SingleFitGrouped',
                      'KFoldCV', 'LeaveOneOutCV', 'LeaveOutPercentCV', 'LeaveOutGroupCV',
-                     'PlotNoAnalysis', 'PredictionVsFeature']:
+                     'PlotNoAnalysis', 'PredictionVsFeature',]:
                 param['training_dataset'] = 'string'
                 param['testing_dataset'] = 'string'
                 param['xlabel'] = 'string'
@@ -189,6 +197,8 @@ class ConfigFileConstructor(ConfigFileParser):
                 param['feature_plot_feature'] = 'string'
                 param['plot_filter_out'] = 'string'
                 param['data_labels'] = 'string'
+            if key == 'MultiClass':
+                param['plot_filter_out'] = 'string'
             if key == 'SingleFit':
                 param['plot_filter_out'] = 'string'
             if key == 'SingleFitPerGroup':
@@ -275,6 +285,8 @@ class ConfigFileConstructor(ConfigFileParser):
                 param['optimizer'] = ['fmin_l_bfgs_b']
                 param['n_restarts_optimizer'] = 'integer'
                 param['normalize_y'] = 'bool'
+            if key == 'k_nearest_neighbors_classifier':
+                param['foo'] = 'integer'
 
         return self.configtemplate
 
@@ -292,7 +304,7 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
                 dict : configdict of parsed input file
                 bool : whether any errors occurred parsing the input file
             Throws:
-                MASTML.ConfigFileError : after everything has been checked, if ANY checks fail, raise 
+                ConfigFileError : after everything has been checked, if ANY checks fail, raise 
                             exception with message to check log.
     """
     def __init__(self, configfile):
@@ -327,7 +339,7 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
         logging.info('MASTML target feature name is valid')
 
         if self.errors_present:
-            raise MASTML.ConfigFileError('Errors found in your .conf file, check log file for all errors')
+            raise ConfigFileError('Errors found in your .conf file, check log file for all errors')
 
         return configdict
 
@@ -538,11 +550,17 @@ class ModelTestConstructor(object):
     def get_machinelearning_model(self, model_type, y_feature):
         if 'classification' in y_feature:
             logging.info('Error: Currently, MASTML only supports regression models. Classification models and metrics are under development')
-            raise NotImplementedError('Error: Currently, MASTML only supports regression models. Classification models and metrics are under development')
+            #raise NotImplementedError('Error: Currently, MASTML only supports regression models. Classification models and metrics are under development')
+            raise Warning('this is some untested water you"re treading here')
             if 'classifier' in model_type:
                 logging.info('got y_feature %s' % y_feature)
                 logging.info('model type is %s' % model_type)
                 logging.info('doing classification on %s' % y_feature)
+
+                if model_type == 'k_nearest_neighbors_classifier':
+                    model = sklearn.neighbors.KNeighborsClassifier()
+                    return model
+
                 if model_type == 'support_vector_machine_model_classifier':
                     d = self.configdict['Model Parameters']['support_vector_machine_model_classifier']
                     return SVC(C=float(d['error_penalty']),
@@ -683,6 +701,7 @@ class ModelTestConstructor(object):
                                                     normalize_y=d['normalize_y'],
                                                     copy_X_train=True)  # bool(self.configdict['Model Parameters']['gaussianprocess_model']['copy_X_train']),
                                                     # int(self.configdict['Model Parameters']['gaussianprocess_model']['random_state']
+
                 if model_type == 'dummy_model':
                     model = None # model doesn't do anything
                     return model
@@ -694,7 +713,7 @@ class ModelTestConstructor(object):
             model_dict = self.configdict['Model Parameters']['custom_model']
             package_name = model_dict.pop('package_name') #return and remove
             class_name = model_dict.pop('class_name') #return and remove
-            import importlib
+            print('
             custom_module = importlib.import_module(package_name)
             module_class_def = getattr(custom_module, class_name) 
             model = module_class_def(**model_dict) #pass all the rest as kwargs

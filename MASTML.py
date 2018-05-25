@@ -20,9 +20,6 @@ from FeatureSelection import FeatureSelection, DimensionalReduction, LearningCur
 from DataHandler import DataHandler
 from SingleFit import timeit
 
-class ConfigFileError(Exception):
-    """ Raised when conf file is incorrect """
-    pass
 def _resetlogging():
     """ Remove all handlers associated with the root logger object.
         From SO: https://stackoverflow.com/a/12158233
@@ -202,6 +199,8 @@ class MASTMLDriver(object):
         self.csv_setup = self.modeltestconstructor._process_config_keyword(keyword = "CSV Setup")
         setup_class = self.csv_setup.pop("setup_class") #also remove from dict
         class_name = setup_class.split(".")[-1]
+        print("importing: ", setup_class)
+        logging.warn('imported from string: ' + class_name + ' ' + setup_class)
         test_module = importlib.import_module('%s' % (setup_class))
         test_class_def = getattr(test_module, class_name)
         logging.debug("Parameters passed by keyword:")
@@ -506,7 +505,7 @@ class MASTMLDriver(object):
                 model_list.append(ml_model)
                 logging.info('Adding model %s to queue...' % str(model))
                 model_vals.append(model_val)
-        return (model_list, model_val)
+        return (model_list, model_val) #TODO did you mean to make a dict?
 
     def _gather_tests(self):
         # Gather test types
@@ -602,7 +601,7 @@ class MASTMLDriver(object):
         fdict["ParamOptGA"] = ["OPTIMIZED_PARAMS"]
         fdict["ParamGridSearch"] = ["OPTIMIZED_PARAMS","rmse_heatmap.png","rmse_heatmap_3d.png"]
         fdict["PredictionVsFeature"] = [] #not sure
-        self.favorites_dict=dict(fdict)
+        self.favorites_dict=dict(fdict) #TODO uh clean up that dict
 
     def _make_links_for_favorites(self, test_folder, test_save_path):
         linklist=list()

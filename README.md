@@ -20,6 +20,9 @@
   (Two modules: 1. a sklearn/keras wrapper 2. a .conf file parser and executer)
 * Standardize/abstract the image generation, so user only needs to specify the image type and
   location once.
+* Conf files are parsed by configobj package, which we are only use a small part of. Perhaps it 
+  can make our lives easier if we use more of its features?
+* if you don't use `generate_feature_learning_curve` then you don't need its parameters.
 
 ## Documentation and install instructions
 

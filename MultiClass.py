@@ -1,4 +1,4 @@
-__author__ = 'Tam Mayeshiba'
+__author__ = 'Luke Miles, Max Williams, Tam Mayeshiba'
 __maintainer__ = 'Ryan Jacobs'
 __version__ = '1.0'
 __email__ = 'rjacobs3@wisc.edu'
@@ -19,6 +19,7 @@ from sklearn.externals import joblib
 from sklearn.linear_model import LinearRegression
 logger = logging.getLogger()
 
+raise Exception("you did it!")
 def timeit(method):
     """Timing function for logger.
         Taken from http://stackoverflow.com/questions/38314993/standard-logging-for-every-method-in-a-class.
@@ -42,7 +43,7 @@ def timeit(method):
 
     return timed
 
-class SingleFit():
+class MultiClass():
     """
     This is the basic analysis class. Serves as a parent class for more specific analysis classes.
 
@@ -81,7 +82,6 @@ class SingleFit():
                 self.statistics <dict of float>: statistics dictionary
                 self.readme_list <dict of str>: stores lines for readme
         """
-        raise Exception("you tried to import singlefit, didn't you??")
         # Keyword-set attributes
         # training csv
         if training_dataset is None:

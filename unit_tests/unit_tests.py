@@ -8,12 +8,11 @@ import pdb
 # so we can find MASTML package
 sys.path.append('../')
 
-import MASTML
-import MASTMLInitializer
+import MASTML, MASTMLInitializer
 
-# pipe program stdout into a log file so we can read 
+# pipe program stdout into /dev/null so we can read 
 # unittest prinout more easily
-sys.stdout = open(os.devnull, 'w')
+#sys.stdout = open(os.devnull, 'w')
 
 class SmokeTest(unittest.TestCase):
 
@@ -21,22 +20,28 @@ class SmokeTest(unittest.TestCase):
         self.folders = list()
 
     def test_full_run(self):
-        configfile = 'conf_files/full_run.conf'
+        configfile = 'full_run.conf'
         warnings.simplefilter('ignore')
         MASTML.MASTMLDriver(configfile=configfile).run_MASTML()
         self.folders.append('results/full_run')
 
     def test_basic_example(self):
-        configfile = 'conf_files/example_input.conf'
+        configfile = 'example_input.conf'
         warnings.simplefilter('ignore')
         MASTML.MASTMLDriver(configfile=configfile).run_MASTML()
         self.folders.append('results/example_results')
 
     def test_classifiers(self):
-        configfile = 'conf_files/classifiers.conf'
+        configfile = 'classifiers.conf'
         warnings.simplefilter('ignore')
         MASTML.MASTMLDriver(configfile=configfile).run_MASTML()
         self.folders.append('results/classifiers')
+
+    def test_example_classifier(self):
+        configfile = 'example_classifier.conf'
+        warnings.simplefilter('ignore')
+        MASTML.MASTMLDriver(configfile=configfile).run_MASTML()
+        self.folders.append('results/example_classifier')
 
     def tearDown(self):
         for f in self.folders:

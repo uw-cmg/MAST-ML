@@ -347,7 +347,6 @@ class BasicForwardSelection(object):
         plt.figure()
         plt.title('Basic forward selection learning curve')
         plt.grid()
-        savedir = self.configdict['General Setup']['save_path']
         Xdata = np.linspace(start=1, stop=self.number_features_to_keep, num=self.number_features_to_keep).tolist()
         ydata = selected_feature_avg_rmses
         yspread = selected_feature_std_rmses
@@ -358,7 +357,7 @@ class BasicForwardSelection(object):
         plt.xlabel("Number of features")
         plt.ylabel("RMSE")
         plt.legend(loc="best")
-        plt.savefig(savedir + "/" + "basic_forwards_selection_learning_curve_featurenumber.pdf")
+        plt.savefig(self.configdict['General Setup']['save_path'] + "/" + "basic_forwards_selection_learning_curve_featurenumber.pdf")
 
 class LearningCurve(object):
     """
@@ -687,7 +686,7 @@ class LearningCurve(object):
                     'r2_score': 'R^2'}[self.scoring_metric])
         plt.legend(loc="best")
 
-        plt.savefig(savedir + "/" + feature_selection_type + "_learning_curve_featurenumber.pdf")
+        plt.savefig(self.configdict['General Setup']['save_path'] + "/" + feature_selection_type + "_learning_curve_featurenumber.pdf")
 
     def get_sequential_forward_selection_learning_curve(self, metricdict, filetag):
         """
