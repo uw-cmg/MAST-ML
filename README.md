@@ -10,13 +10,23 @@
 * Refactor code
 * Add unit tests
 * Write classification routines
-* Improve html and inline documentation
+* Improve rst and docstring documentation
+* Speed up the grid search hyperparameter thing
+
+## Random Ideas
+
+* Serve the http documentation somewhere so users don't have to build it from .rst themseleves
+* Seperate out the .conf file parsing/running stuff from the rest of the program.
+  (Two modules: 1. a sklearn/keras wrapper 2. a .conf file parser and executer)
+* Standardize/abstract the image generation, so user only needs to specify the image type and
+  location once.
 
 ## Documentation and install instructions
 
 Full documentation starts in `docs/build/html/index.html`.
 
 Clone the repository and open `index.html` with your browser.
+
 ## Contributors 
 DBTT Skunkworks undergraduates (~2015-2017, alphabetical order):
 *   Ben Anderson
@@ -180,8 +190,6 @@ all groups on one plot and just colors them differently.
 
 ## Directories
 
-+ The "custom_xxx" folders are leftover from an old part of the project, and
-  contained some old code we used for testing.
 + The docs folder has all the files that build the html documentation.
 + The examples folder has the example run to do to ensure installation was done correctly.
 + mongo_data was also from a previous research project that initially launched this whole endeavor.
