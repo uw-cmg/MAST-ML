@@ -149,6 +149,11 @@ class LeaveOutPercentCV(SingleFit):
             target_test = self.testing_dataset.target_data[fdict['test_index']]
             fit = self.model.fit(input_train, target_train)
             predict_test = self.model.predict(input_test)
+
+
+
+
+
             rmse = np.sqrt(mean_squared_error(predict_test, target_test))
             merr = np.mean(predict_test - target_test)
             prediction_array[fdict['test_index']] = predict_test
@@ -238,6 +243,9 @@ class LeaveOutPercentCV(SingleFit):
         return
 
     def plot_best_worst_overlay(self, notelist=list()):
+        #unnormalize x before plotting
+        self.testing_dataset.target_data = self.un_normalize(array=self.testing_dataset.target_data)
+
         kwargs2 = dict()
         kwargs2['xlabel'] = self.xlabel
         kwargs2['ylabel'] = self.ylabel

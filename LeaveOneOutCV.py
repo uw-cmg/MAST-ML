@@ -39,6 +39,7 @@ class LeaveOneOutCV(KFoldCV):
         xlabel="Measured",
         ylabel="Predicted",
         mark_outlying_points=None,
+        scaler=None,
         *args, **kwargs):
         """
         Additional class attributes to parent class:
@@ -59,6 +60,7 @@ class LeaveOneOutCV(KFoldCV):
             num_cvtests=1, #single test
             num_folds = -1, #set in code
             fix_random_for_testing = 0, #no randomization in this test
+            scaler=scaler
             )
         self.all_pred_array=None
         return 

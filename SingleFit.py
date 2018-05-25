@@ -147,29 +147,19 @@ class SingleFit():
         return
 
     @timeit
-    def un_normalize(self):
+    def un_normalize(self, array):
         if self.scaler is not None:
-            # Unnormalize data
-            self.testing_dataset.target_prediction = self.scaler.inverse_transform(X=self.testing_dataset.target_prediction.reshape(-1, 1))
-            self.testing_dataset.target_data = self.scaler.inverse_transform(X=self.testing_dataset.target_data.reshape(-1, 1))
-
-            # Flatten array
-            self.testing_dataset.target_data = self.testing_dataset.target_data.ravel()
-            self.testing_dataset.target_prediction = self.testing_dataset.target_prediction.ravel()
-
-            # Cast array to df
-            self.testing_dataset.target_data = DataframeUtilities().array_to_dataframe(array=self.testing_dataset.target_data)
-            self.testing_dataset.target_prediction = DataframeUtilities().array_to_dataframe(array=self.testing_dataset.target_prediction)
-
-            # Make df 1d
-            self.testing_dataset.target_data = self.testing_dataset.target_data[0]
-            self.testing_dataset.target_prediction = self.testing_dataset.target_prediction[0]
-        return
+            array = self.scaler.inverse_transform(X=array.reshape(-1, 1))
+            array = array.ravel()
+            array = DataframeUtilities().array_to_dataframe(array=array)
+            array = array[0]
+        return array
 
     @timeit
     def predict(self):
         self.get_prediction()
-        self.un_normalize()
+        self.testing_dataset.target_data = self.un_normalize(array=self.testing_dataset.target_data)
+        self.testing_dataset.target_prediction = self.un_normalize(array=self.testing_dataset.target_prediction)
         self.get_statistics()
         self.print_output_csv()
         self.print_statistics()

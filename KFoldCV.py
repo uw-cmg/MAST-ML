@@ -127,6 +127,11 @@ class KFoldCV(LeaveOutPercentCV):
                 target_test = self.testing_dataset.target_data[fdict['test_index']]
                 fit = self.model.fit(input_train, target_train)
                 predict_test = self.model.predict(input_test)
+
+                # Unnormalize data here
+                target_test = self.un_normalize(array=target_test)
+                predict_test = self.un_normalize(array=predict_test)
+
                 rmse = np.sqrt(mean_squared_error(predict_test, target_test))
                 merr = np.mean(predict_test - target_test)
                 fold_rmses[fold] = rmse

@@ -40,6 +40,7 @@ class LeaveOutGroupCV(LeaveOutPercentCV):
         xlabel="Measured",
         ylabel="Predicted",
         mark_outlying_points=None,
+        scaler=None,
         *args, **kwargs):
         """
         Additional class attributes to parent class:
@@ -59,7 +60,7 @@ class LeaveOutGroupCV(LeaveOutPercentCV):
             percent_leave_out = -1, #not using this field
             num_cvtests = -1, #not using this field; num_cvtests is set by number of groups
             fix_random_for_testing = 0, #no randomization in this test
-            )
+            scaler=scaler)
         if self.testing_dataset.grouping_feature is None:
             raise ValueError("grouping feature must be set.")
         return 
