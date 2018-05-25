@@ -339,6 +339,7 @@ class MASTMLDriver(object):
                 feature_scale_min = self.configdict['Feature Normalization']['feature_scale_min']
                 feature_scale_max = self.configdict['Feature Normalization']['feature_scale_max']
                 dataframe_nostrings, scaler = fn.normalize_features(x_features=x_features, y_feature=y_feature, normalize_x_features=normalize_x_features, normalize_y_feature=normalize_y_feature, feature_normalization_type=feature_normalization_type, feature_scale_min=feature_scale_min, feature_scale_max=feature_scale_max)
+                self.scaler = scaler
                 x_features, y_feature = DataParser(configdict=self.configdict).get_features(dataframe=dataframe_nostrings, target_feature=y_feature)
 
             # Perform feature selection and dimensional reduction, as specified in the input file (optional)
@@ -544,7 +545,9 @@ class MASTMLDriver(object):
                         os.mkdir(test_save_path)
 
                     #print('passing model', model, 'for test type', test_type)
-
+                    if self.configdict['Feature Normalization']['normalize_y_feature'] == True:
+                        y_scaler = self.scaler[1]
+                        test_params['scaler'] = y_scaler
                     self.modeltestconstructor.get_machinelearning_test(test_type=test_type,
                                                                 model=model, save_path=test_save_path, **test_params)
                     logging.info('Ran test %s for your %s model' % (test_type, str(model)))

@@ -49,6 +49,7 @@ class KFoldCV(LeaveOutPercentCV):
         num_cvtests=10,
         fix_random_for_testing=0,
         num_folds=2,
+        scaler=None,
         *args, **kwargs):
         """
         Additional class attributes to parent class:
@@ -68,8 +69,10 @@ class KFoldCV(LeaveOutPercentCV):
             mark_outlying_points = mark_outlying_points,
             percent_leave_out = -1, #not using this field
             num_cvtests = num_cvtests,
-            fix_random_for_testing = fix_random_for_testing)
+            fix_random_for_testing = fix_random_for_testing,
+            scaler=scaler)
         self.num_folds = int(num_folds)
+
         return 
 
     @timeit

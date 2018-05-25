@@ -65,7 +65,7 @@ class SingleFit():
                     model
     """
     def __init__(self, training_dataset=None, testing_dataset=None, model=None, save_path=None, xlabel="Measured",
-        ylabel="Predicted", plot_filter_out=None, *args, **kwargs):
+        ylabel="Predicted", plot_filter_out=None, scaler=None, *args, **kwargs):
         """Initialize class.
             Attributes that can be set through keywords:
                 self.training_dataset
@@ -97,6 +97,7 @@ class SingleFit():
             self.testing_dataset = copy.deepcopy(testing_dataset[0])
         else:
             self.testing_dataset=copy.deepcopy(testing_dataset)
+        self.scaler = scaler
 
         # model
         if model is None:
@@ -144,10 +145,31 @@ class SingleFit():
         self.print_model()
         self.save_model()
         return
-   
+
+    @timeit
+    def un_normalize(self):
+        if self.scaler is not None:
+            # Unnormalize data
+            self.testing_dataset.target_prediction = self.scaler.inverse_transform(X=self.testing_dataset.target_prediction.reshape(-1, 1))
+            self.testing_dataset.target_data = self.scaler.inverse_transform(X=self.testing_dataset.target_data.reshape(-1, 1))
+
+            # Flatten array
+            self.testing_dataset.target_data = self.testing_dataset.target_data.ravel()
+            self.testing_dataset.target_prediction = self.testing_dataset.target_prediction.ravel()
+
+            # Cast array to df
+            self.testing_dataset.target_data = DataframeUtilities().array_to_dataframe(array=self.testing_dataset.target_data)
+            self.testing_dataset.target_prediction = DataframeUtilities().array_to_dataframe(array=self.testing_dataset.target_prediction)
+
+            # Make df 1d
+            self.testing_dataset.target_data = self.testing_dataset.target_data[0]
+            self.testing_dataset.target_prediction = self.testing_dataset.target_prediction[0]
+        return
+
     @timeit
     def predict(self):
         self.get_prediction()
+        self.un_normalize()
         self.get_statistics()
         self.print_output_csv()
         self.print_statistics()
@@ -301,6 +323,7 @@ class SingleFit():
         return
     
     def plot_results(self, addl_plot_kwargs=None):
+
         self.readme_list.append("----- Plotting -----\n")
         if self.testing_dataset.target_data is None:
             logger.warning("No testing target data. Predicted vs. measured plot will not be plotted.")

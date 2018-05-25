@@ -42,7 +42,7 @@ class LeaveOutPercentCV(SingleFit):
     """
     def __init__(self, training_dataset=None, testing_dataset=None, model=None, save_path=None, xlabel="Measured",
         ylabel="Predicted", mark_outlying_points=None, percent_leave_out=20, num_cvtests=10, fix_random_for_testing=0,
-        *args, **kwargs):
+        scaler=None, *args, **kwargs):
         """
         Additional class attributes to parent class:
             Set by keyword:
@@ -65,7 +65,8 @@ class LeaveOutPercentCV(SingleFit):
             model=model, 
             save_path = save_path,
             xlabel=xlabel,
-            ylabel=ylabel)
+            ylabel=ylabel,
+            scaler=scaler)
         self.mark_outlying_points = mark_outlying_points
         self.percent_leave_out = int(percent_leave_out)
         self.num_cvtests = int(num_cvtests)
