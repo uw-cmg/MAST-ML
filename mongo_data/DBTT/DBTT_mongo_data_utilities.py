@@ -219,4 +219,3 @@ def add_eony_field(db, newcname, verbose=0):
 
 if __name__=="__main__":
     print("Use from DataImportAndExport.py. Exiting.")
-    sys.exit()

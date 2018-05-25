@@ -10,11 +10,13 @@ import os
 import logging
 from pymatgen import Element, Composition
 from pymatgen.ext.matproj import MPRester
+
 try:
     from citrination_client import CitrinationClient, PifQuery, SystemQuery, ChemicalFieldQuery, ChemicalFilter
-except ImportError:
+except ImportError as e:
     print('You have installed an incompatible version of citrination_client. Please install version 2.1.0, via "pip install citrination_client=="2.1.0""')
-    sys.exit()
+    raise e
+
 from DataOperations import DataframeUtilities
 from SingleFit import timeit
 
@@ -52,7 +54,7 @@ class MagpieFeatureGeneration(object):
 
         if len(composition_components) < 1:
             logging.info('Error! No column named "Material compositions" found in your input data file. To use this feature generation routine, you must supply a material composition for each data point')
-            sys.exit()
+            raise KeyError('No column named "MaterialCompositions" in data file.')
 
         row = 0
         while row < len(composition_components[0]):
@@ -131,9 +133,9 @@ class MagpieFeatureGeneration(object):
                             break
         try:
             data_path
-        except NameError:
+        except NameError as e:
             logging.info('Error: Could not find elemental property database files. Please check that the files exist under your MASTML installation directory')
-            sys.exit()
+            raise e
         return data_path
 
     def _get_computed_magpie_features(self, composition, data_path):
@@ -270,9 +272,9 @@ class MaterialsProjectFeatureGeneration(object):
     def generate_materialsproject_features(self, save_to_csv=True):
         try:
             compositions = self.dataframe['Material compositions']
-        except KeyError:
+        except KeyError as e:
             logging.info('Error! No column named "Material compositions" found in your input data file. To use this feature generation routine, you must supply a material composition for each data point')
-            sys.exit()
+            raise e
 
         mpdata_dict_composition = {}
         for composition in compositions:
@@ -374,9 +376,9 @@ class CitrineFeatureGeneration(object):
                      'interested in, there may be many records to parse through, thus this routine may take a long time to complete!')
         try:
             compositions = self.dataframe['Material compositions'].tolist()
-        except KeyError:
+        except KeyError as e:
             logging.info('Error! No column named "Material compositions" found in your input data file. To use this feature generation routine, you must supply a material composition for each data point')
-            sys.exit()
+            raise e
         citrine_dict_property_min = dict()
         citrine_dict_property_max = dict()
         citrine_dict_property_avg = dict()
@@ -449,7 +451,7 @@ class CitrineFeatureGeneration(object):
         property_names_unique = list()
         if len(property_name_list) != len(property_value_list):
             print('Error! Length of property name and property value lists are not the same. There must be a bug in the _get_pifquerey_property_list method')
-            sys.exit()
+            raise IndexError("property_name_list and property_value_list are not the same size.")
         else:
             # Get unique property names
             for name in property_name_list:

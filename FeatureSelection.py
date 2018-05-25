@@ -51,13 +51,21 @@ class DimensionalReduction(object):
         self.y_feature = y_feature
 
     def remove_constant_features(self):
+        """
+        Returns dataframe with constant columns removed
+        (does not modify reference)
+        """
         dataframe = self.dataframe.loc[:, self.dataframe.var() != 0.0]
         return dataframe
 
     def principal_component_analysis(self):
+        """
+        Uses PCA to pick best columns for dataframe and returns that
+        (does not modify reference)
+        """
         pca = PCA(n_components=len(self.x_features), svd_solver='auto')
-        Xnew = pca.fit_transform(X=self.dataframe[self.x_features])
-        dataframe = DataframeUtilities().array_to_dataframe(array=Xnew)
+        X_new = pca.fit_transform(X=self.dataframe[self.x_features])
+        dataframe = DataframeUtilities().array_to_dataframe(array=X_new)
         dataframe = FeatureIO(dataframe=dataframe).add_custom_features(features_to_add=[self.y_feature], data_to_add=self.dataframe[self.y_feature])
         return dataframe
 
@@ -104,10 +112,13 @@ class FeatureSelection(object):
         self.model = mtc.get_machinelearning_model(model_type=self.model_type, y_feature=self.y_feature)
 
     def sequential_forward_selection(self, number_features_to_keep):
+        """ 
+        Does forward selection
+        """ # TODO: write better docstring
         sfs = SFS(self.model, k_features=number_features_to_keep, forward=True,
                   floating=False, verbose=0, scoring='neg_mean_squared_error', cv=KFold(n_splits=5, shuffle=True, random_state=False))
         sfs = sfs.fit(X=np.array(self.dataframe[self.x_features]), y=np.array(self.dataframe[self.y_feature]))
-        Xnew = sfs.fit_transform(X=np.array(self.dataframe[self.x_features]), y=np.array(self.dataframe[self.y_feature]))
+        X_new = sfs.fit_transform(X=np.array(self.dataframe[self.x_features]), y=np.array(self.dataframe[self.y_feature]))
         feature_indices_selected = sfs.k_feature_idx_
         x_features_to_keep = []
         for index in feature_indices_selected:
@@ -122,11 +133,9 @@ class FeatureSelection(object):
         metricdict = sfs.get_metric_dict()
 
         # Change avg_score metric_dict values to be positive RMSE (currently negative MSE by default)
-        for featurenumber, featuredict in metricdict.items():
-            for metric, metricvalue in featuredict.items():
-                if metric == 'avg_score':
-                    metricvalue = np.sqrt(-1*metricvalue)
-                    metricdict[featurenumber][metric] = metricvalue
+        for featuredict in metricdict.values():
+            if 'avg_score' in featuredict:
+                featuredict['avg_score'] = np.sqrt(-featuredict['avg_score'])
 
         fs_dataframe = pd.DataFrame.from_dict(metricdict).T
         logging.info(("Summary of forward selection:"))
@@ -144,13 +153,16 @@ class FeatureSelection(object):
         return dataframe
 
     def feature_selection(self, feature_selection_type, number_features_to_keep, use_mutual_info):
+        """
+        Returns the reduced dataframe
+        """
         if 'regression' in self.y_feature:
             selection_type = 'regression'
         elif 'classification' in self.y_feature:
             selection_type = 'classification'
         else:
             print('You must specify either "regression" or "classification" in your y_feature name')
-            sys.exit()
+            raise KeyError('invalid key: ' + y_feature)
 
         mtc = ModelTestConstructor(configdict=self.configdict)
         if feature_selection_type == 'recursive_feature_elimination' and self.model_type not in \
@@ -162,61 +174,46 @@ class FeatureSelection(object):
         else:
             self.model = mtc.get_machinelearning_model(model_type=self.model_type, y_feature=self.y_feature)
 
-        if use_mutual_info == False or use_mutual_info == 'False':
-            if selection_type == 'regression':
-                if feature_selection_type == 'univariate_feature_selection':
-                    selector = SelectKBest(score_func=f_regression, k=number_features_to_keep)
-                elif feature_selection_type == 'recursive_feature_elimination':
-                    selector = RFE(estimator=self.model, n_features_to_select=number_features_to_keep)
-                elif feature_selection_type == 'basic_forward_selection':
-                    bfs = BasicForwardSelection(dataframe=self.dataframe, x_features=self.x_features, y_feature=self.y_feature,
-                                                model=self.model, number_features_to_keep=number_features_to_keep, configdict=self.configdict)
-                    dataframe = bfs.run_basic_forward_selection()
-                else:
-                    logging.info('You must specify feature_selection_type as either "univariate_feature_selection" or "recursive_feature_elimination"')
-            elif selection_type == 'classification':
-                if feature_selection_type == 'univariate_feature_selection':
-                    selector = SelectKBest(score_func=f_classif, k=number_features_to_keep)
-                elif feature_selection_type == 'recursive_feature_elimination':
-                    selector = RFE(estimator=self.model, n_features_to_select=number_features_to_keep)
-                else:
-                    logging.info('You must specify feature_selection_type as either "univariate_feature_selection" or "recursive_feature_elimination"')
-        elif use_mutual_info == True or use_mutual_info == 'True':
-            if selection_type == 'regression':
-                if feature_selection_type == 'univariate_feature_selection':
-                    selector = SelectKBest(score_func=mutual_info_regression, k=number_features_to_keep)
-                elif feature_selection_type == 'recursive_feature_elimination':
-                    logging.info('Important Note: You have specified recursive feature elimination with mutual information. '
-                                 'Mutual information is only used for univariate feature selection. Feature selection will still run OK')
-                    selector = RFE(estimator=self.model, n_features_to_select=number_features_to_keep)
-                elif feature_selection_type == 'basic_forward_selection':
-                    logging.info('Important Note: You have specified basic forward selection with mutual information. '
-                                 'Mutual information is only used for univariate feature selection. Feature selection will still run OK')
-                    bfs = BasicForwardSelection(dataframe=self.dataframe, x_features=self.x_features,
-                                            y_feature=self.y_feature, model=self.model,
-                                            number_features_to_keep=number_features_to_keep,
-                                            configdict=self.configdict)
-                    dataframe = bfs.run_basic_forward_selection()
-                else:
-                    logging.info('You must specify feature_selection_type as either "univariate_feature_selection" or "recursive_feature_elimination"')
-            elif selection_type == 'classification':
-                if feature_selection_type == 'univariate_feature_selection':
-                    selector = SelectKBest(score_func=mutual_info_classif, k=number_features_to_keep)
-                elif feature_selection_type == 'recursive_feature_elimination':
-                    logging.info('Important Note: You have specified recursive feature elimination with mutual information. '
-                                 'Mutual information is only used for univariate feature selection. Feature selection will still run OK')
-                    selector = RFE(estimator=self.model, n_features_to_select=number_features_to_keep)
-                else:
-                    logging.info('You must specify feature_selection_type as either "univariate_feature_selection" or "recursive_feature_elimination"')
+        def log_warning(feature_selection_type):
+            logging.info('Important Note: You have specified ' + feature_selection_type + ' with mutual'
+                         'information. Mutual information is only used for univariate feature selection'
+                         'Feature selection will still run OK')
+
+        use_mutual_info = (use_mutual_info in [True, 'True'])
+
+        if feature_selection_type == 'recursive_feature_elimination':
+            selector = RFE(estimator=self.model, n_features_to_select=number_features_to_keep)
+            if use_mutual_info: log_warning(feature_selection_type)
+
+        elif feature_selection_type == 'basic_forward_selection':
+            bfs = BasicForwardSelection(
+                dataframe=self.dataframe, x_features=self.x_features, y_feature=self.y_feature,
+                model=self.model, number_features_to_keep=number_features_to_keep,
+                configdict=self.configdict)
+            dataframe = bfs.run_basic_forward_selection()
+            if use_mutual_info: log_warning(feature_selection_type)
+
+        elif feature_selection_type == 'univariate_feature_selection':
+            score_func = {
+                'regression':     {False: f_regression,
+                                   True: mutual_info_regression},
+                'classification': {False: f_classif,
+                                   True: mutual_info_classif}
+                }[selection_type][use_mutual_info]
+            selector = SelectKBest(score_func=score_func, k=number_features_to_keep)
+
+        else:
+            logging.info("Invalid selection type: " + str(selection_type))
+
 
         mfso = MiscFeatureSelectionOperations()
         if feature_selection_type != 'basic_forward_selection':
-            Xnew = selector.fit_transform(X=self.dataframe[self.x_features], y=self.dataframe[self.y_feature])
-            feature_indices_selected, feature_names_selected = mfso.get_selector_feature_names(selector=selector, x_features=self.x_features)
-            dataframe = DataframeUtilities().array_to_dataframe(array=Xnew)
+            X_new = selector.fit_transform(X=self.dataframe[self.x_features], y=self.dataframe[self.y_feature])
+            _, feature_names_selected = mfso.get_selector_feature_names(selector=selector, x_features=self.x_features)
+            dataframe = DataframeUtilities().array_to_dataframe(array=X_new)
             dataframe = DataframeUtilities().assign_columns_as_features(dataframe=dataframe, x_features=feature_names_selected, y_feature=self.y_feature, remove_first_row=False)
             # Add y_feature back into the dataframe
-            dataframe = FeatureIO(dataframe=dataframe).add_custom_features(features_to_add=[self.y_feature],data_to_add=self.dataframe[self.y_feature])
+            dataframe = FeatureIO(dataframe=dataframe).add_custom_features(features_to_add=[self.y_feature], data_to_add=self.dataframe[self.y_feature])
             dataframe = dataframe.dropna()
 
         # Only report the features selected and save csv file when number_features_to_keep is equal to value
@@ -330,11 +327,10 @@ class BasicForwardSelection(object):
         # Make dict of ranked features into list for sorting
         for k, v in ranked_features.items():
             feature_names.append(k)
-            for kk, vv in v.items():
-                if kk == 'avg_rmse':
-                    feature_avg_rmses.append(vv)
-                if kk == 'std_rmse':
-                    feature_std_rmses.append(vv)
+            if 'avg_rmse' in v: # TODO: Is this check necessary?
+                feature_avg_rmses.append(v['avg_rmse'])
+            if 'std_rmse' in v:
+                feature_std_rmses.append(v['std_rmse'])
 
         # Sort feature lists so RMSE goes from min to max
         feature_avg_rmses_sorted = sorted(feature_avg_rmses)
@@ -424,9 +420,10 @@ class LearningCurve(object):
         self.configdict = configdict
         self.dataframe = dataframe
         self.model_type = model_type
-        self.x_features, self.y_feature = DataParser(configdict=self.configdict).get_features(dataframe=self.dataframe,
-                                                    target_feature=self.configdict['General Setup']['target_feature'],
-                                                    from_input_file=False)
+        self.x_features, self.y_feature = DataParser(configdict=self.configdict) \
+                                          .get_features(dataframe=self.dataframe,
+                                                        target_feature=self.configdict['General Setup']['target_feature'],
+                                                        from_input_file=False)
         # Get model to use in feature selection
         mtc = ModelTestConstructor(configdict=self.configdict)
         self.model = mtc.get_machinelearning_model(model_type=self.model_type, y_feature=self.y_feature)
@@ -473,8 +470,8 @@ class LearningCurve(object):
             fs = FeatureSelection(configdict=self.configdict, dataframe=self.dataframe, x_features=self.x_features,
                                   y_feature=self.y_feature, model_type=self.model_type)
             dataframe_fs = fs.feature_selection(feature_selection_type=feature_selection_algorithm,
-                                                                        number_features_to_keep=n_features + 1,
-                                                                        use_mutual_info=use_mutual_info)
+                                                number_features_to_keep=n_features + 1,
+                                                use_mutual_info=use_mutual_info)
             dataframe_fs_list.append(dataframe_fs)
 
         num_cvtests = 10
@@ -623,8 +620,12 @@ class LearningCurve(object):
 
             # Construct learning curve plot of CVscore vs number of training data included. Only do it once max features reached
             if num_features == n_features_to_keep:
-                self.get_univariate_RFE_training_data_learning_curve(estimator=self.model, title='Training data learning curve',
-                                                       Xdata=Xdata, ydata=ydata, feature_selection_type= feature_selection_algorithm, cv=5)
+                self.get_univariate_RFE_training_data_learning_curve(estimator=self.model,
+                                                                     title='Training data learning curve',
+                                                                     Xdata=Xdata,
+                                                                     ydata=ydata,
+                                                                     feature_selection_type=feature_selection_algorithm,
+                                                                     cv=5)
 
         # Construct learning curve plot of RMSE vs number of features included
         if self.scoring_metric == 'root_mean_squared_error':
@@ -641,7 +642,7 @@ class LearningCurve(object):
             ydict_stdev = {"train_r2": train_r2_stdev_list, "test_r2": test_r2_stdev_list}
         else:
             logging.info("ERROR: you must specify a valid scoring metric for feature selection!")
-            sys.exit()
+            raise KeyError('invalid key: ' + self.scoring_metric)
         self.get_univariate_RFE_feature_learning_curve(title=feature_selection_algorithm + ' learning curve',
                                                        Xdata=num_features_list, ydata=ydict, ydata_stdev=ydict_stdev,
                                                        feature_selection_type=feature_selection_algorithm)
@@ -698,14 +699,14 @@ class LearningCurve(object):
         plt.grid()
         savedir = self.configdict['General Setup']['save_path']
         for ydataname, ydata in ydata.items():
+            difference = np.array(ydata) - np.array(ydata_stdev[ydataname])
+            total = np.array(ydata) + np.array(ydata_stdev[ydataname])
             if 'train' in ydataname:
                 plt.plot(Xdata, ydata, 'o-', color='r', label='Training data score')
-                plt.fill_between(Xdata, np.array(ydata) - np.array(ydata_stdev[ydataname]), np.array(ydata) + np.array(ydata_stdev[ydataname]), alpha=0.1,
-                                 color="r")
+                plt.fill_between(Xdata, difference, total, alpha=0.1, color="r")
             if 'test' in ydataname:
                 plt.plot(Xdata, ydata, 'o-', color='g', label='Test data score')
-                plt.fill_between(Xdata, np.array(ydata) - np.array(ydata_stdev[ydataname]), np.array(ydata) + np.array(ydata_stdev[ydataname]), alpha=0.1,
-                                color="g")
+                plt.fill_between(Xdata, difference, total, alpha=0.1, color="g")
         plt.xlabel("Number of features")
         if self.scoring_metric == 'root_mean_squared_error':
             plt.ylabel("RMSE")
@@ -725,11 +726,10 @@ class LearningCurve(object):
         ydata_stdev = list()
         for k, v in metricdict.items():
             Xdata.append(k)
-            for kk, vv in v.items():
-                if kk == 'avg_score':
-                    ydata.append(vv)
-                if kk == 'std_dev':
-                    ydata_stdev.append(vv)
+            if 'avg_score' in v: # TODO: is this check necessary?
+                ydata.append(v['avg_score'])
+            if 'std_dev' in v:
+                ydata.append(v['std_dev'])
         plt.figure()
         plt.grid()
         plt.plot(Xdata, ydata, '-o', color='r')
@@ -835,9 +835,8 @@ class MiscFeatureSelectionOperations():
                 filetag = column
                 foundfeature = True
         if foundfeature == False:
-            logging.info('Error: Could not locate y_feature in your dataframe, please ensure the y_feature names match in your csv'
-                      'and input file')
-            sys.exit()
+            logging.info('Error: Could not locate y_feature in your dataframe, please ensure the y_feature names match in your csv and input file')
+            raise KeyError('not found: ' + column)
         return filetag
 
     @classmethod
