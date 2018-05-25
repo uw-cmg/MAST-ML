@@ -651,7 +651,7 @@ class LearningCurve(object):
         plt.legend(loc="best")
         plt.title(title)
         plt.xlabel("Number of training data points")
-        ply.ylabel(ylabel)
+        plt.ylabel(ylabel)
 
         plt.savefig(self.configdict['General Setup']['save_path'] + "/" + feature_selection_type + "_learning_curve_trainingdata.pdf")
 
