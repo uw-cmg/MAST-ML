@@ -88,28 +88,28 @@ class ParseTemplate(unittest.TestCase):
         for leaf in leaves_of_dict(self.type_template):
             # should either be a list of strings (that lists off legal options
             # or a string that matching the ones in legal_types
-            self.assertTrue(leaf in legal_types or
+            self.assertTrue(leaf in self.legal_types or
                             all(isinstance(x, str) for x in leaf))
 
-    def _errors_present_from_conf_file(self, filename):
+    def _validate_conf_file(self, filename):
         file_validator = MASTMLInitializer.ConfigFileValidator(filename)
-        _, errors_present = file_validator.run_config_validation()
-        return errors_present
+        conf_file_dict = file_validator.run_config_validation()
+        return conf_file_dict
         
     def test_validate_valid_conf_file(self):
-        self.assertFalse(self._errors_present_from_conf_file('example_input.conf'))
+        self._validate_conf_file('example_input.conf')
 
     def test_validate_bad_sections_conf_file(self):
-        self.assertFalse(self._errors_present_from_conf_file('config_with_bad_sections.conf'))
+        self.assertRaises(KeyError, lambda: self._validate_conf_file('config_with_bad_sections.conf'))
 
     def test_validate_bad_subsections_conf_file(self):
-        self.assertFalse(self._errors_present_from_conf_file('config_with_bad_subsections.conf'))
+        self.assertRaises(KeyError, lambda: self._validate_conf_file('config_with_bad_subsections.conf'))
 
     def test_validate_bad_values_conf_file(self):
-        self.assertFalse(self._errors_present_from_conf_file('config_with_bad_values.conf'))
+        self.assertRaises(KeyError, lambda: self._validate_conf_file('config_with_bad_values.conf'))
 
     def test_validate_invalid_model_conf_file(self):
-        self.assertFalse(self._errors_present_from_conf_file('config_with_invalid_model.conf'))
+        self.assertRaises(KeyError, lambda: self._validate_conf_file('config_with_invalid_model.conf'))
 
     def tearDown(self):
         pass

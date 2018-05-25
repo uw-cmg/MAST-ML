@@ -29,6 +29,10 @@ if DEBUG_MODE:
     sys.exit = do_nothing
     import pdb
 
+class ConfigFileError(Exception):
+    """ Raised when conf file is incorrect """
+    pass
+
 def _resetlogging():
     """ Remove all handlers associated with the root logger object.
         From SO: https://stackoverflow.com/a/12158233
