@@ -81,7 +81,6 @@ class SingleFit():
                 self.statistics <dict of float>: statistics dictionary
                 self.readme_list <dict of str>: stores lines for readme
         """
-        raise Exception("you tried to import singlefit, didn't you??")
         # Keyword-set attributes
         # training csv
         if training_dataset is None:

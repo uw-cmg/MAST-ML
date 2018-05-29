@@ -44,6 +44,7 @@ def timeit(method):
     return timed
 
 class MultiClass():
+    raise Exception("alfraidof you did it!")
     """
     This is the basic analysis class. Serves as a parent class for more specific analysis classes.
 
