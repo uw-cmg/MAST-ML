@@ -87,7 +87,7 @@ class DataParser(object):
             #dataframe = DataframeUtilities()._assign_columns_as_features(dataframe=dataframe, x_features=x_features, y_feature=y_feature, column_names=column_names, remove_first_row=True)
             Xdata, ydata = self.get_data(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
 
-            if as_array == bool(True):
+            if as_array:
                 Xdata = np.asarray(Xdata)
                 ydata = np.asarray(ydata)
         else:
@@ -99,7 +99,7 @@ class DataParser(object):
         x_features, y_feature = self.get_features(dataframe=dataframe, target_feature=target_feature, from_input_file=False)
         Xdata, ydata = self.get_data(dataframe=dataframe, x_features=x_features, y_feature=y_feature)
 
-        if as_array == bool(True):
+        if as_array:
             Xdata = np.asarray(Xdata)
             ydata = np.asarray(ydata)
 
@@ -117,7 +117,7 @@ class DataParser(object):
         return dataframe
 
     def get_features(self, dataframe, target_feature=None, from_input_file=False):
-        if from_input_file == bool(True):
+        if from_input_file:
             y_feature_from_input = self.configdict['General Setup']['target_feature']
 
             x_and_y_features = dataframe.columns.values.tolist()
@@ -140,7 +140,7 @@ class DataParser(object):
                     if feature in y_feature_from_input:
                         y_feature = feature
 
-        elif from_input_file == bool(False):
+        elif from_input_file == False:
             y_feature = target_feature
             if 'grouping_feature' in self.configdict['General Setup'].keys():
                 x_features = [feature for feature in dataframe.columns.values if feature not in [y_feature, self.configdict['General Setup']['grouping_feature']]]
@@ -300,7 +300,7 @@ class DataframeUtilities(object):
         for i, feature in enumerate(x_and_y_features):
             column_dict[i] = feature
         dataframe = dataframe.rename(columns=column_dict)
-        if remove_first_row == bool(True):
+        if remove_first_row:
             dataframe = dataframe.drop([0])  # Need to remove feature names from first row so can obtain data
         return dataframe
 
