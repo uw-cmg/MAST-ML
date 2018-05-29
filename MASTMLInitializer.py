@@ -186,9 +186,7 @@ class ConfigFileConstructor(ConfigFileParser):
         for test_case in self.configtemplate['Models and Tests to Run']['test_cases']:
             self.configtemplate['Test Parameters'][test_case] = dict()
         for key, param in self.configtemplate['Test Parameters'].items():
-            if key in ['MultiClass', 'SingleFit', 'SingleFitPerGroup', 'SingleFitGrouped',
-                     'KFoldCV', 'LeaveOneOutCV', 'LeaveOutPercentCV', 'LeaveOutGroupCV',
-                     'PlotNoAnalysis', 'PredictionVsFeature',]:
+            if key in self.configtemplate['Models and Tests to Run']['test_cases']:
                 param['training_dataset'] = 'string'
                 param['testing_dataset'] = 'string'
                 param['xlabel'] = 'string'
