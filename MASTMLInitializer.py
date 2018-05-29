@@ -12,6 +12,7 @@ from sklearn.kernel_ridge import KernelRidge
 from sklearn.neural_network import MLPRegressor, MLPClassifier
 from sklearn.linear_model import LinearRegression, Lasso, LogisticRegression
 from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor, AdaBoostRegressor, ExtraTreesClassifier, RandomForestClassifier, AdaBoostClassifier
+import sklearn
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 from sklearn.svm import SVC, SVR
 import sklearn.gaussian_process.kernels as skkernel
@@ -514,7 +515,8 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
 
     def _check_target_feature(self, configdict):
         target_feature_name = configdict['General Setup']['target_feature']
-        if ('regression' or 'classification') not in target_feature_name:
+        if ('regression'  not in target_feature_name and
+           'classification' not in target_feature_name):
             logging.info('Error: You must include the designation "regression" or "classification" in your target feature name in your input file and data file. For example: "my_target_feature_regression"')
             self.errors_present = True
         return configdict
