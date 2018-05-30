@@ -1,68 +1,37 @@
 # MAterial Science Tools - Machine Learning 
 
-## Project Standards:
-
-* Wrap lines to 100 chars
-* `Pylint` to check code style
-
-## Large scale TODO items:
-
-* Refactor code
-* Add unit tests
-* Write classification routines
-* Improve rst and docstring documentation
-* Speed up the grid search hyperparameter thing
-* Fix the folder/file/cwd problem. (Everything should be in one subdir per run.)
-* use a DOM manipulation module instead of concatenating strings for HTML
-* Seperate out a normal python `mastml` . _Seperately_, have a config validator/parser interface.
-* Add running mode that generates no external files (print errors instead of logging them; show plots instead of saving them)
-  * Could use /temp instead with a http.server run at the end (ohh that sounds nice...)
-* add a parent to singlefit and multiclass, for splits etc that all "tests" (regression or classification) need.
-* If we are going to keep using a global `dict`, then why does any function take any arguments? Maybe we could have every major piece work directly from the global `dict`...
-
-## Random Ideas
-
-* Serve the http documentation somewhere so users don't have to build it from .rst themseleves
-* Seperate out the .conf file parsing/running stuff from the rest of the program.
-  (Two modules: 1. a sklearn/keras wrapper 2. a .conf file parser and executer)
-* Standardize/abstract the image generation, so user only needs to specify the image type and
-  location once.
-* Conf files are parsed by configobj package, which we are only use a small part of. Perhaps it 
-  can make our lives easier if we use more of its features?
-* if you don't use `generate_feature_learning_curve` then you don't need its parameters.
-
 ## Documentation and install instructions
 
-Full documentation starts in `docs/build/html/index.html`.
-
-Clone the repository and open `index.html` with your browser.
+Clone the repository and open `docs/build/html/index.html` with your browser. It has build/install
+instructions.
 
 ## Contributors 
+
 DBTT Skunkworks undergraduates (~2015-2017, alphabetical order):
-*   Ben Anderson
-*   Josh Cordell
-*   Fenil Doshi
-*   Jerit George
-*   Aren Lorenson
-*   Matthew Parker
-*   Josh Perry
-*   Liam Witteman
-*   Haotian (Will) Wu
-*   Jinyu Xia
-*   Hao Yuan
+* Ben Anderson
+* Josh Cordell
+* Fenil Doshi
+* Jerit George
+* Aren Lorenson
+* Matthew Parker
+* Josh Perry
+* Liam Witteman
+* Haotian (Will) Wu
+* Jinyu Xia
+* Hao Yuan
 
 CMG group members:
-*   Ben Afflerbach
-*   Ryan Jacobs
-*   Tam Mayeshiba
-*   Henry Wu
+* Ben Afflerbach
+* Ryan Jacobs
+* Tam Mayeshiba
+* Henry Wu
 
 Advisor:
-*   Professor Dane Morgan
+* Professor Dane Morgan
 
 UKY Summer Employees:
-*   Luke Harold Miles
-*   Robert Max Williams
+* Luke Harold Miles
+* Robert Max Williams
 
 ## Summary of modules in MASTML
 
@@ -132,7 +101,7 @@ outside of the training set.
 ### LeaveOutPercentCV.py
 
 This module is the same as KFoldCV, except instead of specifying groups of data by number of folds,
-the groups are denoted by a percent of the total dataset.  For example, leave out 10% cross
+the groups are denoted by a percent of the total dataset. For example, leave out 10% cross
 validation is the same as 10-fold cross validation.
 
 ### MASTML.py
@@ -187,7 +156,7 @@ assess the predictive accuracy of a given model.
 
 This module is the same as SingleFit, except that it creates parity plots based on data that is
 organized into specific groups. All data is put on one plot and the data points are colored
-differently based on which group they are in (e.g.  houses in different neighborhoods based on the
+differently based on which group they are in (e.g. houses in different neighborhoods based on the
 example above).
 
 ### SingleFitPerGroup.py
@@ -214,4 +183,31 @@ all groups on one plot and just colors them differently.
   style. Those are being written separately by a grad student in our group
 
 _Original code 4/12/17 pulled from the DBTT Skunkworks project._
+
+## Project standards kinda:
+
+* Wrap lines to 100 chars
+* `Pylint` to check code style
+
+## Max & Luke things to do and random ideas:
+
+* Write classification routines
+* Speed up the grid search hyperparameter thing
+* Improve RST and docstring documentation
+* Use a DOM manipulation module instead of concatenating strings for HTML
+* Add a parent to singlefit and multiclass, for splits etc that all "tests" (regression or classification) need.
+* Fix the folder/file/cwd problem. (Everything should be in one subdir per run.)
+* Refactor old code
+* Add more unit tests
+* Add running mode that generates no external files (print errors instead of logging them; show plots instead of saving them)
+  * Could use /tmp instead with a http.server run at the end
+* If we are going to keep using a global `dict`, then why does any function take any arguments?
+  Maybe we could have every major piece work directly from the global `dict`...
+* Serve the http documentation somewhere so users don't have to build it from .rst themseleves
+* Standardize/abstract the image generation, so user only needs to specify the image type and
+  location once.
+* Conf files are parsed by configobj package, which we are only use a small part of.
+  Perhaps it can make our lives easier if we use more of its features?
+* Make it so if the conf file doesn't use `generate_feature_learning_curve` the parameters don't
+  need to be specified.
 
