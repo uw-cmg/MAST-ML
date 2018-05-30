@@ -13,6 +13,12 @@
 * Improve rst and docstring documentation
 * Speed up the grid search hyperparameter thing
 * Fix the folder/file/cwd problem. (Everything should be in one subdir per run.)
+* use a DOM manipulation module instead of concatenating strings for HTML
+* Seperate out a normal python `mastml` . _Seperately_, have a config validator/parser interface.
+* Add running mode that generates no external files (print errors instead of logging them; show plots instead of saving them)
+  * Could use /temp instead with a http.server run at the end (ohh that sounds nice...)
+* add a parent to singlefit and multiclass, for splits etc that all "tests" (regression or classification) need.
+* If we are going to keep using a global `dict`, then why does any function take any arguments? Maybe we could have every major piece work directly from the global `dict`...
 
 ## Random Ideas
 
