@@ -1,4 +1,5 @@
 __author__ = 'Ryan Jacobs, Tam Mayeshiba'
+import pdb
 __maintainer__ = 'Ryan Jacobs'
 __version__ = '1.0'
 __email__ = 'rjacobs3@wisc.edu'
@@ -212,6 +213,7 @@ class MASTMLDriver(object):
         if not(os.path.isfile(data_path)):
             raise OSError("No file found at %s" % data_path)
         Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=self.configdict).parse_fromfile(datapath=data_path, as_array=False)
+        #pdb.set_trace()
         return Xdata, ydata, x_features, y_feature, dataframe
 
     def _create_data_dict(self):

@@ -1,4 +1,5 @@
 __author__ = 'Tam Mayeshiba'
+import pdb
 __maintainer__ = 'Ryan Jacobs'
 __version__ = '1.0'
 __email__ = 'rjacobs3@wisc.edu'
@@ -80,6 +81,7 @@ class DataHandler():
         self.group_data = None
         self.groups = None
         #Run upon initialization
+        #pdb.set_trace()
         self.set_up_data()
 
     def set_up_data(self):

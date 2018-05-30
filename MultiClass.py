@@ -1,4 +1,5 @@
 __author__ = 'Luke Miles, Max Williams, Tam Mayeshiba'
+import pdb
 __maintainer__ = 'Ryan Jacobs'
 __version__ = '1.0'
 __email__ = 'rjacobs3@wisc.edu'
@@ -8,6 +9,7 @@ import numpy as np
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import r2_score
+import sklearn
 from plot_data.PlotHelper import PlotHelper
 from DataOperations import DataframeUtilities
 import os
@@ -19,7 +21,50 @@ from sklearn.externals import joblib
 from sklearn.linear_model import LinearRegression
 logger = logging.getLogger()
 
-raise Exception("you did it!")
+
+from matplotlib import pyplot as plt
+import itertools
+
+
+def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix', cmap=plt.cm.Blues, savepath='.'):
+    """
+    From http://scikit-learn.org/stable/_downloads/plot_confusion_matrix.py
+    This function prints and plots the confusion matrix.
+    Normalization can be applied by setting `normalize=True`.
+    """
+
+    plt.title("old stuff please ignore")
+    plt.show()
+    plt.close()
+
+    if normalize:
+        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+        print("Normalized confusion matrix")
+    else:
+        print('Confusion matrix, without normalization')
+
+    print(cm)
+
+    plt.imshow(cm, interpolation='nearest', cmap=cmap)
+    plt.title(title)
+    plt.colorbar()
+    tick_marks = np.arange(len(classes))
+    plt.xticks(tick_marks, classes, rotation=45)
+    plt.yticks(tick_marks, classes)
+
+    fmt = '.2f' if normalize else 'd'
+    thresh = cm.max() / 2.
+    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        plt.text(j, i, format(cm[i, j], fmt),
+                 horizontalalignment="center",
+                 color="white" if cm[i, j] > thresh else "black")
+
+    plt.tight_layout()
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+    plt.savefig(savepath + "/" + "confusion_matrix.png")
+
+
 def timeit(method):
     """Timing function for logger.
         Taken from http://stackoverflow.com/questions/38314993/standard-logging-for-every-method-in-a-class.
@@ -44,7 +89,6 @@ def timeit(method):
     return timed
 
 class MultiClass():
-    raise Exception("alfraidof you did it!")
     """
     This is the basic analysis class. Serves as a parent class for more specific analysis classes.
 
@@ -139,9 +183,9 @@ class MultiClass():
 
     @timeit
     def fit(self):
-        self.get_trained_model()
-        self.print_model()
-        self.save_model()
+        self.get_trained_model() # calls fit on model
+        self.print_model() # prints to readme
+        self.save_model() # dumps model to file
    
     @timeit
     def predict(self):
@@ -153,6 +197,7 @@ class MultiClass():
     @timeit
     def plot(self):
         self.plot_results()
+        self.my_plot_confusion_matrix()
         self.plot_residuals_histogram()
 
     def get_trained_model(self):
@@ -189,6 +234,11 @@ class MultiClass():
         mean_error = np.mean(pred_minus_true)
         return mean_error
 
+
+    def get_confusion_matrix(self): # We're really doing it!)))))
+        #pdb.set_trace()
+        return sklearn.metrics.confusion_matrix(self.testing_dataset.target_data, self.testing_dataset.target_prediction)
+
     def get_mean_absolute_error(self):
         mean_abs_err = mean_absolute_error(self.testing_dataset.target_data, self.testing_dataset.target_prediction)
         return mean_abs_err
@@ -223,6 +273,7 @@ class MultiClass():
             return
         self.statistics['rmse'] = self.get_rmse()
         self.statistics['mean_error'] = self.get_mean_error()
+        self.statistics['confusion_matrix'] = self.get_confusion_matrix()
         self.statistics['mean_absolute_error'] = self.get_mean_absolute_error()
         self.statistics['rsquared'] = self.get_rsquared(Xdata=self.testing_dataset.target_data, ydata=self.testing_dataset.target_prediction)
         self.statistics['rsquared_noint'] = self.get_rsquared_noint(Xdata=self.testing_dataset.target_data, ydata=self.testing_dataset.target_prediction)
@@ -287,6 +338,12 @@ class MultiClass():
         self.print_output_csv("output_data_filtered.csv")
         rmse_pfo = np.sqrt(mean_squared_error(self.testing_dataset.target_prediction, self.testing_dataset.target_data)) 
         self.statistics['filtered_rmse'] = rmse_pfo
+
+    def my_plot_confusion_matrix(self):
+        self.confusion_matrix = self.get_confusion_matrix()
+        #myph = PlotHelper()
+        print("self.confusion_matrix", self.confusion_matrix)
+        plot_confusion_matrix(self.confusion_matrix, [0, 1, 2], savepath=self.save_path)
     
     def plot_results(self, addl_plot_kwargs=None):
         self.readme_list.append("----- Plotting -----\n")

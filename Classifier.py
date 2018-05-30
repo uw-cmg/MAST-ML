@@ -14,7 +14,6 @@ model = sklearn.neighbors.KNeighborsClassifier()
 #y_pred = model.predict(X_test)
 
 
-
 def plot_confusion_matrix(cm, classes,
                           normalize=False,
                           title='Confusion matrix',
@@ -50,9 +49,6 @@ def plot_confusion_matrix(cm, classes,
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
     plt.show()
-
-
-
 
 
 def make_cluster(x,y,sigma,count):
