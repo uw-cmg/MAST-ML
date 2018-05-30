@@ -1,5 +1,4 @@
 __author__ = 'Ryan Jacobs, Tam Mayeshiba'
-import pdb
 __maintainer__ = 'Ryan Jacobs'
 __version__ = '1.0'
 __email__ = 'rjacobs3@wisc.edu'
@@ -200,8 +199,7 @@ class MASTMLDriver(object):
         self.csv_setup = self.modeltestconstructor._process_config_keyword(keyword = "CSV Setup")
         setup_class = self.csv_setup.pop("setup_class") #also remove from dict
         class_name = setup_class.split(".")[-1]
-        print("importing: ", setup_class)
-        logging.warn('imported from string: ' + class_name + ' ' + setup_class)
+        logging.info('importing based on conf file: ' + class_name + ' ' + setup_class)
         test_module = importlib.import_module('%s' % (setup_class))
         test_class_def = getattr(test_module, class_name)
         logging.debug("Parameters passed by keyword:")
@@ -213,7 +211,6 @@ class MASTMLDriver(object):
         if not(os.path.isfile(data_path)):
             raise OSError("No file found at %s" % data_path)
         Xdata, ydata, x_features, y_feature, dataframe = DataParser(configdict=self.configdict).parse_fromfile(datapath=data_path, as_array=False)
-        #pdb.set_trace()
         return Xdata, ydata, x_features, y_feature, dataframe
 
     def _create_data_dict(self):
@@ -593,6 +590,7 @@ class MASTMLDriver(object):
 
     def _set_favorites_dict(self):
         fdict = dict()
+        fdict["MultiClass"] = ["confusion_matrix.png"]
         fdict["SingleFit"] = ["single_fit.png"]
         fdict["SingleFitGrouped"] = ["per_group_info/per_group_info.png"]
         fdict["SingleFitPerGroup"] = ["per_group_fits_overlay/per_group_fits_overlay.png"]

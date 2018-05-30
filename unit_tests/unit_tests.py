@@ -3,7 +3,6 @@ import os
 import sys
 import shutil
 import warnings
-import pdb
 
 # so we can find MASTML package
 sys.path.append('../')

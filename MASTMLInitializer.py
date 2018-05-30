@@ -20,8 +20,6 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from configobj import ConfigObj, ConfigObjError
 import distutils.util as du
 
-import Classifier
-print("The class loaded! Yes. Mmm. Yes")
 class ConfigFileError(Exception):
     """ Raised when conf file is incorrect """
     pass
@@ -513,8 +511,7 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
 
     def _check_target_feature(self, configdict):
         target_feature_name = configdict['General Setup']['target_feature']
-        if ('regression'  not in target_feature_name and
-           'classification' not in target_feature_name):
+        if 'regression'  not in target_feature_name and 'classification' not in target_feature_name:
             logging.info('Error: You must include the designation "regression" or "classification" in your target feature name in your input file and data file. For example: "my_target_feature_regression"')
             self.errors_present = True
         return configdict
@@ -548,11 +545,8 @@ class ModelTestConstructor(object):
         self.configdict = configdict
 
     def get_machinelearning_model(self, model_type, y_feature):
-        print("scooby dooby doo, look at foo", model_type, y_feature)
         if 'classification' in y_feature:
-            logging.info('Error: Currently, MASTML only supports regression models. Classification models and metrics are under development')
-            #raise NotImplementedError('Error: Currently, MASTML only supports regression models. Classification models and metrics are under development')
-            print('this is some untested water you"re treading here')
+            logging.info('Warning: MAST-ML classifiers are still untested')
             if 'classifier' in model_type:
                 logging.info('got y_feature %s' % y_feature)
                 logging.info('model type is %s' % model_type)
@@ -714,8 +708,6 @@ class ModelTestConstructor(object):
             model_dict = self.configdict['Model Parameters']['custom_model']
             package_name = model_dict.pop('package_name') #return and remove
             class_name = model_dict.pop('class_name') #return and remove
-            print('importlib???')
-            raise Exception('bad practive???')
             custom_module = importlib.import_module(package_name)
             module_class_def = getattr(custom_module, class_name) 
             model = module_class_def(**model_dict) #pass all the rest as kwargs
@@ -733,7 +725,6 @@ class ModelTestConstructor(object):
         mod_name = test_type.split("_")[0] #ex. KFoldCV_5fold goes to KFoldCV
         test_module = importlib.import_module('%s' % (mod_name))
         test_class_def = getattr(test_module, mod_name)
-        print("test_module:", test_module, "mod_name:", mod_name)
         logging.debug("Parameters passed by keyword:")
         logging.debug(kwargs)
         test_class = test_class_def(model=model,

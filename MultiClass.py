@@ -1,5 +1,4 @@
 __author__ = 'Luke Miles, Max Williams, Tam Mayeshiba'
-import pdb
 __maintainer__ = 'Ryan Jacobs'
 __version__ = '1.0'
 __email__ = 'rjacobs3@wisc.edu'
@@ -34,7 +33,8 @@ def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix'
     """
 
     plt.title("old stuff please ignore")
-    plt.show()
+    #plt.show();
+    plt.clf(); plt.cla(); plt.close()
     plt.close()
 
     if normalize:
@@ -235,8 +235,7 @@ class MultiClass():
         return mean_error
 
 
-    def get_confusion_matrix(self): # We're really doing it!)))))
-        #pdb.set_trace()
+    def get_confusion_matrix(self):
         return sklearn.metrics.confusion_matrix(self.testing_dataset.target_data, self.testing_dataset.target_prediction)
 
     def get_mean_absolute_error(self):
@@ -343,7 +342,7 @@ class MultiClass():
         self.confusion_matrix = self.get_confusion_matrix()
         #myph = PlotHelper()
         print("self.confusion_matrix", self.confusion_matrix)
-        plot_confusion_matrix(self.confusion_matrix, [0, 1, 2], savepath=self.save_path)
+        plot_confusion_matrix(self.confusion_matrix, ['foo', 'bar', 'rosco'], savepath=self.save_path)
     
     def plot_results(self, addl_plot_kwargs=None):
         self.readme_list.append("----- Plotting -----\n")
