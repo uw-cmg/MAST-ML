@@ -12,6 +12,7 @@
 * Write classification routines
 * Improve rst and docstring documentation
 * Speed up the grid search hyperparameter thing
+* Fix the folder/file/cwd problem. (Everything should be in one subdir per run.)
 
 ## Random Ideas
 
