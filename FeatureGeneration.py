@@ -111,7 +111,7 @@ class MagpieFeatureGeneration(object):
             # Merge magpie feature dataframe with originally supplied dataframe
             dataframe = DataframeUtilities().merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_magpie)
 
-        if save_to_csv == bool(True):
+        if save_to_csv:
             # Get y_feature in this dataframe, attach it to save path
             for column in dataframe.columns.values:
                 if column in self.configdict['General Setup']['target_feature']:
@@ -293,7 +293,7 @@ class MaterialsProjectFeatureGeneration(object):
         # Merge magpie feature dataframe with originally supplied dataframe
         dataframe = DataframeUtilities().merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_mp)
 
-        if save_to_csv == bool(True):
+        if save_to_csv:
             # Get y_feature in this dataframe, attach it to save path
             for column in dataframe.columns.values:
                 if column in self.configdict['General Setup']['target_feature']:
@@ -404,7 +404,7 @@ class CitrineFeatureGeneration(object):
             # Merge magpie feature dataframe with originally supplied dataframe
             dataframe = DataframeUtilities().merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_citrine)
 
-        if save_to_csv == bool(True):
+        if save_to_csv:
             # Get y_feature in this dataframe, attach it to save path
             for column in dataframe.columns.values:
                 if column in self.configdict['General Setup']['target_feature']:

@@ -204,7 +204,7 @@ class FeatureNormalization(object):
         self.configdict = configdict
 
     def normalize_features(self, x_features, y_feature, normalize_x_features, normalize_y_feature, feature_normalization_type, feature_scale_min = 0, feature_scale_max = 1, to_csv=True):
-        if normalize_x_features == bool(True) and normalize_y_feature == bool(False):
+        if normalize_x_features and not normalize_y_feature:
             if feature_normalization_type == 'standardize':
                 scaler = StandardScaler().fit(X=self.dataframe[x_features])
             elif feature_normalization_type == 'normalize':
@@ -214,7 +214,7 @@ class FeatureNormalization(object):
                 raise KeyError('invalid key: ' + feature_normalization_type)
             array_normalized = scaler.fit_transform(X=self.dataframe[x_features])
             array_normalized = DataframeUtilities().concatenate_arrays(X_array=array_normalized, y_array=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
-        elif normalize_x_features == bool(False) and normalize_y_feature == bool(True):
+        elif not normalize_x_features and normalize_y_feature:
             if feature_normalization_type == 'standardize':
                 scaler = StandardScaler().fit(X=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
             elif feature_normalization_type == 'normalize':
@@ -224,7 +224,7 @@ class FeatureNormalization(object):
                 raise KeyError('invalid key: ' + feature_normalization_type)
             array_normalized = scaler.fit_transform(X=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
             array_normalized = DataframeUtilities().concatenate_arrays(X_array=np.asarray(self.dataframe[x_features]), y_array=array_normalized.reshape([-1, 1]))
-        elif normalize_x_features == bool(True) and normalize_y_feature == bool(True):
+        elif normalize_x_features and normalize_y_feature:
             if feature_normalization_type == 'standardize':
                 scaler_x = StandardScaler().fit(X=self.dataframe[x_features])
                 scaler_y = StandardScaler().fit(X=np.asarray(self.dataframe[y_feature]).reshape([-1, 1]))
@@ -252,7 +252,7 @@ class FeatureNormalization(object):
                     filetag = column
             dataframe_normalized.to_csv(self.configdict['General Setup']['save_path']+"/"+'input_data_normalized'+'_'+str(filetag)+'.csv', index=False)
 
-        if not (normalize_x_features == bool(True) and normalize_y_feature == bool(True)):
+        if not (normalize_x_features and normalize_y_feature):
             return dataframe_normalized, scaler
         else:
             return dataframe_normalized, (scaler_x, scaler_y)
