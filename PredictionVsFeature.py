@@ -187,24 +187,23 @@ class PredictionVsFeature(SingleFit):
         if len(series_list) == 0:
             logging.info("No series for plot.")
             return
-        addl_kwargs=dict()
-        addl_kwargs['guideline'] = 0
-        addl_kwargs['save_path'] = os.path.join(self.save_path, plabel)
-        addl_kwargs['xlabel'] = self.feature_plot_xlabel
-        addl_kwargs['ylabel'] = self.feature_plot_ylabel
-        addl_kwargs['markers'] = self.markers
-        addl_kwargs['outlines'] = self.outlines
-        addl_kwargs['linestyles'] = self.linestyles
-        addl_kwargs['legendloc'] = self.legendloc
-        addl_kwargs['sizes'] = self.sizes
-        faces = list()
-        for fidx in range(0, len(self.markers)):
-            faces.append("None")
-        addl_kwargs['faces'] = faces
-        addl_kwargs['group_dict'] = pdict
-        addl_kwargs['plotlabel'] = plabel
-        addl_kwargs['outlying_groups'] = series_list
-        addl_kwargs['notelist'] = list(group_notelist)
+        faces = ["None"] * len(self.markers)
+        addl_kwargs = {
+            'guideline': 0,
+            'save_path': os.path.join(self.save_path, plabel),
+            'xlabel': self.feature_plot_xlabel,
+            'ylabel': self.feature_plot_ylabel,
+            'markers': self.markers,
+            'outlines': self.outlines,
+            'linestyles': self.linestyles,
+            'legendloc': self.legendloc,
+            'sizes': self.sizes,
+            'faces': faces,
+            'group_dict': pdict,
+            'plotlabel': plabel,
+            'outlying_groups': series_list,
+            'notelist': list(group_notelist),
+        }
         myph = PlotHelper(**addl_kwargs)
         myph.plot_group_splits_with_outliers()
 

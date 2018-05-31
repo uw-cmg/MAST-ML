@@ -190,6 +190,10 @@ class MultiClass():
         self.plot_residuals_histogram()
 
     def get_trained_model(self):
+        print('self.training_dataset.input_data: ', self.training_dataset.input_data)
+        print('self.training_dataset.target_data: ', self.training_dataset.target_data)
+        import pdb
+        pdb.set_trace()
         trained_model = self.model.fit(self.training_dataset.input_data, self.training_dataset.target_data)
         self.trained_model = trained_model
     
@@ -340,11 +344,13 @@ class MultiClass():
             self.readme_list.append("No target data.\n")
             self.readme_list.append("No plot comparing predicted vs. measured data was made.\n")
             return
-        plot_kwargs=dict()
-        plot_kwargs['xlabel'] = self.xlabel
-        plot_kwargs['ylabel'] = self.ylabel
-        plot_kwargs['plotlabel'] = "single_fit"
-        plot_kwargs['guideline'] = 1
+        plot_kwargs = {
+            'xlabel': self.xlabel,
+            'ylabel': self.ylabel,
+            'plotlabel': "single_fit",
+            'guideline': 1
+        }
+
         notelist=list()
         notelist.append("RMSE: %3.3f" % self.statistics['rmse'])
         notelist.append("R-squared: %3.3f" % self.statistics['rsquared'])
