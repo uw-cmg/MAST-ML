@@ -63,6 +63,7 @@ def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix'
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
     plt.savefig(savepath + "/" + "confusion_matrix.png")
+    plt.clf(); plt.cla(); plt.close()
 
 
 def timeit(method):

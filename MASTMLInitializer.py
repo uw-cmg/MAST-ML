@@ -150,6 +150,7 @@ class ConfigFileConstructor(ConfigFileParser):
         }
 
         self.configtemplate['Models and Tests to Run'] = {
+            # MARK place to add new models
             'models': [
                 'linear_model_regressor',
                 'linear_model_lasso_regressor',
@@ -164,6 +165,8 @@ class ConfigFileConstructor(ConfigFileParser):
                 'nn_model_regressor',
                 'gaussianprocess_model_regressor',
                 'k_nearest_neighbors_classifier',
+                'logistic_regression_model_classifier',
+                'support_vector_machine_model_classifier'
             ],
             'test_cases': [
                 'MultiClass',
@@ -224,6 +227,7 @@ class ConfigFileConstructor(ConfigFileParser):
         for model in models:
             self.configtemplate['Model Parameters'][model] = dict()
         for key, param in self.configtemplate['Model Parameters'].items():
+            # MARK place to add new models
             if key in ['linear_model_regressor', 'linear_model_lasso_regressor']:
                 param['fit_intercept'] = 'bool'
             if key == 'linear_model_lasso_regressor':
@@ -282,8 +286,15 @@ class ConfigFileConstructor(ConfigFileParser):
                 param['optimizer'] = ['fmin_l_bfgs_b']
                 param['n_restarts_optimizer'] = 'integer'
                 param['normalize_y'] = 'bool'
+            # TODO didn't these get typecast in another section in this same file?
             if key == 'k_nearest_neighbors_classifier':
                 param['foo'] = 'integer'
+            if key == 'support_vector_machine_model_classifier':
+                param['error_penalty'] = 'float'
+                param['kernel'] = 'string'
+                param['degree'] = 'integer'
+                param['gamma'] = 'float'
+                param['coef0'] = 'float'
 
         return self.configtemplate
 
@@ -545,19 +556,23 @@ class ModelTestConstructor(object):
         self.configdict = configdict
 
     def get_machinelearning_model(self, model_type, y_feature):
+        # TODO should we really require this of our users? What if they just downloaded
+        # some data that doesn't have this string in the column name?
         if 'classification' in y_feature:
-            logging.info('Warning: MAST-ML classifiers are still untested')
+            logging.warn('MAST-ML classifiers are still untested')
             if 'classifier' in model_type:
                 logging.info('got y_feature %s' % y_feature)
                 logging.info('model type is %s' % model_type)
                 logging.info('doing classification on %s' % y_feature)
 
+                # MARK place to add new models
                 if model_type == 'k_nearest_neighbors_classifier':
                     model = sklearn.neighbors.KNeighborsClassifier()
                     return model
 
                 if model_type == 'support_vector_machine_model_classifier':
                     d = self.configdict['Model Parameters']['support_vector_machine_model_classifier']
+                    # TODO these are type checking twice? Don't we do that when parsing?
                     return SVC(C=float(d['error_penalty']),
                                kernel=str(d['kernel']),
                                degree=int(d['degree']),
