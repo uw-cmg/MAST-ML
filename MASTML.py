@@ -608,7 +608,8 @@ class MASTMLDriver(object):
         linkloc  = ""
         linktext = ""
         linkline = ""
-        test_short = test_folder.split("_")[0]
+        # Important! We grab the first part of the test name before the underscore:
+        test_short = test_folder.split("_")[0] 
         if test_short in self.favorites_dict.keys():
             flist = self.favorites_dict[test_short]
             for fval in flist:

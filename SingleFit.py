@@ -2,21 +2,21 @@ __author__ = 'Tam Mayeshiba'
 __maintainer__ = 'Ryan Jacobs'
 __version__ = '1.0'
 __email__ = 'rjacobs3@wisc.edu'
-__date__ = 'October 14th, 2017'
+__date__ = 'May 31, 2018'
 
-import numpy as np
-from sklearn.metrics import mean_squared_error
-from sklearn.metrics import mean_absolute_error
-from sklearn.metrics import r2_score
-from plot_data.PlotHelper import PlotHelper
-from DataOperations import DataframeUtilities
-import os
 import sys
 import time
 import logging
 import copy
+
+import numpy as np
+from DataOperations import DataframeUtilities
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from sklearn.externals import joblib
 from sklearn.linear_model import LinearRegression
+
+from plot_data.PlotHelper import PlotHelper
+
 logger = logging.getLogger()
 
 def timeit(method):
