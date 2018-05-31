@@ -166,7 +166,10 @@ class ConfigFileConstructor(ConfigFileParser):
                 'gaussianprocess_model_regressor',
                 'k_nearest_neighbors_classifier',
                 'logistic_regression_model_classifier',
-                'support_vector_machine_model_classifier'
+                'support_vector_machine_model_classifier',
+                'decision_tree_model_classifier',
+                'random_forest_model_classifier',
+                'extra_trees_model_classifier',
             ],
             'test_cases': [
                 'MultiClass',
@@ -295,6 +298,26 @@ class ConfigFileConstructor(ConfigFileParser):
                 param['degree'] = 'integer'
                 param['gamma'] = 'float'
                 param['coef0'] = 'float'
+            if key == 'decision_tree_model_classifier':
+                param['criterion'] = 'string'
+                param['splitter'] = 'string'
+                param['max_depth'] = 'integer'
+                param['min_samples_leaf'] = 'integer'
+                param['min_samples_split'] = 'integer'
+            if key == 'random_forest_model_classifier':
+                param['criterion'] = 'string'
+                param['n_estimators'] = 'integer'
+                param['max_depth'] = 'integer'
+                param['min_samples_split'] = 'integer'
+                param['min_samples_leaf'] = 'integer'
+                param['max_leaf_nodes'] = 'integer'
+            if key == 'extra_trees_model_classifier':
+                param['criterion'] = 'string'
+                param['n_estimators'] = 'integer'
+                param['max_depth'] = 'integer'
+                param['min_samples_split'] = 'integer'
+                param['min_samples_leaf'] = 'integer'
+                param['max_leaf_nodes'] = 'integer'
 
         return self.configtemplate
 
