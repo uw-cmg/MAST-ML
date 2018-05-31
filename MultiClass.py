@@ -4,6 +4,8 @@ __version__ = '1.0'
 __email__ = 'rjacobs3@wisc.edu'
 __date__ = 'October 14th, 2017'
 
+
+import pdb
 import numpy as np
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import mean_absolute_error
@@ -32,11 +34,7 @@ def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix'
     Normalization can be applied by setting `normalize=True`.
     """
 
-    plt.title("old stuff please ignore")
-    #plt.show();
-    plt.clf(); plt.cla(); plt.close()
-    plt.close()
-
+    plt.figure(figsize=(8,6))
     if normalize:
         cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
         print("Normalized confusion matrix")
@@ -63,7 +61,6 @@ def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix'
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
     plt.savefig(savepath + "/" + "confusion_matrix.png")
-    plt.clf(); plt.cla(); plt.close()
 
 
 def timeit(method):
