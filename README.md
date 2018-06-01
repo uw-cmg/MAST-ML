@@ -184,6 +184,11 @@ all groups on one plot and just colors them differently.
 
 _Original code 4/12/17 pulled from the DBTT Skunkworks project._
 
+## Design Changes since start
+
+* Checks if all models are all \_regression or \_classification and thows an error if you try to mix
+  them. Also, `config_dict['General Setup']['is_classification']` is set programatically based on models.
+
 ## Project standards kinda:
 
 * Wrap lines to 100 chars

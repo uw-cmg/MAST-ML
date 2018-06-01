@@ -246,11 +246,15 @@ class MASTMLDriver(object):
             else:
                 generate_features = False
 
+            # NOTE this is how default args work in MASTML (but you have to look in the other file
+            # for what the args are and their types
             if 'Feature Normalization' in self.configdict.keys():
                 if self.configdict['Feature Normalization']['normalize_x_features'] == True:
                     normalize_x_features = True
                 else:
                     normalize_x_features = False
+
+                # TODO: the following 4 lines: normalize_y_feature = self.configdict['Feature Normalization']['normalize_y_feature'] 
                 if self.configdict['Feature Normalization']['normalize_y_feature'] == True:
                     normalize_y_feature = True
                 else:

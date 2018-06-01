@@ -192,8 +192,6 @@ class MultiClass():
     def get_trained_model(self):
         print('self.training_dataset.input_data: ', self.training_dataset.input_data)
         print('self.training_dataset.target_data: ', self.training_dataset.target_data)
-        import pdb
-        pdb.set_trace()
         trained_model = self.model.fit(self.training_dataset.input_data, self.training_dataset.target_data)
         self.trained_model = trained_model
     
@@ -334,7 +332,7 @@ class MultiClass():
     def my_plot_confusion_matrix(self):
         self.confusion_matrix = self.get_confusion_matrix()
         #myph = PlotHelper()
-        print("self.confusion_matrix", self.confusion_matrix)
+        #print("self.confusion_matrix", self.confusion_matrix)
         plot_confusion_matrix(self.confusion_matrix, ['foo', 'bar', 'rosco'], savepath=self.save_path)
     
     def plot_results(self, addl_plot_kwargs=None):
