@@ -564,6 +564,7 @@ class ConfigFileValidator(ConfigFileConstructor, ConfigFileParser):
 
         #TODO is adding new fields to configdict a bad idea?
         configdict['General Setup']['is_classification'] = classifiers_present
+        logging.info(" configdict['General Setup']['is_classification'] = " + str(classifiers_present))
         
 class ModelTestConstructor(object):
     """
@@ -772,9 +773,11 @@ class ModelTestConstructor(object):
         test_class_def = getattr(test_module, mod_name)
         logging.debug("Parameters passed by keyword:")
         logging.debug(kwargs)
-        test_class = test_class_def(model=model,
-                            save_path = save_path,
-                            **kwargs)
+        test_class = test_class_def(
+            model=model,
+            save_path=save_path,
+            is_classification=self.configdict['General Setup']['is_classification'],
+            **kwargs)
         if run_test == True:
             test_class.run()
         return test_class

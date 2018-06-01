@@ -4,21 +4,25 @@ __version__ = '1.0'
 __email__ = 'rjacobs3@wisc.edu'
 __date__ = 'May 31, 2018'
 
+import copy
+import itertools
+import logging
+import os
+import pdb
+import sklearn
 import sys
 import time
-import logging
-import copy
 
 import numpy as np
-from DataOperations import DataframeUtilities
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+from matplotlib import pyplot as plt
 from sklearn.externals import joblib
 from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
+from DataOperations import DataframeUtilities
 from plot_data.PlotHelper import PlotHelper
 
 logger = logging.getLogger()
-
 def timeit(method):
     """Timing function for logger.
         Taken from http://stackoverflow.com/questions/38314993/standard-logging-for-every-method-in-a-class.
@@ -64,8 +68,9 @@ class SingleFit():
                     input_features, target_feature,
                     model
     """
-    def __init__(self, training_dataset=None, testing_dataset=None, model=None, save_path=None, xlabel="Measured",
-        ylabel="Predicted", plot_filter_out=None, *args, **kwargs):
+    def __init__(self, training_dataset=None, testing_dataset=None, model=None,
+            is_classification=False, save_path=None, xlabel="Measured",
+            ylabel="Predicted", plot_filter_out=None, *args, **kwargs):
         """Initialize class.
             Attributes that can be set through keywords:
                 self.training_dataset
@@ -102,6 +107,10 @@ class SingleFit():
         if model is None:
             raise ValueError("No model.")
         self.model=model
+
+        # is_classification
+        self.is_classification = is_classification
+
         # paths
         if save_path is None:
             save_path = os.getcwd()
@@ -150,8 +159,13 @@ class SingleFit():
 
     @timeit
     def plot(self):
-        self.plot_results()
-        self.plot_residuals_histogram()
+        if self.is_classification:
+            logger.info('Performing classification plotting')
+            self.plot_confusion_matrix()
+        else: # assume it's a regressor
+            logger.info('Performing regression plotting')
+            self.plot_results()
+            self.plot_residuals_histogram()
 
     def get_trained_model(self):
         trained_model = self.model.fit(self.training_dataset.input_data, self.training_dataset.target_data)
@@ -177,6 +191,9 @@ class SingleFit():
         else:
             target_prediction = self.trained_model.predict(self.testing_dataset.input_data)
         self.testing_dataset.add_prediction(target_prediction)
+
+    def get_confusion_matrix(self):
+        return sklearn.metrics.confusion_matrix(self.testing_dataset.target_data, self.testing_dataset.target_prediction)
 
     def get_rmse(self):
         rmse = np.sqrt(mean_squared_error(self.testing_dataset.target_data, self.testing_dataset.target_prediction))        
@@ -341,6 +358,45 @@ class SingleFit():
             xlabel='Residuals', ylabel='Number of occurrences', save_path=self.save_path,
             file_name='histogram_residuals.png')
 
+
+    def plot_confusion_matrix(self):
+
+        # TODO this belongs in plot_helper
+        def helper(cm, classes, normalize=False, title='Confusion matrix', cmap=plt.cm.Blues, savepath='.'):
+            """
+            From http://scikit-learn.org/stable/_downloads/plot_confusion_matrix.py
+            This function prints and plots the confusion matrix.
+            Normalization can be applied by setting `normalize=True`.
+            """
+
+            plt.figure(figsize=(8,6))
+            plt.imshow(cm, interpolation='nearest', cmap=cmap)
+            plt.title(title)
+            tick_marks = np.arange(len(classes))
+            plt.xticks(tick_marks, classes, rotation=45)
+            plt.yticks(tick_marks, classes)
+
+            fmt = '.2f' if normalize else 'd'
+            thresh = cm.max() / 2.
+            for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+                plt.text(j, i, format(cm[i, j], fmt),
+                         horizontalalignment="center",
+                         color="white" if cm[i, j] > thresh else "black")
+
+            plt.tight_layout()
+            plt.ylabel('True label')
+            plt.xlabel('Predicted label')
+            plt.savefig(savepath + "/" + "confusion_matrix.png")
+
+        self.confusion_matrix = self.get_confusion_matrix()
+        #print("self.confusion_matrix", self.confusion_matrix)
+
+        # the sklearn confusion_matrix function orders the rows and columns in this way:
+        labels = sorted(list(set(self.testing_dataset.target_data)))
+
+        helper(self.confusion_matrix, labels, savepath=self.save_path)
+
+    
     @timeit
     def print_readme(self):
         with open(os.path.join(self.save_path,"README"), 'w') as rfile:
