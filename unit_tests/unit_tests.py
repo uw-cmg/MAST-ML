@@ -14,7 +14,7 @@ from ConfigFileValidator import ConfigFileValidator
 
 # pipe program stdout into /dev/null so we can read 
 # unittest prinout more easily
-sys.stdout = open(os.devnull, 'w')
+#sys.stdout = open(os.devnull, 'w')
 
 class SmokeTest(unittest.TestCase):
 

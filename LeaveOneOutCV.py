@@ -13,7 +13,7 @@ from SingleFit import timeit
 
 class LeaveOneOutCV(KFoldCV):
     """Class to conduct leave-one-out cross-validation analysis
-   
+
     Args:
         training_dataset (DataHandler object): Training dataset handler
         testing_dataset (DataHandler object): Testing dataset handler
@@ -22,7 +22,7 @@ class LeaveOneOutCV(KFoldCV):
         xlabel (str): Label for full-fit x-axis (default "Measured")
         ylabel (str): Label for full-fit y-axis (default "Predicted")
         mark_outlying_points (int): Number of outlying points to mark in best and worst tests, e.g. 3
- 
+
     Returns:
         Analysis in the save_path folder
         Plots results in a predicted vs. measured square plot.
@@ -31,7 +31,7 @@ class LeaveOneOutCV(KFoldCV):
         ValueError: if testing target data is None; CV must have testing target data
 
     """
-    def __init__(self, 
+    def __init__(self,
         training_dataset=None,
         testing_dataset=None,
         model=None,
@@ -48,10 +48,10 @@ class LeaveOneOutCV(KFoldCV):
         """
         if not(training_dataset == testing_dataset):
             raise ValueError("Only testing_dataset will be used. Use the same values for training_dataset and testing_dataset")
-        KFoldCV.__init__(self, 
+        KFoldCV.__init__(self,
             training_dataset=training_dataset, #only testing_dataset is used
             testing_dataset=testing_dataset,
-            model=model, 
+            model=model,
             save_path = save_path,
             xlabel=xlabel,
             ylabel=ylabel,
@@ -63,7 +63,7 @@ class LeaveOneOutCV(KFoldCV):
         self.all_pred_array=None
 
     def set_up_cv(self):
-        self.num_folds = len(self.testing_dataset.target_data) 
+        self.num_folds = len(self.testing_dataset.target_data)
         KFoldCV.set_up_cv(self)
         self.readme_list.append("Equivalent to %i leave-one-out CV tests\n" % self.num_folds)
 
@@ -80,13 +80,13 @@ class LeaveOneOutCV(KFoldCV):
         statlist=['avg_rmse','std_rmse','avg_mean_error','std_mean_error']
         for key in statlist:
             self.readme_list.append("%s: %3.3f\n" % (key,self.cvtest_dict[0][key]))
-    
+
     def print_output_csv(self, label="", cvtest_entry=None):
         """
         """
         olabel = "%s_test_data.csv" % label
         ocsvname = os.path.join(self.save_path, olabel)
-        self.testing_dataset.add_feature("LOO Predictions", 
+        self.testing_dataset.add_feature("LOO Predictions",
                     cvtest_entry['prediction_array'])
         cols = self.testing_dataset.print_data(ocsvname, ["LOO Predictions"])
         self.readme_list.append("%s file created with columns:\n" % olabel)
@@ -104,12 +104,12 @@ class LeaveOneOutCV(KFoldCV):
         notelist.append("    {:.2f} $\pm$ {:.2f}".format(self.cvtest_dict[0]['avg_mean_error'], self.cvtest_dict[0]['std_mean_error']))
         self.plot_results(notelist=list(notelist))
         self.plot_residuals_histogram()
-    
+
     def plot_results(self, notelist=list()):
         kwargs2 = dict()
         kwargs2['xlabel'] = self.xlabel
         kwargs2['ylabel'] = self.ylabel
-        kwargs2['labellist'] = list(["loo_prediction"]) 
+        kwargs2['labellist'] = list(["loo_prediction"])
         kwargs2['xdatalist'] = list([self.testing_dataset.target_data])
         kwargs2['ydatalist'] = list(
                 [self.cvtest_dict[0]['prediction_array']]) #only one cvtest, with number of folds equal to number of data points

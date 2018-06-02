@@ -16,7 +16,7 @@ from SingleFit import timeit
 
 class LeaveOutPercentCV(SingleFit):
     """Class to conduct leave out x% cross-validation analysis
-   
+
     Args:
         training_dataset (DataHandler object): Training dataset handler
         testing_dataset (DataHandler object): Testing dataset handler
@@ -28,10 +28,10 @@ class LeaveOutPercentCV(SingleFit):
 
         percent_leave_out (int): Percent to leave out
         num_cvtests (int): Number of CV tests
-        fix_random_for_testing (int): 
+        fix_random_for_testing (int):
                 1 - fix random shuffle for testing purposes
                 0 (default) Use random shuffle
- 
+
     Returns:
         Analysis in the save_path folder
         Plots results in a predicted vs. measured square plot.
@@ -59,10 +59,10 @@ class LeaveOutPercentCV(SingleFit):
         """
         if not(training_dataset == testing_dataset):
             raise ValueError("Only testing_dataset will be used. Use the same values for training_dataset and testing_dataset")
-        SingleFit.__init__(self, 
+        SingleFit.__init__(self,
             training_dataset=training_dataset, #only testing_dataset is used
             testing_dataset=testing_dataset,
-            model=model, 
+            model=model,
             save_path = save_path,
             xlabel=xlabel,
             ylabel=ylabel)
@@ -76,7 +76,7 @@ class LeaveOutPercentCV(SingleFit):
         self.cvtest_dict=dict()
         self.best_test_index = None
         self.worst_test_index = None
-        return 
+        return
 
     @timeit
     def set_up(self):
@@ -118,8 +118,8 @@ class LeaveOutPercentCV(SingleFit):
         self.readme_list.append("%i CV tests,\n" % self.num_cvtests)
         self.readme_list.append("leaving out %i percent\n" % self.percent_leave_out)
         test_fraction = self.percent_leave_out / 100.0
-        self.cvmodel = ShuffleSplit(n_splits = 1, 
-                            test_size = test_fraction, 
+        self.cvmodel = ShuffleSplit(n_splits = 1,
+                            test_size = test_fraction,
                             random_state = None)
         for cvtest in range(0, self.num_cvtests):
             self.cvtest_dict[cvtest] = dict()
@@ -128,7 +128,7 @@ class LeaveOutPercentCV(SingleFit):
                 fdict['train_index'] = train
                 fdict['test_index'] = test
                 self.cvtest_dict[cvtest]= dict(fdict)
-    
+
     def cv_fit_and_predict(self):
         for cvtest in self.cvtest_dict.keys():
             prediction_array = np.zeros(len(self.testing_dataset.target_data))
@@ -218,9 +218,9 @@ class LeaveOutPercentCV(SingleFit):
         """
         olabel = "%s_test_data.csv" % label
         ocsvname = os.path.join(self.save_path, olabel)
-        self.testing_dataset.add_feature("Best Prediction", 
+        self.testing_dataset.add_feature("Best Prediction",
                     self.cvtest_dict[self.best_test_index]['prediction_array'])
-        self.testing_dataset.add_feature("Worst Prediction", 
+        self.testing_dataset.add_feature("Worst Prediction",
                     self.cvtest_dict[self.worst_test_index]['prediction_array'])
         cols = self.testing_dataset.print_data(ocsvname, ["Best Prediction", "Worst Prediction"])
         self.readme_list.append("%s file created with columns:\n" % olabel)
@@ -232,7 +232,7 @@ class LeaveOutPercentCV(SingleFit):
         kwargs2['xlabel'] = self.xlabel
         kwargs2['ylabel'] = self.ylabel
         kwargs2['labellist'] = ["Best test","Worst test"]
-        kwargs2['xdatalist'] = list([self.testing_dataset.target_data, 
+        kwargs2['xdatalist'] = list([self.testing_dataset.target_data,
                             self.testing_dataset.target_data])
         kwargs2['ydatalist'] = list(
                 [self.cvtest_dict[self.best_test_index]['prediction_array'],

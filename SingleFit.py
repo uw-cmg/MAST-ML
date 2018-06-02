@@ -131,7 +131,7 @@ class SingleFit():
         #
         logger.info("-------- %s --------" % self.analysis_name)
         logger.info("Starting analysis at %s" % time.asctime())
-   
+
     @timeit
     def run(self):
         self.set_up()
@@ -149,7 +149,7 @@ class SingleFit():
         self.get_trained_model()
         self.print_model()
         self.save_model()
-   
+
     @timeit
     def predict(self):
         self.get_prediction()
@@ -170,7 +170,7 @@ class SingleFit():
     def get_trained_model(self):
         trained_model = self.model.fit(self.training_dataset.input_data, self.training_dataset.target_data)
         self.trained_model = trained_model
-    
+
     def print_model(self):
         self.readme_list.append("----- Model ----------------\n")
         self.readme_list.append("Class: %s\n" % self.model.__class__)
@@ -182,7 +182,7 @@ class SingleFit():
     def save_model(self):
         pname = os.path.join(self.save_path, "model.pickle")
         with open(pname,'wb') as pfile:
-            joblib.dump(self.model, pfile) 
+            joblib.dump(self.model, pfile)
 
     def get_prediction(self):
         if self.trained_model.__class__.__name__=="GaussianProcessRegressor":
@@ -196,9 +196,9 @@ class SingleFit():
         return sklearn.metrics.confusion_matrix(self.testing_dataset.target_data, self.testing_dataset.target_prediction)
 
     def get_rmse(self):
-        rmse = np.sqrt(mean_squared_error(self.testing_dataset.target_data, self.testing_dataset.target_prediction))        
+        rmse = np.sqrt(mean_squared_error(self.testing_dataset.target_data, self.testing_dataset.target_prediction))
         return rmse
-    
+
     def get_mean_error(self):
         pred_minus_true =self.testing_dataset.target_prediction-self.testing_dataset.target_data
         mean_error = np.mean(pred_minus_true)
@@ -292,7 +292,7 @@ class SingleFit():
                     value = rawvalue
                 pf_tuple_list.append((feature, symbol, value))
         return pf_tuple_list
-        
+
     def plot_filter_update_statistics(self):
         if self.plot_filter_out is None:
             return
@@ -300,9 +300,9 @@ class SingleFit():
             return
         self.testing_dataset.add_filters(self.plot_filter_out)
         self.print_output_csv("output_data_filtered.csv")
-        rmse_pfo = np.sqrt(mean_squared_error(self.testing_dataset.target_prediction, self.testing_dataset.target_data)) 
+        rmse_pfo = np.sqrt(mean_squared_error(self.testing_dataset.target_prediction, self.testing_dataset.target_data))
         self.statistics['filtered_rmse'] = rmse_pfo
-    
+
     def plot_results(self, addl_plot_kwargs=None):
         self.readme_list.append("----- Plotting -----\n")
         if self.testing_dataset.target_data is None:
@@ -396,7 +396,7 @@ class SingleFit():
 
         helper(self.confusion_matrix, labels, savepath=self.save_path)
 
-    
+
     @timeit
     def print_readme(self):
         with open(os.path.join(self.save_path,"README"), 'w') as rfile:

@@ -1,4 +1,3 @@
-from copy import deepcopy
 from distutils.util import strtobool
 
 class ConfigFileValidator:
@@ -149,7 +148,7 @@ class ConfigFileValidator:
                                 self.configdict[section][subsection_key][param_name] = int(self.configdict[section][subsection_key][param_name])
                             if self.configtemplate[section][subsection_key_template][param_name] == 'float':
                                 self.configdict[section][subsection_key][param_name] = float(self.configdict[section][subsection_key][param_name])
-        
+
     def _check_config_heading_compatibility(self):
         """ Check that listed test_cases coincide with subsection names in Test_Parameters and
         Model_Parameters, and flag test cases that won't be run """

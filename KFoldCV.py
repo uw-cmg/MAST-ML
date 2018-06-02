@@ -14,7 +14,7 @@ from SingleFit import timeit
 
 class KFoldCV(LeaveOutPercentCV):
     """Class to conduct k-fold cross-validation analysis
-   
+
     Args:
         training_dataset (DataHandler object): Training dataset handler
         testing_dataset (DataHandler object): Testing dataset handler
@@ -29,7 +29,7 @@ class KFoldCV(LeaveOutPercentCV):
                 1 - fix random shuffle for testing purposes
                 0 (default) Use random shuffle.
         num_folds (int): Number of folds for KFold CV
- 
+
     Returns:
         Analysis in the save_path folder
         Plots results in a predicted vs. measured square plot.
@@ -38,7 +38,7 @@ class KFoldCV(LeaveOutPercentCV):
         ValueError: if testing target data is None; CV must have testing target data
 
     """
-    def __init__(self, 
+    def __init__(self,
         training_dataset=None,
         testing_dataset=None,
         model=None,
@@ -58,10 +58,10 @@ class KFoldCV(LeaveOutPercentCV):
         """
         if not(training_dataset == testing_dataset):
             raise ValueError("Only testing_dataset will be used. Use the same values for training_dataset and testing_dataset")
-        LeaveOutPercentCV.__init__(self, 
+        LeaveOutPercentCV.__init__(self,
             training_dataset=training_dataset, #only testing_dataset is used
             testing_dataset=testing_dataset,
-            model=model, 
+            model=model,
             save_path = save_path,
             xlabel=xlabel,
             ylabel=ylabel,
@@ -70,7 +70,7 @@ class KFoldCV(LeaveOutPercentCV):
             num_cvtests = num_cvtests,
             fix_random_for_testing = fix_random_for_testing)
         self.num_folds = int(num_folds)
-        return 
+        return
 
     @timeit
     def plot(self):
@@ -94,7 +94,7 @@ class KFoldCV(LeaveOutPercentCV):
         self.readme_list.append("----- CV setup -----\n")
         self.readme_list.append("%i CV tests,\n" % self.num_cvtests)
         self.readme_list.append("each with %i folds\n" % self.num_folds)
-        self.cvmodel = KFold(n_splits = self.num_folds, shuffle=True, 
+        self.cvmodel = KFold(n_splits = self.num_folds, shuffle=True,
                                 random_state = None)
         for cvtest in range(0, self.num_cvtests):
             self.cvtest_dict[cvtest] = dict()
@@ -106,7 +106,7 @@ class KFoldCV(LeaveOutPercentCV):
                 fdict['test_index'] = test
                 self.cvtest_dict[cvtest][foldidx] = dict(fdict)
                 foldidx = foldidx + 1
-    
+
     def cv_fit_and_predict(self):
         for cvtest in self.cvtest_dict.keys():
             fold_rmses = np.zeros(self.num_folds)
@@ -174,19 +174,19 @@ class KFoldCV(LeaveOutPercentCV):
 
         self.statistics['r2_score'] = rsquared
         self.statistics['r2_score_noint'] = rsquared_noint
-    
+
     def print_best_worst_output_csv(self, label=""):
         """
         """
         olabel = "%s_test_data.csv" % label
         ocsvname = os.path.join(self.save_path, olabel)
-        self.testing_dataset.add_feature("Best Prediction", 
+        self.testing_dataset.add_feature("Best Prediction",
                     self.cvtest_dict[self.best_test_index]['prediction_array'])
-        self.testing_dataset.add_feature("Folds for best", 
+        self.testing_dataset.add_feature("Folds for best",
                     self.cvtest_dict[self.best_test_index]['fold_array'])
-        self.testing_dataset.add_feature("Worst Prediction", 
+        self.testing_dataset.add_feature("Worst Prediction",
                     self.cvtest_dict[self.worst_test_index]['prediction_array'])
-        self.testing_dataset.add_feature("Folds for worst", 
+        self.testing_dataset.add_feature("Folds for worst",
                     self.cvtest_dict[self.worst_test_index]['fold_array'])
         addl_cols = list()
         addl_cols.append("Best Prediction")

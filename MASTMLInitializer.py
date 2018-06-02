@@ -442,7 +442,7 @@ class ModelTestConstructor(object):
                                kernel=d['kernel'],
                                kernel_params=None)
 
-        
+
         if model_type == 'decision_tree_model_regressor':
             return DecisionTreeRegressor(criterion=d['criterion'],
                                          splitter=d['splitter'],

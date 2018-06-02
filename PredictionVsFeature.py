@@ -46,7 +46,7 @@ class PredictionVsFeature(SingleFit):
         sizes="", *args, **kwargs):
         """
             Additional class attributes not in parent class:
-           
+
             Set by keyword:
             self.testing_datasets <list of data objects>: testing datasets
             self.feature_plot_xlabel <str>: x-axis label for feature plots
@@ -58,15 +58,15 @@ class PredictionVsFeature(SingleFit):
             self.data_labels <list of str>: list of data labels for plotting
             self.legendloc <str>: legend location (optional)
             self.sizes <list of str>: list of sizes for plotting
-            
+
             Set by code:
             self.sf_dict <dict of SingleFit objects>: dict of SingleFit objects,
                                     with keys as testing dataset names
         """
-        SingleFit.__init__(self, 
-            training_dataset=training_dataset, 
+        SingleFit.__init__(self,
+            training_dataset=training_dataset,
             testing_dataset=testing_dataset,
-            model=model, 
+            model=model,
             save_path = save_path,
             xlabel=xlabel,
             ylabel=ylabel,
@@ -86,7 +86,7 @@ class PredictionVsFeature(SingleFit):
         self.sizes = sizes
         #Sets in code
         self.sf_dict = dict()
-   
+
     @timeit
     def set_up(self):
         SingleFit.set_up(self)
@@ -105,10 +105,10 @@ class PredictionVsFeature(SingleFit):
             testset = self.data_labels[tidx]
             testdata = copy.deepcopy(self.testing_datasets[tidx])
             self.readme_list.append("  %s\n" % testset)
-            self.sf_dict[testset] = SingleFit( 
-                training_dataset = self.training_dataset, 
+            self.sf_dict[testset] = SingleFit(
+                training_dataset = self.training_dataset,
                 testing_dataset = testdata,
-                model = self.model, 
+                model = self.model,
                 save_path = os.path.join(self.save_path, str(testset)),
                 xlabel=self.xlabel,
                 ylabel=self.ylabel,

@@ -24,7 +24,7 @@ logger = logging.getLogger()
 
 class ParamGridSearch(SingleFit):
     """Class to perform parameter optimization by grid search. Only up to 4 parameters may be optimized at a time.
-   
+
     Args:
         training_dataset (DataHandler object): Training dataset handler
         testing_dataset (DataHandler object): Testing dataset handler
@@ -102,10 +102,10 @@ class ParamGridSearch(SingleFit):
         """
         if not(training_dataset == testing_dataset):
             raise ValueError("Only testing_dataset will be used. Use the same values for training_dataset and testing_dataset")
-        SingleFit.__init__(self, 
+        SingleFit.__init__(self,
             training_dataset=training_dataset, #only testing_dataset is used
             testing_dataset=testing_dataset,
-            model=model, 
+            model=model,
             save_path = save_path,
             xlabel=xlabel,
             ylabel=ylabel)
@@ -137,7 +137,7 @@ class ParamGridSearch(SingleFit):
         self.flat_results=None
         self.best_indivs=None
         self.best_params=None
-        return 
+        return
 
     @timeit
     def run(self):
@@ -168,7 +168,7 @@ class ParamGridSearch(SingleFit):
         logger.debug("opt dict: %s" % self.opt_dict)
         logger.debug("opt param list: %s" % self.opt_param_list)
         logger.debug("nonopt param list: %s" % self.nonopt_param_list)
-    
+
 
 
     @timeit
@@ -341,7 +341,7 @@ class ParamGridSearch(SingleFit):
         """
         for afm in indiv_params.keys():
             if afm == 'model': #model dealt with separately
-                continue 
+                continue
             afm_kwargs = dict(indiv_params[afm])
             (feature_name,feature_data)=cf_help.get_custom_feature_data(afm,
                         starting_dataframe = indiv_df,
@@ -389,7 +389,7 @@ class ParamGridSearch(SingleFit):
             new_dict = dict()
             for oldstr in old_dict.keys():
                 for addct in range(0, len(add_vals)):
-                    newstr = "%s_%i" % (oldstr, addct) 
+                    newstr = "%s_%i" % (oldstr, addct)
                     new_dict[newstr] = dict()
                     for oloc in old_dict[oldstr].keys():
                         if not oloc in new_dict[newstr].keys():
@@ -400,7 +400,7 @@ class ParamGridSearch(SingleFit):
                         new_dict[newstr][location]=dict()
                     new_dict[newstr][location][param_name] = add_vals[addct]
         return new_dict
-    
+
     def grow_param_dict_nonopt(self, old_dict, add_combined_name):
         """Add nonoptimized parameters (single value) to parameter
             dictionary.
@@ -454,7 +454,7 @@ class ParamGridSearch(SingleFit):
                 raise ValueError("Parameter type %s must be one of int, float, bool, or str. Exiting." % paramtype)
             rangetype = paramsplit[3].strip().lower()
             if not(rangetype in ['discrete','continuous','continuous-log']):
-                raise ValueError("Range type %s must be 'discrete' or 'continuous' or 'continuous-log'. Exiting." % rangetype) 
+                raise ValueError("Range type %s must be 'discrete' or 'continuous' or 'continuous-log'. Exiting." % rangetype)
             if paramtype in ['bool', 'str']:
                 if not(rangetype in ['discrete']):
                     raise ValueError("Range type %s must be discrete for parameter type of %s" % (rangetype, paramtype))
@@ -516,7 +516,7 @@ class ParamGridSearch(SingleFit):
             if location in init_param and param in init_param and 'log' in init_param:
                 return True
         return False
-    
+
     def plot_3d_rmse_heatmap(self, cols):
         #adjust for log params if necessary
         xcol = cols[0]
@@ -527,19 +527,19 @@ class ParamGridSearch(SingleFit):
         if self.is_log_param(xcol):
             xdata_raw = np.array(self.flat_results[xcol].values,'float')
             xdata = np.log10(xdata_raw)
-            xlabel = "log10 %s" % xcol 
+            xlabel = "log10 %s" % xcol
         ydata = self.flat_results[ycol]
         ylabel = ycol
         if self.is_log_param(ycol):
             ydata_raw = np.array(self.flat_results[ycol].values,'float')
             ydata = np.log10(ydata_raw)
-            ylabel = "log10 %s" % ycol 
+            ylabel = "log10 %s" % ycol
         zdata = self.flat_results[zcol]
         zlabel = zcol
         if self.is_log_param(zcol):
             zdata_raw = np.array(self.flat_results[zcol].values,'float')
             zdata = np.log10(zdata_raw)
-            zlabel = "log10 %s" % zcol 
+            zlabel = "log10 %s" % zcol
         kwargs = dict()
         kwargs['xlabel'] = xlabel
         kwargs['ylabel'] = ylabel
@@ -566,13 +566,13 @@ class ParamGridSearch(SingleFit):
         if self.is_log_param(xcol):
             xdata_raw = np.array(self.flat_results[xcol].values,'float')
             xdata = np.log10(xdata_raw)
-            xlabel = "log10 %s" % xcol 
+            xlabel = "log10 %s" % xcol
         ydata = np.array(self.flat_results[ycol])
         ylabel = ycol
         if self.is_log_param(ycol):
             ydata_raw = np.array(self.flat_results[ycol].values,'float')
             ydata = np.log10(ydata_raw)
-            ylabel = "log10 %s" % ycol 
+            ylabel = "log10 %s" % ycol
         kwargs = dict()
         kwargs['xlabel'] = xlabel
         kwargs['ylabel'] = ylabel
@@ -598,7 +598,7 @@ class ParamGridSearch(SingleFit):
             import numpy as np
             xdata_raw = np.array(self.flat_results[col].values,'float')
             xdata = np.log10(xdata_raw)
-            xlabel = "log10 %s" % col 
+            xlabel = "log10 %s" % col
         kwargs = dict()
         kwargs['xlabel'] = xlabel
         kwargs['ylabel'] = 'RMSE'

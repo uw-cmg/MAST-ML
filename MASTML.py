@@ -208,7 +208,7 @@ class MASTMLDriver(object):
         logging.debug("Parameters passed by keyword:")
         logging.debug(self.csv_setup)
         test_class = test_class_def(**self.csv_setup)
-        test_class.run() 
+        test_class.run()
 
     def _parse_input_data(self, data_path=""):
         if not(os.path.isfile(data_path)):
@@ -257,7 +257,7 @@ class MASTMLDriver(object):
                 else:
                     normalize_x_features = False
 
-                # TODO: the following 4 lines: normalize_y_feature = self.configdict['Feature Normalization']['normalize_y_feature'] 
+                # TODO: the following 4 lines: normalize_y_feature = self.configdict['Feature Normalization']['normalize_y_feature']
                 if self.configdict['Feature Normalization']['normalize_y_feature'] == True:
                     normalize_y_feature = True
                 else:
@@ -614,7 +614,7 @@ class MASTMLDriver(object):
         linktext = ""
         linkline = ""
         # Important! We grab the first part of the test name before the underscore:
-        test_short = test_folder.split("_")[0] 
+        test_short = test_folder.split("_")[0]
         if test_short in self.favorites_dict.keys():
             flist = self.favorites_dict[test_short]
             for fval in flist:
@@ -632,7 +632,7 @@ class MASTMLDriver(object):
                     else:
                         txtline = '<EMBED SRC="%s" width=75%%><BR>\n' % (linklocrel)
                         linklist.append(txtline)
-                linklist.append("<BR>\n") 
+                linklist.append("<BR>\n")
         return linklist
 
     def _string_or_list_input_to_list(self, unknown_input_val):

@@ -795,7 +795,7 @@ class MiscFeatureSelectionOperations():
 
         if number_features_to_keep > len(ranked_features):
             raise IndexError("number_features_to_keep exceeds len(ranked_features)")
-        return [ranked_features[i][1] for i in range(number_features_to_keep)] 
+        return [ranked_features[i][1] for i in range(number_features_to_keep)]
 
     @classmethod
     def remove_features_containing_strings(cls, dataframe, x_features):

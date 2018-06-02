@@ -13,7 +13,7 @@ from sklearn.model_selection import LeaveOneGroupOut
 
 class LeaveOutGroupCV(LeaveOutPercentCV):
     """Class to conduct leave-out-group cross-validation analysis
-   
+
     Args:
         training_dataset (DataHandler object): Training dataset handler
         testing_dataset (DataHandler object): Testing dataset handler
@@ -22,7 +22,7 @@ class LeaveOutGroupCV(LeaveOutPercentCV):
         xlabel (str): Label for full-fit x-axis (default "Measured")
         ylabel (str): Label for full-fit y-axis (default "Predicted")
         mark_outlying_points (int): Number of outlying points to mark in best and worst tests, e.g. 3
- 
+
     Returns:
         Analysis in the save_path folder
         Plots results in a predicted vs. measured square plot.
@@ -32,7 +32,7 @@ class LeaveOutGroupCV(LeaveOutPercentCV):
         ValueError: if testing target data is None; CV must have testing target data
 
     """
-    def __init__(self, 
+    def __init__(self,
         training_dataset=None,
         testing_dataset=None,
         model=None,
@@ -48,10 +48,10 @@ class LeaveOutGroupCV(LeaveOutPercentCV):
         """
         if not(training_dataset == testing_dataset):
             raise ValueError("Only testing_dataset will be used. Use the same values for training_dataset and testing_dataset")
-        LeaveOutPercentCV.__init__(self, 
+        LeaveOutPercentCV.__init__(self,
             training_dataset=training_dataset, #only testing_dataset is used
             testing_dataset=testing_dataset,
-            model=model, 
+            model=model,
             save_path = save_path,
             xlabel=xlabel,
             ylabel=ylabel,
@@ -136,7 +136,7 @@ class LeaveOutGroupCV(LeaveOutPercentCV):
         """
         olabel = "%s_test_data.csv" % label
         ocsvname = os.path.join(self.save_path, olabel)
-        self.testing_dataset.add_feature("Group Prediction", 
+        self.testing_dataset.add_feature("Group Prediction",
                     cvtest_entry['prediction_array'])
         addl_cols = list()
         addl_cols.append("Group Prediction")

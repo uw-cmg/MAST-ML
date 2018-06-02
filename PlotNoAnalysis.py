@@ -73,7 +73,7 @@ class PlotNoAnalysis(SingleFit):
         self.plot()
         self.print_readme()
         self.print_output_csv()
-    
+
     @timeit
     def print_output_csv(self):
         self.readme_list.append("----- Output data -----\n")

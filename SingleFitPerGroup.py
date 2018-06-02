@@ -46,10 +46,10 @@ class SingleFitPerGroup(SingleFitGrouped):
         self.per_group_singlefits = dict()
         """
         SingleFitGrouped.__init__(
-            self, 
-            training_dataset=training_dataset, 
+            self,
+            training_dataset=training_dataset,
             testing_dataset=testing_dataset,
-            model=model, 
+            model=model,
             save_path = save_path,
             xlabel=xlabel,
             ylabel=ylabel,
@@ -58,7 +58,7 @@ class SingleFitPerGroup(SingleFitGrouped):
             fit_only_on_matched_groups=0)
         # Sets later in code
         self.per_group_singlefits = dict()
-    
+
     @timeit
     def predict(self):
         self.get_group_predictions()
@@ -132,7 +132,7 @@ class SingleFitPerGroup(SingleFitGrouped):
         self.readme_list.append("----- Plotting -----\n")
         self.readme_list.append("Plot in subfolder per_group_fits_overlay created,\n")
         self.readme_list.append("    labeling worst-fitting groups and their RMSEs.\n")
-    
+
     def get_per_group_statistics(self): # TODO: args are different from super
         for group in self.per_group_singlefits:
             self.per_group_statistics[group] = dict(self.per_group_singlefits[group].statistics)

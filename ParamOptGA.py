@@ -73,7 +73,7 @@ class ParamOptGA(ParamGridSearch):
         *args, **kwargs):
         """
             Additional class attributes not in parent class:
-           
+
             Set by keyword:
             self.ga_pop_size <int>: GA population size
             self.num_gas <int>
@@ -87,13 +87,13 @@ class ParamOptGA(ParamGridSearch):
             self.gen_tol
             Set by code:
             self.random_state <numpy RandomState>: random state
-            self.ga_dict 
-            self.gact 
+            self.ga_dict
+            self.gact
         """
-        ParamGridSearch.__init__(self, 
-            training_dataset=training_dataset, 
-            testing_dataset=training_dataset, 
-            model=model, 
+        ParamGridSearch.__init__(self,
+            training_dataset=training_dataset,
+            testing_dataset=training_dataset,
+            model=model,
             save_path = save_path,
             fix_random_for_testing = fix_random_for_testing,
             num_cvtests = num_cvtests,
@@ -262,11 +262,11 @@ class ParamOptGA(ParamGridSearch):
         self.ga_dict[self.gact] = dict()
         self.ga_dict[self.gact]['generations'] = dict()
         gen_bests = list()
-        
+
         highval = 10000000
         for gbidx in range(0, self.convergence_generations):
             gen_bests.append((highval, dict()))
-        
+
         print('running', flush=True)
         ga_genct = 0
         ga_best_rmse = highval
@@ -274,7 +274,7 @@ class ParamOptGA(ParamGridSearch):
         ga_converged = False
         previous_generation = None
 
-        while (ga_converged is False) and (ga_genct < self.max_generations): 
+        while (ga_converged is False) and (ga_genct < self.max_generations):
             print("Generation %i %s" % (ga_genct, time.asctime()), flush=True)
             mygen = self.set_up_generation(ga_genct)
             mygen.set_up_prior_to_population()
@@ -301,7 +301,7 @@ class ParamOptGA(ParamGridSearch):
             print("%s: %s" % (genpref, printlist))
             ga_genct = ga_genct + 1
             (ga_converged, ga_best_rmse, ga_best_genome) = self.check_convergence(gen_bests, ga_best_rmse, ga_best_genome)
-        self.ga_dict[self.gact]['best_rmse'] = ga_best_rmse 
+        self.ga_dict[self.gact]['best_rmse'] = ga_best_rmse
         self.ga_dict[self.gact]['best_genome'] = ga_best_genome
         self.ga_dict[self.gact]['converged'] = ga_converged
         self.ga_dict[self.gact]['gen_bests'] = gen_bests
@@ -325,7 +325,7 @@ class ParamOptGA(ParamGridSearch):
             self.print_ga(ga)
         self.select_final_best()
         self.print_final_results()
-    
+
     def print_final_results(self):
         self.print_best_params()
         self.save_best_model()
@@ -338,7 +338,7 @@ class ParamOptGA(ParamGridSearch):
 
     def select_final_best(self):
         ga_final_rmse_list = list()
-        for gact in range(0, self.gact): 
+        for gact in range(0, self.gact):
             ga_final_rmse_list.append(self.ga_dict[gact]['best_rmse'])
         ga_min_idx = np.argmin(ga_final_rmse_list)
         self.best_params = self.ga_dict[ga_min_idx]['best_genome']

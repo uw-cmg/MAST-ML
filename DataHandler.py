@@ -28,16 +28,16 @@ class DataHandler():
     Raises:
         ValueError if dataframe is None
     """
-    def __init__(self, data=None, 
-                    input_data=None, 
-                    target_data=None, 
-                    input_features=None, 
+    def __init__(self, data=None,
+                    input_data=None,
+                    target_data=None,
+                    input_features=None,
                     target_feature=None,
                     target_error_feature=None,
                     labeling_features=None,
                     grouping_feature=None):
         """Data Handler
-            
+
         Attributes:
             #Set by keyword
             self.data <dataframe>: Main dataframe; all data
