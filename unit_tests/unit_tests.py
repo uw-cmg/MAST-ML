@@ -3,15 +3,18 @@ import os
 import sys
 import shutil
 import warnings
+import logging
+logging.basicConfig(filename='unit_tests.log')
 
 # so we can find MASTML package
 sys.path.append('../')
 
 import MASTML, MASTMLInitializer
+from ConfigFileValidator import ConfigFileValidator
 
 # pipe program stdout into /dev/null so we can read 
 # unittest prinout more easily
-#sys.stdout = open(os.devnull, 'w')
+sys.stdout = open(os.devnull, 'w')
 
 class SmokeTest(unittest.TestCase):
 
@@ -96,8 +99,9 @@ class ParseTemplate(unittest.TestCase):
                             all(isinstance(x, str) for x in leaf))
 
     def _validate_conf_file(self, filename):
-        file_validator = MASTMLInitializer.ConfigFileValidator(filename)
-        conf_file_dict = file_validator.run_config_validation()
+        configdict = MASTMLInitializer.ConfigFileParser(filename).get_config_dict(os.getcwd())
+        configtemplate = MASTMLInitializer.ConfigFileConstructor(filename).get_config_template()
+        conf_file_dict = ConfigFileValidator(configdict, configtemplate, logging).run_config_validation()
         return conf_file_dict
         
     def test_validate_valid_conf_file(self):

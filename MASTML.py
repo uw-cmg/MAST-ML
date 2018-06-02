@@ -12,13 +12,14 @@ import time
 import matplotlib
 import importlib
 import pandas as pd
-from MASTMLInitializer import ModelTestConstructor, ConfigFileValidator
+from MASTMLInitializer import ModelTestConstructor, ConfigFileParser, ConfigFileConstructor
 from DataOperations import DataParser, DataframeUtilities
 from FeatureGeneration import MagpieFeatureGeneration, MaterialsProjectFeatureGeneration, CitrineFeatureGeneration
 from FeatureOperations import FeatureNormalization, FeatureIO, MiscFeatureOperations
 from FeatureSelection import FeatureSelection, DimensionalReduction, LearningCurve
 from DataHandler import DataHandler
 from SingleFit import timeit
+from ConfigFileValidator import ConfigFileValidator
 
 def _resetlogging():
     """ Remove all handlers associated with the root logger object.
@@ -178,7 +179,9 @@ class MASTMLDriver(object):
             hfile.writelines(self.readme_html_tests)
 
     def _generate_mastml_wrapper(self):
-        configdict = ConfigFileValidator(configfile=self.configfile).run_config_validation()
+        configdict = ConfigFileParser(self.configfile).get_config_dict(os.getcwd())
+        configtemplate = ConfigFileConstructor(self.configfile).get_config_template()
+        ConfigFileValidator(configdict, configtemplate, logging).run_config_validation()
         modeltestconstructor = ModelTestConstructor(configdict=configdict)
         logging.info('Successfully read in and parsed your MASTML input file, %s' % str(self.configfile))
         return modeltestconstructor, configdict
@@ -560,14 +563,12 @@ class MASTMLDriver(object):
                     self.readme_html_tests.append('<A HREF="%s">%s</A><BR>\n' % (testrelpath, test_type))
                     test_short = test_folder.split("_")[0]
                     if test_short in self.param_optimizing_tests:
-                        popt_warn = list()
-                        popt_warn.append("Last test was a parameter-optimizing test.")
-                        popt_warn.append("The test results may have specified an update of model parameters or data.")
-                        popt_warn.append("Please run a separate test.conf file with updated data and model parameters.")
-                        popt_warn.append("No further tests will be run on this file.")
-                        for popt_warn_line in popt_warn:
-                            logging.warning(popt_warn_line)
-                            print(popt_warn_line)
+                        message = ('Last test was a parameter-optimizing test. The test results may'
+                                   ' have specified an update of model parameters or data. Please'
+                                   ' run a separate test.conf file with updated data and model'
+                                   ' parameters. No further tests will be run on this file.')
+                        logging.warning(message)
+                        print(message)
                         break
 
         return test_list, test_params
