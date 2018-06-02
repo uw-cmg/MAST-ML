@@ -12,7 +12,7 @@ import time
 import matplotlib
 import importlib
 import pandas as pd
-from MASTMLInitializer import ModelTestConstructor, ConfigFileParser, ConfigFileConstructor
+from MASTMLInitializer import ModelTestConstructor, ConfigFileParser
 from DataOperations import DataParser, DataframeUtilities
 from FeatureGeneration import MagpieFeatureGeneration, MaterialsProjectFeatureGeneration, CitrineFeatureGeneration
 from FeatureOperations import FeatureNormalization, FeatureIO, MiscFeatureOperations
@@ -180,8 +180,7 @@ class MASTMLDriver(object):
 
     def _generate_mastml_wrapper(self):
         configdict = ConfigFileParser(self.configfile).get_config_dict(os.getcwd())
-        configtemplate = ConfigFileConstructor(self.configfile).get_config_template()
-        ConfigFileValidator(configdict, configtemplate, logging).run_config_validation()
+        ConfigFileValidator(configdict, logging).run_config_validation()
         modeltestconstructor = ModelTestConstructor(configdict=configdict)
         logging.info('Successfully read in and parsed your MASTML input file, %s' % str(self.configfile))
         return modeltestconstructor, configdict

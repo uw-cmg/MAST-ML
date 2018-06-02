@@ -1,13 +1,13 @@
 from distutils.util import strtobool
+from ConfigTemplate import configtemplate
 
 class ConfigFileValidator:
     """
     Class to validate contents of user-specified MASTML input file and flag any errors
     """
-    def __init__(self, configdict, configtemplate, logger):
+    def __init__(self, configdict, logger):
         #print("ConfigFileValidator configdict:", configdict)
         self.configdict = configdict
-        self.configtemplate = configtemplate
         self.logger = logger
         self.errors_present = False
 
@@ -34,28 +34,28 @@ class ConfigFileValidator:
     def _check_config_section_names(self):
         # Check if extra sections are in input file that shouldn't be
         for k in self.configdict.keys():
-            if k not in self.configtemplate.keys():
+            if k not in configtemplate.keys():
                 self.logger.error('Conf file missing section: %s' % str(k))
                 self.errors_present = True
 
         # Check if any sections are missing from input file
-        for k in self.configtemplate.keys():
+        for k in configtemplate.keys():
             if k not in self.configdict.keys():
                 self.logger.error('You are missing the section called %s in your input file. To correct this issue, add this section to your input file.' % str(k))
                 self.errors_present = True
 
     def _check_config_subsection_names(self):
-        for section in self.configtemplate.keys():
-            depth = _get_dict_depth(self.configtemplate[section])
+        for section in configtemplate.keys():
+            depth = _get_dict_depth(configtemplate[section])
             if depth == 1:
                 # Check that required subsections are present for each section in user's input file.
-                for section_key in self.configtemplate[section].keys():
+                for section_key in configtemplate[section].keys():
                     if section_key not in self.configdict[section].keys():
                         self.logger.error('Your input file is missing section key %s, which is part of the %s section. Please include this section key in your input file.' % (section_key, section))
                         self.errors_present = True
                 # Check that user's input file does not have any extra section keys that would later throw errors
                 for section_key in self.configdict[section].keys():
-                    if section_key not in self.configtemplate[section].keys():
+                    if section_key not in configtemplate[section].keys():
                         self.logger.error('Your input file contains an extra section key or misspelled section key: %s in the %s section. Please correct this section key in your input file.' % (section_key, section))
                         self.errors_present = True
             if depth == 2:
@@ -67,15 +67,15 @@ class ConfigFileValidator:
                             self.errors_present = True
                     if section == 'Test Parameters':
                         if '_' in subsection_key:
-                            if not (subsection_key.split('_')[0] in self.configtemplate[section]):
+                            if not (subsection_key.split('_')[0] in configtemplate[section]):
                                 self.logger.error('Your input file contains an improper subsection key name: %s.' % subsection_key)
                                 self.errors_present = True
                         else:
-                            if not (subsection_key in self.configtemplate[section]):
+                            if not (subsection_key in configtemplate[section]):
                                 self.logger.error('Your input file contains an improper subsection key name: %s.' % subsection_key)
                                 self.errors_present = True
                     if section == 'Model Parameters':
-                        if not (subsection_key in self.configtemplate[section]):
+                        if not (subsection_key in configtemplate[section]):
                             self.logger.error('Your input file contains an improper subsection key name: %s.' % subsection_key)
                             self.errors_present = True
 
@@ -86,7 +86,7 @@ class ConfigFileValidator:
                             if '_' in subsection_key:
                                 subsection_key = subsection_key.split('_')[0]
                         try:
-                            if not (subsection_param in self.configtemplate[section][subsection_key]):
+                            if not (subsection_param in configtemplate[section][subsection_key]):
                                 self.logger.error('Your input file contains an improper subsection parameter name: %s.' % subsection_param)
                                 self.errors_present = True
                         except KeyError:
@@ -105,21 +105,21 @@ class ConfigFileValidator:
             depth = _get_dict_depth(test_dict=configdict[section])
             if depth == 1:
                 for section_key in configdict[section].keys():
-                    if type(self.configtemplate[section][section_key]) is str:
-                        if self.configtemplate[section][section_key] == 'string':
+                    if type(configtemplate[section][section_key]) is str:
+                        if configtemplate[section][section_key] == 'string':
                             self.configdict[section][section_key] = str(self.configdict[section][section_key])
-                        elif self.configtemplate[section][section_key] == 'bool':
+                        elif configtemplate[section][section_key] == 'bool':
                             self.configdict[section][section_key] = bool(strtobool(self.configdict[section][section_key]))
-                        elif self.configtemplate[section][section_key] == 'integer':
+                        elif configtemplate[section][section_key] == 'integer':
                             self.configdict[section][section_key] = int(self.configdict[section][section_key])
-                        elif self.configtemplate[section][section_key] == 'float':
+                        elif configtemplate[section][section_key] == 'float':
                             self.configdict[section][section_key] = float(self.configdict[section][section_key])
                         else:
                             logging.info('Error: Unrecognized data type encountered in input file template')
                             sys.exit()
-                    elif type(self.configtemplate[section][section_key]) is list:
+                    elif type(configtemplate[section][section_key]) is list:
                         if type(self.configdict[section][section_key]) is str:
-                            if self.configdict[section][section_key] not in self.configtemplate[section][section_key]:
+                            if self.configdict[section][section_key] not in configtemplate[section][section_key]:
                                 logging.info('Error: Your input file contains an incorrect parameter keyword: %s' % str(self.configdict[section][section_key]))
                                 errors_present = bool(True)
                         if type(self.configdict[section][section_key]) is list:
@@ -127,7 +127,7 @@ class ConfigFileValidator:
                                 if section_key == 'test_cases':
                                     if '_' in param_value:
                                         param_value = param_value.split('_')[0]
-                                    if param_value not in self.configtemplate[section][section_key]:
+                                    if param_value not in configtemplate[section][section_key]:
                                         logging.info('Error: Your input file contains an incorrect parameter keyword: %s' % param_value)
                                         errors_present = bool(True)
             if depth == 2:
@@ -139,14 +139,14 @@ class ConfigFileValidator:
                         elif section == 'Test Parameters':
                             if '_' in subsection_key:
                                 subsection_key_template = subsection_key.split('_')[0]
-                        if type(self.configtemplate[section][subsection_key_template][param_name]) is str:
-                            if self.configtemplate[section][subsection_key_template][param_name] == 'string':
+                        if type(configtemplate[section][subsection_key_template][param_name]) is str:
+                            if configtemplate[section][subsection_key_template][param_name] == 'string':
                                 self.configdict[section][subsection_key][param_name] = str(self.configdict[section][subsection_key][param_name])
-                            if self.configtemplate[section][subsection_key_template][param_name] == 'bool':
+                            if configtemplate[section][subsection_key_template][param_name] == 'bool':
                                 self.configdict[section][subsection_key][param_name] = bool(strtobool(self.configdict[section][subsection_key][param_name]))
-                            if self.configtemplate[section][subsection_key_template][param_name] == 'integer':
+                            if configtemplate[section][subsection_key_template][param_name] == 'integer':
                                 self.configdict[section][subsection_key][param_name] = int(self.configdict[section][subsection_key][param_name])
-                            if self.configtemplate[section][subsection_key_template][param_name] == 'float':
+                            if configtemplate[section][subsection_key_template][param_name] == 'float':
                                 self.configdict[section][subsection_key][param_name] = float(self.configdict[section][subsection_key][param_name])
 
     def _check_config_heading_compatibility(self):
@@ -174,7 +174,6 @@ class ConfigFileValidator:
             for test_case in test_parameter_subsections:
                 if test_case not in tests_being_run:
                     self.logger.warn('You have specified the test/model %s, which is not listed in your test_cases/models section. It will be skipped.' % test_case)
-                    self.errors_present = True
 
     def _check_model_type_consistency(self):
         regressors_present = classifiers_present = False

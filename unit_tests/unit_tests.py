@@ -11,6 +11,7 @@ sys.path.append('../')
 
 import MASTML, MASTMLInitializer
 from ConfigFileValidator import ConfigFileValidator
+from ConfigTemplate import configtemplate
 
 # pipe program stdout into /dev/null so we can read 
 # unittest prinout more easily
@@ -76,8 +77,7 @@ class ParseTemplate(unittest.TestCase):
         self.parser = MASTMLInitializer.ConfigFileParser(conf_file)
         self.config_dict = self.parser.get_config_dict(conf_folder)
 
-        self.config_file_constructor = MASTMLInitializer.ConfigFileConstructor(conf_file)
-        self.type_template = self.config_file_constructor.get_config_template()
+        self.type_template = configtemplate
         #self.typed_config_dict
 
 
@@ -100,8 +100,7 @@ class ParseTemplate(unittest.TestCase):
 
     def _validate_conf_file(self, filename):
         configdict = MASTMLInitializer.ConfigFileParser(filename).get_config_dict(os.getcwd())
-        configtemplate = MASTMLInitializer.ConfigFileConstructor(filename).get_config_template()
-        conf_file_dict = ConfigFileValidator(configdict, configtemplate, logging).run_config_validation()
+        conf_file_dict = ConfigFileValidator(configdict, logging).run_config_validation()
         return conf_file_dict
         
     def test_validate_valid_conf_file(self):
