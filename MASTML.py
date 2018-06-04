@@ -185,7 +185,6 @@ class MASTMLDriver(object):
         #ET.SubElement(self.body, 'br')
         ET.SubElement(self.body, 'hr')
 
-        pdb.set_trace()
         with open(os.path.join(self.save_path, 'index.html'), 'w') as f:
             f.write(ET.tostring(self.html, encoding='unicode', method='html'))
 
@@ -629,13 +628,9 @@ class MASTMLDriver(object):
                 testrelpath = os.path.relpath(test_save_path, self.save_path)
 
                 p = ET.SubElement(self.body, 'p')
-                a1 = ET.Element('a', href=linklocrel)
-                a1.text = str(fval)
-                a2 = ET.Element('a', href=testrelpath)
-                a2.text = test_folder
-                p.append(a1)
-                p.text = ' from test '
-                p.append(a2)
+                ET.SubElement(p, 'a', href=linklocrel).text = fval
+                ET.SubElement(p, 'span').text = ' from test '
+                ET.SubElement(p, 'a', href=testrelpath).text = test_folder
 
                 if not (os.path.exists(linkloc)):
                     ET.SubElement(self.body, 'p').text = 'File not found.'
