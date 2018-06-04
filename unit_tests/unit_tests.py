@@ -9,7 +9,8 @@ logging.basicConfig(filename='unit_tests.log')
 # so we can find MASTML package
 sys.path.append('../')
 
-import MASTML, MASTMLInitializer
+from MASTML import MASTMLDriver
+from MASTMLInitializer import get_config_dict
 from ConfigFileValidator import ConfigFileValidator
 from ConfigTemplate import configtemplate
 
@@ -25,25 +26,25 @@ class SmokeTest(unittest.TestCase):
     def test_full_run(self):
         configfile = 'full_run.conf'
         warnings.simplefilter('ignore')
-        MASTML.MASTMLDriver(configfile=configfile).run_MASTML()
+        MASTMLDriver(configfile=configfile).run_MASTML()
         self.folders.append('results/full_run')
 
     def test_basic_example(self):
         configfile = 'example_input.conf'
         warnings.simplefilter('ignore')
-        MASTML.MASTMLDriver(configfile=configfile).run_MASTML()
+        MASTMLDriver(configfile=configfile).run_MASTML()
         self.folders.append('results/example_results')
 
     def test_classifiers(self):
         configfile = 'classifiers.conf'
         warnings.simplefilter('ignore')
-        MASTML.MASTMLDriver(configfile=configfile).run_MASTML()
+        MASTMLDriver(configfile=configfile).run_MASTML()
         self.folders.append('results/classifiers')
 
     def test_example_classifier(self):
         configfile = 'example_classifier.conf'
         warnings.simplefilter('ignore')
-        MASTML.MASTMLDriver(configfile=configfile).run_MASTML()
+        MASTMLDriver(configfile=configfile).run_MASTML()
         self.folders.append('results/example_classifier')
 
     def tearDown(self):
@@ -69,7 +70,7 @@ class ParseTemplate(unittest.TestCase):
     def setUp(self):
         conf_folder  = '../MASTML_input_file_template/'
         conf_file = 'MASTML_input_file_template.conf'
-        self.config_dict = MASTMLInitializer.get_config_dict(conf_folder, conf_file, logging)
+        self.config_dict = get_config_dict(conf_folder, conf_file, logging)
 
     def test_dict_is_not_empty(self):
         self.assertTrue(0 < len(self.config_dict.keys()))
@@ -89,7 +90,7 @@ class ParseTemplate(unittest.TestCase):
                             all(isinstance(x, str) for x in leaf))
 
     def _validate_conf_file(self, filename):
-        configdict MASTMLInitializer.get_config_dict(os.getcwd(), filename, logging)
+        configdict = get_config_dict(os.getcwd(), filename, logging)
         conf_file_dict = ConfigFileValidator(configdict, logging).run_config_validation()
         return conf_file_dict
         

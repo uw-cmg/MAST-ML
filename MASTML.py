@@ -12,7 +12,7 @@ import time
 import matplotlib
 import importlib
 import pandas as pd
-from MASTMLInitializer import ModelTestConstructor
+from MASTMLInitializer import ModelTestConstructor, get_config_dict
 from DataOperations import DataParser, DataframeUtilities
 from FeatureGeneration import MagpieFeatureGeneration, MaterialsProjectFeatureGeneration, CitrineFeatureGeneration
 from FeatureOperations import FeatureNormalization, FeatureIO, MiscFeatureOperations

@@ -27,13 +27,13 @@ def get_config_dict(directory, filename, logger):
         logger.error(message)
         raise OSError(message)
 
-    if not os.path.exists(directory + '/' + str(self.configfile)):
+    if not os.path.exists(directory + '/' + str(filename)):
         message = 'Conf file %s does not exist in directory %s' % (directory, filename)
         logging.error(message)
         raise OSError(message)
 
     original_dir = os.getcwd()
-    os.chdir(path_to_file)
+    os.chdir(directory)
 
     try:
         config_dict = ConfigObj(filename)
