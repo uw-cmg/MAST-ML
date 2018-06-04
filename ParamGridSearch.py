@@ -6,9 +6,6 @@ __date__ = 'October 14th, 2017'
 
 import os
 import numpy as np
-from sklearn.metrics import mean_squared_error
-from sklearn.model_selection import KFold
-from sklearn.model_selection import ShuffleSplit
 from KFoldCV import KFoldCV
 from LeaveOutPercentCV import LeaveOutPercentCV
 from plot_data.PlotHelper import PlotHelper
@@ -16,7 +13,6 @@ from SingleFit import SingleFit
 from SingleFit import timeit
 from custom_features import cf_help
 from FeatureOperations import FeatureIO
-from DataHandler import DataHandler
 import pandas as pd
 import copy
 import logging

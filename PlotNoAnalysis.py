@@ -4,7 +4,6 @@ __version__ = '1.0'
 __email__ = 'rjacobs3@wisc.edu'
 __date__ = 'October 14th, 2017'
 
-import numpy as np
 from plot_data.PlotHelper import PlotHelper
 import os
 from SingleFit import SingleFit

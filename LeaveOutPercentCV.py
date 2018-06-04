@@ -9,7 +9,6 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import ShuffleSplit
 from sklearn.metrics import mean_squared_error
-from sklearn.linear_model import LinearRegression
 from plot_data.PlotHelper import PlotHelper
 from SingleFit import SingleFit
 from SingleFit import timeit

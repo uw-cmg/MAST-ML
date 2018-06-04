@@ -5,13 +5,10 @@ __email__ = 'rjacobs3@wisc.edu'
 __date__ = 'October 14th, 2017'
 
 import numpy as np
-import copy
 import os
-from SingleFit import SingleFit
 from SingleFit import timeit
 from ParamGridSearch import ParamGridSearch
 import time
-from custom_features import cf_help
 
 class ParamOptGA(ParamGridSearch):
     """Class to perform parameter optimization by genetic algorithm. Allows custom features.

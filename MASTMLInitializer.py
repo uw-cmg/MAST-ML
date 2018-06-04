@@ -4,22 +4,19 @@ __version__ = '1.0'
 __email__ = 'rjacobs3@wisc.edu'
 __date__ = 'October 14th, 2017'
 
-import sys
 import os
 import importlib
 import logging
-from sklearn.kernel_ridge import KernelRidge
-from sklearn.neural_network import MLPRegressor, MLPClassifier
-from sklearn.linear_model import LinearRegression, Lasso, LogisticRegression
-from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor, AdaBoostRegressor, ExtraTreesClassifier, RandomForestClassifier, AdaBoostClassifier
 import sklearn
-from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
-from sklearn.svm import SVC, SVR
-import sklearn.gaussian_process.kernels as skkernel
-from sklearn.gaussian_process import GaussianProcessRegressor
 from configobj import ConfigObj, ConfigObjError
-import distutils.util as du
-from ConfigTemplate import configtemplate
+from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor, AdaBoostRegressor, ExtraTreesClassifier, RandomForestClassifier, AdaBoostClassifier
+from sklearn.gaussian_process import GaussianProcessRegressor
+from sklearn.kernel_ridge import KernelRidge
+from sklearn.linear_model import LinearRegression, Lasso, LogisticRegression
+from sklearn.neural_network import MLPRegressor, MLPClassifier
+from sklearn.svm import SVC, SVR
+from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
+import sklearn.gaussian_process.kernels as skkernel
 
 def get_config_dict(directory, filename, logger):
     """

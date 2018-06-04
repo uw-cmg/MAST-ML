@@ -8,7 +8,6 @@ import os
 import numpy as np
 from sklearn.model_selection import KFold
 from sklearn.metrics import mean_squared_error
-from sklearn.linear_model import LinearRegression
 from LeaveOutPercentCV import LeaveOutPercentCV
 from SingleFit import timeit
 

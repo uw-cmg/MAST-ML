@@ -5,8 +5,6 @@ __email__ = 'rjacobs3@wisc.edu'
 __date__ = 'October 14th, 2017'
 
 import os
-import numpy as np
-from sklearn.model_selection import LeaveOneOut
 from plot_data.PlotHelper import PlotHelper
 from KFoldCV import KFoldCV
 from SingleFit import timeit

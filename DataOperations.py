@@ -6,9 +6,7 @@ __date__ = 'October 14th, 2017'
 
 import pandas as pd
 import logging
-import sys
 import numpy as np
-import os
 from matplotlib import pyplot as plt
 
 class DataParser(object):
