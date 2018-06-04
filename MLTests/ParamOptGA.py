@@ -6,8 +6,8 @@ __date__ = 'October 14th, 2017'
 
 import numpy as np
 import os
-from SingleFit import timeit
-from ParamGridSearch import ParamGridSearch
+from MLTests.SingleFit import timeit
+from MLTests.ParamGridSearch import ParamGridSearch
 import time
 
 class ParamOptGA(ParamGridSearch):

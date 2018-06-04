@@ -7,8 +7,8 @@ __date__ = 'October 14th, 2017'
 import numpy as np
 from plot_data.PlotHelper import PlotHelper
 import os
-from LeaveOutPercentCV import LeaveOutPercentCV
-from SingleFit import timeit
+from MLTests.LeaveOutPercentCV import LeaveOutPercentCV
+from MLTests.SingleFit import timeit
 from sklearn.model_selection import LeaveOneGroupOut
 
 class LeaveOutGroupCV(LeaveOutPercentCV):

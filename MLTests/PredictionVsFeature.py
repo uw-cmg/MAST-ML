@@ -6,8 +6,8 @@ __date__ = 'October 14th, 2017'
 
 import numpy as np
 import os
-from SingleFit import timeit
-from SingleFit import SingleFit
+from MLTests.SingleFit import timeit
+from MLTests.SingleFit import SingleFit
 from plot_data.PlotHelper import PlotHelper
 import copy
 import logging

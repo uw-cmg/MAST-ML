@@ -8,8 +8,8 @@ import os
 import numpy as np
 from sklearn.model_selection import KFold
 from sklearn.metrics import mean_squared_error
-from LeaveOutPercentCV import LeaveOutPercentCV
-from SingleFit import timeit
+from MLTests.LeaveOutPercentCV import LeaveOutPercentCV
+from MLTests.SingleFit import timeit
 
 class KFoldCV(LeaveOutPercentCV):
     """Class to conduct k-fold cross-validation analysis

@@ -19,8 +19,8 @@ from mlxtend.feature_selection import SequentialFeatureSelector as SFS
 from DataOperations import DataframeUtilities, DataParser
 from FeatureOperations import FeatureIO
 from MASTMLInitializer import ModelTestConstructor
-from SingleFit import timeit
-from KFoldCV import KFoldCV
+from MLTests.SingleFit import timeit
+from MLTests.KFoldCV import KFoldCV
 from DataHandler import DataHandler
 
 class DimensionalReduction(object):

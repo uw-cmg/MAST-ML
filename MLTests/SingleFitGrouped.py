@@ -8,8 +8,8 @@ import numpy as np
 from sklearn.metrics import mean_squared_error
 from plot_data.PlotHelper import PlotHelper
 import os
-from SingleFit import SingleFit
-from SingleFit import timeit
+from MLTests.SingleFit import SingleFit
+from MLTests.SingleFit import timeit
 import logging
 
 class SingleFitGrouped(SingleFit):

@@ -134,7 +134,7 @@ class ModelTestConstructor(object):
 
     def get_machinelearning_test(self, test_type, model, save_path, run_test=True, *args, **kwargs):
         mod_name = test_type.split("_")[0] #ex. KFoldCV_5fold goes to KFoldCV
-        test_module = importlib.import_module('%s' % (mod_name))
+        test_module = importlib.import_module('MLTests.%s' % mod_name)
         test_class_def = getattr(test_module, mod_name)
         logging.debug("Parameters passed by keyword:")
         logging.debug(kwargs)

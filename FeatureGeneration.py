@@ -18,7 +18,7 @@ except ImportError as e:
     raise e
 
 from DataOperations import DataframeUtilities
-from SingleFit import timeit
+from MLTests.SingleFit import timeit
 
 class MagpieFeatureGeneration(object):
     """

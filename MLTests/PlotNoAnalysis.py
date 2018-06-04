@@ -6,8 +6,8 @@ __date__ = 'October 14th, 2017'
 
 from plot_data.PlotHelper import PlotHelper
 import os
-from SingleFit import SingleFit
-from SingleFit import timeit
+from MLTests.SingleFit import SingleFit
+from MLTests.SingleFit import timeit
 
 class PlotNoAnalysis(SingleFit):
     """Class to conduct data plotting, but no data analysis

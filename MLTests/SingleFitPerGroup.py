@@ -8,8 +8,8 @@ import os
 import logging
 import copy
 import numpy as np
-from SingleFit import SingleFit, timeit
-from SingleFitGrouped import SingleFitGrouped
+from MLTests.SingleFit import SingleFit, timeit
+from MLTests.SingleFitGrouped import SingleFitGrouped
 
 class SingleFitPerGroup(SingleFitGrouped):
     """Class used to split out the data by groups and then do single fits on each group.

@@ -21,7 +21,7 @@ from FeatureGeneration import MagpieFeatureGeneration, MaterialsProjectFeatureGe
 from FeatureOperations import FeatureNormalization, FeatureIO, MiscFeatureOperations
 from FeatureSelection import FeatureSelection, DimensionalReduction, LearningCurve
 from DataHandler import DataHandler
-from SingleFit import timeit
+from MLTests.SingleFit import timeit
 from ConfigFileValidator import ConfigFileValidator
 
 def _resetlogging():

@@ -10,8 +10,7 @@ import pandas as pd
 from sklearn.model_selection import ShuffleSplit
 from sklearn.metrics import mean_squared_error
 from plot_data.PlotHelper import PlotHelper
-from SingleFit import SingleFit
-from SingleFit import timeit
+from MLTests.SingleFit import SingleFit, timeit
 
 class LeaveOutPercentCV(SingleFit):
     """Class to conduct leave out x% cross-validation analysis

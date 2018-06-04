@@ -6,8 +6,8 @@ __date__ = 'October 14th, 2017'
 
 import os
 from plot_data.PlotHelper import PlotHelper
-from KFoldCV import KFoldCV
-from SingleFit import timeit
+from MLTests.KFoldCV import KFoldCV
+from MLTests.SingleFit import timeit
 
 class LeaveOneOutCV(KFoldCV):
     """Class to conduct leave-one-out cross-validation analysis

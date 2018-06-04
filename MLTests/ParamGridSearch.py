@@ -6,11 +6,11 @@ __date__ = 'October 14th, 2017'
 
 import os
 import numpy as np
-from KFoldCV import KFoldCV
-from LeaveOutPercentCV import LeaveOutPercentCV
+from MLTests.KFoldCV import KFoldCV
+from MLTests.LeaveOutPercentCV import LeaveOutPercentCV
 from plot_data.PlotHelper import PlotHelper
-from SingleFit import SingleFit
-from SingleFit import timeit
+from MLTests.SingleFit import SingleFit
+from MLTests.SingleFit import timeit
 from custom_features import cf_help
 from FeatureOperations import FeatureIO
 import pandas as pd
