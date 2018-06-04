@@ -10,7 +10,6 @@ import sys
 import numpy as np
 import os
 from matplotlib import pyplot as plt
-from MASTMLInitializer import ConfigFileParser
 
 class DataParser(object):
     """

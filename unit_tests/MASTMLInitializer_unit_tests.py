@@ -5,9 +5,11 @@ import sys
 testdir = os.path.realpath(os.path.dirname(sys.argv[0]))
 moduledir = '/Users/ryanjacobs/PycharmProjects/MASTML/'
 sys.path.append(moduledir)
-from MASTMLInitializer import ConfigFileParser, ConfigFileValidator, MASTMLWrapper
+from MASTMLInitializer import MASTMLWrapper, get_config_dict
+from ConfigFileValidator import ConfigFileValidator
 from DataHandler import DataHandler
 import configobj
+import logging
 
 class TestConfigFileParser(unittest.TestCase):
 
@@ -16,7 +18,7 @@ class TestConfigFileParser(unittest.TestCase):
         return
 
     def test_get_config_dict(self):
-        configdict = ConfigFileParser(configfile=self.configfile).get_config_dict(path_to_file=testdir)
+        configdict = get_config_dict(testdir, self.configfile, logging)
         self.assertIsInstance(configdict, configobj.ConfigObj)
         return
 
@@ -28,11 +30,8 @@ class TestConfigFileValidator(unittest.TestCase):
         return
 
     def test_run_config_validation(self):
-        configdict, errors_present = ConfigFileValidator(configfile=self.configfile).run_config_validation()
-        self.assertTrue(errors_present is False)
-        configdict, errors_present = ConfigFileValidator(configfile=self.configfilebroken).run_config_validation()
-        self.assertTrue(errors_present is True)
-        return
+        configdict = get_config_dict(testdir, self.configfile, logging)
+        configdict, errors_present = ConfigFileValidator(configdict, logging).run_config_validation() # smoke test
 
 class TestMASTMLInitializer(unittest.TestCase):
 
@@ -48,7 +47,7 @@ class TestMASTMLInitializer(unittest.TestCase):
         self.configfile = 'test_unittest_featuregeneration.conf'
         self.df1 = pd.read_csv(testdir+'/'+'testcsv1featureselection.csv')
         del self.df1['Material compositions']
-        self.configdict = ConfigFileParser(configfile='test_unittest_featuregeneration.conf').get_config_dict(path_to_file=testdir)
+        self.configdict = get_config_dict(testdir, 'test_unittest_featuregeneration.conf', logging)
         self.target_feature = "O_pband_center_regression"
         self.x_features = [f for f in self.df1.columns.values.tolist() if f != self.target_feature]
         return

@@ -64,22 +64,12 @@ def leaves_of_dict(dictt):
 
 class ParseTemplate(unittest.TestCase):
 
-    legal_types = ['string',
-                   'bool',
-                   'string_list',
-                   'Auto',
-                   'integer']
+    legal_types = ['string', 'bool', 'string_list', 'Auto', 'integer']
 
     def setUp(self):
         conf_folder  = '../MASTML_input_file_template/'
         conf_file = 'MASTML_input_file_template.conf'
-
-        self.parser = MASTMLInitializer.ConfigFileParser(conf_file)
-        self.config_dict = self.parser.get_config_dict(conf_folder)
-
-        self.type_template = configtemplate
-        #self.typed_config_dict
-
+        self.config_dict = MASTMLInitializer.get_config_dict(conf_folder, conf_file, logging)
 
     def test_dict_is_not_empty(self):
         self.assertTrue(0 < len(self.config_dict.keys()))
@@ -92,14 +82,14 @@ class ParseTemplate(unittest.TestCase):
                              all(isinstance(x, str) for x in leaf))
  
     def test_template_has_only_type_names_and_lists_of_strings(self):
-        for leaf in leaves_of_dict(self.type_template):
+        for leaf in leaves_of_dict(configtemplate):
             # should either be a list of strings (that lists off legal options
             # or a string that matching the ones in legal_types
             self.assertTrue(leaf in self.legal_types or
                             all(isinstance(x, str) for x in leaf))
 
     def _validate_conf_file(self, filename):
-        configdict = MASTMLInitializer.ConfigFileParser(filename).get_config_dict(os.getcwd())
+        configdict MASTMLInitializer.get_config_dict(os.getcwd(), filename, logging)
         conf_file_dict = ConfigFileValidator(configdict, logging).run_config_validation()
         return conf_file_dict
         

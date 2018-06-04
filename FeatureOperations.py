@@ -9,6 +9,7 @@ import numpy as np
 import sys
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from DataOperations import DataframeUtilities
+from MASTMLInitializer import get_config_dict
 
 class FeatureIO(object):
     """
@@ -245,7 +246,8 @@ class FeatureNormalization(object):
         dataframe_normalized = DataframeUtilities().assign_columns_as_features(dataframe=dataframe_normalized, x_features=x_features, y_feature=y_feature, remove_first_row=False)
         if to_csv == True:
             # Need configdict to get save path
-            #configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
+            # import logging
+            #configdict = get_config_dict(os.getcwd(), sys.argv[1], logging)
             # Get y_feature in this dataframe, attach it to save path
             for column in dataframe_normalized.columns.values:
                 if column in self.configdict['General Setup']['target_feature']:

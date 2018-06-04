@@ -12,7 +12,7 @@ import time
 import matplotlib
 import importlib
 import pandas as pd
-from MASTMLInitializer import ModelTestConstructor, ConfigFileParser
+from MASTMLInitializer import ModelTestConstructor
 from DataOperations import DataParser, DataframeUtilities
 from FeatureGeneration import MagpieFeatureGeneration, MaterialsProjectFeatureGeneration, CitrineFeatureGeneration
 from FeatureOperations import FeatureNormalization, FeatureIO, MiscFeatureOperations
@@ -179,7 +179,7 @@ class MASTMLDriver(object):
             hfile.writelines(self.readme_html_tests)
 
     def _generate_mastml_wrapper(self):
-        configdict = ConfigFileParser(self.configfile).get_config_dict(os.getcwd())
+        configdict = get_config_dict(os.getcwd(), self.configfile, logging)
         ConfigFileValidator(configdict, logging).run_config_validation()
         modeltestconstructor = ModelTestConstructor(configdict=configdict)
         logging.info('Successfully read in and parsed your MASTML input file, %s' % str(self.configfile))
@@ -520,7 +520,7 @@ class MASTMLDriver(object):
         # Run the specified test cases for every model
         for test_type in test_list:
             # Need to renew configdict each loop other issue with dictionary indexing occurs when you have multiple y_features
-            #configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())
+            #configdict = get_config_dict(os.getcwd(), sys.argv[1], logging)
             logging.info('Looking up parameters for test type %s' % test_type)
             test_params = self.configdict["Test Parameters"][test_type]
 
@@ -646,6 +646,7 @@ class MASTMLDriver(object):
 if __name__ == '__main__':
     if len(sys.argv) > 1:
         mastml = MASTMLDriver(configfile=sys.argv[1])
+        # TODO: grab the conf file directory here
         mastml.run_MASTML()
     else:
         logging.info('Specify the name of your MASTML input file, such as "mastmlinput.conf", and run as "python MASTML.py mastmlinput.conf" ')

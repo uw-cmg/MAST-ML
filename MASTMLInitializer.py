@@ -21,45 +21,32 @@ from configobj import ConfigObj, ConfigObjError
 import distutils.util as du
 from ConfigTemplate import configtemplate
 
-class ConfigFileParser(object):
+def get_config_dict(directory, filename, logger):
     """
-    Class to read in contents of MASTML input files
-
-    Args:
-        configfile (MASTML configfile object) : a MASTML input file, as a configfile object
-
-    Methods:
-        get_config_dict : returns dict representation of configfile
-
-            Args:
-                path_to_file (str) : path indicating where config file is stored
-
-            Returns:
-                dict : configdict of parsed input file
+    Reads in contents of MASTML input file and parse it
     """
-    def __init__(self, configfile):
-        self.configfile = configfile
+    if not os.path.exists(directory):
+        message = 'Specified directory %s does not exist.' % directory
+        logger.error(message)
+        raise OSError(message)
 
-    def get_config_dict(self, path_to_file):
-        return self._parse_config_file(path_to_file=path_to_file)
+    if not os.path.exists(directory + '/' + str(self.configfile)):
+        message = 'Conf file %s does not exist in directory %s' % (directory, filename)
+        logging.error(message)
+        raise OSError(message)
 
-    def _parse_config_file(self, path_to_file):
-        if not os.path.exists(path_to_file):
-            logging.info('You must specify a valid path')
-            raise OSError('You must specify a valid path')
-        if os.path.exists(path_to_file+"/"+str(self.configfile)):
-            original_dir = os.getcwd()
-            os.chdir(path_to_file)
-            try:
-                config_dict = ConfigObj(self.configfile)
-                os.chdir(original_dir)
-                #print("Returning config_dict:", config_dict)
-                return config_dict
-            except(ConfigObjError, IOError) as e:
-                logging.info('Could not read in input file %s') % str(self.configfile)
-                raise e
-        else:
-            raise OSError('The input file you specified, %s, does not exist in the path %s' % (str(self.configfile), str(path_to_file)))
+    original_dir = os.getcwd()
+    os.chdir(path_to_file)
+
+    try:
+        config_dict = ConfigObj(filename)
+    except (ConfigObjError, IOError) as e:
+        logger.error('Could not read in conf file %s') % str(self.configfile)
+        raise e
+    finally:
+        os.chdir(original_dir)
+
+    return config_dict
 
 class ModelTestConstructor(object):
     """
