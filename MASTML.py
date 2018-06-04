@@ -4,6 +4,7 @@ __version__ = '1.0'
 __email__ = 'rjacobs3@wisc.edu'
 __date__ = 'October 14th, 2017'
 
+import pdb
 import sys
 import os
 import logging
@@ -12,6 +13,8 @@ import time
 import matplotlib
 import importlib
 import pandas as pd
+import xml.etree.ElementTree as ET
+
 from MASTMLInitializer import ModelTestConstructor, get_config_dict
 from DataOperations import DataParser, DataframeUtilities
 from FeatureGeneration import MagpieFeatureGeneration, MaterialsProjectFeatureGeneration, CitrineFeatureGeneration
@@ -53,8 +56,7 @@ class MASTMLDriver(object):
         self.model_list = list() #list of actual models
         self.model_vals = list() #list of model names, like "gkrr_model"
         self.param_optimizing_tests = ["ParamOptGA","ParamGridSearch"]
-        self.readme_html = list()
-        self.readme_html_tests = list()
+        self.html = ET.Element('html')
         self.start_time = None
         self.favorites_dict = dict()
         self.test_save_paths = list()
@@ -155,28 +157,37 @@ class MASTMLDriver(object):
         logging.info("Matplotlib defaults from %s" % matplotlib.matplotlib_fname())
 
     def _initialize_html(self):
-        self.readme_html.append("<HTML>\n")
-        self.readme_html.append("<TITLE>MASTML</TITLE>\n")
-        self.readme_html.append("<BODY>\n")
-        self.readme_html.append("<H1>%s</H1>\n" % "MAST Machine Learning Output")
-        self.readme_html.append("%s<BR>\n" % self.start_time)
-        self.readme_html.append("<HR>\n")
+        # This function uses the Python ElementTree tool instead of directly writing html strings
+        # because you get random difficult bugs when you directly write html. The DOM was built for
+        # this purpose.
+        title = ET.SubElement(self.html, 'title')
+        title.text = 'MASTML'
+        self.body = ET.SubElement(self.html, 'body')
+        h1 = ET.SubElement(self.body, 'h1')
+        h1.text = 'MAST Machine Learning Output'
+        par = ET.SubElement(self.body, 'p')
+        par.text = str(self.start_time)
+        ET.SubElement(self.body, 'hr')
 
     def _end_html(self):
-        self.readme_html.append("<HR>\n")
-        self.readme_html.append("<H2>Setup</H2>\n")
+        ET.SubElement(self.body, 'hr')
+        h2 = ET.SubElement(self.body, 'h2')
+        h2.text = 'Setup'
+
         logpath = os.path.join(self.save_path, self.logfilename)
         logpath = os.path.relpath(logpath, self.save_path)
-        self.readme_html.append('<A HREF="%s">Log file</A><BR>\n' % logpath)
+        ET.SubElement(self.body, 'a', {'href':logpath}).text = 'Log File'
+        ET.SubElement(self.body, 'br')
+
         confpath = os.path.join(self.save_path, str(self.configfile))
         confpath = os.path.relpath(confpath, self.save_path)
-        self.readme_html.append('<A HREF="%s">Config file</A><BR>\n' % confpath)
-        self.readme_html.append("<HR>\n")
-        self.readme_html.append("</BODY>\n")
-        self.readme_html.append("</HTML>\n")
-        with open(os.path.join(self.save_path, "index.html"),"w") as hfile:
-            hfile.writelines(self.readme_html)
-            hfile.writelines(self.readme_html_tests)
+        ET.SubElement(self.body, 'a', {'href': confpath}).text = 'Config File'
+        #ET.SubElement(self.body, 'br')
+        ET.SubElement(self.body, 'hr')
+
+        pdb.set_trace()
+        with open(os.path.join(self.save_path, 'index.html'), 'w') as f:
+            f.write(ET.tostring(self.html, encoding='unicode', method='html'))
 
     def _generate_mastml_wrapper(self):
         configdict = get_config_dict(os.getcwd(), self.configfile, logging)
@@ -224,7 +235,7 @@ class MASTMLDriver(object):
 
             #data_weights = self.data_setup[data_name]['weights']
             if 'labeling_features' in self.general_setup.keys():
-                labeling_features = self._string_or_list_input_to_list(self.general_setup['labeling_features'])
+                labeling_features = self._ensure_list(self.general_setup['labeling_features'])
                 if labeling_features[0] == 'None':
                     labeling_features = None
             else:
@@ -514,9 +525,9 @@ class MASTMLDriver(object):
 
     def _gather_tests(self):
         # Gather test types
-        self.readme_html_tests.append("<H2>Tests</H2>\n")
-        self.readme_html.append("<H2>Favorites</H2>\n")
-        test_list = self._string_or_list_input_to_list(self.models_and_tests_setup['test_cases'])
+        ET.SubElement(self.body, 'h2').text='Tests'
+        ET.SubElement(self.body, 'h2').text='Favorites'
+        test_list = self._ensure_list(self.models_and_tests_setup['test_cases'])
         # Run the specified test cases for every model
         for test_type in test_list:
             # Need to renew configdict each loop other issue with dictionary indexing occurs when you have multiple y_features
@@ -525,13 +536,13 @@ class MASTMLDriver(object):
             test_params = self.configdict["Test Parameters"][test_type]
 
             # Set data lists
-            training_dataset_name_list = self._string_or_list_input_to_list(test_params['training_dataset'])
+            training_dataset_name_list = self._ensure_list(test_params['training_dataset'])
             training_dataset_list = list()
             for dname in training_dataset_name_list:
                 training_dataset_list.append(self.data_dict[dname])
             test_params['training_dataset'] = training_dataset_list
 
-            testing_dataset_name_list = self._string_or_list_input_to_list(test_params['testing_dataset'])
+            testing_dataset_name_list = self._ensure_list(test_params['testing_dataset'])
             testing_dataset_list = list()
             for dname in testing_dataset_name_list:
                 testing_dataset_list.append(self.data_dict[dname])
@@ -557,9 +568,9 @@ class MASTMLDriver(object):
                     self.modeltestconstructor.get_machinelearning_test(test_type=test_type,
                                                                 model=model, save_path=test_save_path, **test_params)
                     logging.info('Ran test %s for your %s model' % (test_type, str(model)))
-                    self.readme_html.extend(self._make_links_for_favorites(test_folder, test_save_path))
+                    self._make_links_for_favorites(test_folder, test_save_path)
                     testrelpath = os.path.relpath(test_save_path, self.save_path)
-                    self.readme_html_tests.append('<A HREF="%s">%s</A><BR>\n' % (testrelpath, test_type))
+                    ET.SubElement(self.body, 'a', {'href': testrelpath}).text = str(test_type)
                     test_short = test_folder.split("_")[0]
                     if test_short in self.param_optimizing_tests:
                         message = ('Last test was a parameter-optimizing test. The test results may'
@@ -593,25 +604,21 @@ class MASTMLDriver(object):
             shutil.copy(copyconfig, self.save_path)
 
     def _set_favorites_dict(self):
-        fdict = dict()
-        fdict["MultiClass"] = ["confusion_matrix.png"]
-        fdict["SingleFit"] = ["single_fit.png"]
-        fdict["SingleFitGrouped"] = ["per_group_info/per_group_info.png"]
-        fdict["SingleFitPerGroup"] = ["per_group_fits_overlay/per_group_fits_overlay.png"]
-        fdict["KFoldCV"] = ["best_worst_overlay.png"]
-        fdict["LeaveOneOutCV"] = ["loo_results.png"]
-        fdict["LeaveOutPercentCV"] = ["best_worst_overlay.png"]
-        fdict["LeaveOutGroupCV"] = ["leave_out_group.png"]
-        fdict["ParamOptGA"] = ["OPTIMIZED_PARAMS"]
-        fdict["ParamGridSearch"] = ["OPTIMIZED_PARAMS","rmse_heatmap.png","rmse_heatmap_3d.png"]
-        fdict["PredictionVsFeature"] = [] #not sure
-        self.favorites_dict=dict(fdict) #TODO uh clean up that dict
+        self.favorites_dict = {
+            "KFoldCV": ["best_worst_overlay.png"],
+            "LeaveOneOutCV": ["loo_results.png"],
+            "LeaveOutGroupCV": ["leave_out_group.png"],
+            "LeaveOutPercentCV": ["best_worst_overlay.png"],
+            "MultiClass": ["confusion_matrix.png"],
+            "ParamGridSearch": ["OPTIMIZED_PARAMS","rmse_heatmap.png","rmse_heatmap_3d.png"],
+            "ParamOptGA": ["OPTIMIZED_PARAMS"],
+            "PredictionVsFeature": [], #not sure
+            "SingleFit": ["single_fit.png"],
+            "SingleFitGrouped": ["per_group_info/per_group_info.png"],
+            "SingleFitPerGroup": ["per_group_fits_overlay/per_group_fits_overlay.png"],
+        }
 
     def _make_links_for_favorites(self, test_folder, test_save_path):
-        linklist=list()
-        linkloc  = ""
-        linktext = ""
-        linkline = ""
         # Important! We grab the first part of the test name before the underscore:
         test_short = test_folder.split("_")[0]
         if test_short in self.favorites_dict.keys():
@@ -620,28 +627,37 @@ class MASTMLDriver(object):
                 linkloc = os.path.join(test_save_path, fval)
                 linklocrel = os.path.relpath(linkloc, self.save_path)
                 testrelpath = os.path.relpath(test_save_path, self.save_path)
-                linkline = '<A HREF="%s">%s</A> from test <A HREF="%s">%s</A><BR><BR>\n' % (linklocrel, fval, testrelpath, test_folder)
-                linklist.append(linkline)
+
+                p = ET.SubElement(self.body, 'p')
+                a1 = ET.Element('a', href=linklocrel)
+                a1.text = str(fval)
+                a2 = ET.Element('a', href=testrelpath)
+                a2.text = test_folder
+                p.append(a1)
+                p.text = ' from test '
+                p.append(a2)
+
                 if not (os.path.exists(linkloc)):
-                    linklist.append("File not found.\n")
+                    ET.SubElement(self.body, 'p').text = 'File not found.'
                 else:
                     if '.png' in fval:
-                        imline = '<A HREF="%s"><IMG SRC="%s" height=300 width=400></A><BR>\n' % (linklocrel, linklocrel)
-                        linklist.append(imline)
+                        a = ET.SubElement(self.body, 'a')
+                        a.set('href', linklocrel)
+                        img = ET.SubElement(a, 'img')
+                        img.set('src', linklocrel)
+                        img.set('height', '300')
+                        img.set('width',  '400')
                     else:
-                        txtline = '<EMBED SRC="%s" width=75%%><BR>\n' % (linklocrel)
-                        linklist.append(txtline)
-                linklist.append("<BR>\n")
-        return linklist
+                        embed = ET.SubElement(self.body, 'embed')
+                        embed.set('src', linklocrel)
+                        embed.set('width', '75%')
+                    ET.SubElement(self.body, 'br')
+                ET.SubElement(self.body, 'br')
 
-    def _string_or_list_input_to_list(self, unknown_input_val):
-        input_list = list()
-        if type(unknown_input_val) is str:
-            input_list.append(unknown_input_val)
-        elif type(unknown_input_val) is list:
-            for unknown_input in unknown_input_val:
-                input_list.append(unknown_input)
-        return input_list
+    def _ensure_list(self, val):
+        if isinstance(val, str):
+            return [val]
+        return val[:]
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
