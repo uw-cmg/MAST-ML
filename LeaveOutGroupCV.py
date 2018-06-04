@@ -68,7 +68,7 @@ class LeaveOutGroupCV(LeaveOutPercentCV):
         self.get_statistics()
         self.print_statistics()
         self.readme_list.append("----- Output data -----\n")
-        for cvtest in self.cvtest_dict.keys():
+        for cvtest in self.cvtest_dict:
             self.print_output_csv(label=self.cvtest_dict[cvtest]['group'], cvtest_entry=self.cvtest_dict[cvtest])
 
     @timeit
@@ -85,7 +85,7 @@ class LeaveOutGroupCV(LeaveOutPercentCV):
         group_label_list=list()
         rms_list=list()
         group_rms_list=list()
-        for cvtest in self.cvtest_dict.keys():
+        for cvtest in self.cvtest_dict:
             group_rms_list.append((self.cvtest_dict[cvtest]['group'],
                                     self.cvtest_dict[cvtest]['rmse']))
         group_rms_list.sort() #sorts by group

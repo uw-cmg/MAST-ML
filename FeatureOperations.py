@@ -311,7 +311,7 @@ class MiscFeatureOperations(object):
                 if type(entry) is str:
                     is_str = True
             if is_str == True:
-                if 'grouping_feature' in self.configdict['General Setup'].keys():
+                if 'grouping_feature' in self.configdict['General Setup']:
                     if x_feature not in self.configdict['General Setup']['grouping_feature']:
                         x_features_to_remove.append(x_feature)
                 else:

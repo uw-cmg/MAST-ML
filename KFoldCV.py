@@ -107,13 +107,13 @@ class KFoldCV(LeaveOutPercentCV):
                 foldidx = foldidx + 1
 
     def cv_fit_and_predict(self):
-        for cvtest in self.cvtest_dict.keys():
+        for cvtest in self.cvtest_dict:
             fold_rmses = np.zeros(self.num_folds)
             fold_mean_errors = np.zeros(self.num_folds)
             fold_array = np.zeros(len(self.testing_dataset.target_data))
             prediction_array = np.zeros(len(self.testing_dataset.target_data))
             error_array = np.zeros(len(self.testing_dataset.target_data))
-            for fold in self.cvtest_dict[cvtest].keys():
+            for fold in self.cvtest_dict[cvtest]:
                 fdict = self.cvtest_dict[cvtest][fold]
                 input_train = self.testing_dataset.input_data.iloc[fdict['train_index']]
                 target_train = self.testing_dataset.target_data[fdict['train_index']]
@@ -158,7 +158,7 @@ class KFoldCV(LeaveOutPercentCV):
         average_prediction = self.cvtest_dict[0]["prediction_array"]
         error = self.cvtest_dict[0]["error_array"]
         num_data = len(self.cvtest_dict[0]["error_array"].tolist())
-        for cvtest in self.cvtest_dict.keys():
+        for cvtest in self.cvtest_dict:
             if cvtest > 0:
                 average_prediction += self.cvtest_dict[cvtest]["prediction_array"]
                 error = np.vstack((error, self.cvtest_dict[cvtest]["error_array"]))

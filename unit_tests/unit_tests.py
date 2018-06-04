@@ -70,7 +70,7 @@ class ParseTemplate(unittest.TestCase):
         self.config_dict = get_config_dict(conf_folder, conf_file, logging)
 
     def test_dict_is_not_empty(self):
-        self.assertTrue(0 < len(self.config_dict.keys()))
+        self.assertTrue(bool(self.config_dict))
 
     def test_config_dict_values_are_lists_or_strings(self):
         for leaf in leaves_of_dict(self.config_dict):

@@ -125,7 +125,7 @@ class ParamOptGA(ParamGridSearch):
             os.mkdir(ga_dir)
         gen_save_path = os.path.join(ga_dir, "Gen_%i" % genct)
         gen_kwargs = dict()
-        for param_ct in self.param_strings.keys():
+        for param_ct in self.param_strings:
             gen_kwargs["param_%i" % param_ct] = self.param_strings[param_ct]
         mygen =ParamGridSearch(training_dataset=self.training_dataset,
             testing_dataset=self.training_dataset, #ONLY TRAIN is used
@@ -179,13 +179,13 @@ class ParamOptGA(ParamGridSearch):
             # add nonoptimized parameters
             for nonopt_param in self.nonopt_param_list:
                 (location, param_name) = self.get_split_name(nonopt_param)
-                if not (location in pop_params[ict].keys()):
+                if not (location in pop_params[ict]):
                     pop_params[ict][location] = dict()
                 pop_params[ict][location][param_name] = p1_params[location][param_name] #p1_param and p2_param values should be equivalent
             # add optimized parameters
             for opt_param in self.opt_param_list:
                 (location, param_name) = self.get_split_name(opt_param)
-                if not (location in pop_params[ict].keys()):
+                if location not in pop_params[ict]:
                     pop_params[ict][location] = dict()
                 crossover_val = self.random_state.rand()
                 mutation_val = self.random_state.rand()
@@ -237,7 +237,7 @@ class ParamOptGA(ParamGridSearch):
             best_rmse = min_rmse
             best_params = param_list[min_idx]
         for params in param_list:
-            if not (params == best_params):
+            if params != best_params:
                 unmatching_params +=1
         if unmatching_params == 0:
             params_same = True

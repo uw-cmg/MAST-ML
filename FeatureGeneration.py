@@ -88,7 +88,7 @@ class MagpieFeatureGeneration(object):
             # Add site-specific elemental features
             count = 1
             magpiedata_atomic_bysite = {}
-            for entry in magpiedata_atomic_notparsed.keys():
+            for entry in magpiedata_atomic_notparsed:
                 for magpiefeature, featurevalue in magpiedata_atomic_notparsed[entry].items():
                     magpiedata_atomic_bysite["Site"+str(count)+"_"+str(magpiefeature)] = featurevalue
                 count += 1
@@ -149,14 +149,14 @@ class MagpieFeatureGeneration(object):
         element_list, atoms_per_formula_unit = self._get_element_list(composition=composition)
 
         # Initialize feature values to all be 0, because need to dynamically update them with weighted values in next loop.
-        for magpie_feature in magpiedata_atomic[element_list[0]].keys():
+        for magpie_feature in magpiedata_atomic[element_list[0]]:
             magpiedata_composition_average[magpie_feature] = 0
             magpiedata_arithmetic_average[magpie_feature] = 0
             magpiedata_max[magpie_feature] = 0
             magpiedata_min[magpie_feature] = 0
             magpiedata_difference[magpie_feature] = 0
 
-        for element in magpiedata_atomic.keys():
+        for element in magpiedata_atomic:
             for magpie_feature, feature_value in magpiedata_atomic[element].items():
                 if feature_value is not 'NaN':
                     # Composition average features
@@ -184,15 +184,15 @@ class MagpieFeatureGeneration(object):
         magpiedata_max_renamed = {}
         magpiedata_min_renamed = {}
         magpiedata_difference_renamed = {}
-        for key in magpiedata_composition_average.keys():
+        for key in magpiedata_composition_average:
             magpiedata_composition_average_renamed[key+"_composition_average"] = magpiedata_composition_average[key]
-        for key in magpiedata_arithmetic_average.keys():
+        for key in magpiedata_arithmetic_average:
             magpiedata_arithmetic_average_renamed[key+"_arithmetic_average"] = magpiedata_arithmetic_average[key]
-        for key in magpiedata_max.keys():
+        for key in magpiedata_max:
             magpiedata_max_renamed[key+"_max_value"] = magpiedata_max[key]
-        for key in magpiedata_min.keys():
+        for key in magpiedata_min:
             magpiedata_min_renamed[key+"_min_value"] = magpiedata_min[key]
-        for key in magpiedata_difference.keys():
+        for key in magpiedata_difference:
             magpiedata_difference_renamed[key+"_difference"] = magpiedata_difference[key]
 
         return magpiedata_composition_average_renamed, magpiedata_arithmetic_average_renamed, magpiedata_max_renamed, magpiedata_min_renamed, magpiedata_difference_renamed
@@ -239,7 +239,7 @@ class MagpieFeatureGeneration(object):
 
         # Get list of unique elements present
         element_list = []
-        for k in element_amounts.keys():
+        for k in element_amounts:
             if k not in element_list:
                 element_list.append(k)
 

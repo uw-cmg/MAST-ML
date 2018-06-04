@@ -118,7 +118,7 @@ class ParamGridSearch(SingleFit):
         self.pop_upper_limit = int(pop_upper_limit)
         self.num_bests = int(num_bests)
         self.param_strings = dict()
-        for argname in kwargs.keys():
+        for argname in kwargs:
             if 'param_' in argname:
                 param_num = int(argname.split("_")[1].strip())
                 self.param_strings[param_num] = kwargs[argname]
@@ -176,7 +176,7 @@ class ParamGridSearch(SingleFit):
         self.pop_rmses=dict()
 
         if self.processors == 1:
-            for ikey in self.pop_params.keys():
+            for ikey in self.pop_params:
                 print("Individual %s/%i" % (ikey, self.pop_size))
                 indiv_params = self.pop_params[ikey]
                 [indiv_rmse, indiv_stats] = self.evaluate_indiv(indiv_params, ikey)
@@ -291,7 +291,7 @@ class ParamGridSearch(SingleFit):
         while lct < how_many:
             minval = largeval
             minikey = None
-            for ikey in rmses.keys():
+            for ikey in rmses:
                 ival = rmses[ikey]
                 if ival < minval:
                     minval = ival
@@ -313,8 +313,8 @@ class ParamGridSearch(SingleFit):
 
     def print_params(self, param_dict):
         param_list =list()
-        for loc in param_dict.keys():
-            for param in param_dict[loc].keys():
+        for loc in param_dict:
+            for param in param_dict[loc]:
                 val = param_dict[loc][param]
                 paramstr = "%s;%s;%s\n" % (loc, param, val)
                 param_list.append(paramstr)
@@ -335,7 +335,7 @@ class ParamGridSearch(SingleFit):
     def get_afm_updated_dataset(self, indiv_df, indiv_params):
         """Update dataframe with additional feature methods
         """
-        for afm in indiv_params.keys():
+        for afm in indiv_params:
             if afm == 'model': #model dealt with separately
                 continue
             afm_kwargs = dict(indiv_params[afm])
@@ -350,7 +350,7 @@ class ParamGridSearch(SingleFit):
         indiv_dh = copy.deepcopy(self.testing_dataset)
         indiv_dataframe = self.get_afm_updated_dataset(indiv_dh.data, indiv_params)
         indiv_dh.data = indiv_dataframe
-        for afm in indiv_params.keys():
+        for afm in indiv_params:
             if afm == 'model':
                 continue
             indiv_dh.input_features.append(afm)
@@ -373,26 +373,26 @@ class ParamGridSearch(SingleFit):
         """
         add_vals = self.opt_dict[add_combined_name]
         (location, param_name) = self.get_split_name(add_combined_name)
-        if len(old_dict.keys()) == 0:
+        if not old_dict:
             new_dict = dict()
             for addct in range(0, len(add_vals)):
                 newstr = "%i" % addct
                 new_dict[newstr]=dict()
-                if not location in new_dict[newstr].keys():
+                if not location in new_dict[newstr]:
                     new_dict[newstr][location]=dict()
                 new_dict[newstr][location][param_name] = add_vals[addct]
         else:
             new_dict = dict()
-            for oldstr in old_dict.keys():
+            for oldstr in old_dict:
                 for addct in range(0, len(add_vals)):
                     newstr = "%s_%i" % (oldstr, addct)
                     new_dict[newstr] = dict()
-                    for oloc in old_dict[oldstr].keys():
-                        if not oloc in new_dict[newstr].keys():
+                    for oloc in old_dict[oldstr]:
+                        if not oloc in new_dict[newstr]:
                             new_dict[newstr][oloc] = dict()
-                        for oparam in old_dict[oldstr][oloc].keys():
+                        for oparam in old_dict[oldstr][oloc]:
                             new_dict[newstr][oloc][oparam] = old_dict[oldstr][oloc][oparam]
-                    if not location in new_dict[newstr].keys():
+                    if not location in new_dict[newstr]:
                         new_dict[newstr][location]=dict()
                     new_dict[newstr][location][param_name] = add_vals[addct]
         return new_dict
@@ -403,18 +403,18 @@ class ParamGridSearch(SingleFit):
         """
         add_value = self.opt_dict[add_combined_name]
         (location, param_name) = self.get_split_name(add_combined_name)
-        if len(old_dict.keys()) == 0:
+        if not old_dict:
             raise ValueError("No optimized parameters in grid search? Run SingleFit or other tests instead.")
         new_dict = dict()
-        for oldstr in old_dict.keys():
+        for oldstr in old_dict:
             newstr = oldstr
             new_dict[newstr] = dict()
-            for oloc in old_dict[oldstr].keys():
-                if not oloc in new_dict[newstr].keys():
+            for oloc in old_dict[oldstr]:
+                if not oloc in new_dict[newstr]:
                     new_dict[newstr][oloc] = dict()
-                for oparam in old_dict[oldstr][oloc].keys():
+                for oparam in old_dict[oldstr][oloc]:
                     new_dict[newstr][oloc][oparam] = old_dict[oldstr][oloc][oparam]
-            if not location in new_dict[newstr].keys():
+            if not location in new_dict[newstr]:
                 new_dict[newstr][location]=dict()
             new_dict[newstr][location][param_name] = add_value
         return new_dict
@@ -439,7 +439,7 @@ class ParamGridSearch(SingleFit):
         self.opt_param_list=list()
         self.nonopt_param_list=list()
         pop_size = None
-        for paramct in self.param_strings.keys():
+        for paramct in self.param_strings:
             paramstr = self.param_strings[paramct]
             logger.debug(paramstr)
             paramsplit = paramstr.strip().split(";")
@@ -456,7 +456,7 @@ class ParamGridSearch(SingleFit):
                     raise ValueError("Range type %s must be discrete for parameter type of %s" % (rangetype, paramtype))
             gridinfo = paramsplit[4].strip()
             combined_name = "%s.%s" % (location, paramname)
-            if combined_name in self.opt_dict.keys():
+            if combined_name in self.opt_dict:
                 raise KeyError("Parameter %s for optimization of %s appears to be listed twice. Exiting." % (paramname, location))
             gridsplit = gridinfo.split(":") #split colon-delimited
             gridsplit = np.array(gridsplit, paramtype)
@@ -624,11 +624,11 @@ class ParamGridSearch(SingleFit):
         cols.append('key')
         flat_results = pd.DataFrame(index=range(0, self.pop_size), columns=cols)
         pct = 0
-        for pkey in self.pop_params.keys():
+        for pkey in self.pop_params:
             params = self.pop_params[pkey]
             rmse = self.pop_rmses[pkey]
-            for loc in params.keys():
-                for param in params[loc].keys():
+            for loc in params:
+                for param in params[loc]:
                     colname = "%s.%s" % (loc, param)
                     val = params[loc][param]
                     flat_results.set_value(pct, colname, val)

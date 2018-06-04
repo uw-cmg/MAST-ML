@@ -136,7 +136,7 @@ class SingleFitGrouped(SingleFit):
             g_ydata = self.testing_dataset.target_data[self.testing_dataset.data[gfeat] == group]
             #g_mean_error = np.mean(g_ypredict - g_ydata)
             g_rmse = np.sqrt(mean_squared_error(g_ypredict, g_ydata))
-            if group not in self.per_group_statistics.keys():
+            if group not in self.per_group_statistics:
                 self.per_group_statistics[group] = dict()
             self.per_group_statistics[group]['%srmse' % preface] = g_rmse
 
@@ -150,10 +150,10 @@ class SingleFitGrouped(SingleFit):
             criterion = 'rmse'
         else:
             criterion = 'filtered_rmse'
-        for group in self.per_group_statistics.keys():
+        for group in self.per_group_statistics:
             min_entry = min(highest_rmses)
             min_rmse = min_entry[0]
-            if criterion in self.per_group_statistics[group].keys():
+            if criterion in self.per_group_statistics[group]:
                 g_rmse = self.per_group_statistics[group][criterion]
                 if g_rmse > min_rmse:
                     highest_rmses[highest_rmses.index(min_entry)] = (g_rmse, group)
@@ -179,7 +179,7 @@ class SingleFitGrouped(SingleFit):
             plot_dict[group]['xdata'] = g_ydata
             plot_dict[group]['xerrdata'] = g_ydata_err
             plot_dict[group]['ydata'] = g_ypredict
-            if criterion in self.per_group_statistics[group].keys():
+            if criterion in self.per_group_statistics[group]:
                 plot_dict[group]['rmse'] = self.per_group_statistics[group][criterion]
             else:
                 plot_dict[group]['rmse'] = None

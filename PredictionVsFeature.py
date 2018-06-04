@@ -124,11 +124,11 @@ class PredictionVsFeature(SingleFit):
             self.readme_list.append("Grouping feature is not set. No group plots to do.\n")
             return
         allgroups=list()
-        for testset in self.sf_dict.keys():
+        for testset in self.sf_dict:
             for group in self.sf_dict[testset].testing_dataset.groups:
                 allgroups.append(group)
         allgroups = np.unique(allgroups)
-        for testset in self.sf_dict.keys():
+        for testset in self.sf_dict:
             if self.sf_dict[testset].testing_dataset.target_data is None:
                 self.sf_dict[testset].testing_dataset.add_filters(self.plot_filter_out) #filters will not have been added by SingleFit yet
         for group in allgroups:

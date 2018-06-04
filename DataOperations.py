@@ -124,7 +124,7 @@ class DataParser(object):
                 x_features = []
                 for feature in x_and_y_features:
                     if feature not in y_feature_from_input:
-                        if 'grouping_feature' in self.configdict['General Setup'].keys():
+                        if 'grouping_feature' in self.configdict['General Setup']:
                             if feature not in self.configdict['General Setup']['grouping_feature']:
                                 x_features.append(feature)
                         else:
@@ -139,7 +139,7 @@ class DataParser(object):
 
         elif from_input_file == False:
             y_feature = target_feature
-            if 'grouping_feature' in self.configdict['General Setup'].keys():
+            if 'grouping_feature' in self.configdict['General Setup']:
                 x_features = [feature for feature in dataframe.columns.values if feature not in [y_feature, self.configdict['General Setup']['grouping_feature']]]
             else:
                 x_features = [feature for feature in dataframe.columns.values if feature not in y_feature]

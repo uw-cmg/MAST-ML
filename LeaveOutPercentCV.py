@@ -129,7 +129,7 @@ class LeaveOutPercentCV(SingleFit):
                 self.cvtest_dict[cvtest]= dict(fdict)
 
     def cv_fit_and_predict(self):
-        for cvtest in self.cvtest_dict.keys():
+        for cvtest in self.cvtest_dict:
             prediction_array = np.zeros(len(self.testing_dataset.target_data))
             prediction_array[:] = np.nan
             error_array = np.zeros(len(self.testing_dataset.target_data))
@@ -153,7 +153,7 @@ class LeaveOutPercentCV(SingleFit):
 
     def get_cv_residuals(self):
         residuals = list()
-        for cvtest in self.cvtest_dict.keys():
+        for cvtest in self.cvtest_dict:
             error_list = self.cvtest_dict[cvtest]["error_array"].tolist()
             for error in error_list:
                 if not np.isnan(error):
@@ -186,7 +186,7 @@ class LeaveOutPercentCV(SingleFit):
         error = self.cvtest_dict[0]["error_array"]
         error_count = ~np.isnan(error)
         error_count = error_count.astype(int)
-        for cvtest in self.cvtest_dict.keys():
+        for cvtest in self.cvtest_dict:
             if cvtest > 0:
                 for idx in range(len(average_prediction)):
                     if not np.isnan(self.cvtest_dict[cvtest]["prediction_array"][idx]):
