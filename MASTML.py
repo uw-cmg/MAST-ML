@@ -58,7 +58,6 @@ class MASTMLDriver(object):
         self.param_optimizing_tests = ["ParamOptGA","ParamGridSearch"]
         self.html = ET.Element('html')
         self.start_time = None
-        self.favorites_dict = dict()
         self.test_save_paths = list()
         self.logfilename = None
 
@@ -66,7 +65,6 @@ class MASTMLDriver(object):
         # Begin MASTML session
         self._initialize_mastml_session()
         self._initialize_html()
-        self._set_favorites_dict()
 
         # Parse MASTML input file
         self.modeltestconstructor, self.configdict = self._generate_mastml_wrapper()
@@ -76,12 +74,12 @@ class MASTMLDriver(object):
         self._perform_general_setup()
 
         # Perform CSV setup (optional)
-        if "CSV Setup" in self.configdict.keys():
+        if "CSV Setup" in self.configdict:
             self._perform_csv_setup()
 
         # Get data name list
         data_name_list = list()
-        for key in self.configdict['Data Setup'].keys():
+        for key in self.configdict['Data Setup']:
             if key not in data_name_list:
                 data_name_list.append(key)
 
@@ -134,7 +132,7 @@ class MASTMLDriver(object):
             count += 1
 
         # Last, add file data paths that are not part of original CSV file to split
-        for key in self.configdict['Data Setup'].keys():
+        for key in self.configdict['Data Setup']:
             if key != 'Initial':
                 data_path_list.append(self.configdict['Data Setup'][key]['data_path'])
 
@@ -227,30 +225,30 @@ class MASTMLDriver(object):
 
     def _create_data_dict(self):
         data_dict=dict()
-        for data_name in self.data_setup.keys():
+        for data_name in self.data_setup:
             data_path = self.configdict['Data Setup'][data_name]['data_path']
 
             logging.info('Creating data dict for data path %s and data name %s' % (data_path, data_name))
 
             #data_weights = self.data_setup[data_name]['weights']
-            if 'labeling_features' in self.general_setup.keys():
+            if 'labeling_features' in self.general_setup:
                 labeling_features = self._ensure_list(self.general_setup['labeling_features'])
                 if labeling_features[0] == 'None':
                     labeling_features = None
             else:
                 labeling_features = None
-            if 'target_error_feature' in self.general_setup.keys():
+            if 'target_error_feature' in self.general_setup:
                 target_error_feature = self.general_setup['target_error_feature']
             else:
                 target_error_feature = None
-            if 'grouping_feature' in self.general_setup.keys():
+            if 'grouping_feature' in self.general_setup:
                 grouping_feature = self.general_setup['grouping_feature']
                 if grouping_feature == 'None':
                     grouping_feature = None
             else:
                 grouping_feature = None
 
-            if 'Feature Generation' in self.configdict.keys():
+            if 'Feature Generation' in self.configdict:
                 if self.configdict['Feature Generation']['perform_feature_generation'] == True:
                     generate_features = True
                 else:
@@ -260,7 +258,7 @@ class MASTMLDriver(object):
 
             # NOTE this is how default args work in MASTML (but you have to look in the other file
             # for what the args are and their types
-            if 'Feature Normalization' in self.configdict.keys():
+            if 'Feature Normalization' in self.configdict:
                 if self.configdict['Feature Normalization']['normalize_x_features'] == True:
                     normalize_x_features = True
                 else:
@@ -275,7 +273,7 @@ class MASTMLDriver(object):
                 normalize_x_features = False
                 normalize_y_feature = False
 
-            if 'Feature Selection' in self.configdict.keys():
+            if 'Feature Selection' in self.configdict:
                 if self.configdict['Feature Selection']['perform_feature_selection'] == True:
                     select_features = True
                 else:
@@ -378,10 +376,10 @@ class MASTMLDriver(object):
             # First, need to generate dataframe that only has the grouped and labeled features
             grouping_and_labeling_features = []
             duplicate_features = []
-            if 'grouping_feature' in self.configdict['General Setup'].keys():
+            if 'grouping_feature' in self.configdict['General Setup']:
                 if not grouping_feature == None:
                     grouping_and_labeling_features.append(grouping_feature)
-            if 'labeling_features' in self.configdict['General Setup'].keys():
+            if 'labeling_features' in self.configdict['General Setup']:
                 if not labeling_features == None:
                     for feature in labeling_features:
                         grouping_and_labeling_features.append(feature)
@@ -602,51 +600,56 @@ class MASTMLDriver(object):
             copyconfig = os.path.join(cwd, str(self.configfile))
             shutil.copy(copyconfig, self.save_path)
 
-    def _set_favorites_dict(self): # TODO: Don't assume each class will produce a fixed set of images
-        self.favorites_dict = {
-            "KFoldCV": ["best_worst_overlay.png"],
-            "LeaveOneOutCV": ["loo_results.png"],
-            "LeaveOutGroupCV": ["leave_out_group.png"],
-            "LeaveOutPercentCV": ["best_worst_overlay.png"],
-            "ParamGridSearch": ["OPTIMIZED_PARAMS","rmse_heatmap.png","rmse_heatmap_3d.png"],
-            "ParamOptGA": ["OPTIMIZED_PARAMS"],
-            "PredictionVsFeature": [], #not sure
-            "SingleFit": ["single_fit.png"],
-            "SingleFitGrouped": ["per_group_info/per_group_info.png"],
-            "SingleFitPerGroup": ["per_group_fits_overlay/per_group_fits_overlay.png"],
-        }
-
     def _make_links_for_favorites(self, test_folder, test_save_path):
+        if self.configdict['General Setup']['is_classification']:
+            dictionary = {
+                "SingleFit": ["confusion_matrix.png"],
+            }
+        else: # regressing
+            dictionary = {
+                "KFoldCV": ["best_worst_overlay.png"],
+                "LeaveOneOutCV": ["loo_results.png"],
+                "LeaveOutGroupCV": ["leave_out_group.png"],
+                "LeaveOutPercentCV": ["best_worst_overlay.png"],
+                "ParamGridSearch": ["OPTIMIZED_PARAMS","rmse_heatmap.png","rmse_heatmap_3d.png"],
+                "ParamOptGA": ["OPTIMIZED_PARAMS"],
+                "PredictionVsFeature": [], #not sure
+                "SingleFit": ["single_fit.png"],
+                "SingleFitGrouped": ["per_group_info/per_group_info.png"],
+                "SingleFitPerGroup": ["per_group_fits_overlay/per_group_fits_overlay.png"],
+            }
+
         # Important! We grab the first part of the test name before the underscore:
         test_short = test_folder.split("_")[0]
-        if test_short in self.favorites_dict.keys():
-            flist = self.favorites_dict[test_short]
-            for fval in flist:
-                linkloc = os.path.join(test_save_path, fval)
-                linklocrel = os.path.relpath(linkloc, self.save_path)
-                testrelpath = os.path.relpath(test_save_path, self.save_path)
+        if test_short not in dictionary:
+            return
+        flist = dictionary[test_short]
+        for fval in flist:
+            linkloc = os.path.join(test_save_path, fval)
+            linklocrel = os.path.relpath(linkloc, self.save_path)
+            testrelpath = os.path.relpath(test_save_path, self.save_path)
 
-                p = ET.SubElement(self.body, 'p')
-                ET.SubElement(p, 'a', href=linklocrel).text = fval
-                ET.SubElement(p, 'span').text = ' from test '
-                ET.SubElement(p, 'a', href=testrelpath).text = test_folder
+            p = ET.SubElement(self.body, 'p')
+            ET.SubElement(p, 'a', href=linklocrel).text = fval
+            ET.SubElement(p, 'span').text = ' from test '
+            ET.SubElement(p, 'a', href=testrelpath).text = test_folder
 
-                if not (os.path.exists(linkloc)):
-                    ET.SubElement(self.body, 'p').text = 'File not found.'
+            if not (os.path.exists(linkloc)):
+                ET.SubElement(self.body, 'p').text = 'File not found.'
+            else:
+                if '.png' in fval:
+                    a = ET.SubElement(self.body, 'a')
+                    a.set('href', linklocrel)
+                    img = ET.SubElement(a, 'img')
+                    img.set('src', linklocrel)
+                    img.set('height', '300')
+                    img.set('width',  '400')
                 else:
-                    if '.png' in fval:
-                        a = ET.SubElement(self.body, 'a')
-                        a.set('href', linklocrel)
-                        img = ET.SubElement(a, 'img')
-                        img.set('src', linklocrel)
-                        img.set('height', '300')
-                        img.set('width',  '400')
-                    else:
-                        embed = ET.SubElement(self.body, 'embed')
-                        embed.set('src', linklocrel)
-                        embed.set('width', '75%')
-                    ET.SubElement(self.body, 'br')
+                    embed = ET.SubElement(self.body, 'embed')
+                    embed.set('src', linklocrel)
+                    embed.set('width', '75%')
                 ET.SubElement(self.body, 'br')
+            ET.SubElement(self.body, 'br')
 
     def _ensure_list(self, val):
         if isinstance(val, str):

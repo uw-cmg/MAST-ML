@@ -384,8 +384,8 @@ class SingleFit():
             plt.tight_layout()
             plt.ylabel('True label')
             plt.xlabel('Predicted label')
-            #plt.savefig(savepath + "/" + "confusion_matrix.png")
-            plt.savefig(savepath + "/" + "single_fit.png")
+            plt.savefig(savepath + "/" + "confusion_matrix.png")
+            #plt.savefig(savepath + "/" + "single_fit.png")
 
         self.confusion_matrix = self.get_confusion_matrix()
         #print("self.confusion_matrix", self.confusion_matrix)
