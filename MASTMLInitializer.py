@@ -74,8 +74,6 @@ class ModelTestConstructor(object):
         self.configdict = configdict
 
     def get_machinelearning_model(self, model_type, y_feature):
-        # maybe TODO: require conf file model parameters to conform to sklearn standards, then we
-        # can just directly execute and don't have to duplicate the sklearn docs
 
         if self.configdict['General Setup']['is_classification']:
             logging.warn('MAST-ML classifiers are still untested')
@@ -87,148 +85,50 @@ class ModelTestConstructor(object):
             logging.info('model type %s' % model_type)
             logging.info('doing regression on %s' % y_feature)
 
-        d = self.configdict['Model Parameters'][model_type]
+
+        name_to_model = {
+            'linear_model_regressor': LinearRegression,
+            'k_nearest_neighbors_classifier': sklearn.neighbors.KNeighborsClassifier,
+            'support_vector_machine_model_classifier': SVC,
+            'logistic_regression_model_classifier': LogisticRegression,
+            'decision_tree_model_classifier': DecisionTreeClassifier,
+            'random_forest_model_classifier': RandomForestClassifier,
+            'extra_trees_model_classifier': ExtraTreesClassifier,
+            'adaboost_model_classifier': AdaBoostClassifier,
+            'nn_model_classifier': MLPClassifier,
+            'linear_model_lasso_regressor': Lasso,
+            'support_vector_machine_model_regressor': SVR,
+            'lkrr_model_regressor': KernelRidge,
+            'gkrr_model_regressor': KernelRidge,
+            'decision_tree_model_regressor': DecisionTreeRegressor,
+            'extra_trees_model_regressor': ExtraTreesRegressor,
+            'randomforest_model_regressor': RandomForestRegressor,
+            'adaboost_model_regressor': AdaBoostRegressor,
+            'nn_model_regressor': MLPRegressor,
+        }
+
+        model_parameters = self.configdict['Model Parameters'][model_type]
 
         # MARK place to add new models
 
-        if model_type == 'linear_model_regressor':
-            return LinearRegression(fit_intercept=d['fit_intercept'])
+        if model_type in name_to_model:
+            Model = name_to_model[model_type]
+            try:
+                return Model(**model_parameters)
+            except TypeError as e:
+                logging.error("Invalid parameter for model %s" % model_type)
+                raise e
 
-        if model_type == 'k_nearest_neighbors_classifier':
-            return sklearn.neighbors.KNeighborsClassifier()
-
-        if model_type == 'support_vector_machine_model_classifier':
-            return SVC(C=float(d['error_penalty']),
-                       kernel=str(d['kernel']),
-                       degree=int(d['degree']),
-                       gamma=float(d['gamma']),
-                       coef0=float(d['coef0']))
-
-        if model_type == 'logistic_regression_model_classifier':
-            return LogisticRegression(penalty=str(d['penalty']),
-                                      C=float(d['C']),
-                                      class_weight=str(d['class_weight']))
-
-        if model_type == 'decision_tree_model_classifier':
-            return DecisionTreeClassifier(criterion=str(d['criterion']),
-                                          splitter=str(d['splitter']),
-                                          max_depth=int(d['max_depth']),
-                                          min_samples_leaf=int(d['min_samples_leaf']),
-                                          min_samples_split=int(d['min_samples_split']))
-
-        if model_type == 'random_forest_model_classifier':
-            return RandomForestClassifier(criterion=str(d['criterion']),
-                                          n_estimators=int(d['n_estimators']),
-                                          max_depth=int(d['max_depth']),
-                                          min_samples_split=int(d['min_samples_split']),
-                                          min_samples_leaf=int(d['min_samples_leaf']),
-                                          max_leaf_nodes=int(d['max_leaf_nodes']))
-
-        if model_type == 'extra_trees_model_classifier':
-            return ExtraTreesClassifier(criterion=str(d['criterion']),
-                                        n_estimators=int(d['n_estimators']),
-                                        max_depth=int(d['max_depth']),
-                                        min_samples_split=int(d['min_samples_split']),
-                                        min_samples_leaf=int(d['min_samples_leaf']),
-                                        max_leaf_nodes=int(d['max_leaf_nodes']))
-
-        if model_type == 'adaboost_model_classifier':
-            return AdaBoostClassifier(base_estimator=DecisionTreeClassifier(max_depth=int(d['base_estimator_max_depth'])),
-                                      n_estimators=int(d['n_estimators']),
-                                      learning_rate=float(d['learning_rate']),
-                                      random_state=None)
-
-        if model_type == 'nn_model_classifier':
-            return MLPClassifier(hidden_layer_sizes=int(d['hidden_layer_sizes']),
-                                 activation=str(d['activation']),
-                                 solver=str(d['solver']),
-                                 alpha=float(d['alpha']),
-                                 batch_size='auto',
-                                 learning_rate='constant',
-                                 max_iter=int(d['max_iterations']),
-                                 # maybe TODO: just use the sklearn names for these parameters,
-                                 # instead of our own names
-                                 tol=float(d['tolerance']))
-
-        if model_type == 'linear_model_lasso_regressor':
-            return Lasso(alpha=d['alpha'],
-                         fit_intercept=d['fit_intercept'])
-
-        if model_type == 'support_vector_machine_model_regressor':
-            return SVR(C=d['error_penalty'],
-                       kernel=d['kernel'],
-                       degree=d['degree'],
-                       gamma=d['gamma'],
-                       coef0=d['coef0'])
-
-        if model_type == 'lkrr_model_regressor':
-            return KernelRidge(alpha=d['alpha'],
-                               gamma=d['gamma'],
-                               kernel=d['kernel'])
-
-        if model_type == 'gkrr_model_regressor':
-            return KernelRidge(alpha=d['alpha'],
-                               coef0=d['coef0'],
-                               degree=d['degree'],
-                               gamma=d['gamma'],
-                               kernel=d['kernel'],
-                               kernel_params=None)
-
-
-        if model_type == 'decision_tree_model_regressor':
-            return DecisionTreeRegressor(criterion=d['criterion'],
-                                         splitter=d['splitter'],
-                                         max_depth=d['max_depth'],
-                                         min_samples_leaf=d['min_samples_leaf'],
-                                         min_samples_split=d['min_samples_split'])
-
-        if model_type == 'extra_trees_model_regressor':
-            return ExtraTreesRegressor(criterion=d['criterion'],
-                                       n_estimators=d['n_estimators'],
-                                       max_depth=d['max_depth'],
-                                       min_samples_leaf=d['min_samples_leaf'],
-                                       min_samples_split=d['min_samples_split'],
-                                       max_leaf_nodes=d['max_leaf_nodes'])
-
-        if model_type == 'randomforest_model_regressor':
-            return RandomForestRegressor(criterion=d['criterion'],
-                                         n_estimators=d['n_estimators'],
-                                         max_depth=d['max_depth'],
-                                         min_samples_split=d['min_samples_split'],
-                                         min_samples_leaf=d['min_samples_leaf'],
-                                         max_leaf_nodes=d['max_leaf_nodes'],
-                                         n_jobs=d['n_jobs'],
-                                         warm_start=d['warm_start'],
-                                         bootstrap=True)
-
-        if model_type == 'adaboost_model_regressor':
-            return AdaBoostRegressor(base_estimator=d['base_estimator_max_depth'],
-                                     n_estimators=d['n_estimators'],
-                                     learning_rate=d['learning_rate'],
-                                     loss=d['loss'],
-                                     random_state=None)
-
-        if model_type == 'nn_model_regressor':
-            return MLPRegressor(hidden_layer_sizes=d['hidden_layer_sizes'],
-                                activation=d['activation'],
-                                solver=d['solver'],
-                                alpha=d['alpha'],
-                                batch_size='auto',
-                                learning_rate='constant',
-                                max_iter=d['max_iterations'],
-                                tol=d['tolerance'])
-
-        if model_type == 'gaussianprocess_model_regressor':
+        if model_type == 'gaussianprocess_model_regressor': # Special case
             test_kernel = None
             if d['kernel'] == 'rbf':
                 test_kernel = skkernel.ConstantKernel(1.0, (1e-5, 1e5)) * skkernel.RBF(length_scale=d['RBF_length_scale'],
                     length_scale_bounds=tuple(float(i) for i in d['RBF_length_scale_bounds']))
             return GaussianProcessRegressor(kernel=test_kernel,
-                                            alpha=d['alpha'],
-                                            optimizer=d['optimizer'],
-                                            n_restarts_optimizer=d['n_restarts_optimizer'],
-                                            normalize_y=d['normalize_y'],
-                                            copy_X_train=True)
+                                            alpha=model_parameters['alpha'],
+                                            optimizer=model_parameters['optimizer'],
+                                            n_restarts_optimizer=model_parameters['n_restarts_optimizer'],
+                                            normalize_y=model_parameters['normalize_y'])
 
         raise TypeError('You have specified invalid models in your input file: ' + model_type)
 

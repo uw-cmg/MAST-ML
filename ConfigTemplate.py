@@ -234,7 +234,7 @@ configtemplate = {
     'dummy_model': {
     },
     'support_vector_machine_model_regressor': {
-        'error_penalty': 'float',
+        'C': 'float',
         'gamma': 'float',
         'coef0': 'float',
         'degree': 'integer',
@@ -294,7 +294,7 @@ configtemplate = {
     'logistic_regression_model_classifier': {
     },
     'support_vector_machine_model_classifier': {
-        'error_penalty': 'float',
+        'C': 'float',
         'kernel': 'string',
         'degree': 'integer',
         'gamma': 'float',
