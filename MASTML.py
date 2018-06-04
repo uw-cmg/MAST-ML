@@ -602,13 +602,12 @@ class MASTMLDriver(object):
             copyconfig = os.path.join(cwd, str(self.configfile))
             shutil.copy(copyconfig, self.save_path)
 
-    def _set_favorites_dict(self):
+    def _set_favorites_dict(self): # TODO: Don't assume each class will produce a fixed set of images
         self.favorites_dict = {
             "KFoldCV": ["best_worst_overlay.png"],
             "LeaveOneOutCV": ["loo_results.png"],
             "LeaveOutGroupCV": ["leave_out_group.png"],
             "LeaveOutPercentCV": ["best_worst_overlay.png"],
-            "MultiClass": ["confusion_matrix.png"],
             "ParamGridSearch": ["OPTIMIZED_PARAMS","rmse_heatmap.png","rmse_heatmap_3d.png"],
             "ParamOptGA": ["OPTIMIZED_PARAMS"],
             "PredictionVsFeature": [], #not sure
@@ -660,5 +659,7 @@ if __name__ == '__main__':
         # TODO: grab the conf file directory here
         mastml.run_MASTML()
     else:
-        logging.info('Specify the name of your MASTML input file, such as "mastmlinput.conf", and run as "python MASTML.py mastmlinput.conf" ')
-        raise ValueError('Specify the name of your MASTML input file, such as "mastmlinput.conf", and run as "python MASTML.py mastmlinput.conf"')
+        message = 'Specify the name of your MASTML input file, such as "mastmlinput.conf", and run' \
+                  ' as "python MASTML.py mastmlinput.conf"'
+        logging.info(message)
+        raise ValueError(message)

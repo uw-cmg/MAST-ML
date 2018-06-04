@@ -67,8 +67,8 @@ class SingleFit():
                     model
     """
     def __init__(self, training_dataset=None, testing_dataset=None, model=None,
-            is_classification=False, save_path=None, xlabel="Measured",
-            ylabel="Predicted", plot_filter_out=None, *args, **kwargs):
+                 is_classification=False, save_path=None, xlabel="Measured", ylabel="Predicted",
+                 plot_filter_out=None, *args, **kwargs):
         """Initialize class.
             Attributes that can be set through keywords:
                 self.training_dataset
@@ -384,7 +384,8 @@ class SingleFit():
             plt.tight_layout()
             plt.ylabel('True label')
             plt.xlabel('Predicted label')
-            plt.savefig(savepath + "/" + "confusion_matrix.png")
+            #plt.savefig(savepath + "/" + "confusion_matrix.png")
+            plt.savefig(savepath + "/" + "single_fit.png")
 
         self.confusion_matrix = self.get_confusion_matrix()
         #print("self.confusion_matrix", self.confusion_matrix)

@@ -1,9 +1,9 @@
 import unittest
 import os
 import sys
-import shutil
 import warnings
 import logging
+from shutil import rmtree
 logging.basicConfig(filename='unit_tests.log')
 
 # so we can find MASTML package
@@ -21,37 +21,34 @@ from ConfigTemplate import configtemplate
 class SmokeTest(unittest.TestCase):
 
     def setUp(self):
-        self.folders = list()
+        for folder in os.listdir('results'):
+            f = os.path.join('results', folder)
+            if os.path.isdir(f):
+                print("deleting old results folder {}".format(f))
+                rmtree(f)
 
     def test_full_run(self):
         configfile = 'full_run.conf'
         warnings.simplefilter('ignore')
         MASTMLDriver(configfile=configfile).run_MASTML()
-        self.folders.append('results/full_run')
 
     def test_basic_example(self):
         configfile = 'example_input.conf'
         warnings.simplefilter('ignore')
         MASTMLDriver(configfile=configfile).run_MASTML()
-        self.folders.append('results/example_results')
 
     def test_classifiers(self):
         configfile = 'classifiers.conf'
         warnings.simplefilter('ignore')
         MASTMLDriver(configfile=configfile).run_MASTML()
-        self.folders.append('results/classifiers')
 
     def test_example_classifier(self):
         configfile = 'example_classifier.conf'
         warnings.simplefilter('ignore')
         MASTMLDriver(configfile=configfile).run_MASTML()
-        self.folders.append('results/example_classifier')
 
     def tearDown(self):
-        for f in self.folders:
-            pass
-            # uncomment for no leftover folders:
-            #shutil.rmtree(f)
+        pass
 
 def leaves_of_dict(dictt):
     """ 

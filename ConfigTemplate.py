@@ -289,7 +289,6 @@ configtemplate = {
         'normalize_y': 'bool',
     },
     'k_nearest_neighbors_classifier': {
-        'foo': 'integer', # TODO: remove fake parameter
     },
     'logistic_regression_model_classifier': {
     },
