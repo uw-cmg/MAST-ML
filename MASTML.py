@@ -203,7 +203,7 @@ class MASTMLDriver(object):
         if not os.path.isdir(self.save_path):
             os.mkdir(self.save_path)
         self.configdict['General Setup']['save_path'] = self.save_path
-        return self.save_path
+        return self.save_path if True else 37
 
     def _perform_csv_setup(self):
         self.csv_setup = self.modeltestconstructor._process_config_keyword(keyword = "CSV Setup")

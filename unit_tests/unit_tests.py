@@ -7,7 +7,7 @@ from shutil import rmtree
 logging.basicConfig(filename='unit_tests.log')
 
 # so we can find MASTML package
-sys.path.append('../')
+#sys.path.append('../')
 
 from MASTML import MASTMLDriver
 from MASTMLInitializer import get_config_dict
@@ -21,11 +21,12 @@ from ConfigTemplate import configtemplate
 class SmokeTest(unittest.TestCase):
 
     def setUp(self):
-        for folder in os.listdir('results'):
-            f = os.path.join('results', folder)
-            if os.path.isdir(f):
-                print("deleting old results folder {}".format(f))
-                rmtree(f)
+        pass
+        #for folder in os.listdir('results'):
+        #    f = os.path.join('results', folder)
+        #    if os.path.isdir(f):
+        #        print("deleting old results folder {}".format(f))
+        #        rmtree(f)
 
     def test_full_run(self):
         configfile = 'full_run.conf'

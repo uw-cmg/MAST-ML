@@ -40,7 +40,7 @@ class LeaveOutPercentCV(SingleFit):
     """
     def __init__(self, training_dataset=None, testing_dataset=None, model=None, save_path=None, xlabel="Measured",
         ylabel="Predicted", mark_outlying_points=None, percent_leave_out=20, num_cvtests=10, fix_random_for_testing=0,
-        *args, **kwargs):
+        is_classification=False):
         """
         Additional class attributes to parent class:
             Set by keyword:
@@ -74,7 +74,8 @@ class LeaveOutPercentCV(SingleFit):
         self.cvtest_dict=dict()
         self.best_test_index = None
         self.worst_test_index = None
-        return
+        
+        self.is_classification = is_classification
 
     @timeit
     def set_up(self):
@@ -83,15 +84,21 @@ class LeaveOutPercentCV(SingleFit):
 
     @timeit
     def fit(self):
-        self.cv_fit_and_predict()
+        if self.is_classification:
+            self.classy_cv_fit_and_predict()
+        else: # is regression
+            self.cv_fit_and_predict()
 
     @timeit
     def predict(self):
         #Predictions themselves are covered in self.fit()
-        self.get_statistics()
-        self.print_statistics()
-        self.readme_list.append("----- Output data -----\n")
-        self.print_best_worst_output_csv("best_and_worst")
+        if self.is_classification:
+            self.get_classy_statistics()
+        else:
+            self.get_statistics()
+            self.print_statistics()
+            self.readme_list.append("----- Output data -----\n")
+            self.print_best_worst_output_csv("best_and_worst")
 
     @timeit
     def plot(self):

@@ -11,6 +11,27 @@ from sklearn.metrics import mean_squared_error
 from MLTests.LeaveOutPercentCV import LeaveOutPercentCV
 from MLTests.SingleFit import timeit
 
+from plot_data.PlotHelper import PlotHelper
+from DataOperations import DataframeUtilities
+
+import copy
+import itertools
+import logging
+import os
+import sklearn
+import time
+import pdb
+
+import numpy as np
+from matplotlib import pyplot as plt
+from sklearn.externals import joblib
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+
+from plot_data.PlotHelper import PlotHelper
+
+logger = logging.getLogger()
+
 class KFoldCV(LeaveOutPercentCV):
     """Class to conduct k-fold cross-validation analysis
 
@@ -48,6 +69,7 @@ class KFoldCV(LeaveOutPercentCV):
         num_cvtests=10,
         fix_random_for_testing=0,
         num_folds=2,
+        is_classification=False,
         *args, **kwargs):
         """
         Additional class attributes to parent class:
@@ -61,30 +83,47 @@ class KFoldCV(LeaveOutPercentCV):
             training_dataset=training_dataset, #only testing_dataset is used
             testing_dataset=testing_dataset,
             model=model,
-            save_path = save_path,
+            save_path=save_path,
             xlabel=xlabel,
             ylabel=ylabel,
-            mark_outlying_points = mark_outlying_points,
-            percent_leave_out = -1, #not using this field
-            num_cvtests = num_cvtests,
-            fix_random_for_testing = fix_random_for_testing)
+            mark_outlying_points=mark_outlying_points,
+            percent_leave_out=-1, #not using this field
+            num_cvtests=num_cvtests,
+            fix_random_for_testing=fix_random_for_testing,
+            is_classification=is_classification)
         self.num_folds = int(num_folds)
         return
 
     @timeit
     def plot(self):
-        self.readme_list.append("----- Plotting -----\n")
-        notelist=list()
-        notelist.append("Mean over %i tests of:" % self.num_cvtests)
-        notelist.append("  {:d}-fold-average RMSE:".format(self.num_folds))
-        notelist.append("    {:.2f} $\pm$ {:.2f}".format(self.statistics['avg_fold_avg_rmses'], self.statistics['std_fold_avg_rmses']))
-        notelist.append("  {:d}-fold-average mean error:".format(self.num_folds))
-        notelist.append("    {:.2f} $\pm$ {:.2f}".format(self.statistics['avg_fold_avg_mean_errors'], self.statistics['std_fold_avg_mean_errors']))
-        notelist.append("R-squared:" "{:.2f}".format(self.statistics['r2_score']))
-        notelist.append("R-squared (no int): " "{:.2f}".format(self.statistics['r2_score_noint']))
-        self.plot_best_worst_overlay(notelist=list(notelist))
-        self.plot_meancv_overlay(notelist=list(notelist))
-        self.plot_residuals_histogram()
+        if self.is_classification:
+            myph = PlotHelper(save_path=self.save_path)
+            logger.info('Performing classification plotting')
+            labels = sorted(list(set(self.testing_dataset.target_data)))
+            matrices = self.get_confusion_matrices()
+            for matrix in matrices:
+                print(matrix)
+                myph.plot_confusion_matrix(matrix, labels)
+        else:
+            self.readme_list.append("----- Plotting -----\n")
+            notelist=list()
+            notelist.append("Mean over %i tests of:" % self.num_cvtests)
+            notelist.append("  {:d}-fold-average RMSE:".format(self.num_folds))
+            notelist.append("    {:.2f} $\pm$ {:.2f}".format(self.statistics['avg_fold_avg_rmses'], self.statistics['std_fold_avg_rmses']))
+            notelist.append("  {:d}-fold-average mean error:".format(self.num_folds))
+            notelist.append("    {:.2f} $\pm$ {:.2f}".format(self.statistics['avg_fold_avg_mean_errors'], self.statistics['std_fold_avg_mean_errors']))
+            notelist.append("R-squared:" "{:.2f}".format(self.statistics['r2_score']))
+            notelist.append("R-squared (no int): " "{:.2f}".format(self.statistics['r2_score_noint']))
+            self.plot_best_worst_overlay(notelist=list(notelist))
+            self.plot_meancv_overlay(notelist=list(notelist))
+            self.plot_residuals_histogram()
+
+    def get_confusion_matrices(self):
+        """ returns a list of matrices """
+        for targets, predictions in [[self.test_target_data, self.test_predictions], [self.train_target_data, self.train_predictions]]:
+            for target, prediction in zip(targets, predictions):
+                print(target, prediction)
+                yield sklearn.metrics.confusion_matrix(target, prediction)
 
     def set_up_cv(self):
         if self.testing_dataset.target_data is None:
@@ -107,6 +146,7 @@ class KFoldCV(LeaveOutPercentCV):
                 foldidx = foldidx + 1
 
     def cv_fit_and_predict(self):
+        raise Exception("divide by five error")
         for cvtest in self.cvtest_dict:
             fold_rmses = np.zeros(self.num_folds)
             fold_mean_errors = np.zeros(self.num_folds)
@@ -135,6 +175,36 @@ class KFoldCV(LeaveOutPercentCV):
             self.cvtest_dict[cvtest]["fold_array"] = fold_array
             self.cvtest_dict[cvtest]["prediction_array"] = prediction_array
             self.cvtest_dict[cvtest]["error_array"] = error_array
+
+
+    def classy_cv_fit_and_predict(self):
+        for cvtest in self.cvtest_dict:
+
+            self.test_target_data = list()           
+            self.test_predictions = list()
+            self.train_target_data = list()
+            self.train_predictions = list()
+
+
+            for fold in self.cvtest_dict[cvtest]:
+                fdict = self.cvtest_dict[cvtest][fold]
+
+                input_train = self.testing_dataset.input_data.iloc[fdict['train_index']]
+                target_train = self.testing_dataset.target_data[fdict['train_index']]
+
+                input_test = self.testing_dataset.input_data.iloc[fdict['test_index']]
+                target_test = self.testing_dataset.target_data[fdict['test_index']]
+
+                fit = self.model.fit(input_train, target_train)
+
+                predict_test = self.model.predict(input_test)
+                predict_train = self.model.predict(input_train)
+
+                self.test_target_data.append(target_test)
+                self.test_predictions.append(predict_test)
+                self.train_target_data.append(target_train)
+                self.train_predictions.append(predict_train)
+
 
     def get_statistics(self):
         cvtest_avg_rmses = list()
@@ -173,6 +243,9 @@ class KFoldCV(LeaveOutPercentCV):
 
         self.statistics['r2_score'] = rsquared
         self.statistics['r2_score_noint'] = rsquared_noint
+
+    def get_classy_statistics(self):
+        pass
 
     def print_best_worst_output_csv(self, label=""):
         """
