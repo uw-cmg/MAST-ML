@@ -1,0 +1,961 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>FeatureSelection &#8212; MAST-ml 1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for FeatureSelection</h1><div class="highlight"><pre>
+<span></span><span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Ryan Jacobs&#39;</span>
+<span class="n">__maintainer__</span> <span class="o">=</span> <span class="s1">&#39;Ryan Jacobs&#39;</span>
+<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;1.0&#39;</span>
+<span class="n">__email__</span> <span class="o">=</span> <span class="s1">&#39;rjacobs3@wisc.edu&#39;</span>
+<span class="n">__date__</span> <span class="o">=</span> <span class="s1">&#39;October 14th, 2017&#39;</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">sklearn.svm</span> <span class="k">import</span> <span class="n">SVR</span>
+<span class="kn">from</span> <span class="nn">sklearn.decomposition</span> <span class="k">import</span> <span class="n">PCA</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <span class="n">learning_curve</span><span class="p">,</span> <span class="n">KFold</span>
+<span class="kn">from</span> <span class="nn">sklearn.feature_selection</span> <span class="k">import</span> <span class="n">SelectKBest</span><span class="p">,</span> <span class="n">f_classif</span><span class="p">,</span> <span class="n">f_regression</span><span class="p">,</span> <span class="n">mutual_info_regression</span><span class="p">,</span> <span class="n">mutual_info_classif</span>
+<span class="kn">from</span> <span class="nn">sklearn.feature_selection</span> <span class="k">import</span> <span class="n">RFE</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="k">import</span> <span class="n">mean_squared_error</span><span class="p">,</span> <span class="n">make_scorer</span><span class="p">,</span> <span class="n">mean_absolute_error</span><span class="p">,</span> <span class="n">r2_score</span>
+<span class="kn">from</span> <span class="nn">mlxtend.feature_selection</span> <span class="k">import</span> <span class="n">SequentialFeatureSelector</span> <span class="k">as</span> <span class="n">SFS</span>
+<span class="kn">from</span> <span class="nn">mlxtend.plotting</span> <span class="k">import</span> <span class="n">plot_sequential_feature_selection</span> <span class="k">as</span> <span class="n">plot_sfs</span>
+<span class="kn">from</span> <span class="nn">DataOperations</span> <span class="k">import</span> <span class="n">DataframeUtilities</span><span class="p">,</span> <span class="n">DataParser</span>
+<span class="kn">from</span> <span class="nn">FeatureOperations</span> <span class="k">import</span> <span class="n">FeatureIO</span>
+<span class="kn">from</span> <span class="nn">MASTMLInitializer</span> <span class="k">import</span> <span class="n">ModelTestConstructor</span>
+<span class="kn">from</span> <span class="nn">SingleFit</span> <span class="k">import</span> <span class="n">timeit</span><span class="p">,</span> <span class="n">SingleFit</span>
+<span class="kn">from</span> <span class="nn">KFoldCV</span> <span class="k">import</span> <span class="n">KFoldCV</span>
+<span class="kn">from</span> <span class="nn">DataHandler</span> <span class="k">import</span> <span class="n">DataHandler</span>
+
+<div class="viewcode-block" id="DimensionalReduction"><a class="viewcode-back" href="../5_1_featureselection.html#FeatureSelection.DimensionalReduction">[docs]</a><span class="k">class</span> <span class="nc">DimensionalReduction</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to conduct principal component analysis (PCA) and constant feature removal for dimensional reduction of features.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dataframe (pandas dataframe) : dataframe containing x and y data and feature names</span>
+<span class="sd">        x_features (list) : list of x feature names</span>
+<span class="sd">        y_feature (str) : target feature name</span>
+
+<span class="sd">    Methods:</span>
+<span class="sd">        remove_constant_features : removes features that have the same value for all data entries</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                pandas dataframe : dataframe with constant features removed</span>
+
+<span class="sd">        principal_component_analysis: uses principal component analysis to reduce size of feature space</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                pandas dataframe : dataframe with PCA-selected features</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataframe</span><span class="p">,</span> <span class="n">x_features</span><span class="p">,</span> <span class="n">y_feature</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span> <span class="o">=</span> <span class="n">dataframe</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x_features</span> <span class="o">=</span> <span class="n">x_features</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y_feature</span> <span class="o">=</span> <span class="n">y_feature</span>
+
+    <span class="k">def</span> <span class="nf">remove_constant_features</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span><span class="o">.</span><span class="n">var</span><span class="p">()</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">dataframe</span>
+
+    <span class="k">def</span> <span class="nf">principal_component_analysis</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">pca</span> <span class="o">=</span> <span class="n">PCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_features</span><span class="p">),</span> <span class="n">svd_solver</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">)</span>
+        <span class="n">Xnew</span> <span class="o">=</span> <span class="n">pca</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">x_features</span><span class="p">])</span>
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="n">DataframeUtilities</span><span class="p">()</span><span class="o">.</span><span class="n">array_to_dataframe</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="n">Xnew</span><span class="p">)</span>
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="n">FeatureIO</span><span class="p">(</span><span class="n">dataframe</span><span class="o">=</span><span class="n">dataframe</span><span class="p">)</span><span class="o">.</span><span class="n">add_custom_features</span><span class="p">(</span><span class="n">features_to_add</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">y_feature</span><span class="p">],</span> <span class="n">data_to_add</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">y_feature</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">dataframe</span></div>
+
+<div class="viewcode-block" id="FeatureSelection"><a class="viewcode-back" href="../5_1_featureselection.html#FeatureSelection.FeatureSelection">[docs]</a><span class="k">class</span> <span class="nc">FeatureSelection</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to conduct feature selection routines to reduce the number of input features in the feature space</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        configdict (dict) : MASTML configfile object as dict</span>
+<span class="sd">        dataframe (pandas dataframe) : dataframe containing x and y data and feature names</span>
+<span class="sd">        x_features (list) : list of x feature names</span>
+<span class="sd">        y_feature (str) : target feature name</span>
+<span class="sd">        model_type (kwarg) : key word model string specifying model type (obtained from input file)</span>
+
+<span class="sd">    Methods:</span>
+<span class="sd">        sequential_forward_selection :</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                number_of_features_keep (int) : number of features to keep after feature selection</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                pandas dataframe : dataframe containing only selected features</span>
+
+<span class="sd">        feature_selection :</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                feature_selection_type (kwarg) : type of feature selection algorithm to use. Must choose from either</span>
+<span class="sd">                    &quot;univariate_feature_selection&quot;, &quot;recursive_feature_elimination&quot;, &quot;basic_foward_selection&quot;, or &quot;sequential_feature_selection&quot;</span>
+<span class="sd">                number_features_to_keep (int) : number of features to keep after feature selection</span>
+<span class="sd">                use_mutual_info (bool) : whether or not to use mutual information between features (only applicable to</span>
+<span class="sd">                    univariate feature selection)</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                pandas dataframe : dataframe containing only selected features</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">configdict</span><span class="p">,</span> <span class="n">dataframe</span><span class="p">,</span> <span class="n">x_features</span><span class="p">,</span> <span class="n">y_feature</span><span class="p">,</span> <span class="n">model_type</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">configdict</span> <span class="o">=</span> <span class="n">configdict</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span> <span class="o">=</span> <span class="n">dataframe</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x_features</span> <span class="o">=</span> <span class="n">x_features</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y_feature</span> <span class="o">=</span> <span class="n">y_feature</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_type</span> <span class="o">=</span> <span class="n">model_type</span>
+        <span class="c1"># Get model to use in feature selection. If specified model doesn&#39;t have feature_importances_ attribute, use SVR by default</span>
+        <span class="n">mtc</span> <span class="o">=</span> <span class="n">ModelTestConstructor</span><span class="p">(</span><span class="n">configdict</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">configdict</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">mtc</span><span class="o">.</span><span class="n">get_machinelearning_model</span><span class="p">(</span><span class="n">model_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_type</span><span class="p">,</span> <span class="n">y_feature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">y_feature</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">sequential_forward_selection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">number_features_to_keep</span><span class="p">):</span>
+        <span class="n">sfs</span> <span class="o">=</span> <span class="n">SFS</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">k_features</span><span class="o">=</span><span class="n">number_features_to_keep</span><span class="p">,</span> <span class="n">forward</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                  <span class="n">floating</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="s1">&#39;neg_mean_squared_error&#39;</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">KFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+        <span class="n">sfs</span> <span class="o">=</span> <span class="n">sfs</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">x_features</span><span class="p">]),</span> <span class="n">y</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">y_feature</span><span class="p">]))</span>
+        <span class="n">Xnew</span> <span class="o">=</span> <span class="n">sfs</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">x_features</span><span class="p">]),</span> <span class="n">y</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">y_feature</span><span class="p">]))</span>
+        <span class="n">feature_indices_selected</span> <span class="o">=</span> <span class="n">sfs</span><span class="o">.</span><span class="n">k_feature_idx_</span>
+        <span class="n">x_features_to_keep</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">feature_indices_selected</span><span class="p">:</span>
+            <span class="n">x_features_to_keep</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_features</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="n">FeatureIO</span><span class="p">(</span><span class="n">dataframe</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span><span class="p">)</span><span class="o">.</span><span class="n">keep_custom_features</span><span class="p">(</span><span class="n">features_to_keep</span><span class="o">=</span><span class="n">x_features_to_keep</span><span class="p">)</span>
+        <span class="c1"># Add y_feature back into the dataframe</span>
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="n">FeatureIO</span><span class="p">(</span><span class="n">dataframe</span><span class="o">=</span><span class="n">dataframe</span><span class="p">)</span><span class="o">.</span><span class="n">add_custom_features</span><span class="p">(</span><span class="n">features_to_add</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">y_feature</span><span class="p">],</span>
+                                                                       <span class="n">data_to_add</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">y_feature</span><span class="p">])</span>
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+        <span class="c1"># Get forward selection data</span>
+        <span class="n">metricdict</span> <span class="o">=</span> <span class="n">sfs</span><span class="o">.</span><span class="n">get_metric_dict</span><span class="p">()</span>
+
+        <span class="c1"># Change avg_score metric_dict values to be positive RMSE (currently negative MSE by default)</span>
+        <span class="k">for</span> <span class="n">featurenumber</span><span class="p">,</span> <span class="n">featuredict</span> <span class="ow">in</span> <span class="n">metricdict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">metric</span><span class="p">,</span> <span class="n">metricvalue</span> <span class="ow">in</span> <span class="n">featuredict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">metric</span> <span class="o">==</span> <span class="s1">&#39;avg_score&#39;</span><span class="p">:</span>
+                    <span class="n">metricvalue</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="n">metricvalue</span><span class="p">)</span>
+                    <span class="n">metricdict</span><span class="p">[</span><span class="n">featurenumber</span><span class="p">][</span><span class="n">metric</span><span class="p">]</span> <span class="o">=</span> <span class="n">metricvalue</span>
+
+        <span class="n">fs_dataframe</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">metricdict</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">((</span><span class="s2">&quot;Summary of forward selection:&quot;</span><span class="p">))</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">fs_dataframe</span><span class="p">)</span>
+
+        <span class="n">mfso</span> <span class="o">=</span> <span class="n">MiscFeatureSelectionOperations</span><span class="p">()</span>
+        <span class="n">filetag</span> <span class="o">=</span> <span class="n">mfso</span><span class="o">.</span><span class="n">get_feature_filetag</span><span class="p">(</span><span class="n">configdict</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">configdict</span><span class="p">,</span> <span class="n">dataframe</span><span class="o">=</span><span class="n">dataframe</span><span class="p">)</span>
+        <span class="n">mfso</span><span class="o">.</span><span class="n">save_data_to_csv</span><span class="p">(</span><span class="n">configdict</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">configdict</span><span class="p">,</span> <span class="n">dataframe</span><span class="o">=</span><span class="n">dataframe</span><span class="p">,</span>
+                              <span class="n">feature_selection_str</span><span class="o">=</span><span class="s1">&#39;input_with_sequential_forward_selection&#39;</span><span class="p">,</span> <span class="n">filetag</span><span class="o">=</span><span class="n">filetag</span><span class="p">)</span>
+        <span class="n">mfso</span><span class="o">.</span><span class="n">save_data_to_csv</span><span class="p">(</span><span class="n">configdict</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">configdict</span><span class="p">,</span> <span class="n">dataframe</span><span class="o">=</span><span class="n">fs_dataframe</span><span class="p">,</span>
+                              <span class="n">feature_selection_str</span><span class="o">=</span><span class="s1">&#39;sequential_forward_selection_data&#39;</span><span class="p">,</span> <span class="n">filetag</span><span class="o">=</span><span class="n">filetag</span><span class="p">)</span>
+        <span class="n">learningcurve</span> <span class="o">=</span> <span class="n">LearningCurve</span><span class="p">(</span><span class="n">configdict</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">configdict</span><span class="p">,</span> <span class="n">dataframe</span><span class="o">=</span><span class="n">dataframe</span><span class="p">,</span> <span class="n">model_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_type</span><span class="p">)</span>
+        <span class="n">learningcurve</span><span class="o">.</span><span class="n">get_sequential_forward_selection_learning_curve</span><span class="p">(</span><span class="n">metricdict</span><span class="o">=</span><span class="n">metricdict</span><span class="p">,</span> <span class="n">filetag</span><span class="o">=</span><span class="n">filetag</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">dataframe</span>
+
+    <span class="k">def</span> <span class="nf">feature_selection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature_selection_type</span><span class="p">,</span> <span class="n">number_features_to_keep</span><span class="p">,</span> <span class="n">use_mutual_info</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s1">&#39;regression&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_feature</span><span class="p">:</span>
+            <span class="n">selection_type</span> <span class="o">=</span> <span class="s1">&#39;regression&#39;</span>
+        <span class="k">elif</span> <span class="s1">&#39;classification&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_feature</span><span class="p">:</span>
+            <span class="n">selection_type</span> <span class="o">=</span> <span class="s1">&#39;classification&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;You must specify either &quot;regression&quot; or &quot;classification&quot; in your y_feature name&#39;</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
+
+        <span class="n">mtc</span> <span class="o">=</span> <span class="n">ModelTestConstructor</span><span class="p">(</span><span class="n">configdict</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">configdict</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">feature_selection_type</span> <span class="o">==</span> <span class="s1">&#39;recursive_feature_elimination&#39;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_type</span> <span class="ow">not</span> <span class="ow">in</span> \
+                <span class="p">[</span><span class="s2">&quot;linear_model_regressor&quot;</span><span class="p">,</span> <span class="s2">&quot;linear_model_lasso_regressor&quot;</span><span class="p">,</span> <span class="s2">&quot;support_vector_machine_regressor&quot;</span><span class="p">,</span> <span class="s2">&quot;randomforest_model_regressor&quot;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">SVR</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;You have specified a model type for feature selection that does not have a feature_importances_ or coef_ attribute.&#39;</span>
+                         <span class="s1">&#39;The RFE method requires one of these to function.&#39;</span>
+                         <span class="s1">&#39;Therefore, the model type has defaulted to an SVR model. Results should still be ok.&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">mtc</span><span class="o">.</span><span class="n">get_machinelearning_model</span><span class="p">(</span><span class="n">model_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_type</span><span class="p">,</span> <span class="n">y_feature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">y_feature</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">use_mutual_info</span> <span class="o">==</span> <span class="kc">False</span> <span class="ow">or</span> <span class="n">use_mutual_info</span> <span class="o">==</span> <span class="s1">&#39;False&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">selection_type</span> <span class="o">==</span> <span class="s1">&#39;regression&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">feature_selection_type</span> <span class="o">==</span> <span class="s1">&#39;univariate_feature_selection&#39;</span><span class="p">:</span>
+                    <span class="n">selector</span> <span class="o">=</span> <span class="n">SelectKBest</span><span class="p">(</span><span class="n">score_func</span><span class="o">=</span><span class="n">f_regression</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">number_features_to_keep</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">feature_selection_type</span> <span class="o">==</span> <span class="s1">&#39;recursive_feature_elimination&#39;</span><span class="p">:</span>
+                    <span class="n">selector</span> <span class="o">=</span> <span class="n">RFE</span><span class="p">(</span><span class="n">estimator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">n_features_to_select</span><span class="o">=</span><span class="n">number_features_to_keep</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">feature_selection_type</span> <span class="o">==</span> <span class="s1">&#39;basic_forward_selection&#39;</span><span class="p">:</span>
+                    <span class="n">bfs</span> <span class="o">=</span> <span class="n">BasicForwardSelection</span><span class="p">(</span><span class="n">dataframe</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span><span class="p">,</span> <span class="n">x_features</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">x_features</span><span class="p">,</span> <span class="n">y_feature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">y_feature</span><span class="p">,</span>
+                                                <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">number_features_to_keep</span><span class="o">=</span><span class="n">number_features_to_keep</span><span class="p">,</span> <span class="n">configdict</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">configdict</span><span class="p">)</span>
+                    <span class="n">dataframe</span> <span class="o">=</span> <span class="n">bfs</span><span class="o">.</span><span class="n">run_basic_forward_selection</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;You must specify feature_selection_type as either &quot;univariate_feature_selection&quot; or &quot;recursive_feature_elimination&quot;&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">selection_type</span> <span class="o">==</span> <span class="s1">&#39;classification&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">feature_selection_type</span> <span class="o">==</span> <span class="s1">&#39;univariate_feature_selection&#39;</span><span class="p">:</span>
+                    <span class="n">selector</span> <span class="o">=</span> <span class="n">SelectKBest</span><span class="p">(</span><span class="n">score_func</span><span class="o">=</span><span class="n">f_classif</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">number_features_to_keep</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">feature_selection_type</span> <span class="o">==</span> <span class="s1">&#39;recursive_feature_elimination&#39;</span><span class="p">:</span>
+                    <span class="n">selector</span> <span class="o">=</span> <span class="n">RFE</span><span class="p">(</span><span class="n">estimator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">n_features_to_select</span><span class="o">=</span><span class="n">number_features_to_keep</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;You must specify feature_selection_type as either &quot;univariate_feature_selection&quot; or &quot;recursive_feature_elimination&quot;&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">use_mutual_info</span> <span class="o">==</span> <span class="kc">True</span> <span class="ow">or</span> <span class="n">use_mutual_info</span> <span class="o">==</span> <span class="s1">&#39;True&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">selection_type</span> <span class="o">==</span> <span class="s1">&#39;regression&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">feature_selection_type</span> <span class="o">==</span> <span class="s1">&#39;univariate_feature_selection&#39;</span><span class="p">:</span>
+                    <span class="n">selector</span> <span class="o">=</span> <span class="n">SelectKBest</span><span class="p">(</span><span class="n">score_func</span><span class="o">=</span><span class="n">mutual_info_regression</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">number_features_to_keep</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">feature_selection_type</span> <span class="o">==</span> <span class="s1">&#39;recursive_feature_elimination&#39;</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Important Note: You have specified recursive feature elimination with mutual information. &#39;</span>
+                                 <span class="s1">&#39;Mutual information is only used for univariate feature selection. Feature selection will still run OK&#39;</span><span class="p">)</span>
+                    <span class="n">selector</span> <span class="o">=</span> <span class="n">RFE</span><span class="p">(</span><span class="n">estimator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">n_features_to_select</span><span class="o">=</span><span class="n">number_features_to_keep</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">feature_selection_type</span> <span class="o">==</span> <span class="s1">&#39;basic_forward_selection&#39;</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Important Note: You have specified basic forward selection with mutual information. &#39;</span>
+                                 <span class="s1">&#39;Mutual information is only used for univariate feature selection. Feature selection will still run OK&#39;</span><span class="p">)</span>
+                    <span class="n">bfs</span> <span class="o">=</span> <span class="n">BasicForwardSelection</span><span class="p">(</span><span class="n">dataframe</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span><span class="p">,</span> <span class="n">x_features</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">x_features</span><span class="p">,</span>
+                                            <span class="n">y_feature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">y_feature</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+                                            <span class="n">number_features_to_keep</span><span class="o">=</span><span class="n">number_features_to_keep</span><span class="p">,</span>
+                                            <span class="n">configdict</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">configdict</span><span class="p">)</span>
+                    <span class="n">dataframe</span> <span class="o">=</span> <span class="n">bfs</span><span class="o">.</span><span class="n">run_basic_forward_selection</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;You must specify feature_selection_type as either &quot;univariate_feature_selection&quot; or &quot;recursive_feature_elimination&quot;&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">selection_type</span> <span class="o">==</span> <span class="s1">&#39;classification&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">feature_selection_type</span> <span class="o">==</span> <span class="s1">&#39;univariate_feature_selection&#39;</span><span class="p">:</span>
+                    <span class="n">selector</span> <span class="o">=</span> <span class="n">SelectKBest</span><span class="p">(</span><span class="n">score_func</span><span class="o">=</span><span class="n">mutual_info_classif</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">number_features_to_keep</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">feature_selection_type</span> <span class="o">==</span> <span class="s1">&#39;recursive_feature_elimination&#39;</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Important Note: You have specified recursive feature elimination with mutual information. &#39;</span>
+                                 <span class="s1">&#39;Mutual information is only used for univariate feature selection. Feature selection will still run OK&#39;</span><span class="p">)</span>
+                    <span class="n">selector</span> <span class="o">=</span> <span class="n">RFE</span><span class="p">(</span><span class="n">estimator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">n_features_to_select</span><span class="o">=</span><span class="n">number_features_to_keep</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;You must specify feature_selection_type as either &quot;univariate_feature_selection&quot; or &quot;recursive_feature_elimination&quot;&#39;</span><span class="p">)</span>
+
+        <span class="n">mfso</span> <span class="o">=</span> <span class="n">MiscFeatureSelectionOperations</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">feature_selection_type</span> <span class="o">!=</span> <span class="s1">&#39;basic_forward_selection&#39;</span><span class="p">:</span>
+            <span class="n">Xnew</span> <span class="o">=</span> <span class="n">selector</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">x_features</span><span class="p">],</span> <span class="n">y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">y_feature</span><span class="p">])</span>
+            <span class="n">feature_indices_selected</span><span class="p">,</span> <span class="n">feature_names_selected</span> <span class="o">=</span> <span class="n">mfso</span><span class="o">.</span><span class="n">get_selector_feature_names</span><span class="p">(</span><span class="n">selector</span><span class="o">=</span><span class="n">selector</span><span class="p">,</span> <span class="n">x_features</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">x_features</span><span class="p">)</span>
+            <span class="n">dataframe</span> <span class="o">=</span> <span class="n">DataframeUtilities</span><span class="p">()</span><span class="o">.</span><span class="n">array_to_dataframe</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="n">Xnew</span><span class="p">)</span>
+            <span class="n">dataframe</span> <span class="o">=</span> <span class="n">DataframeUtilities</span><span class="p">()</span><span class="o">.</span><span class="n">assign_columns_as_features</span><span class="p">(</span><span class="n">dataframe</span><span class="o">=</span><span class="n">dataframe</span><span class="p">,</span> <span class="n">x_features</span><span class="o">=</span><span class="n">feature_names_selected</span><span class="p">,</span> <span class="n">y_feature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">y_feature</span><span class="p">,</span> <span class="n">remove_first_row</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="c1"># Add y_feature back into the dataframe</span>
+            <span class="n">dataframe</span> <span class="o">=</span> <span class="n">FeatureIO</span><span class="p">(</span><span class="n">dataframe</span><span class="o">=</span><span class="n">dataframe</span><span class="p">)</span><span class="o">.</span><span class="n">add_custom_features</span><span class="p">(</span><span class="n">features_to_add</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">y_feature</span><span class="p">],</span><span class="n">data_to_add</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">y_feature</span><span class="p">])</span>
+            <span class="n">dataframe</span> <span class="o">=</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+
+        <span class="c1"># Only report the features selected and save csv file when number_features_to_keep is equal to value</span>
+        <span class="c1"># specified in input file (so that many files aren&#39;t generated when making feature learning curve).</span>
+        <span class="k">if</span> <span class="n">number_features_to_keep</span> <span class="o">==</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">configdict</span><span class="p">[</span><span class="s1">&#39;Feature Selection&#39;</span><span class="p">][</span><span class="s1">&#39;number_of_features_to_keep&#39;</span><span class="p">]):</span>
+            <span class="n">filetag</span> <span class="o">=</span> <span class="n">mfso</span><span class="o">.</span><span class="n">get_feature_filetag</span><span class="p">(</span><span class="n">configdict</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">configdict</span><span class="p">,</span> <span class="n">dataframe</span><span class="o">=</span><span class="n">dataframe</span><span class="p">)</span>
+            <span class="n">mfso</span><span class="o">.</span><span class="n">save_data_to_csv</span><span class="p">(</span><span class="n">configdict</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">configdict</span><span class="p">,</span> <span class="n">dataframe</span><span class="o">=</span><span class="n">dataframe</span><span class="p">,</span>
+                                  <span class="n">feature_selection_str</span><span class="o">=</span><span class="s1">&#39;input_with_&#39;</span><span class="o">+</span><span class="n">feature_selection_type</span><span class="p">,</span> <span class="n">filetag</span><span class="o">=</span><span class="n">filetag</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">dataframe</span></div>
+
+<div class="viewcode-block" id="BasicForwardSelection"><a class="viewcode-back" href="../5_1_featureselection.html#FeatureSelection.BasicForwardSelection">[docs]</a><span class="k">class</span> <span class="nc">BasicForwardSelection</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to perform a basic forward selection routine</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dataframe (pandas dataframe) : dataframe containing x and y data and feature names</span>
+<span class="sd">        x_features (list) : list of x_feature names</span>
+<span class="sd">        y_feature (str) : target feature name</span>
+<span class="sd">        model (sklearn model object) : a scikit-learn model object</span>
+<span class="sd">        number_features_to_keep (int) : the final number of features to keep</span>
+<span class="sd">        configdict (dict) : MASTML configfile object as dict</span>
+
+<span class="sd">    Methods:</span>
+<span class="sd">        run_basic_forward_selection : performs the basic forward selection routine and generates a learning curve</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                pandas dataframe : a dataframe containing X and y data and feature names of the feature-selected data set</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataframe</span><span class="p">,</span> <span class="n">x_features</span><span class="p">,</span> <span class="n">y_feature</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">number_features_to_keep</span><span class="p">,</span> <span class="n">configdict</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span> <span class="o">=</span> <span class="n">dataframe</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x_features</span> <span class="o">=</span> <span class="n">x_features</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y_feature</span> <span class="o">=</span> <span class="n">y_feature</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">number_features_to_keep</span> <span class="o">=</span> <span class="n">number_features_to_keep</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">configdict</span> <span class="o">=</span> <span class="n">configdict</span>
+
+    <span class="k">def</span> <span class="nf">run_basic_forward_selection</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">selected_feature_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">selected_feature_avg_rmses</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">selected_feature_std_rmses</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">basic_forward_selection_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">num_features_selected</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">x_features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_features</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_features_to_keep</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_features</span><span class="p">):</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;MASTML has detected you want to select more features than are available in your dataset. Setting number of features to keep equal to total number of features!&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">number_features_to_keep</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_features</span><span class="p">)</span>
+        <span class="k">while</span> <span class="n">num_features_selected</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_features_to_keep</span><span class="p">:</span>
+            <span class="c1"># Catch pandas warnings here</span>
+            <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+                <span class="n">ranked_features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rank_features</span><span class="p">(</span><span class="n">x_features</span><span class="o">=</span><span class="n">x_features</span><span class="p">,</span> <span class="n">other_features_to_keep</span><span class="o">=</span><span class="n">selected_feature_names</span><span class="p">)</span>
+                <span class="n">top_feature_name</span><span class="p">,</span> <span class="n">top_feature_avg_rmse</span><span class="p">,</span> <span class="n">top_feature_std_rmse</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_choose_top_feature</span><span class="p">(</span><span class="n">ranked_features</span><span class="o">=</span><span class="n">ranked_features</span><span class="p">)</span>
+
+            <span class="n">selected_feature_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">top_feature_name</span><span class="p">)</span>
+            <span class="n">selected_feature_avg_rmses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">top_feature_avg_rmse</span><span class="p">)</span>
+            <span class="n">selected_feature_std_rmses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">top_feature_std_rmse</span><span class="p">)</span>
+
+            <span class="n">x_features</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">top_feature_name</span><span class="p">)</span>
+            <span class="n">basic_forward_selection_dict</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">num_features_selected</span><span class="p">)]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="n">basic_forward_selection_dict</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">num_features_selected</span><span class="p">)][</span><span class="s1">&#39;Number of features selected&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">num_features_selected</span><span class="o">+</span><span class="mi">1</span>
+            <span class="n">basic_forward_selection_dict</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">num_features_selected</span><span class="p">)][</span><span class="s1">&#39;Top feature added this iteration&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">top_feature_name</span>
+            <span class="n">basic_forward_selection_dict</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">num_features_selected</span><span class="p">)][</span><span class="s1">&#39;Avg RMSE using top features&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">top_feature_avg_rmse</span>
+            <span class="n">basic_forward_selection_dict</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">num_features_selected</span><span class="p">)][</span><span class="s1">&#39;Stdev RMSE using top features&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">top_feature_std_rmse</span>
+            <span class="n">num_features_selected</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">basic_forward_selection_dict</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">number_features_to_keep</span><span class="o">-</span><span class="mi">1</span><span class="p">)][</span><span class="s1">&#39;Full feature set Names&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">selected_feature_names</span>
+        <span class="n">basic_forward_selection_dict</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">number_features_to_keep</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)][</span><span class="s1">&#39;Full feature set Avg RMSEs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">selected_feature_avg_rmses</span>
+        <span class="n">basic_forward_selection_dict</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">number_features_to_keep</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)][</span><span class="s1">&#39;Full feature set Stdev RMSEs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">selected_feature_std_rmses</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_save_featureselected_data</span><span class="p">(</span><span class="n">basic_forward_selection_dict</span><span class="o">=</span><span class="n">basic_forward_selection_dict</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_plot_featureselected_learningcurve</span><span class="p">(</span><span class="n">selected_feature_avg_rmses</span><span class="o">=</span><span class="n">selected_feature_avg_rmses</span><span class="p">,</span> <span class="n">selected_feature_std_rmses</span><span class="o">=</span><span class="n">selected_feature_std_rmses</span><span class="p">)</span>
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_featureselected_dataframe</span><span class="p">(</span><span class="n">selected_feature_names</span><span class="o">=</span><span class="n">selected_feature_names</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">dataframe</span>
+
+    <span class="k">def</span> <span class="nf">_rank_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_features</span><span class="p">,</span> <span class="n">other_features_to_keep</span><span class="p">):</span>
+        <span class="n">ranked_features</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">x_feature</span> <span class="ow">in</span> <span class="n">x_features</span><span class="p">:</span>
+            <span class="n">features_to_keep</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">other_features_to_keep</span><span class="p">:</span>
+                <span class="n">features_to_keep</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+            <span class="n">features_to_keep</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x_feature</span><span class="p">)</span>
+            <span class="n">dataframe</span> <span class="o">=</span> <span class="n">FeatureIO</span><span class="p">(</span><span class="n">dataframe</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span><span class="p">)</span><span class="o">.</span><span class="n">keep_custom_features</span><span class="p">(</span><span class="n">features_to_keep</span><span class="o">=</span><span class="n">features_to_keep</span><span class="p">)</span>
+            <span class="n">dh</span> <span class="o">=</span> <span class="n">DataHandler</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span><span class="p">,</span> <span class="n">input_data</span><span class="o">=</span><span class="n">dataframe</span><span class="p">,</span> <span class="n">target_data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">y_feature</span><span class="p">],</span>
+                             <span class="n">input_features</span><span class="o">=</span><span class="n">x_feature</span><span class="p">,</span> <span class="n">target_feature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">y_feature</span><span class="p">)</span>
+            <span class="c1">#sf = SingleFit(training_dataset=dh, testing_dataset=dh, model=self.model)</span>
+            <span class="c1">#sf.fit()</span>
+            <span class="c1">#sf.predict()</span>
+            <span class="c1">#rmse = sf.statistics[&#39;rmse&#39;]</span>
+
+            <span class="n">kfold</span> <span class="o">=</span> <span class="n">KFoldCV</span><span class="p">(</span><span class="n">training_dataset</span><span class="o">=</span><span class="n">dh</span><span class="p">,</span> <span class="n">testing_dataset</span><span class="o">=</span><span class="n">dh</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">num_cvtests</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">num_folds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+            <span class="n">kfold</span><span class="o">.</span><span class="n">set_up_cv</span><span class="p">()</span>
+            <span class="n">kfold</span><span class="o">.</span><span class="n">cv_fit_and_predict</span><span class="p">()</span>
+            <span class="n">kfold</span><span class="o">.</span><span class="n">get_statistics</span><span class="p">()</span>
+
+            <span class="n">avg_rmse</span> <span class="o">=</span> <span class="n">kfold</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;avg_fold_avg_rmses&#39;</span><span class="p">]</span>
+            <span class="n">std_rmse</span> <span class="o">=</span> <span class="n">kfold</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;std_fold_avg_rmses&#39;</span><span class="p">]</span>
+
+            <span class="n">ranked_features</span><span class="p">[</span><span class="n">x_feature</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;avg_rmse&quot;</span><span class="p">:</span> <span class="n">avg_rmse</span><span class="p">,</span> <span class="s2">&quot;std_rmse&quot;</span><span class="p">:</span> <span class="n">std_rmse</span><span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">ranked_features</span>
+
+    <span class="k">def</span> <span class="nf">_choose_top_feature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ranked_features</span><span class="p">):</span>
+        <span class="n">feature_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">feature_avg_rmses</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">feature_std_rmses</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">feature_names_sorted</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">feature_std_rmses_sorted</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="c1"># Make dict of ranked features into list for sorting</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">ranked_features</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">feature_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">kk</span><span class="p">,</span> <span class="n">vv</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">kk</span> <span class="o">==</span> <span class="s1">&#39;avg_rmse&#39;</span><span class="p">:</span>
+                    <span class="n">feature_avg_rmses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vv</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">kk</span> <span class="o">==</span> <span class="s1">&#39;std_rmse&#39;</span><span class="p">:</span>
+                    <span class="n">feature_std_rmses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vv</span><span class="p">)</span>
+
+        <span class="c1"># Sort feature lists so RMSE goes from min to max</span>
+        <span class="n">feature_avg_rmses_sorted</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">feature_avg_rmses</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">feature_avg_rmse</span> <span class="ow">in</span> <span class="n">feature_avg_rmses_sorted</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">ranked_features</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="s1">&#39;avg_rmse&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">feature_avg_rmse</span><span class="p">:</span>
+                    <span class="n">feature_names_sorted</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+                    <span class="n">feature_std_rmses_sorted</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="s1">&#39;std_rmse&#39;</span><span class="p">])</span>
+
+        <span class="n">top_feature_name</span> <span class="o">=</span> <span class="n">feature_names_sorted</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">top_feature_avg_rmse</span> <span class="o">=</span> <span class="n">feature_avg_rmses_sorted</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">top_feature_std_rmse</span> <span class="o">=</span> <span class="n">feature_std_rmses_sorted</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">top_feature_name</span><span class="p">,</span> <span class="n">top_feature_avg_rmse</span><span class="p">,</span> <span class="n">top_feature_std_rmse</span>
+
+    <span class="k">def</span> <span class="nf">_get_featureselected_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selected_feature_names</span><span class="p">):</span>
+        <span class="c1"># Return dataframe containing only selected features</span>
+        <span class="n">fio</span> <span class="o">=</span> <span class="n">FeatureIO</span><span class="p">(</span><span class="n">dataframe</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span><span class="p">)</span>
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="n">fio</span><span class="o">.</span><span class="n">keep_custom_features</span><span class="p">(</span><span class="n">features_to_keep</span><span class="o">=</span><span class="n">selected_feature_names</span><span class="p">,</span> <span class="n">y_feature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">y_feature</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dataframe</span>
+
+    <span class="k">def</span> <span class="nf">_save_featureselected_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">basic_forward_selection_dict</span><span class="p">):</span>
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">basic_forward_selection_dict</span><span class="p">)</span>
+        <span class="n">dataframe</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">configdict</span><span class="p">[</span><span class="s1">&#39;General Setup&#39;</span><span class="p">][</span><span class="s1">&#39;save_path&#39;</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="s1">&#39;output_basic_forward_selection.csv&#39;</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">_plot_featureselected_learningcurve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selected_feature_avg_rmses</span><span class="p">,</span> <span class="n">selected_feature_std_rmses</span><span class="p">):</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Basic forward selection learning curve&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+        <span class="n">savedir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">configdict</span><span class="p">[</span><span class="s1">&#39;General Setup&#39;</span><span class="p">][</span><span class="s1">&#39;save_path&#39;</span><span class="p">]</span>
+        <span class="n">Xdata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">number_features_to_keep</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">number_features_to_keep</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">ydata</span> <span class="o">=</span> <span class="n">selected_feature_avg_rmses</span>
+        <span class="n">yspread</span> <span class="o">=</span> <span class="n">selected_feature_std_rmses</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">Xdata</span><span class="p">,</span> <span class="n">ydata</span><span class="p">,</span> <span class="s1">&#39;-o&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Avg RMSE 10 tests 5-fold CV&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">Xdata</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ydata</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">yspread</span><span class="p">),</span>
+                         <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ydata</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">yspread</span><span class="p">),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                         <span class="n">color</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Number of features&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;RMSE&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s2">&quot;best&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">savedir</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="s2">&quot;basic_forwards_selection_learning_curve_featurenumber.pdf&quot;</span><span class="p">)</span>
+        <span class="k">return</span></div>
+
+<div class="viewcode-block" id="LearningCurve"><a class="viewcode-back" href="../5_1_featureselection.html#FeatureSelection.LearningCurve">[docs]</a><span class="k">class</span> <span class="nc">LearningCurve</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to construct learning curves to assess feature selection choices</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        configdict (dict) : MASTML configfile object as dict</span>
+<span class="sd">        dataframe (pandas dataframe) : dataframe containing x and y data and feature names</span>
+<span class="sd">        model_type (kwarg) : key word model string specifying model type (obtained from input file)</span>
+
+<span class="sd">    Methods:</span>
+<span class="sd">        generate_feature_learning_curve : generates feature-based learning curve for a specific feature selection routine</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                feature_selection_algorithm (kwarg) : name of feature selection routine</span>
+
+<span class="sd">        get_univariate_RFE_training_data_learning_curve: generates training data learning curve for univariate or RFE</span>
+<span class="sd">            feature selection routine</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                estimator (sklearn model object) : an sklearn model used to assess model accuracy</span>
+<span class="sd">                title (str) : Title for learning curve plot</span>
+<span class="sd">                Xdata (pandas dataframe) : dataframe of Xdata</span>
+<span class="sd">                ydata (pandas dataframe) : dataframe of ydata</span>
+<span class="sd">                feature_selection_type (kwarg) : name of feature selection routine</span>
+
+<span class="sd">        get_univariate_RFE_feature_learning_curve: generates feature-based learning curve for univariate or RFE feature</span>
+<span class="sd">            selection routine</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                title (str) : Title for learning curve plot</span>
+<span class="sd">                Xdata (pandas dataframe) : dataframe of Xdata</span>
+<span class="sd">                ydata (pandas dataframe) : dataframe of ydata</span>
+<span class="sd">                ydata_stdev (pandas dataframe) : dataframe of standard deviations of ydata</span>
+
+<span class="sd">        get_sequential_forward_selection_learning_curve: generates feature-based learning curve for SFS algorithm</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                metricdict (dict) : dict of feature selection metrics from SFS</span>
+<span class="sd">                filetag (str) : name of target feature used to name save files</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">configdict</span><span class="p">,</span> <span class="n">dataframe</span><span class="p">,</span> <span class="n">model_type</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">configdict</span> <span class="o">=</span> <span class="n">configdict</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span> <span class="o">=</span> <span class="n">dataframe</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_type</span> <span class="o">=</span> <span class="n">model_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x_features</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_feature</span> <span class="o">=</span> <span class="n">DataParser</span><span class="p">(</span><span class="n">configdict</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">configdict</span><span class="p">)</span><span class="o">.</span><span class="n">get_features</span><span class="p">(</span><span class="n">dataframe</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span><span class="p">,</span>
+                                                    <span class="n">target_feature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">configdict</span><span class="p">[</span><span class="s1">&#39;General Setup&#39;</span><span class="p">][</span><span class="s1">&#39;target_feature&#39;</span><span class="p">],</span>
+                                                    <span class="n">from_input_file</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="c1"># Get model to use in feature selection</span>
+        <span class="n">mtc</span> <span class="o">=</span> <span class="n">ModelTestConstructor</span><span class="p">(</span><span class="n">configdict</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">configdict</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">mtc</span><span class="o">.</span><span class="n">get_machinelearning_model</span><span class="p">(</span><span class="n">model_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_type</span><span class="p">,</span> <span class="n">y_feature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">y_feature</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scoring_metric</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">configdict</span><span class="p">[</span><span class="s1">&#39;Feature Selection&#39;</span><span class="p">][</span><span class="s1">&#39;scoring_metric&#39;</span><span class="p">]</span>
+
+    <span class="nd">@timeit</span>
+    <span class="k">def</span> <span class="nf">generate_feature_learning_curve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature_selection_algorithm</span><span class="p">):</span>
+        <span class="n">n_features_to_keep</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">configdict</span><span class="p">[</span><span class="s1">&#39;Feature Selection&#39;</span><span class="p">][</span><span class="s1">&#39;number_of_features_to_keep&#39;</span><span class="p">])</span>
+        <span class="n">dataframe_fs_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">num_features_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+        <span class="n">avg_train_rmse_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">avg_test_rmse_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">train_rmse_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">test_rmse_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">train_rmse_stdev_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">test_rmse_stdev_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+        <span class="n">avg_train_mse_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">avg_test_mse_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">train_mse_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">test_mse_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">train_mse_stdev_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">test_mse_stdev_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+        <span class="n">avg_train_mae_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">avg_test_mae_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">train_mae_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">test_mae_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">train_mae_stdev_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">test_mae_stdev_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+        <span class="n">avg_train_r2_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">avg_test_r2_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">train_r2_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">test_r2_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">train_r2_stdev_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">test_r2_stdev_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+        <span class="c1"># Obtain dataframes of selected features for n_features ranging from 1 to number_of_features_to_keep</span>
+        <span class="k">for</span> <span class="n">n_features</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_features_to_keep</span><span class="p">):</span>
+            <span class="n">num_features_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n_features</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">use_mutual_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">configdict</span><span class="p">[</span><span class="s1">&#39;Feature Selection&#39;</span><span class="p">][</span><span class="s1">&#39;use_mutual_information&#39;</span><span class="p">]</span>
+            <span class="n">fs</span> <span class="o">=</span> <span class="n">FeatureSelection</span><span class="p">(</span><span class="n">configdict</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">configdict</span><span class="p">,</span> <span class="n">dataframe</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span><span class="p">,</span> <span class="n">x_features</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">x_features</span><span class="p">,</span>
+                                  <span class="n">y_feature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">y_feature</span><span class="p">,</span> <span class="n">model_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_type</span><span class="p">)</span>
+            <span class="n">dataframe_fs</span> <span class="o">=</span> <span class="n">fs</span><span class="o">.</span><span class="n">feature_selection</span><span class="p">(</span><span class="n">feature_selection_type</span><span class="o">=</span><span class="n">feature_selection_algorithm</span><span class="p">,</span>
+                                                                        <span class="n">number_features_to_keep</span><span class="o">=</span><span class="n">n_features</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                                                                        <span class="n">use_mutual_info</span><span class="o">=</span><span class="n">use_mutual_info</span><span class="p">)</span>
+            <span class="n">dataframe_fs_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataframe_fs</span><span class="p">)</span>
+
+        <span class="n">num_cvtests</span> <span class="o">=</span> <span class="mi">10</span>
+        <span class="n">num_folds</span> <span class="o">=</span> <span class="mi">5</span>
+        <span class="n">kfoldcv</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="n">num_folds</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">target_feature</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">configdict</span><span class="p">[</span><span class="s1">&#39;General Setup&#39;</span><span class="p">][</span><span class="s1">&#39;target_feature&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Loop over list of feature-selected dataframes and perform CV tests using general GKRR model. Save list of average CV scores for plotting</span>
+        <span class="k">for</span> <span class="n">df</span> <span class="ow">in</span> <span class="n">dataframe_fs_list</span><span class="p">:</span>
+            <span class="n">dfcopy</span> <span class="o">=</span> <span class="n">df</span>
+            <span class="n">cvtest_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">num_features</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+
+            <span class="c1"># Set up CV splits for the dataframe being tested</span>
+            <span class="k">for</span> <span class="n">cvtest</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_cvtests</span><span class="p">):</span>
+                <span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+                <span class="n">foldidx</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">for</span> <span class="n">train</span><span class="p">,</span> <span class="n">test</span> <span class="ow">in</span> <span class="n">kfoldcv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">indices</span><span class="p">):</span>
+                    <span class="n">fdict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+                    <span class="n">fdict</span><span class="p">[</span><span class="s1">&#39;train_index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">train</span>
+                    <span class="n">fdict</span><span class="p">[</span><span class="s1">&#39;test_index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">test</span>
+                    <span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="n">foldidx</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">fdict</span><span class="p">)</span>
+                    <span class="n">foldidx</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="c1"># For each CV test, and each fold in each CV test, fit the model to the appropriate train and test data and get CV scores</span>
+            <span class="k">for</span> <span class="n">cvtest</span> <span class="ow">in</span> <span class="n">cvtest_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">fold_train_rmses</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_folds</span><span class="p">)</span>
+                <span class="n">fold_test_rmses</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_folds</span><span class="p">)</span>
+                <span class="n">fold_train_mses</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_folds</span><span class="p">)</span>
+                <span class="n">fold_test_mses</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_folds</span><span class="p">)</span>
+                <span class="n">fold_train_maes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_folds</span><span class="p">)</span>
+                <span class="n">fold_test_maes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_folds</span><span class="p">)</span>
+                <span class="n">fold_train_r2s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_folds</span><span class="p">)</span>
+                <span class="n">fold_test_r2s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_folds</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">fold</span> <span class="ow">in</span> <span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">fdict</span> <span class="o">=</span> <span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="n">fold</span><span class="p">]</span>
+                    <span class="n">input_train</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">fdict</span><span class="p">[</span><span class="s1">&#39;train_index&#39;</span><span class="p">]]</span>
+                    <span class="k">if</span> <span class="n">target_feature</span> <span class="ow">in</span> <span class="n">input_train</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                        <span class="k">del</span> <span class="n">input_train</span><span class="p">[</span><span class="n">target_feature</span><span class="p">]</span>
+
+                    <span class="n">target_train</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">target_feature</span><span class="p">][</span><span class="n">fdict</span><span class="p">[</span><span class="s1">&#39;train_index&#39;</span><span class="p">]]</span>
+                    <span class="n">input_test</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">fdict</span><span class="p">[</span><span class="s1">&#39;test_index&#39;</span><span class="p">]]</span>
+                    <span class="k">if</span> <span class="n">target_feature</span> <span class="ow">in</span> <span class="n">input_test</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                        <span class="k">del</span> <span class="n">input_test</span><span class="p">[</span><span class="n">target_feature</span><span class="p">]</span>
+                    <span class="n">target_test</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">target_feature</span><span class="p">][</span><span class="n">fdict</span><span class="p">[</span><span class="s1">&#39;test_index&#39;</span><span class="p">]]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">input_train</span><span class="p">,</span> <span class="n">target_train</span><span class="p">)</span>
+                    <span class="n">predict_train</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">input_train</span><span class="p">)</span>
+                    <span class="n">predict_test</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">input_test</span><span class="p">)</span>
+
+                    <span class="n">mse_train</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">predict_train</span><span class="p">,</span> <span class="n">target_train</span><span class="p">)</span>
+                    <span class="n">mse_test</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">predict_test</span><span class="p">,</span> <span class="n">target_test</span><span class="p">)</span>
+                    <span class="n">rmse_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mse_test</span><span class="p">)</span>
+                    <span class="n">rmse_train</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mse_train</span><span class="p">)</span>
+                    <span class="n">mae_train</span> <span class="o">=</span> <span class="n">mean_absolute_error</span><span class="p">(</span><span class="n">predict_train</span><span class="p">,</span> <span class="n">target_train</span><span class="p">)</span>
+                    <span class="n">mae_test</span> <span class="o">=</span> <span class="n">mean_absolute_error</span><span class="p">(</span><span class="n">predict_test</span><span class="p">,</span> <span class="n">target_test</span><span class="p">)</span>
+                    <span class="n">r2_train</span> <span class="o">=</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">predict_train</span><span class="p">,</span> <span class="n">target_train</span><span class="p">)</span>
+                    <span class="n">r2_test</span> <span class="o">=</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">predict_test</span><span class="p">,</span> <span class="n">target_test</span><span class="p">)</span>
+
+                    <span class="n">fold_train_rmses</span><span class="p">[</span><span class="n">fold</span><span class="p">]</span> <span class="o">=</span> <span class="n">rmse_train</span>
+                    <span class="n">fold_test_rmses</span><span class="p">[</span><span class="n">fold</span><span class="p">]</span> <span class="o">=</span> <span class="n">rmse_test</span>
+                    <span class="n">fold_train_mses</span><span class="p">[</span><span class="n">fold</span><span class="p">]</span> <span class="o">=</span> <span class="n">mse_train</span>
+                    <span class="n">fold_test_mses</span><span class="p">[</span><span class="n">fold</span><span class="p">]</span> <span class="o">=</span> <span class="n">mse_test</span>
+                    <span class="n">fold_train_maes</span><span class="p">[</span><span class="n">fold</span><span class="p">]</span> <span class="o">=</span> <span class="n">mae_train</span>
+                    <span class="n">fold_test_maes</span><span class="p">[</span><span class="n">fold</span><span class="p">]</span> <span class="o">=</span> <span class="n">mae_test</span>
+                    <span class="n">fold_train_r2s</span><span class="p">[</span><span class="n">fold</span><span class="p">]</span> <span class="o">=</span> <span class="n">r2_train</span>
+                    <span class="n">fold_test_r2s</span><span class="p">[</span><span class="n">fold</span><span class="p">]</span> <span class="o">=</span> <span class="n">r2_test</span>
+
+                <span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;avg_train_rmse&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">fold_train_rmses</span><span class="p">)</span>
+                <span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;train_rmse_stdev&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">fold_train_rmses</span><span class="p">)</span>
+                <span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;avg_test_rmse&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">fold_test_rmses</span><span class="p">)</span>
+                <span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;test_rmse_stdev&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">fold_test_rmses</span><span class="p">)</span>
+
+                <span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;avg_train_mse&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">fold_train_mses</span><span class="p">)</span>
+                <span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;train_mse_stdev&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">fold_train_mses</span><span class="p">)</span>
+                <span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;avg_test_mse&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">fold_test_mses</span><span class="p">)</span>
+                <span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;test_mse_stdev&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">fold_test_mses</span><span class="p">)</span>
+
+                <span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;avg_train_mae&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">fold_train_maes</span><span class="p">)</span>
+                <span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;train_mae_stdev&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">fold_train_maes</span><span class="p">)</span>
+                <span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;avg_test_mae&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">fold_test_maes</span><span class="p">)</span>
+                <span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;test_mae_stdev&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">fold_test_maes</span><span class="p">)</span>
+
+                <span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;avg_train_r2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">fold_train_r2s</span><span class="p">)</span>
+                <span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;train_r2_stdev&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">fold_train_r2s</span><span class="p">)</span>
+                <span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;avg_test_r2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">fold_test_r2s</span><span class="p">)</span>
+                <span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;test_r2_stdev&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">fold_test_r2s</span><span class="p">)</span>
+
+            <span class="c1"># Average scoring metric (e.g. RMSE, MAE) over all cvtests for this dataframe</span>
+            <span class="n">avg_train_rmse</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">avg_test_rmse</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">avg_train_mse</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">avg_test_mse</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">avg_train_mae</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">avg_test_mae</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">avg_train_rsquared</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">avg_test_rsquared</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">cvtest</span> <span class="ow">in</span> <span class="n">cvtest_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">avg_train_rmse</span> <span class="o">+=</span> <span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;avg_train_rmse&quot;</span><span class="p">]</span>
+                <span class="n">avg_test_rmse</span> <span class="o">+=</span> <span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;avg_test_rmse&quot;</span><span class="p">]</span>
+                <span class="n">avg_train_mse</span> <span class="o">+=</span> <span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;avg_train_mse&quot;</span><span class="p">]</span>
+                <span class="n">avg_test_mse</span> <span class="o">+=</span> <span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;avg_test_mse&quot;</span><span class="p">]</span>
+                <span class="n">avg_train_mae</span> <span class="o">+=</span> <span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;avg_train_mae&quot;</span><span class="p">]</span>
+                <span class="n">avg_test_mae</span> <span class="o">+=</span> <span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;avg_test_mae&quot;</span><span class="p">]</span>
+                <span class="n">avg_train_rsquared</span> <span class="o">+=</span> <span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;avg_train_r2&quot;</span><span class="p">]</span>
+                <span class="n">avg_test_rsquared</span> <span class="o">+=</span> <span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;avg_test_r2&quot;</span><span class="p">]</span>
+                <span class="n">train_rmse_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;avg_train_rmse&quot;</span><span class="p">])</span>
+                <span class="n">test_rmse_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;avg_test_rmse&quot;</span><span class="p">])</span>
+                <span class="n">train_mse_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;avg_train_rmse&quot;</span><span class="p">])</span>
+                <span class="n">test_mse_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;avg_test_rmse&quot;</span><span class="p">])</span>
+                <span class="n">train_mae_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;avg_train_rmse&quot;</span><span class="p">])</span>
+                <span class="n">test_mae_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;avg_test_rmse&quot;</span><span class="p">])</span>
+                <span class="n">train_r2_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;avg_train_r2&quot;</span><span class="p">])</span>
+                <span class="n">test_r2_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cvtest_dict</span><span class="p">[</span><span class="n">cvtest</span><span class="p">][</span><span class="s2">&quot;avg_test_r2&quot;</span><span class="p">])</span>
+            <span class="n">avg_train_rmse</span> <span class="o">/=</span> <span class="n">num_cvtests</span>
+            <span class="n">avg_test_rmse</span> <span class="o">/=</span> <span class="n">num_cvtests</span>
+            <span class="n">avg_train_rmse_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">avg_train_rmse</span><span class="p">)</span>
+            <span class="n">avg_test_rmse_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">avg_test_rmse</span><span class="p">)</span>
+            <span class="n">train_rmse_stdev_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">train_rmse_list</span><span class="p">)))</span>
+            <span class="n">test_rmse_stdev_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">test_rmse_list</span><span class="p">)))</span>
+
+            <span class="n">avg_train_mse</span> <span class="o">/=</span> <span class="n">num_cvtests</span>
+            <span class="n">avg_test_mse</span> <span class="o">/=</span> <span class="n">num_cvtests</span>
+            <span class="n">avg_train_mse_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">avg_train_mse</span><span class="p">)</span>
+            <span class="n">avg_test_mse_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">avg_test_mse</span><span class="p">)</span>
+            <span class="n">train_mse_stdev_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">train_mse_list</span><span class="p">)))</span>
+            <span class="n">test_mse_stdev_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">test_mse_list</span><span class="p">)))</span>
+
+            <span class="n">avg_train_mae</span> <span class="o">/=</span> <span class="n">num_cvtests</span>
+            <span class="n">avg_test_mae</span> <span class="o">/=</span> <span class="n">num_cvtests</span>
+            <span class="n">avg_train_mae_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">avg_train_mae</span><span class="p">)</span>
+            <span class="n">avg_test_mae_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">avg_test_mae</span><span class="p">)</span>
+            <span class="n">train_mae_stdev_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">train_mae_list</span><span class="p">)))</span>
+            <span class="n">test_mae_stdev_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">test_mae_list</span><span class="p">)))</span>
+
+            <span class="n">avg_train_rsquared</span> <span class="o">/=</span> <span class="n">num_cvtests</span>
+            <span class="n">avg_test_rsquared</span> <span class="o">/=</span> <span class="n">num_cvtests</span>
+            <span class="n">avg_train_r2_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">avg_train_rsquared</span><span class="p">)</span>
+            <span class="n">avg_test_r2_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">avg_test_rsquared</span><span class="p">)</span>
+            <span class="n">train_r2_stdev_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">train_r2_list</span><span class="p">)))</span>
+            <span class="n">test_r2_stdev_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">test_r2_list</span><span class="p">)))</span>
+
+            <span class="c1"># Get current df x and y data split</span>
+            <span class="n">ydata</span> <span class="o">=</span> <span class="n">FeatureIO</span><span class="p">(</span><span class="n">dataframe</span><span class="o">=</span><span class="n">dfcopy</span><span class="p">)</span><span class="o">.</span><span class="n">keep_custom_features</span><span class="p">(</span><span class="n">features_to_keep</span><span class="o">=</span><span class="n">target_feature</span><span class="p">)</span>
+            <span class="n">Xdata</span> <span class="o">=</span> <span class="n">FeatureIO</span><span class="p">(</span><span class="n">dataframe</span><span class="o">=</span><span class="n">dfcopy</span><span class="p">)</span><span class="o">.</span><span class="n">remove_custom_features</span><span class="p">(</span><span class="n">features_to_remove</span><span class="o">=</span><span class="n">target_feature</span><span class="p">)</span>
+
+            <span class="c1"># Construct learning curve plot of CVscore vs number of training data included. Only do it once max features reached</span>
+            <span class="k">if</span> <span class="n">num_features</span> <span class="o">==</span> <span class="n">n_features_to_keep</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">get_univariate_RFE_training_data_learning_curve</span><span class="p">(</span><span class="n">estimator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Training data learning curve&#39;</span><span class="p">,</span>
+                                                       <span class="n">Xdata</span><span class="o">=</span><span class="n">Xdata</span><span class="p">,</span> <span class="n">ydata</span><span class="o">=</span><span class="n">ydata</span><span class="p">,</span> <span class="n">feature_selection_type</span><span class="o">=</span> <span class="n">feature_selection_algorithm</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+        <span class="c1"># Construct learning curve plot of RMSE vs number of features included</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scoring_metric</span> <span class="o">==</span> <span class="s1">&#39;root_mean_squared_error&#39;</span><span class="p">:</span>
+            <span class="n">ydict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;train_rmse&quot;</span><span class="p">:</span> <span class="n">avg_train_rmse_list</span><span class="p">,</span> <span class="s2">&quot;test_rmse&quot;</span><span class="p">:</span> <span class="n">avg_test_rmse_list</span><span class="p">}</span>
+            <span class="n">ydict_stdev</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;train_rmse&quot;</span><span class="p">:</span> <span class="n">train_rmse_stdev_list</span><span class="p">,</span> <span class="s2">&quot;test_rmse&quot;</span><span class="p">:</span> <span class="n">test_rmse_stdev_list</span><span class="p">}</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">scoring_metric</span> <span class="o">==</span> <span class="s1">&#39;mean_squared_error&#39;</span><span class="p">:</span>
+            <span class="n">ydict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;train_mse&quot;</span><span class="p">:</span> <span class="n">avg_train_mse_list</span><span class="p">,</span> <span class="s2">&quot;test_mse&quot;</span><span class="p">:</span> <span class="n">avg_test_mse_list</span><span class="p">}</span>
+            <span class="n">ydict_stdev</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;train_mse&quot;</span><span class="p">:</span> <span class="n">train_mse_stdev_list</span><span class="p">,</span> <span class="s2">&quot;test_mse&quot;</span><span class="p">:</span> <span class="n">test_mse_stdev_list</span><span class="p">}</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">scoring_metric</span> <span class="o">==</span> <span class="s1">&#39;mean_absolute_error&#39;</span><span class="p">:</span>
+            <span class="n">ydict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;train_mae&quot;</span><span class="p">:</span> <span class="n">avg_train_mae_list</span><span class="p">,</span> <span class="s2">&quot;test_mae&quot;</span><span class="p">:</span> <span class="n">avg_test_mae_list</span><span class="p">}</span>
+            <span class="n">ydict_stdev</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;train_mae&quot;</span><span class="p">:</span> <span class="n">train_mae_stdev_list</span><span class="p">,</span> <span class="s2">&quot;test_mae&quot;</span><span class="p">:</span> <span class="n">test_mae_stdev_list</span><span class="p">}</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">scoring_metric</span> <span class="o">==</span> <span class="s1">&#39;r2_score&#39;</span><span class="p">:</span>
+            <span class="n">ydict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;train_r2&quot;</span><span class="p">:</span> <span class="n">avg_train_r2_list</span><span class="p">,</span> <span class="s2">&quot;test_r2&quot;</span><span class="p">:</span> <span class="n">avg_test_r2_list</span><span class="p">}</span>
+            <span class="n">ydict_stdev</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;train_r2&quot;</span><span class="p">:</span> <span class="n">train_r2_stdev_list</span><span class="p">,</span> <span class="s2">&quot;test_r2&quot;</span><span class="p">:</span> <span class="n">test_r2_stdev_list</span><span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;ERROR: you must specify a valid scoring metric for feature selection!&quot;</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_univariate_RFE_feature_learning_curve</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">feature_selection_algorithm</span> <span class="o">+</span> <span class="s1">&#39; learning curve&#39;</span><span class="p">,</span>
+                                                       <span class="n">Xdata</span><span class="o">=</span><span class="n">num_features_list</span><span class="p">,</span> <span class="n">ydata</span><span class="o">=</span><span class="n">ydict</span><span class="p">,</span> <span class="n">ydata_stdev</span><span class="o">=</span><span class="n">ydict_stdev</span><span class="p">,</span>
+                                                       <span class="n">feature_selection_type</span><span class="o">=</span><span class="n">feature_selection_algorithm</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">get_univariate_RFE_training_data_learning_curve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">estimator</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">Xdata</span><span class="p">,</span> <span class="n">ydata</span><span class="p">,</span> <span class="n">feature_selection_type</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+        <span class="n">savedir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">configdict</span><span class="p">[</span><span class="s1">&#39;General Setup&#39;</span><span class="p">][</span><span class="s1">&#39;save_path&#39;</span><span class="p">]</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Number of training data points&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scoring_metric</span> <span class="o">==</span> <span class="s1">&#39;root_mean_squared_error&#39;</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;RMSE&quot;</span><span class="p">)</span>
+            <span class="n">score_func</span> <span class="o">=</span> <span class="n">mean_squared_error</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">scoring_metric</span> <span class="o">==</span> <span class="s1">&#39;mean_squared_error&#39;</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;MSE&#39;</span><span class="p">)</span>
+            <span class="n">score_func</span> <span class="o">=</span> <span class="n">mean_squared_error</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">scoring_metric</span> <span class="o">==</span> <span class="s1">&#39;mean_absolute_error&#39;</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;MAE&#39;</span><span class="p">)</span>
+            <span class="n">score_func</span> <span class="o">=</span> <span class="n">mean_absolute_error</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">scoring_metric</span> <span class="o">==</span> <span class="s1">&#39;r2_score&#39;</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;R^2&#39;</span><span class="p">)</span>
+            <span class="n">score_func</span> <span class="o">=</span> <span class="n">r2_score</span>
+
+        <span class="n">train_sizes</span><span class="p">,</span> <span class="n">train_scores</span><span class="p">,</span> <span class="n">test_scores</span> <span class="o">=</span> <span class="n">learning_curve</span><span class="p">(</span><span class="n">estimator</span><span class="p">,</span> <span class="n">Xdata</span><span class="p">,</span> <span class="n">ydata</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                                                <span class="n">scoring</span><span class="o">=</span><span class="n">make_scorer</span><span class="p">(</span><span class="n">score_func</span><span class="o">=</span><span class="n">score_func</span><span class="p">),</span>
+                                                                <span class="n">train_sizes</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scoring_metric</span> <span class="o">==</span> <span class="s1">&#39;root_mean_squared_error&#39;</span><span class="p">:</span>
+            <span class="n">train_scores_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">train_scores</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">train_scores_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">train_scores</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">test_scores_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">test_scores</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">test_scores_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">test_scores</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">train_scores_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">train_scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">train_scores_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">train_scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">test_scores_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">test_scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">test_scores_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">test_scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">train_sizes</span><span class="p">,</span> <span class="n">train_scores_mean</span> <span class="o">-</span> <span class="n">train_scores_std</span><span class="p">,</span> <span class="n">train_scores_mean</span> <span class="o">+</span> <span class="n">train_scores_std</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                         <span class="n">color</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">train_sizes</span><span class="p">,</span> <span class="n">test_scores_mean</span> <span class="o">-</span> <span class="n">test_scores_std</span><span class="p">,</span> <span class="n">test_scores_mean</span> <span class="o">+</span> <span class="n">test_scores_std</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                         <span class="n">color</span><span class="o">=</span><span class="s2">&quot;g&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">train_sizes</span><span class="p">,</span> <span class="n">train_scores_mean</span><span class="p">,</span> <span class="s1">&#39;o-&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Training data score&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">train_sizes</span><span class="p">,</span> <span class="n">test_scores_mean</span><span class="p">,</span> <span class="s1">&#39;o-&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;g&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Test data score&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s2">&quot;best&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">savedir</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">feature_selection_type</span> <span class="o">+</span> <span class="s2">&quot;_learning_curve_trainingdata.pdf&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">get_univariate_RFE_feature_learning_curve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">Xdata</span><span class="p">,</span> <span class="n">ydata</span><span class="p">,</span> <span class="n">ydata_stdev</span><span class="p">,</span> <span class="n">feature_selection_type</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+        <span class="n">savedir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">configdict</span><span class="p">[</span><span class="s1">&#39;General Setup&#39;</span><span class="p">][</span><span class="s1">&#39;save_path&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">ydataname</span><span class="p">,</span> <span class="n">ydata</span> <span class="ow">in</span> <span class="n">ydata</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="s1">&#39;train&#39;</span> <span class="ow">in</span> <span class="n">ydataname</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">Xdata</span><span class="p">,</span> <span class="n">ydata</span><span class="p">,</span> <span class="s1">&#39;o-&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Training data score&#39;</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">Xdata</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ydata</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ydata_stdev</span><span class="p">[</span><span class="n">ydataname</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ydata</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ydata_stdev</span><span class="p">[</span><span class="n">ydataname</span><span class="p">]),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                                 <span class="n">color</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s1">&#39;test&#39;</span> <span class="ow">in</span> <span class="n">ydataname</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">Xdata</span><span class="p">,</span> <span class="n">ydata</span><span class="p">,</span> <span class="s1">&#39;o-&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Test data score&#39;</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">Xdata</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ydata</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ydata_stdev</span><span class="p">[</span><span class="n">ydataname</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ydata</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ydata_stdev</span><span class="p">[</span><span class="n">ydataname</span><span class="p">]),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                                <span class="n">color</span><span class="o">=</span><span class="s2">&quot;g&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Number of features&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scoring_metric</span> <span class="o">==</span> <span class="s1">&#39;root_mean_squared_error&#39;</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;RMSE&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">scoring_metric</span> <span class="o">==</span> <span class="s1">&#39;mean_squared_error&#39;</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;MSE&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">scoring_metric</span> <span class="o">==</span> <span class="s1">&#39;mean_absolute_error&#39;</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;MAE&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">scoring_metric</span> <span class="o">==</span> <span class="s1">&#39;r2_score&#39;</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;R^2&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s2">&quot;best&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">savedir</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">feature_selection_type</span> <span class="o">+</span> <span class="s2">&quot;_learning_curve_featurenumber.pdf&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">get_sequential_forward_selection_learning_curve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metricdict</span><span class="p">,</span> <span class="n">filetag</span><span class="p">):</span>
+        <span class="n">Xdata</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">ydata</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">ydata_stdev</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">metricdict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">Xdata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">kk</span><span class="p">,</span> <span class="n">vv</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">kk</span> <span class="o">==</span> <span class="s1">&#39;avg_score&#39;</span><span class="p">:</span>
+                    <span class="n">ydata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vv</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">kk</span> <span class="o">==</span> <span class="s1">&#39;std_dev&#39;</span><span class="p">:</span>
+                    <span class="n">ydata_stdev</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vv</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">Xdata</span><span class="p">,</span> <span class="n">ydata</span><span class="p">,</span> <span class="s1">&#39;-o&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">Xdata</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ydata</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ydata_stdev</span><span class="p">),</span>
+                         <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ydata</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ydata_stdev</span><span class="p">),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                         <span class="n">color</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Sequential forward selection learning curve&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;RMSE&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Number of features&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">configdict</span><span class="p">[</span><span class="s1">&#39;General Setup&#39;</span><span class="p">][</span><span class="s1">&#39;save_path&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="s1">&#39;sequential_forward_selection_learning_curve_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span>
+            <span class="n">filetag</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;.pdf&#39;</span><span class="p">)</span>
+        <span class="k">return</span></div>
+
+<div class="viewcode-block" id="MiscFeatureSelectionOperations"><a class="viewcode-back" href="../5_1_featureselection.html#FeatureSelection.MiscFeatureSelectionOperations">[docs]</a><span class="k">class</span> <span class="nc">MiscFeatureSelectionOperations</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class containing additional functions to help with feature selection routines</span>
+
+<span class="sd">    Methods:</span>
+<span class="sd">        get_selector_feature_names : obtains the feature names and indices selected by a RFE algorithm</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                selector (sklearn RFE object) : an instance of the RFE sklearn class</span>
+<span class="sd">                x_features (list) : list of x feature names</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                list : list of feature index numbers selected</span>
+<span class="sd">                list : list of feature names selected</span>
+
+<span class="sd">        get_forward_selection_feature_names : obtain feature names based on feature indices</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                feature_indices_selected (list) : list of feature index numbers selected</span>
+<span class="sd">                x_features (list) : list of x feature names</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                list : list of feature names selected</span>
+
+<span class="sd">        get_feature_filetag : obtain feature name to be used in saved file names</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                configdict (dict) : MASTML configfile object as dict</span>
+<span class="sd">                dataframe (pandas dataframe) : a pandas dataframe object</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                str : feature name to be used in file name</span>
+
+<span class="sd">        get_ranked_feature_names : obtains ranked feature names from an RFE algorithm</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                selector (sklearn RFE object) : an instance of the RFE sklearn class</span>
+<span class="sd">                x_features (list) : list of x feature names</span>
+<span class="sd">                number_features_to_keep (int) : number of features to keep in selected feature list</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                list : list of feature names selected</span>
+
+<span class="sd">        remove_features_containing_strings : removes feature columns whose values are strings as these can&#39;t be used in regression tasks</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                dataframe (pandas dataframe) : dataframe containing data and feature names</span>
+<span class="sd">                x_features (list) : list of x feature names</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                list : list of x features with those features removed which contained data as strings</span>
+<span class="sd">                pandas dataframe : dataframe containing data and feature names, with string features removed</span>
+
+<span class="sd">        save_data_to_csv : save dataframe to csv file</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                configdict (dict) : MASTML configfile object as dict</span>
+<span class="sd">                dataframe (pandas dataframe) : a pandas dataframe object</span>
+<span class="sd">                feature_selection_str (str) : name of feature selection routine used</span>
+<span class="sd">                filetag (str) : name of target feature</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_selector_feature_names</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">selector</span><span class="p">,</span> <span class="n">x_features</span><span class="p">):</span>
+        <span class="n">feature_indices_selected</span> <span class="o">=</span> <span class="n">selector</span><span class="o">.</span><span class="n">get_support</span><span class="p">(</span><span class="n">indices</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># Get the names of the features based on their indices, for features selected from feature selection</span>
+        <span class="n">feature_names_selected</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x_features</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">feature_indices_selected</span><span class="p">:</span>
+                <span class="n">feature_names_selected</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x_features</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">feature_indices_selected</span><span class="p">,</span> <span class="n">feature_names_selected</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_forward_selection_feature_names</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">feature_indices_selected</span><span class="p">,</span> <span class="n">x_features</span><span class="p">):</span>
+        <span class="c1"># Get the names of the features based on their indices, for features selected from feature selection</span>
+        <span class="n">feature_names_selected</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x_features</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">feature_indices_selected</span><span class="p">:</span>
+                <span class="n">feature_names_selected</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x_features</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">feature_names_selected</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_feature_filetag</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">configdict</span><span class="p">,</span> <span class="n">dataframe</span><span class="p">):</span>
+        <span class="n">foundfeature</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">configdict</span><span class="p">[</span><span class="s1">&#39;General Setup&#39;</span><span class="p">][</span><span class="s1">&#39;target_feature&#39;</span><span class="p">]:</span>
+                <span class="n">filetag</span> <span class="o">=</span> <span class="n">column</span>
+                <span class="n">foundfeature</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="n">foundfeature</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Error: Could not locate y_feature in your dataframe, please ensure the y_feature names match in your csv&#39;</span>
+                      <span class="s1">&#39;and input file&#39;</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">filetag</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_ranked_feature_names</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">selector</span><span class="p">,</span> <span class="n">x_features</span><span class="p">,</span> <span class="n">number_features_to_keep</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ranked_features</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">selector</span><span class="o">.</span><span class="n">scores_</span><span class="p">,</span> <span class="n">x_features</span><span class="p">),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="n">ranked_features</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">selector</span><span class="o">.</span><span class="n">ranking_</span><span class="p">,</span> <span class="n">x_features</span><span class="p">))</span>
+        <span class="n">feature_names_selected</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ranked_features</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">count</span> <span class="o">&lt;</span> <span class="n">number_features_to_keep</span><span class="p">:</span>
+                <span class="n">feature_names_selected</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ranked_features</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">feature_names_selected</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">remove_features_containing_strings</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">dataframe</span><span class="p">,</span> <span class="n">x_features</span><span class="p">):</span>
+        <span class="n">x_features_pruned</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">x_features_to_remove</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">x_feature</span> <span class="ow">in</span> <span class="n">x_features</span><span class="p">:</span>
+            <span class="n">is_str</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">dataframe</span><span class="p">[</span><span class="n">x_feature</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+                    <span class="c1">#print(&#39;found a string&#39;)</span>
+                    <span class="n">is_str</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="n">is_str</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">x_features_to_remove</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x_feature</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">x_feature</span> <span class="ow">in</span> <span class="n">x_features</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">x_feature</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">x_features_to_remove</span><span class="p">:</span>
+                <span class="n">x_features_pruned</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x_feature</span><span class="p">)</span>
+
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="n">FeatureIO</span><span class="p">(</span><span class="n">dataframe</span><span class="o">=</span><span class="n">dataframe</span><span class="p">)</span><span class="o">.</span><span class="n">remove_custom_features</span><span class="p">(</span><span class="n">features_to_remove</span><span class="o">=</span><span class="n">x_features_to_remove</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x_features_pruned</span><span class="p">,</span> <span class="n">dataframe</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">save_data_to_csv</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">configdict</span><span class="p">,</span> <span class="n">dataframe</span><span class="p">,</span> <span class="n">feature_selection_str</span><span class="p">,</span> <span class="n">filetag</span><span class="p">):</span>
+        <span class="n">dataframe</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">configdict</span><span class="p">[</span><span class="s1">&#39;General Setup&#39;</span><span class="p">][</span><span class="s1">&#39;save_path&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">feature_selection_str</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">filetag</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;.csv&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, UW-Madison Computational Materials Group.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

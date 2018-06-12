@@ -1,9 +1,17 @@
+__author__ = 'Tam Mayeshiba'
+__maintainer__ = 'Ryan Jacobs'
+__version__ = '1.0'
+__email__ = 'rjacobs3@wisc.edu'
+__date__ = 'October 14th, 2017'
+
 import numpy as np
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import r2_score
 from plot_data.PlotHelper import PlotHelper
+from DataOperations import DataframeUtilities
 import os
+import sys
 import time
 import logging
 import copy
@@ -35,21 +43,18 @@ def timeit(method):
     return timed
 
 class SingleFit():
-    """This is the basic analysis class.
-
-    This class provides a template for other classes. Combine many classes 
-    to do meta-analysis.
+    """
+    This is the basic analysis class. Serves as a parent class for more specific analysis classes.
 
     Args:
         training_dataset (DataHandler object): Training dataset handler
         testing_dataset (DataHandler object): Testing dataset handler
-        model (sklearn model): Machine-learning model
+        model (sklearn model object): sklearn model
         save_path (str): Save path
         xlabel (str): Label for full-fit x-axis (default "Measured")
         ylabel (str): Label for full-fit y-axis (default "Predicted")
-        plot_filter_out (list): List of semicolon-delimited strings with
-                            feature;operator;value for filtering out
-                            values for plotting.
+        plot_filter_out (list): List of semicolon-delimited strings with feature;operator;value for leaving out specific values for plotting.
+
     Returns:
         Analysis in the path marked by save_path
 
@@ -59,15 +64,8 @@ class SingleFit():
                     input_features, target_feature,
                     model
     """
-    def __init__(self, 
-        training_dataset=None,
-        testing_dataset=None,
-        model=None,
-        save_path=None,
-        xlabel="Measured",
-        ylabel="Predicted",
-        plot_filter_out=None,
-        *args, **kwargs):
+    def __init__(self, training_dataset=None, testing_dataset=None, model=None, save_path=None, xlabel="Measured",
+        ylabel="Predicted", plot_filter_out=None, scaler=None, *args, **kwargs):
         """Initialize class.
             Attributes that can be set through keywords:
                 self.training_dataset
@@ -91,6 +89,7 @@ class SingleFit():
             self.training_dataset= copy.deepcopy(training_dataset[0]) #first item
         else:
             self.training_dataset = copy.deepcopy(training_dataset)
+
         # testing csv
         if testing_dataset is None:
             raise ValueError("testing_dataset is not set")
@@ -98,6 +97,8 @@ class SingleFit():
             self.testing_dataset = copy.deepcopy(testing_dataset[0])
         else:
             self.testing_dataset=copy.deepcopy(testing_dataset)
+        self.scaler = scaler
+
         # model
         if model is None:
             raise ValueError("No model.")
@@ -144,18 +145,30 @@ class SingleFit():
         self.print_model()
         self.save_model()
         return
-   
+
+    @timeit
+    def un_normalize(self, array):
+        if self.scaler is not None:
+            array = self.scaler.inverse_transform(X=array.reshape(-1, 1))
+            array = array.ravel()
+            array = DataframeUtilities().array_to_dataframe(array=array)
+            array = array[0]
+        return array
+
     @timeit
     def predict(self):
         self.get_prediction()
-        self.print_output_csv()
+        self.testing_dataset.target_data = self.un_normalize(array=self.testing_dataset.target_data)
+        self.testing_dataset.target_prediction = self.un_normalize(array=self.testing_dataset.target_prediction)
         self.get_statistics()
+        self.print_output_csv()
         self.print_statistics()
         return
 
     @timeit
     def plot(self):
         self.plot_results()
+        self.plot_residuals_histogram()
         return
 
     def get_trained_model(self):
@@ -200,6 +213,11 @@ class SingleFit():
         mean_abs_err = mean_absolute_error(self.testing_dataset.target_data, self.testing_dataset.target_prediction)
         return mean_abs_err
 
+    def get_residuals(self):
+        residuals = self.testing_dataset.target_prediction-self.testing_dataset.target_data
+        self.testing_dataset.add_residuals(residual_data=residuals)
+        return residuals
+
     def get_rsquared(self, Xdata, ydata):
         Xdata = np.array(Xdata).reshape(-1,1)
         ydata = np.array(ydata).reshape(-1,1)
@@ -228,6 +246,7 @@ class SingleFit():
         self.statistics['mean_absolute_error'] = self.get_mean_absolute_error()
         self.statistics['rsquared'] = self.get_rsquared(Xdata=self.testing_dataset.target_data, ydata=self.testing_dataset.target_prediction)
         self.statistics['rsquared_noint'] = self.get_rsquared_noint(Xdata=self.testing_dataset.target_data, ydata=self.testing_dataset.target_prediction)
+        self.statistics['residuals'] = self.get_residuals()
         self.plot_filter_update_statistics()
         return
 
@@ -259,7 +278,7 @@ class SingleFit():
         return
 
     def get_plot_filter(self, plot_filter_out):
-        if plot_filter_out is None:
+        if (plot_filter_out is None or plot_filter_out == 'None' or plot_filter_out == ''):
             self.plot_filter_out = None
             return
         pf_tuple_list = list()
@@ -294,6 +313,7 @@ class SingleFit():
         return
     
     def plot_results(self, addl_plot_kwargs=None):
+
         self.readme_list.append("----- Plotting -----\n")
         if self.testing_dataset.target_data is None:
             logger.warning("No testing target data. Predicted vs. measured plot will not be plotted.")
@@ -341,6 +361,12 @@ class SingleFit():
         self.readme_list.append("Plot single_fit.png created.\n")
         self.readme_list.append("    Plotted data is in the data_... csv file.\n")
         self.readme_list.append("    Error column of all zeros indicates no error.\n")
+        return
+
+    def plot_residuals_histogram(self):
+        DataframeUtilities.plot_dataframe_histogram(dataframe=self.statistics['residuals'], title='Histogram of residuals',
+                                                          xlabel='Residuals', ylabel='Number of occurrences',
+                                                          save_path=self.save_path, file_name='histogram_residuals.png')
         return
 
     @timeit

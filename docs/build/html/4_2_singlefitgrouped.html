@@ -23,6 +23,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="SingleFitPerGroup" href="4_3_singlefitpergroup.html" />
     <link rel="prev" title="SingleFit" href="4_1_singlefit.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -80,28 +81,22 @@ and reports statistics and plots data by groups.</p>
 <dl class="class">
 <dt id="SingleFitGrouped.SingleFitGrouped">
 <em class="property">class </em><code class="descclassname">SingleFitGrouped.</code><code class="descname">SingleFitGrouped</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='Measured'</em>, <em>ylabel='Predicted'</em>, <em>plot_filter_out=None</em>, <em>mark_outlying_groups=2</em>, <em>fit_only_on_matched_groups=0</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SingleFitGrouped.html#SingleFitGrouped"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#SingleFitGrouped.SingleFitGrouped" title="Permalink to this definition">¶</a></dt>
-<dd><p>Do a single full fit and split out group contributions to RMSE.</p>
+<dd><p>Class to perform a single full fit and split out group contributions to overall scoring metric used.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>training_dataset</strong><strong>,</strong> – </li>
-<li><strong>testing_dataset</strong><strong>,</strong> – </li>
-<li><strong>model</strong><strong>,</strong> – </li>
-<li><strong>save_path</strong><strong>,</strong> – </li>
-<li><strong>xlabel</strong><strong>,</strong> – </li>
-<li><strong>ylabel</strong><strong>,</strong> – </li>
-<li><strong>plot_filter_out</strong> – see parent class</li>
+<li><strong>training_dataset</strong> (<em>DataHandler object</em>) – Training dataset handler</li>
+<li><strong>testing_dataset</strong> (<em>DataHandler object</em>) – Testing dataset handler</li>
+<li><strong>model</strong> (<em>sklearn model object</em>) – sklearn model</li>
+<li><strong>save_path</strong> (<em>str</em>) – Save path</li>
+<li><strong>xlabel</strong> (<em>str</em>) – Label for full-fit x-axis (default “Measured”)</li>
+<li><strong>ylabel</strong> (<em>str</em>) – Label for full-fit y-axis (default “Predicted”)</li>
+<li><strong>plot_filter_out</strong> (<em>list</em>) – List of semicolon-delimited strings with feature;operator;value for leaving out specific values for plotting.</li>
 <li><strong>mark_outlying_groups</strong> (<em>int</em>) – Number of outlying groups to mark</li>
-<li><strong>fit_only_on_matched_groups</strong> (<em>int</em>) – <dl class="docutils">
-<dt>0 - fit on all data in the training</dt>
-<dd>dataset (default)</dd>
-<dt>1 - fit only on groups in the training</dt>
-<dd>dataset that are also in the
-testing dataset</dd>
-</dl>
-</li>
+<li><strong>fit_only_on_matched_groups</strong> (<em>int</em>) – 0 - fit on all data in the training dataset (default)
+1 - fit only on groups in the training dataset that are also in the testing dataset</li>
 </ul>
 </td>
 </tr>
@@ -111,8 +106,7 @@ Plots results in a predicted vs. measured square plot.</p>
 </tr>
 <tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
 <li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> – if grouping_feature is not set in testing dataset</li>
-<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> – if testing target data is None; has to have at least
-some testing target data to plot</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> – if testing target data is None; has to have at least some testing target data to plot</li>
 </ul>
 </td>
 </tr>
@@ -143,6 +137,7 @@ some testing target data to plot</li>
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="4_tests.html">Tests</a><ul>
       <li>Previous: <a href="4_1_singlefit.html" title="previous chapter">SingleFit</a></li>
+      <li>Next: <a href="4_3_singlefitpergroup.html" title="next chapter">SingleFitPerGroup</a></li>
   </ul></li>
   </ul></li>
 </ul>

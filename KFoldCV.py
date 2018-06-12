@@ -1,3 +1,9 @@
+__author__ = 'Tam Mayeshiba'
+__maintainer__ = 'Ryan Jacobs'
+__version__ = '1.0'
+__email__ = 'rjacobs3@wisc.edu'
+__date__ = 'October 14th, 2017'
+
 import os
 import numpy as np
 from sklearn.model_selection import KFold
@@ -7,26 +13,30 @@ from LeaveOutPercentCV import LeaveOutPercentCV
 from SingleFit import timeit
 
 class KFoldCV(LeaveOutPercentCV):
-    """KFold cross validation
+    """Class to conduct k-fold cross-validation analysis
    
     Args:
-        training_dataset, (Should be the same as testing_dataset)
-        testing_dataset, (Should be the same as training_dataset)
-        model,
-        save_path,
-        xlabel, 
-        ylabel,
-        mark_outlying_points,
-        num_cvtests, (each test contains K folds)
-        fix_random_for_testing: see parent class.
+        training_dataset (DataHandler object): Training dataset handler
+        testing_dataset (DataHandler object): Testing dataset handler
+        model (sklearn model object): sklearn model
+        save_path (str): Save path
+        xlabel (str): Label for full-fit x-axis (default "Measured")
+        ylabel (str): Label for full-fit y-axis (default "Predicted")
+        mark_outlying_points (list of int): Number of outlying points to mark in best and worst tests, e.g. [0,3]
+
+        num_cvtests (int): number of CV tests to perform. Each CV test contains K folds as set by num_folds
+        fix_random_for_testing (int):
+                1 - fix random shuffle for testing purposes
+                0 (default) Use random shuffle.
         num_folds (int): Number of folds for KFold CV
  
     Returns:
         Analysis in the save_path folder
         Plots results in a predicted vs. measured square plot.
+
     Raises:
-        ValueError: if testing target data is None; CV must have
-                testing target data
+        ValueError: if testing target data is None; CV must have testing target data
+
     """
     def __init__(self, 
         training_dataset=None,
@@ -39,6 +49,7 @@ class KFoldCV(LeaveOutPercentCV):
         num_cvtests=10,
         fix_random_for_testing=0,
         num_folds=2,
+        scaler=None,
         *args, **kwargs):
         """
         Additional class attributes to parent class:
@@ -58,8 +69,10 @@ class KFoldCV(LeaveOutPercentCV):
             mark_outlying_points = mark_outlying_points,
             percent_leave_out = -1, #not using this field
             num_cvtests = num_cvtests,
-            fix_random_for_testing = fix_random_for_testing)
+            fix_random_for_testing = fix_random_for_testing,
+            scaler=scaler)
         self.num_folds = int(num_folds)
+
         return 
 
     @timeit
@@ -75,6 +88,7 @@ class KFoldCV(LeaveOutPercentCV):
         notelist.append("R-squared (no int): " "{:.2f}".format(self.statistics['r2_score_noint']))
         self.plot_best_worst_overlay(notelist=list(notelist))
         self.plot_meancv_overlay(notelist=list(notelist))
+        self.plot_residuals_histogram()
         return
 
     def set_up_cv(self):
@@ -113,6 +127,11 @@ class KFoldCV(LeaveOutPercentCV):
                 target_test = self.testing_dataset.target_data[fdict['test_index']]
                 fit = self.model.fit(input_train, target_train)
                 predict_test = self.model.predict(input_test)
+
+                # Unnormalize data here
+                target_test = self.un_normalize(array=target_test)
+                predict_test = self.un_normalize(array=predict_test)
+
                 rmse = np.sqrt(mean_squared_error(predict_test, target_test))
                 merr = np.mean(predict_test - target_test)
                 fold_rmses[fold] = rmse
@@ -145,6 +164,7 @@ class KFoldCV(LeaveOutPercentCV):
         self.statistics['std_fold_avg_mean_errors'] = np.std(cvtest_avg_mean_errors)
         self.statistics['fold_avg_rmse_best'] = lowest_rmse
         self.statistics['fold_avg_rmse_worst'] = highest_rmse
+        self.statistics['residuals'] = self.get_cv_residuals()
 
         # Get average CV values and errors
         average_prediction = self.cvtest_dict[0]["prediction_array"]

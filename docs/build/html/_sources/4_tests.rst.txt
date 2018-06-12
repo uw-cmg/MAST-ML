@@ -8,7 +8,8 @@ Single fits
 
    4_1_singlefit
    4_2_singlefitgrouped
-   4_3_predvsfeat
+   4_3_singlefitpergroup
+   4_4_predvsfeat
 
 -----------------------------------
 Cross validation

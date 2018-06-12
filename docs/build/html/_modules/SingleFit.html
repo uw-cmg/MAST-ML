@@ -39,16 +39,24 @@
           <div class="body" role="main">
             
   <h1>Source code for SingleFit</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span></span><span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Tam Mayeshiba&#39;</span>
+<span class="n">__maintainer__</span> <span class="o">=</span> <span class="s1">&#39;Ryan Jacobs&#39;</span>
+<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;1.0&#39;</span>
+<span class="n">__email__</span> <span class="o">=</span> <span class="s1">&#39;rjacobs3@wisc.edu&#39;</span>
+<span class="n">__date__</span> <span class="o">=</span> <span class="s1">&#39;October 14th, 2017&#39;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="k">import</span> <span class="n">mean_squared_error</span>
 <span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="k">import</span> <span class="n">mean_absolute_error</span>
 <span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="k">import</span> <span class="n">r2_score</span>
 <span class="kn">from</span> <span class="nn">plot_data.PlotHelper</span> <span class="k">import</span> <span class="n">PlotHelper</span>
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">from</span> <span class="nn">sklearn.externals</span> <span class="k">import</span> <span class="n">joblib</span>
+<span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="k">import</span> <span class="n">LinearRegression</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
 
 <span class="k">def</span> <span class="nf">timeit</span><span class="p">(</span><span class="n">method</span><span class="p">):</span>
@@ -75,21 +83,18 @@
     <span class="k">return</span> <span class="n">timed</span>
 
 <div class="viewcode-block" id="SingleFit"><a class="viewcode-back" href="../4_1_singlefit.html#SingleFit.SingleFit">[docs]</a><span class="k">class</span> <span class="nc">SingleFit</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;This is the basic analysis class.</span>
-
-<span class="sd">    This class provides a template for other classes. Combine many classes </span>
-<span class="sd">    to do meta-analysis.</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This is the basic analysis class. Serves as a parent class for more specific analysis classes.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        training_dataset (DataHandler object): Training dataset handler</span>
 <span class="sd">        testing_dataset (DataHandler object): Testing dataset handler</span>
-<span class="sd">        model (sklearn model): Machine-learning model</span>
+<span class="sd">        model (sklearn model object): sklearn model</span>
 <span class="sd">        save_path (str): Save path</span>
 <span class="sd">        xlabel (str): Label for full-fit x-axis (default &quot;Measured&quot;)</span>
 <span class="sd">        ylabel (str): Label for full-fit y-axis (default &quot;Predicted&quot;)</span>
-<span class="sd">        plot_filter_out (list): List of semicolon-delimited strings with</span>
-<span class="sd">                            feature;operator;value for filtering out</span>
-<span class="sd">                            values for plotting.</span>
+<span class="sd">        plot_filter_out (list): List of semicolon-delimited strings with feature;operator;value for leaving out specific values for plotting.</span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        Analysis in the path marked by save_path</span>
 
@@ -99,15 +104,8 @@
 <span class="sd">                    input_features, target_feature,</span>
 <span class="sd">                    model</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
-        <span class="n">training_dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">testing_dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">save_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Measured&quot;</span><span class="p">,</span>
-        <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Predicted&quot;</span><span class="p">,</span>
-        <span class="n">plot_filter_out</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">training_dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">testing_dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">save_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Measured&quot;</span><span class="p">,</span>
+        <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Predicted&quot;</span><span class="p">,</span> <span class="n">plot_filter_out</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialize class.</span>
 <span class="sd">            Attributes that can be set through keywords:</span>
 <span class="sd">                self.training_dataset</span>
@@ -131,6 +129,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">training_dataset</span><span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">training_dataset</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="c1">#first item</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">training_dataset</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">training_dataset</span><span class="p">)</span>
+
         <span class="c1"># testing csv</span>
         <span class="k">if</span> <span class="n">testing_dataset</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;testing_dataset is not set&quot;</span><span class="p">)</span>
@@ -138,6 +137,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">testing_dataset</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">testing_dataset</span><span class="p">)</span>
+
         <span class="c1"># model</span>
         <span class="k">if</span> <span class="n">model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No model.&quot;</span><span class="p">)</span>
@@ -198,8 +198,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">plot_results</span><span class="p">()</span>
         <span class="k">return</span>
 
-
-
     <span class="k">def</span> <span class="nf">get_trained_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">trained_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training_dataset</span><span class="o">.</span><span class="n">input_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_dataset</span><span class="o">.</span><span class="n">target_data</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">trained_model</span> <span class="o">=</span> <span class="n">trained_model</span>
@@ -221,7 +219,11 @@
         <span class="k">return</span>
 
     <span class="k">def</span> <span class="nf">get_prediction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">target_prediction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trained_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">input_data</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trained_model</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;GaussianProcessRegressor&quot;</span><span class="p">:</span>
+            <span class="n">target_prediction</span><span class="p">,</span><span class="n">target_prediction_sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trained_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">input_data</span><span class="p">,</span><span class="n">return_std</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">add_prediction_sigma</span><span class="p">(</span><span class="n">target_prediction_sigma</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">target_prediction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trained_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">input_data</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">add_prediction</span><span class="p">(</span><span class="n">target_prediction</span><span class="p">)</span>
         <span class="k">return</span>
 
@@ -238,10 +240,25 @@
         <span class="n">mean_abs_err</span> <span class="o">=</span> <span class="n">mean_absolute_error</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_prediction</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">mean_abs_err</span>
 
-    <span class="k">def</span> <span class="nf">get_rsquared</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">rsquared</span> <span class="o">=</span> <span class="n">r2_score</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_prediction</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">get_rsquared</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Xdata</span><span class="p">,</span> <span class="n">ydata</span><span class="p">):</span>
+        <span class="n">Xdata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Xdata</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">ydata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ydata</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">linearmodel</span> <span class="o">=</span> <span class="n">LinearRegression</span><span class="p">(</span><span class="n">fit_intercept</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">linearmodel</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xdata</span><span class="p">,</span> <span class="n">ydata</span><span class="p">)</span>
+        <span class="n">rsquared</span> <span class="o">=</span> <span class="n">linearmodel</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">Xdata</span><span class="p">,</span> <span class="n">ydata</span><span class="p">)</span>
+        <span class="c1"># WARNING: There seems to be some issue (possibly numerical) with this routine whereby it gives a negative</span>
+        <span class="c1"># R2 value even for datasets that clearly have positive correlation. Do not use for now!!</span>
+        <span class="c1">#rsquared_sklearn = r2_score(self.testing_dataset.target_data, self.testing_dataset.target_prediction)</span>
         <span class="k">return</span> <span class="n">rsquared</span>
-    
+
+    <span class="k">def</span> <span class="nf">get_rsquared_noint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Xdata</span><span class="p">,</span> <span class="n">ydata</span><span class="p">):</span>
+        <span class="n">Xdata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Xdata</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">ydata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ydata</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">linearmodel</span> <span class="o">=</span> <span class="n">LinearRegression</span><span class="p">(</span><span class="n">fit_intercept</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">linearmodel</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xdata</span><span class="p">,</span> <span class="n">ydata</span><span class="p">)</span>
+        <span class="n">rsquared_noint</span> <span class="o">=</span> <span class="n">linearmodel</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">Xdata</span><span class="p">,</span> <span class="n">ydata</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">rsquared_noint</span>
+
     <span class="k">def</span> <span class="nf">get_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No testing target data. Statistics will not be collected.&quot;</span><span class="p">)</span>
@@ -249,7 +266,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;rmse&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_rmse</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;mean_error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_mean_error</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;mean_absolute_error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_mean_absolute_error</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;rsquared&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_rsquared</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;rsquared&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_rsquared</span><span class="p">(</span><span class="n">Xdata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_data</span><span class="p">,</span> <span class="n">ydata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_prediction</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;rsquared_noint&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_rsquared_noint</span><span class="p">(</span><span class="n">Xdata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_data</span><span class="p">,</span> <span class="n">ydata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_prediction</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">plot_filter_update_statistics</span><span class="p">()</span>
         <span class="k">return</span>
 
@@ -262,7 +280,10 @@
             <span class="n">skeys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
             <span class="n">skeys</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
             <span class="k">for</span> <span class="n">skey</span> <span class="ow">in</span> <span class="n">skeys</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">: </span><span class="si">%3.4f</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">skey</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="n">skey</span><span class="p">]))</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">readme_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">: </span><span class="si">%3.4f</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">skey</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="n">skey</span><span class="p">]))</span>
+                <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                    <span class="k">continue</span>
         <span class="k">return</span>
 
     <span class="k">def</span> <span class="nf">print_output_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">csvname</span><span class="o">=</span><span class="s2">&quot;output_data.csv&quot;</span><span class="p">):</span>
@@ -278,7 +299,7 @@
         <span class="k">return</span>
 
     <span class="k">def</span> <span class="nf">get_plot_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plot_filter_out</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">plot_filter_out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">plot_filter_out</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">plot_filter_out</span> <span class="o">==</span> <span class="s1">&#39;None&#39;</span> <span class="ow">or</span> <span class="n">plot_filter_out</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">plot_filter_out</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="k">return</span>
         <span class="n">pf_tuple_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -327,6 +348,7 @@
         <span class="n">notelist</span><span class="o">=</span><span class="nb">list</span><span class="p">()</span>
         <span class="n">notelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;RMSE: </span><span class="si">%3.3f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;rmse&#39;</span><span class="p">])</span>
         <span class="n">notelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;R-squared: </span><span class="si">%3.3f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;rsquared&#39;</span><span class="p">])</span>
+        <span class="n">notelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;R-squared (no int): </span><span class="si">%3.3f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;rsquared_noint&#39;</span><span class="p">])</span>
         <span class="n">notelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Mean error: </span><span class="si">%3.3f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;mean_error&#39;</span><span class="p">])</span>
         <span class="n">notelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Mean abs error: </span><span class="si">%3.3f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">[</span><span class="s1">&#39;mean_absolute_error&#39;</span><span class="p">])</span>
         <span class="n">plot_kwargs</span><span class="p">[</span><span class="s1">&#39;notelist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">notelist</span>
@@ -349,7 +371,10 @@
             <span class="n">plot_kwargs</span><span class="p">[</span><span class="s1">&#39;xerrlist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">plot_kwargs</span><span class="p">[</span><span class="s1">&#39;xerrlist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_error_data</span><span class="p">]</span>
-        <span class="n">plot_kwargs</span><span class="p">[</span><span class="s1">&#39;yerrlist&#39;</span><span class="p">]</span><span class="o">=</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trained_model</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;GaussianProcessRegressor&quot;</span><span class="p">:</span>
+            <span class="n">plot_kwargs</span><span class="p">[</span><span class="s1">&#39;yerrlist&#39;</span><span class="p">]</span><span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_dataset</span><span class="o">.</span><span class="n">target_prediction_sigma</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">plot_kwargs</span><span class="p">[</span><span class="s1">&#39;yerrlist&#39;</span><span class="p">]</span><span class="o">=</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span>
         <span class="n">plot_kwargs</span><span class="p">[</span><span class="s1">&#39;labellist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;predicted_vs_measured&quot;</span><span class="p">]</span>
         <span class="n">myph</span> <span class="o">=</span> <span class="n">PlotHelper</span><span class="p">(</span><span class="o">**</span><span class="n">plot_kwargs</span><span class="p">)</span>
         <span class="n">myph</span><span class="o">.</span><span class="n">multiple_overlay</span><span class="p">()</span>

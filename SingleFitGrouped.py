@@ -1,3 +1,9 @@
+__author__ = 'Tam Mayeshiba'
+__maintainer__ = 'Ryan Jacobs'
+__version__ = '1.0'
+__email__ = 'rjacobs3@wisc.edu'
+__date__ = 'October 14th, 2017'
+
 import numpy as np
 from sklearn.metrics import mean_squared_error
 from plot_data.PlotHelper import PlotHelper
@@ -7,22 +13,20 @@ from SingleFit import timeit
 import logging
 
 class SingleFitGrouped(SingleFit):
-    """Do a single full fit and split out group contributions to RMSE.
+    """
+    Class to perform a single full fit and split out group contributions to overall scoring metric used.
 
     Args:
-        training_dataset,
-        testing_dataset,
-        model,
-        save_path,
-        xlabel, 
-        ylabel,
-        plot_filter_out: see parent class
+        training_dataset (DataHandler object): Training dataset handler
+        testing_dataset (DataHandler object): Testing dataset handler
+        model (sklearn model object): sklearn model
+        save_path (str): Save path
+        xlabel (str): Label for full-fit x-axis (default "Measured")
+        ylabel (str): Label for full-fit y-axis (default "Predicted")
+        plot_filter_out (list): List of semicolon-delimited strings with feature;operator;value for leaving out specific values for plotting.
         mark_outlying_groups (int): Number of outlying groups to mark
-        fit_only_on_matched_groups (int): 0 - fit on all data in the training
-                                                dataset (default)
-                                          1 - fit only on groups in the training
-                                                dataset that are also in the
-                                                testing dataset
+        fit_only_on_matched_groups (int): 0 - fit on all data in the training dataset (default)
+                                          1 - fit only on groups in the training dataset that are also in the testing dataset
 
     Returns:
         Analysis in the save_path folder
@@ -30,19 +34,11 @@ class SingleFitGrouped(SingleFit):
 
     Raises:
         ValueError: if grouping_feature is not set in testing dataset
-        ValueError: if testing target data is None; has to have at least
-                    some testing target data to plot
+        ValueError: if testing target data is None; has to have at least some testing target data to plot
+
     """
-    def __init__(self, 
-        training_dataset=None,
-        testing_dataset=None,
-        model=None,
-        save_path=None,
-        xlabel="Measured",
-        ylabel="Predicted",
-        plot_filter_out = None,
-        mark_outlying_groups = 2,
-        fit_only_on_matched_groups = 0,
+    def __init__(self, training_dataset=None, testing_dataset=None, model=None, save_path=None, xlabel="Measured",
+        ylabel="Predicted", plot_filter_out = None, mark_outlying_groups = 2, fit_only_on_matched_groups = 0,
         *args, **kwargs):
         """
         Additional class attributes to parent class:

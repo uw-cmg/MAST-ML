@@ -1,0 +1,10 @@
+Working with Features
+===================================
+
+-----------------
+Feature Generation
+-----------------
+.. toctree::
+
+   6_1_featuregeneration
+

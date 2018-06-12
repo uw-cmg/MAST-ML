@@ -39,7 +39,13 @@
           <div class="body" role="main">
             
   <h1>Source code for LeaveOutGroupCV</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span></span><span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Tam Mayeshiba&#39;</span>
+<span class="n">__maintainer__</span> <span class="o">=</span> <span class="s1">&#39;Ryan Jacobs&#39;</span>
+<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;1.0&#39;</span>
+<span class="n">__email__</span> <span class="o">=</span> <span class="s1">&#39;rjacobs3@wisc.edu&#39;</span>
+<span class="n">__date__</span> <span class="o">=</span> <span class="s1">&#39;October 14th, 2017&#39;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">plot_data.PlotHelper</span> <span class="k">import</span> <span class="n">PlotHelper</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">LeaveOutPercentCV</span> <span class="k">import</span> <span class="n">LeaveOutPercentCV</span>
@@ -47,24 +53,25 @@
 <span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <span class="n">LeaveOneGroupOut</span>
 
 <div class="viewcode-block" id="LeaveOutGroupCV"><a class="viewcode-back" href="../4_cv4_logroup.html#LeaveOutGroupCV.LeaveOutGroupCV">[docs]</a><span class="k">class</span> <span class="nc">LeaveOutGroupCV</span><span class="p">(</span><span class="n">LeaveOutPercentCV</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;leave-out-group cross validation</span>
+    <span class="sd">&quot;&quot;&quot;Class to conduct leave-out-group cross-validation analysis</span>
 <span class="sd">   </span>
 <span class="sd">    Args:</span>
-<span class="sd">        training_dataset, (Should be the same as testing_dataset)</span>
-<span class="sd">        testing_dataset, (Should be the same as training_dataset)</span>
-<span class="sd">        model,</span>
-<span class="sd">        save_path,</span>
-<span class="sd">        xlabel, </span>
-<span class="sd">        ylabel,</span>
-<span class="sd">        mark_outlying_points (Use only 1 number): see parent class.</span>
+<span class="sd">        training_dataset (DataHandler object): Training dataset handler</span>
+<span class="sd">        testing_dataset (DataHandler object): Testing dataset handler</span>
+<span class="sd">        model (sklearn model object): sklearn model</span>
+<span class="sd">        save_path (str): Save path</span>
+<span class="sd">        xlabel (str): Label for full-fit x-axis (default &quot;Measured&quot;)</span>
+<span class="sd">        ylabel (str): Label for full-fit y-axis (default &quot;Predicted&quot;)</span>
+<span class="sd">        mark_outlying_points (int): Number of outlying points to mark in best and worst tests, e.g. 3</span>
 <span class="sd"> </span>
 <span class="sd">    Returns:</span>
 <span class="sd">        Analysis in the save_path folder</span>
 <span class="sd">        Plots results in a predicted vs. measured square plot.</span>
+
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: if grouping feature is None</span>
-<span class="sd">        ValueError: if testing target data is None; CV must have</span>
-<span class="sd">                testing target data</span>
+<span class="sd">        ValueError: if testing target data is None; CV must have testing target data</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
         <span class="n">training_dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>

@@ -24,6 +24,7 @@ autodoc_mock_imports=['numpy',
                         'sklearn',
                         'matplotlib',
                         'pandas',
+                        'pymatgen'
                         ]
 #Below from http://docs.readthedocs.io/en/latest/faq.html#i-get-import-errors-on-libraries-that-depend-on-c-modules 
 import sys
@@ -34,7 +35,7 @@ class Mock(MagicMock):
     def __getattr__(cls, name):
             return MagicMock()
 
-MOCK_MODULES = ['scipy', 'numpy', 'pandas', 'sklearn', 'matplotlib']
+MOCK_MODULES = ['scipy', 'numpy', 'pandas', 'sklearn', 'matplotlib', 'pymatgen']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 # -- General configuration ------------------------------------------------

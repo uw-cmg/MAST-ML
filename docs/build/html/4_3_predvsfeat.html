@@ -70,22 +70,20 @@
 <dl class="class">
 <dt id="PredictionVsFeature.PredictionVsFeature">
 <em class="property">class </em><code class="descclassname">PredictionVsFeature.</code><code class="descname">PredictionVsFeature</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='Measured'</em>, <em>ylabel='Predicted'</em>, <em>plot_filter_out=''</em>, <em>feature_plot_xlabel='X'</em>, <em>feature_plot_ylabel='Prediction'</em>, <em>feature_plot_feature=None</em>, <em>markers=''</em>, <em>outlines=''</em>, <em>data_labels=''</em>, <em>linestyles=''</em>, <em>legendloc=None</em>, <em>sizes=''</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PredictionVsFeature.html#PredictionVsFeature"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PredictionVsFeature.PredictionVsFeature" title="Permalink to this definition">¶</a></dt>
-<dd><p>Make prediction vs. feature plots from a single fit.</p>
+<dd><p>Class used to make plots of predicted values versus a specific feature, using a single fit.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>training_dataset</strong><strong>,</strong> – </li>
-<li><strong>testing_dataset</strong><strong>,</strong> (<em>Multiple testing datasets are allowed as a list.</em>) – </li>
-<li><strong>model</strong><strong>,</strong> – </li>
-<li><strong>save_path</strong><strong>,</strong> – </li>
-<li><strong>xlabel</strong><strong>,</strong> – </li>
-<li><strong>ylabel</strong><strong>,</strong> – </li>
-<li><strong>see parent class.</strong> (<em>plot_filter_out</em><em>,</em>) – </li>
-<li><strong>feature_plot_xlabel</strong> (<em>str</em>) – x-axis label for per-group plots of predicted and
-measured y data versus data from field of
-numeric_field_name</li>
+<li><strong>training_dataset</strong> (<em>DataHandler object</em>) – Training dataset handler</li>
+<li><strong>testing_dataset</strong> (<em>DataHandler object</em>) – Testing dataset handler</li>
+<li><strong>model</strong> (<em>sklearn model object</em>) – sklearn model</li>
+<li><strong>save_path</strong> (<em>str</em>) – Save path</li>
+<li><strong>xlabel</strong> (<em>str</em>) – Label for full-fit x-axis (default “Measured”)</li>
+<li><strong>ylabel</strong> (<em>str</em>) – Label for full-fit y-axis (default “Predicted”)</li>
+<li><strong>plot_filter_out</strong> (<em>list</em>) – List of semicolon-delimited strings with feature;operator;value for leaving out specific values for plotting.</li>
+<li><strong>feature_plot_xlabel</strong> (<em>str</em>) – x-axis label for per-group plots of predicted and measured y data versus data from field of numeric_field_name</li>
 <li><strong>feature_plot_ylabel</strong> (<em>str</em>) – y-axis label for per-group plots</li>
 <li><strong>feature_plot_feature</strong> (<em>str</em>) – feature for per-group feature plots</li>
 <li><strong>markers</strong> (<em>str</em>) – comma-delimited marker list for split plots</li>

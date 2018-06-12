@@ -23,6 +23,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Feature Manipulation" href="5_featuremanipulations.html" />
     <link rel="prev" title="ParamOptGA" href="4_p2_paramoptga.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -65,30 +66,25 @@ Data is also split out by a grouping feature set in the <a class="reference inte
 <dl class="class">
 <dt id="PlotNoAnalysis.PlotNoAnalysis">
 <em class="property">class </em><code class="descclassname">PlotNoAnalysis.</code><code class="descname">PlotNoAnalysis</code><span class="sig-paren">(</span><em>training_dataset=None</em>, <em>testing_dataset=None</em>, <em>model=None</em>, <em>save_path=None</em>, <em>xlabel='X'</em>, <em>ylabel='Y'</em>, <em>plot_filter_out=None</em>, <em>feature_plot_feature=None</em>, <em>data_labels=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PlotNoAnalysis.html#PlotNoAnalysis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PlotNoAnalysis.PlotNoAnalysis" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plotting without analysis</p>
+<dd><p>Class to conduct data plotting, but no data analysis</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>training_dataset</strong> – for compatibility; only testing dataset is used</li>
-<li><strong>testing_dataset</strong> – multiple sets are allowed</li>
-<li><strong>model</strong><strong>,</strong> (<em>not used</em>) – </li>
-<li><strong>save_path</strong><strong>,</strong> – </li>
-<li><strong>xlabel</strong><strong>,</strong> – </li>
-<li><strong>ylabel</strong><strong>,</strong> – </li>
-<li><strong>plot_filter_out</strong> – see parent class.</li>
+<li><strong>training_dataset</strong> (<em>DataHandler object</em>) – Training dataset handler</li>
+<li><strong>testing_dataset</strong> (<em>DataHandler object</em>) – Testing dataset handler</li>
+<li><strong>model</strong> (<em>sklearn model object</em>) – sklearn model</li>
+<li><strong>save_path</strong> (<em>str</em>) – Save path</li>
+<li><strong>xlabel</strong> (<em>str</em>) – Label for full-fit x-axis (default “Measured”)</li>
+<li><strong>ylabel</strong> (<em>str</em>) – Label for full-fit y-axis (default “Predicted”)</li>
+<li><strong>plot_filter_out</strong> (<em>list</em>) – List of semicolon-delimited strings with feature;operator;value for leaving out specific values for plotting.</li>
 <li><strong>feature_plot_feature</strong> (<em>str</em>) – Feature to plot on x-axis, against target feature</li>
 <li><strong>data_labels</strong> (<em>list of str</em>) – Dataset labels</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><dl class="docutils">
-<dt>Plots target data against feature data, by group if a grouping feature</dt>
-<dd><p class="first last">is set</p>
-</dd>
-</dl>
-</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Plots target data against feature data, by group if a grouping feature is set</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> – if
@@ -124,6 +120,7 @@ data_labels is None</p>
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="4_tests.html">Tests</a><ul>
       <li>Previous: <a href="4_p2_paramoptga.html" title="previous chapter">ParamOptGA</a></li>
+      <li>Next: <a href="5_featuremanipulations.html" title="next chapter">Feature Manipulation</a></li>
   </ul></li>
   </ul></li>
 </ul>
