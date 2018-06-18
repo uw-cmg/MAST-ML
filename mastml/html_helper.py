@@ -1,39 +1,55 @@
-import xml.etree.ElementTree as ET
-import time
 import os
+from time import gmtime, strftime
 
-def make_html(image_paths, savepath):
-    #begining
-    html = ET.Element('html')
-    title = ET.SubElement(html, 'title')
-    title.text = 'MASTML'
-    body = ET.SubElement(html, 'body')
-    h1 = ET.SubElement(body, 'h1')
-    h1.text = 'MAST Machine Learning Output'
-    par = ET.SubElement(body, 'p')
-    par.text = str(time.time())
-    ET.SubElement(body, 'hr')
+import glob
+from dominate import document
+from dominate.tags import *
 
-    for path in image_paths:
-        a = ET.SubElement(body, 'a')
-        a.set('href', path)
-        img = ET.SubElement(a, 'img')
-        img.set('src', path)
+# Goal for this thing:
+"""
+MAST-ML massively machine ml Turing complete
+Datetime
 
-    # ending
-    ET.SubElement(body, 'hr')
-    h2 = ET.SubElement(body, 'h2')
-    h2.text = 'Setup'
+if errors___presetn_:
+    errorwarings.txt
 
-    #logpath = os.path.join(savepath)
-    #ET.SubElement(self.body, 'a', {'href':logpath}).text = 'Log File'
-    #ET.SubElement(self.body, 'br')
+Best:
+Model params
+Title
+[plot]
 
-    #confpath = os.path.join(self.save_path, str(self.configfile))
-    #confpath = os.path.relpath(confpath, self.save_path)
-    #ET.SubElement(self.body, 'a', {'href': confpath}).text = 'Config File'
-    ##ET.SubElement(self.body, 'br')
-    #ET.SubElement(self.body, 'hr')
+Worst:
+model params
+Title
+[plot]
 
-    with open(os.path.join(savepath, 'index.html'), 'w') as f:
-        f.write(ET.tostring(html, encoding='unicode', method='html'))
+Title
+[plot]
+
+Title
+[plot]
+
+final_data.csv
+statiscics.csv
+info.txt
+debug.txt
+"""
+
+def make_html(image_paths, data_csv_path, conf_path, statistics_path, save_dir):
+
+    with document(title='MASTML') as doc:
+        h1('MAterial Science Tools - Machine Learning')
+        h4(strftime("%Y-%m-%d %H:%M:%S", gmtime()))
+        h2('Plots')
+        for path in image_paths:
+            div(img(src=path), _class='photo')
+
+        p(a('Computed CSV', href=data_csv_path))
+        p(a('Conf file', href=conf_path))
+        p(a('statistics CSV', href=statistics_path))
+
+
+    with open(os.path.join(save_dir, 'index.html'), 'w') as f:
+        f.write(doc.render())
+
+
