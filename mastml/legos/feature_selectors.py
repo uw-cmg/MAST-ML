@@ -1,5 +1,10 @@
+"""
+A collection of classes for selecting features
+All classes here assume dataframe input and guarantee dataframe output.
+(So no numpy arrays.)
+"""
 from sklearn.feature_selection import GenericUnivariateSelect, SelectPercentile, SelectKBest, SelectFpr, SelectFdr, SelectFwe, VarianceThreshold
-from .utils import DoNothing
+import utils
 # list of sklearn feature selectors: http://scikit-learn.org/stable/modules/classes.html#module-sklearn.feature_selection
 
 name_to_constructor = {
@@ -10,6 +15,8 @@ name_to_constructor = {
     'SelectFdr': SelectFdr,
     'SelectFwe': SelectFwe,
     'VarianceThreshold': VarianceThreshold,
-    'DoNothing': DoNothing,
+    'DoNothing': utils.DoNothing,
 }
 
+for constructor in name_to_constructor:
+    constructor.transform = utils.dataframify(constructor.transform)

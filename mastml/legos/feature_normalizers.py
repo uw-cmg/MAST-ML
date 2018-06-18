@@ -1,4 +1,8 @@
-" All classes in this file fit and transform from and to dataframes. No arrays. "
+"""
+A collection of classes for normalizing features.
+All classes here assume dataframe input and guarantee dataframe output.
+(So no numpy arrays.)
+"""
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import scale, MinMaxScaler
 import pandas as pd
@@ -44,6 +48,8 @@ class NoNormalize(BaseEstimator, TransformerMixin):
         return self
     def transform(self,X):
         return X
+
+MinMaxScaler.transform = dataframify(MinMaxScaler.transform)
 
 name_to_constructor = {
     'MeanStdevScaler': MeanStdevScaler,

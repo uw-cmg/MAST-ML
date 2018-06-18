@@ -105,8 +105,6 @@ def mastml_run(conf_path, data_path, outdir):
     shutil.copy2(conf_path, outdir)
     shutil.copy2(data_path, outdir)
 
-    # TODO: plotting
-    # TODO: statistics
     # TODO: save cached models
     # TODO: create intermediate "save to csv" lego blocks
     # TODO: clustering legos
@@ -114,6 +112,7 @@ def mastml_run(conf_path, data_path, outdir):
     # TODO: model caching and csv saving after data generation
     # TODO: address the great dataframe vs array debate for pipelines
     # maybe TODO: put feature generation once at the beginning only
+    # TODO: implement is_trainable column in csv
 
 def _instantiate(kwargs_dict, name_to_constructor, category):
     "Uses name_to_constructor to instantiate ever item in kwargs_dict and return the list of instantiations"
