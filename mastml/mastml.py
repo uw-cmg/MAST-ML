@@ -1,6 +1,7 @@
 " Does one big mastml run "
 
 import argparse
+import inspect
 import itertools
 import os.path
 import shutil
@@ -118,8 +119,9 @@ def _instantiate(kwargs_dict, name_to_constructor, category):
         try:
             instantiations.append(name_to_constructor[name](**kwargs))
         except TypeError:
-            raise TypeError(f"The {category} '{name}' has invalid parameters: {args}")
-            # TODO: print class argument and doc string
+            print(inspect.signature(name_to_constructor[name]))
+            raise TypeError(f"The {category} '{name}' has invalid parameters: {kwargs}\n"
+                             "The arguments for '{name}' are printed above the call stack.")
         except KeyError:
             raise KeyError(f"There is no {category} called '{name}'.")
     return instantiations
