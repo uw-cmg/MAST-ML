@@ -7,7 +7,7 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure, figaspect
 from matplotlib.ticker import MaxNLocator
 
-def plot_confusion_matrix(y_true, y_pred, filename, stats, normalize=False, title='Confusion matrix',
+def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False, title='Confusion matrix',
         cmap=plt.cm.Blues):
     """
     This function prints and plots the confusion matrix.
@@ -62,10 +62,10 @@ def plot_confusion_matrix(y_true, y_pred, filename, stats, normalize=False, titl
     #plt.tight_layout()
     ax.set_ylabel('True label')
     ax.set_xlabel('Predicted label')
-    fig.savefig(filename)
+    fig.savefig(savepath)
 
 # using OO interface from https://matplotlib.org/gallery/api/agg_oo_sgskip.html
-def plot_predicted_vs_true(true, predicted, savepath, stats, title='predicted vs true'):
+def plot_predicted_vs_true(y_true, y_pred, savepath, stats, title='predicted vs true'):
     # set image aspect ratio. Needs to be wide enough or plot will shrink really skinny
     w, h = figaspect(0.7)
     fig = Figure(figsize=(w,h))
@@ -79,8 +79,8 @@ def plot_predicted_vs_true(true, predicted, savepath, stats, title='predicted vs
     ax.set_title(title)
 
     # do the actual plotting
-    ax.scatter(true, predicted, edgecolors=(0, 0, 0))
-    ax.plot([true.min(), true.max()], [true.min(), true.max()], 'k--', lw=4)
+    ax.scatter(y_true, y_pred, edgecolors=(0, 0, 0))
+    ax.plot([y_true.min(), y_true.max()], [y_true.min(), y_true.max()], 'k--', lw=4)
 
     # set axis labels
     ax.set_xlabel('Measured')
@@ -95,7 +95,7 @@ def plot_predicted_vs_true(true, predicted, savepath, stats, title='predicted vs
 
     fig.savefig(savepath)
 
-def plot_residuals_histogram(true, pred, savepath, stats, title='residuals histogram'):
+def plot_residuals_histogram(y_true, y_pred, savepath, stats, title='residuals histogram'):
 
     # make the aspect ration wide for text next to square-ish graph
     w, h = figaspect(0.7)
@@ -111,7 +111,7 @@ def plot_residuals_histogram(true, pred, savepath, stats, title='residuals histo
 
     ax.set_title(title)
     # do the actual plotting
-    residuals = true - pred
+    residuals = y_true - y_pred
     ax.hist(residuals, bins=30)
 
     # normal text stuff
