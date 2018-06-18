@@ -1,4 +1,6 @@
+import os.path
 import itertools
+
 import numpy as np
 from matplotlib import pyplot as plt
 from sklearn.metrics import confusion_matrix
@@ -6,6 +8,27 @@ from sklearn.metrics import confusion_matrix
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure, figaspect
 from matplotlib.ticker import MaxNLocator
+
+def make_plots(runs, is_classification, outdir):
+    paths = []
+    # sort the runs by their score on the first test metric
+    #import pdb; pdb.set_trace()
+    runs = sorted(runs, key=lambda run: run['test_metrics'][0][1])
+    for run,name in [(runs[0],'worst_run'), (runs[len(runs)//2], 'median_run'), (runs[-1], 'best_run')]:
+        savepath = os.path.join(outdir, name +
+                                        f"_split_{run['split']}" +
+                                        f"_normalizer_{run['normalizer']}" +
+                                        f"_selector_{run['selector']}" +
+                                        f"_model_{run['model']}.png")
+        paths.append(savepath)
+        # Ordered Dict to preserve original user-specified statistics ordering:
+        y_true, y_pred, stats = run['test_true'], run['test_pred'], run['test_metrics']
+        if is_classification:
+            plot_confusion_matrix(y_true, y_pred, savepath, stats, title=name)
+        else: # is_regression
+            plot_predicted_vs_true(y_true, y_pred, savepath, stats, title=name)
+            plot_residuals_histogram(y_true, y_pred, savepath, stats, title=name)
+    return paths
 
 def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False, title='Confusion matrix',
         cmap=plt.cm.Blues):
@@ -55,7 +78,7 @@ def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False, titl
 
     # print stats onto the image. Goes off screen if they are too long or too many in number
     text_height = 0.08
-    for i, (name, val) in enumerate(stats.items()):
+    for i, (name, val) in enumerate(stats):
         y_pos = 1 - (text_height * i + 0.1)
         fig.text(0.7, y_pos, f'{name}: {val}')
 
@@ -88,7 +111,7 @@ def plot_predicted_vs_true(y_true, y_pred, savepath, stats, title='predicted vs 
 
     # print stats onto the image. Goes off screen if they are too long or too many in number
     text_height = 0.08
-    for i, (name, val) in enumerate(stats.items()):
+    for i, (name, val) in enumerate(stats):
         y_pos = 1 - (text_height * i + 0.1)
         fig.text(0.7, y_pos, f'{name}: {val}')
 
@@ -126,7 +149,7 @@ def plot_residuals_histogram(y_true, y_pred, savepath, stats, title='residuals h
 
     # print stats onto the image. Goes off screen if they are too long or too many in number
     text_height = 0.08
-    for i, (name, val) in enumerate(stats.items()):
+    for i, (name, val) in enumerate(stats):
         y_pos = 1 - (text_height * i + 0.1)
         fig.text(0.7, y_pos, f'{name}: {val}')
 

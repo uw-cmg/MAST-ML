@@ -11,7 +11,7 @@ import pandas as pd
 import sklearn.pipeline
 import sklearn.model_selection
 
-from . import conf_parser, data_loader, plot_helper, metrics
+from . import conf_parser, data_loader, html_helper, plot_helper, metrics
 from .legos import data_splitters, feature_generators, feature_normalizers, feature_selectors, model_finder, utils
 
 def mastml_run(conf_path, data_path, outdir):
@@ -75,33 +75,42 @@ def mastml_run(conf_path, data_path, outdir):
                 train_true=train_y.values,
                 train_pred=train_pred,
                 test_true=test_y.values,
-                test_pred=test_pred
+                test_pred=test_pred,
+                train_metrics=[], # a list of (metric_name, value) tuples
+                test_metrics=[],
             )
             for name in conf['metrics']:
-                run['train_' + name] = metrics_dict[name](train_y, train_pred)
-                run['test_' + name]  = metrics_dict[name](test_y, test_pred)
+                run['train_metrics'].append((name, metrics_dict[name](train_y, train_pred)))
+                run['test_metrics'].append((name, metrics_dict[name](test_y,  test_pred)))
             results.append(run)
             fit_num += 1
 
-    # Print all runs in an html file
-    pd.DataFrame(results).to_html(os.path.join(outdir, 'results.html'))
+    print("Saving images...")
+    image_paths = plot_helper.make_plots(results, conf['is_classification'], outdir)
 
+    print("Making image html file...")
+    html_helper.make_html(image_paths, outdir)
+
+    print("Making data html file...")
+    # Save a table of all the runs to an html file
+    # We have to flatten the subdicts to make it all fit in one table
+    for_table = []
     for run in results:
-        savepath = os.path.join(outdir,
-                                f"split_{run['split']}"
-                                f"_normalizer_{run['normalizer']}"
-                                f"_selector_{run['selector']}"
-                                f"_model_{run['model']}.png")
-        # Ordered Dict to preserve original user-specified statistics ordering:
-        stats_dict = collections.OrderedDict((key, val) for key,val in run.items()
-                                             if key.startswith('train_') or key.startswith('test_'))
-        if conf['is_classification']:
-            plot_helper.plot_confusion_matrix(run['test_true'], run['test_pred'], savepath, stats_dict)
-        else: # is_regression
-            plot_helper.plot_predicted_vs_true(run['test_true'], run['test_pred'], savepath, stats_dict)
-            plot_helper.plot_residuals_histogram(run['test_true'], run['test_pred'], savepath, stats_dict)
+        od = collections.OrderedDict()
+        for name, value in run.items():
+            if name == 'train_metrics':
+                for k,v in run['train_metrics']:
+                    od['train_'+k] = v
+            elif name == 'test_metrics':
+                for k,v in run['test_metrics']:
+                    od['test_'+k] = v
+            else:
+                od[name] = value
+        for_table.append(od)
+    pd.DataFrame(for_table).to_html(os.path.join(outdir, 'results.html'))
 
     # Copy the original input files to the output directory for easy reference
+    print("Copying input files to output directory...")
     shutil.copy2(conf_path, outdir)
     shutil.copy2(data_path, outdir)
 
