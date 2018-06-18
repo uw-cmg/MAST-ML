@@ -4,12 +4,13 @@ import argparse
 import itertools
 import os.path
 import shutil
+import collections
 
 import pandas as pd
 import sklearn.pipeline
 import sklearn.model_selection
 
-from . import conf_parser, data_loader, plot_helper
+from . import conf_parser, data_loader, plot_helper, metrics
 from .legos import data_splitters, feature_generators, feature_normalizers, feature_selectors, model_finder, utils
 
 def mastml_run(conf_path, data_path, outdir):
@@ -36,6 +37,9 @@ def mastml_run(conf_path, data_path, outdir):
     conf = conf_parser.parse_conf_file(conf_path)
     df, input_features, target_feature = data_loader.load_data(data_path, **conf['GeneralSetup'])
 
+    # Get the appropriate collection of metrics:
+    metrics_dict = metrics.classification_metrics if conf['is_classification'] else metrics.regression_metrics
+
     # Instantiate all the sections of the conf file:
     generators = _instantiate(conf['FeatureGeneration'], feature_generators.name_to_constructor, 'feature generator')
     normalizers = _instantiate(conf['FeatureNormalization'], feature_normalizers.name_to_constructor, 'feature normalizer')
@@ -50,23 +54,49 @@ def mastml_run(conf_path, data_path, outdir):
 
     # NOTE: This is done using itertools.product instead of sklearn.model_selection.GridSearchCV
     #  because we need to heavily inspect & use & modify data within each iteration of the loop.
+    num_fits = len(normalizers) * len(selectors) * len(models) * len(splits)
+    fit_num = 1
+    results = []
     for normalizer, selector, model in itertools.product(normalizers, selectors, models):
         pipe = sklearn.pipeline.make_pipeline(generators_union, normalizer, selector, model)
         for split_num, (train_indices, test_indices) in enumerate(splits):
             train_X, train_y = df.loc[train_indices, input_features], df.loc[train_indices, target_feature]
             test_X,  test_y  = df.loc[test_indices,  input_features], df.loc[test_indices,  target_feature]
+            print(f"Fit number {fit_num}/{num_fits}")
             pipe.fit(train_X, train_y)
-            train_predictions = pipe.predict(train_X)
-            test_predictions  = pipe.predict(test_X)
-            filename = f"split_{split_num}" \
-                       f"_normalizer_{normalizer.__class__.__name__}" \
-                       f"_selector_{selector.__class__.__name__}" \
-                       f"_model_{model.__class__.__name__}.png"
-            if conf['is_classification']:
-                plot_helper.plot_confusion_matrix(test_y.values, test_predictions, filename=os.path.join(outdir, filename))
-            else: # is_regression
-                plot_helper.plot_predicted_vs_true(test_y.values, test_predictions, filename=os.path.join(outdir, filename))
-                plot_helper.plot_residuals(test_y.values, test_predictions, filename=os.path.join(outdir, filename))
+            train_pred = pipe.predict(train_X)
+            test_pred  = pipe.predict(test_X)
+            run = collections.OrderedDict( # The ordered dict ensures column order in saved html
+                split=str(split_num),
+                normalizer=normalizer.__class__.__name__,
+                selector=selector.__class__.__name__,
+                model=model.__class__.__name__,
+                train_true=train_y.values,
+                train_pred=train_pred,
+                test_true=test_y.values,
+                test_pred=test_pred
+            )
+            for name in conf['metrics']:
+                run['train_' + name] = metrics_dict[name](train_y, train_pred)
+                run['test_' + name]  = metrics_dict[name](test_y, test_pred)
+            results.append(run)
+            fit_num += 1
+
+    #import pdb; pdb.set_trace()
+    pd.DataFrame(results).to_html(os.path.join(outdir, 'results.html'))
+
+    #for d in results:
+    #    plot_helper.plot_confusion_matrix(test_y.values, test_predictions, filename=os.path.join(outdir, filename))
+
+    #filename = f"split_{split_num}" \
+    #           f"_normalizer_{normalizer.__class__.__name__}" \
+    #           f"_selector_{selector.__class__.__name__}" \
+    #           f"_model_{model.__class__.__name__}.png"
+            #if conf['is_classification']:
+            #    plot_helper.plot_confusion_matrix(test_y.values, test_predictions, filename=os.path.join(outdir, filename))
+            #else: # is_regression
+            #    plot_helper.plot_predict_vs_true(test_y.values, test_predictions, filename=os.path.join(outdir, filename))
+            #    plot_helper.plot_residuals(test_y.values, test_predictions, filename=os.path.join(outdir, filename))
 
     # Copy the original input files to the output directory for easy reference
     shutil.copy2(conf_path, outdir)

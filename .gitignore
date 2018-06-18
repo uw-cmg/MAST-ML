@@ -20,3 +20,5 @@ examples/*results*/
 *.png
 
 .ackrc
+
+results/

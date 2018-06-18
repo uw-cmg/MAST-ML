@@ -28,6 +28,8 @@ class TestPlots(unittest.TestCase):
 
         plot_helper.plot_predicted_vs_true(predicted, actual, 'pred-vs-true.png')
 
+    def test_residual_histogram(self):
+
     def test_confusion_matrix(self):
         true = np.random.randint(4, size=(50,))
         pred = true.copy()
