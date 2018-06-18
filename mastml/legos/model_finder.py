@@ -29,3 +29,5 @@ def check_models_mixed(model_names):
 
     if found_classifier and found_regressor:
         raise Exception("Both classifiers and regressor models have been included")
+
+    return found_classifier
