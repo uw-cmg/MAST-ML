@@ -87,17 +87,19 @@ def mastml_run(conf_path, data_path, outdir):
     pd.DataFrame(results).to_html(os.path.join(outdir, 'results.html'))
 
     for run in results:
-        filename = os.path.join(outdir,
-                               f"split_{split_num}"
-                               f"_normalizer_{normalizer.__class__.__name__}"
-                               f"_selector_{selector.__class__.__name__}"
-                               f"_model_{model.__class__.__name__}.png")
+        savepath = os.path.join(outdir,
+                                f"split_{run['split']}"
+                                f"_normalizer_{run['normalizer']}"
+                                f"_selector_{run['selector']}"
+                                f"_model_{run['model']}.png")
+        # Ordered Dict to preserve original user-specified statistics ordering:
+        stats_dict = collections.OrderedDict((key, val) for key,val in run.items()
+                                             if key.startswith('train_') or key.startswith('test_'))
         if conf['is_classification']:
-            plot_helper.plot_confusion_matrix(run['test_true'], run['test_true'], filename=filename)
+            plot_helper.plot_confusion_matrix(run['test_true'], run['test_pred'], stats_dict, filename=filename)
         else: # is_regression
-            pass
-            #plot_helper.plot_pred_vs_true(run['test_true'], run['test_true'], filename=filename)
-            #plot_helper.plot_residuals(run['test_true'], run['test_true'], filename=filename)
+            plot_helper.plot_pred_vs_true(run['test_true'], run['test_pred'], stats_dict, filename=filename)
+            plot_helper.plot_residuals(run['test_true'], run['test_pred'], filename=filename)
 
     # Copy the original input files to the output directory for easy reference
     shutil.copy2(conf_path, outdir)
