@@ -82,21 +82,20 @@ def mastml_run(conf_path, data_path, outdir):
             results.append(run)
             fit_num += 1
 
-    #import pdb; pdb.set_trace()
+    # Print all runs in an html file
     pd.DataFrame(results).to_html(os.path.join(outdir, 'results.html'))
 
-    #for d in results:
-    #    plot_helper.plot_confusion_matrix(test_y.values, test_predictions, filename=os.path.join(outdir, filename))
-
-    #filename = f"split_{split_num}" \
-    #           f"_normalizer_{normalizer.__class__.__name__}" \
-    #           f"_selector_{selector.__class__.__name__}" \
-    #           f"_model_{model.__class__.__name__}.png"
-            #if conf['is_classification']:
-            #    plot_helper.plot_confusion_matrix(test_y.values, test_predictions, filename=os.path.join(outdir, filename))
-            #else: # is_regression
-            #    plot_helper.plot_predict_vs_true(test_y.values, test_predictions, filename=os.path.join(outdir, filename))
-            #    plot_helper.plot_residuals(test_y.values, test_predictions, filename=os.path.join(outdir, filename))
+    for run in results:
+        filename = os.path.join(outdir,
+                               f"split_{split_num}"
+                               f"_normalizer_{normalizer.__class__.__name__}"
+                               f"_selector_{selector.__class__.__name__}"
+                               f"_model_{model.__class__.__name__}.png")
+        if conf['is_classification']:
+            plot_helper.plot_confusion_matrix(run['test_true'], run['test_true'], filename=filename)
+        else: # is_regression
+            plot_helper.plot_pred_vs_true(run['test_true'], run['test_true'], filename=filename)
+            plot_helper.plot_residuals(run['test_true'], run['test_true'], filename=filename)
 
     # Copy the original input files to the output directory for easy reference
     shutil.copy2(conf_path, outdir)
