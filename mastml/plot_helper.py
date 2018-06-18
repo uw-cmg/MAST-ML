@@ -1,11 +1,9 @@
 import itertools
 import numpy as np
-from matplotlib import pyplot as plt
-from sklearn.metrics import confusion_matrix
 
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-from matplotlib.figure import Figure, figaspect
-from matplotlib.ticker import MaxNLocator
+import matplotlib.pyplot as plt
+import seaborn as sns
+sns.set()
 
 def plot_confusion_matrix(y_true, y_pred, filename, normalize=False, title='Confusion matrix',
         stats=dict(), cmap=plt.cm.Blues):
@@ -17,34 +15,10 @@ def plot_confusion_matrix(y_true, y_pred, filename, normalize=False, title='Conf
     cm = confusion_matrix(y_true, y_pred)
     classes = sorted(list(set(y_true).intersection(set(y_pred))))
 
-    fig = Figure()
-    FigureCanvas(fig)
-    ax = fig.add_subplot(111)
-    ax.set_title(title)
-    mappable = ax.imshow(cm, interpolation='nearest', cmap=cmap)
-    fig.colorbar(mappable)
-    tick_marks = np.arange(len(classes))
-    ax.set_xticks(tick_marks, classes)
-    ax.set_yticks(tick_marks, classes)
-
-    # force ticks to integer: https://stackoverflow.com/a/34880501
-    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
-
-    fmt = '.2f' if normalize else 'd'
-    thresh = cm.max() / 2.
-    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
-        ax.text(j, i, format(cm[i, j], fmt),
-                 horizontalalignment="center",
-                 color="white" if cm[i, j] > thresh else "black")
-
-    #plt.tight_layout()
-    ax.set_ylabel('True label')
-    ax.set_xlabel('Predicted label')
-    fig.savefig(filename)
-
-
-# using OO interface from https://matplotlib.org/gallery/api/agg_oo_sgskip.html
+    # Draw a heatmap with the numeric values in each cell
+    f, ax = plt.subplots(figsize=(9, 6))
+    sns.heatmap(cm, annot=True, fmt="d", linewidths=.5, ax=ax)
+    plt.show()
 
 
 def plot_predicted_vs_true(true, predicted, savepath, title='predicted vs true'):
