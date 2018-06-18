@@ -64,16 +64,18 @@ def plot_residuals_histogram(true, pred, savepath, title='residuals histogram', 
     w, h = figaspect(0.7)
     fig = Figure(figsize=(w,h))
     FigureCanvas(fig)
-    ax = fig.add_subplot(111, autoscale_on=False, aspect='equal')
+
+    print(w, h)
+
+
+    gs = plt.GridSpec(2, 3)
+
+    ax = fig.add_subplot(gs[0:2, 0:2], aspect='equal')
     ax.set_title(title)
 
     residuals = true - pred
     ax.hist(residuals, bins=30)
-    ax.set_y_ticks = np.arange(5)
-    ax.set_xticks = np.linspace(min(pred), max(pred))
 
-    ax.set_aspect('equal')
-    ax.set_anchor('W')
 
     ax.set_xlabel('residual')
     ax.set_ylabel('frequency')
