@@ -5,8 +5,8 @@ import pandas as pd
 import numpy as np
 
 
-from mastml import mastml
-from mastml import plot_helper
+#from mastml import mastml
+from mastml import plot_helper, html_helper
 from matplotlib.ticker import MaxNLocator
 
 
@@ -52,6 +52,11 @@ class TestPlots(unittest.TestCase):
 
         plot_helper.plot_confusion_matrix(true, pred, 'cf.png', stats)
 
+class TestHtml(unittest.TestCase):
+
+    def test_image_list(self):
+        imgs = ['cf.png', 'rh.png', 'pred-vs-true.png']
+        html_helper.make_html(imgs, './')
         
 
 class TestRandomizer(unittest.TestCase):
