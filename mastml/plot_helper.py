@@ -61,33 +61,38 @@ def plot_predicted_vs_true(true, predicted, savepath, title='predicted vs true')
     fig.savefig(savepath)
 
 def plot_residuals_histogram(true, pred, savepath, title='residuals histogram', stats=dict()):
+
+    # make the aspect ration wide for text next to square-ish graph
     w, h = figaspect(0.7)
+
     fig = Figure(figsize=(w,h))
     FigureCanvas(fig)
 
-    print(w, h)
-
-
+    # these two lines are where the magic happens, trapping the figure on the left side
+    # so we can make print text beside it
     gs = plt.GridSpec(2, 3)
-
     ax = fig.add_subplot(gs[0:2, 0:2], aspect='equal')
-    ax.set_title(title)
 
+
+    ax.set_title(title)
+    # do the actual plotting
     residuals = true - pred
     ax.hist(residuals, bins=30)
 
-
+    # normal text stuff
     ax.set_xlabel('residual')
     ax.set_ylabel('frequency')
 
-    #fig.tight_layout()
+    # make y axis ints, because it is discrete
+    #ax.yaxis.set_major_locator(MaxNLocator(integer=True))
 
+    # shrink those margins
+    fig.tight_layout()
 
-
+    # print stats onto the image. Goes off screen if they are too long or too many in number
     text_height = 0.08
     for i, (name, val) in enumerate(stats.items()):
         y_pos = 1 - (text_height * i + 0.1)
         fig.text(0.7, y_pos, f'{name}: {val}')
-    #for name, value in stats:
 
     fig.savefig(savepath)
