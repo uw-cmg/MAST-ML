@@ -46,7 +46,7 @@ def plot_confusion_matrix(y_true, y_pred, filename, normalize=False, title='Conf
 # using OO interface from https://matplotlib.org/gallery/api/agg_oo_sgskip.html
 
 
-def plot_predicted_vs_true(predicted, y, savepath, title='predicted vs true'):
+def plot_predicted_vs_true(true, predicted, savepath, title='predicted vs true'):
     fig = Figure()
     # A canvas must be manually attached to the figure (pyplot would automatically
     # do it).  This is done by instantiating the canvas with the figure as
@@ -55,8 +55,21 @@ def plot_predicted_vs_true(predicted, y, savepath, title='predicted vs true'):
     ax = fig.add_subplot(111)
     ax.set_title(title)
     #ax.grid(True)
-    ax.scatter(y, predicted, edgecolors=(0, 0, 0))
-    ax.plot([y.min(), y.max()], [y.min(), y.max()], 'k--', lw=4)
+    ax.scatter(true, predicted, edgecolors=(0, 0, 0))
+    ax.plot([true.min(), true.max()], [true.min(), true.max()], 'k--', lw=4)
     ax.set_xlabel('Measured')
     ax.set_ylabel('Predicted')
+    fig.savefig(savepath)
+
+def plot_residuals_histogram(true, pred, savepath, title='residuals histogram'):
+    fig = Figure(); FigureCanvas(fig)
+    ax = fig.add_subplot(111)
+    ax.set_title(title)
+
+    residuals = true - pred
+    ax.hist(residuals, bins=30)
+
+    ax.set_xlabel('Residual')
+    ax.set_ylabel('frequency')
+
     fig.savefig(savepath)

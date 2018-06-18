@@ -21,14 +21,20 @@ class SmokeTests(unittest.TestCase):
         mastml.mastml_run('tests/conf/regression.conf', 'tests/csv/boston_housing.csv', 'results/regression')
 
 class TestPlots(unittest.TestCase):
+    """ don't mind the mismatched naming conventions for [true actual y_true] and [pred prediction
+    y_pred] """
 
     def test_plot_predicted_vs_true(self):
         predicted = np.arange(30) + np.random.random_sample((30,)) * 10 - 3
         actual = np.arange(30)
 
-        plot_helper.plot_predicted_vs_true(predicted, actual, 'pred-vs-true.png')
+        plot_helper.plot_predicted_vs_true(actual, predicted, 'pred-vs-true.png')
 
-    def test_residual_histogram(self):
+    def test_residuals_histogram(self):
+        predicted = np.arange(30) + sum(np.random.random_sample((30,)) for _ in range(10)) - 3
+        actual = np.arange(30)
+
+        plot_helper.plot_residuals_histogram(actual, predicted, 'rh.png')
 
     def test_confusion_matrix(self):
         true = np.random.randint(4, size=(50,))
