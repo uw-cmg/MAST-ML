@@ -65,7 +65,7 @@ def mastml_run(conf_path, data_path, outdir):
             if conf['is_classification']:
                 plot_helper.plot_confusion_matrix(test_y.values, test_predictions, filename=os.path.join(outdir, filename))
             else: # is_regression
-                plot_helper.plot_predict_vs_true(test_y.values, test_predictions, filename=os.path.join(outdir, filename))
+                plot_helper.plot_predicted_vs_true(test_y.values, test_predictions, filename=os.path.join(outdir, filename))
                 plot_helper.plot_residuals(test_y.values, test_predictions, filename=os.path.join(outdir, filename))
 
     # Copy the original input files to the output directory for easy reference

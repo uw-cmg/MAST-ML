@@ -1,9 +1,14 @@
 import unittest
+import random
+
 import pandas as pd
 import numpy as np
 
 
 from mastml import mastml
+from mastml import plot_helper
+from matplotlib.ticker import MaxNLocator
+
 
 
 class SmokeTests(unittest.TestCase):
@@ -15,6 +20,23 @@ class SmokeTests(unittest.TestCase):
     def test_regression(self):
         mastml.mastml_run('tests/conf/regression.conf', 'tests/csv/boston_housing.csv', 'results/regression')
 
+class TestPlots(unittest.TestCase):
+
+    def test_plot_predicted_vs_true(self):
+        predicted = np.arange(30) + np.random.random_sample((30,)) * 10 - 3
+        actual = np.arange(30)
+
+        plot_helper.plot_predicted_vs_true(predicted, actual, 'pred-vs-true.png')
+
+    def test_confusion_matrix(self):
+        true = np.random.randint(4, size=(50,))
+        pred = true.copy()
+        slices = [not bool(x) for x in np.random.randint(3, size=50)]
+        pred[slices] = [random.randint(1, 3) for s in slices if s]
+
+        plot_helper.plot_confusion_matrix(true, pred, 'cf.png')
+
+        
 
 class TestRandomizer(unittest.TestCase):
 
