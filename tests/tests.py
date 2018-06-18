@@ -56,7 +56,7 @@ class TestHtml(unittest.TestCase):
 
     def test_image_list(self):
         imgs = ['cf.png', 'rh.png', 'pred-vs-true.png']
-        html_helper.make_html(imgs, './')
+        html_helper.make_html(imgs, 'tests/csv/three_clusters.csv', 'tests/conf/fullrun.conf', 'oop.txt', './')
         
 
 class TestRandomizer(unittest.TestCase):
