@@ -2,8 +2,19 @@ import unittest
 import pandas as pd
 import numpy as np
 
-from mastml.feature_operations.randomizer import Randomizer
-from mastml.feature_operations.feature_normalization import FeatureNormalization
+
+from mastml import mastml
+
+
+class SmokeTests(unittest.TestCase):
+
+    def test_classification(self):
+        mastml.mastml_run('tests/conf/fullrun.conf', 'tests/csv/three_clusters.csv',
+                'results/classification')
+
+    def test_regression(self):
+        mastml.mastml_run('tests/conf/regression.conf', 'tests/csv/boston_housing.csv', 'results/regression')
+
 
 class TestRandomizer(unittest.TestCase):
 
