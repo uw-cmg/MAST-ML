@@ -1,5 +1,0 @@
-# gitignore inside of otherwise empty file 
-# so it gets added. 
-# Also serves to explicitely ignore contents
-*
-!.gitignore
