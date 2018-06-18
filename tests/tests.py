@@ -36,6 +36,13 @@ class TestPlots(unittest.TestCase):
 
         plot_helper.plot_residuals_histogram(actual, predicted, 'rh.png')
 
+    def test_residuals_histogram_w_stats(self):
+        predicted = np.arange(30) + sum(np.random.random_sample((30,)) for _ in range(10)) - 3
+        actual = np.arange(30)
+        stats = {'foo': 500000, 'bar': 123.4566, 'baz': 'impossoble', 'rosco': 123e-500}
+
+        plot_helper.plot_residuals_histogram(actual, predicted, 'rhws.png', stats=stats)
+
     def test_confusion_matrix(self):
         true = np.random.randint(4, size=(50,))
         pred = true.copy()

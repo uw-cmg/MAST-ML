@@ -4,10 +4,11 @@ from matplotlib import pyplot as plt
 from sklearn.metrics import confusion_matrix
 
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-from matplotlib.figure import Figure
+from matplotlib.figure import Figure, figaspect
 from matplotlib.ticker import MaxNLocator
 
-def plot_confusion_matrix(y_true, y_pred, filename, normalize=False, title='Confusion matrix', cmap=plt.cm.Blues):
+def plot_confusion_matrix(y_true, y_pred, filename, normalize=False, title='Confusion matrix',
+        stats=dict(), cmap=plt.cm.Blues):
     """
     This function prints and plots the confusion matrix.
     Normalization can be applied by setting `normalize=True`.
@@ -47,10 +48,8 @@ def plot_confusion_matrix(y_true, y_pred, filename, normalize=False, title='Conf
 
 
 def plot_predicted_vs_true(true, predicted, savepath, title='predicted vs true'):
-    fig = Figure()
-    # A canvas must be manually attached to the figure (pyplot would automatically
-    # do it).  This is done by instantiating the canvas with the figure as
-    # argument.
+    ####w, h = figaspect(2.)
+    fig = Figure(figsize=(w,h))
     FigureCanvas(fig)
     ax = fig.add_subplot(111)
     ax.set_title(title)
@@ -61,15 +60,32 @@ def plot_predicted_vs_true(true, predicted, savepath, title='predicted vs true')
     ax.set_ylabel('Predicted')
     fig.savefig(savepath)
 
-def plot_residuals_histogram(true, pred, savepath, title='residuals histogram'):
-    fig = Figure(); FigureCanvas(fig)
-    ax = fig.add_subplot(111)
+def plot_residuals_histogram(true, pred, savepath, title='residuals histogram', stats=dict()):
+    w, h = figaspect(0.7)
+    fig = Figure(figsize=(w,h))
+    FigureCanvas(fig)
+    ax = fig.add_subplot(111, autoscale_on=False, aspect='equal')
     ax.set_title(title)
 
     residuals = true - pred
     ax.hist(residuals, bins=30)
+    ax.set_y_ticks = np.arange(5)
+    ax.set_xticks = np.linspace(min(pred), max(pred))
 
-    ax.set_xlabel('Residual')
+    ax.set_aspect('equal')
+    ax.set_anchor('W')
+
+    ax.set_xlabel('residual')
     ax.set_ylabel('frequency')
+
+    #fig.tight_layout()
+
+
+
+    text_height = 0.08
+    for i, (name, val) in enumerate(stats.items()):
+        y_pos = 1 - (text_height * i + 0.1)
+        fig.text(0.7, y_pos, f'{name}: {val}')
+    #for name, value in stats:
 
     fig.savefig(savepath)
