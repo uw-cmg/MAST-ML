@@ -33,11 +33,9 @@ regression_metrics = {
     'r2_score': r2_score,	#R^2 (coefficient of determination) regression score function.
 }
 
-def check_mixed(metric_names):
-    found_regression = found_classification = False
+def check_names(metric_names, is_classification):
+    task = 'classification' if is_classification else 'regression'
+    metrics_dict = classification_metrics if is_classification else regression_metrics
     for name in metric_names:
-        if name in classification_metrics:
-            found_classification = True
-        if name in regression_metrics:
-            found_regression = True
-        fg
+        if name not in metrics_dict:
+            raise Exception(f"Metric '{name}' is not supported for {task}.")

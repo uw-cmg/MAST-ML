@@ -1,5 +1,6 @@
 from configobj import ConfigObj
 from distutils.util import strtobool
+from . import metrics
 from .legos.model_finder import check_models_mixed
 
 def parse_conf_file(filepath):
@@ -43,18 +44,28 @@ def parse_conf_file(filepath):
                 parameter_dict[name] = _fix_types(value)
 
         # Ensure all models are either classifiers or regressors: (raises error if mixed)
-        conf['is_classification'] = check_models_mixed(conf['Models'].keys())
-        
+        is_classification = conf['is_classification'] = check_models_mixed(conf['Models'].keys())
 
-        # Other functions reference certain optional values, so if those values
-        # aren't specified then we default them to None:
+        ## Assign default values to unspecified or 'Auto' options: ##
+
         for name in feature_sections:
             if name not in conf or conf[name] == dict():
                 conf[name] = {'DoNothing': {}}
 
         for name in ['input_features', 'target_feature']:
-            if name not in conf['GeneralSetup'] or if conf['GeneralSetup'][name] == 'Auto':
+            if (name not in conf['GeneralSetup']) or (conf['GeneralSetup'][name] == 'Auto'):
                 conf['GeneralSetup'][name] = None
+
+        if 'metrics' in conf['GeneralSetup']:
+            conf['metrics'] = conf['GeneralSetup']['metrics']
+            del conf['GeneralSetup']['metrics']
+        if 'metrics' not in conf or conf['metrics'] == 'Auto':
+            if is_classification:
+                conf['metrics'] = ['accuracy_score', 'precision_score', 'recall_score']
+            else:
+                conf['metrics'] = ['r2_score', 'explained_variance_score']
+        else: # User has specified their own specific metrics:
+            metrics.check_names(conf['metrics'], is_classification)
 
         # TODO Grouping is not a real section, figure out how that would really work
         #if 'grouping_feature' in conf['Grouping']:

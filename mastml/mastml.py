@@ -4,6 +4,7 @@ import argparse
 import itertools
 import os.path
 import shutil
+import collections
 
 import pandas as pd
 import sklearn.pipeline
@@ -53,34 +54,44 @@ def mastml_run(conf_path, data_path, outdir):
 
     # NOTE: This is done using itertools.product instead of sklearn.model_selection.GridSearchCV
     #  because we need to heavily inspect & use & modify data within each iteration of the loop.
+    num_fits = len(normalizers) * len(selectors) * len(models) * len(splits)
+    fit_num = 1
     results = []
     for normalizer, selector, model in itertools.product(normalizers, selectors, models):
         pipe = sklearn.pipeline.make_pipeline(generators_union, normalizer, selector, model)
         for split_num, (train_indices, test_indices) in enumerate(splits):
             train_X, train_y = df.loc[train_indices, input_features], df.loc[train_indices, target_feature]
             test_X,  test_y  = df.loc[test_indices,  input_features], df.loc[test_indices,  target_feature]
+            print(f"Fit number {fit_num}/{num_fits}")
             pipe.fit(train_X, train_y)
             train_pred = pipe.predict(train_X)
             test_pred  = pipe.predict(test_X)
-            results.append(dict(
+            run = collections.OrderedDict( # The ordered dict ensures column order in saved html
                 split=str(split_num),
                 normalizer=normalizer.__class__.__name__,
                 selector=selector.__class__.__name__,
                 model=model.__class__.__name__,
-                train_true=train_y,
+                train_true=train_y.values,
                 train_pred=train_pred,
-                test_true=test_y,
+                test_true=test_y.values,
                 test_pred=test_pred
-            ))
+            )
             for name in conf['metrics']:
-    import pdb; pdb.set_trace()
-    for d in results:
-        plot_helper.plot_confusion_matrix(test_y.values, test_predictions, filename=os.path.join(outdir, filename))
+                run['train_' + name] = metrics_dict[name](train_y, train_pred)
+                run['test_' + name]  = metrics_dict[name](test_y, test_pred)
+            results.append(run)
+            fit_num += 1
 
-    filename = f"split_{split_num}" \
-               f"_normalizer_{normalizer.__class__.__name__}" \
-               f"_selector_{selector.__class__.__name__}" \
-               f"_model_{model.__class__.__name__}.png"
+    #import pdb; pdb.set_trace()
+    pd.DataFrame(results).to_html(os.path.join(outdir, 'results.html'))
+
+    #for d in results:
+    #    plot_helper.plot_confusion_matrix(test_y.values, test_predictions, filename=os.path.join(outdir, filename))
+
+    #filename = f"split_{split_num}" \
+    #           f"_normalizer_{normalizer.__class__.__name__}" \
+    #           f"_selector_{selector.__class__.__name__}" \
+    #           f"_model_{model.__class__.__name__}.png"
             #if conf['is_classification']:
             #    plot_helper.plot_confusion_matrix(test_y.values, test_predictions, filename=os.path.join(outdir, filename))
             #else: # is_regression
