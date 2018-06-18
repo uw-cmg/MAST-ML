@@ -4,7 +4,7 @@ All classes here assume dataframe input and guarantee dataframe output.
 (So no numpy arrays.)
 """
 from sklearn.feature_selection import GenericUnivariateSelect, SelectPercentile, SelectKBest, SelectFpr, SelectFdr, SelectFwe, VarianceThreshold
-import utils
+from . import utils
 # list of sklearn feature selectors: http://scikit-learn.org/stable/modules/classes.html#module-sklearn.feature_selection
 
 name_to_constructor = {
@@ -18,5 +18,5 @@ name_to_constructor = {
     'DoNothing': utils.DoNothing,
 }
 
-for constructor in name_to_constructor:
+for constructor in name_to_constructor.values():
     constructor.transform = utils.dataframify(constructor.transform)
