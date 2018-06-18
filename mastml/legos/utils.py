@@ -65,7 +65,9 @@ def dataframify(transform):
     " Decorator to make a transformer's transform method work on dataframes. "
     @wraps(transform)
     def new_transform(self, df):
-        print("self:", self, "df:", df)
         arr = transform(self, df.values)
-        return pd.DataFrame(arr, columns=df.columns, index=df.values)
+        try:
+            return pd.DataFrame(arr, columns=df.columns, index=df.values)
+        except ValueError:
+            return pd.DataFrame(arr, index=df.values)
     return new_transform
