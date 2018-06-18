@@ -42,8 +42,9 @@ def parse_conf_file(filepath):
                     raise TypeError(f"Subsection in parameter-only section: {key}")
                 parameter_dict[name] = _fix_types(value)
 
-        # Ensure all models are either classifiers or regressors:
-        check_models_mixed(conf['Models'].keys())
+        # Ensure all models are either classifiers or regressors: (raises error if mixed)
+        conf['is_classification'] = check_models_mixed(conf['Models'].keys())
+        
 
         # Other functions reference certain optional values, so if those values
         # aren't specified then we default them to None:

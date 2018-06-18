@@ -81,6 +81,11 @@ def mastml_run(conf_path, data_path, outdir):
                f"_normalizer_{normalizer.__class__.__name__}" \
                f"_selector_{selector.__class__.__name__}" \
                f"_model_{model.__class__.__name__}.png"
+            #if conf['is_classification']:
+            #    plot_helper.plot_confusion_matrix(test_y.values, test_predictions, filename=os.path.join(outdir, filename))
+            #else: # is_regression
+            #    plot_helper.plot_predict_vs_true(test_y.values, test_predictions, filename=os.path.join(outdir, filename))
+            #    plot_helper.plot_residuals(test_y.values, test_predictions, filename=os.path.join(outdir, filename))
 
     # Copy the original input files to the output directory for easy reference
     shutil.copy2(conf_path, outdir)
