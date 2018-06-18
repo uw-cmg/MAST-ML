@@ -95,8 +95,9 @@ def mastml_run(conf_path, data_path, outdir):
         if conf['is_classification']:
             plot_helper.plot_confusion_matrix(run['test_true'], run['test_true'], filename=filename)
         else: # is_regression
-            plot_helper.plot_pred_vs_true(run['test_true'], run['test_true'], filename=filename)
-            plot_helper.plot_residuals(run['test_true'], run['test_true'], filename=filename)
+            pass
+            #plot_helper.plot_pred_vs_true(run['test_true'], run['test_true'], filename=filename)
+            #plot_helper.plot_residuals(run['test_true'], run['test_true'], filename=filename)
 
     # Copy the original input files to the output directory for easy reference
     shutil.copy2(conf_path, outdir)
@@ -119,9 +120,9 @@ def _instantiate(kwargs_dict, name_to_constructor, category):
         try:
             instantiations.append(name_to_constructor[name](**kwargs))
         except TypeError:
-            print(inspect.signature(name_to_constructor[name]))
+            print(f"ARGUMENTS FOR '{name}':", inspect.signature(name_to_constructor[name]))
             raise TypeError(f"The {category} '{name}' has invalid parameters: {kwargs}\n"
-                             "The arguments for '{name}' are printed above the call stack.")
+                            f"The arguments for '{name}' are printed above the call stack.")
         except KeyError:
             raise KeyError(f"There is no {category} called '{name}'.")
     return instantiations

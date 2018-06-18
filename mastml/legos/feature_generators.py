@@ -1,9 +1,27 @@
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.preprocessing import PolynomialFeatures as SklearnPolynomialFeatures
 from .utils import DoNothing
-name_to_constructor = {'DoNothing': DoNothing} # TODO
 
+class PolynomialFeatures(BaseEstimator, TransformerMixin):
+    def __init__(self, features=None, degree=2, interaction_only=False, include_bias=True):
+        self.features = features
+        self.SPF = SklearnPolynomialFeatures(degree, interaction_only, include_bias)
+    def fit(self, df, y=None):
+        if self.features is None:
+            self.features = df.columns
+        array = df[self.features].values
+        self.SPF.fit(array)
+        return self
+    def transform(self, df):
+        array = df[self.features].values
+        return pd.DataFrame(self.SPF.transform(array))
 
-# TODO: implement feature generation!!
+name_to_constructor = {
+    'DoNothing': DoNothing,
+    'PolynomialFeatures': PolynomialFeatures,
+}
+
+# TODO: implement API feature generation!!
 
 class Magpie():
 
