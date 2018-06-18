@@ -23,6 +23,6 @@ def load_data(file_path, input_features=None, target_feature=None, grouping_feat
         if feature not in df.columns:
             raise Exception(f"Data file does not have column '{feature}'")
 
-    df = df[required_features]
+    df = df[required_features] # drop the columns we aren't using
 
     return df, input_features, target_feature
