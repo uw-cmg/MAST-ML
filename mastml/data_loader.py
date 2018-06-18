@@ -2,6 +2,7 @@ import pandas as pd
 
 def load_data(file_path, input_features=None, target_feature=None, grouping_feature=None, clustering_features=None):
     " Loads in csv from filename and ensures required columns are present. Returns dataframe. "
+    # TODO: modify this to omit the target feature from the input features by default if the target feature is supplied
 
     # Load data and assign default arguments:
     df = pd.read_csv(file_path)

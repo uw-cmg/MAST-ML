@@ -1,6 +1,10 @@
+# Classification metrics:
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, f1_score, fbeta_score, hamming_loss, jaccard_similarity_score, log_loss, matthews_corrcoef, precision_recall_fscore_support, precision_score, recall_score, roc_auc_score, roc_curve, zero_one_loss
+# Regression metrics:
 from sklearn.metrics import explained_variance_score, mean_absolute_error, mean_squared_error, mean_squared_log_error, median_absolute_error, r2_score
 
+# All metrics:
+# http://scikit-learn.org/stable/modules/classes.html#module-sklearn.metrics
 
 classification_metrics = {
     'accuracy_score': accuracy_score,	#Accuracy classification score.
@@ -28,3 +32,12 @@ regression_metrics = {
     'median_absolute_error': median_absolute_error,	#Median absolute error regression loss
     'r2_score': r2_score,	#R^2 (coefficient of determination) regression score function.
 }
+
+def check_mixed(metric_names):
+    found_regression = found_classification = False
+    for name in metric_names:
+        if name in classification_metrics:
+            found_classification = True
+        if name in regression_metrics:
+            found_regression = True
+        fg

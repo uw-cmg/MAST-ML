@@ -47,18 +47,13 @@ def parse_conf_file(filepath):
 
         # Other functions reference certain optional values, so if those values
         # aren't specified then we default them to None:
-        #if 'FeatureSelection' not in conf or conf['FeatureSelection'] == dict():
-        #    conf['FeatureSelection'] = {'DoNothing': {}}
-        #if 'FeatureNormalize' not in conf or conf['FeatureNormalize'] == dict():
-        #    conf['FeatureNormalize'] = {'DoNothing': {}}
         for name in feature_sections:
             if name not in conf or conf[name] == dict():
                 conf[name] = {'DoNothing': {}}
 
-        if 'input_features' not in conf['GeneralSetup']:
-            conf['GeneralSetup']['input_features'] = None
-        if 'target_feature' not in conf['GeneralSetup']:
-            conf['GeneralSetup']['target_feature'] = None
+        for name in ['input_features', 'target_feature']:
+            if name not in conf['GeneralSetup'] or if conf['GeneralSetup'][name] == 'Auto':
+                conf['GeneralSetup'][name] = None
 
         # TODO Grouping is not a real section, figure out how that would really work
         #if 'grouping_feature' in conf['Grouping']:
