@@ -1,40 +1,101 @@
 import itertools
 import numpy as np
+from matplotlib import pyplot as plt
+from sklearn.metrics import confusion_matrix
 
-import matplotlib.pyplot as plt
-import seaborn as sns
-sns.set()
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure, figaspect
+from matplotlib.ticker import MaxNLocator
 
-def plot_confusion_matrix(y_true, y_pred, filename, normalize=False, title='Confusion matrix',
-        stats=dict(), cmap=plt.cm.Blues):
+def plot_confusion_matrix(y_true, y_pred, filename, stats, normalize=False, title='Confusion matrix',
+        cmap=plt.cm.Blues):
     """
     This function prints and plots the confusion matrix.
     Normalization can be applied by setting `normalize=True`.
     http://scikit-learn.org/stable/auto_examples/model_selection/plot_confusion_matrix.html
     """
+    # calculate confusion matrix and lables in correct order
     cm = confusion_matrix(y_true, y_pred)
     classes = sorted(list(set(y_true).intersection(set(y_pred))))
 
-    # Draw a heatmap with the numeric values in each cell
-    f, ax = plt.subplots(figsize=(9, 6))
-    sns.heatmap(cm, annot=True, fmt="d", linewidths=.5, ax=ax)
-    plt.show()
-
-
-def plot_predicted_vs_true(true, predicted, savepath, title='predicted vs true'):
-    ####w, h = figaspect(2.)
+    # initializae fig
+    # set image aspect ratio. Needs to be wide enough or plot will shrink really skinny
+    w, h = figaspect(0.7)
     fig = Figure(figsize=(w,h))
     FigureCanvas(fig)
-    ax = fig.add_subplot(111)
+
+    # these two lines are where the magic happens, trapping the figure on the left side
+    # so we can make print text beside it
+    gs = plt.GridSpec(2, 3)
+    ax = fig.add_subplot(gs[0:2, 0:2], aspect='equal')
+    FigureCanvas(fig)
+
     ax.set_title(title)
-    #ax.grid(True)
+
+    # create the colorbar, not really needed but everyones got 'em
+    mappable = ax.imshow(cm, interpolation='nearest', cmap=cmap)
+    fig.colorbar(mappable)
+
+    # set x and y ticks to labels
+    tick_marks = range(len(classes))
+    ax.set_xticks(tick_marks)
+    ax.set_xticklabels(classes, rotation='vertical', fontsize=18)
+
+    ax.set_yticks(tick_marks)
+    ax.set_yticklabels(classes, rotation='vertical', fontsize=18)
+
+    # draw number in the boxes
+    fmt = '.2f' if normalize else 'd'
+    thresh = cm.max() / 2.
+    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        ax.text(j, i, format(cm[i, j], fmt),
+                 horizontalalignment="center",
+                 color="white" if cm[i, j] > thresh else "black")
+
+
+    # print stats onto the image. Goes off screen if they are too long or too many in number
+    text_height = 0.08
+    for i, (name, val) in enumerate(stats.items()):
+        y_pos = 1 - (text_height * i + 0.1)
+        fig.text(0.7, y_pos, f'{name}: {val}')
+
+    #plt.tight_layout()
+    ax.set_ylabel('True label')
+    ax.set_xlabel('Predicted label')
+    fig.savefig(filename)
+
+# using OO interface from https://matplotlib.org/gallery/api/agg_oo_sgskip.html
+def plot_predicted_vs_true(true, predicted, savepath, stats, title='predicted vs true'):
+    # set image aspect ratio. Needs to be wide enough or plot will shrink really skinny
+    w, h = figaspect(0.7)
+    fig = Figure(figsize=(w,h))
+    FigureCanvas(fig)
+
+    # these two lines are where the magic happens, trapping the figure on the left side
+    # so we can make print text beside it
+    gs = plt.GridSpec(2, 3)
+    ax = fig.add_subplot(gs[0:2, 0:2], aspect='equal')
+
+    ax.set_title(title)
+
+    # do the actual plotting
     ax.scatter(true, predicted, edgecolors=(0, 0, 0))
     ax.plot([true.min(), true.max()], [true.min(), true.max()], 'k--', lw=4)
+
+    # set axis labels
     ax.set_xlabel('Measured')
     ax.set_ylabel('Predicted')
+
+    # print stats onto the image. Goes off screen if they are too long or too many in number
+    text_height = 0.08
+    for i, (name, val) in enumerate(stats.items()):
+        y_pos = 1 - (text_height * i + 0.1)
+        fig.text(0.7, y_pos, f'{name}: {val}')
+
+
     fig.savefig(savepath)
 
-def plot_residuals_histogram(true, pred, savepath, title='residuals histogram', stats=dict()):
+def plot_residuals_histogram(true, pred, savepath, stats, title='residuals histogram'):
 
     # make the aspect ration wide for text next to square-ish graph
     w, h = figaspect(0.7)

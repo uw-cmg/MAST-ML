@@ -27,21 +27,16 @@ class TestPlots(unittest.TestCase):
     def test_plot_predicted_vs_true(self):
         predicted = np.arange(30) + np.random.random_sample((30,)) * 10 - 3
         actual = np.arange(30)
+        stats = {'foo': 500000, 'bar': 123.4566, 'baz': 'impossoble', 'rosco': 123e-500}
 
-        plot_helper.plot_predicted_vs_true(actual, predicted, 'pred-vs-true.png')
+        plot_helper.plot_predicted_vs_true(actual, predicted, 'pred-vs-true.png', stats)
 
     def test_residuals_histogram(self):
         predicted = np.arange(30) + sum(np.random.random_sample((30,)) for _ in range(10)) - 3
         actual = np.arange(30)
-
-        plot_helper.plot_residuals_histogram(actual, predicted, 'rh.png')
-
-    def test_residuals_histogram_w_stats(self):
-        predicted = np.arange(30) + sum(np.random.random_sample((30,)) for _ in range(10)) - 3
-        actual = np.arange(30)
         stats = {'foo': 500000, 'bar': 123.4566, 'baz': 'impossoble', 'rosco': 123e-500}
 
-        plot_helper.plot_residuals_histogram(actual, predicted, 'rhws.png', stats=stats)
+        plot_helper.plot_residuals_histogram(actual, predicted, 'rh.png', stats)
 
     def test_confusion_matrix(self):
         true = np.random.randint(4, size=(50,))
@@ -49,7 +44,13 @@ class TestPlots(unittest.TestCase):
         slices = [not bool(x) for x in np.random.randint(3, size=50)]
         pred[slices] = [random.randint(1, 3) for s in slices if s]
 
-        plot_helper.plot_confusion_matrix(true, pred, 'cf.png')
+        names = ['a', 'b', 'c', 'f']
+        pred = np.array([names[x] for x in pred] + ['a', 'a', 'a'])
+        true = np.array([names[x] for x in true] + ['b', 'b', 'b'])
+
+        stats = {'foo': 500000, 'bar': 123.4566, 'baz': 'impossoble', 'rosco': 123e-500}
+
+        plot_helper.plot_confusion_matrix(true, pred, 'cf.png', stats)
 
         
 
