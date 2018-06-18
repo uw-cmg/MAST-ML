@@ -96,10 +96,10 @@ def mastml_run(conf_path, data_path, outdir):
         stats_dict = collections.OrderedDict((key, val) for key,val in run.items()
                                              if key.startswith('train_') or key.startswith('test_'))
         if conf['is_classification']:
-            plot_helper.plot_confusion_matrix(run['test_true'], run['test_pred'], stats_dict, filename=filename)
+            plot_helper.plot_confusion_matrix(run['test_true'], run['test_pred'], savepath, stats_dict)
         else: # is_regression
-            plot_helper.plot_pred_vs_true(run['test_true'], run['test_pred'], stats_dict, filename=filename)
-            plot_helper.plot_residuals(run['test_true'], run['test_pred'], filename=filename)
+            plot_helper.plot_predicted_vs_true(run['test_true'], run['test_pred'], savepath, stats_dict)
+            plot_helper.plot_residuals_histogram(run['test_true'], run['test_pred'], savepath, stats_dict)
 
     # Copy the original input files to the output directory for easy reference
     shutil.copy2(conf_path, outdir)
