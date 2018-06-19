@@ -14,7 +14,7 @@ from matplotlib.ticker import MaxNLocator
 class SmokeTests(unittest.TestCase):
 
     def test_classification(self):
-        mastml.mastml_run('tests/conf/fullrun.conf', 'tests/csv/three_clusters.csv',
+        mastml.mastml_run('tests/conf/classification.conf', 'tests/csv/three_clusters.csv',
                 'results/classification')
 
     def test_regression(self):
@@ -58,6 +58,7 @@ class TestHtml(unittest.TestCase):
         #imgs = ['cf.png', 'rh.png', 'pred-vs-true.png']
         #html_helper.make_html(imgs, 'tests/csv/three_clusters.csv', 'tests/conf/fullrun.conf', 'oop.txt', './')
         html_helper.make_html('results/classification')
+        html_helper.make_html('results/regression')
 
         
 
