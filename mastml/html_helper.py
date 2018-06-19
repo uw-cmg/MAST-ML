@@ -1,5 +1,5 @@
 import os
-from os.path import join # because it's used so much
+from os.path import join, relpath # because it's used so much
 from time import gmtime, strftime
 
 import glob
@@ -37,19 +37,20 @@ debug.txt
 """
 
 def is_train_image(path):
-    basename = os.path.basename(f)
-    return basename.split('.') == 'png' and 'train_' in basename
+    basename = os.path.basename(path)
+    return basename.split('.')[1] == 'png' and 'train_' in basename
 
 def is_test_image(path):
-    basename = os.path.basename(f)
-    return basename.split('.') == 'png' and 'test_' in basename
+    basename = os.path.basename(path)
+    return basename.split('.')[1] == 'png' and 'test_' in basename
 
-def show_data(split_dir):
+def show_data(split_dir, outdir):
 
     # collect test image, train image, and other file links
     links = list()
     for root, _, files in os.walk(split_dir):
         for f in files:
+            print(f)
             if is_train_image(f):
                 train_image = join(root, f)
             elif is_test_image(f):
@@ -57,19 +58,39 @@ def show_data(split_dir):
             else:
                 links.append(join(root, f))
 
+    # come up with a good section title
+    path = os.path.normpath(relpath(split_dir, outdir))
+    paths = path.split(os.sep)
+    title = " - ".join(paths)
+
+    h2(title)
+
     # loop seperately so we can control order
-    h2('Train')
-    image(train_image)
-    h2('Test')
-    image(test_image)
+    image(relpath(train_image, outdir))
+    image(relpath(test_image, outdir))
+    br();br()
     for l in links:
-        link(l)
+        link(relpath(l, outdir))
 
 def make_html(outdir):
-    for root, dirs, files in os.walk(outdir):
-        for d in dirs:
-            if 'split_' in os.path.basename(d):
-                show_data(join(root, d))
+    with document(title='MASTML') as doc:
+
+        # title and date
+        h1('MAterial Science Tools - Machine Learning')
+        h4(strftime("%Y-%m-%d %H:%M:%S", gmtime()))
+
+        # link to error log
+        #if errors_present:
+        #    p('You have errors! check ', link(error_log))
+
+        for root, dirs, files in os.walk(outdir):
+            for d in dirs:
+                if 'split_' in os.path.basename(d):
+                    show_data(join(root, d), outdir)
+
+
+    with open(join(outdir, 'index.html'), 'w') as f:
+        f.write(doc.render())
 
 def make_html_2000(save_dir, images: list, starting_data_csv, computed_csvs: list, conf, statistics,
         error_log, debug_log, best=None, median=None, worst=None):
@@ -125,9 +146,16 @@ def make_html_2000(save_dir, images: list, starting_data_csv, computed_csvs: lis
         f.write(doc.render())
 
 
+def link_p(href):
+    """ Makes it slightly shorter to link files with their names"""
+    return p(a(os.path.basename(href), href=href))
+
 def link(href):
     """ Makes it slightly shorter to link files with their names"""
-    return p(a(href, href=href))
+    return a(os.path.basename(href), href=href)
 
 def image(src):
-    div(img(src=src), _class='photo')
+    div(img(src=src, width='500'), style='display:inline-block;', _class='photo')
+
+
+

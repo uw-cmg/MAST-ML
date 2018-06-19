@@ -39,7 +39,7 @@ def mastml_run(conf_path, data_path, outdir):
     # Check output directory:
     if os.path.exists(outdir):
         print("Output dir already exists. Press enter to delete it or ctrl-c to cancel.")
-        input()
+        #input()
         shutil.rmtree(outdir)
     os.makedirs(outdir)
     print(f"Saving to directory 'outdir'")
@@ -65,6 +65,7 @@ def mastml_run(conf_path, data_path, outdir):
     #image_paths = plot_helper.make_plots(runs, conf['is_classification'], outdir)
 
     print("Making image html file...")
+    html_helper.make_html(outdir)
     #html_helper.make_html(outdir, image_paths, data_path, ['computed csv.notcsv'], conf_path,
     #        os.path.join(outdir, 'results.html'), 'errors.txt', 'debug.txt', best=None, median=None, worst=None)
 
@@ -147,8 +148,12 @@ def _do_fits(X, y, generators, normalizers, selectors, models, splitters, metric
 
         # TODO: add train data plotting
         if is_classification:
-            plot_helper.plot_confusion_matrix(test_y.values, test_pred, ospj(path, 'test_confusion_matrix.png'), run['test_metrics'])
-            plot_helper.plot_confusion_matrix(train_y.values, train_pred, ospj(path, 'train_confusion_matrix.png'), run['train_metrics'])
+            title = 'test_confusion_matrix'
+            plot_helper.plot_confusion_matrix(test_y.values, test_pred, ospj(path, title+'.png'),
+                    run['test_metrics'], title=title)
+            title = 'train_confusion_matrix'
+            plot_helper.plot_confusion_matrix(train_y.values, train_pred, ospj(path, title+'.png'),
+                    run['train_metrics'], title=title)
         else: # is_regression
             plot_helper.plot_predicted_vs_true(test_y.values, test_pred, ospj(path, 'test_predicted_vs_true.png'), run['test_metrics'])
             plot_helper.plot_residuals_histogram(test_y.values, test_pred, ospj(path, 'test_residuals_histogram.png'), run['test_metrics'])
