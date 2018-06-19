@@ -2,6 +2,7 @@
 *.ipynb_checkpoints*
 *.swo
 *.html
+*.txt
 
 MASTML.egg-info/
 build/

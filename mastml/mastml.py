@@ -18,10 +18,6 @@ from .legos import data_splitters, feature_generators, feature_normalizers, feat
 
 utils.Tee('log.txt', 'w')
 utils.TeeErr('errors.txt', 'w')
-print('oops')
-print('wow', file=sys.stderr)
-warnings.warn('ouch')
-raise Exception('aiugh')
 
 def mastml_run(conf_path, data_path, outdir):
     " Runs operations specifed in conf_path on data_path and puts results in outdir "
