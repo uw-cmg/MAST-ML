@@ -4,6 +4,7 @@ Actual legos don't go in here.
 """
 
 from functools import wraps
+import pandas as pd
 
 def dataframify(transform):
     " Decorator to make a transformer's transform method work on dataframes. "
