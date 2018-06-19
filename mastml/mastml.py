@@ -37,8 +37,11 @@ def mastml_run(conf_path, data_path, outdir):
         raise FileNotFoundError(f"No such file: {data_path}")
 
     # Check output directory:
-    if not os.path.exists(outdir):
-        os.makedirs(outdir)
+    if os.path.exists(outdir):
+        print("Output dir already exists. Press enter to delete it or ctrl-c to cancel.")
+        input()
+        shutil.rmtree(outdir)
+    os.makedirs(outdir)
     print(f"Saving to directory 'outdir'")
 
     # Load in and parse the configuration and data files:
