@@ -1,8 +1,7 @@
 """
-Collection of classes for debugging and control flow, plus a decorator.
+Collection of classes for debugging and control flow
 """
 import pdb
-from functools import wraps
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -60,14 +59,3 @@ class PrintHeadTail(BaseEstimator, TransformerMixin):
         print(data[:self.head])
         print(data[-self.tail:])
         return data
-
-def dataframify(transform):
-    " Decorator to make a transformer's transform method work on dataframes. "
-    @wraps(transform)
-    def new_transform(self, df):
-        arr = transform(self, df.values)
-        try:
-            return pd.DataFrame(arr, columns=df.columns, index=df.index)
-        except ValueError:
-            return pd.DataFrame(arr, index=df.index)
-    return new_transform

@@ -1,18 +1,27 @@
 " Does one big mastml run "
 
+import sys
 import argparse
 import inspect
 import itertools
 import os.path
 import shutil
 import collections
+import warnings
 
 import pandas as pd
 import sklearn.pipeline
 import sklearn.model_selection
 
-from . import conf_parser, data_loader, html_helper, plot_helper, metrics
-from .legos import data_splitters, feature_generators, feature_normalizers, feature_selectors, model_finder, utils
+from . import conf_parser, data_loader, html_helper, plot_helper, metrics, utils
+from .legos import data_splitters, feature_generators, feature_normalizers, feature_selectors, model_finder, util_legos
+
+utils.Tee('log.txt', 'w')
+utils.TeeErr('errors.txt', 'w')
+print('oops')
+print('wow', file=sys.stderr)
+warnings.warn('ouch')
+raise Exception('aiugh')
 
 def mastml_run(conf_path, data_path, outdir):
     " Runs operations specifed in conf_path on data_path and puts results in outdir "
@@ -79,7 +88,7 @@ def mastml_run(conf_path, data_path, outdir):
 
 def _do_fits(X, y, generators, normalizers, selectors, models, splitters, metrics, metrics_dict, outdir):
 
-    generators_union = utils.DataFrameFeatureUnion(generators)
+    generators_union = util_legos.DataFrameFeatureUnion(generators)
     splits = [pair for splitter in splitters for pair in splitter.split(X,y)]
 
     print("Doing feature generation & normalization & selection...")

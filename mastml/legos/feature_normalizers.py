@@ -8,7 +8,7 @@ from sklearn.preprocessing import scale, MinMaxScaler
 import pandas as pd
 import numpy as np
 
-from . import utils
+from . import util_legos, lego_utils
 
 # TODO: add all sklearn preprocessors
 # http://scikit-learn.org/stable/modules/classes.html#module-sklearn.preprocessing
@@ -49,11 +49,11 @@ class NoNormalize(BaseEstimator, TransformerMixin):
     def transform(self,X):
         return X
 
-MinMaxScaler.transform = utils.dataframify(MinMaxScaler.transform)
+MinMaxScaler.transform = lego_utils.dataframify(MinMaxScaler.transform)
 
 name_to_constructor = {
     'MeanStdevScaler': MeanStdevScaler,
     'MinMaxScaler': MinMaxScaler,
     'NoNormalize': NoNormalize,
-    'DoNothing': utils.DoNothing,
+    'DoNothing': util_legos.DoNothing,
 }

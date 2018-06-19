@@ -1,6 +1,6 @@
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import PolynomialFeatures as SklearnPolynomialFeatures
-from .utils import DoNothing
+from .util_legos import DoNothing
 
 class PolynomialFeatures(BaseEstimator, TransformerMixin):
     def __init__(self, features=None, degree=2, interaction_only=False, include_bias=True):
