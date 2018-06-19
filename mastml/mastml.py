@@ -48,45 +48,11 @@ def mastml_run(conf_path, data_path, outdir):
     models = _instantiate(conf['Models'], model_finder.name_to_constructor, 'model')
     splitters = _instantiate(conf['DataSplits'], data_splitters.name_to_constructor, 'data split')
 
-    # Build necessary units for main
-    generators_union = utils.DataFrameFeatureUnion(generators)
     X, y = df[input_features], df[target_feature]
-    splits = [pair for splitter in splitters for pair in splitter.split(X,y)]
-
-    # NOTE: This is done using itertools.product instead of sklearn.model_selection.GridSearchCV
-    #  because we need to heavily inspect & use & modify data within each iteration of the loop.
-    num_fits = len(normalizers) * len(selectors) * len(models) * len(splits)
-    fit_num = 1
-    results = []
-    for normalizer, selector, model in itertools.product(normalizers, selectors, models):
-        pipe = sklearn.pipeline.make_pipeline(generators_union, normalizer, selector, model)
-        for split_num, (train_indices, test_indices) in enumerate(splits):
-            train_X, train_y = df.loc[train_indices, input_features], df.loc[train_indices, target_feature]
-            test_X,  test_y  = df.loc[test_indices,  input_features], df.loc[test_indices,  target_feature]
-            print(f"Fit number {fit_num}/{num_fits}")
-            pipe.fit(train_X, train_y)
-            train_pred = pipe.predict(train_X)
-            test_pred  = pipe.predict(test_X)
-            run = collections.OrderedDict( # The ordered dict ensures column order in saved html
-                split=str(split_num),
-                normalizer=normalizer.__class__.__name__,
-                selector=selector.__class__.__name__,
-                model=model.__class__.__name__,
-                train_true=train_y.values,
-                train_pred=train_pred,
-                test_true=test_y.values,
-                test_pred=test_pred,
-                train_metrics=[], # a list of (metric_name, value) tuples
-                test_metrics=[],
-            )
-            for name in conf['metrics']:
-                run['train_metrics'].append((name, metrics_dict[name](train_y, train_pred)))
-                run['test_metrics'].append((name, metrics_dict[name](test_y,  test_pred)))
-            results.append(run)
-            fit_num += 1
+    runs = _do_fits(X, y, generators, normalizers, selectors, models, splitters, conf['metrics'], metrics_dict, outdir)
 
     print("Saving images...")
-    image_paths = plot_helper.make_plots(results, conf['is_classification'], outdir)
+    image_paths = plot_helper.make_plots(runs, conf['is_classification'], outdir)
 
     print("Making image html file...")
     html_helper.make_html(outdir, image_paths, data_path, ['computed csv.notcsv'], conf_path,
@@ -95,8 +61,75 @@ def mastml_run(conf_path, data_path, outdir):
     print("Making data html file...")
     # Save a table of all the runs to an html file
     # We have to flatten the subdicts to make it all fit in one table
+    _save_all_runs(runs, outdir)
+
+    # Copy the original input files to the output directory for easy reference
+    print("Copying input files to output directory...")
+    shutil.copy2(conf_path, outdir)
+    shutil.copy2(data_path, outdir)
+
+    # TODO: save cached models
+    # TODO: clustering legos
+    # TODO: model caching and csv saving after data generation
+    # TODO: address the great dataframe vs array debate for pipelines
+    # TODO: implement is_trainable column in csv
+    # TODONE: Get best, worst, average runs
+    # TODONE: put feature generation once at the beginning only
+    # TODONE: create intermediate "save to csv" lego blocks
+
+def _do_fits(X, y, generators, normalizers, selectors, models, splitters, metrics, metrics_dict, outdir):
+
+    generators_union = utils.DataFrameFeatureUnion(generators)
+    splits = [pair for splitter in splitters for pair in splitter.split(X,y)]
+
+    print("Doing feature generation & normalization & selection...")
+    X_generated = generators_union.fit_transform(X, y)
+    X_generated.to_csv(outdir+f"data_generated.csv")
+    Xs_selected = []
+    for normalizer in normalizers:
+        X_normalized = normalizer.fit_transform(X_generated, y)
+        X_normalized.to_csv(outdir+f"data_generated_normalized_{normalizer.__class__.__name__}.csv")
+        for selector in selectors:
+            X_normalized.to_csv(outdir+f"data_generated_normalized_{normalizer.__class__.__name__}" +
+                                       f"_selected_{selector.__class__.__name__}.csv")
+            X_selected = selector.fit_transform(X_normalized, y)
+            Xs_selected.append((normalizer, selector, X_selected))
+
+    print("Fitting models to datas...")
+    num_fits = len(normalizers) * len(selectors) * len(models) * len(splits)
+    runs = [None] * num_fits
+    for fit_num, ((normalizer, selector, X_selected), model, (split_num, (train_indices, test_indices))) \
+            in enumerate(itertools.product(Xs_selected, models, enumerate(splits))):
+        #import pdb; pdb.set_trace()
+        train_X, train_y = X_selected.loc[train_indices], y.loc[train_indices]
+        test_X,  test_y  = X_selected.loc[test_indices], y.loc[test_indices]
+        print(f"Fit number {fit_num}/{num_fits}")
+        model.fit(train_X, train_y)
+        train_pred = model.predict(train_X)
+        test_pred  = model.predict(test_X)
+        run = collections.OrderedDict( # The ordered dict ensures column order in saved html
+            split=str(split_num),
+            normalizer=normalizer.__class__.__name__,
+            selector=selector.__class__.__name__,
+            model=model.__class__.__name__,
+            train_true=train_y.values,
+            train_pred=train_pred,
+            test_true=test_y.values,
+            test_pred=test_pred,
+            train_metrics=[], # a list of (metric_name, value) tuples
+            test_metrics=[],
+        )
+        for name in metrics:
+            metric = metrics_dict[name]
+            run['train_metrics'].append( (name, metric(train_y, train_pred)) )
+            run['test_metrics'].append(  (name, metric(test_y,  test_pred))  )
+        runs[fit_num] = run
+    
+    return runs
+
+def _save_all_runs(runs, outdir):
     for_table = []
-    for run in results:
+    for run in runs:
         od = collections.OrderedDict()
         for name, value in run.items():
             if name == 'train_metrics':
@@ -108,21 +141,7 @@ def mastml_run(conf_path, data_path, outdir):
             else:
                 od[name] = value
         for_table.append(od)
-    pd.DataFrame(for_table).to_html(os.path.join(outdir, 'results.html'))
-
-    # Copy the original input files to the output directory for easy reference
-    print("Copying input files to output directory...")
-    shutil.copy2(conf_path, outdir)
-    shutil.copy2(data_path, outdir)
-
-    # TODO: save cached models
-    # TODO: create intermediate "save to csv" lego blocks
-    # TODO: clustering legos
-    # TODO: Get best, worst, average runs
-    # TODO: model caching and csv saving after data generation
-    # TODO: address the great dataframe vs array debate for pipelines
-    # maybe TODO: put feature generation once at the beginning only
-    # TODO: implement is_trainable column in csv
+    pd.DataFrame(for_table).to_html(outdir + 'results.html')
 
 def _instantiate(kwargs_dict, name_to_constructor, category):
     "Uses name_to_constructor to instantiate ever item in kwargs_dict and return the list of instantiations"
