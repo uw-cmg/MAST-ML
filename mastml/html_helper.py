@@ -48,13 +48,15 @@ def show_data(split_dir, outdir):
 
     # collect test image, train image, and other file links
     links = list()
+    train_images = list()
+    test_images = list()
     for root, _, files in os.walk(split_dir):
         for f in files:
             print(f)
             if is_train_image(f):
-                train_image = join(root, f)
+                train_images.append(join(root, f))
             elif is_test_image(f):
-                test_image = join(root, f)
+                test_images.append(join(root, f))
             else:
                 links.append(join(root, f))
 
@@ -66,9 +68,10 @@ def show_data(split_dir, outdir):
     h2(title)
 
     # loop seperately so we can control order
-    image(relpath(train_image, outdir))
-    image(relpath(test_image, outdir))
-    br();br()
+    for train_image, test_image in zip(sorted(train_images), sorted(test_images)):
+        image(relpath(train_image, outdir), 'train')
+        image(relpath(test_image, outdir), 'test')
+        br();br()
     for l in links:
         link(relpath(l, outdir))
 
@@ -154,8 +157,12 @@ def link(href):
     """ Makes it slightly shorter to link files with their names"""
     return a(os.path.basename(href), href=href)
 
-def image(src):
-    div(img(src=src, width='500'), style='display:inline-block;', _class='photo')
+def image(src, title=None):
+    d = div(style='display:inline-block;', _class='photo')
+    if title:
+        d += h4(title)
+        #d += p(a(title))
+    d += img(src=src, width='500')
 
 
 

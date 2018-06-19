@@ -155,10 +155,18 @@ def _do_fits(X, y, generators, normalizers, selectors, models, splitters, metric
             plot_helper.plot_confusion_matrix(train_y.values, train_pred, ospj(path, title+'.png'),
                     run['train_metrics'], title=title)
         else: # is_regression
-            plot_helper.plot_predicted_vs_true(test_y.values, test_pred, ospj(path, 'test_predicted_vs_true.png'), run['test_metrics'])
-            plot_helper.plot_residuals_histogram(test_y.values, test_pred, ospj(path, 'test_residuals_histogram.png'), run['test_metrics'])
-            plot_helper.plot_predicted_vs_true(train_y.values, train_pred, ospj(path, 'train_predicted_vs_true.png'), run['train_metrics'])
-            plot_helper.plot_residuals_histogram(train_y.values, train_pred, ospj(path, 'train_residuals_histogram.png'), run['train_metrics'])
+            title = 'test_predicted_vs_true'
+            plot_helper.plot_predicted_vs_true(test_y.values, test_pred, ospj(path, title+'.png'),
+                    run['test_metrics'], title=title)
+            title = 'test_residuals_histogram'
+            plot_helper.plot_residuals_histogram(test_y.values, test_pred, ospj(path, title+'.png'),
+                    run['test_metrics'], title=title)
+            title = 'train_predicted_vs_true'
+            plot_helper.plot_predicted_vs_true(train_y.values, train_pred, ospj(path, title+'.png'),
+                    run['train_metrics'], title=title)
+            title = 'train_residuals_histogram'
+            plot_helper.plot_residuals_histogram(train_y.values, train_pred, ospj(path,
+                title+'.png'), run['train_metrics'], title=title)
         with open(ospj(path, 'stats.txt'), 'w') as f:
             f.write("TRAIN:\n")
             for name,score in run['train_metrics']:
