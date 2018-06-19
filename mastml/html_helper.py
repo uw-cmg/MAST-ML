@@ -37,8 +37,12 @@ debug.txt
 
 def make_html(save_dir, images: list, starting_data_csv, computed_csvs: list, conf, statistics,
         error_log, debug_log, best=None, median=None, worst=None):
-        """ Makes saves html to file with all of the stuff you give it. 
-        all arguments refer to the file paths to the things, not the things themselves. """
+    """ Makes saves html to file with all of the stuff you give it. 
+    all arguments refer to the file paths to the things, not the things themselves. """
+
+    # TODO everyhting should be flat files in same dir as index.html
+    images = [os.path.basename(path) for path in images]
+    statistics = os.path.basename(statistics)
 
     # check if error_log has an substantial content
     with open(error_log) as f:
@@ -52,7 +56,7 @@ def make_html(save_dir, images: list, starting_data_csv, computed_csvs: list, co
 
         # link to error log
         if errors_present:
-            p('You have errors! check ' link(error_log))
+            p('You have errors! check ', link(error_log))
 
         link(statistics)
 

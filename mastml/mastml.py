@@ -89,8 +89,8 @@ def mastml_run(conf_path, data_path, outdir):
     image_paths = plot_helper.make_plots(results, conf['is_classification'], outdir)
 
     print("Making image html file...")
-    html_helper.make_html(outdir, image_paths, data_path, computed_csvs: list, conf_path,
-            os.path.join(outdir, 'results.html'), 'errors.txt', 'debug.txt', best=None, median=None, worst=None):
+    html_helper.make_html(outdir, image_paths, data_path, ['computed csv.notcsv'], conf_path,
+            os.path.join(outdir, 'results.html'), 'errors.txt', 'debug.txt', best=None, median=None, worst=None)
 
     print("Making data html file...")
     # Save a table of all the runs to an html file
