@@ -18,5 +18,6 @@ name_to_constructor = {
     'DoNothing': utils.DoNothing,
 }
 
+# TODO: this is a problem:
 for constructor in name_to_constructor.values():
     constructor.transform = utils.dataframify(constructor.transform)

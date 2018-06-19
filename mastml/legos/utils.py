@@ -67,7 +67,7 @@ def dataframify(transform):
     def new_transform(self, df):
         arr = transform(self, df.values)
         try:
-            return pd.DataFrame(arr, columns=df.columns, index=df.values)
+            return pd.DataFrame(arr, columns=df.columns, index=df.index)
         except ValueError:
-            return pd.DataFrame(arr, index=df.values)
+            return pd.DataFrame(arr, index=df.index)
     return new_transform
