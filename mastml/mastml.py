@@ -138,7 +138,7 @@ def _do_fits(X, y, generators, normalizers, selectors, models, splitters, metric
 
         # TODO: add train data plotting
         if is_classification:
-            plot_helper.plot_confusion_matrix(test_y.values, test_pred, ospj(path, 'train_confusion_matrix.png'), run['test_metrics'])
+            plot_helper.plot_confusion_matrix(test_y.values, test_pred, ospj(path, 'test_confusion_matrix.png'), run['test_metrics'])
             plot_helper.plot_confusion_matrix(train_y.values, train_pred, ospj(path, 'train_confusion_matrix.png'), run['train_metrics'])
         else: # is_regression
             plot_helper.plot_predicted_vs_true(test_y.values, test_pred, ospj(path, 'test_predicted_vs_true.png'), run['test_metrics'])
