@@ -1,15 +1,16 @@
 " Does one big mastml run "
 
 import argparse
+import collections
 import inspect
 import itertools
 import os.path
 import shutil
-import collections
 
 import pandas as pd
 import sklearn.pipeline
 import sklearn.model_selection
+from sklearn.externals import joblib
 
 from . import conf_parser, data_loader, html_helper, plot_helper, metrics
 from .legos import data_splitters, feature_generators, feature_normalizers, feature_selectors, model_finder, utils
@@ -78,21 +79,26 @@ def mastml_run(conf_path, data_path, outdir):
     # TODONE: create intermediate "save to csv" lego blocks
 
 def _do_fits(X, y, generators, normalizers, selectors, models, splitters, metrics, metrics_dict, outdir):
+    ospj = os.path.join
 
     generators_union = utils.DataFrameFeatureUnion(generators)
     splits = [pair for splitter in splitters for pair in splitter.split(X,y)]
 
     print("Doing feature generation & normalization & selection...")
     X_generated = generators_union.fit_transform(X, y)
-    X_generated.to_csv(outdir+f"data_generated.csv")
+    X_generated.to_csv(ospj(outdir, "data_generated.csv"))
     Xs_selected = []
     for normalizer in normalizers:
+        dirname = ospj(outdir, normalizer.__class__.__name__)
+        os.mkdir(dirname)
         X_normalized = normalizer.fit_transform(X_generated, y)
-        X_normalized.to_csv(outdir+f"data_generated_normalized_{normalizer.__class__.__name__}.csv")
+        X_normalized.to_csv(ospj(dirname, "normalized.csv"))
+
         for selector in selectors:
-            X_normalized.to_csv(outdir+f"data_generated_normalized_{normalizer.__class__.__name__}" +
-                                       f"_selected_{selector.__class__.__name__}.csv")
+            dirname = ospj(outdir, normalizer.__class__.__name__, selector.__class__.__name__)
+            os.mkdir(dirname)
             X_selected = selector.fit_transform(X_normalized, y)
+            X_selected.to_csv(ospj(dirname, "selected.csv"))
             Xs_selected.append((normalizer, selector, X_selected))
 
     print("Fitting models to datas...")
@@ -100,13 +106,19 @@ def _do_fits(X, y, generators, normalizers, selectors, models, splitters, metric
     runs = [None] * num_fits
     for fit_num, ((normalizer, selector, X_selected), model, (split_num, (train_indices, test_indices))) \
             in enumerate(itertools.product(Xs_selected, models, enumerate(splits))):
+        path = ospj(outdir, normalizer.__class__.__name__, selector.__class__.__name__,
+                    model.__class__.__name__, 'split_'+str(split_num))
+        os.makedirs(path)
         #import pdb; pdb.set_trace()
         train_X, train_y = X_selected.loc[train_indices], y.loc[train_indices]
         test_X,  test_y  = X_selected.loc[test_indices], y.loc[test_indices]
         print(f"Fit number {fit_num}/{num_fits}")
         model.fit(train_X, train_y)
+        joblib.dump(model, ospj(path, "trained_model.pkl"))
         train_pred = model.predict(train_X)
         test_pred  = model.predict(test_X)
+        pd.concat([train_X, train_y, pd.DataFrame(train_pred,columns=['train_pred'])], axis=1).to_csv(ospj(path, 'train.csv'))
+        pd.concat([test_X, test_y, pd.DataFrame(test_pred,columns=['test_pred'])], axis=1).to_csv(ospj(path, 'test.csv'))
         run = collections.OrderedDict( # The ordered dict ensures column order in saved html
             split=str(split_num),
             normalizer=normalizer.__class__.__name__,
