@@ -185,7 +185,7 @@ def _save_all_runs(runs, outdir):
             else:
                 od[name] = value
         for_table.append(od)
-    pd.DataFrame(for_table).to_html(outdir + 'results.html')
+    pd.DataFrame(for_table).to_html(os.path.join(outdir, 'results.html'))
 
 def _instantiate(kwargs_dict, name_to_constructor, category):
     "Uses name_to_constructor to instantiate ever item in kwargs_dict and return the list of instantiations"
