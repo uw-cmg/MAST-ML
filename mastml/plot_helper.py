@@ -15,8 +15,13 @@ def make_plots(runs, is_classification, outdir):
     #import pdb; pdb.set_trace()
     runs = sorted(runs, key=lambda run: run['test_metrics'][0][1])
     for run,name in [(runs[0],'worst_run'), (runs[len(runs)//2], 'median_run'), (runs[-1], 'best_run')]:
-        savepath = os.path.join(outdir, name +
-                                        f"_split_{run['split']}" +
+        savepath = os.path.join(outdir, run['normalizer'].__class__.__name__,
+                                        run['selector'].__class__.__name__,
+                                        run['model'].__class__.__name__,
+                                        run['split'].__class__.__name__,
+                                        run['normalizer'].__class__.__name__,
+
+                f"_split_{run['split']}" +
                                         f"_normalizer_{run['normalizer']}" +
                                         f"_selector_{run['selector']}" +
                                         f"_model_{run['model']}.png")

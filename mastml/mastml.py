@@ -56,14 +56,14 @@ def mastml_run(conf_path, data_path, outdir):
     splitters = _instantiate(conf['DataSplits'], data_splitters.name_to_constructor, 'data split')
 
     X, y = df[input_features], df[target_feature]
-    runs = _do_fits(X, y, generators, normalizers, selectors, models, splitters, conf['metrics'], metrics_dict, outdir)
+    runs = _do_fits(X, y, generators, normalizers, selectors, models, splitters, conf['metrics'], metrics_dict, outdir, conf['is_classification'])
 
-    print("Saving images...")
-    image_paths = plot_helper.make_plots(runs, conf['is_classification'], outdir)
+    #print("Saving images...")
+    #image_paths = plot_helper.make_plots(runs, conf['is_classification'], outdir)
 
     print("Making image html file...")
-    html_helper.make_html(outdir, image_paths, data_path, ['computed csv.notcsv'], conf_path,
-            os.path.join(outdir, 'results.html'), 'errors.txt', 'debug.txt', best=None, median=None, worst=None)
+    #html_helper.make_html(outdir, image_paths, data_path, ['computed csv.notcsv'], conf_path,
+    #        os.path.join(outdir, 'results.html'), 'errors.txt', 'debug.txt', best=None, median=None, worst=None)
 
     print("Making data html file...")
     # Save a table of all the runs to an html file
@@ -84,7 +84,7 @@ def mastml_run(conf_path, data_path, outdir):
     # TODONE: put feature generation once at the beginning only
     # TODONE: create intermediate "save to csv" lego blocks
 
-def _do_fits(X, y, generators, normalizers, selectors, models, splitters, metrics, metrics_dict, outdir):
+def _do_fits(X, y, generators, normalizers, selectors, models, splitters, metrics, metrics_dict, outdir, is_classification):
     ospj = os.path.join
 
     generators_union = util_legos.DataFrameFeatureUnion(generators)
@@ -141,6 +141,24 @@ def _do_fits(X, y, generators, normalizers, selectors, models, splitters, metric
             metric = metrics_dict[name]
             run['train_metrics'].append( (name, metric(train_y, train_pred)) )
             run['test_metrics'].append(  (name, metric(test_y,  test_pred))  )
+
+        # TODO: add train data plotting
+        if is_classification:
+            plot_helper.plot_confusion_matrix(test_y.values, test_pred, ospj(path, 'test_confusion_matrix.png'), run['test_metrics'])
+            plot_helper.plot_confusion_matrix(train_y.values, train_pred, ospj(path, 'train_confusion_matrix.png'), run['train_metrics'])
+        else: # is_regression
+            plot_helper.plot_predicted_vs_true(test_y.values, test_pred, ospj(path, 'test_predicted_vs_true.png'), run['test_metrics'])
+            plot_helper.plot_residuals_histogram(test_y.values, test_pred, ospj(path, 'test_residuals_histogram.png'), run['test_metrics'])
+            plot_helper.plot_predicted_vs_true(train_y.values, train_pred, ospj(path, 'train_predicted_vs_true.png'), run['train_metrics'])
+            plot_helper.plot_residuals_histogram(train_y.values, train_pred, ospj(path, 'train_residuals_histogram.png'), run['train_metrics'])
+        with open(ospj(path, 'stats.txt'), 'w') as f:
+            f.write("TRAIN:\n")
+            for name,score in run['train_metrics']:
+                f.write(f"{name}: score\n")
+            f.write("TEST:\n")
+            for name,score in run['test_metrics']:
+                f.write(f"{name}: score\n")
+
         runs[fit_num] = run
     
     return runs
