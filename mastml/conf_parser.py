@@ -77,7 +77,7 @@ def _fix_types(maybe_list):
     " Takes user parameter string and gives true value "
 
     if isinstance(maybe_list, list):
-        return [fix_types(item) for item in maybe_list]
+        return [_fix_types(item) for item in maybe_list]
 
     try: return strtobool(maybe_list)
     except ValueError: pass
