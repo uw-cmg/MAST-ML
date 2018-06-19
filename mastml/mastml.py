@@ -79,11 +79,11 @@ def mastml_run(conf_path, data_path, outdir):
     shutil.copy2(conf_path, outdir)
     shutil.copy2(data_path, outdir)
 
-    # TODO: save cached models
     # TODO: clustering legos
-    # TODO: model caching and csv saving after data generation
-    # TODO: address the great dataframe vs array debate for pipelines
     # TODO: implement is_trainable column in csv
+    # TODONE: model caching and csv saving after data generation
+    # TODONE: address the great dataframe vs array debate for pipelines
+    # TODONE: save cached models
     # TODONE: Get best, worst, average runs
     # TODONE: put feature generation once at the beginning only
     # TODONE: create intermediate "save to csv" lego blocks
@@ -162,10 +162,10 @@ def _do_fits(X, y, generators, normalizers, selectors, models, splitters, metric
         with open(ospj(path, 'stats.txt'), 'w') as f:
             f.write("TRAIN:\n")
             for name,score in run['train_metrics']:
-                f.write(f"{name}: score\n")
+                f.write(f"{name}: {score}\n")
             f.write("TEST:\n")
             for name,score in run['test_metrics']:
-                f.write(f"{name}: score\n")
+                f.write(f"{name}: {score}\n")
 
         runs[fit_num] = run
     
