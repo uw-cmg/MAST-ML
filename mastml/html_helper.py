@@ -45,8 +45,9 @@ def make_html(save_dir, images: list, starting_data_csv, computed_csvs: list, co
     statistics = os.path.basename(statistics)
 
     # check if error_log has an substantial content
-    with open(error_log) as f:
-        errors_present = len(f.read()) > 4
+    if os.path.exists(error_log):
+        with open(error_log) as f:
+            errors_present = len(f.read()) > 4
 
     with document(title='MASTML') as doc:
 
