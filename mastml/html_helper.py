@@ -35,21 +35,55 @@ info.txt
 debug.txt
 """
 
-def make_html(image_paths, data_csv_path, conf_path, statistics_path, save_dir):
+def make_html(save_dir, images: list, starting_data_csv, computed_csvs: list, conf, statistics,
+        error_log, debug_log, best=None, median=None, worst=None):
+        """ Makes saves html to file with all of the stuff you give it. 
+        all arguments refer to the file paths to the things, not the things themselves. """
+
+    # check if error_log has an substantial content
+    with open(error_log) as f:
+        errors_present = len(f.read()) > 4
 
     with document(title='MASTML') as doc:
+
+        # title and date
         h1('MAterial Science Tools - Machine Learning')
         h4(strftime("%Y-%m-%d %H:%M:%S", gmtime()))
+
+        # link to error log
+        if errors_present:
+            p('You have errors! check ' link(error_log))
+
+        link(statistics)
+
+        # best worst and median images
+        for name, path in (('best', best), ('median', median), ('worst', worst)):
+            if path:
+                h2(name)
+                h3(path)
+                div(img(src=best), _class='photo')
+
+        # all plots
         h2('Plots')
-        for path in image_paths:
+
+        for path in images:
+            h3(path)
             div(img(src=path), _class='photo')
 
-        p(a('Computed CSV', href=data_csv_path))
-        p(a('Conf file', href=conf_path))
-        p(a('statistics CSV', href=statistics_path))
+        # links to csv's
+        for path in computed_csvs:
+            link(path)
+
+        # link to conf file and starting data
+        link(conf)
+        link(starting_data_csv)
+        link(debug_log)
 
 
     with open(os.path.join(save_dir, 'index.html'), 'w') as f:
         f.write(doc.render())
 
 
+def link(href):
+    """ Makes it slightly shorter to link files with their names"""
+    return p(a(href, href=href))

@@ -1,6 +1,7 @@
 *.pyc
 *.ipynb_checkpoints*
 *.swo
+*.html
 
 MASTML.egg-info/
 build/
