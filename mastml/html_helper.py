@@ -75,6 +75,18 @@ def show_data(split_dir, outdir):
     for l in links:
         link(relpath(l, outdir))
 
+def simple_section(filepath, outdir):
+
+    # come up with a good section title
+    path = os.path.normpath(relpath(filepath, outdir))
+    paths = path.split(os.sep)
+    title = " - ".join(paths)
+    
+    h4(title)
+    
+    link(relpath(filepath, outdir))
+
+
 def make_html(outdir):
     with document(title='MASTML') as doc:
 
@@ -86,10 +98,19 @@ def make_html(outdir):
         #if errors_present:
         #    p('You have errors! check ', link(error_log))
 
+
+        # create a section with info on each run
         for root, dirs, files in os.walk(outdir):
             for d in dirs:
                 if 'split_' in os.path.basename(d):
                     show_data(join(root, d), outdir)
+
+            for f in files:
+                if os.path.splitext(f)[1] == '.csv' and f not in ['train.csv', 'test.csv']:
+                    simple_section(join(root, f), outdir)
+                if os.path.splitext(f)[1] == '.conf':
+                    simple_section(join(root, f), outdir)
+
 
 
     with open(join(outdir, 'index.html'), 'w') as f:
