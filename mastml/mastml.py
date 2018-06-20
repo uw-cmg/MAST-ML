@@ -61,8 +61,8 @@ def mastml_run(conf_path, data_path, outdir):
     X, y = df[input_features], df[target_feature]
     runs = _do_fits(X, y, generators, normalizers, selectors, models, splitters, conf['metrics'], metrics_dict, outdir, conf['is_classification'])
 
-    #print("Saving images...")
-    #image_paths = plot_helper.make_plots(runs, conf['is_classification'], outdir)
+    print("Finding best, worst, average...")
+    flag_favorite_runs(runs, outdir)
 
     print("Making image html file...")
     html_helper.make_html(outdir)
@@ -119,7 +119,6 @@ def _do_fits(X, y, generators, normalizers, selectors, models, splitters, metric
         path = ospj(outdir, normalizer.__class__.__name__, selector.__class__.__name__,
                     model.__class__.__name__, 'split_'+str(split_num))
         os.makedirs(path)
-        #import pdb; pdb.set_trace()
         train_X, train_y = X_selected.loc[train_indices], y.loc[train_indices]
         test_X,  test_y  = X_selected.loc[test_indices], y.loc[test_indices]
         print(f"Fit number {fit_num}/{num_fits}")
@@ -208,6 +207,16 @@ def _instantiate(kwargs_dict, name_to_constructor, category):
         except KeyError:
             raise KeyError(f"There is no {category} called '{name}'.")
     return instantiations
+
+def flag_favorite_runs(runs, outdir):
+    paths = []
+    # sort the runs by their score on the first test metric
+    runs = sorted(runs, key=lambda run: run['test_metrics'][0][1])
+    for run,name in [(runs[0],'WORST'), (runs[len(runs)//2], 'MEDIAN'), (runs[-1], 'BEST')]:
+        savepath = os.path.join(outdir, run['normalizer'], run['selector'], run['model'], 'split_'+run['split'], name)
+        # touch the file
+        open(savepath, 'a').close()
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='MAterials Science Toolkit - Machine Learning')
