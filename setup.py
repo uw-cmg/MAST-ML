@@ -1,9 +1,20 @@
 ########################################################################
 # This is the setup script for the MAterials Simulation Toolkit
 #   machine-learning module (MASTML)
-# Maintainer: Tam Mayeshiba
-# Last updated: 2017-05-23
+# Creator: Tam Mayeshiba
+# Maintainer: Robert Max Williams
+# Last updated: 2018-06-20
+#  _________________________________
+# / No one knows where the original \
+# \ setup.py came from.             /
+#  ---------------------------------
+#         \   ^__^
+#          \  (oo)\_______
+#             (__)\       )\/\
+#                 ||----w |
+#                 ||     ||
 ########################################################################
+
 from __future__ import print_function
 from setuptools.command.install import install
 from setuptools import setup, find_packages
@@ -18,46 +29,36 @@ if sys.version_info[0] < 3:
     print('Python version >= 3 needed!')
     sys.exit(0)
 
-###Version load, adapted from http://stackoverflow.com/questions/2058802/how-can-i-get-the-version-defined-in-setup-py-setuptools-in-my-package/3619714#3619714
-PKG = "MAST"
-VERSIONFILE = os.path.join(PKG, "_version.py")
+# One of the techniques from https://packaging.python.org/guides/single-sourcing-package-version/
 verstr = "unknown"
 try:
-    verstrline = open(VERSIONFILE, "rt").read()
+    verstr = open("VERSION", "rt").read().strip()
 except EnvironmentError:
     pass # Okay, there is no version file.
-else:
-    VSRE = r"^__version__ = ['\"]([^'\"]*)['\"]"
-    mo = re.search(VSRE, verstrline, re.M)
-    if mo:
-        verstr = mo.group(1)
-    else:
-        print('unable to find version in %s' % (VERSIONFILE,))
-        raise RuntimeError("if %s.py exists, it is required to be well-formed" % (VERSIONFILE,))
 
 setup(
-        name="MASTML",
-        packages=find_packages(),
-        version=verstr,
-        install_requires=["numpy>=1.11.2", 
-                "scipy>=0.18.1", 
-                "pandas>=0.19.2",
-                "matplotlib>=1.5.3",
-                "configobj>=5.0.6",
-                "scikit-learn>=0.18.1",
-                "pymongo>=3.4.0",
-                "pymatgen==2017.9.23",
-                "PeakUtils>=1.0.3",
-                "citrination-client==2.1.0",
-                "mlxtend",
-                ],
-        author="MAST Development Team, University of Wisconsin-Madison Computational Materials Group",
-        author_email="ddmorgan@wisc.edu",
-        url="",
-        license="Private",
-        description="MAterials Simulation Toolkit - Machine Learning",
-        long_description="MAterials Simulation Toolkit for Machine Learning (MASTML)",
-        keywords=["MAST","materials","simulation","MASTML","machine learning"],
+    name="mastml", # TODO  should this be MAST-ML?
+    packages=find_packages(),
+    version=verstr,
+    install_requires=[
+        "numpy>=1.11.2",
+        "scipy>=0.18.1",
+        "pandas>=0.19.2",
+        "matplotlib>=1.5.3",
+        "configobj>=5.0.6",
+        "scikit-learn>=0.18.1",
+        "dominate"
+        "pymatgen",
+        "citrination-client",
+        "mlxtend",
+        ],
+    author="MAST Development Team, University of Wisconsin-Madison Computational Materials Group",
+    author_email="ddmorgan@wisc.edu",
+    url="https://github.com/uw-cmg/MAST-ML",
+    license="MIT",
+    description="MAterials Simulation Toolkit - Machine Learning",
+    long_description="MAterials Simulation Toolkit for Machine Learning (MASTML)",
+    keywords=["MAST","materials","simulation","MASTML","machine learning"],
 )
 
 

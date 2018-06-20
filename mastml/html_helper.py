@@ -52,7 +52,6 @@ def show_data(split_dir, outdir):
     test_images = list()
     for root, _, files in os.walk(split_dir):
         for f in files:
-            print(f)
             if is_train_image(f):
                 train_images.append(join(root, f))
             elif is_test_image(f):
@@ -81,9 +80,9 @@ def simple_section(filepath, outdir):
     path = os.path.normpath(relpath(filepath, outdir))
     paths = path.split(os.sep)
     title = " - ".join(paths)
-    
+
     h4(title)
-    
+
     link(relpath(filepath, outdir))
 
 
@@ -101,10 +100,18 @@ def make_html(outdir):
         # create a section with info on each run
         for root, dirs, files in os.walk(outdir):
             for d in dirs:
+                # show all of the split_0 directories as images and stats
                 if 'split_' in os.path.basename(d):
                     show_data(join(root, d), outdir)
 
+                # show best worst and median
+                for fname in os.listdir(join(root, d)):
+                    if fname in  ['BEST', 'MEDIAN', 'WORST']:
+                        h1(fname)
+                        show_data(root, outdir)
+
             for f in files:
+                # extract links to important csvs and conf
                 if os.path.splitext(f)[1] == '.csv' and f not in ['train.csv', 'test.csv']:
                     simple_section(join(root, f), outdir)
                 if os.path.splitext(f)[1] == '.conf':

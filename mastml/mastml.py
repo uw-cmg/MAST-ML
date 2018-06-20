@@ -23,7 +23,7 @@ utils.TeeErr('errors.txt', 'w')
 
 def mastml_run(conf_path, data_path, outdir):
     " Runs operations specifed in conf_path on data_path and puts results in outdir "
-    
+
     # Check conf path:
     if os.path.splitext(conf_path)[1] != '.conf':
         raise Exception(f"Conf file does not end in .conf: '{conf_path}'")
