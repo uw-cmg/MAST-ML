@@ -5,6 +5,9 @@ from sklearn.model_selection import GroupKFold, GroupShuffleSplit, KFold, LeaveO
 # List of sklearn splitter classes:
 # http://scikit-learn.org/stable/modules/classes.html#module-sklearn.model_selection
 
+# TODO: leave out percent cv
+# TODO: repeated leave out percent cv
+
 class SplittersUnion(BaseEstimator, TransformerMixin):
     " Takes a list of splitters and creates a splitter which is their union "
     def __init__(self, splitters):
