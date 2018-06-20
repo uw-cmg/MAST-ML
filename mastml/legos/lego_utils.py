@@ -15,4 +15,8 @@ def dataframify(transform):
             return pd.DataFrame(arr, columns=df.columns, index=df.index)
         except ValueError:
             return pd.DataFrame(arr, index=df.index)
+        except AssertionError:
+            print('owwie')
+            import pdb
+            pdb.set_trace()
     return new_transform

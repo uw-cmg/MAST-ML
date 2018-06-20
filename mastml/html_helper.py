@@ -38,11 +38,11 @@ debug.txt
 
 def is_train_image(path):
     basename = os.path.basename(path)
-    return os.path.splitext(basename)[1] == 'png' and 'train_' in basename
+    return os.path.splitext(basename)[1] == '.png' and 'train_' in basename
 
 def is_test_image(path):
     basename = os.path.basename(path)
-    return os.path.splitext(basename)[1] == 'png' and 'test_' in basename
+    return os.path.splitext(basename)[1] == '.png' and 'test_' in basename
 
 def show_data(split_dir, outdir):
 
@@ -50,14 +50,13 @@ def show_data(split_dir, outdir):
     links = list()
     train_images = list()
     test_images = list()
-    for root, _, files in os.walk(split_dir):
-        for f in files:
-            if is_train_image(f):
-                train_images.append(join(root, f))
-            elif is_test_image(f):
-                test_images.append(join(root, f))
-            else:
-                links.append(join(root, f))
+    for f in os.listdir(split_dir):
+        if is_train_image(f):
+            train_images.append(join(split_dir, f))
+        elif is_test_image(f):
+            test_images.append(join(split_dir, f))
+        else:
+            links.append(join(split_dir, f))
 
     # come up with a good section title
     path = os.path.normpath(relpath(split_dir, outdir))
@@ -81,9 +80,11 @@ def simple_section(filepath, outdir):
     paths = path.split(os.sep)
     title = " - ".join(paths)
 
-    h4(title)
+    a(b(title))
 
     link(relpath(filepath, outdir))
+
+    br()
 
 
 def make_html(outdir):
@@ -96,29 +97,53 @@ def make_html(outdir):
         # link to error log
         #if errors_present:
         #    p('You have errors! check ', link(error_log))
+        favorites = dict()
+        graph_sections = list()
+        link_sections = list()
 
         # create a section with info on each run
         for root, dirs, files in os.walk(outdir):
             for d in dirs:
                 # show all of the split_0 directories as images and stats
                 if 'split_' in os.path.basename(d):
-                    show_data(join(root, d), outdir)
-
-                # show best worst and median
-                for fname in os.listdir(join(root, d)):
-                    if fname in  ['BEST', 'MEDIAN', 'WORST']:
-                        h1(fname)
-                        show_data(root, outdir)
+                    graph_sections.append(join(root, d))
+                    #show_data(join(root, d), outdir)
 
             for f in files:
                 # extract links to important csvs and conf
-                if os.path.splitext(f)[1] == '.csv' and f not in ['train.csv', 'test.csv']:
-                    simple_section(join(root, f), outdir)
-                if os.path.splitext(f)[1] == '.conf':
-                    simple_section(join(root, f), outdir)
+                if (os.path.splitext(f)[1] == '.csv' and f not in ['train.csv', 'test.csv']) or\
+                        os.path.splitext(f)[1] == '.conf':
+                    link_sections.append(join(root, f))
+                    #simple_section(join(root, f), outdir)
+
+            for d in dirs:
+                # show best worst and median
+                for fname in os.listdir(join(root, d)):
+                    if fname in ['BEST', 'MEDIAN', 'WORST']:
+                        favorites[fname] = join(root, d)
+                        #h1(fname)
+                        #show_data(root, outdir)
+
+        h1('Favorites')
+        for name, path in favorites.items():
+            h2(name)
+            show_data(path, outdir)
+            br()
+
+        h1('Files')
+        for path in link_sections:
+            simple_section(path, outdir)
+
+        h1('Other Graphs')
+        for path in graph_sections:
+            show_data(path, outdir)
+
+
 
     with open(join(outdir, 'index.html'), 'w') as f:
         f.write(doc.render())
+
+    print('wrote ', join(outdir, 'index.html'))
 
 def link_p(href):
     """ Makes it slightly shorter to link files with their names"""

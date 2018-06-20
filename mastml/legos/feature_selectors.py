@@ -20,4 +20,5 @@ name_to_constructor = {
 
 # TODO: this is a problem:
 for constructor in name_to_constructor.values():
+    constructor.old_transform = constructor.transform
     constructor.transform = lego_utils.dataframify(constructor.transform)

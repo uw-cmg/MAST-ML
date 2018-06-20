@@ -16,28 +16,48 @@ class PolynomialFeatures(BaseEstimator, TransformerMixin):
         array = df[self.features].values
         return pd.DataFrame(self.SPF.transform(array))
 
-name_to_constructor = {
-    'DoNothing': DoNothing,
-    'PolynomialFeatures': PolynomialFeatures,
-}
-
 # TODO: implement API feature generation!!
 
-class Magpie():
+class Magpie(BaseEstimator, TransformerMixin):
 
-    def __init__(self, api_key, composition_feature):
-        self.api_key = api_key
+    def __init__(self, composition_feature):
         self.composition_feature = composition_feature
         
-    def fit(self, df):
+    def fit(self, df, y=None):
+        self.original_features = df.columns
         return self
     
     def transform(self, df):
         mfg = MagpieFeatureGeneration(df, self.composition_feature)
         df = mfg.generate_magpie_features()
+        df = df.drop(self.original_features, axis=1)
+
+        # delete missing values, generation makes a lot of garbage.
+        df = df.select_dtypes(['number']).dropna(axis=1)
+
+        assert self.composition_feature not in df.columns
         return df
 
 
+class PassThrough(BaseEstimator, TransformerMixin):
+
+    def __init__(self, features):
+        self.features = features
+        
+    def fit(self, df, y=None):
+        return self
+    
+    def transform(self, df):
+        df = df[self.features]
+        return df
+
+
+name_to_constructor = {
+    'DoNothing': DoNothing,
+    'PolynomialFeatures': PolynomialFeatures,
+    'Magpie':Magpie,
+    'PassThrough':PassThrough
+}
 
 
 import logging
@@ -162,12 +182,12 @@ class MagpieFeatureGeneration(object): #TODO update docs once tests are passing
         for magpiedata_dict in magpiedata_dict_list:
             dataframe_magpie = pd.DataFrame.from_dict(data=magpiedata_dict, orient='index')
             # Need to reorder compositions in new dataframe to match input dataframe
-            dataframe_magpie = dataframe_magpie.reindex(self.dataframe[comp_column_name].tolist())
+            dataframe_magpie = dataframe_magpie.reindex(self.dataframe[self.composition_feature].tolist())
             # Need to make compositions the first column, instead of the row names
-            dataframe_magpie.index.name = comp_column_name
+            dataframe_magpie.index.name = self.composition_feature
             dataframe_magpie.reset_index(inplace=True)
             # Need to delete duplicate column before merging dataframes
-            del dataframe_magpie[comp_column_name]
+            del dataframe_magpie[self.composition_feature]
             # Merge magpie feature dataframe with originally supplied dataframe
             dataframe = DataframeUtilities().merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_magpie)
 

@@ -1,5 +1,9 @@
 from configobj import ConfigObj
 from distutils.util import strtobool
+
+ # TODO don't do this. Keep conf dict sacred. Only primitives and lists. This is bad.
+from sklearn.feature_selection import f_regression, f_classif
+
 from . import metrics
 from .legos.model_finder import check_models_mixed
 
@@ -70,6 +74,17 @@ def parse_conf_file(filepath):
         # TODO Grouping is not a real section, figure out how that would really work
         #if 'grouping_feature' in conf['Grouping']:
         #    conf['GeneralSetup']['grouping_feature'] = conf['Grouping']['grouping_feature']
+
+
+
+
+        # TODO make a generic wrapper or indiviudla wrapper classes for these to import and use the
+        # string for the score func
+        if 'SelectPercentile' in conf['FeatureSelection']:
+            conf['FeatureSelection']['SelectPercentile']['score_func'] = f_classif if conf['is_classification'] else f_regression
+
+
+
 
         return conf
 

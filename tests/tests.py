@@ -20,6 +20,10 @@ class SmokeTests(unittest.TestCase):
     def test_regression(self):
         mastml.mastml_run('tests/conf/regression.conf', 'tests/csv/boston_housing.csv', 'results/regression')
 
+    def test_generation(self):
+        mastml.mastml_run('tests/conf/feature-gen.conf', 'tests/csv/feature-gen.csv',
+                'results/generation')
+
 class TestPlots(unittest.TestCase):
     """ don't mind the mismatched naming conventions for [true actual y_true] and [pred prediction
     y_pred] """
@@ -57,6 +61,7 @@ class TestHtml(unittest.TestCase):
     def test_image_list(self):
         #imgs = ['cf.png', 'rh.png', 'pred-vs-true.png']
         #html_helper.make_html(imgs, 'tests/csv/three_clusters.csv', 'tests/conf/fullrun.conf', 'oop.txt', './')
+        html_helper.make_html('results/generation')
         html_helper.make_html('results/classification')
         html_helper.make_html('results/regression')
 
