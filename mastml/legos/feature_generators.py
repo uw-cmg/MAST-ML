@@ -2,6 +2,9 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import PolynomialFeatures as SklearnPolynomialFeatures
 from .util_legos import DoNothing
 
+# path to directory containing AtomicNumber.table, AtomicRadii.table AtomicVolume.table, etc
+MAGPIE_DATA_PATH = #"/Users/lhm/Documents/magpie/"
+
 class PolynomialFeatures(BaseEstimator, TransformerMixin):
     def __init__(self, features=None, degree=2, interaction_only=False, include_bias=True):
         self.features = features
@@ -60,7 +63,6 @@ name_to_constructor = {
 }
 
 
-import logging
 import os
 import sys
 import warnings
@@ -133,7 +135,7 @@ class MagpieFeatureGeneration(object): #TODO update docs once tests are passing
                 composition_components.append(self.dataframe[column].tolist())
 
         if len(composition_components) < 1:
-            logging.info('Error! No column named "Material compositions" found in your input data file. To use this feature generation routine, you must supply a material composition for each data point')
+            print('Error! No column named "Material compositions" found in your input data file. To use this feature generation routine, you must supply a material composition for each data point')
             raise KeyError('No column named "MaterialCompositions" in data file.')
 
         row = 0
@@ -154,10 +156,9 @@ class MagpieFeatureGeneration(object): #TODO update docs once tests are passing
         magpiedata_dict_min = {}
         magpiedata_dict_difference = {}
         magpiedata_dict_atomic_bysite = {}
-        data_path = self._find_mastml_install()
         for composition in compositions:
-            magpiedata_composition_average, magpiedata_arithmetic_average, magpiedata_max, magpiedata_min, magpiedata_difference = self._get_computed_magpie_features(composition=composition, data_path=data_path)
-            magpiedata_atomic_notparsed = self._get_atomic_magpie_features(composition=composition, data_path=data_path)
+            magpiedata_composition_average, magpiedata_arithmetic_average, magpiedata_max, magpiedata_min, magpiedata_difference = self._get_computed_magpie_features(composition=composition, data_path=MAGPIE_DATA_PATH)
+            magpiedata_atomic_notparsed = self._get_atomic_magpie_features(composition=composition, data_path=MAGPIE_DATA_PATH)
 
             magpiedata_dict_composition_average[composition] = magpiedata_composition_average
             magpiedata_dict_arithmetic_average[composition] = magpiedata_arithmetic_average
@@ -192,23 +193,6 @@ class MagpieFeatureGeneration(object): #TODO update docs once tests are passing
             dataframe = DataframeUtilities().merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_magpie)
 
         return dataframe
-
-    def _find_mastml_install(self):
-        basepath = '/'+os.getcwd().split('/')[1]+'/'
-        for folder, subfolders, file in os.walk(basepath):
-            if ("MASTML" in subfolders or "MAST-ML" in subfolders):
-                for subfolder in subfolders:
-                    if ("MASTML" in subfolder or "MAST-ML" in subfolder):
-                        path = folder + '/' + subfolder
-                        if os.path.exists(path + '/' + 'MASTML_config_files/magpiedata/magpie_elementdata'):
-                            data_path = path + '/' + 'MASTML_config_files/magpiedata/magpie_elementdata'
-                            break
-        try:
-            data_path
-        except NameError as e:
-            logging.info('Error: Could not find elemental property database files. Please check that the files exist under your MASTML installation directory')
-            raise e
-        return data_path
 
     def _get_computed_magpie_features(self, composition, data_path):
         magpiedata_composition_average = {}
@@ -445,12 +429,12 @@ class CitrineFeatureGeneration(object):
         self.composition_feature = composition_feature
 
     def generate_citrine_features(self):
-        logging.info('WARNING: You have specified generation of features from Citrine. Based on which materials you are'
+        print('WARNING: You have specified generation of features from Citrine. Based on which materials you are'
                      'interested in, there may be many records to parse through, thus this routine may take a long time to complete!')
         try:
             compositions = self.dataframe[self.composition_feature].tolist()
         except KeyError as e:
-            logging.info('Error! No column named "Material compositions" found in your input data file. To use this feature generation routine, you must supply a material composition for each data point')
+            print('Error! No column named "Material compositions" found in your input data file. To use this feature generation routine, you must supply a material composition for each data point')
             raise e
         citrine_dict_property_min = dict()
         citrine_dict_property_max = dict()
