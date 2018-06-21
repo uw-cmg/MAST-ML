@@ -10,6 +10,34 @@ from matplotlib.figure import Figure, figaspect
 from matplotlib.ticker import MaxNLocator
 
 
+def plot_stats(fig, stats: dict):
+    """ print stats onto the image. Goes off screen if they are too long or too many in number """
+    text_height = 0.08
+    for bad_i, (name, val) in enumerate(stats):
+        i = bad_i * 2
+        i2 = bad_i * 2 + 1
+        # print name at i
+        y_pos = 1 - (text_height * i + 0.1)
+        fig.text(0.7, y_pos, f'{name}:')
+        # print value at i2
+        y_pos = 1 - (text_height * i2 + 0.1)
+        fig.text(0.7, y_pos, f'  {val}')
+
+
+def make_fig_ax():
+    """# using OO interface from https://matplotlib.org/gallery/api/agg_oo_sgskip.html"""
+    # set image aspect ratio. Needs to be wide enough or plot will shrink really skinny
+    w, h = figaspect(0.7)
+    fig = Figure(figsize=(w,h))
+    FigureCanvas(fig)
+
+    # these two lines are where the magic happens, trapping the figure on the left side
+    # so we can make print text beside it
+    gs = plt.GridSpec(2, 3)
+    ax = fig.add_subplot(gs[0:2, 0:2], aspect='equal')
+
+    return fig, ax
+
 def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False, title='Confusion matrix',
         cmap=plt.cm.Blues):
     """
@@ -21,17 +49,7 @@ def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False, titl
     cm = confusion_matrix(y_true, y_pred)
     classes = sorted(list(set(y_true).intersection(set(y_pred))))
 
-    # initializae fig
-    # set image aspect ratio. Needs to be wide enough or plot will shrink really skinny
-    w, h = figaspect(0.7)
-    fig = Figure(figsize=(w,h))
-    FigureCanvas(fig)
-
-    # these two lines are where the magic happens, trapping the figure on the left side
-    # so we can make print text beside it
-    gs = plt.GridSpec(2, 3)
-    ax = fig.add_subplot(gs[0:2, 0:2], aspect='equal')
-    FigureCanvas(fig)
+    fig, ax = make_fig_ax()
 
     ax.set_title(title)
 
@@ -56,28 +74,17 @@ def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False, titl
                  color="white" if cm[i, j] > thresh else "black")
 
 
-    # print stats onto the image. Goes off screen if they are too long or too many in number
-    text_height = 0.08
-    for i, (name, val) in enumerate(stats):
-        y_pos = 1 - (text_height * i + 0.1)
-        fig.text(0.7, y_pos, f'{name}: {val}')
+    # plots the stats
+    plot_stats(fig, stats)
 
     #plt.tight_layout()
     ax.set_ylabel('True label')
     ax.set_xlabel('Predicted label')
     fig.savefig(savepath)
 
-# using OO interface from https://matplotlib.org/gallery/api/agg_oo_sgskip.html
 def plot_predicted_vs_true(y_true, y_pred, savepath, stats, title='predicted vs true'):
-    # set image aspect ratio. Needs to be wide enough or plot will shrink really skinny
-    w, h = figaspect(0.7)
-    fig = Figure(figsize=(w,h))
-    FigureCanvas(fig)
 
-    # these two lines are where the magic happens, trapping the figure on the left side
-    # so we can make print text beside it
-    gs = plt.GridSpec(2, 3)
-    ax = fig.add_subplot(gs[0:2, 0:2], aspect='equal')
+    fig, ax = make_fig_ax()
 
     ax.set_title(title)
 
@@ -89,28 +96,32 @@ def plot_predicted_vs_true(y_true, y_pred, savepath, stats, title='predicted vs 
     ax.set_xlabel('Measured')
     ax.set_ylabel('Predicted')
 
-    # print stats onto the image. Goes off screen if they are too long or too many in number
-    text_height = 0.08
-    for i, (name, val) in enumerate(stats):
-        y_pos = 1 - (text_height * i + 0.1)
-        fig.text(0.7, y_pos, f'{name}: {val}')
+    plot_stats(fig, stats)
 
+    fig.savefig(savepath)
+
+def plot_best_worst(y_true, y_pred_best, y_pred_worst, savepath, stats, title='Best Worst Overlay'):
+
+    fig, ax = make_fig_ax()
+
+    ax.set_title(title)
+
+    # do the actual plotting
+    ax.scatter(y_true, y_pred_best, edgecolors=(0, 0, 0))
+    ax.scatter(y_true, y_pred_worst, edgecolors=(1, 0, 0))
+    ax.plot([y_true.min(), y_true.max()], [y_true.min(), y_true.max()], 'k--', lw=4)
+
+    # set axis labels
+    ax.set_xlabel('Measured')
+    ax.set_ylabel('Predicted')
+
+    plot_stats(fig, stats)
 
     fig.savefig(savepath)
 
 def plot_residuals_histogram(y_true, y_pred, savepath, stats, title='residuals histogram'):
 
-    # make the aspect ration wide for text next to square-ish graph
-    w, h = figaspect(0.7)
-
-    fig = Figure(figsize=(w,h))
-    FigureCanvas(fig)
-
-    # these two lines are where the magic happens, trapping the figure on the left side
-    # so we can make print text beside it
-    gs = plt.GridSpec(2, 3)
-    ax = fig.add_subplot(gs[0:2, 0:2], aspect='equal')
-
+    fig, ax = make_fig_ax()
 
     ax.set_title(title)
     # do the actual plotting
@@ -127,10 +138,6 @@ def plot_residuals_histogram(y_true, y_pred, savepath, stats, title='residuals h
     # shrink those margins
     fig.tight_layout()
 
-    # print stats onto the image. Goes off screen if they are too long or too many in number
-    text_height = 0.08
-    for i, (name, val) in enumerate(stats):
-        y_pos = 1 - (text_height * i + 0.1)
-        fig.text(0.7, y_pos, f'{name}: {val}')
+    plot_stats(fig, stats)
 
     fig.savefig(savepath)
