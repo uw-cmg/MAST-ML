@@ -9,8 +9,6 @@ from mastml import mastml
 from mastml import plot_helper, html_helper
 from matplotlib.ticker import MaxNLocator
 
-
-
 class SmokeTests(unittest.TestCase):
 
     def test_classification(self):
@@ -28,33 +26,44 @@ class TestPlots(unittest.TestCase):
     """ don't mind the mismatched naming conventions for [true actual y_true] and [pred prediction
     y_pred] """
 
-    def test_plot_predicted_vs_true(self):
-        predicted = np.arange(30) + np.random.random_sample((30,)) * 10 - 3
-        actual = np.arange(30)
-        stats = {'foo': 500000, 'bar': 123.4566, 'baz': 'impossoble', 'rosco': 123e-500}
+    def setUp(self):
+        self.stats = [
+                ('foo', 500000),
+                ('bar', 123.45660923904908),
+                ('baz', 'impossoble'),
+                ('rosco', 123e-500),
+                ('math', r"My long label with unescaped {\LaTeX} $\Sigma_{C}$ math" "\n"
+                    r"continues here with $\pi$"),
+                ]
 
-        plot_helper.plot_predicted_vs_true(actual, predicted, 'pred-vs-true.png', stats)
+    def test_plot_predicted_vs_true(self):
+        y_pred = 100 * (np.arange(30) + np.random.random_sample((30,)) * 10 - 3) + 0.5
+        y_true = np.arange(30)
+
+        plot_helper.plot_predicted_vs_true(y_true, y_pred, 'pred-vs-true.png', self.stats)
 
     def test_residuals_histogram(self):
-        predicted = np.arange(30) + sum(np.random.random_sample((30,)) for _ in range(10)) - 3
-        actual = np.arange(30)
-        stats = {'foo': 500000, 'bar': 123.4566, 'baz': 'impossoble', 'rosco': 123e-500}
-
-        plot_helper.plot_residuals_histogram(actual, predicted, 'rh.png', stats)
+        y_pred = np.arange(30) + sum(np.random.random_sample((30,)) for _ in range(10)) - 3
+        y_true = np.arange(30)
+        plot_helper.plot_residuals_histogram(y_true, y_pred, 'residuals.png', self.stats)
 
     def test_confusion_matrix(self):
-        true = np.random.randint(4, size=(50,))
-        pred = true.copy()
+        y_true = np.random.randint(4, size=(50,))
+        y_pred = y_true.copy()
         slices = [not bool(x) for x in np.random.randint(3, size=50)]
-        pred[slices] = [random.randint(1, 3) for s in slices if s]
+        y_pred[slices] = [random.randint(1, 3) for s in slices if s]
 
         names = ['a', 'b', 'c', 'f']
-        pred = np.array([names[x] for x in pred] + ['a', 'a', 'a'])
-        true = np.array([names[x] for x in true] + ['b', 'b', 'b'])
+        y_pred = np.array([names[x] for x in y_pred] + ['a', 'a', 'a'])
+        y_true = np.array([names[x] for x in y_true] + ['b', 'b', 'b'])
 
-        stats = {'foo': 500000, 'bar': 123.4566, 'baz': 'impossoble', 'rosco': 123e-500}
+        plot_helper.plot_confusion_matrix(y_true, y_pred, 'confuse.png', self.stats)
 
-        plot_helper.plot_confusion_matrix(true, pred, 'cf.png', stats)
+    def test_best_worst(self):
+        y_true = np.arange(30)
+        y_pred = np.arange(30) + sum(np.random.random_sample((30,)) for _ in range(10)) - 3
+        y_pred_bad = 0.2*np.arange(30) + 3*sum(np.random.random_sample((30,)) for _ in range(10)) - 3
+        plot_helper.plot_best_worst(y_true, y_pred, y_pred_bad, 'best-worst.png', self.stats)
 
 class TestHtml(unittest.TestCase):
 
