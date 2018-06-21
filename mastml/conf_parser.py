@@ -52,6 +52,9 @@ def parse_conf_file(filepath):
 
         ## Assign default values to unspecified or 'Auto' options: ##
 
+        if conf['DataSplits'] == {}:
+            conf['DataSplits']['NoSplit'] = {}
+
         for name in feature_sections:
             if name not in conf or conf[name] == dict():
                 conf[name] = {'DoNothing': {}}
