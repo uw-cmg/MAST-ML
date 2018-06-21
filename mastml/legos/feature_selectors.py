@@ -29,12 +29,13 @@ name_to_constructor = {
     'SelectFdr': SelectFdr,
     'SelectFwe': SelectFwe,
     'VarianceThreshold': VarianceThreshold,
-    'DoNothing': util_legos.DoNothing,
-
-    'PassThrough': PassThrough,
 }
 
-# TODO: this is a problem:
+# Modify all sklearn transform methods to return dataframes:
 for constructor in name_to_constructor.values():
     constructor.old_transform = constructor.transform
-    constructor.transform = lego_utils.dataframify(constructor.transform)
+    constructor.transform = lego_utils.dataframify_selector(constructor.transform)
+
+# Custom selectors don't need to be dataframified
+name_to_constructor['PassThrough'] = PassThrough
+name_to_constructor['DoNothing'] = util_legos.DoNothing
