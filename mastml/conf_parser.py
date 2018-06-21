@@ -12,15 +12,15 @@ def parse_conf_file(filepath):
 
         conf = ConfigObj(filepath)
 
-        required_sections = ['GeneralSetup', 'DataSplits', 'Models']
+        main_sections = ['GeneralSetup', 'DataSplits', 'Models']
         feature_sections = ['FeatureNormalization', 'FeatureGeneration', 'FeatureSelection']
         feature_section_dicts = [conf[name] for name in feature_sections if name in conf]
-        all_sections = required_sections + feature_sections
+        all_sections = main_sections + feature_sections
 
         # Are all required sections present in the file?
-        for name in required_sections:
+        for name in main_sections:
             if name not in conf:
-                raise Exception(f"Missing required section: [{name}]")
+                conf[name] = dict()
 
         # Are there any invalid sections?
         for section_name in conf:

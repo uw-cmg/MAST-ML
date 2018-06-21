@@ -38,8 +38,7 @@ def mastml_run(conf_path, data_path, outdir):
 
     # Check output directory:
     if os.path.exists(outdir):
-        print("Output dir already exists. Press enter to delete it or ctrl-c to cancel.")
-        #input()
+        print("Output dir already exists. Deleting...")
         shutil.rmtree(outdir)
     os.makedirs(outdir)
     print(f"Saving to directory 'outdir'")
@@ -93,23 +92,31 @@ def _do_fits(X, y, generators, normalizers, selectors, models, splitters, metric
 
     generators_union = util_legos.DataFrameFeatureUnion(generators)
     splits = [pair for splitter in splitters for pair in splitter.split(X,y)]
+    print(f"There are {len(normalizers)} normalizers, {len(selectors)} feature selectors,"
+          f" {len(models)} total models, and {len(splits)} total splits.")
 
-    print("Doing feature generation & normalization & selection...")
+    print("Doing feature generation...")
     X_generated = generators_union.fit_transform(X, y)
-    X_generated.to_csv(ospj(outdir, "data_generated.csv"))
+    print("First three rows of generated data:")
+    print(X_generated.head(3))
+    print("Saving generated data to csv...")
+    X_generated.to_csv(ospj(outdir, "data_generated.csv"), index=False)
     Xs_selected = []
     for normalizer in normalizers:
+        print("Running normalizer", normalizer.__class__.__name__)
         dirname = ospj(outdir, normalizer.__class__.__name__)
         os.mkdir(dirname)
         X_normalized = normalizer.fit_transform(X_generated, y)
-        X_normalized.to_csv(ospj(dirname, "normalized.csv"))
-
+        X_normalized.to_csv(ospj(dirname, "normalized.csv"), index=False)
+        print("Done normalizing")
+        print("Running selectors...")
         for selector in selectors:
             dirname = ospj(outdir, normalizer.__class__.__name__, selector.__class__.__name__)
             os.mkdir(dirname)
             X_selected = selector.fit_transform(X_normalized, y)
-            X_selected.to_csv(ospj(dirname, "selected.csv"))
+            X_selected.to_csv(ospj(dirname, "selected.csv"), index=False)
             Xs_selected.append((normalizer, selector, X_selected))
+            print("    selector", selector.__class__.__name__, "done.")
 
     print("Fitting models to datas...")
     num_fits = len(normalizers) * len(selectors) * len(models) * len(splits)
@@ -126,8 +133,10 @@ def _do_fits(X, y, generators, normalizers, selectors, models, splitters, metric
         joblib.dump(model, ospj(path, "trained_model.pkl"))
         train_pred = model.predict(train_X)
         test_pred  = model.predict(test_X)
-        pd.concat([train_X, train_y, pd.DataFrame(train_pred,columns=['train_pred'])], axis=1).to_csv(ospj(path, 'train.csv'))
-        pd.concat([test_X, test_y, pd.DataFrame(test_pred,columns=['test_pred'])], axis=1).to_csv(ospj(path, 'test.csv'))
+        pd.concat([train_X, train_y, pd.DataFrame(train_pred,columns=['train_pred'])], axis=1)\
+                .to_csv(ospj(path, 'train.csv'), index=False)
+        pd.concat([test_X, test_y, pd.DataFrame(test_pred,columns=['test_pred'])], axis=1)\
+                .to_csv(ospj(path, 'test.csv'), index=False)
         run = collections.OrderedDict( # The ordered dict ensures column order in saved html
             split=str(split_num),
             normalizer=normalizer.__class__.__name__,
@@ -209,6 +218,8 @@ def _instantiate(kwargs_dict, name_to_constructor, category):
     return instantiations
 
 def flag_favorite_runs(runs, outdir):
+    if not runs: # there are no model fits
+        return
     paths = []
     # sort the runs by their score on the first test metric
     runs = sorted(runs, key=lambda run: run['test_metrics'][0][1])

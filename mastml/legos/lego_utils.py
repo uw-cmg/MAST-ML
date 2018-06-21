@@ -7,16 +7,24 @@ from functools import wraps
 import pandas as pd
 
 def dataframify(transform):
-    " Decorator to make a transformer's transform method work on dataframes. "
+    """
+    Decorator to make a transformer's transform method work on dataframes
+    Assumes columns will be preserved
+    """
     @wraps(transform)
     def new_transform(self, df):
         arr = transform(self, df.values)
-        try:
-            return pd.DataFrame(arr, columns=df.columns, index=df.index)
-        except ValueError:
-            return pd.DataFrame(arr, index=df.index)
-        except AssertionError:
-            print('owwie')
-            import pdb
-            pdb.set_trace()
+        return pd.DataFrame(arr, columns=df.columns, index=df.index)
     return new_transform
+
+def dataframify_selector(transform):
+    " Special dataframify which preserves column names for feature selectors "
+    @wraps(transform)
+    def new_transform(self, df):
+        return df[df.columns[self.get_support(indices=True)]]
+    return new_transform
+
+def variance_threshold_selector(data, threshold=0.5):
+    selector = VarianceThreshold(threshold)
+    selector.fit(data)
+    return data[data.columns[selector.get_support(indices=True)]]

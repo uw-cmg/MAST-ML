@@ -18,9 +18,9 @@ class SplittersUnion(BaseEstimator, TransformerMixin):
         for splitter in self.splitters:
             yield from splitter.split(X, y, groups)
 
-class NoSplit(BaseEstimator, TransformerMixin): 
+class NoSplit(BaseEstimator, TransformerMixin):
     " Just train the model on the training data and test it on that same data "
-    def __init__(self, number_of_splits_to_not_split=0):
+    def __init__(self):
         pass
 
     def get_n_splits(self, X=None, y=None, groups=None):
