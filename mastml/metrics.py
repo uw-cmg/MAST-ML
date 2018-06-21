@@ -3,8 +3,16 @@ from sklearn.metrics import accuracy_score, classification_report, confusion_mat
 # Regression metrics:
 from sklearn.metrics import explained_variance_score, mean_absolute_error, mean_squared_error, mean_squared_log_error, median_absolute_error, r2_score
 
+from sklearn.linear_model import LinearRegression
+
 # All metrics:
 # http://scikit-learn.org/stable/modules/classes.html#module-sklearn.metrics
+
+def r2_score_noint(y_true, y_pred):
+    " Get the R^2 coefficient without intercept "
+    lr = LinearRegression(fit_intercept=False)
+    lr.fit(y_true, y_pred)
+    return lr.score(y_true, y_pred)
 
 
 classification_metrics = {
@@ -29,9 +37,11 @@ regression_metrics = {
     'explained_variance_score': explained_variance_score,  #Explained variance regression score function
     'mean_absolute_error': mean_absolute_error,  #Mean absolute error regression loss
     'mean_squared_error': mean_squared_error,  #Mean squared error regression loss
+    'root_mean_squared_error': lambda y_true, y_pred: mean_squared_error(y_true,y_pred)**0.5,
     'mean_squared_log_error': mean_squared_log_error,  #Mean squared logarithmic error regression loss
     'median_absolute_error': median_absolute_error,  #Median absolute error regression loss
     'r2_score': r2_score,  #R^2 (coefficient of determination) regression score function.
+    'r2_score_noint': r2_score_noint,
 }
 
 def check_names(metric_names, is_classification):
