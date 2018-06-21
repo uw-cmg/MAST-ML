@@ -217,6 +217,8 @@ def _instantiate(kwargs_dict, name_to_constructor, category):
     return instantiations
 
 def flag_favorite_runs(runs, outdir):
+    if not runs: # there are no model fits
+        return
     paths = []
     # sort the runs by their score on the first test metric
     runs = sorted(runs, key=lambda run: run['test_metrics'][0][1])
