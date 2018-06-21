@@ -1,7 +1,14 @@
+""" most of these plots take in (data, other_data, ..., savepath, stats, title='Default Title')
+Where the data args are numpy arrays, savepath is a string, 
+and stats is a list of pairs or tripletes of (name, value[, error])
+
+"""
+
 import os.path
 import itertools
 
 import numpy as np
+import matplotlib
 from matplotlib import pyplot as plt
 from sklearn.metrics import confusion_matrix
 
@@ -9,32 +16,48 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure, figaspect
 from matplotlib.ticker import MaxNLocator
 
+# set all font to bigger
+font = {'family' : 'normal',
+       #'weight' : 'bold',
+        'size'   : 18}
+matplotlib.rc('font', **font)
+matplotlib.rc('figure', autolayout=True)
 
-def plot_stats(fig, stats: dict):
+def parse_stat(data):
+    """ takes in a pair or tripple of stats and returns a string for the plot 
+    Also singleton tuples for Titles or something"""
+    if len(data) == 1:
+        return data[0]
+    if len(data) == 2:
+        name, value = data
+        return f'{name}: {value}'
+    if len(data) == 3:
+        name, value, err = data
+        return (f'{name}: \n\t{value}' + r'$\pm$' + f'{err}')
+
+    raise Exception(f'{data} must be a pair or tripplet')
+
+def plot_stats(fig, stats):
     """ print stats onto the image. Goes off screen if they are too long or too many in number """
-    text_height = 0.08
-    for bad_i, (name, val) in enumerate(stats):
-        i = bad_i * 2
-        i2 = bad_i * 2 + 1
-        # print name at i
-        y_pos = 1 - (text_height * i + 0.1)
-        fig.text(0.7, y_pos, f'{name}:')
-        # print value at i2
-        y_pos = 1 - (text_height * i2 + 0.1)
-        fig.text(0.7, y_pos, f'  {val}')
+
+    stat_str = '\n\n'.join(parse_stat(data) for data in stats)
+
+    fig.text(0.62, 0.98, stat_str,
+            verticalalignment='top', wrap=True# transform=ax.transAxes)
+            )
 
 
 def make_fig_ax(aspect='equal'):
-    """# using OO interface from https://matplotlib.org/gallery/api/agg_oo_sgskip.html"""
+    """ using OO interface from https://matplotlib.org/gallery/api/agg_oo_sgskip.html"""
     # set image aspect ratio. Needs to be wide enough or plot will shrink really skinny
-    w, h = figaspect(0.7)
+    w, h = figaspect(0.6)
     fig = Figure(figsize=(w,h))
     FigureCanvas(fig)
 
     # these two lines are where the magic happens, trapping the figure on the left side
     # so we can make print text beside it
-    gs = plt.GridSpec(2, 3)
-    ax = fig.add_subplot(gs[0:2, 0:2], aspect=aspect)
+    gs = plt.GridSpec(1, 5)
+    ax = fig.add_subplot(gs[0, 0:3], aspect=aspect)
 
     return fig, ax
 
@@ -110,14 +133,16 @@ def plot_best_worst(y_true, y_pred_best, y_pred_worst, savepath, stats, title='B
 
     ax.set_title(title)
 
-    # do the actual plotting
-    ax.scatter(y_true, y_pred_best, edgecolors=(0, 0, 0))
-    ax.scatter(y_true, y_pred_worst, edgecolors=(1, 0, 0))
-
     # make diagonal line from absolute min to absolute max of any data point
     maxx = max(y_true.max(), y_pred_best.max(), y_pred_worst.max())
     minn = min(y_true.min(), y_pred_best.min(), y_pred_worst.min())
-    ax.plot([minn, maxx], [minn, maxx], 'k--', lw=4)
+    ax.plot([minn, maxx], [minn, maxx], 'k--', lw=4, zorder=1)
+
+    # do the actual plotting
+    ax.scatter(y_true, y_pred_best, c='red', alpha=0.7, s=80, label='best', edgecolor='darkred', zorder=2)
+    ax.scatter(y_true, y_pred_worst, c='blue', alpha=0.7, label='worst', edgecolor='darkblue', zorder=3)
+    ax.legend()
+
 
     # set axis labels
     ax.set_xlabel('Measured')

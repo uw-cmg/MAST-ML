@@ -32,15 +32,23 @@ class TestPlots(unittest.TestCase):
                 ('bar', 123.45660923904908),
                 ('baz', 'impossoble'),
                 ('rosco', 123e-500),
-                ('math', r"My long label with unescaped {\LaTeX} $\Sigma_{C}$ math" "\n"
+                ('math', r"My long label with $\sqrt{2}$ $\Sigma_{C}$ math" "\n"
                     r"continues here with $\pi$"),
                 ]
 
-    def test_plot_predicted_vs_true(self):
-        y_pred = 100 * (np.arange(30) + np.random.random_sample((30,)) * 10 - 3) + 0.5
-        y_true = np.arange(30)
+        self.stats2 = [('Mean over 10 tests',),
+                 ('5-fold average RMSE', 0.27, 0.01),
+                 ('5 fold mean error', 0.00 , 0.01),
+                 ('R-squared', 0.97),
+                 ('R-squared (no int)', 0.97)]
 
-        plot_helper.plot_predicted_vs_true(y_true, y_pred, 'pred-vs-true.png', self.stats)
+    def test_plot_predicted_vs_true(self):
+        y_pred_tall = 10 * (np.arange(90) + np.random.random_sample((90,)) * 10 - 3) + 0.5
+        y_pred_fat = 0.1 * (np.arange(90) + np.random.random_sample((90,)) * 10 - 3) + 0.5
+        y_true = np.arange(90)
+
+        plot_helper.plot_predicted_vs_true(y_true, y_pred_tall, 'pred-vs-true_skinny.png', self.stats2)
+        plot_helper.plot_predicted_vs_true(y_true, y_pred_fat, 'pred-vs-true_fat.png', self.stats2)
 
     def test_residuals_histogram(self):
         y_pred = np.arange(30) + sum(np.random.random_sample((30,)) for _ in range(10)) - 3
@@ -60,10 +68,10 @@ class TestPlots(unittest.TestCase):
         plot_helper.plot_confusion_matrix(y_true, y_pred, 'confuse.png', self.stats)
 
     def test_best_worst(self):
-        y_true = np.arange(30)
-        y_pred = np.arange(30) + sum(np.random.random_sample((30,)) for _ in range(10)) - 3
-        y_pred_bad = 0.2*np.arange(30) + 3*sum(np.random.random_sample((30,)) for _ in range(10)) - 3
-        plot_helper.plot_best_worst(y_true, y_pred, y_pred_bad, 'best-worst.png', self.stats)
+        y_true = np.arange(90)
+        y_pred = np.arange(90) + 9*sum(np.random.random_sample((90,)) for _ in range(10)) - 54
+        y_pred_bad = 0.5*np.arange(90) + 20*sum(np.random.random_sample((90,)) for _ in range(10)) - 54
+        plot_helper.plot_best_worst(y_true, y_pred, y_pred_bad, 'best-worst.png', self.stats2)
 
 class TestHtml(unittest.TestCase):
 
