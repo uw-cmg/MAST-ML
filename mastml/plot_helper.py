@@ -24,7 +24,7 @@ def plot_stats(fig, stats: dict):
         fig.text(0.7, y_pos, f'  {val}')
 
 
-def make_fig_ax():
+def make_fig_ax(aspect='equal'):
     """# using OO interface from https://matplotlib.org/gallery/api/agg_oo_sgskip.html"""
     # set image aspect ratio. Needs to be wide enough or plot will shrink really skinny
     w, h = figaspect(0.7)
@@ -34,7 +34,7 @@ def make_fig_ax():
     # these two lines are where the magic happens, trapping the figure on the left side
     # so we can make print text beside it
     gs = plt.GridSpec(2, 3)
-    ax = fig.add_subplot(gs[0:2, 0:2], aspect='equal')
+    ax = fig.add_subplot(gs[0:2, 0:2], aspect=aspect)
 
     return fig, ax
 
@@ -90,6 +90,8 @@ def plot_predicted_vs_true(y_true, y_pred, savepath, stats, title='predicted vs 
 
     # do the actual plotting
     ax.scatter(y_true, y_pred, edgecolors=(0, 0, 0))
+
+    # make diagonal line from absolute min to absolute max of any data point
     maxx = max(y_true.max(), y_pred.max())
     minn = min(y_true.min(), y_pred.min())
     ax.plot([minn, maxx], [minn, maxx], 'k--', lw=4)
@@ -111,7 +113,11 @@ def plot_best_worst(y_true, y_pred_best, y_pred_worst, savepath, stats, title='B
     # do the actual plotting
     ax.scatter(y_true, y_pred_best, edgecolors=(0, 0, 0))
     ax.scatter(y_true, y_pred_worst, edgecolors=(1, 0, 0))
-    ax.plot([y_true.min(), y_true.max()], [y_true.min(), y_true.max()], 'k--', lw=4)
+
+    # make diagonal line from absolute min to absolute max of any data point
+    maxx = max(y_true.max(), y_pred_best.max(), y_pred_worst.max())
+    minn = min(y_true.min(), y_pred_best.min(), y_pred_worst.min())
+    ax.plot([minn, maxx], [minn, maxx], 'k--', lw=4)
 
     # set axis labels
     ax.set_xlabel('Measured')
@@ -123,7 +129,7 @@ def plot_best_worst(y_true, y_pred_best, y_pred_worst, savepath, stats, title='B
 
 def plot_residuals_histogram(y_true, y_pred, savepath, stats, title='residuals histogram'):
 
-    fig, ax = make_fig_ax()
+    fig, ax = make_fig_ax(aspect='auto')
 
     ax.set_title(title)
     # do the actual plotting
