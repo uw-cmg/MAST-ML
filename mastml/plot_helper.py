@@ -17,10 +17,10 @@ from matplotlib.figure import Figure, figaspect
 from matplotlib.ticker import MaxNLocator
 
 # set all font to bigger
-font = {'family' : 'normal',
-       #'weight' : 'bold',
-        'size'   : 18}
+font = {'size'   : 18}
 matplotlib.rc('font', **font)
+
+# turn on autolayout (why is it not default?)
 matplotlib.rc('figure', autolayout=True)
 
 def parse_stat(data):

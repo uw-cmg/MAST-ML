@@ -22,6 +22,67 @@ class SmokeTests(unittest.TestCase):
         mastml.mastml_run('tests/conf/feature-gen.conf', 'tests/csv/feature-gen.csv',
                 'results/generation')
 
+class TestPlotToPython(unittest.TestCase):
+    """ how to convert a call to plot to a .py file that the user can modify """
+    def test_test(self):
+        import textwrap
+        header = textwrap.dedent("""\
+            import os.path
+            import itertools
+
+            import numpy as np
+            import matplotlib
+            from matplotlib import pyplot as plt
+            from sklearn.metrics import confusion_matrix
+
+            from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+            from matplotlib.figure import Figure, figaspect
+            from matplotlib.ticker import MaxNLocator
+
+            # set all font to bigger
+            font = {'size'   : 18}
+            matplotlib.rc('font', **font)
+
+            # turn on autolayout (why is it not default?)
+            matplotlib.rc('figure', autolayout=True)
+        """)
+
+        from mastml.plot_helper import parse_stat, plot_stats, make_fig_ax, plot_predicted_vs_true
+        import nbformat
+        import inspect
+
+        core_funcs = [parse_stat, plot_stats, make_fig_ax]
+        func_strings = '\n\n'.join(inspect.getsource(func) for func in core_funcs)
+
+        plot_func = plot_predicted_vs_true
+        plot_func_string = inspect.getsource(plot_func)
+
+        csv_file = 'tests/csv/predicted_vs_measured.csv'
+        stats = [('some stats',),
+                 ('foo', 20)]
+
+
+
+        main = textwrap.dedent(f"""\
+            import pandas as pd
+            from IPython.core.display import Image as image
+
+            df = pd.read_csv('{csv_file}')
+            y_true = df['Enorm DFT (eV)'].values
+            y_pred = df['Enorm Predicted (eV)'].values
+            savepath = './foobar.png'
+            stats = {stats}
+
+            {plot_func.__name__}(y_true, y_pred, savepath, stats, title='some plot of some data')
+            image(filename='foobar.png')
+        """)
+
+        nb = nbformat.v4.new_notebook()
+        text_cells = [header, func_strings, plot_func_string, main]
+        cells = [nbformat.v4.new_code_cell(cell_text) for cell_text in text_cells]
+        nb['cells'] = cells
+        nbformat.write(nb, 'test.ipynb')
+
 class TestPlots(unittest.TestCase):
     """ don't mind the mismatched naming conventions for [true actual y_true] and [pred prediction
     y_pred] """
@@ -72,6 +133,8 @@ class TestPlots(unittest.TestCase):
         y_pred = np.arange(90) + 9*sum(np.random.random_sample((90,)) for _ in range(10)) - 54
         y_pred_bad = 0.5*np.arange(90) + 20*sum(np.random.random_sample((90,)) for _ in range(10)) - 54
         plot_helper.plot_best_worst(y_true, y_pred, y_pred_bad, 'best-worst.png', self.stats2)
+
+
 
 class TestHtml(unittest.TestCase):
 
