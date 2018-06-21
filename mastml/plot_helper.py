@@ -90,7 +90,9 @@ def plot_predicted_vs_true(y_true, y_pred, savepath, stats, title='predicted vs 
 
     # do the actual plotting
     ax.scatter(y_true, y_pred, edgecolors=(0, 0, 0))
-    ax.plot([y_true.min(), y_true.max()], [y_true.min(), y_true.max()], 'k--', lw=4)
+    maxx = max(y_true.max(), y_pred.max())
+    minn = min(y_true.min(), y_pred.min())
+    ax.plot([minn, maxx], [minn, maxx], 'k--', lw=4)
 
     # set axis labels
     ax.set_xlabel('Measured')
