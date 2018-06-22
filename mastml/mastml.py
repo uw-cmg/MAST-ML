@@ -140,9 +140,9 @@ def _do_splits(X, y, model, main_path, metrics_dict, pair_list, is_classificatio
         test_pred  = model.predict(test_X)
 
         # Save train and test data and results to csv:
-        pd.concat([train_X, train_y, pd.DataFrame(train_pred, columns=['train_pred'])], axis=1)\
+        pd.concat([train_X, train_y, pd.DataFrame(train_pred, columns=['train_pred'], index=train_indices)], axis=1)\
                 .to_csv(join(path, 'train.csv'), index=False)
-        pd.concat([test_X,  test_y,  pd.DataFrame(test_pred,  columns=['test_pred'])],  axis=1)\
+        pd.concat([test_X,  test_y,  pd.DataFrame(test_pred,  columns=['test_pred'], index=test_indices)],  axis=1)\
                 .to_csv(join(path, 'test.csv'),  index=False)
 
         # Collect all our metrics
