@@ -43,12 +43,12 @@ def make_plots(run, path, is_classification):
         title = 'train_predicted_vs_true'
         plot_predicted_vs_true(y_train_true, y_train_pred, join(path, title+'.png'), train_metrics, title=title)
         title = 'test_predicted_vs_true'
-        plot_predicted_vs_true(y_test_true,  y_test_pred, join(path, title+'.png'), train_metrics, title=title)
+        plot_predicted_vs_true(y_test_true,  y_test_pred, join(path, title+'.png'), test_metrics, title=title)
 
         title = 'train_residuals_histogram'
         plot_residuals_histogram(y_train_true, y_train_pred, join(path, title+'.png'), train_metrics, title=title)
         title = 'test_residuals_histogram'
-        plot_residuals_histogram(y_test_true,  y_test_pred, join(path, title+'.png'), train_metrics, title=title)
+        plot_residuals_histogram(y_test_true,  y_test_pred, join(path, title+'.png'), test_metrics, title=title)
 
     with open(join(path, 'stats.txt'), 'w') as f:
         f.write("TRAIN:\n")
@@ -141,8 +141,6 @@ def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False, titl
 
 @ipynb_maker
 def plot_predicted_vs_true(y_true, y_pred, savepath, stats, title='predicted vs true'):
-    print("STATS:", stats)
-
     fig, ax = make_fig_ax()
 
     ax.set_title(title)

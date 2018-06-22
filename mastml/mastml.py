@@ -155,6 +155,8 @@ def _do_splits(X, y, model, main_path, metrics_dict, pair_list, is_classificatio
             train_metrics = OrderedDict((name, function(train_y, train_pred)) for name,function in metrics_dict.items()),
             test_metrics  = OrderedDict((name, function(test_y, test_pred))   for name,function in metrics_dict.items()),
         )
+        if split_result['test_metrics']['r2_score'] > 0.99:
+            import pdb; pdb.set_trace()
 
         plot_helper.make_plots(split_result, path, is_classification)
 
@@ -169,6 +171,7 @@ def _do_splits(X, y, model, main_path, metrics_dict, pair_list, is_classificatio
         train_stats[name] = (np.mean(train_values), np.std(train_values))
         test_stats[name]  = (np.mean(test_values),  np.std(test_values))
 
+    import pdb; pdb.set_trace()
     split_results.sort(key=lambda run: list(run['test_metrics'].items())[0][1]) # sort splits by the test score of first metric
     worst, median, best = split_results[0], split_results[len(split_results)//2], split_results[-1]
     if not is_classification:
