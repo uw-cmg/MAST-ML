@@ -63,12 +63,13 @@ def make_plots(run, path, is_classification):
 def parse_stat(name,value):
     """ takes in a pair or tripple of stats and returns a string for the plot 
     Also singleton tuples for Titles or something"""
+    name = name.replace('_', ' ')
     if not value:
         return name
     if isinstance(value, tuple):
         mean, std = value
-        return (f'{name}: \n----{mean:.3f}' + r'$\pm$' + f'{std:.3f}')
-    return f'{name}: {value}'
+        return (f'{name}:' + '\n\t' + f'{mean:.3f}' + r'$\pm$' + f'{std:.3f}')
+    return f'{name}: {value:.3f}'
 
 def plot_stats(fig, stats):
     """ print stats onto the image. Goes off screen if they are too long or too many in number """
@@ -134,7 +135,6 @@ def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False, titl
     # plots the stats
     plot_stats(fig, stats)
 
-    #plt.tight_layout()
     ax.set_ylabel('True label')
     ax.set_xlabel('Predicted label')
     fig.savefig(savepath)

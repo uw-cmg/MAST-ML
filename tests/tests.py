@@ -141,9 +141,10 @@ class TestHtml(unittest.TestCase):
     def test_image_list(self):
         #imgs = ['cf.png', 'rh.png', 'pred-vs-true.png']
         #html_helper.make_html(imgs, 'tests/csv/three_clusters.csv', 'tests/conf/fullrun.conf', 'oop.txt', './')
-        html_helper.make_html('results/generation')
-        html_helper.make_html('results/classification')
-        html_helper.make_html('results/regression')
+        html_helper.make_html('results/regression_test')
+        #html_helper.make_html('results/generation')
+        #html_helper.make_html('results/classification')
+        #html_helper.make_html('results/regression')
 
         
 

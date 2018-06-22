@@ -44,7 +44,7 @@ def is_test_image(path):
     basename = os.path.basename(path)
     return os.path.splitext(basename)[1] == '.png' and 'test_' in basename
 
-def show_data(split_dir, outdir):
+def show_split(split_dir, outdir):
 
     # collect test image, train image, and other file links
     links = list()
@@ -97,46 +97,41 @@ def make_html(outdir):
         # link to error log
         #if errors_present:
         #    p('You have errors! check ', link(error_log))
-        favorites = dict()
-        graph_sections = list()
+
+        splits = list()
         link_sections = list()
+        #favorites = dict()
 
-        # create a section with info on each run
         for root, dirs, files in os.walk(outdir):
+            # find a folder that contains split_ folder.
+            # For example, results/StandardScaler/SelectKBest/LinearRegression/KFold
             for d in dirs:
-                # show all of the split_0 directories as images and stats
-                if 'split_' in os.path.basename(d):
-                    graph_sections.append(join(root, d))
-                    #show_data(join(root, d), outdir)
+                if d.startswith('split_'):
+                    splits.append(root)
 
+            # extract links to important csvs and conf
             for f in files:
-                # extract links to important csvs and conf
                 if (os.path.splitext(f)[1] == '.csv' and f not in ['train.csv', 'test.csv']) or\
                         os.path.splitext(f)[1] == '.conf':
                     link_sections.append(join(root, f))
                     #simple_section(join(root, f), outdir)
 
-            for d in dirs:
-                # show best worst and median
-                for fname in os.listdir(join(root, d)):
-                    if fname in ['BEST', 'MEDIAN', 'WORST']:
-                        favorites[fname] = join(root, d)
-                        #h1(fname)
-                        #show_data(root, outdir)
-
-        h1('Favorites')
-        for name, path in favorites.items():
-            h2(name)
-            show_data(path, outdir)
-            br()
 
         h1('Files')
         for path in link_sections:
             simple_section(path, outdir)
 
-        h1('Other Graphs')
-        for path in graph_sections:
-            show_data(path, outdir)
+        h1('Plots')
+        for split in splits:
+            for fname in os.listdir(split):
+                if fname.endswith('.png'):
+                    h3(os.path.splitext(fname)[0]) # probably best_worst overlay
+                    image(relpath(join(split, fname), outdir), fname)
+                if fname.startswith('split_'):
+                    show_split(join(split, fname), outdir)
+
+
+
 
 
 
