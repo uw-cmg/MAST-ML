@@ -2,14 +2,14 @@
 
 import sys
 import argparse
-import collections
 import inspect
 import itertools
 import os.path
 import shutil
-import collections
 import warnings
+from collections import OrderedDict
 
+import numpy as np
 import pandas as pd
 import sklearn.pipeline
 import sklearn.model_selection
@@ -48,7 +48,8 @@ def mastml_run(conf_path, data_path, outdir):
     df, input_features, target_feature = data_loader.load_data(data_path, **conf['GeneralSetup'])
 
     # Get the appropriate collection of metrics:
-    metrics_dict = metrics.classification_metrics if conf['is_classification'] else metrics.regression_metrics
+    big_metrics_dict = metrics.classification_metrics if conf['is_classification'] else metrics.regression_metrics
+    metrics_dict = {name: big_metrics_dict[name] for name in conf['metrics']}
 
     # Instantiate all the sections of the conf file:
     generators = _instantiate(conf['FeatureGeneration'], feature_generators.name_to_constructor, 'feature generator')
@@ -59,25 +60,26 @@ def mastml_run(conf_path, data_path, outdir):
 
     X, y = df[input_features], df[target_feature]
     runs = _do_fits(X, y, generators, normalizers, selectors, models, splitters,
-                    conf['metrics'], metrics_dict, outdir, conf['is_classification'])
+                    metrics_dict, outdir, conf['is_classification'])
 
-    print("Finding best, worst, average...")
-    flag_favorite_runs(runs, outdir)
+    #print("Finding best, worst, average...")
+    #flag_favorite_runs(runs, outdir)
 
     print("Making image html file...")
     html_helper.make_html(outdir)
 
-    print("Making data html file...")
+    #print("Making data html file...")
     # Save a table of all the runs to an html file
-    _save_all_runs(runs, outdir)
+    #_save_all_runs(runs, outdir)
 
     # Copy the original input files to the output directory for easy reference
     print("Copying input files to output directory...")
     shutil.copy2(conf_path, outdir)
     shutil.copy2(data_path, outdir)
 
-def _do_fits(X, y, generators, normalizers, selectors, models, splitters, metrics, metrics_dict, outdir, is_classification):
-    ospj = os.path.join
+def _do_fits(X, y, generators, normalizers, selectors, models, splitters,
+             metrics_dict, outdir, is_classification):
+    join = os.path.join
 
     generators_union = util_legos.DataFrameFeatureUnion(generators)
     #splits = [pair for splitter in splitters for pair in splitter.split(X,y)] # CHANGING THIS
@@ -90,105 +92,94 @@ def _do_fits(X, y, generators, normalizers, selectors, models, splitters, metric
     print("First three rows of generated data:")
     print(X_generated.head(3))
     print("Saving generated data to csv...")
-    X_generated.to_csv(ospj(outdir, "data_generated.csv"), index=False)
+    X_generated.to_csv(join(outdir, "data_generated.csv"), index=False)
     Xs_selected = []
     for normalizer in normalizers:
         print("Running normalizer", normalizer.__class__.__name__)
-        dirname = ospj(outdir, normalizer.__class__.__name__)
+        dirname = join(outdir, normalizer.__class__.__name__)
         os.mkdir(dirname)
         X_normalized = normalizer.fit_transform(X_generated, y)
-        X_normalized.to_csv(ospj(dirname, "normalized.csv"), index=False)
+        X_normalized.to_csv(join(dirname, "normalized.csv"), index=False)
         print("Done normalizing")
         print("Running selectors...")
         for selector in selectors:
-            dirname = ospj(outdir, normalizer.__class__.__name__, selector.__class__.__name__)
+            dirname = join(outdir, normalizer.__class__.__name__, selector.__class__.__name__)
             os.mkdir(dirname)
             X_selected = selector.fit_transform(X_normalized, y)
-            X_selected.to_csv(ospj(dirname, "selected.csv"), index=False)
+            X_selected.to_csv(join(dirname, "selected.csv"), index=False)
             Xs_selected.append((normalizer, selector, X_selected))
             print("    selector", selector.__class__.__name__, "done.")
 
     print("Fitting models to datas...")
-    num_fits = len(normalizers) * len(selectors) * len(models) * len(splits)
-    runs = []
-    for fit_num, ((normalizer, selector, X_selected), model, (splitter, pair_list)) \
-            in enumerate(itertools.product(Xs_selected, models, splits)):
-        path = ospj(outdir, normalizer.__class__.__name__, selector.__class__.__name__,
+    all_results = []
+    for (normalizer, selector, X_selected), model, (splitter, pair_list) \
+            in itertools.product(Xs_selected, models, splits):
+        path = join(outdir, normalizer.__class__.__name__, selector.__class__.__name__,
                     model.__class__.__name__, splitter.__class__.__name__)
         os.makedirs(path)
-        split_results = []
-        for train_indices, test_indices in pair_list:
-            train_X, train_y = X_selected.loc[train_indices], y.loc[train_indices]
-            test_X,  test_y  = X_selected.loc[test_indices], y.loc[test_indices]
-            print(f"Fit number {fit_num}/{num_fits}")
-            model.fit(train_X, train_y)
-            joblib.dump(model, ospj(path, "trained_model.pkl"))
-            train_pred = model.predict(train_X)
-            test_pred  = model.predict(test_X)
-            pd.concat([train_X, train_y, pd.DataFrame(train_pred,columns=['train_pred'])], axis=1)\
-                    .to_csv(ospj(path, 'train.csv'), index=False)
-            pd.concat([test_X, test_y, pd.DataFrame(test_pred,columns=['test_pred'])], axis=1)\
-                    .to_csv(ospj(path, 'test.csv'), index=False)
-            run = collections.OrderedDict( # The ordered dict ensures column order in saved html
-                normalizer=normalizer.__class__.__name__,
-                selector=selector.__class__.__name__,
-                model=model.__class__.__name__,
-                model_not_the_name_but_the_actual_model_model=model,
-                splitter=splitter.__class__.__name__,
-                train_true=train_y.values,
-                train_pred=train_pred,
-                test_true=test_y.values,
-                test_pred=test_pred,
-                train_metrics=[], # a list of (metric_name, value) tuples
-                test_metrics=[],
-            )
-            for name in metrics:
-                metric = metrics_dict[name]
-                run['train_metrics'].append( (name, metric(train_y, train_pred)) )
-                run['test_metrics'].append(  (name, metric(test_y,  test_pred))  )
-            split_results.append(run)
-
-        split_results.sort(key=lambda run: run['test_metrics'][0][1]) # sort splits by the test score of first metric
-
-        worst, median, best = split_results[0], split_results[len(pair_list)//2], split_results[-1]
-
-        # TODO: add train data plotting
-        if is_classification:
-            title = 'test_confusion_matrix'
-            plot_helper.plot_confusion_matrix(test_y.values, test_pred, ospj(path, title+'.png'),
-                    run['test_metrics'], title=title)
-            title = 'train_confusion_matrix'
-            plot_helper.plot_confusion_matrix(train_y.values, train_pred, ospj(path, title+'.png'),
-                    run['train_metrics'], title=title)
-        else: # is_regression
-            title = 'test_predicted_vs_true'
-            plot_helper.plot_predicted_vs_true(test_y.values, test_pred, ospj(path, title+'.png'),
-                    run['test_metrics'], title=title)
-            title = 'test_residuals_histogram'
-            plot_helper.plot_residuals_histogram(test_y.values, test_pred, ospj(path, title+'.png'),
-                    run['test_metrics'], title=title)
-            title = 'train_predicted_vs_true'
-            plot_helper.plot_predicted_vs_true(train_y.values, train_pred, ospj(path, title+'.png'),
-                    run['train_metrics'], title=title)
-            title = 'train_residuals_histogram'
-            plot_helper.plot_residuals_histogram(train_y.values, train_pred, ospj(path,
-                title+'.png'), run['train_metrics'], title=title)
-        with open(ospj(path, 'stats.txt'), 'w') as f:
-            f.write("TRAIN:\n")
-            for name,score in run['train_metrics']:
-                f.write(f"{name}: {score}\n")
-            f.write("TEST:\n")
-            for name,score in run['test_metrics']:
-                f.write(f"{name}: {score}\n")
-
-        runs.append(...)
+        runs = _do_splits(X_selected, y, model, path, metrics_dict, pair_list, is_classification)
+        all_results.extend(runs)
     
-    return runs
+    return all_results
+
+#def _do_combos(normalizer_name, selector_name, model_name, splitter_name, metrics_dict, pair_list, outdir, is_classification):
+def _do_splits(X, y, model, main_path, metrics_dict, pair_list, is_classification):
+    join = os.path.join
+
+    split_results = []
+    for split_num, (test_indices, train_indices) in enumerate(pair_list):
+        path = os.path.join(main_path, f"split_{split_num}")
+        os.mkdir(path)
+        train_X, train_y = X.loc[train_indices], y.loc[train_indices]
+        test_X,  test_y  = X.loc[test_indices],  y.loc[test_indices]
+
+        # Fit model and make predictions:
+        model.fit(train_X, train_y)
+        joblib.dump(model, join(path, "trained_model.pkl"))
+        train_pred = model.predict(train_X)
+        test_pred  = model.predict(test_X)
+
+        # Save train and test data and results to csv:
+        pd.concat([train_X, train_y, pd.DataFrame(train_pred, columns=['train_pred'])], axis=1)\
+                .to_csv(join(path, 'train.csv'), index=False)
+        pd.concat([test_X,  test_y,  pd.DataFrame(test_pred,  columns=['test_pred'])],  axis=1)\
+                .to_csv(join(path, 'test.csv'),  index=False)
+
+        # Collect all our metrics
+        split_result = OrderedDict(
+            split_num = split_num,
+            y_train_true = train_y,
+            y_train_pred = train_pred,
+            y_test_true  = test_y,
+            y_test_pred  = test_pred,
+            train_metrics = OrderedDict((name, function(train_y, train_pred)) for name,function in metrics_dict.items()),
+            test_metrics  = OrderedDict((name, function(test_y, test_pred))   for name,function in metrics_dict.items()),
+        )
+
+        plot_helper.make_plots(split_result, path, is_classification)
+
+        split_results.append(split_result)
+
+        # Get the mean and standard deviation across splits for each metric:
+    train_stats = OrderedDict()
+    test_stats  = OrderedDict()
+    for name in metrics_dict:
+        train_values = [split_result['train_metrics'][name] for split_result in split_results]
+        test_values  = [split_result['test_metrics'][name]  for split_result in split_results]
+        train_stats[name] = (np.mean(train_values), np.std(train_values))
+        test_stats[name]  = (np.mean(test_values),  np.std(test_values))
+
+    split_results.sort(key=lambda run: list(run['test_metrics'].items())[0][1]) # sort splits by the test score of first metric
+    worst, median, best = split_results[0], split_results[len(split_results)//2], split_results[-1]
+    if not is_classification:
+        plot_helper.plot_best_worst(best['y_test_true'], best['y_test_pred'], worst['y_test_true'], worst['y_test_pred'], os.path.join(main_path, 'best_worst_overlay.png'), test_stats)
+
+    return split_results
 
 def _save_all_runs(runs, outdir):
     for_table = []
     for run in runs:
-        od = collections.OrderedDict()
+        od = OrderedDict()
         for name, value in run.items():
             if name == 'train_metrics':
                 for k,v in run['train_metrics']:

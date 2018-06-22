@@ -23,24 +23,53 @@ font = {'family' : 'normal',
 matplotlib.rc('font', **font)
 matplotlib.rc('figure', autolayout=True)
 
-def parse_stat(data):
+
+def make_plots(run, path, is_classification):
+    join = os.path.join
+    y_train_true, y_train_pred, y_test_true,  y_test_pred, train_metrics, test_metrics = \
+        run['y_train_true'], run['y_train_pred'], run['y_test_true'],  run['y_test_pred'], run['train_metrics'], run['test_metrics']
+
+    if is_classification:
+        title = 'train_confusion_matrix'
+        plot_confusion_matrix(y_train_true, y_train_pred, join(path, title+'.png'), train_metrics, title=title)
+        title = 'test_confusion_matrix'
+        plot_confusion_matrix(y_test_true,  y_test_pred, join(path, title+'.png'), test_metrics, title=title)
+
+    else: # is_regression
+        title = 'train_predicted_vs_true'
+        plot_predicted_vs_true(y_train_true, y_train_pred, join(path, title+'.png'), train_metrics, title=title)
+        title = 'test_predicted_vs_true'
+        plot_predicted_vs_true(y_test_true,  y_test_pred, join(path, title+'.png'), train_metrics, title=title)
+
+        title = 'train_residuals_histogram'
+        plot_residuals_histogram(y_train_true, y_train_pred, join(path, title+'.png'), train_metrics, title=title)
+        title = 'test_residuals_histogram'
+        plot_residuals_histogram(y_test_true,  y_test_pred, join(path, title+'.png'), train_metrics, title=title)
+
+    with open(join(path, 'stats.txt'), 'w') as f:
+        f.write("TRAIN:\n")
+        for name,score in train_metrics.items():
+            f.write(f"{name}: {score}\n")
+        f.write("TEST:\n")
+        for name,score in test_metrics.items():
+            f.write(f"{name}: {score}\n")
+
+
+
+def parse_stat(name,value):
     """ takes in a pair or tripple of stats and returns a string for the plot 
     Also singleton tuples for Titles or something"""
-    if len(data) == 1:
-        return data[0]
-    if len(data) == 2:
-        name, value = data
-        return f'{name}: {value}'
-    if len(data) == 3:
-        name, value, err = data
-        return (f'{name}: \n\t{value}' + r'$\pm$' + f'{err}')
-
-    raise Exception(f'{data} must be a pair or tripplet')
+    if not value:
+        return name
+    if isinstance(value, tuple):
+        mean, std = value
+        return (f'{name}: \n----{mean:.3f}' + r'$\pm$' + f'{std:.3f}')
+    return f'{name}: {value}'
 
 def plot_stats(fig, stats):
     """ print stats onto the image. Goes off screen if they are too long or too many in number """
 
-    stat_str = '\n\n'.join(parse_stat(data) for data in stats)
+    stat_str = '\n\n'.join(parse_stat(name, value) for name,value in stats.items())
 
     fig.text(0.62, 0.98, stat_str,
             verticalalignment='top', wrap=True# transform=ax.transAxes)
@@ -106,6 +135,7 @@ def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False, titl
     fig.savefig(savepath)
 
 def plot_predicted_vs_true(y_true, y_pred, savepath, stats, title='predicted vs true'):
+    print("STATS:", stats)
 
     fig, ax = make_fig_ax()
 
@@ -127,22 +157,22 @@ def plot_predicted_vs_true(y_true, y_pred, savepath, stats, title='predicted vs 
 
     fig.savefig(savepath)
 
-def plot_best_worst(y_true, y_pred_best, y_pred_worst, savepath, stats, title='Best Worst Overlay'):
+def plot_best_worst(y_true_best, y_pred_best, y_true_worst, y_pred_worst, savepath, stats, title='Best Worst Overlay'):
 
     fig, ax = make_fig_ax()
 
     ax.set_title(title)
 
     # make diagonal line from absolute min to absolute max of any data point
-    maxx = max(y_true.max(), y_pred_best.max(), y_pred_worst.max())
-    minn = min(y_true.min(), y_pred_best.min(), y_pred_worst.min())
+    all_y = [y_true_best, y_pred_best, y_true_worst, y_pred_worst]
+    maxx = max(y.max() for y in all_y)
+    minn = min(y.min() for y in all_y)
     ax.plot([minn, maxx], [minn, maxx], 'k--', lw=4, zorder=1)
 
     # do the actual plotting
-    ax.scatter(y_true, y_pred_best, c='red', alpha=0.7, s=80, label='best', edgecolor='darkred', zorder=2)
-    ax.scatter(y_true, y_pred_worst, c='blue', alpha=0.7, label='worst', edgecolor='darkblue', zorder=3)
+    ax.scatter(y_true_best,  y_pred_best,  c='red',  alpha=0.7, label='best',  edgecolor='darkred',  zorder=2, s=80)
+    ax.scatter(y_true_worst, y_pred_worst, c='blue', alpha=0.7, label='worst', edgecolor='darkblue', zorder=3)
     ax.legend()
-
 
     # set axis labels
     ax.set_xlabel('Measured')
