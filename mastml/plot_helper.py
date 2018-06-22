@@ -145,13 +145,13 @@ def plot_predicted_vs_true(y_true, y_pred, savepath, stats, title='predicted vs 
 
     ax.set_title(title)
 
-    # do the actual plotting
-    ax.scatter(y_true, y_pred, edgecolors=(0, 0, 0))
-
     # make diagonal line from absolute min to absolute max of any data point
     maxx = max(y_true.max(), y_pred.max())
     minn = min(y_true.min(), y_pred.min())
-    ax.plot([minn, maxx], [minn, maxx], 'k--', lw=4)
+    ax.plot([minn, maxx], [minn, maxx], 'k--', lw=4, zorder=1)
+
+    # do the actual plotting
+    ax.scatter(y_true, y_pred, edgecolors=(0, 0, 0), zorder=2)
 
     # set axis labels
     ax.set_xlabel('Measured')

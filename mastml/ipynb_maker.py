@@ -41,7 +41,9 @@ def ipynb_maker(plot_func):
         for key, var in all_args.items():
             arg_assignments.append(f'{key} = {repr(var)}') 
             arg_names.append(key)
-        args_block = "from numpy import array\n" + '\n'.join(arg_assignments)
+        args_block = ("from numpy import array\n" +
+                      "from collections import OrderedDict\n" +
+                      '\n'.join(arg_assignments))
         arg_names = ', '.join(arg_names)
 
 
