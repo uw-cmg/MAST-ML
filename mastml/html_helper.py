@@ -58,20 +58,20 @@ def show_split(split_dir, outdir):
         else:
             links.append(join(split_dir, f))
 
-    # come up with a good section title
-    path = os.path.normpath(relpath(split_dir, outdir))
-    paths = path.split(os.sep)
-    title = " - ".join(paths)
+    # have a header for split_0 split_1 etc
+    h2(split_dir.split(os.sep)[-1])
 
-    h2(title)
 
     # loop seperately so we can control order
     for train_image, test_image in zip(sorted(train_images), sorted(test_images)):
         image(relpath(train_image, outdir), 'train')
         image(relpath(test_image, outdir), 'test')
         br();br()
+
+    h3('links')
     for l in links:
         link(relpath(l, outdir))
+        span('  ')
 
 def simple_section(filepath, outdir):
 
@@ -123,10 +123,21 @@ def make_html(outdir):
 
         h1('Plots')
         for split in splits:
+            # come up with a good section title
+            path = os.path.normpath(relpath(split, outdir))
+            paths = path.split(os.sep)
+            title = " - ".join(paths)
+            h2(title)
+
+            # find the best worst overlay
             for fname in os.listdir(split):
                 if fname.endswith('.png'):
                     h3(os.path.splitext(fname)[0]) # probably best_worst overlay
                     image(relpath(join(split, fname), outdir), fname)
+                    br()
+
+            # find the split_0 split_1 etc bs stuff
+            for fname in os.listdir(split):
                 if fname.startswith('split_'):
                     show_split(join(split, fname), outdir)
 
@@ -142,11 +153,11 @@ def make_html(outdir):
 
 def link_p(href):
     """ Makes it slightly shorter to link files with their names"""
-    return p(a(os.path.basename(href), href=href))
+    return p(link(href))
 
 def link(href):
     """ Makes it slightly shorter to link files with their names"""
-    return a(os.path.basename(href), href=href)
+    return a(os.path.basename(href), href=href, style='padding-left: 15px;')
 
 def image(src, title=None):
     d = div(style='display:inline-block;', _class='photo')

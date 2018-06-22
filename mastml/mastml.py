@@ -80,6 +80,9 @@ def mastml_run(conf_path, data_path, outdir):
 def _do_fits(X, y, generators, normalizers, selectors, models, splitters,
              metrics_dict, outdir, is_classification):
     join = os.path.join
+    def cn(c):
+        " Shorthand for getting the class name of an instance "
+        return c.__class__.__name__
 
     generators_union = util_legos.DataFrameFeatureUnion(generators)
     #splits = [pair for splitter in splitters for pair in splitter.split(X,y)] # CHANGING THIS
@@ -95,30 +98,32 @@ def _do_fits(X, y, generators, normalizers, selectors, models, splitters,
     X_generated.to_csv(join(outdir, "data_generated.csv"), index=False)
     Xs_selected = []
     for normalizer in normalizers:
-        print("Running normalizer", normalizer.__class__.__name__)
-        dirname = join(outdir, normalizer.__class__.__name__)
+        print("Running normalizer", cn(normalizer))
+        dirname = join(outdir, cn(normalizer))
         os.mkdir(dirname)
         X_normalized = normalizer.fit_transform(X_generated, y)
         X_normalized.to_csv(join(dirname, "normalized.csv"), index=False)
         print("Done normalizing")
         print("Running selectors...")
         for selector in selectors:
-            dirname = join(outdir, normalizer.__class__.__name__, selector.__class__.__name__)
+            dirname = join(outdir, cn(normalizer), cn(selector))
             os.mkdir(dirname)
             X_selected = selector.fit_transform(X_normalized, y)
             X_selected.to_csv(join(dirname, "selected.csv"), index=False)
             Xs_selected.append((normalizer, selector, X_selected))
-            print("    selector", selector.__class__.__name__, "done.")
+            print("    selector", cn(selector), "done.")
+
 
     print("Fitting models to datas...")
     all_results = []
     for (normalizer, selector, X_selected), model, (splitter, pair_list) \
             in itertools.product(Xs_selected, models, splits):
-        path = join(outdir, normalizer.__class__.__name__, selector.__class__.__name__,
-                    model.__class__.__name__, splitter.__class__.__name__)
+        print(f"Running splits for selector {cn(selector)}, model {cn(model)}, splitter {cn(splitter)}")
+        path = join(outdir, cn(normalizer), cn(selector), cn(model), cn(splitter))
         os.makedirs(path)
         runs = _do_splits(X_selected, y, model, path, metrics_dict, pair_list, is_classification)
         all_results.extend(runs)
+        print("Done with that selector,model,splitter")
     
     return all_results
 
@@ -128,6 +133,7 @@ def _do_splits(X, y, model, main_path, metrics_dict, pair_list, is_classificatio
 
     split_results = []
     for split_num, (test_indices, train_indices) in enumerate(pair_list):
+        print(f"    Doing split number {split_num}")
         path = os.path.join(main_path, f"split_{split_num}")
         os.mkdir(path)
         train_X, train_y = X.loc[train_indices], y.loc[train_indices]
@@ -148,9 +154,9 @@ def _do_splits(X, y, model, main_path, metrics_dict, pair_list, is_classificatio
         # Collect all our metrics
         split_result = OrderedDict(
             split_num = split_num,
-            y_train_true = train_y,
+            y_train_true = train_y.values,
             y_train_pred = train_pred,
-            y_test_true  = test_y,
+            y_test_true  = test_y.values,
             y_test_pred  = test_pred,
             train_metrics = OrderedDict((name, function(train_y, train_pred)) for name,function in metrics_dict.items()),
             test_metrics  = OrderedDict((name, function(test_y, test_pred))   for name,function in metrics_dict.items()),
