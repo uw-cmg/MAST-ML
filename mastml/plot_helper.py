@@ -16,13 +16,17 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure, figaspect
 from matplotlib.ticker import MaxNLocator
 
+
 # set all font to bigger
-font = {'family' : 'normal',
-       #'weight' : 'bold',
-        'size'   : 18}
+font = {'size'   : 18}
 matplotlib.rc('font', **font)
+
+# turn on autolayout (why is it not default?)
 matplotlib.rc('figure', autolayout=True)
 
+# HEADERENDER don't delete this line, it's used by ipynb maker
+
+from .ipynb_maker import ipynb_maker
 
 def make_plots(run, path, is_classification):
     join = os.path.join
@@ -90,6 +94,7 @@ def make_fig_ax(aspect='equal'):
 
     return fig, ax
 
+@ipynb_maker
 def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False, title='Confusion matrix',
         cmap=plt.cm.Blues):
     """
@@ -134,6 +139,7 @@ def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False, titl
     ax.set_xlabel('Predicted label')
     fig.savefig(savepath)
 
+@ipynb_maker
 def plot_predicted_vs_true(y_true, y_pred, savepath, stats, title='predicted vs true'):
     print("STATS:", stats)
 
@@ -157,12 +163,10 @@ def plot_predicted_vs_true(y_true, y_pred, savepath, stats, title='predicted vs 
 
     fig.savefig(savepath)
 
+@ipynb_maker
 def plot_best_worst(y_true_best, y_pred_best, y_true_worst, y_pred_worst, savepath, stats, title='Best Worst Overlay'):
-
     fig, ax = make_fig_ax()
-
     ax.set_title(title)
-
     # make diagonal line from absolute min to absolute max of any data point
     all_y = [y_true_best, y_pred_best, y_true_worst, y_pred_worst]
     maxx = max(y.max() for y in all_y)
@@ -182,6 +186,7 @@ def plot_best_worst(y_true_best, y_pred_best, y_true_worst, y_pred_worst, savepa
 
     fig.savefig(savepath)
 
+@ipynb_maker
 def plot_residuals_histogram(y_true, y_pred, savepath, stats, title='residuals histogram'):
 
     fig, ax = make_fig_ax(aspect='auto')

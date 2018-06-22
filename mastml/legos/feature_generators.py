@@ -2,8 +2,13 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import PolynomialFeatures as SklearnPolynomialFeatures
 from .util_legos import DoNothing
 
-# path to directory containing AtomicNumber.table, AtomicRadii.table AtomicVolume.table, etc
-MAGPIE_DATA_PATH = #"/Users/lhm/Documents/magpie/"
+# locate path to directory containing AtomicNumber.table, AtomicRadii.table AtomicVolume.table, etc
+# needs to do it the hard way becuase python -m sets cwd to wherever python is ran from.
+import os
+import mastml
+print('mastml dir: ', mastml.__path__)
+MAGPIE_DATA_PATH = os.path.join(mastml.__path__[0], '../magpie/')
+
 
 class PolynomialFeatures(BaseEstimator, TransformerMixin):
     def __init__(self, features=None, degree=2, interaction_only=False, include_bias=True):
