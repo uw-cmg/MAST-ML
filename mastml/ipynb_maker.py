@@ -3,6 +3,7 @@ from . import plot_helper
 #from mastml.plot_helper import * #parse_stat, plot_stats, make_fig_ax, plot_predicted_vs_true
 import nbformat
 import inspect
+import os
 
 def ipynb_maker(plot_func):
     """
@@ -17,6 +18,7 @@ def ipynb_maker(plot_func):
         sig = inspect.signature(plot_func)
         binding = sig.bind(*args, **kwargs)
         all_args = binding.arguments
+        all_args['savepath'] = os.path.basename(all_args['savepath']) # fix absolute path problem
 
         assert 'savepath' in all_args
 
