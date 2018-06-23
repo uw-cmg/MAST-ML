@@ -23,6 +23,7 @@ from .legos import data_splitters, feature_generators, feature_normalizers, feat
 utils.Tee('log.txt', 'w')
 utils.TeeErr('errors.txt', 'w')
 
+
 def mastml_run(conf_path, data_path, outdir):
     " Runs operations specifed in conf_path on data_path and puts results in outdir "
 
@@ -61,11 +62,8 @@ def mastml_run(conf_path, data_path, outdir):
     splitters = _instantiate(conf['DataSplits'], data_splitters.name_to_constructor, 'data split')
 
     X, y = df[input_features], df[target_feature]
-    runs = _do_fits(X, y, generators, normalizers, selectors, models, splitters,
+    runs = _do_combos(X, y, generators, normalizers, selectors, models, splitters,
                     metrics_dict, outdir, conf['is_classification'])
-
-    #print("Finding best, worst, average...")
-    #flag_favorite_runs(runs, outdir)
 
     print("Making image html file...")
     html_helper.make_html(outdir)
@@ -78,81 +76,101 @@ def mastml_run(conf_path, data_path, outdir):
     shutil.copy2(conf_path, outdir)
     shutil.copy2(data_path, outdir)
 
-def _do_fits(X, y, generators, normalizers, selectors, models, splitters,
-             metrics_dict, outdir, is_classification):
+
+def _do_combos(X, y, generators, normalizers, selectors, models, splitters,
+               metrics_dict, outdir, is_classification):
+    """
+    Uses cross product to generate, normalize, and select the input data, then saves it.
+    Calls _do_splits for actual model fits.
+    """
+
     def cn(c):
         " Shorthand for getting the class name of an instance "
         return c.__class__.__name__
 
-    generators_union = util_legos.DataFrameFeatureUnion(generators)
-    #splits = [pair for splitter in splitters for pair in splitter.split(X,y)] # CHANGING THIS
-    splits = [(splitter, tuple(splitter.split(X,y))) for splitter in splitters]
-    print(f"There are {len(normalizers)} normalizers, {len(selectors)} feature selectors,"
-          f" {len(models)} total models, and {len(splits)} total splits.") # TODO: this is misleading
+    print(f"There are {len(normalizers)} feature normalizers, {len(selectors)} feature selectors,"
+          f" {len(models)} models, and {len(splitters)} splitters.")
 
     print("Doing feature generation...")
+    generators_union = util_legos.DataFrameFeatureUnion(generators)
     X_generated = generators_union.fit_transform(X, y)
-    print("First three rows of generated data:")
-    print(X_generated.head(3))
+
     print("Saving generated data to csv...")
     pd.concat([X_generated, y], 1).to_csv(join(outdir, "data_generated.csv"), index=False)
+
     Xs_selected = []
     for normalizer in normalizers:
-        print("Running normalizer", cn(normalizer))
+
+        print("Running normalizer", cn(normalizer), "...")
+        X_normalized = normalizer.fit_transform(X_generated, y)
+
+        print("Saving normalized data to csv...")
         dirname = join(outdir, cn(normalizer))
         os.mkdir(dirname)
-        X_normalized = normalizer.fit_transform(X_generated, y)
         pd.concat([X_normalized, y], 1).to_csv(join(dirname, "normalized.csv"), index=False)
-        print("Done normalizing")
+
         print("Running selectors...")
         for selector in selectors:
+
+            print("    Running selector", cn(selector), "...")
+            X_selected = selector.fit_transform(X_normalized, y)
+
+            print("    Saving selected features to csv...")
             dirname = join(outdir, cn(normalizer), cn(selector))
             os.mkdir(dirname)
-            X_selected = selector.fit_transform(X_normalized, y)
             pd.concat([X_selected, y], 1).to_csv(join(dirname, "selected.csv"), index=False)
+
             Xs_selected.append((normalizer, selector, X_selected))
-            print("    selector", cn(selector), "done.")
 
+    splits = [(splitter, tuple(splitter.split(X,y))) for splitter in splitters]
 
-    print("Fitting models to datas...")
+    print("Fitting models to splits...")
     all_results = []
     for (normalizer, selector, X_selected), model, (splitter, pair_list) \
             in itertools.product(Xs_selected, models, splits):
-        print(f"Running splits for selector {cn(selector)}, model {cn(model)}, splitter {cn(splitter)}")
-        path = join(outdir, cn(normalizer), cn(selector), cn(model), cn(splitter))
+        subdir = join(cn(normalizer), cn(selector), cn(model), cn(splitter))
+        print(f"    Running splits for {subdir}")
+        path = join(outdir, subdir)
         os.makedirs(path)
         runs = _do_splits(X_selected, y, model, path, metrics_dict, pair_list, is_classification)
         all_results.extend(runs)
-        print("Done with that selector,model,splitter")
     
     return all_results
 
-#def _do_combos(normalizer_name, selector_name, model_name, splitter_name, metrics_dict, pair_list, outdir, is_classification):
+
 def _do_splits(X, y, model, main_path, metrics_dict, pair_list, is_classification):
+    """
+    For a fixed normalizer,selector,model,splitter,
+    train and test the model on each split that the splitter makes
+    """
     split_results = []
     for split_num, (test_indices, train_indices) in enumerate(pair_list):
+
         #for parameters in model_parameters_list:
         #    pass
-        print(f"    Doing split number {split_num}")
-        path = join(main_path, f"split_{split_num}")
-        os.mkdir(path)
+
+        print(f"        Doing split number {split_num}")
         train_X, train_y = X.loc[train_indices], y.loc[train_indices]
         test_X,  test_y  = X.loc[test_indices],  y.loc[test_indices]
 
-        # Fit model and make predictions:
+        path = join(main_path, f"split_{split_num}")
+        os.mkdir(path)
+
+        print("             Fitting model and making predictions...")
         model.fit(train_X, train_y)
         joblib.dump(model, join(path, "trained_model.pkl"))
         train_pred = model.predict(train_X)
         test_pred  = model.predict(test_X)
 
         # Save train and test data and results to csv:
+        print("             Saving train/test data and predictions to csv...")
         train_pred_series = pd.DataFrame(train_pred, columns=['train_pred'], index=train_indices)
         pd.concat([train_X, train_y, train_pred_series], 1).to_csv(join(path, 'train.csv'), index=False)
         test_pred_series = pd.DataFrame(test_pred,   columns=['test_pred'],  index=test_indices)
         pd.concat([test_X,  test_y,  test_pred_series],  1).to_csv(join(path, 'test.csv'),  index=False)
 
+        print("             Calculating score metrics...")
         split_path = main_path.split(os.sep)
-        # Collect all our metrics
         split_result = OrderedDict(
             normalizer = split_path[-4],
             selector = split_path[-3],
@@ -167,11 +185,13 @@ def _do_splits(X, y, model, main_path, metrics_dict, pair_list, is_classificatio
             test_metrics  = OrderedDict((name, function(test_y, test_pred))   for name,function in metrics_dict.items()),
         )
 
+
+        print("             Making plots...")
         plot_helper.make_plots(split_result, path, is_classification)
 
         split_results.append(split_result)
 
-        # Get the mean and standard deviation across splits for each metric:
+    print("    Calculating mean and stdev of scores...")
     train_stats = OrderedDict()
     test_stats  = OrderedDict()
     for name in metrics_dict:
@@ -180,6 +200,7 @@ def _do_splits(X, y, model, main_path, metrics_dict, pair_list, is_classificatio
         train_stats[name] = (np.mean(train_values), np.std(train_values))
         test_stats[name]  = (np.mean(test_values),  np.std(test_values))
 
+    print("    Making best/worst plots...")
     split_results.sort(key=lambda run: list(run['test_metrics'].items())[0][1]) # sort splits by the test score of first metric
     worst, median, best = split_results[0], split_results[len(split_results)//2], split_results[-1]
     if not is_classification:
@@ -188,7 +209,11 @@ def _do_splits(X, y, model, main_path, metrics_dict, pair_list, is_classificatio
 
     return split_results
 
+
 def _save_all_runs(runs, outdir):
+    """
+    Produces a giant html table of all stats for all runs
+    """
     table = []
     for run in runs:
         od = OrderedDict()
@@ -203,6 +228,7 @@ def _save_all_runs(runs, outdir):
                 od[name] = value
         table.append(od)
     pd.DataFrame(table).to_html(join(outdir, 'all_runs_table.html'))
+
 
 def _instantiate(kwargs_dict, name_to_constructor, category):
     """
@@ -221,17 +247,6 @@ def _instantiate(kwargs_dict, name_to_constructor, category):
             raise KeyError(f"There is no {category} called '{name}'."
                            f"All valid {category}: {list(name_to_constructor.keys())}")
     return instantiations
-
-def flag_favorite_runs(runs, outdir):
-    if not runs: # there are no model fits
-        return
-    paths = []
-    # sort the runs by their score on the first test metric
-    runs = sorted(runs, key=lambda run: run['test_metrics'][0][1])
-    for run,name in [(runs[0],'WORST'), (runs[len(runs)//2], 'MEDIAN'), (runs[-1], 'BEST')]:
-        savepath = join(outdir, run['normalizer'], run['selector'], run['model'], 'split_'+run['split'], name)
-        # touch the file
-        open(savepath, 'a').close()
 
 
 if __name__ == '__main__':
