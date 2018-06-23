@@ -4,7 +4,7 @@ import sys
 import argparse
 import inspect
 import itertools
-import os.path
+import os
 import shutil
 import warnings
 from collections import OrderedDict
@@ -70,9 +70,8 @@ def mastml_run(conf_path, data_path, outdir):
     print("Making image html file...")
     html_helper.make_html(outdir)
 
-    #print("Making data html file...")
-    # Save a table of all the runs to an html file
-    #_save_all_runs(runs, outdir)
+    print("Making html file of all runs stats...")
+    _save_all_runs(runs, outdir)
 
     # Copy the original input files to the output directory for easy reference
     print("Copying input files to output directory...")
@@ -152,8 +151,13 @@ def _do_splits(X, y, model, main_path, metrics_dict, pair_list, is_classificatio
         test_pred_series = pd.DataFrame(test_pred,   columns=['test_pred'],  index=test_indices)
         pd.concat([test_X,  test_y,  test_pred_series],  1).to_csv(join(path, 'test.csv'),  index=False)
 
+        split_path = main_path.split(os.sep)
         # Collect all our metrics
         split_result = OrderedDict(
+            normalizer = split_path[-4],
+            selector = split_path[-3],
+            model = split_path[-2],
+            splitter = split_path[-1],
             split_num = split_num,
             y_train_true = train_y.values,
             y_train_pred = train_pred,
@@ -179,25 +183,26 @@ def _do_splits(X, y, model, main_path, metrics_dict, pair_list, is_classificatio
     split_results.sort(key=lambda run: list(run['test_metrics'].items())[0][1]) # sort splits by the test score of first metric
     worst, median, best = split_results[0], split_results[len(split_results)//2], split_results[-1]
     if not is_classification:
-        plot_helper.plot_best_worst(best['y_test_true'], best['y_test_pred'], worst['y_test_true'], worst['y_test_pred'], os.path.join(main_path, 'best_worst_overlay.png'), test_stats)
+        plot_helper.plot_best_worst(best['y_test_true'], best['y_test_pred'], worst['y_test_true'],
+                                    worst['y_test_pred'], os.path.join(main_path, 'best_worst_overlay.png'), test_stats)
 
     return split_results
 
 def _save_all_runs(runs, outdir):
-    for_table = []
+    table = []
     for run in runs:
         od = OrderedDict()
         for name, value in run.items():
             if name == 'train_metrics':
-                for k,v in run['train_metrics']:
+                for k,v in run['train_metrics'].items():
                     od['train_'+k] = v
             elif name == 'test_metrics':
-                for k,v in run['test_metrics']:
+                for k,v in run['test_metrics'].items():
                     od['test_'+k] = v
             else:
                 od[name] = value
-        for_table.append(od)
-    pd.DataFrame(for_table).to_html(join(outdir, 'results.html'))
+        table.append(od)
+    pd.DataFrame(table).to_html(join(outdir, 'all_runs_table.html'))
 
 def _instantiate(kwargs_dict, name_to_constructor, category):
     """
