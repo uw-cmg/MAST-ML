@@ -1,3 +1,9 @@
+"""
+A collection of classes for generating extra features.
+All classes here assume dataframe input and guarantee dataframe output.
+(So no numpy arrays.)
+"""
+
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import PolynomialFeatures as SklearnPolynomialFeatures
 from .util_legos import DoNothing

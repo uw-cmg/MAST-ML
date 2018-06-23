@@ -1,5 +1,5 @@
 """
-Place for misc functions that are needed for making legos
+Place for misc functions that are needed for making legos.
 Actual legos don't go in here.
 """
 

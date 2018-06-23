@@ -1,3 +1,9 @@
+"""
+Not integrated yet.
+A collection of classes for randomizing X-y matchings
+Needs to be part of main conf file.
+"""
+
 import pandas as pd
 import numpy as np
 

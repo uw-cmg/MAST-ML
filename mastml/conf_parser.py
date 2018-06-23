@@ -1,3 +1,7 @@
+"""
+Module for handling, parsing, and checking configuration files
+"""
+
 from configobj import ConfigObj
 from distutils.util import strtobool
 

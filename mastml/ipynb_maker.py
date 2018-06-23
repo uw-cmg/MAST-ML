@@ -1,3 +1,6 @@
+"""
+Module for creating Jupyter Notebooks so user can modify and regenerate the plots
+"""
 import textwrap
 from . import plot_helper
 #from mastml.plot_helper import * #parse_stat, plot_stats, make_fig_ax, plot_predicted_vs_true

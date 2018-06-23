@@ -1,3 +1,7 @@
+"""
+Module for loading checking the input data file
+"""
+
 import pandas as pd
 
 def load_data(file_path, input_features=None, target_feature=None, grouping_feature=None, clustering_features=None):

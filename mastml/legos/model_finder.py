@@ -1,3 +1,7 @@
+"""
+Provides a name_to_constructor dict for all the models in sklearn,
+and the check_models_mixed function
+"""
 import warnings
 
 import sklearn.base

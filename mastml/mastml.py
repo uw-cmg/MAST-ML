@@ -1,4 +1,6 @@
-" Does one big mastml run "
+"""
+Module for getting a mastml system call and calling all the appropriate subroutines
+"""
 
 import sys
 import argparse

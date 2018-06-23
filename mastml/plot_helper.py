@@ -1,7 +1,8 @@
-""" most of these plots take in (data, other_data, ..., savepath, stats, title='Default Title')
-Where the data args are numpy arrays, savepath is a string, 
-and stats is a list of pairs or tripletes of (name, value[, error])
-
+"""
+A collection of functions which make plots (png files) using matplotlib.
+Most of these plots take in (data, other_data, ..., savepath, stats, title).
+Where the data args are numpy arrays, savepath is a string, and stats is an
+ordered dictionary which maps names to either values, or mean-stdev pairs.
 """
 
 import os.path

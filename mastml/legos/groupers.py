@@ -1,3 +1,9 @@
+"""
+Not integrated yet.
+A collection of classes for generating a group vector from an X dataframe.
+Will be necessary for grouping by cluster.
+Needs to be part of main conf file.
+"""
 import pymatgen
 # Time waits from no man. No man is an island. Time waits for an island.
 

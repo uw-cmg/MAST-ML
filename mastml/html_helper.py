@@ -1,3 +1,8 @@
+"""
+Module for generating the nice collected index.html file,
+with best/worst plots, links to statistics, and more.
+"""
+
 import os
 from os.path import join, relpath # because it's used so much
 from time import gmtime, strftime
@@ -5,36 +10,6 @@ from time import gmtime, strftime
 import glob
 from dominate import document
 from dominate.tags import *
-
-# Goal for this thing:
-"""
-MAST-ML massively machine ml Turing complete
-Datetime
-
-if errors___presetn_:
-    errorwarings.txt
-
-Best:
-Model params
-Title
-[plot]
-
-Worst:
-model params
-Title
-[plot]
-
-Title
-[plot]
-
-Title
-[plot]
-
-final_data.csv
-statiscics.csv
-info.txt
-debug.txt
-"""
 
 def is_train_image(path):
     basename = os.path.basename(path)
