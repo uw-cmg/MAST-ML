@@ -9,6 +9,8 @@ import shutil
 import warnings
 from collections import OrderedDict
 
+from os.path import join # We use join tons
+
 import numpy as np
 import pandas as pd
 import sklearn.pipeline
@@ -79,7 +81,6 @@ def mastml_run(conf_path, data_path, outdir):
 
 def _do_fits(X, y, generators, normalizers, selectors, models, splitters,
              metrics_dict, outdir, is_classification):
-    join = os.path.join
     def cn(c):
         " Shorthand for getting the class name of an instance "
         return c.__class__.__name__
@@ -95,21 +96,21 @@ def _do_fits(X, y, generators, normalizers, selectors, models, splitters,
     print("First three rows of generated data:")
     print(X_generated.head(3))
     print("Saving generated data to csv...")
-    X_generated.to_csv(join(outdir, "data_generated.csv"), index=False)
+    pd.concat([X_generated, y], 1).to_csv(join(outdir, "data_generated.csv"), index=False)
     Xs_selected = []
     for normalizer in normalizers:
         print("Running normalizer", cn(normalizer))
         dirname = join(outdir, cn(normalizer))
         os.mkdir(dirname)
         X_normalized = normalizer.fit_transform(X_generated, y)
-        X_normalized.to_csv(join(dirname, "normalized.csv"), index=False)
+        pd.concat([X_normalized, y], 1).to_csv(join(dirname, "normalized.csv"), index=False)
         print("Done normalizing")
         print("Running selectors...")
         for selector in selectors:
             dirname = join(outdir, cn(normalizer), cn(selector))
             os.mkdir(dirname)
             X_selected = selector.fit_transform(X_normalized, y)
-            X_selected.to_csv(join(dirname, "selected.csv"), index=False)
+            pd.concat([X_selected, y], 1).to_csv(join(dirname, "selected.csv"), index=False)
             Xs_selected.append((normalizer, selector, X_selected))
             print("    selector", cn(selector), "done.")
 
@@ -129,12 +130,12 @@ def _do_fits(X, y, generators, normalizers, selectors, models, splitters,
 
 #def _do_combos(normalizer_name, selector_name, model_name, splitter_name, metrics_dict, pair_list, outdir, is_classification):
 def _do_splits(X, y, model, main_path, metrics_dict, pair_list, is_classification):
-    join = os.path.join
-
     split_results = []
     for split_num, (test_indices, train_indices) in enumerate(pair_list):
+        #for parameters in model_parameters_list:
+        #    pass
         print(f"    Doing split number {split_num}")
-        path = os.path.join(main_path, f"split_{split_num}")
+        path = join(main_path, f"split_{split_num}")
         os.mkdir(path)
         train_X, train_y = X.loc[train_indices], y.loc[train_indices]
         test_X,  test_y  = X.loc[test_indices],  y.loc[test_indices]
@@ -146,10 +147,10 @@ def _do_splits(X, y, model, main_path, metrics_dict, pair_list, is_classificatio
         test_pred  = model.predict(test_X)
 
         # Save train and test data and results to csv:
-        pd.concat([train_X, train_y, pd.DataFrame(train_pred, columns=['train_pred'], index=train_indices)], axis=1)\
-                .to_csv(join(path, 'train.csv'), index=False)
-        pd.concat([test_X,  test_y,  pd.DataFrame(test_pred,  columns=['test_pred'], index=test_indices)],  axis=1)\
-                .to_csv(join(path, 'test.csv'),  index=False)
+        train_pred_series = pd.DataFrame(train_pred, columns=['train_pred'], index=train_indices)
+        pd.concat([train_X, train_y, train_pred_series], 1).to_csv(join(path, 'train.csv'), index=False)
+        test_pred_series = pd.DataFrame(test_pred,   columns=['test_pred'],  index=test_indices)
+        pd.concat([test_X,  test_y,  test_pred_series],  1).to_csv(join(path, 'test.csv'),  index=False)
 
         # Collect all our metrics
         split_result = OrderedDict(
@@ -196,10 +197,13 @@ def _save_all_runs(runs, outdir):
             else:
                 od[name] = value
         for_table.append(od)
-    pd.DataFrame(for_table).to_html(os.path.join(outdir, 'results.html'))
+    pd.DataFrame(for_table).to_html(join(outdir, 'results.html'))
 
 def _instantiate(kwargs_dict, name_to_constructor, category):
-    "Uses name_to_constructor to instantiate ever item in kwargs_dict and return the list of instantiations"
+    """
+    Uses name_to_constructor to instantiate every item in kwargs_dict and return
+    the list of instantiations
+    """
     instantiations = []
     for name, kwargs in kwargs_dict.items():
         try:
@@ -220,7 +224,7 @@ def flag_favorite_runs(runs, outdir):
     # sort the runs by their score on the first test metric
     runs = sorted(runs, key=lambda run: run['test_metrics'][0][1])
     for run,name in [(runs[0],'WORST'), (runs[len(runs)//2], 'MEDIAN'), (runs[-1], 'BEST')]:
-        savepath = os.path.join(outdir, run['normalizer'], run['selector'], run['model'], 'split_'+run['split'], name)
+        savepath = join(outdir, run['normalizer'], run['selector'], run['model'], 'split_'+run['split'], name)
         # touch the file
         open(savepath, 'a').close()
 
