@@ -18,7 +18,9 @@ def ipynb_maker(plot_func):
         sig = inspect.signature(plot_func)
         binding = sig.bind(*args, **kwargs)
         all_args = binding.arguments
-        all_args['savepath'] = os.path.basename(all_args['savepath']) # fix absolute path problem
+        full_path = all_args['savepath']
+        filename = os.path.basename(all_args['savepath']) # fix absolute path problem
+        all_args['savepath'] = filename
 
         assert 'savepath' in all_args
 
@@ -55,14 +57,14 @@ def ipynb_maker(plot_func):
 
 
             {plot_func.__name__}({arg_names})
-            image(filename='{all_args['savepath']}')
+            image(filename='{filename}')
         """)
 
         nb = nbformat.v4.new_notebook()
         text_cells = [header, func_strings, plot_func_string, args_block, main]
         cells = [nbformat.v4.new_code_cell(cell_text) for cell_text in text_cells]
         nb['cells'] = cells
-        nbformat.write(nb, all_args['savepath'] + '.ipynb')
+        nbformat.write(nb, full_path + '.ipynb')
 
         return plot_func(*args, **kwargs)
     return wrapper
