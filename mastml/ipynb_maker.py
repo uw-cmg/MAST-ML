@@ -1,12 +1,14 @@
 """
 Module for creating Jupyter Notebooks so user can modify and regenerate the plots
 """
-import textwrap
-from . import plot_helper
-#from mastml.plot_helper import * #parse_stat, plot_stats, make_fig_ax, plot_predicted_vs_true
-import nbformat
+
 import inspect
 import os
+import textwrap
+
+import nbformat
+
+from . import plot_helper # TODO: fix cyclic import
 
 def ipynb_maker(plot_func):
     """
@@ -46,7 +48,7 @@ def ipynb_maker(plot_func):
         arg_assignments = []
         arg_names = []
         for key, var in all_args.items():
-            arg_assignments.append(f'{key} = {repr(var)}') 
+            arg_assignments.append(f'{key} = {repr(var)}')
             arg_names.append(key)
         args_block = ("from numpy import array\n" +
                       "from collections import OrderedDict\n" +

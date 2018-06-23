@@ -16,11 +16,8 @@
 ########################################################################
 
 from __future__ import print_function
-from setuptools.command.install import install
-from setuptools import setup, find_packages
 import sys
-import os
-import re
+from setuptools import setup, find_packages
 
 ###Python version check
 #print "Python version detected: %s" % sys.version_info
@@ -60,5 +57,3 @@ setup(
     long_description="MAterials Simulation Toolkit for Machine Learning (MASTML)",
     keywords=["MAST","materials","simulation","MASTML","machine learning"],
 )
-
-

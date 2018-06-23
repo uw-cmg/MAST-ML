@@ -7,9 +7,8 @@ import warnings
 import sklearn.base
 import sklearn.utils.testing
 
-# TODO does sklearn have like a find_model routine? (I don't think so)
 with warnings.catch_warnings():
-    warnings.filterwarnings("ignore",category=DeprecationWarning)
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
     name_to_constructor = dict(sklearn.utils.testing.all_estimators())
 
 def find_model(model_name):

@@ -1,8 +1,10 @@
 import sys
 
 class Tee(object):
-    """ instatiate this, and print will also go to a file! 
-    From https://stackoverflow.com/a/616686 """
+    """
+    Makes stdout go both to file and screen
+    From https://stackoverflow.com/a/616686
+    """
     def __init__(self, name, mode):
         self.file = open(name, mode)
         self.stdout = sys.stdout
@@ -17,8 +19,10 @@ class Tee(object):
         self.file.flush()
 
 class TeeErr(object):
-    """ replace sys.stderr with both to file! 
-    From https://stackoverflow.com/a/616686 """
+    """
+    Makes stderr go both to file and screen
+    From https://stackoverflow.com/a/616686
+    """
     def __init__(self, name, mode):
         self.file = open(name, mode)
         self.stderr = sys.stderr

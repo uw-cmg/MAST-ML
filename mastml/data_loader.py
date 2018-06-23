@@ -31,7 +31,7 @@ def load_data(file_path, input_features=None, target_feature=None, grouping_feat
     #    required_features.extend(clustering_features)
 
     # Ensure they are all present:
-    for feature in required_features: 
+    for feature in required_features:
         if feature not in df.columns:
             raise Exception(f"Data file does not have column '{feature}'")
 

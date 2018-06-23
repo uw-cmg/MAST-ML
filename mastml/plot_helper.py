@@ -8,14 +8,15 @@ ordered dictionary which maps names to either values, or mean-stdev pairs.
 import os.path
 import itertools
 
-import numpy as np
-import matplotlib
-from matplotlib import pyplot as plt
+import numpy as np # TODO: used?
+
 from sklearn.metrics import confusion_matrix
 
+import matplotlib
+from matplotlib import pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure, figaspect
-from matplotlib.ticker import MaxNLocator
+from matplotlib.ticker import MaxNLocator # TODO: used?
 
 
 # set all font to bigger
@@ -27,7 +28,7 @@ matplotlib.rc('figure', autolayout=True)
 
 # HEADERENDER don't delete this line, it's used by ipynb maker
 
-from .ipynb_maker import ipynb_maker
+from .ipynb_maker import ipynb_maker # TODO: fix cyclic import
 
 def make_plots(run, path, is_classification):
     join = os.path.join
@@ -62,15 +63,15 @@ def make_plots(run, path, is_classification):
 
 
 def parse_stat(name,value):
-    """ takes in a pair or tripple of stats and returns a string for the plot 
-    Also singleton tuples for Titles or something"""
+    " Stringifies the name value pair for display within a plot "
     name = name.replace('_', ' ')
     if not value:
         return name
     if isinstance(value, tuple):
         mean, std = value
-        return (f'{name}:' + '\n\t' + f'{mean:.3f}' + r'$\pm$' + f'{std:.3f}')
+        return f'{name}:' + '\n\t' + f'{mean:.3f}' + r'$\pm$' + f'{std:.3f}'
     return f'{name}: {value:.3f}'
+
 
 def plot_stats(fig, stats):
     """ print stats onto the image. Goes off screen if they are too long or too many in number """
@@ -78,8 +79,7 @@ def plot_stats(fig, stats):
     stat_str = '\n\n'.join(parse_stat(name, value) for name,value in stats.items())
 
     fig.text(0.62, 0.98, stat_str,
-            verticalalignment='top', wrap=True# transform=ax.transAxes)
-            )
+             verticalalignment='top', wrap=True)
 
 
 def make_fig_ax(aspect='equal'):
@@ -97,8 +97,8 @@ def make_fig_ax(aspect='equal'):
     return fig, ax
 
 @ipynb_maker
-def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False, title='Confusion matrix',
-        cmap=plt.cm.Blues):
+def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False,
+                          title='Confusion matrix', cmap=plt.cm.Blues):
     """
     This function prints and plots the confusion matrix.
     Normalization can be applied by setting `normalize=True`.
@@ -129,8 +129,8 @@ def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False, titl
     thresh = cm.max() / 2.
     for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
         ax.text(j, i, format(cm[i, j], fmt),
-                 horizontalalignment="center",
-                 color="white" if cm[i, j] > thresh else "black")
+                horizontalalignment="center",
+                color="white" if cm[i, j] > thresh else "black")
 
 
     # plots the stats
@@ -163,7 +163,8 @@ def plot_predicted_vs_true(y_true, y_pred, savepath, stats, title='predicted vs 
     fig.savefig(savepath)
 
 @ipynb_maker
-def plot_best_worst(y_true_best, y_pred_best, y_true_worst, y_pred_worst, savepath, stats, title='Best Worst Overlay'):
+def plot_best_worst(y_true_best, y_pred_best, y_true_worst, y_pred_worst, savepath,
+                    stats, title='Best Worst Overlay'):
     fig, ax = make_fig_ax()
     ax.set_title(title)
     # make diagonal line from absolute min to absolute max of any data point

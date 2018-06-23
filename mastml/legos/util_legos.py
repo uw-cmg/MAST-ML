@@ -12,7 +12,7 @@ class DataFrameFeatureUnion(BaseEstimator, TransformerMixin):
         self.transforms = transforms
     def fit(self, X, y=None):
         for transform in self.transforms:
-            transform.fit(X,y)
+            transform.fit(X, y)
         return self
     def transform(self, X):
         dataframes = [transform.transform(X) for transform in self.transforms]
@@ -22,7 +22,7 @@ class DoNothing(BaseEstimator, TransformerMixin):
     " Returns same input "
     def __init__(self):
         pass
-    def fit(self, X, y=None): 
+    def fit(self, X, y=None):
         return self
     def transform(self, X):
         return X
@@ -31,7 +31,7 @@ class Inspector(BaseEstimator, TransformerMixin):
     " Inspect the middle of the pipeline "
     def __init__(self):
         pass
-    def fit(self, X, y=None): 
+    def fit(self, X, y=None):
         pdb.set_trace()
         return self
     def transform(self, X):

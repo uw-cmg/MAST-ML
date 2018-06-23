@@ -7,7 +7,6 @@ import os
 from os.path import join, relpath # because it's used so much
 from time import gmtime, strftime
 
-import glob
 from dominate import document
 from dominate.tags import *
 
@@ -39,13 +38,13 @@ def show_split(split_dir, outdir):
 
     # loop seperately so we can control order
     for train_image, test_image in zip(sorted(train_images), sorted(test_images)):
-        image(relpath(train_image, outdir), 'train')
-        image(relpath(test_image, outdir), 'test')
+        make_image(relpath(train_image, outdir), 'train')
+        make_image(relpath(test_image, outdir), 'test')
         br();br()
 
     h3('links')
     for l in links:
-        link(relpath(l, outdir))
+        make_link(relpath(l, outdir))
         span('  ')
 
 def simple_section(filepath, outdir):
@@ -57,7 +56,7 @@ def simple_section(filepath, outdir):
 
     a(b(title))
 
-    link(relpath(filepath, outdir))
+    make_link(relpath(filepath, outdir))
 
     br()
 
@@ -71,7 +70,7 @@ def make_html(outdir):
 
         # link to error log
         #if errors_present:
-        #    p('You have errors! check ', link(error_log))
+        #    p('You have errors! check ', make_link(error_log))
 
         splits = list()
         link_sections = list()
@@ -108,7 +107,7 @@ def make_html(outdir):
             for fname in os.listdir(split):
                 if fname.endswith('.png'):
                     h3(os.path.splitext(fname)[0]) # probably best_worst overlay
-                    image(relpath(join(split, fname), outdir), fname)
+                    make_image(relpath(join(split, fname), outdir), fname)
                     br()
 
             # find the split_0 split_1 etc bs stuff
@@ -126,20 +125,15 @@ def make_html(outdir):
 
     print('wrote ', join(outdir, 'index.html'))
 
-def link_p(href):
-    """ Makes it slightly shorter to link files with their names"""
-    return p(link(href))
-
-def link(href):
-    """ Makes it slightly shorter to link files with their names"""
+def make_link(href):
+    " Make a link where text is filename of href "
     return a(os.path.basename(href), href=href, style='padding-left: 15px;')
 
-def image(src, title=None):
+def make_image(src, title=None):
+    " Show an image in fixed width "
     d = div(style='display:inline-block;', _class='photo')
     if title:
         d += h4(title)
         #d += p(a(title))
     d += img(src=src, width='500')
-
-
 

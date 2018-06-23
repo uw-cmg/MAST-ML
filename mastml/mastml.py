@@ -2,21 +2,18 @@
 Module for getting a mastml system call and calling all the appropriate subroutines
 """
 
-import sys
 import argparse
 import inspect
 import itertools
 import os
 import shutil
 import warnings
-from collections import OrderedDict
 
+from collections import OrderedDict
 from os.path import join # We use join tons
 
 import numpy as np
 import pandas as pd
-import sklearn.pipeline
-import sklearn.model_selection
 from sklearn.externals import joblib
 
 from . import conf_parser, data_loader, html_helper, plot_helper, metrics, utils
@@ -36,7 +33,7 @@ def mastml_run(conf_path, data_path, outdir):
         raise FileNotFoundError(f"No such file: {conf_path}")
 
     # Check data path:
-    if os.path.splitext(data_path)[1] not in ['.csv','.xlsx']:
+    if os.path.splitext(data_path)[1] not in ['.csv', '.xlsx']:
         raise Exception(f"Data file does not end in .csv or .xlsx: '{data_path}'")
     if not os.path.isfile(data_path):
         raise FileNotFoundError(f"No such file: {data_path}")
@@ -65,7 +62,7 @@ def mastml_run(conf_path, data_path, outdir):
 
     X, y = df[input_features], df[target_feature]
     runs = _do_combos(X, y, generators, normalizers, selectors, models, splitters,
-                    metrics_dict, outdir, conf['is_classification'])
+                      metrics_dict, outdir, conf['is_classification'])
 
     print("Making image html file...")
     html_helper.make_html(outdir)
@@ -124,7 +121,7 @@ def _do_combos(X, y, generators, normalizers, selectors, models, splitters,
 
             Xs_selected.append((normalizer, selector, X_selected))
 
-    splits = [(splitter, tuple(splitter.split(X,y))) for splitter in splitters]
+    splits = [(splitter, tuple(splitter.split(X, y))) for splitter in splitters]
 
     print("Fitting models to splits...")
     all_results = []
@@ -136,7 +133,7 @@ def _do_combos(X, y, generators, normalizers, selectors, models, splitters,
         os.makedirs(path)
         runs = _do_splits(X_selected, y, model, path, metrics_dict, pair_list, is_classification)
         all_results.extend(runs)
-    
+
     return all_results
 
 
@@ -183,8 +180,10 @@ def _do_splits(X, y, model, main_path, metrics_dict, pair_list, is_classificatio
             y_train_pred = train_pred,
             y_test_true  = test_y.values,
             y_test_pred  = test_pred,
-            train_metrics = OrderedDict((name, function(train_y, train_pred)) for name,function in metrics_dict.items()),
-            test_metrics  = OrderedDict((name, function(test_y, test_pred))   for name,function in metrics_dict.items()),
+            train_metrics = OrderedDict((name, function(train_y, train_pred))
+                                        for name,function in metrics_dict.items()),
+            test_metrics  = OrderedDict((name, function(test_y, test_pred))
+                                        for name,function in metrics_dict.items()),
         )
 
 
@@ -221,10 +220,10 @@ def _save_all_runs(runs, outdir):
         od = OrderedDict()
         for name, value in run.items():
             if name == 'train_metrics':
-                for k,v in run['train_metrics'].items():
+                for k, v in run['train_metrics'].items():
                     od['train_'+k] = v
             elif name == 'test_metrics':
-                for k,v in run['test_metrics'].items():
+                for k, v in run['test_metrics'].items():
                     od['test_'+k] = v
             else:
                 od[name] = value
@@ -257,11 +256,10 @@ if __name__ == '__main__':
     parser.add_argument('conf_path', type=str, help='path to mastml .conf file')
     parser.add_argument('data_path', type=str, help='path to csv or xlsx file')
     parser.add_argument('-o', action="store", dest='outdir', default='results',
-            help='Folder path to save output files to. Defaults to results/')
+                        help='Folder path to save output files to. Defaults to results/')
 
     args = parser.parse_args()
 
     mastml_run(os.path.abspath(args.conf_path),
                os.path.abspath(args.data_path),
                os.path.abspath(args.outdir))
-

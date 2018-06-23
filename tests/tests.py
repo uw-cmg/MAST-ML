@@ -4,26 +4,27 @@ import random
 import pandas as pd
 import numpy as np
 
-
 from mastml import mastml
 from mastml import plot_helper, html_helper
+from mastml.legos.randomizers import Randomizer
+from mastml.legos.feature_normalizers import MeanStdevScaler
 from matplotlib.ticker import MaxNLocator
 
 class SmokeTests(unittest.TestCase):
 
     def test_classification(self):
-        mastml.mastml_run('tests/conf/classification.conf', 'tests/csv/three_clusters.csv',
-                'results/classification')
+        mastml.mastml_run('tests/conf/classification.conf', 'tests/csv/three_clusters.csv', 'results/classification')
 
     def test_regression(self):
         mastml.mastml_run('tests/conf/regression.conf', 'tests/csv/boston_housing.csv', 'results/regression')
 
     def test_generation(self):
-        mastml.mastml_run('tests/conf/feature-gen.conf', 'tests/csv/feature-gen.csv',
-                'results/generation')
+        mastml.mastml_run('tests/conf/feature-gen.conf', 'tests/csv/feature-gen.csv', 'results/generation')
+
+    # TODO: add the other test conf files and csv files
 
 class TestPlotToPython(unittest.TestCase):
-    """ how to convert a call to plot to a .py file that the user can modify """
+    """ How to convert a call to plot to a .py file that the user can modify """
     def test_test(self):
         import textwrap
         header = textwrap.dedent("""\
@@ -88,20 +89,23 @@ class TestPlots(unittest.TestCase):
     y_pred] """
 
     def setUp(self):
+        # TODO: update this test
         self.stats = [
-                ('foo', 500000),
-                ('bar', 123.45660923904908),
-                ('baz', 'impossoble'),
-                ('rosco', 123e-500),
-                ('math', r"My long label with $\sqrt{2}$ $\Sigma_{C}$ math" "\n"
-                    r"continues here with $\pi$"),
-                ]
+            ('foo', 500000),
+            ('bar', 123.45660923904908),
+            ('baz', 'impossoble'),
+            ('rosco', 123e-500),
+            ('math', r"My long label with $\sqrt{2}$ $\Sigma_{C}$ math" "\n"
+                r"continues here with $\pi$"),
+        ]
 
-        self.stats2 = [('Mean over 10 tests',),
-                 ('5-fold average RMSE', 0.27, 0.01),
-                 ('5 fold mean error', 0.00 , 0.01),
-                 ('R-squared', 0.97),
-                 ('R-squared (no int)', 0.97)]
+        self.stats2 = [
+            ('Mean over 10 tests',),
+            ('5-fold average RMSE', 0.27, 0.01),
+            ('5 fold mean error', 0.00 , 0.01),
+            ('R-squared', 0.97),
+            ('R-squared (no int)', 0.97)
+        ]
 
     def test_plot_predicted_vs_true(self):
         y_pred_tall = 10 * (np.arange(90) + np.random.random_sample((90,)) * 10 - 3) + 0.5
@@ -109,7 +113,7 @@ class TestPlots(unittest.TestCase):
         y_true = np.arange(90)
 
         plot_helper.plot_predicted_vs_true(y_true, y_pred_tall, 'pred-vs-true_skinny.png', self.stats2)
-        plot_helper.plot_predicted_vs_true(y_true, y_pred_fat, 'pred-vs-true_fat.png', self.stats2)
+        plot_helper.plot_predicted_vs_true(y_true, y_pred_fat,  'pred-vs-true_fat.png',    self.stats2)
 
     def test_residuals_histogram(self):
         y_pred = np.arange(30) + sum(np.random.random_sample((30,)) for _ in range(10)) - 3
@@ -132,7 +136,7 @@ class TestPlots(unittest.TestCase):
         y_true = np.arange(90)
         y_pred = np.arange(90) + 9*sum(np.random.random_sample((90,)) for _ in range(10)) - 54
         y_pred_bad = 0.5*np.arange(90) + 20*sum(np.random.random_sample((90,)) for _ in range(10)) - 54
-        plot_helper.plot_best_worst(y_true, y_pred, y_pred_bad, 'best-worst.png', self.stats2)
+        plot_helper.plot_best_worst(y_true, y_pred, y_true, y_pred_bad, 'best-worst.png', self.stats2)
 
 
 
@@ -146,7 +150,6 @@ class TestHtml(unittest.TestCase):
         #html_helper.make_html('results/classification')
         #html_helper.make_html('results/regression')
 
-        
 
 class TestRandomizer(unittest.TestCase):
 
@@ -163,16 +166,15 @@ class TestRandomizer(unittest.TestCase):
 
 class TestNormalization(unittest.TestCase):
 
-    def  test_normalization(self):
+    def test_normalization(self):
         d1 = pd.DataFrame(np.random.random((7,3)), columns=['a','b','c']) * 4 + 6 # some random data
 
-        fn = FeatureNormalization(features=['a','c'], mean=-2, stdev=5)
+        fn = MeanStdevScaler(features=['a','c'], mean=-2, stdev=5)
         fn.fit()
 
         d2 = fn.transform(d1)
         self.assertTrue(set(d1.columns) == set(d2.columns))
         arr = d2[['a','c']].values
-        #import pdb; pdb.set_trace()
         self.assertTrue(abs(arr.mean() - (-2)) < 0.001)
         self.assertTrue(abs(arr.std() - 5) < 0.001)
 

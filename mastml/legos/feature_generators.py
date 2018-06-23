@@ -4,14 +4,29 @@ All classes here assume dataframe input and guarantee dataframe output.
 (So no numpy arrays.)
 """
 
+# TODO: implement API feature generation!!
+
+import multiprocessing
+import os
+import sys
+import warnings
+
+import numpy as np
+import pandas as pd
+
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import PolynomialFeatures as SklearnPolynomialFeatures
+
+from pymatgen import Element, Composition
+from pymatgen.ext.matproj import MPRester
+from citrination_client import CitrinationClient, PifQuery, SystemQuery, ChemicalFieldQuery, ChemicalFilter
+# trouble? try: `pip install citrination_client=="2.1.0"`
+
+import mastml
 from .util_legos import DoNothing
 
 # locate path to directory containing AtomicNumber.table, AtomicRadii.table AtomicVolume.table, etc
 # needs to do it the hard way becuase python -m sets cwd to wherever python is ran from.
-import os
-import mastml
 print('mastml dir: ', mastml.__path__)
 MAGPIE_DATA_PATH = os.path.join(mastml.__path__[0], '../magpie/')
 
@@ -30,37 +45,28 @@ class PolynomialFeatures(BaseEstimator, TransformerMixin):
         array = df[self.features].values
         return pd.DataFrame(self.SPF.transform(array))
 
-# TODO: implement API feature generation!!
 
 class Magpie(BaseEstimator, TransformerMixin):
-
     def __init__(self, composition_feature):
         self.composition_feature = composition_feature
-        
     def fit(self, df, y=None):
         self.original_features = df.columns
         return self
-    
     def transform(self, df):
         mfg = MagpieFeatureGeneration(df, self.composition_feature)
         df = mfg.generate_magpie_features()
         df = df.drop(self.original_features, axis=1)
-
         # delete missing values, generation makes a lot of garbage.
         df = df.select_dtypes(['number']).dropna(axis=1)
-
         assert self.composition_feature not in df.columns
         return df
 
 
 class PassThrough(BaseEstimator, TransformerMixin):
-
     def __init__(self, features):
         self.features = features
-        
     def fit(self, df, y=None):
         return self
-    
     def transform(self, df):
         df = df[self.features]
         return df
@@ -74,19 +80,10 @@ name_to_constructor = {
 }
 
 
-import os
-import sys
-import warnings
-import numpy as np
-import pandas as pd
-from pymatgen import Element, Composition
-from pymatgen.ext.matproj import MPRester
-from citrination_client import CitrinationClient, PifQuery, SystemQuery, ChemicalFieldQuery, ChemicalFilter
-# trouble? try: `pip install citrination_client=="2.1.0"`
-import multiprocessing
+# OLD STUFF NEEDS TO BE REINTEGRATED:
 
 def feature_generation(df, save_path, add_magpie_features=False, add_materialsproject_features=False,
-        add_citrine_features=False, materialsproject_apikey='', citrine_apikey=''): 
+                       add_citrine_features=False, materialsproject_apikey='', citrine_apikey=''):
 
 
     # collect all dataframes, including the original for concatenation at the end
@@ -106,7 +103,7 @@ def feature_generation(df, save_path, add_magpie_features=False, add_materialspr
         cfg = CitrineFeatureGeneration('default', save_path, comp_df.copy(), citrine_apikey)
         dataframes.append(cfg.generate_citrine_features())
 
-    big_df =  pd.concat(dataframes, axis=1)
+    big_df = pd.concat(dataframes, axis=1)
 
     # drop all Material composition columns
     big_df = big_df.drop(columns=self.composition_feature)
@@ -280,7 +277,7 @@ class MagpieFeatureGeneration(object): #TODO update docs once tests are passing
 
         magpiedata_atomic = {}
         for k, v in element_dict.items():
-            atomic_values ={}
+            atomic_values = {}
             for feature_name in magpie_feature_names:
                 f = open(data_path + '/' + feature_name + '.table', 'r')
                 # Get Magpie data of relevant atomic numbers for this composition
@@ -311,6 +308,7 @@ class MagpieFeatureGeneration(object): #TODO update docs once tests are passing
                 element_list.append(k)
 
         return element_list, atoms_per_formula_unit
+
 
 class MaterialsProjectFeatureGeneration(object):
     """
@@ -374,7 +372,7 @@ class MaterialsProjectFeatureGeneration(object):
 
         # Sort structures by stability (i.e. E above hull), and only return most stable compound data
         if len(structure_data_list) > 0:
-            structure_data_list = sorted(structure_data_list, key= lambda e_above: e_above['e_above_hull'])
+            structure_data_list = sorted(structure_data_list, key=lambda e_above: e_above['e_above_hull'])
             structure_data_most_stable = structure_data_list[0]
         else:
             structure_data_most_stable = {}
@@ -413,6 +411,7 @@ class MaterialsProjectFeatureGeneration(object):
 
         return structure_data_dict_condensed
 
+
 class CitrineFeatureGeneration(object):
     """
     Class to generate new features using Citrine data and dataframe containing material compositions
@@ -440,8 +439,9 @@ class CitrineFeatureGeneration(object):
         self.composition_feature = composition_feature
 
     def generate_citrine_features(self):
-        print('WARNING: You have specified generation of features from Citrine. Based on which materials you are'
-                     'interested in, there may be many records to parse through, thus this routine may take a long time to complete!')
+        print('WARNING: You have specified generation of features from Citrine. Based on which'
+              ' materials you are interested in, there may be many records to parse through, thus'
+              ' this routine may take a long time to complete!')
         try:
             compositions = self.dataframe[self.composition_feature].tolist()
         except KeyError as e:
@@ -451,7 +451,7 @@ class CitrineFeatureGeneration(object):
         citrine_dict_property_max = dict()
         citrine_dict_property_avg = dict()
 
-        # before: ~11 seconds 
+        # before: ~11 seconds
         # made into a func so we can do requests in parallel
 
         # now like 1.8 secs!
@@ -499,10 +499,11 @@ class CitrineFeatureGeneration(object):
     def _get_pifquery_property_list(self, pifquery):
         property_name_list = list()
         property_value_list = list()
-        accepted_properties_list = ['mass', 'space group', 'band', 'Band',
-            'energy', 'volume', 'density', 'dielectric', 'Dielectric', 'Enthalpy',
-            'Convex', 'Magnetization', 'Elements', 'Modulus', 'Shear', "Poisson's",
-            'Elastic', 'Energy']
+        accepted_properties_list = [
+            'mass', 'space group', 'band', 'Band', 'energy', 'volume', 'density', 'dielectric',
+            'Dielectric', 'Enthalpy', 'Convex', 'Magnetization', 'Elements', 'Modulus', 'Shear',
+            "Poisson's", 'Elastic', 'Energy'
+        ]
 
         for result_number, results in enumerate(pifquery):
             for i, dictionary in enumerate(results['system']['properties']):

@@ -23,8 +23,3 @@ def dataframify_selector(transform):
     def new_transform(self, df):
         return df[df.columns[self.get_support(indices=True)]]
     return new_transform
-
-def variance_threshold_selector(data, threshold=0.5):
-    selector = VarianceThreshold(threshold)
-    selector.fit(data)
-    return data[data.columns[selector.get_support(indices=True)]]

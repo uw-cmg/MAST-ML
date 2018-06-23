@@ -35,8 +35,10 @@ class NoSplit(BaseEstimator, TransformerMixin):
         return [[indices, indices]]
 
 class JustEachGroup(BaseEstimator, TransformerMixin):
-    """ Train the model on one group at a time and test it on the rest of the data
-    This class wraps "LeavePGroupsOut with P set to n-1. """
+    """
+    Train the model on one group at a time and test it on the rest of the data
+    This class wraps "LeavePGroupsOut with P set to n-1.
+    """
 
     def __init__(self):
         pass
@@ -75,4 +77,3 @@ name_to_constructor = {
     'JustEachGroup': JustEachGroup,
     'WithoutElement': WithoutElement,
 }
-

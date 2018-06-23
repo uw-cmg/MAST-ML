@@ -45,7 +45,7 @@ regression_metrics = {
     'explained_variance_score': explained_variance_score,  # Explained variance regression score function
     'mean_absolute_error': mean_absolute_error,  # Mean absolute error regression loss
     'mean_squared_error': mean_squared_error,  # Mean squared error regression loss
-    'root_mean_squared_error': lambda y_true, y_pred: mean_squared_error(y_true,y_pred)**0.5,
+    'root_mean_squared_error': lambda y_true, y_pred: mean_squared_error(y_true, y_pred)**0.5,
     'mean_squared_log_error': mean_squared_log_error,  # Mean squared logarithmic error regression loss
     'median_absolute_error': median_absolute_error,  # Median absolute error regression loss
     'r2_score': r2_score,  # R^2 (coefficient of determination) regression score function.
@@ -59,4 +59,3 @@ def check_names(metric_names, is_classification):
     for name in metric_names:
         if name not in metrics_dict:
             raise Exception(f"Metric '{name}' is not supported for {task}.")
-
