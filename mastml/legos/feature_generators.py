@@ -125,8 +125,18 @@ name_to_constructor = {
 
 def clean_dataframe(df):
     """ Delete missing values or non-numerics """
+    df = df.apply(pd.to_numeric) # convert non-number to NaN
+
+    # drop empty rows
+    before_count = df.shape[0]
+    df = df.dropna(axis=0, how='all')
+    lost_count = before_count - df.shape[0]
+    if lost_count > 0:
+        warnings.warn(f'Dropping {lost_count}/{before_count} rows for being totally empty')
+
+    # drop columns with any empty cells
     before_count = len(df.columns)
-    #df = df.select_dtypes(['number']).dropna(axis=1)
+    df = df.select_dtypes(['number']).dropna(axis=1)
     lost_count = before_count - len(df.columns)
     if lost_count > 0:
         warnings.warn(f'Dropping {lost_count}/{before_count} generated columns due to missing values')
@@ -375,7 +385,6 @@ class MaterialsProjectFeatureGeneration(object):
         return dataframe
 
     def _get_data_from_materials_project(self, composition):
-        composition = 'FeO3'
         mprester = MPRester(self.mapi_key)
         structure_data_list = mprester.get_data(chemsys_formula_id=composition)
 
@@ -398,14 +407,12 @@ class MaterialsProjectFeatureGeneration(object):
             for prop in property_list:
                 if prop in elastic_property_list:
                     try:
-                        structure_data_dict_condensed[prop] =
-                        structure_data_most_stable["elasticity"][prop]
+                        structure_data_dict_condensed[prop] = structure_data_most_stable["elasticity"][prop]
                     except TypeError:
                         structure_data_dict_condensed[prop] = ''
                 elif prop == "number":
                     try:
-                        structure_data_dict_condensed["Spacegroup_"+prop] =
-                        structure_data_most_stable["spacegroup"][prop]
+                        structure_data_dict_condensed["Spacegroup_"+prop] = structure_data_most_stable["spacegroup"][prop]
                     except TypeError:
                         structure_data_dict_condensed[prop] = ''
                 else:
@@ -420,7 +427,10 @@ class MaterialsProjectFeatureGeneration(object):
                 else:
                     structure_data_dict_condensed[prop] = ''
 
-        print('MAterials Project Feature Generation', composition, structure_data_dict_condensed)
+        if all(val == '' for _, val in structure_data_dict_condensed.items()):
+            warnings.warn(f'No data found for composition "{composition}" using materials project')
+        else:
+            print('MAterials Project Feature Generation', composition, structure_data_dict_condensed)
         return structure_data_dict_condensed
 
 
