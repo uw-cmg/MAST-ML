@@ -395,28 +395,30 @@ class MaterialsProjectFeatureGeneration(object):
         elastic_property_list = ["G_Voigt_Reuss_Hill", "G_Reuss", "K_Voigt_Reuss_Hill", "K_Reuss", "K_Voigt", "G_Voigt",
                                  "G_VRH", "homogeneous_poisson", "poisson_ratio", "universal_anisotropy", "K_VRH", "elastic_anisotropy"]
         if len(structure_data_list) > 0:
-            for property in property_list:
-                if property in elastic_property_list:
+            for prop in property_list:
+                if prop in elastic_property_list:
                     try:
-                        structure_data_dict_condensed[property] = structure_data_most_stable["elasticity"][property]
+                        structure_data_dict_condensed[prop] =
+                        structure_data_most_stable["elasticity"][prop]
                     except TypeError:
-                        structure_data_dict_condensed[property] = ''
-                elif property == "number":
+                        structure_data_dict_condensed[prop] = ''
+                elif prop == "number":
                     try:
-                        structure_data_dict_condensed["Spacegroup_"+property] = structure_data_most_stable["spacegroup"][property]
+                        structure_data_dict_condensed["Spacegroup_"+prop] =
+                        structure_data_most_stable["spacegroup"][prop]
                     except TypeError:
-                        structure_data_dict_condensed[property] = ''
+                        structure_data_dict_condensed[prop] = ''
                 else:
                     try:
-                        structure_data_dict_condensed[property] = structure_data_most_stable[property]
+                        structure_data_dict_condensed[prop] = structure_data_most_stable[prop]
                     except TypeError:
-                        structure_data_dict_condensed[property] = ''
+                        structure_data_dict_condensed[prop] = ''
         else:
-            for property in property_list:
-                if property == "number":
-                    structure_data_dict_condensed["Spacegroup_"+property] = ''
+            for prop in property_list:
+                if prop == "number":
+                    structure_data_dict_condensed["Spacegroup_"+prop] = ''
                 else:
-                    structure_data_dict_condensed[property] = ''
+                    structure_data_dict_condensed[prop] = ''
 
         print('MAterials Project Feature Generation', composition, structure_data_dict_condensed)
         return structure_data_dict_condensed
