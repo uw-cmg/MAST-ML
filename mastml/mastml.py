@@ -143,7 +143,7 @@ def _do_splits(X, y, model, main_path, metrics_dict, pair_list, is_classificatio
     train and test the model on each split that the splitter makes
     """
     split_results = []
-    for split_num, (test_indices, train_indices) in enumerate(pair_list):
+    for split_num, (train_indices, test_indices) in enumerate(pair_list):
 
         #for parameters in model_parameters_list:
         #    pass
