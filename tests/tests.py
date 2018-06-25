@@ -9,6 +9,7 @@ from mastml import plot_helper, html_helper
 from mastml.legos.randomizers import Randomizer
 from mastml.legos.feature_normalizers import MeanStdevScaler
 from matplotlib.ticker import MaxNLocator
+from mastml.legos import feature_generators
 
 class SmokeTests(unittest.TestCase):
 
@@ -83,6 +84,36 @@ class TestPlotToPython(unittest.TestCase):
         cells = [nbformat.v4.new_code_cell(cell_text) for cell_text in text_cells]
         nb['cells'] = cells
         nbformat.write(nb, 'test.ipynb')
+
+class TestGeneration(unittest.TestCase):
+
+    def setUp(self):
+        self.df = pd.read_csv('tests/csv/feature_generation.csv')
+
+    def test_magpie(self):
+        magpie = feature_generators.Magpie('MaterialComp')
+        df = self.df.copy()
+        magpie.fit(df)
+        df = magpie.transform(df)
+        df.to_csv('magpie_test.csv')
+
+    def test_materials_project(self):
+        materials_project = feature_generators.MaterialsProject('MaterialComp', 'TtAHFCrZhQa7cwEy')
+        #materials_project = feature_generators.MaterialsProject('MaterialComp',  'amQVQutFrr7etr4ufQQh0gtt')
+        # TODO test for bad api key using pymatgen.ext.matproj.MPRestError
+
+        df = self.df.copy()
+        materials_project.fit(df)
+        df = materials_project.transform(df)
+        df.to_csv('materials_project.csv')
+
+    def test_citrine(self):
+        citrine = feature_generators.Citrine('MaterialComp', 'amQVQutFrr7etr4ufQQh0gtt')
+        df = self.df.copy()
+        citrine.fit(df)
+        df = citrine.transform(df)
+        df.to_csv('citrine.csv')
+
 
 class TestPlots(unittest.TestCase):
     """ don't mind the mismatched naming conventions for [true actual y_true] and [pred prediction
