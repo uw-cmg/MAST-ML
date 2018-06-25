@@ -55,12 +55,54 @@ class Magpie(BaseEstimator, TransformerMixin):
     def transform(self, df):
         mfg = MagpieFeatureGeneration(df, self.composition_feature)
         df = mfg.generate_magpie_features()
+
         df = df.drop(self.original_features, axis=1)
         # delete missing values, generation makes a lot of garbage.
+        df = clean_dataframe(df)
         df = df.select_dtypes(['number']).dropna(axis=1)
         assert self.composition_feature not in df.columns
         return df
 
+
+class MaterialsProject(BaseEstimator, TransformerMixin):
+    def __init__(self, composition_feature, api_key):
+        self.composition_feature = composition_feature
+        self.api_key = api_key
+
+    def fit(self, df, y=None):
+        self.original_features = df.columns
+        return self
+
+    def transform(self, df):
+        # make materials project api call (uses internet)
+        mpg = MaterialsProjectFeatureGeneration(df.copy(), self.api_key, self.composition_feature)
+        df = mpg.generate_materialsproject_features()
+
+        df = df.drop(self.original_features, axis=1)
+        # delete missing values, generation makes a lot of garbage.
+        df = clean_dataframe(df)
+        assert self.composition_feature not in df.columns
+        return df
+
+class Citrine(BaseEstimator, TransformerMixin):
+    def __init__(self, composition_feature, api_key):
+        self.composition_feature = composition_feature
+        self.api_key = api_key
+
+    def fit(self, df, y=None):
+        self.original_features = df.columns
+        return self
+
+    def transform(self, df):
+        # make citrine api call (uses internet)
+        cfg = CitrineFeatureGeneration(df.copy(), self.api_key, self.composition_feature)
+        df = cfg.generate_citrine_features())
+
+        df = df.drop(self.original_features, axis=1)
+        # delete missing values, generation makes a lot of garbage.
+        df = clean_dataframe(df)
+        assert self.composition_feature not in df.columns
+        return df
 
 class PassThrough(BaseEstimator, TransformerMixin):
     def __init__(self, features):
@@ -79,51 +121,14 @@ name_to_constructor = {
     'PassThrough':PassThrough
 }
 
-
-# OLD STUFF NEEDS TO BE REINTEGRATED:
-
-def feature_generation(df, save_path, add_magpie_features=False, add_materialsproject_features=False,
-                       add_citrine_features=False, materialsproject_apikey='', citrine_apikey=''):
-
-
-    # collect all dataframes, including the original for concatenation at the end
-    dataframes = [df]
-
-    comp_df = df[['Material compositions']]
-
-    if add_magpie_features:
-        mfg = MagpieFeatureGeneration('default', save_path, comp_df.copy())
-        dataframes.append(mfg.generate_magpie_features())
-
-    if add_materialsproject_features:
-        mpg = MaterialsProjectFeatureGeneration('default', save_path, comp_df.copy(), materialsproject_apikey)
-        dataframes.append(mpg.generate_materialsproject_features())
-
-    if add_citrine_features:
-        cfg = CitrineFeatureGeneration('default', save_path, comp_df.copy(), citrine_apikey)
-        dataframes.append(cfg.generate_citrine_features())
-
-    big_df = pd.concat(dataframes, axis=1)
-
-    # drop all Material composition columns
-    big_df = big_df.drop(columns=self.composition_feature)
-
-    # replace empty string with NaN's
-    big_df = big_df.replace('', np.nan)
-    big_df = big_df.replace('NaN', np.nan)
-
-    # drop columns with any nan or empty
-    before_count = len(big_df.columns)
-    big_df = big_df.dropna(axis=1)
+def clean_dataframe(df):
+    """ Delete missing values or non-numerics """
+    before_count = len(df.columns)
+    df = df.select_dtypes(['number']).dropna(axis=1)
     lost_count = before_count - len(big_df.columns)
     if lost_count > 0:
-        warnings.warn(f'Dropping {lost_count} out of {before_count} columns due to missing values')
-
-        
-
-    #big_df.to_csv(os.path.join(save_path, 'god_is_great_and_i_am_with_him.csv'), index=False)
-    return big_df
-
+        warnings.warn(f'Dropping {lost_count}/{before_count} generated columns due to missing values')
+    return df
 
 
 class MagpieFeatureGeneration(object): #TODO update docs once tests are passing
