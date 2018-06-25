@@ -49,9 +49,11 @@ class PolynomialFeatures(BaseEstimator, TransformerMixin):
 class Magpie(BaseEstimator, TransformerMixin):
     def __init__(self, composition_feature):
         self.composition_feature = composition_feature
+
     def fit(self, df, y=None):
         self.original_features = df.columns
         return self
+
     def transform(self, df):
         mfg = MagpieFeatureGeneration(df, self.composition_feature)
         df = mfg.generate_magpie_features()
@@ -96,7 +98,7 @@ class Citrine(BaseEstimator, TransformerMixin):
     def transform(self, df):
         # make citrine api call (uses internet)
         cfg = CitrineFeatureGeneration(df.copy(), self.api_key, self.composition_feature)
-        df = cfg.generate_citrine_features())
+        df = cfg.generate_citrine_features()
 
         df = df.drop(self.original_features, axis=1)
         # delete missing values, generation makes a lot of garbage.
@@ -124,8 +126,8 @@ name_to_constructor = {
 def clean_dataframe(df):
     """ Delete missing values or non-numerics """
     before_count = len(df.columns)
-    df = df.select_dtypes(['number']).dropna(axis=1)
-    lost_count = before_count - len(big_df.columns)
+    #df = df.select_dtypes(['number']).dropna(axis=1)
+    lost_count = before_count - len(df.columns)
     if lost_count > 0:
         warnings.warn(f'Dropping {lost_count}/{before_count} generated columns due to missing values')
     return df
@@ -343,7 +345,7 @@ class MaterialsProjectFeatureGeneration(object):
         try:
             compositions = self.dataframe[self.composition_feature]
         except KeyError as e:
-            raise Exception('No column named "Material compositions" in csv file')
+            raise Exception(f'No column named {self.composition_feature} in csv file')
 
         mpdata_dict_composition = {}
 
@@ -353,7 +355,8 @@ class MaterialsProjectFeatureGeneration(object):
         #    mpdata_dict_composition[composition] = composition_data_mp
         # after: 2.5 seconds!!!
         pool = multiprocessing.Pool(processes=20)
-        comp_data_mp = pool.map(self._get_data_from_materials_project, compositions)
+        #comp_data_mp = pool.map(self._get_data_from_materials_project, compositions)
+        comp_data_mp = map(self._get_data_from_materials_project, compositions)
 
         mpdata_dict_composition.update(dict(zip(compositions, comp_data_mp)))
 
@@ -372,6 +375,7 @@ class MaterialsProjectFeatureGeneration(object):
         return dataframe
 
     def _get_data_from_materials_project(self, composition):
+        composition = 'FeO3'
         mprester = MPRester(self.mapi_key)
         structure_data_list = mprester.get_data(chemsys_formula_id=composition)
 
@@ -414,6 +418,7 @@ class MaterialsProjectFeatureGeneration(object):
                 else:
                     structure_data_dict_condensed[property] = ''
 
+        print('MAterials Project Feature Generation', composition, structure_data_dict_condensed)
         return structure_data_dict_condensed
 
 
@@ -461,7 +466,8 @@ class CitrineFeatureGeneration(object):
 
         # now like 1.8 secs!
         pool = multiprocessing.Pool(processes=20)
-        result_tuples = pool.map(self._load_composition, compositions)
+        #result_tuples = pool.map(self._load_composition, compositions)
+        result_tuples = map(self._load_composition, compositions)
         for comp, (prop_min, prop_max, prop_avg) in zip(compositions, result_tuples):
             citrine_dict_property_min[comp] = prop_min
             citrine_dict_property_max[comp] = prop_max
@@ -487,6 +493,7 @@ class CitrineFeatureGeneration(object):
     def _load_composition(self, composition):
         pifquery = self._get_pifquery(composition=composition)
         property_name_list, property_value_list = self._get_pifquery_property_list(pifquery=pifquery)
+        print("Citrine Feature Generation: ", composition, property_name_list, property_value_list)
         property_names_unique, parsed_property_min, parsed_property_max, parsed_property_avg = self._parse_pifquery_property_list(property_name_list=property_name_list, property_value_list=property_value_list)
         return parsed_property_min, parsed_property_max, parsed_property_avg
 
