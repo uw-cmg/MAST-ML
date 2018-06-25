@@ -29,6 +29,14 @@ def ipynb_maker(plot_func):
 
         assert 'savepath' in all_args
 
+        readme = textwrap.dedent(f"""\
+            This notebook was automatically generated from your MAST-ML run so you can recreate the
+            plots. Some things are a bit different from the usual way of creating plots - we are
+            using the [object oriented
+            interface](https://matplotlib.org/tutorials/introductory/lifecycle.html) instead of
+            pyplot to create the `fig` and `ax` instances. 
+        """)
+
         # get source of the top of plot_helper.py
         header = ""
         with open(plot_helper.__file__) as f:
@@ -66,8 +74,9 @@ def ipynb_maker(plot_func):
         """)
 
         nb = nbformat.v4.new_notebook()
+        readme_cell = nbformat.v4.new_markdown_cell(readme)
         text_cells = [header, func_strings, plot_func_string, args_block, main]
-        cells = [nbformat.v4.new_code_cell(cell_text) for cell_text in text_cells]
+        cells = [readme_cell] + [nbformat.v4.new_code_cell(cell_text) for cell_text in text_cells]
         nb['cells'] = cells
         nbformat.write(nb, full_path + '.ipynb')
 
