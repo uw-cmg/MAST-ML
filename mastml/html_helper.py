@@ -6,6 +6,7 @@ with best/worst plots, links to statistics, and more.
 import os
 from os.path import join, relpath # because it's used so much
 from time import gmtime, strftime
+import logging
 
 from dominate import document
 from dominate.tags import *
@@ -123,7 +124,7 @@ def make_html(outdir):
     with open(join(outdir, 'index.html'), 'w') as f:
         f.write(doc.render())
 
-    print('wrote ', join(outdir, 'index.html'))
+    logging.info('wrote ', join(outdir, 'index.html'))
 
 def make_link(href):
     " Make a link where text is filename of href "

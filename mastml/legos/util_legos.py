@@ -2,6 +2,7 @@
 Collection of classes for debugging and control flow
 """
 import pdb
+import logging
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -45,17 +46,17 @@ class PrintHeadTail(BaseEstimator, TransformerMixin):
         self.head = head
         self.tail = tail
     def fit(self, data, correct=None):
-        print()
-        print(f"{self.name}, fit data:")
-        print(data[:self.head])
-        print(data[-self.tail:])
+        logging.info()
+        logging.info(f"{self.name}, fit data:")
+        logging.info(data[:self.head])
+        logging.info(data[-self.tail:])
         if correct is not None:
-            print(f"{self.name}, fit correct:")
-            print(correct[:self.head])
-            print(correct[-self.tail:])
+            logging.info(f"{self.name}, fit correct:")
+            logging.info(correct[:self.head])
+            logging.info(correct[-self.tail:])
         return self
     def transform(self, data):
-        print(f"{self.name}, transform data:")
-        print(data[:self.head])
-        print(data[-self.tail:])
+        logging.info(f"{self.name}, transform data:")
+        logging.info(data[:self.head])
+        logging.info(data[-self.tail:])
         return data

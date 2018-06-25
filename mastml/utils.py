@@ -32,3 +32,25 @@ class MastError(Exception):
 class ConfError(MastError):
     """ error in conf file """
     pass
+
+class MissingColumnError(MastError):
+    """ raised when your csv doesn't have the column you asked for """
+    pass
+
+class InvalidConfParameters(MastError):
+    """ invalid conf params """
+    pass
+
+class InvalidConfSubSection(MastError):
+    """ invalid section name """
+    pass
+class InvalidConfSection(MastError):
+    """ invalid section name """
+    pass
+
+class FiletypeError(MastError):
+    """ for using the wrong file extentions """
+    pass
+
+class FileNotFoundError(MastError): # sorry for re-using builtin name
+    pass

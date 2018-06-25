@@ -8,6 +8,7 @@ import itertools
 import os
 import shutil
 import warnings
+import logging
 
 from collections import OrderedDict
 from os.path import join # We use join tons
@@ -25,22 +26,22 @@ def mastml_run(conf_path, data_path, outdir):
 
     # Check conf path:
     if os.path.splitext(conf_path)[1] != '.conf':
-        raise Exception(f"Conf file does not end in .conf: '{conf_path}'")
+        raise utils.FiletypeError(f"Conf file does not end in .conf: '{conf_path}'")
     if not os.path.isfile(conf_path):
-        raise FileNotFoundError(f"No such file: {conf_path}")
+        raise utils.FileNotFoundError(f"No such file: {conf_path}")
 
     # Check data path:
     if os.path.splitext(data_path)[1] not in ['.csv', '.xlsx']:
-        raise Exception(f"Data file does not end in .csv or .xlsx: '{data_path}'")
+        raise utils.FiletypeError(f"Data file does not end in .csv or .xlsx: '{data_path}'")
     if not os.path.isfile(data_path):
-        raise FileNotFoundError(f"No such file: {data_path}")
+        raise utils.FileNotFoundError(f"No such file: {data_path}")
 
     # Check output directory:
     if os.path.exists(outdir):
-        print("Output dir already exists. Deleting...")
+        logging.warning("Output dir already exists. Deleting...")
         shutil.rmtree(outdir)
     os.makedirs(outdir)
-    print(f"Saving to directory 'outdir'")
+    logging.info(f"Saving to directory 'outdir'")
 
     # Load in and parse the configuration and data files:
     conf = conf_parser.parse_conf_file(conf_path)
@@ -61,14 +62,14 @@ def mastml_run(conf_path, data_path, outdir):
     runs = _do_combos(X, y, generators, normalizers, selectors, models, splitters,
                       metrics_dict, outdir, conf['is_classification'])
 
-    print("Making image html file...")
+    logging.info("Making image html file...")
     html_helper.make_html(outdir)
 
-    print("Making html file of all runs stats...")
+    logging.info("Making html file of all runs stats...")
     _save_all_runs(runs, outdir)
 
     # Copy the original input files to the output directory for easy reference
-    print("Copying input files to output directory...")
+    logging.info("Copying input files to output directory...")
     shutil.copy2(conf_path, outdir)
     shutil.copy2(data_path, outdir)
 
@@ -84,34 +85,34 @@ def _do_combos(X, y, generators, normalizers, selectors, models, splitters,
         " Shorthand for getting the class name of an instance "
         return c.__class__.__name__
 
-    print(f"There are {len(normalizers)} feature normalizers, {len(selectors)} feature selectors,"
-          f" {len(models)} models, and {len(splitters)} splitters.")
+    logging.info(f"There are {len(normalizers)} feature normalizers, {len(selectors)} feature selectors,"
+                 f" {len(models)} models, and {len(splitters)} splitters.")
 
-    print("Doing feature generation...")
+    logging.info("Doing feature generation...")
     generators_union = util_legos.DataFrameFeatureUnion(generators)
     X_generated = generators_union.fit_transform(X, y)
 
-    print("Saving generated data to csv...")
+    logging.info("Saving generated data to csv...")
     pd.concat([X_generated, y], 1).to_csv(join(outdir, "data_generated.csv"), index=False)
 
     Xs_selected = []
     for normalizer in normalizers:
 
-        print("Running normalizer", cn(normalizer), "...")
+        logging.info(f"Running normalizer {cn(normalizer)} ...")
         X_normalized = normalizer.fit_transform(X_generated, y)
 
-        print("Saving normalized data to csv...")
+        logging.info("Saving normalized data to csv...")
         dirname = join(outdir, cn(normalizer))
         os.mkdir(dirname)
         pd.concat([X_normalized, y], 1).to_csv(join(dirname, "normalized.csv"), index=False)
 
-        print("Running selectors...")
+        logging.info("Running selectors...")
         for selector in selectors:
 
-            print("    Running selector", cn(selector), "...")
+            logging.info(f"    Running selector {cn(selector)} ...")
             X_selected = selector.fit_transform(X_normalized, y)
 
-            print("    Saving selected features to csv...")
+            logging.info("    Saving selected features to csv...")
             dirname = join(outdir, cn(normalizer), cn(selector))
             os.mkdir(dirname)
             pd.concat([X_selected, y], 1).to_csv(join(dirname, "selected.csv"), index=False)
@@ -120,12 +121,12 @@ def _do_combos(X, y, generators, normalizers, selectors, models, splitters,
 
     splits = [(splitter, tuple(splitter.split(X, y))) for splitter in splitters]
 
-    print("Fitting models to splits...")
+    logging.info("Fitting models to splits...")
     all_results = []
     for (normalizer, selector, X_selected), model, (splitter, pair_list) \
             in itertools.product(Xs_selected, models, splits):
         subdir = join(cn(normalizer), cn(selector), cn(model), cn(splitter))
-        print(f"    Running splits for {subdir}")
+        logging.info(f"    Running splits for {subdir}")
         path = join(outdir, subdir)
         os.makedirs(path)
         runs = _do_splits(X_selected, y, model, path, metrics_dict, pair_list, is_classification)
@@ -145,27 +146,27 @@ def _do_splits(X, y, model, main_path, metrics_dict, pair_list, is_classificatio
         #for parameters in model_parameters_list:
         #    pass
 
-        print(f"        Doing split number {split_num}")
+        logging.info(f"        Doing split number {split_num}")
         train_X, train_y = X.loc[train_indices], y.loc[train_indices]
         test_X,  test_y  = X.loc[test_indices],  y.loc[test_indices]
 
         path = join(main_path, f"split_{split_num}")
         os.mkdir(path)
 
-        print("             Fitting model and making predictions...")
+        logging.info("             Fitting model and making predictions...")
         model.fit(train_X, train_y)
         joblib.dump(model, join(path, "trained_model.pkl"))
         train_pred = model.predict(train_X)
         test_pred  = model.predict(test_X)
 
         # Save train and test data and results to csv:
-        print("             Saving train/test data and predictions to csv...")
+        logging.info("             Saving train/test data and predictions to csv...")
         train_pred_series = pd.DataFrame(train_pred, columns=['train_pred'], index=train_indices)
         pd.concat([train_X, train_y, train_pred_series], 1).to_csv(join(path, 'train.csv'), index=False)
         test_pred_series = pd.DataFrame(test_pred,   columns=['test_pred'],  index=test_indices)
         pd.concat([test_X,  test_y,  test_pred_series],  1).to_csv(join(path, 'test.csv'),  index=False)
 
-        print("             Calculating score metrics...")
+        logging.info("             Calculating score metrics...")
         split_path = main_path.split(os.sep)
         split_result = OrderedDict(
             normalizer = split_path[-4],
@@ -184,12 +185,12 @@ def _do_splits(X, y, model, main_path, metrics_dict, pair_list, is_classificatio
         )
 
 
-        print("             Making plots...")
+        logging.info("             Making plots...")
         plot_helper.make_plots(split_result, path, is_classification)
 
         split_results.append(split_result)
 
-    print("    Calculating mean and stdev of scores...")
+    logging.info("    Calculating mean and stdev of scores...")
     train_stats = OrderedDict()
     test_stats  = OrderedDict()
     for name in metrics_dict:
@@ -198,7 +199,7 @@ def _do_splits(X, y, model, main_path, metrics_dict, pair_list, is_classificatio
         train_stats[name] = (np.mean(train_values), np.std(train_values))
         test_stats[name]  = (np.mean(test_values),  np.std(test_values))
 
-    print("    Making best/worst plots...")
+    logging.info("    Making best/worst plots...")
     split_results.sort(key=lambda run: list(run['test_metrics'].items())[0][1]) # sort splits by the test score of first metric
     worst, median, best = split_results[0], split_results[len(split_results)//2], split_results[-1]
     if not is_classification:
@@ -238,12 +239,14 @@ def _instantiate(kwargs_dict, name_to_constructor, category):
         try:
             instantiations.append(name_to_constructor[name](**kwargs))
         except TypeError:
-            print(f"ARGUMENTS FOR '{name}':", inspect.signature(name_to_constructor[name]))
-            raise TypeError(f"The {category} '{name}' has invalid parameters: {kwargs}\n"
-                            f"The arguments for '{name}' are printed above the call stack.")
+            logging.info(f"ARGUMENTS FOR '{name}': {inspect.signature(name_to_constructor[name])}")
+            raise utils.InvalidConfParameters(
+                f"The {category} '{name}' has invalid parameters: {kwargs}\n"
+                f"The arguments for '{name}' are printed above the call stack.")
         except KeyError:
-            raise KeyError(f"There is no {category} called '{name}'."
-                           f"All valid {category}: {list(name_to_constructor.keys())}")
+            raise utils.InvalidConfSubSection(
+                f"There is no {category} called '{name}'."
+                f"All valid {category}: {list(name_to_constructor.keys())}")
     return instantiations
 
 
