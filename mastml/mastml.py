@@ -8,6 +8,7 @@ import itertools
 import os
 import shutil
 import warnings
+import logging
 
 from collections import OrderedDict
 from os.path import join # We use join tons
@@ -109,7 +110,9 @@ def _do_combos(X, y, generators, normalizers, selectors, models, splitters,
         for selector in selectors:
 
             print("    Running selector", cn(selector), "...")
-            X_selected = selector.fit_transform(X_normalized, y)
+            # NOTE: Changed from fit_transform because PCA's fit_transform
+            #       doesn't call transform (does transformation itself).
+            X_selected = selector.fit(X_normalized, y).transform(X_normalized)
 
             print("    Saving selected features to csv...")
             dirname = join(outdir, cn(normalizer), cn(selector))
