@@ -1,38 +1,34 @@
 import sys
+import logging
 
-class Tee(object):
-    """
-    Makes stdout go both to file and screen
-    From https://stackoverflow.com/a/616686
-    """
-    def __init__(self, name, mode):
-        self.file = open(name, mode)
-        self.stdout = sys.stdout
-        sys.stdout = self
-    def __del__(self):
-        sys.stdout = self.stdout
-        self.file.close()
-    def write(self, data):
-        self.file.write(data)
-        self.stdout.write(data)
-    def flush(self):
-        self.file.flush()
+def activate_logging(to_screen=True, to_file=True):
 
-class TeeErr(object):
-    """
-    Makes stderr go both to file and screen
-    From https://stackoverflow.com/a/616686
-    """
-    def __init__(self, name, mode):
-        self.file = open(name, mode)
-        self.stderr = sys.stderr
-        sys.stderr = self
-    def __del__(self):
-        pass #lol
-        #sys.stderr = self.stderr
-        #self.file.close()
-    def write(self, data):
-        self.file.write(data)
-        self.stderr.write(data)
-    def flush(self):
-        self.file.flush()
+    rootLogger = logging.getLogger()
+    rootLogger.setLevel(logging.DEBUG)
+
+    if to_screen:
+        stdout_hdlr = logging.StreamHandler(sys.stdout)
+        stdout_hdlr.setLevel(logging.DEBUG)
+        rootLogger.addHandler(stdout_hdlr)
+
+        stderr_hdlr = logging.StreamHandler(sys.stderr)
+        stderr_hdlr.setLevel(logging.WARNING)
+        rootLogger.addHandler(stderr_hdlr)
+
+    if to_file:
+        log_hdlr = logging.StreamHandler(open('log.log', 'a'))
+        log_hdlr.setLevel(logging.DEBUG)
+        rootLogger.addHandler(log_hdlr)
+
+        errors_hdlr = logging.StreamHandler(open('errors.log', 'a'))
+        errors_hdlr.setLevel(logging.WARNING)
+        rootLogger.addHandler(errors_hdlr)
+
+
+class MastError(Exception):
+    """ base class for errors that should be shown to the user """
+    pass
+
+class ConfError(MastError):
+    """ error in conf file """
+    pass

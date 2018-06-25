@@ -1,5 +1,7 @@
 import unittest
 import random
+import warnings
+import logging
 
 import pandas as pd
 import numpy as np
@@ -10,6 +12,7 @@ from mastml.legos.randomizers import Randomizer
 from mastml.legos.feature_normalizers import MeanStdevScaler
 from matplotlib.ticker import MaxNLocator
 from mastml.legos import feature_generators
+
 
 class SmokeTests(unittest.TestCase):
 
@@ -23,6 +26,39 @@ class SmokeTests(unittest.TestCase):
         mastml.mastml_run('tests/conf/feature-gen.conf', 'tests/csv/feature-gen.csv', 'results/generation')
 
     # TODO: add the other test conf files and csv files
+
+class TestLogging(unittest.TestCase):
+    """ only run one at a time or you might get like double logging or something """
+    def test_log_levels(self):
+        mastml.utils.activate_logging()
+            
+        warnings.warn('a warning messgage!')
+
+        logging.debug("logging, A DEBUG message")
+        logging.info("logging, An INFO message")
+        logging.warning("logging, A WARNING message")
+        logging.error("logging, An ERROR message")
+        logging.critical("logging, A CRITICAL message")
+
+        raise Exception('oooops an exception')
+
+    def test_try_catch_error_log(self):
+        mastml.utils.activate_logging()
+            
+        try:
+            warnings.warn('a warning messgage!')
+
+            logging.debug("logging, A DEBUG message")
+            logging.info("logging, An INFO message")
+            logging.warning("logging, A WARNING message")
+            logging.error("logging, An ERROR message")
+            logging.critical("logging, A CRITICAL message")
+
+            raise Exception('oooops an exception')
+        except Exception as e:
+            with open('errors.log', 'a') as f:
+                f.write("really baddddd errror: " + str(e))
+            raise e
 
 class TestPlotToPython(unittest.TestCase):
     """ How to convert a call to plot to a .py file that the user can modify """
@@ -111,6 +147,32 @@ class TestGeneration(unittest.TestCase):
         citrine.fit(df)
         df = citrine.transform(df)
         df.to_csv('citrine.csv')
+
+    def test_clean_data(self):
+        good = pd.DataFrame([
+            [10,20,30,40],
+            [50,60,70,80],
+            [90,10,20,30],
+            [40,50,60,70]])
+        missing_row = pd.DataFrame([
+            ['','','',''],
+            [50,60,70,80],
+            [90,10,20,30],
+            [40,50,60,70]])
+        missing_some = pd.DataFrame([
+            [10,'',20,30],
+            [50,60,'',80],
+            [90,10,20,30],
+            [40,50,60,70]])
+        missing_col = pd.DataFrame([
+            ['',10,10,10],
+            ['',60,70,80],
+            ['',10,20,30],
+            ['',50,60,70]])
+        for df in [good, missing_row, missing_some, missing_col]:
+            print('before:\n', df, sep='')
+            print('aftere:\n', feature_generators.clean_dataframe(df), sep='')
+            print()
 
 
 class TestPlots(unittest.TestCase):

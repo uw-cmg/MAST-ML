@@ -19,9 +19,6 @@ from sklearn.externals import joblib
 from . import conf_parser, data_loader, html_helper, plot_helper, metrics, utils
 from .legos import data_splitters, feature_generators, feature_normalizers, feature_selectors, model_finder, util_legos
 
-utils.Tee('log.txt', 'w')
-utils.TeeErr('errors.txt', 'w')
-
 
 def mastml_run(conf_path, data_path, outdir):
     " Runs operations specifed in conf_path on data_path and puts results in outdir "
@@ -260,6 +257,19 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    mastml_run(os.path.abspath(args.conf_path),
-               os.path.abspath(args.data_path),
-               os.path.abspath(args.outdir))
+
+
+
+    try:
+        mastml_run(os.path.abspath(args.conf_path),
+                   os.path.abspath(args.data_path),
+                   os.path.abspath(args.outdir))
+    except utils.MastError as e:
+        # catch user errors, log and print, but don't raise and show them that nasty stack
+        logging.error(str(e))
+    except Exception as e:
+        # catch the error, save it to file, then raise it back up
+        logging.error('A runtime exception has occured, please go to '
+                      'https://github.com/uw-cmg/MAST-ML/issues and post your issue.')
+        logging.error(str(e))
+        raise e

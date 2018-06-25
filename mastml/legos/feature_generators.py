@@ -127,7 +127,7 @@ def clean_dataframe(df):
     """ Delete missing values or non-numerics """
     df = df.apply(pd.to_numeric) # convert non-number to NaN
 
-    # drop empty rows
+    # warn on empty rows
     before_count = df.shape[0]
     df = df.dropna(axis=0, how='all')
     lost_count = before_count - df.shape[0]
@@ -135,9 +135,9 @@ def clean_dataframe(df):
         warnings.warn(f'Dropping {lost_count}/{before_count} rows for being totally empty')
 
     # drop columns with any empty cells
-    before_count = len(df.columns)
+    before_count = df.shape[1]
     df = df.select_dtypes(['number']).dropna(axis=1)
-    lost_count = before_count - len(df.columns)
+    lost_count = before_count - df.shape[1]
     if lost_count > 0:
         warnings.warn(f'Dropping {lost_count}/{before_count} generated columns due to missing values')
     return df
