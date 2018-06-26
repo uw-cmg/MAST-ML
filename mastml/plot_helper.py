@@ -81,7 +81,7 @@ def parse_stat(name,value):
 
 
 def plot_stats(fig, stats):
-    print(stats)
+    #print(stats)
     """ print stats onto the image. Goes off screen if they are too long or too many in number """
 
     stat_str = '\n\n'.join(parse_stat(name, value) for name,value in stats.items())
@@ -164,7 +164,11 @@ def predicted_vs_true(train_triple, test_triple, outdir):
         ax.plot([min1, max1], [min1, max1], 'k--', lw=4, zorder=1)
 
         # fix up dem axis
-        ticks = np.linspace(min1, max1, 5)
+        if max1 - min1 > 5:
+            step = (int(max1) - int(min1)) // 3
+            ticks = range(int(min1), int(max1)+step, step)
+        else:
+            ticks = np.linspace(min1, max1, 4)
         ax.set_xticks(ticks)
         ax.set_yticks(ticks)
 
