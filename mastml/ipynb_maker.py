@@ -26,14 +26,11 @@ def ipynb_maker(plot_func):
 
         # if this is an outdir style function, fill in savepath and delete outdir
         if 'savepath' not in all_args:
-            all_args['savepath'] = os.path.join(all_args['outdir'], plot_func.__name__ + '.png')
-            del all_args['outdir']
+            basename = os.path.join(all_args['outdir'], plot_func.__name__ + '.png')
+        else:
+            full_path = all_args['savepath']
+            basename = os.path.basename(all_args['savepath']) # fix absolute path problem
 
-        full_path = all_args['savepath']
-        filename = os.path.basename(all_args['savepath']) # fix absolute path problem
-        all_args['savepath'] = filename
-
-        assert 'savepath' in all_args
 
         readme = textwrap.dedent(f"""\
             This notebook was automatically generated from your MAST-ML run so you can recreate the
@@ -76,7 +73,7 @@ def ipynb_maker(plot_func):
 
 
             {plot_func.__name__}({arg_names})
-            image(filename='{filename}')
+            image(filename='{basename}')
         """)
 
         nb = nbformat.v4.new_notebook()
