@@ -262,7 +262,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    utils.activate_logging(args)
+    utils.activate_logging(args.outdir, args)
 
 
     try:

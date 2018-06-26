@@ -3,6 +3,7 @@ import logging
 import textwrap
 import time
 import os
+from os.path import join
 
 class BetweenFilter(object):
     """ inclusive on both sides """
@@ -13,7 +14,7 @@ class BetweenFilter(object):
     def filter(self, logRecord):
         return self.min_level <= logRecord.levelno <= self.max_level
 
-def activate_logging(header_data, logger_name='mastml', to_screen=True, to_file=True):
+def activate_logging(savepath, header_data, logger_name='mastml', to_screen=True, to_file=True):
 
     #formatter = logging.Formatter("%(filename)s : %(funcName)s %(message)s")
     time_formatter = logging.Formatter("[%(levelname)s] %(asctime)s : %(message)s")
@@ -24,12 +25,12 @@ def activate_logging(header_data, logger_name='mastml', to_screen=True, to_file=
 
 
     if to_file:
-        log_hdlr = logging.StreamHandler(open('log.log', 'a'))
+        log_hdlr = logging.StreamHandler(open(join(savepath, 'log.log'), 'a'))
         log_hdlr.setLevel(logging.DEBUG)
         log_hdlr.setFormatter(time_formatter)
         rootLogger.addHandler(log_hdlr)
 
-        errors_hdlr = logging.StreamHandler(open('errors.log', 'a'))
+        errors_hdlr = logging.StreamHandler(open(join(savepath, 'errors.log'), 'a'))
         errors_hdlr.setLevel(logging.WARNING)
         errors_hdlr.setFormatter(time_formatter)
         rootLogger.addHandler(errors_hdlr)
