@@ -282,5 +282,5 @@ if __name__ == '__main__':
         # catch the error, save it to file, then raise it back up
         log.error('A runtime exception has occured, please go to '
                       'https://github.com/uw-cmg/MAST-ML/issues and post your issue.')
-        log.error(str(e))
+        log.exception(e)
         raise e

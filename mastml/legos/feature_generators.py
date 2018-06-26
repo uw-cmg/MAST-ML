@@ -142,7 +142,7 @@ name_to_constructor = {
 
 def clean_dataframe(df):
     """ Delete missing values or non-numerics """
-    df = df.apply(pd.to_numeric) # convert non-number to NaN
+    df = df.apply(pd.to_numeric, errors='coerce') # convert non-number to NaN
 
     # warn on empty rows
     before_count = df.shape[0]
