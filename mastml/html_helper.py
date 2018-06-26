@@ -21,22 +21,22 @@ def is_test_image(path):
     basename = os.path.basename(path)
     return os.path.splitext(basename)[1] == '.png' and 'test_' in basename
 
-def show_split(split_dir, outdir):
+def show_combo(combo_dir, outdir):
 
     # collect test image, train image, and other file links
     links = list()
     train_images = list()
     test_images = list()
-    for f in os.listdir(split_dir):
+    for f in os.listdir(combo_dir):
         if is_train_image(f):
-            train_images.append(join(split_dir, f))
+            train_images.append(join(combo_dir, f))
         elif is_test_image(f):
-            test_images.append(join(split_dir, f))
+            test_images.append(join(combo_dir, f))
         else:
-            links.append(join(split_dir, f))
+            links.append(join(combo_dir, f))
 
     # have a header for split_0 split_1 etc
-    h2(split_dir.split(os.sep)[-1])
+    h2(combo_dir.split(os.sep)[-1])
 
 
     # loop seperately so we can control order
@@ -75,7 +75,7 @@ def make_html(outdir):
         #if errors_present:
         #    p('You have errors! check ', make_link(error_log))
 
-        splits = list()
+        combos = list()
         link_sections = list()
         #favorites = dict()
 
@@ -83,8 +83,8 @@ def make_html(outdir):
             # find a folder that contains split_ folder.
             # For example, results/StandardScaler/SelectKBest/LinearRegression/KFold
             for d in dirs:
-                if d.startswith('split_'):
-                    splits.append(root)
+                if d.startswith('split_0'):
+                    combos.append(root)
 
             # extract links to important csvs and conf
             for f in files:
@@ -99,28 +99,24 @@ def make_html(outdir):
             simple_section(path, outdir)
 
         h1('Plots')
-        for split in splits:
+        for combo in combos:
             # come up with a good section title
-            path = os.path.normpath(relpath(split, outdir))
+            path = os.path.normpath(relpath(combo, outdir))
             paths = path.split(os.sep)
             title = " - ".join(paths)
             h2(title)
 
             # find the best worst overlay
-            for fname in os.listdir(split):
+            for fname in os.listdir(combo):
                 if fname.endswith('.png'):
                     h3(os.path.splitext(fname)[0]) # probably best_worst overlay
-                    make_image(relpath(join(split, fname), outdir), fname)
+                    make_image(relpath(join(combo, fname), outdir), fname)
                     br()
 
             # find the split_0 split_1 etc bs stuff
-            for fname in os.listdir(split):
+            for fname in os.listdir(combo):
                 if fname.startswith('split_'):
-                    show_split(join(split, fname), outdir)
-
-
-
-
+                    show_combo(join(combo, fname), outdir)
 
 
     with open(join(outdir, 'index.html'), 'w') as f:
