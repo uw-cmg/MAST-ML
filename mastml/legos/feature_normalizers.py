@@ -6,7 +6,7 @@ All classes here assume dataframe input and guarantee dataframe output.
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, Binarizer
 
 from . import util_legos, lego_utils
 
@@ -54,6 +54,7 @@ class NoNormalize(BaseEstimator, TransformerMixin):
 MinMaxScaler.transform = lego_utils.dataframify(MinMaxScaler.transform)
 
 name_to_constructor = {
+    'Binarizer': Binarizer,
     'MeanStdevScaler': MeanStdevScaler,
     'MinMaxScaler': MinMaxScaler,
     'NoNormalize': NoNormalize,
