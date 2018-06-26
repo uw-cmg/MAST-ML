@@ -66,15 +66,24 @@ def make_plots(run, path, is_classification):
 def parse_stat(name,value):
     " Stringifies the name value pair for display within a plot "
     name = name.replace('_', ' ')
+    # has a name only
     if not value:
         return name
+    # has a mean and std
     if isinstance(value, tuple):
         mean, std = value
         return f'{name}:' + '\n\t' + f'{mean:.3f}' + r'$\pm$' + f'{std:.3f}'
-    return f'{name}: {value:.3f}'
+    # has a name and value only
+    if isinstance(value, int) or (isinstance(value, float) and value%1 == 0):
+        return f'{name}: {int(value)}'
+    if isinstance(value, float):
+        return f'{name}: {value:.3f}'
+    return f'{name}: {value}' # probably a string
+
 
 
 def plot_stats(fig, stats):
+    print(stats)
     """ print stats onto the image. Goes off screen if they are too long or too many in number """
 
     stat_str = '\n\n'.join(parse_stat(name, value) for name,value in stats.items())
@@ -207,5 +216,28 @@ def plot_residuals_histogram(y_true, y_pred, savepath, stats, title='residuals h
     fig.tight_layout()
 
     plot_stats(fig, stats)
+
+    fig.savefig(savepath)
+
+@ipynb_maker
+def target_histogram(y_df, savepath, title='target histogram'):
+
+    fig, ax = make_fig_ax(aspect='auto')
+
+    ax.set_title(title)
+    # do the actual plotting
+    ax.hist(y_df)#, histtype='stepfilled')
+
+    # normal text stuff
+    ax.set_xlabel('y values')
+    ax.set_ylabel('frequency')
+
+    # make y axis ints, because it is discrete
+    #ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+
+    # shrink those margins
+    fig.tight_layout()
+
+    plot_stats(fig, dict(y_df.describe()))
 
     fig.savefig(savepath)

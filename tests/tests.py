@@ -13,7 +13,7 @@ from mastml.legos.feature_normalizers import MeanStdevScaler
 from matplotlib.ticker import MaxNLocator
 from mastml.legos import feature_generators
 
-mastml.utils.activate_logging()
+#mastml.utils.activate_logging()
 
 class SmokeTests(unittest.TestCase):
 
@@ -182,22 +182,22 @@ class TestPlots(unittest.TestCase):
 
     def setUp(self):
         # TODO: update this test
-        self.stats = [
+        self.stats = dict([
             ('foo', 500000),
             ('bar', 123.45660923904908),
             ('baz', 'impossoble'),
             ('rosco', 123e-500),
             ('math', r"My long label with $\sqrt{2}$ $\Sigma_{C}$ math" "\n"
                 r"continues here with $\pi$"),
-        ]
+        ])
 
-        self.stats2 = [
-            ('Mean over 10 tests',),
-            ('5-fold average RMSE', 0.27, 0.01),
-            ('5 fold mean error', 0.00 , 0.01),
+        self.stats2 = dict([
+            ('Mean over 10 tests', None),
+            ('5-fold average RMSE', (0.27, 0.01)),
+            ('5 fold mean error', (0.00 , 0.01)),
             ('R-squared', 0.97),
             ('R-squared (no int)', 0.97)
-        ]
+        ])
 
     def test_plot_predicted_vs_true(self):
         y_pred_tall = 10 * (np.arange(90) + np.random.random_sample((90,)) * 10 - 3) + 0.5
@@ -229,6 +229,11 @@ class TestPlots(unittest.TestCase):
         y_pred = np.arange(90) + 9*sum(np.random.random_sample((90,)) for _ in range(10)) - 54
         y_pred_bad = 0.5*np.arange(90) + 20*sum(np.random.random_sample((90,)) for _ in range(10)) - 54
         plot_helper.plot_best_worst(y_true, y_pred, y_true, y_pred_bad, 'best-worst.png', self.stats2)
+
+    def test_target_histogram(self):
+        y_df = pd.Series(np.concatenate([np.random.normal(4, size=(100,)), 
+                                         np.random.normal(-20, 10, size=(100,))]))
+        plot_helper.target_histogram(y_df, savepath = 'targethist.p.p.png')
 
 
 
