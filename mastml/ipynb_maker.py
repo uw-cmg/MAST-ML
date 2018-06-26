@@ -26,10 +26,11 @@ def ipynb_maker(plot_func):
 
         # if this is an outdir style function, fill in savepath and delete outdir
         if 'savepath' not in all_args:
-            basename = os.path.join(all_args['outdir'], plot_func.__name__ + '.png')
+            full_path = os.path.join(all_args['outdir'], plot_func.__name__ + '.png')
         else:
             full_path = all_args['savepath']
-            basename = os.path.basename(all_args['savepath']) # fix absolute path problem
+
+        basename = os.path.basename(full_path) # fix absolute path problem
 
 
         readme = textwrap.dedent(f"""\
