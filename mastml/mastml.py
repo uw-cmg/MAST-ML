@@ -23,8 +23,7 @@ from .legos import data_splitters, feature_generators, feature_normalizers, feat
 
 log = logging.getLogger('mastml')
 
-def mastml_run(conf_path, data_path, outdir):
-    " Runs operations specifed in conf_path on data_path and puts results in outdir "
+def check_paths(conf_path, data_path, outdir):
 
     # Check conf path:
     if os.path.splitext(conf_path)[1] != '.conf':
@@ -44,6 +43,9 @@ def mastml_run(conf_path, data_path, outdir):
         shutil.rmtree(outdir)
     os.makedirs(outdir)
     log.info(f"Saving to directory 'outdir'")
+
+def mastml_run(conf_path, data_path, outdir):
+    " Runs operations specifed in conf_path on data_path and puts results in outdir "
 
     # Load in and parse the configuration and data files:
     conf = conf_parser.parse_conf_file(conf_path)
@@ -261,6 +263,10 @@ if __name__ == '__main__':
                         help='Folder path to save output files to. Defaults to results/')
 
     args = parser.parse_args()
+
+    check_paths(os.path.abspath(args.conf_path),
+                os.path.abspath(args.data_path),
+                os.path.abspath(args.outdir))
 
     utils.activate_logging(args.outdir, args)
 
