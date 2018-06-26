@@ -4,6 +4,10 @@ import logging
 
 def activate_logging(logger_name='mastml', to_screen=True, to_file=True):
 
+
+    #formatter = logging.Formatter("%(filename)s : %(funcName)s %(message)s")
+    formatter = logging.Formatter("%(asctime)s : %(message)s")
+
     rootLogger = logging.getLogger(logger_name)
     rootLogger.setLevel(logging.DEBUG)
 
@@ -19,10 +23,12 @@ def activate_logging(logger_name='mastml', to_screen=True, to_file=True):
     if to_file:
         log_hdlr = logging.StreamHandler(open('log.log', 'a'))
         log_hdlr.setLevel(logging.DEBUG)
+        log_hdlr.setFormatter(formatter)
         rootLogger.addHandler(log_hdlr)
 
         errors_hdlr = logging.StreamHandler(open('errors.log', 'a'))
         errors_hdlr.setLevel(logging.WARNING)
+        errors_hdlr.setFormatter(formatter)
         rootLogger.addHandler(errors_hdlr)
 
 
