@@ -23,6 +23,12 @@ def ipynb_maker(plot_func):
         sig = inspect.signature(plot_func)
         binding = sig.bind(*args, **kwargs)
         all_args = binding.arguments
+
+        # if this is an outdir style function, fill in savepath and delete outdir
+        if 'savepath' not in all_args:
+            all_args['savepath'] = os.path.join(all_args['outdir'], plot_func.__name__ + '.png')
+            del all_args['outdir']
+
         full_path = all_args['savepath']
         filename = os.path.basename(all_args['savepath']) # fix absolute path problem
         all_args['savepath'] = filename

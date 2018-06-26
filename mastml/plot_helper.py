@@ -43,10 +43,8 @@ def make_plots(run, path, is_classification):
         plot_confusion_matrix(y_test_true,  y_test_pred, join(path, title+'.png'), test_metrics, title=title)
 
     else: # is_regression
-        title = 'train_predicted_vs_true'
-        plot_predicted_vs_true(y_train_true, y_train_pred, join(path, title+'.png'), train_metrics, title=title)
-        title = 'test_predicted_vs_true'
-        plot_predicted_vs_true(y_test_true,  y_test_pred, join(path, title+'.png'), test_metrics, title=title)
+        predicted_vs_true((y_train_true, y_train_pred, train_metrics),
+                          (y_test_true,  y_test_pred,  test_metrics), path)
 
         title = 'train_residuals_histogram'
         plot_residuals_histogram(y_train_true, y_train_pred, join(path, title+'.png'), train_metrics, title=title)
@@ -88,7 +86,7 @@ def plot_stats(fig, stats):
 
     stat_str = '\n\n'.join(parse_stat(name, value) for name,value in stats.items())
 
-    fig.text(0.62, 0.98, stat_str,
+    fig.text(0.69, 0.98, stat_str,
              verticalalignment='top', wrap=True)
 
 def make_fig_ax(aspect='equal'):
@@ -149,27 +147,38 @@ def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False,
     ax.set_xlabel('Predicted label')
     fig.savefig(savepath)
 
-@ipynb_maker
-def plot_predicted_vs_true(y_true, y_pred, savepath, stats, title='predicted vs true'):
-    fig, ax = make_fig_ax()
 
-    ax.set_title(title)
+@ipynb_maker
+def predicted_vs_true(train_triple, test_triple, outdir):
+    y_train_true, y_train_pred, train_metrics = train_triple
+    y_test_true, y_test_pred, test_metrics = test_triple
 
     # make diagonal line from absolute min to absolute max of any data point
-    maxx = max(y_true.max(), y_pred.max())
-    minn = min(y_true.min(), y_pred.min())
-    ax.plot([minn, maxx], [minn, maxx], 'k--', lw=4, zorder=1)
+    max1 = max(y_train_true.max(), y_train_pred.max(), y_test_true.max(), y_test_pred.max())
+    min1 = min(y_train_true.min(), y_train_pred.min(), y_test_true.min(), y_test_pred.min())
 
-    # do the actual plotting
-    ax.scatter(y_true, y_pred, edgecolors=(0, 0, 0), zorder=2)
+    for y_true, y_pred, stats, title_addon in (train_triple+('train',), test_triple+('test',)):
+        fig, ax = make_fig_ax()
 
-    # set axis labels
-    ax.set_xlabel('Measured')
-    ax.set_ylabel('Predicted')
+        ax.set_title('Predicted vs. True ' + title_addon)
+        ax.plot([min1, max1], [min1, max1], 'k--', lw=4, zorder=1)
 
-    plot_stats(fig, stats)
+        # fix up dem axis
+        ticks = np.linspace(min1, max1, 5)
+        ax.set_xticks(ticks)
+        ax.set_yticks(ticks)
 
-    fig.savefig(savepath)
+
+        # do the actual plotting
+        ax.scatter(y_true, y_pred, edgecolors=(0, 0, 0), zorder=2)
+
+        # set axis labels
+        ax.set_xlabel('Measured')
+        ax.set_ylabel('Predicted')
+
+        plot_stats(fig, stats)
+
+        fig.savefig(os.path.join(outdir, 'predicted_vs_true_'+ title_addon + '.png'))
 
 @ipynb_maker
 def plot_best_worst(y_true_best, y_pred_best, y_true_worst, y_pred_worst, savepath,

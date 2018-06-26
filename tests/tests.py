@@ -201,11 +201,13 @@ class TestPlots(unittest.TestCase):
 
     def test_plot_predicted_vs_true(self):
         y_pred_tall = 10 * (np.arange(90) + np.random.random_sample((90,)) * 10 - 3) + 0.5
-        y_pred_fat = 0.1 * (np.arange(90) + np.random.random_sample((90,)) * 10 - 3) + 0.5
-        y_true = np.arange(90)
+        y_pred_fat = 100 * (np.arange(90) + np.random.random_sample((90,)) * 10 - 3) + 0.5
+        y_true_tall = 100 * np.arange(90)
+        y_true_fat = 10*  np.arange(90)
 
-        plot_helper.plot_predicted_vs_true(y_true, y_pred_tall, 'pred-vs-true_skinny.png', self.stats2)
-        plot_helper.plot_predicted_vs_true(y_true, y_pred_fat,  'pred-vs-true_fat.png',    self.stats2)
+        plot_helper.predicted_vs_true((y_true_tall, y_pred_tall, self.stats2), 
+                                           (y_true_fat, y_pred_fat, self.stats2), './',
+                                           savepath='oops.png')
 
     def test_residuals_histogram(self):
         y_pred = np.arange(30) + sum(np.random.random_sample((30,)) for _ in range(10)) - 3
