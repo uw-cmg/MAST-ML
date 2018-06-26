@@ -23,27 +23,6 @@ from .legos import data_splitters, feature_generators, feature_normalizers, feat
 
 log = logging.getLogger('mastml')
 
-def check_paths(conf_path, data_path, outdir):
-
-    # Check conf path:
-    if os.path.splitext(conf_path)[1] != '.conf':
-        raise utils.FiletypeError(f"Conf file does not end in .conf: '{conf_path}'")
-    if not os.path.isfile(conf_path):
-        raise utils.FileNotFoundError(f"No such file: {conf_path}")
-
-    # Check data path:
-    if os.path.splitext(data_path)[1] not in ['.csv', '.xlsx']:
-        raise utils.FiletypeError(f"Data file does not end in .csv or .xlsx: '{data_path}'")
-    if not os.path.isfile(data_path):
-        raise utils.FileNotFoundError(f"No such file: {data_path}")
-
-    # Check output directory:
-    if os.path.exists(outdir):
-        log.warning("Output dir already exists. Deleting...")
-        shutil.rmtree(outdir)
-    os.makedirs(outdir)
-    log.info(f"Saving to directory 'outdir'")
-
 def mastml_run(conf_path, data_path, outdir):
     " Runs operations specifed in conf_path on data_path and puts results in outdir "
 
@@ -252,6 +231,27 @@ def _instantiate(kwargs_dict, name_to_constructor, category):
                 f"There is no {category} called '{name}'."
                 f"All valid {category}: {list(name_to_constructor.keys())}")
     return instantiations
+
+def check_paths(conf_path, data_path, outdir):
+
+    # Check conf path:
+    if os.path.splitext(conf_path)[1] != '.conf':
+        raise utils.FiletypeError(f"Conf file does not end in .conf: '{conf_path}'")
+    if not os.path.isfile(conf_path):
+        raise utils.FileNotFoundError(f"No such file: {conf_path}")
+
+    # Check data path:
+    if os.path.splitext(data_path)[1] not in ['.csv', '.xlsx']:
+        raise utils.FiletypeError(f"Data file does not end in .csv or .xlsx: '{data_path}'")
+    if not os.path.isfile(data_path):
+        raise utils.FileNotFoundError(f"No such file: {data_path}")
+
+    # Check output directory:
+    if os.path.exists(outdir):
+        log.warning("Output dir already exists. Deleting...")
+        shutil.rmtree(outdir)
+    os.makedirs(outdir)
+    log.info(f"Saving to directory 'outdir'")
 
 
 if __name__ == '__main__':
