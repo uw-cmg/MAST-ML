@@ -10,6 +10,7 @@ import multiprocessing
 import os
 import sys
 import warnings
+import logging
 
 import numpy as np
 import pandas as pd
@@ -24,6 +25,8 @@ from citrination_client import CitrinationClient, PifQuery, SystemQuery, Chemica
 
 import mastml
 from .util_legos import DoNothing
+
+log = logging.getLogger('mastml')
 
 # locate path to directory containing AtomicNumber.table, AtomicRadii.table AtomicVolume.table, etc
 # needs to do it the hard way becuase python -m sets cwd to wherever python is ran from.
@@ -160,8 +163,7 @@ class MagpieFeatureGeneration(object): #TODO update docs once tests are passing
                 composition_components.append(self.dataframe[column].tolist())
 
         if len(composition_components) < 1:
-            print('Error! No column named "Material compositions" found in your input data file. To use this feature generation routine, you must supply a material composition for each data point')
-            raise KeyError('No column named "MaterialCompositions" in data file.')
+            raise utils.MissingColumnError('Error! No column named "Material compositions" found in your input data file. To use this feature generation routine, you must supply a material composition for each data point')
 
         row = 0
         while row < len(composition_components[0]):
@@ -355,7 +357,7 @@ class MaterialsProjectFeatureGeneration(object):
         try:
             compositions = self.dataframe[self.composition_feature]
         except KeyError as e:
-            raise Exception(f'No column named {self.composition_feature} in csv file')
+            raise utils.MissingColumnError(f'No column named {self.composition_feature} in csv file')
 
         mpdata_dict_composition = {}
 
@@ -428,9 +430,9 @@ class MaterialsProjectFeatureGeneration(object):
                     structure_data_dict_condensed[prop] = ''
 
         if all(val == '' for _, val in structure_data_dict_condensed.items()):
-            warnings.warn(f'No data found for composition "{composition}" using materials project')
+            log.warning(f'No data found for composition "{composition}" using materials project')
         else:
-            print('MAterials Project Feature Generation', composition, structure_data_dict_condensed)
+            log.info(f'MAterials Project Feature Generation {composition} {structure_data_dict_condensed}')
         return structure_data_dict_condensed
 
 
@@ -461,14 +463,15 @@ class CitrineFeatureGeneration(object):
         self.composition_feature = composition_feature
 
     def generate_citrine_features(self):
-        print('WARNING: You have specified generation of features from Citrine. Based on which'
+        log.warning('WARNING: You have specified generation of features from Citrine. Based on which'
               ' materials you are interested in, there may be many records to parse through, thus'
               ' this routine may take a long time to complete!')
         try:
             compositions = self.dataframe[self.composition_feature].tolist()
         except KeyError as e:
-            print('Error! No column named "Material compositions" found in your input data file. To use this feature generation routine, you must supply a material composition for each data point')
-            raise e
+            log.error(f'original python error: {str(e)}')
+            raise utils.MissingColumnError('Error! No column named {self.composition_feature} found in your input data file. '
+                    'To use this feature generation routine, you must supply a material composition for each data point')
         citrine_dict_property_min = dict()
         citrine_dict_property_max = dict()
         citrine_dict_property_avg = dict()
@@ -480,6 +483,7 @@ class CitrineFeatureGeneration(object):
         pool = multiprocessing.Pool(processes=20)
         #result_tuples = pool.map(self._load_composition, compositions)
         result_tuples = map(self._load_composition, compositions)
+
         for comp, (prop_min, prop_max, prop_avg) in zip(compositions, result_tuples):
             citrine_dict_property_min[comp] = prop_min
             citrine_dict_property_max[comp] = prop_max
@@ -505,7 +509,7 @@ class CitrineFeatureGeneration(object):
     def _load_composition(self, composition):
         pifquery = self._get_pifquery(composition=composition)
         property_name_list, property_value_list = self._get_pifquery_property_list(pifquery=pifquery)
-        print("Citrine Feature Generation: ", composition, property_name_list, property_value_list)
+        #print("Citrine Feature Generation: ", composition, property_name_list, property_value_list)
         property_names_unique, parsed_property_min, parsed_property_max, parsed_property_avg = self._parse_pifquery_property_list(property_name_list=property_name_list, property_value_list=property_value_list)
         return parsed_property_min, parsed_property_max, parsed_property_avg
 

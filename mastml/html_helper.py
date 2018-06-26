@@ -6,9 +6,12 @@ with best/worst plots, links to statistics, and more.
 import os
 from os.path import join, relpath # because it's used so much
 from time import gmtime, strftime
-
+import logging
 from dominate import document
 from dominate.tags import *
+
+log = logging.getLogger('mastml')
+
 
 def is_train_image(path):
     basename = os.path.basename(path)
@@ -123,7 +126,7 @@ def make_html(outdir):
     with open(join(outdir, 'index.html'), 'w') as f:
         f.write(doc.render())
 
-    print('wrote ', join(outdir, 'index.html'))
+    log.info('wrote ' + join(outdir, 'index.html'))
 
 def make_link(href):
     " Make a link where text is filename of href "

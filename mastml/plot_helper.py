@@ -20,7 +20,8 @@ from matplotlib.ticker import MaxNLocator # TODO: used?
 
 
 # set all font to bigger
-font = {'size'   : 18}
+font = {'size'   : 18,
+        'family' : 'sans-serif'}
 matplotlib.rc('font', **font)
 
 # turn on autolayout (why is it not default?)
@@ -80,7 +81,6 @@ def plot_stats(fig, stats):
 
     fig.text(0.62, 0.98, stat_str,
              verticalalignment='top', wrap=True)
-
 
 def make_fig_ax(aspect='equal'):
     """ using OO interface from https://matplotlib.org/gallery/api/agg_oo_sgskip.html"""

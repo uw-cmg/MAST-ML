@@ -2,9 +2,12 @@
 Collection of classes for debugging and control flow
 """
 import pdb
+import logging
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
+
+log = logging.getLogger('mastml')
 
 class DataFrameFeatureUnion(BaseEstimator, TransformerMixin):
     " For unioning dataframe generators (sklearn.pipeline.FeatureUnion always puts out arrays) "
@@ -45,17 +48,17 @@ class PrintHeadTail(BaseEstimator, TransformerMixin):
         self.head = head
         self.tail = tail
     def fit(self, data, correct=None):
-        print()
-        print(f"{self.name}, fit data:")
-        print(data[:self.head])
-        print(data[-self.tail:])
+        log.info()
+        log.info(f"{self.name}, fit data:")
+        log.info(data[:self.head])
+        log.info(data[-self.tail:])
         if correct is not None:
-            print(f"{self.name}, fit correct:")
-            print(correct[:self.head])
-            print(correct[-self.tail:])
+            log.info(f"{self.name}, fit correct:")
+            log.info(correct[:self.head])
+            log.info(correct[-self.tail:])
         return self
     def transform(self, data):
-        print(f"{self.name}, transform data:")
-        print(data[:self.head])
-        print(data[-self.tail:])
+        log.info(f"{self.name}, transform data:")
+        log.info(data[:self.head])
+        log.info(data[-self.tail:])
         return data
