@@ -9,10 +9,7 @@ import os
 import shutil
 import warnings
 import logging
-<<<<<<< HEAD
 import time
-=======
->>>>>>> 5ce9d5913728b5741d60b1312e52a3a762e62ec9
 
 from collections import OrderedDict
 from os.path import join # We use join tons
