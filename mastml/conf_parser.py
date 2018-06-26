@@ -53,7 +53,7 @@ def parse_conf_file(filepath):
             parameter_dict[name] = _fix_types(value)
 
     # Ensure all models are either classifiers or regressors: (raises error if mixed)
-    is_classification = conf['is_classification'] = check_models_mixed(conf['Models'].keys())
+    is_classification = conf['is_classification'] = check_models_mixed(key.split('_')[0] for key in conf['Models'])
 
     ## Assign default values to unspecified or 'Auto' options: ##
 
@@ -88,6 +88,11 @@ def parse_conf_file(filepath):
     if 'SelectPercentile' in conf['FeatureSelection']:
         conf['FeatureSelection']['SelectPercentile']['score_func'] = \
                 f_classif if conf['is_classification'] else f_regression
+
+    # Set the value of all subsections to be a pair of class,settings
+    for dictionary in [conf['DataSplits'], conf['Models']] + [conf[name] for name in feature_sections]:
+        for name, settings in dictionary.items():
+            dictionary[name] = (name.split('_')[0], settings)
 
     return conf
 
