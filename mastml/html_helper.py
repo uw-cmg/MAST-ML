@@ -15,11 +15,11 @@ log = logging.getLogger('mastml')
 
 def is_train_image(path):
     basename = os.path.basename(path)
-    return os.path.splitext(basename)[1] == '.png' and 'train_' in basename
+    return os.path.splitext(basename)[1] == '.png' and 'train' in basename
 
 def is_test_image(path):
     basename = os.path.basename(path)
-    return os.path.splitext(basename)[1] == '.png' and 'test_' in basename
+    return os.path.splitext(basename)[1] == '.png' and 'test' in basename
 
 def show_combo(combo_dir, outdir):
 
@@ -88,8 +88,9 @@ def make_html(outdir):
 
             # extract links to important csvs and conf
             for f in files:
-                if (os.path.splitext(f)[1] == '.csv' and f not in ['train.csv', 'test.csv']) or\
-                        os.path.splitext(f)[1] == '.conf':
+                ext = os.path.splitext(f)[1] 
+                if (ext == '.csv' and f not in ['train.csv', 'test.csv']) or\
+                        ext in ['.conf', '.log']:
                     link_sections.append(join(root, f))
                     #simple_section(join(root, f), outdir)
 
@@ -99,6 +100,9 @@ def make_html(outdir):
             simple_section(path, outdir)
 
         h1('Plots')
+        
+        make_image('target_histogram.png')
+
         for combo in combos:
             # come up with a good section title
             path = os.path.normpath(relpath(combo, outdir))
