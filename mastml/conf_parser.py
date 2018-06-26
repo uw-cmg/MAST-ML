@@ -75,7 +75,7 @@ def parse_conf_file(filepath):
         if is_classification:
             conf['metrics'] = ['accuracy_score', 'precision_score', 'recall_score']
         else:
-            conf['metrics'] = ['r2_score', 'explained_variance_score']
+            conf['metrics'] = ['r2_score', 'root_mean_squared_error', 'mean_absolute_error', 'explained_variance_score']
     else: # User has specified their own specific metrics:
         metrics.check_names(conf['metrics'], is_classification)
 
