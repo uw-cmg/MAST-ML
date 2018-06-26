@@ -1,5 +1,8 @@
 import sys
 import logging
+import textwrap
+import time
+import os
 
 class BetweenFilter(object):
     """ inclusive on both sides """
@@ -10,10 +13,11 @@ class BetweenFilter(object):
     def filter(self, logRecord):
         return self.min_level <= logRecord.levelno <= self.max_level
 
-def activate_logging(logger_name='mastml', to_screen=True, to_file=True):
+def activate_logging(header_data, logger_name='mastml', to_screen=True, to_file=True):
 
     #formatter = logging.Formatter("%(filename)s : %(funcName)s %(message)s")
-    formatter = logging.Formatter("%(asctime)s : %(message)s")
+    time_formatter = logging.Formatter("[%(levelname)s] %(asctime)s : %(message)s")
+    level_formatter = logging.Formatter("[%(levelname)s] %(message)s")
 
     rootLogger = logging.getLogger(logger_name)
     rootLogger.setLevel(logging.DEBUG)
@@ -22,29 +26,30 @@ def activate_logging(logger_name='mastml', to_screen=True, to_file=True):
     if to_file:
         log_hdlr = logging.StreamHandler(open('log.log', 'a'))
         log_hdlr.setLevel(logging.DEBUG)
-        log_hdlr.addFilter(BetweenFilter(logging.DEBUG, logging.INFO))
-        log_hdlr.setFormatter(formatter)
+        log_hdlr.setFormatter(time_formatter)
         rootLogger.addHandler(log_hdlr)
 
         errors_hdlr = logging.StreamHandler(open('errors.log', 'a'))
         errors_hdlr.setLevel(logging.WARNING)
-        errors_hdlr.setFormatter(formatter)
+        errors_hdlr.setFormatter(time_formatter)
         rootLogger.addHandler(errors_hdlr)
 
-    log_header() # only shows up in files
+    log_header(header_data, rootLogger) # only shows up in files
 
     if to_screen:
         stdout_hdlr = logging.StreamHandler(sys.stdout)
         stdout_hdlr.setLevel(logging.DEBUG)
         stdout_hdlr.addFilter(BetweenFilter(logging.DEBUG, logging.INFO))
+        stdout_hdlr.setFormatter(level_formatter)
         rootLogger.addHandler(stdout_hdlr)
 
         stderr_hdlr = logging.StreamHandler(sys.stderr)
         stderr_hdlr.setLevel(logging.WARNING)
+        stderr_hdlr.setFormatter(level_formatter)
         rootLogger.addHandler(stderr_hdlr)
 
 
-def log_header():
+def log_header(header_data, log):
 
     logo = textwrap.dedent(f"""\
            __  ___     __________    __  _____ 
@@ -55,9 +60,9 @@ def log_header():
 
     date_time = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
     header = (f"\n\n{logo}\n\nMAST-ML run on {date_time} using \n"
-              f"conf file: {os.path.basename(args.conf_path)}\n"
-              f"csv file:  {os.path.basename(args.data_path)}\n"
-              f"saving to: {os.path.basename(args.outdir)}\n\n")
+              f"conf file: {os.path.basename(header_data.conf_path)}\n"
+              f"csv file:  {os.path.basename(header_data.data_path)}\n"
+              f"saving to: {os.path.basename(header_data.outdir)}\n\n")
 
     # using highest logging level so it shows up in ALL log files
     log.critical(header)

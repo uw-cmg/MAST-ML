@@ -10,7 +10,6 @@ import shutil
 import warnings
 import logging
 import time
-import textwrap
 
 from collections import OrderedDict
 from os.path import join # We use join tons
@@ -263,22 +262,9 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    utils.activate_logging()
+    utils.activate_logging(args)
 
 
-    logo = textwrap.dedent(f"""\
-           __  ___     __________    __  _____ 
-          /  |/  /__ _/ __/_  __/___/  |/  / / 
-         / /|_/ / _ `/\ \  / / /___/ /|_/ / /__
-        /_/  /_/\_,_/___/ /_/     /_/  /_/____/
-    """)
-
-    date_time = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
-    # using highest logging level so it shows up in ALL log files
-    log.critical(f"\n\n{logo}\n\nMAST-ML run on {date_time} using \n"
-                 f"conf file: {os.path.basename(args.conf_path)}\n"
-                 f"csv file:  {os.path.basename(args.data_path)}\n"
-                 f"saving to: {os.path.basename(args.outdir)}\n\n")
     try:
         mastml_run(os.path.abspath(args.conf_path),
                    os.path.abspath(args.data_path),
