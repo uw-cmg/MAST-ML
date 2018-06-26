@@ -42,6 +42,7 @@ def mastml_run(conf_path, data_path, outdir):
     splitters   = _instantiate(conf['DataSplits'],           data_splitters.name_to_constructor,      'data split')
 
     X, y = df[input_features], df[target_feature]
+    plot_helper.target_histogram(y, join(outdir, 'target_histogram.png'))
     runs = _do_combos(X, y, generators, normalizers, selectors, models, splitters,
                       metrics_dict, outdir, conf['is_classification'])
 
