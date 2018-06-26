@@ -8,7 +8,6 @@ All classes here assume dataframe input and guarantee dataframe output.
 
 import multiprocessing
 import os
-import sys
 import warnings
 import logging
 
@@ -122,9 +121,24 @@ class PassThrough(BaseEstimator, TransformerMixin):
 name_to_constructor = {
     'DoNothing': DoNothing,
     'PolynomialFeatures': PolynomialFeatures,
-    'Magpie':Magpie,
-    'PassThrough':PassThrough
+    'PassThrough':PassThrough,
+    'Magpie': Magpie,
+    'Citrine': Citrine,
+    'MaterialsProject': MaterialsProject,
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 def clean_dataframe(df):
     """ Delete missing values or non-numerics """
@@ -725,15 +739,15 @@ class DataframeUtilities(object):
         dataframe_stats.to_csv(fname, index=True)
         return fname
 
-    @classmethod
-    def plot_dataframe_histogram(cls, configdict, dataframe, y_feature):
-        num_bins = int((dataframe.shape[0])/15)
-        if num_bins < 1:
-            num_bins = 1
-        pyplot.hist(x=dataframe[y_feature], bins=num_bins, edgecolor='k')
-        pyplot.title('Histogram of ' + y_feature + ' values')
-        pyplot.xlabel(y_feature + ' value')
-        pyplot.ylabel('Occurrences in dataset')
-        fname = configdict['General Setup']['save_path'] + "/" + 'input_data_histogram.pdf' # TODO
-        pyplot.savefig(fname)
-        return fname
+    #@classmethod
+    #def plot_dataframe_histogram(cls, configdict, dataframe, y_feature):
+    #    num_bins = int((dataframe.shape[0])/15)
+    #    if num_bins < 1:
+    #        num_bins = 1
+    #    pyplot.hist(x=dataframe[y_feature], bins=num_bins, edgecolor='k')
+    #    pyplot.title('Histogram of ' + y_feature + ' values')
+    #    pyplot.xlabel(y_feature + ' value')
+    #    pyplot.ylabel('Occurrences in dataset')
+    #    fname = configdict['General Setup']['save_path'] + "/" + 'input_data_histogram.pdf' # TODO
+    #    pyplot.savefig(fname)
+    #    return fname

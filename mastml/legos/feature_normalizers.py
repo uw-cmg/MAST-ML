@@ -42,21 +42,12 @@ class MeanStdevScaler(BaseEstimator, TransformerMixin):
         changed = pd.DataFrame(array, columns=self.features, index=df.index)
         return pd.concat([same, changed], axis=1)
 
-class NoNormalize(BaseEstimator, TransformerMixin):
-    " Returns X unmodified "
-    def __init__(self):
-        pass
-    def fit(self, X, y=None):
-        return self
-    def transform(self, X):
-        return X
-
 MinMaxScaler.transform = lego_utils.dataframify(MinMaxScaler.transform)
+Binarizer.transform = lego_utils.dataframify(Binarizer.transform)
 
 name_to_constructor = {
     'Binarizer': Binarizer,
     'MeanStdevScaler': MeanStdevScaler,
     'MinMaxScaler': MinMaxScaler,
-    'NoNormalize': NoNormalize,
     'DoNothing': util_legos.DoNothing,
 }
