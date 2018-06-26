@@ -7,6 +7,8 @@ import logging
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 
+log = logging.getLogger('mastml')
+
 class DataFrameFeatureUnion(BaseEstimator, TransformerMixin):
     " For unioning dataframe generators (sklearn.pipeline.FeatureUnion always puts out arrays) "
     def __init__(self, transforms):
@@ -46,17 +48,17 @@ class PrintHeadTail(BaseEstimator, TransformerMixin):
         self.head = head
         self.tail = tail
     def fit(self, data, correct=None):
-        logging.info()
-        logging.info(f"{self.name}, fit data:")
-        logging.info(data[:self.head])
-        logging.info(data[-self.tail:])
+        log.info()
+        log.info(f"{self.name}, fit data:")
+        log.info(data[:self.head])
+        log.info(data[-self.tail:])
         if correct is not None:
-            logging.info(f"{self.name}, fit correct:")
-            logging.info(correct[:self.head])
-            logging.info(correct[-self.tail:])
+            log.info(f"{self.name}, fit correct:")
+            log.info(correct[:self.head])
+            log.info(correct[-self.tail:])
         return self
     def transform(self, data):
-        logging.info(f"{self.name}, transform data:")
-        logging.info(data[:self.head])
-        logging.info(data[-self.tail:])
+        log.info(f"{self.name}, transform data:")
+        log.info(data[:self.head])
+        log.info(data[-self.tail:])
         return data

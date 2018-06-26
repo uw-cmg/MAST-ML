@@ -13,6 +13,7 @@ from mastml.legos.feature_normalizers import MeanStdevScaler
 from matplotlib.ticker import MaxNLocator
 from mastml.legos import feature_generators
 
+mastml.utils.activate_logging()
 
 class SmokeTests(unittest.TestCase):
 

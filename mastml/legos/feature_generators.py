@@ -26,6 +26,8 @@ from citrination_client import CitrinationClient, PifQuery, SystemQuery, Chemica
 import mastml
 from .util_legos import DoNothing
 
+log = logging.getLogger('mastml')
+
 # locate path to directory containing AtomicNumber.table, AtomicRadii.table AtomicVolume.table, etc
 # needs to do it the hard way becuase python -m sets cwd to wherever python is ran from.
 print('mastml dir: ', mastml.__path__)
@@ -428,9 +430,9 @@ class MaterialsProjectFeatureGeneration(object):
                     structure_data_dict_condensed[prop] = ''
 
         if all(val == '' for _, val in structure_data_dict_condensed.items()):
-            logging.warning(f'No data found for composition "{composition}" using materials project')
+            log.warning(f'No data found for composition "{composition}" using materials project')
         else:
-            logging.info(f'MAterials Project Feature Generation {composition} {structure_data_dict_condensed}')
+            log.info(f'MAterials Project Feature Generation {composition} {structure_data_dict_condensed}')
         return structure_data_dict_condensed
 
 
@@ -461,13 +463,13 @@ class CitrineFeatureGeneration(object):
         self.composition_feature = composition_feature
 
     def generate_citrine_features(self):
-        logging.warning('WARNING: You have specified generation of features from Citrine. Based on which'
+        log.warning('WARNING: You have specified generation of features from Citrine. Based on which'
               ' materials you are interested in, there may be many records to parse through, thus'
               ' this routine may take a long time to complete!')
         try:
             compositions = self.dataframe[self.composition_feature].tolist()
         except KeyError as e:
-            logging.error(f'original python error: {str(e)}')
+            log.error(f'original python error: {str(e)}')
             raise utils.MissingColumnError('Error! No column named {self.composition_feature} found in your input data file. '
                     'To use this feature generation routine, you must supply a material composition for each data point')
         citrine_dict_property_min = dict()

@@ -1,9 +1,10 @@
 import sys
 import logging
 
-def activate_logging(to_screen=True, to_file=True):
 
-    rootLogger = logging.getLogger()
+def activate_logging(logger_name='mastml', to_screen=True, to_file=True):
+
+    rootLogger = logging.getLogger(logger_name)
     rootLogger.setLevel(logging.DEBUG)
 
     if to_screen:
