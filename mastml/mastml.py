@@ -9,7 +9,10 @@ import os
 import shutil
 import warnings
 import logging
+<<<<<<< HEAD
 import time
+=======
+>>>>>>> 5ce9d5913728b5741d60b1312e52a3a762e62ec9
 
 from collections import OrderedDict
 from os.path import join # We use join tons
@@ -54,11 +57,11 @@ def mastml_run(conf_path, data_path, outdir):
     metrics_dict = {name: big_metrics_dict[name] for name in conf['metrics']}
 
     # Instantiate all the sections of the conf file:
-    generators = _instantiate(conf['FeatureGeneration'], feature_generators.name_to_constructor, 'feature generator')
+    generators  = _instantiate(conf['FeatureGeneration'],    feature_generators.name_to_constructor,  'feature generator')
     normalizers = _instantiate(conf['FeatureNormalization'], feature_normalizers.name_to_constructor, 'feature normalizer')
-    selectors = _instantiate(conf['FeatureSelection'], feature_selectors.name_to_constructor, 'feature selector')
-    models = _instantiate(conf['Models'], model_finder.name_to_constructor, 'model')
-    splitters = _instantiate(conf['DataSplits'], data_splitters.name_to_constructor, 'data split')
+    selectors   = _instantiate(conf['FeatureSelection'],     feature_selectors.name_to_constructor,   'feature selector')
+    models      = _instantiate(conf['Models'],               model_finder.name_to_constructor,        'model')
+    splitters   = _instantiate(conf['DataSplits'],           data_splitters.name_to_constructor,      'data split')
 
     X, y = df[input_features], df[target_feature]
     runs = _do_combos(X, y, generators, normalizers, selectors, models, splitters,
@@ -83,67 +86,67 @@ def _do_combos(X, y, generators, normalizers, selectors, models, splitters,
     Calls _do_splits for actual model fits.
     """
 
-    def cn(c):
-        " Shorthand for getting the class name of an instance "
-        return c.__class__.__name__
-
     log.info(f"There are {len(normalizers)} feature normalizers, {len(selectors)} feature selectors,"
-                 f" {len(models)} models, and {len(splitters)} splitters.")
+          f" {len(models)} models, and {len(splitters)} splitters.")
 
     log.info("Doing feature generation...")
-    generators_union = util_legos.DataFrameFeatureUnion(generators)
+    generators_union = util_legos.DataFrameFeatureUnion([instance for name,instance in generators])
     X_generated = generators_union.fit_transform(X, y)
 
     log.info("Saving generated data to csv...")
     pd.concat([X_generated, y], 1).to_csv(join(outdir, "data_generated.csv"), index=False)
 
-    Xs_selected = []
-    for normalizer in normalizers:
+    post_selection = []
+    for normalizer_name, normalizer_instance in normalizers:
 
-        log.info(f"Running normalizer {cn(normalizer)} ...")
-        X_normalized = normalizer.fit_transform(X_generated, y)
+        log.info("Running normalizer", normalizer_name, "...")
+        X_normalized = normalizer_instance.fit_transform(X_generated, y)
 
         log.info("Saving normalized data to csv...")
-        dirname = join(outdir, cn(normalizer))
+        dirname = join(outdir, normalizer_name)
         os.mkdir(dirname)
         pd.concat([X_normalized, y], 1).to_csv(join(dirname, "normalized.csv"), index=False)
 
         log.info("Running selectors...")
-        for selector in selectors:
+        for selector_name, selector_instance in selectors:
 
-            log.info(f"    Running selector {cn(selector)} ...")
-            X_selected = selector.fit_transform(X_normalized, y)
+            log.info("    Running selector", selector_name, "...")
+            # NOTE: Changed from fit_transform because PCA's fit_transform
+            #       doesn't call transform (does transformation itself).
+            X_selected = selector_instance.fit(X_normalized, y).transform(X_normalized)
 
             log.info("    Saving selected features to csv...")
-            dirname = join(outdir, cn(normalizer), cn(selector))
+            dirname = join(outdir, normalizer_name, selector_name)
             os.mkdir(dirname)
             pd.concat([X_selected, y], 1).to_csv(join(dirname, "selected.csv"), index=False)
 
-            Xs_selected.append((normalizer, selector, X_selected))
+            post_selection.append((normalizer_name, selector_name, X_selected))
 
-    splits = [(splitter, tuple(splitter.split(X, y))) for splitter in splitters]
+    splits = [(name, tuple(instance.split(X, y))) for name, instance in splitters]
 
     log.info("Fitting models to splits...")
     all_results = []
-    for (normalizer, selector, X_selected), model, (splitter, pair_list) \
-            in itertools.product(Xs_selected, models, splits):
-        subdir = join(cn(normalizer), cn(selector), cn(model), cn(splitter))
-        log.info(f"    Running splits for {subdir}")
-        path = join(outdir, subdir)
-        os.makedirs(path)
-        runs = _do_splits(X_selected, y, model, path, metrics_dict, pair_list, is_classification)
-        all_results.extend(runs)
+
+    for normalizer_name, selector_name, df in post_selection:
+        for model_name, model_instance in models:
+            for splitter_name, trains_tests in splits:
+                subdir = join(normalizer_name, selector_name, model_name, splitter_name)
+                log.info(f"    Running splits for {subdir}")
+                path = join(outdir, subdir)
+                os.makedirs(path)
+                runs = _do_splits(df, y, model_instance, path, metrics_dict, trains_tests, is_classification)
+                all_results.extend(runs)
 
     return all_results
 
 
-def _do_splits(X, y, model, main_path, metrics_dict, pair_list, is_classification):
+def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classification):
     """
     For a fixed normalizer,selector,model,splitter,
     train and test the model on each split that the splitter makes
     """
     split_results = []
-    for split_num, (train_indices, test_indices) in enumerate(pair_list):
+    for split_num, (train_indices, test_indices) in enumerate(trains_tests):
 
         #for parameters in model_parameters_list:
         #    pass
@@ -237,14 +240,14 @@ def _instantiate(kwargs_dict, name_to_constructor, category):
     the list of instantiations
     """
     instantiations = []
-    for name, kwargs in kwargs_dict.items():
+    for long_name, (name, kwargs) in kwargs_dict.items():
         try:
-            instantiations.append(name_to_constructor[name](**kwargs))
+            instantiations.append((long_name, name_to_constructor[name](**kwargs)))
         except TypeError:
-            log.info(f"ARGUMENTS FOR '{name}': {inspect.signature(name_to_constructor[name])}")
+            log.info(f"ARGUMENTS FOR '{name}':", inspect.signature(name_to_constructor[name]))
             raise utils.InvalidConfParameters(
                 f"The {category} '{name}' has invalid parameters: {kwargs}\n"
-                f"The arguments for '{name}' are printed above the call stack.")
+                f"Signature for '{name}': {inspect.signature(name_to_constructor[name])}")
         except KeyError:
             raise utils.InvalidConfSubSection(
                 f"There is no {category} called '{name}'."
