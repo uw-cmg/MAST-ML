@@ -96,7 +96,7 @@ def _do_combos(X, y, generators, normalizers, selectors, models, splitters,
     post_selection = []
     for normalizer_name, normalizer_instance in normalizers:
 
-        log.info("Running normalizer", normalizer_name, "...")
+        log.info("Running normalizer {normalizer_name} ...")
         X_normalized = normalizer_instance.fit_transform(X_generated, y)
 
         log.info("Saving normalized data to csv...")
@@ -107,7 +107,7 @@ def _do_combos(X, y, generators, normalizers, selectors, models, splitters,
         log.info("Running selectors...")
         for selector_name, selector_instance in selectors:
 
-            log.info("    Running selector", selector_name, "...")
+            log.info(f"    Running selector {selector_name} ...")
             # NOTE: Changed from fit_transform because PCA's fit_transform
             #       doesn't call transform (does transformation itself).
             X_selected = selector_instance.fit(X_normalized, y).transform(X_normalized)
@@ -241,7 +241,7 @@ def _instantiate(kwargs_dict, name_to_constructor, category):
         try:
             instantiations.append((long_name, name_to_constructor[name](**kwargs)))
         except TypeError:
-            log.info(f"ARGUMENTS FOR '{name}':", inspect.signature(name_to_constructor[name]))
+            log.info(f"ARGUMENTS FOR '{name}': {inspect.signature(name_to_constructor[name])}")
             raise utils.InvalidConfParameters(
                 f"The {category} '{name}' has invalid parameters: {kwargs}\n"
                 f"Signature for '{name}': {inspect.signature(name_to_constructor[name])}")
