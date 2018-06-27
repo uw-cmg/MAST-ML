@@ -34,6 +34,8 @@ matplotlib.rc('figure', autolayout=True)
 
 from .ipynb_maker import ipynb_maker # TODO: fix cyclic import
 
+# maybe TODO: have all plot makers start with `plot`
+
 def make_plots(run, path, is_classification):
     join = os.path.join
     y_train_true, y_train_pred, y_test_true,  y_test_pred, train_metrics, test_metrics = \
@@ -63,10 +65,38 @@ def make_plots(run, path, is_classification):
             f.write(f"{name}: {score}\n")
 
 
+nice_names = {
+    'accuracy_score': 'Acc',
+    'confusion_matrix': 'Confusion Matrix',
+    'f1_score': 'f1',
+    'fbeta_score': 'fbeta score',
+    'hamming_loss': 'Hamming Loss',
+    'jaccard_similarity_score': 'Jaccard Similarity Score',
+    'log_loss': 'Log Loss',
+    'matthews_corrcoef': 'Matthews',
+    'precision_recall_fscore_support': 'pr fscore',
+    'precision_score': 'p',
+    'recall_score': 'r',
+    'roc_auc_score': 'roc auc',
+    'roc_curve': 'roc',
+    'zero_one_loss': '10ss',
+    'explained_variance_score': 'explained variance',
+    'mean_absolute_error': 'MAE',
+    'mean_squared_error': 'MSE',
+    'root_mean_squared_error': 'RMSE',
+    'mean_squared_log_error': 'MSLE',
+    'median_absolute_error': 'MeAE',
+    'r2_score': '$r^2$',
+    'r2_score_noint': '$r^2$ noint',
+}
 
 def parse_stat(name,value):
     " Stringifies the name value pair for display within a plot "
-    name = name.replace('_', ' ')
+    if name in nice_names:
+        name = nice_names[name]
+    else:
+        name = name.replace('_', ' ')
+
     # has a name only
     if not value:
         return name
@@ -196,19 +226,20 @@ def make_axis_same(ax, max1, min1):
     ax.set_yticks(ticks)
 
 @ipynb_maker
+def plot_best_worst(best_run, worst_run, stats, savepath, title='Best Worst Overlay'):
 def plot_best_worst(y_true_best, y_pred_best, y_true_worst, y_pred_worst, savepath,
                     stats, title='Best Worst Overlay'):
     fig, ax = make_fig_ax()
     #ax.set_title(title)
     # make diagonal line from absolute min to absolute max of any data point
-    all_y = [y_true_best, y_pred_best, y_true_worst, y_pred_worst]
+    all_y = [best_run['y_true'], best_run['y_pred'], worst_run['y_true'], worst_run['y_pred']]
     maxx = max(y.max() for y in all_y)
     minn = min(y.min() for y in all_y)
     ax.plot([minn, maxx], [minn, maxx], 'k--', lw=4, zorder=1)
 
     # do the actual plotting
-    ax.scatter(y_true_best,  y_pred_best,  c='red',  alpha=0.7, label='best',  edgecolor='darkred',  zorder=2, s=80)
-    ax.scatter(y_true_worst, y_pred_worst, c='blue', alpha=0.7, label='worst', edgecolor='darkblue', zorder=3)
+    ax.scatter(best_run['y_true'],  best_run['y_pred'],  c='red',  alpha=0.7, label='best',  edgecolor='darkred',  zorder=2, s=80)
+    ax.scatter(worst_run['y_true'], worst_run['y_pred'], c='blue', alpha=0.7, label='worst', edgecolor='darkblue', zorder=3)
     ax.legend()
 
     # set axis labels
