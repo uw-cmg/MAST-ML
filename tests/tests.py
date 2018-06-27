@@ -2,6 +2,8 @@ import unittest
 import random
 import warnings
 import logging
+from tempfile import NamedTemporaryFile
+from pprint import pprint
 
 import pandas as pd
 import numpy as np
@@ -60,6 +62,51 @@ class TestLogging(unittest.TestCase):
             with open('errors.log', 'a') as f:
                 f.write("really baddddd errror: " + str(e))
             raise e
+
+class TestFeatureSelectionDefaults(unittest.TestCase):
+    class_conf = '''
+        [FeatureSelection]
+            [[SelectFromModel_1]]
+            [[SelectKBest_1]]
+            [[SelectFromModel_2]]
+                estimator = DecisionTreeClassifier
+            [[SelectKBest_2]]
+                score_func = chi2
+        [Models]
+            [[DecisionTreeClassifier]]
+    '''
+
+    regress_conf = '''
+        [FeatureSelection]
+            [[SelectFromModel_1]]
+            [[SelectKBest_1]]
+            [[SelectFromModel_2]]
+                estimator = LassoCV
+            [[SelectKBest_2]]
+                score_func = mutual_info_regression
+        [Models]
+            [[Ridge]]
+    '''
+    def test_classification(self):
+        from io import StringIO
+        from mastml import conf_parser
+
+        conf = conf_parser.parse_conf_file(string_to_filename(self.class_conf))
+        pprint(conf)
+
+    def test_regression(self):
+        from io import StringIO
+        from mastml import conf_parser
+
+        conf = conf_parser.parse_conf_file(string_to_filename(self.regress_conf))
+        pprint(conf)
+
+def string_to_filename(st):
+    f = NamedTemporaryFile(mode='w', delete=False)
+    f.write(st)
+    f.close()
+    print('nnn', f.name)
+    return f.name
 
 class TestPlotToPython(unittest.TestCase):
     """ How to convert a call to plot to a .py file that the user can modify """

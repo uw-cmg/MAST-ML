@@ -8,9 +8,13 @@ from distutils.util import strtobool
 from configobj import ConfigObj
 # TODO don't do this. Keep conf dict sacred. Only primitives and lists. This is bad.
 from sklearn.feature_selection import f_regression, f_classif
+import logging
 
 from . import metrics
 from .legos.model_finder import check_models_mixed
+from .legos import feature_selectors, model_finder
+
+log = logging.getLogger('mastml')
 
 def parse_conf_file(filepath):
     "Accepts the filepath of a conf file and returns its parsed dictionary"
@@ -118,7 +122,7 @@ def _handle_selectors_references(selectors, is_classification):
     score_funcs and models into actual score_funcs and models
     """
     task = 'classification' if is_classification else 'regression'
-    for selector_name, args_dict in selectors:
+    for selector_name, args_dict in selectors.items():
         selector_name = selector_name.split('_')[0]
         if selector_name in feature_selectors.score_func_selectors: # This selector requires a score func
             name_to_func = metrics.classification_score_funcs if is_classification else metrics.regression_score_funcs
@@ -128,14 +132,13 @@ def _handle_selectors_references(selectors, is_classification):
                 except KeyError:
                     raise utils.InvalidValue(f"Score function '{args_dict['score_func']}' not valid for {task} tasks (inside feature selector {selector_name}). Valid score functions: name_to_func.keys()")
             else:
-                args_dict['score_func'] = f_classif if is_classification else f_regression
+                args_dict['score_func'] = name_to_func['f_classif' if is_classification else 'f_regression']  
         elif selector_name in feature_selectors.model_selectors:
-            name_to_func = 
-            if 'model' in args_dict:
-                loggging.warning('Feature selectors will not use your paramaters for models. This will be added in later versions.')
-                if '_' in args_dict['model']:
+            if 'estimator' in args_dict:
+                log.warning('Feature selectors will not use your paramaters for models. This will be added in later versions.')
+                if '_' in args_dict['estimator']:
                     raise NotImplementedError("Right now you can't specify custom models inside feature selection instances.")
-                args_dict['model'] = model_finder.name_to_constructor(args_dict['model'])
+                args_dict['estimator'] = model_finder.name_to_constructor[args_dict['estimator']]()
             else: # give some good default models
-                args_dict['model'] =  model_finder.name_to_constructor['KNeighborsClassifier' if conf['is_classification'] else 'LinearRegressor']
+                args_dict['estimator'] =  model_finder.name_to_constructor['KNeighborsClassifier' if is_classification else 'LinearRegression']()
     
