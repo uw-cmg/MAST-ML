@@ -170,7 +170,7 @@ def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classifica
 
 
         log.info("             Making plots...")
-        plot_helper.make_plots(split_result, path, is_classification)
+        #plot_helper.make_plots(split_result, path, is_classification)
 
         split_results.append(split_result)
 
@@ -189,6 +189,14 @@ def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classifica
     if not is_classification:
         plot_helper.plot_best_worst(best['y_test_true'], best['y_test_pred'], worst['y_test_true'],
                                     worst['y_test_pred'], os.path.join(main_path, 'best_worst_overlay.png'), test_stats)
+
+
+
+    predictions = [[] for _ in range(X.shape[0])]
+    for split_num, (train_indices, test_indices) in enumerate(trains_tests):
+        for i, pred in zip(test_indices, split_results[split_num]['y_test_pred']):
+            predictions[i].append(pred)
+
 
     return split_results
 
