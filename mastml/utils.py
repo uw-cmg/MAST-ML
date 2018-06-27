@@ -99,3 +99,6 @@ class FiletypeError(MastError):
 
 class FileNotFoundError(MastError): # sorry for re-using builtin name
     pass
+
+class InvalidValue(MastError):
+    pass

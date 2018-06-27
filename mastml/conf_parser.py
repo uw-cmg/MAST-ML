@@ -10,7 +10,7 @@ from configobj import ConfigObj
 from sklearn.feature_selection import f_regression, f_classif
 import logging
 
-from . import metrics
+from . import metrics, utils
 from .legos.model_finder import check_models_mixed
 from .legos import feature_selectors, model_finder
 
@@ -140,5 +140,5 @@ def _handle_selectors_references(selectors, is_classification):
                     raise NotImplementedError("Right now you can't specify custom models inside feature selection instances.")
                 args_dict['estimator'] = model_finder.name_to_constructor[args_dict['estimator']]()
             else: # give some good default models
-                args_dict['estimator'] =  model_finder.name_to_constructor['KNeighborsClassifier' if is_classification else 'LinearRegression']()
+                args_dict['estimator'] =  model_finder.name_to_constructor['LinearSVC' if is_classification else 'LinearRegression']()
     

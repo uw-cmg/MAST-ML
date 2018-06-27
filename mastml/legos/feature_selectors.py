@@ -30,6 +30,10 @@ other_selectors = {
     'VarianceThreshold': fs.VarianceThreshold, # Feature selector that removes all low-variance features.
 }
 
+good_models = ['RidgeClassifier', 'LinearSVC', 'SGDClassifier', 'Perceptron',
+               'PassiveAggressiveClassifier', 'BernoulliNB', 'MultinomialNB',
+               'KNeighborsClassifier', 'NearestCentroid', 'RandomForestClassifier']
+
 name_to_constructor = {
     'GenericUnivariateSelect': fs.GenericUnivariateSelect,
     'RFE': fs.RFE,
