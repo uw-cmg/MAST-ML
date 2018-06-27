@@ -1,12 +1,13 @@
 """
 Module for creating Jupyter Notebooks so user can modify and regenerate the plots
+This whole thing is a hack. But it's the only way, short of repeating every line in plot_helper
+twice.
 """
 
 import inspect
 import os
 import textwrap
 from pandas import DataFrame, Series
-import StringIO
 
 import nbformat
 
@@ -67,10 +68,17 @@ def ipynb_maker(plot_func):
         arg_assignments = []
         arg_names = []
         for key, var in all_args.items():
-            arg_assignments.append(f'{key} = {repr(var)}')
+            if isinstance(var, DataFrame):
+                # this is amazing
+                arg_assignments.append(f"{key} = pd.read_csv(StringIO('''\n{var.to_csv(index=False)}'''))")
+            elif isinstance(var, Series):
+                arg_assignments.append(f"{key} = pd.Series(pd.read_csv(StringIO('''\n{var.to_csv(index=False)}''')).iloc[:,0])")
+            else:
+                arg_assignments.append(f'{key} = {repr(var)}')
             arg_names.append(key)
         args_block = ("from numpy import array\n" +
                       "from collections import OrderedDict\n" +
+                      "from io import StringIO\n" +
                       '\n'.join(arg_assignments))
         arg_names = ', '.join(arg_names)
 
@@ -105,6 +113,3 @@ def ipynb_maker(plot_func):
     return wrapper
 
 
-def dataframe_to_string(df):
-    s = StringIO.StringIO()
-    df.to_csv(s)
