@@ -11,6 +11,37 @@ from . import util_legos, lego_utils
 import pandas as pd
 
 
+
+
+
+
+
+score_func_selectors = { 
+    'SelectKBest': feature_selection.SelectKBest, #Select features according to the k highest scores.
+    'SelectFpr': feature_selection.SelectFpr, #Filter: Select the pvalues below alpha based on a FPR test.
+    'SelectFdr': feature_selection.SelectFdr, #Filter: Select the p-values for an estimated false discovery rate
+    'SelectFwe': feature_selection.SelectFwe, #Filter: Select the p-values corresponding to Family-wise error rate
+    'GenericUnivariateSelect': feature_selection.GenericUnivariateSelect, #Univariate feature selector with configurable strategy.
+    'SelectPercentile': feature_selection.SelectPercentile, #Select features according to a percentile of the highest scores.
+}
+
+model_selectors = { # feature selectors which take a model instance as first parameter
+    'SelectFromModel': feature_selection.SelectFromModel, #Meta-transformer for selecting features based on importance weights.
+    'RFE': feature_selection.RFE, #Feature ranking with recursive feature elimination.
+    'RFECV': feature_selection.RFECV, #Feature ranking with recursive feature elimination and cross-validated selection of the best number of features.
+}
+
+other_selectors = {
+    'VarianceThreshold': feature_selection.VarianceThreshold, #Feature selector that removes all low-variance features.
+}
+
+
+
+
+
+
+
+
 class PassThrough(BaseEstimator, TransformerMixin):
     " Keep specific features and pass them on to the other side "
     def __init__(self, features):

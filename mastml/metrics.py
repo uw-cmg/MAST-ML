@@ -15,6 +15,9 @@ from sklearn.metrics import explained_variance_score, mean_absolute_error, mean_
 # For r2_score_noint:
 from sklearn.linear_model import LinearRegression
 
+# for fixing featuer selectors regress/classif
+from sklearn import feature_selection
+
 def r2_score_noint(y_true, y_pred):
     " Get the R^2 coefficient without intercept "
     lr = LinearRegression(fit_intercept=False)
@@ -51,6 +54,19 @@ regression_metrics = {
     'r2_score': r2_score,  # R^2 (coefficient of determination) regression score function.
     'r2_score_noint': r2_score_noint,
 }
+
+classification_score_funcs = { 
+    'chi2': feature_selection.chi2, #Compute chi-squared stats between each non-negative feature and class.
+    'f_classif': feature_selection.f_classif, #Compute the ANOVA F-value for the provided sample.
+    'mutual_info_classif': feature_selection.mutual_info_classif, #Estimate mutual information for a discrete target variable.
+}
+
+regression_score_funcs = { 
+    'f_regression': feature_selection.f_regression, #Univariate linear regression tests.
+    'mutual_info_regression': feature_selection.mutual_info_regression, #Estimate mutual information for a continuous target variable.
+}
+
+
 
 
 def check_names(metric_names, is_classification):

@@ -85,9 +85,8 @@ def parse_conf_file(filepath):
 
     # TODO make a generic wrapper or indiviudla wrapper classes for these to import and use the
     # string for the score func
-    if 'SelectPercentile' in conf['FeatureSelection']:
-        conf['FeatureSelection']['SelectPercentile']['score_func'] = \
-                f_classif if conf['is_classification'] else f_regression
+
+    _handle_selectors_references(conf['FeatureSelection'], is_classification)
 
     # Set the value of all subsections to be a pair of class,settings
     for dictionary in [conf['DataSplits'], conf['Models']] + [conf[name] for name in feature_sections]:
@@ -112,3 +111,31 @@ def _fix_types(maybe_list):
     except ValueError: pass
 
     return str(maybe_list)
+
+def _handle_selectors_references(selectors, is_classification):
+    """
+    Modifies each selector in `selectors` in place, turning strings referencing
+    score_funcs and models into actual score_funcs and models
+    """
+    task = 'classification' if is_classification else 'regression'
+    for selector_name, args_dict in selectors:
+        selector_name = selector_name.split('_')[0]
+        if selector_name in feature_selectors.score_func_selectors: # This selector requires a score func
+            name_to_func = metrics.classification_score_funcs if is_classification else metrics.regression_score_funcs
+            if 'score_func' in args_dict:
+                try:
+                    args_dict['score_func'] = name_to_func[args_dict['score_func']]
+                except KeyError:
+                    raise utils.InvalidValue(f"Score function '{args_dict['score_func']}' not valid for {task} tasks (inside feature selector {selector_name}). Valid score functions: name_to_func.keys()")
+            else:
+                args_dict['score_func'] = f_classif if is_classification else f_regression
+        elif selector_name in feature_selectors.model_selectors:
+            name_to_func = 
+            if 'model' in args_dict:
+                loggging.warning('Feature selectors will not use your paramaters for models. This will be added in later versions.')
+                if '_' in args_dict['model']:
+                    raise NotImplementedError("Right now you can't specify custom models inside feature selection instances.")
+                args_dict['model'] = model_finder.name_to_constructor(args_dict['model'])
+            else: # give some good default models
+                args_dict['model'] =  model_finder.name_to_constructor['KNeighborsClassifier' if conf['is_classification'] else 'LinearRegressor']
+    
