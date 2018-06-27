@@ -175,20 +175,21 @@ def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classifica
         split_results.append(split_result)
 
     log.info("    Calculating mean and stdev of scores...")
+    # TODO: move the below stats into plot_helper maybe
     train_stats = OrderedDict()
     test_stats  = OrderedDict()
     for name in metrics_dict:
         train_values = [split_result['train_metrics'][name] for split_result in split_results]
         test_values  = [split_result['test_metrics'][name]  for split_result in split_results]
-        train_stats[name] = (np.mean(train_values), np.std(train_values))
-        test_stats[name]  = (np.mean(test_values),  np.std(test_values))
+        train_stats[name] = (np.mean(train_values), np.std(train_values) / np.sqrt(len(train_values)))
+        test_stats[name]  = (np.mean(test_values),  np.std(test_values) / np.sqrt(len(test_values)))
 
     log.info("    Making best/worst plots...")
     split_results.sort(key=lambda run: list(run['test_metrics'].items())[0][1]) # sort splits by the test score of first metric
     worst, median, best = split_results[0], split_results[len(split_results)//2], split_results[-1]
+
     if not is_classification:
-        plot_helper.plot_best_worst(best['y_test_true'], best['y_test_pred'], worst['y_test_true'],
-                                    worst['y_test_pred'], os.path.join(main_path, 'best_worst_overlay.png'), test_stats)
+        plot_helper.plot_best_worst(best, worst, os.path.join(main_path, 'best_worst_overlay.png'), test_stats)
 
 
 
