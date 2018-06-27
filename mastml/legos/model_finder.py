@@ -16,7 +16,7 @@ def find_model(model_name):
     try:
         return name_to_constructor[model_name]
     except KeyError:
-        raise Exception(f"Model '{model_name}' does not exist in scikit-learn.")
+        raise KeyError(f"Model '{model_name}' does not exist in scikit-learn.")
 
 def check_models_mixed(model_names):
     """ raises MixedModelsError if models are not all class or all regress """
