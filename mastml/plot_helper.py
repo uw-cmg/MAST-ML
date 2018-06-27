@@ -211,7 +211,6 @@ def predicted_vs_true(train_triple, test_triple, outdir):
         filename = 'predicted_vs_true_'+ title_addon + '.png'
         filenames.append(filename)
         fig.savefig(os.path.join(outdir, filename))
-        print("huh", os.path.join(outdir, filename))
 
     return filenames
 
@@ -226,20 +225,18 @@ def make_axis_same(ax, max1, min1):
     ax.set_yticks(ticks)
 
 @ipynb_maker
-def plot_best_worst(best_run, worst_run, stats, savepath, title='Best Worst Overlay'):
-def plot_best_worst(y_true_best, y_pred_best, y_true_worst, y_pred_worst, savepath,
-                    stats, title='Best Worst Overlay'):
+def plot_best_worst(best_run, worst_run, savepath, stats, title='Best Worst Overlay'):
     fig, ax = make_fig_ax()
     #ax.set_title(title)
     # make diagonal line from absolute min to absolute max of any data point
-    all_y = [best_run['y_true'], best_run['y_pred'], worst_run['y_true'], worst_run['y_pred']]
+    all_y = [best_run['y_test_true'], best_run['y_test_pred'], worst_run['y_test_true'], worst_run['y_test_pred']]
     maxx = max(y.max() for y in all_y)
     minn = min(y.min() for y in all_y)
     ax.plot([minn, maxx], [minn, maxx], 'k--', lw=4, zorder=1)
 
     # do the actual plotting
-    ax.scatter(best_run['y_true'],  best_run['y_pred'],  c='red',  alpha=0.7, label='best',  edgecolor='darkred',  zorder=2, s=80)
-    ax.scatter(worst_run['y_true'], worst_run['y_pred'], c='blue', alpha=0.7, label='worst', edgecolor='darkblue', zorder=3)
+    ax.scatter(best_run['y_test_true'],  best_run['y_test_pred'],  c='red',  alpha=0.7, label='best',  edgecolor='darkred',  zorder=2, s=80)
+    ax.scatter(worst_run['y_test_true'], worst_run['y_test_pred'], c='blue', alpha=0.7, label='worst', edgecolor='darkblue', zorder=3)
     ax.legend()
 
     # set axis labels
