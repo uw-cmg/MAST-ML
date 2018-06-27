@@ -163,15 +163,7 @@ def predicted_vs_true(train_triple, test_triple, outdir):
         ax.set_title('Predicted vs. True ' + title_addon)
         ax.plot([min1, max1], [min1, max1], 'k--', lw=4, zorder=1)
 
-        # fix up dem axis
-        if max1 - min1 > 5:
-            step = (int(max1) - int(min1)) // 3
-            ticks = range(int(min1), int(max1)+step, step)
-        else:
-            ticks = np.linspace(min1, max1, 4)
-        ax.set_xticks(ticks)
-        ax.set_yticks(ticks)
-
+        make_axis_same(ax, max1, min1)
 
         # do the actual plotting
         ax.scatter(y_true, y_pred, edgecolors=(0, 0, 0), zorder=2)
@@ -184,11 +176,21 @@ def predicted_vs_true(train_triple, test_triple, outdir):
 
         fig.savefig(os.path.join(outdir, 'predicted_vs_true_'+ title_addon + '.png'))
 
+def make_axis_same(ax, max1, min1):
+    # fix up dem axis
+    if max1 - min1 > 5:
+        step = (int(max1) - int(min1)) // 3
+        ticks = range(int(min1), int(max1)+step, step)
+    else:
+        ticks = np.linspace(min1, max1, 4)
+    ax.set_xticks(ticks)
+    ax.set_yticks(ticks)
+
 @ipynb_maker
 def plot_best_worst(y_true_best, y_pred_best, y_true_worst, y_pred_worst, savepath,
                     stats, title='Best Worst Overlay'):
     fig, ax = make_fig_ax()
-    ax.set_title(title)
+    #ax.set_title(title)
     # make diagonal line from absolute min to absolute max of any data point
     all_y = [y_true_best, y_pred_best, y_true_worst, y_pred_worst]
     maxx = max(y.max() for y in all_y)
@@ -253,4 +255,52 @@ def target_histogram(y_df, savepath, title='target histogram'):
 
     plot_stats(fig, dict(y_df.describe()))
 
+    fig.savefig(savepath)
+
+@ipynb_maker
+def predicted_vs_true_bars(y_true, y_pred_list, savepath, title='best worst with bars'):
+    means = [np.mean(y_pred) for y_pred in y_pred_list]
+    standard_error_means = [np.std(y_pred)/np.sqrt(len(y_pred)) for y_pred in y_pred_list]
+    fig, ax = make_fig_ax(aspect='auto')
+
+    # gather max and min
+    max1 = max(np.max(y_true), np.max(means))
+    min1 = min(np.min(y_true), np.min(means))
+
+    make_axis_same(ax, max1, min1)
+
+    # draw dashed horizontal line
+    ax.plot([min1, max1], [min1, max1], 'k--', lw=4, zorder=1)
+
+    # set axis labels
+    ax.set_xlabel('Measured')
+    ax.set_ylabel('Predicted')
+
+    ax.errorbar(y_true, means, yerr=standard_error_means, fmt='o', capsize=3)
+
+    plot_stats(fig, dict())
+    fig.savefig(savepath)
+
+@ipynb_maker
+def violin(y_true, y_pred_list, savepath, title='best worst with bars'):
+    means = [np.mean(y_pred) for y_pred in y_pred_list]
+    standard_error_means = [np.std(y_pred)/np.sqrt(len(y_pred)) for y_pred in y_pred_list]
+    fig, ax = make_fig_ax(aspect='auto')
+
+    # gather max and min
+    max1 = max(np.max(y_true), np.max(means))
+    min1 = min(np.min(y_true), np.min(means))
+
+    make_axis_same(ax, max1, min1)
+
+    # draw dashed horizontal line
+    ax.plot([min1, max1], [min1, max1], 'k--', lw=4, zorder=1)
+
+    # set axis labels
+    ax.set_xlabel('Measured')
+    ax.set_ylabel('Predicted')
+
+    ax.violinplot(y_pred_list, y_true)
+
+    plot_stats(fig, dict())
     fig.savefig(savepath)

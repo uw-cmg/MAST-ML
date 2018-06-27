@@ -181,6 +181,7 @@ class TestPlots(unittest.TestCase):
     y_pred] """
 
     def setUp(self):
+        np.random.seed(1)
         # TODO: update this test
         self.stats = dict([
             ('foo', 500000),
@@ -238,6 +239,23 @@ class TestPlots(unittest.TestCase):
         plot_helper.target_histogram(y_df, savepath = 'targethist.p.p.png')
 
 
+    def test_predicted_vs_true_bars(self):
+        y_true = np.arange(90) + 9*sum(np.random.random_sample((90,)) for _ in range(10)) - 54
+        y_pred_list = [[x + 30*np.random.normal(2, 1) for _ in "r"*np.random.randint(1,5)] for x in y_true]
+        plot_helper.predicted_vs_true_bars(y_true, y_pred_list, 'bars.png', title='test best worst with bars')
+
+        y_true = [1,3,5,5,6,7]
+        y_pred_list = [[x + np.random.normal(2, 1) for _ in "a"*20] for x in y_true]
+        plot_helper.predicted_vs_true_bars(y_true, y_pred_list, 'bars2.png', title='test best worst with bars')
+
+    def test_violin(self):
+        y_true = np.arange(90) + 9*sum(np.random.random_sample((90,)) for _ in range(10)) - 54
+        y_pred_list = [[x + 30*np.random.normal(2, 1) for _ in "r"*np.random.randint(1,5)] for x in y_true]
+        plot_helper.violin(y_true, y_pred_list, 'violin.png', title='violin.png')
+
+        y_true = [1,3,5,5,6,7]
+        y_pred_list = [[x + np.random.normal(2, 1) for _ in "a"*20] for x in y_true]
+        plot_helper.violin(y_true, y_pred_list, 'violin2.png', title='violin2.png')
 
 class TestHtml(unittest.TestCase):
 
