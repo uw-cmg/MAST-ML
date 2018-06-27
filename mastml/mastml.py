@@ -170,7 +170,7 @@ def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classifica
 
 
         log.info("             Making plots...")
-        #plot_helper.make_plots(split_result, path, is_classification)
+        plot_helper.make_plots(split_result, path, is_classification)
 
         split_results.append(split_result)
 
@@ -192,11 +192,12 @@ def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classifica
 
 
 
+    # collect all predictions in a combo for each point in the dataset
     predictions = [[] for _ in range(X.shape[0])]
     for split_num, (train_indices, test_indices) in enumerate(trains_tests):
         for i, pred in zip(test_indices, split_results[split_num]['y_test_pred']):
             predictions[i].append(pred)
-
+    plot_helper.predicted_vs_true_bars(y, predictions, join(main_path, 'bars.png'), title='test best worst with bars')
 
     return split_results
 
