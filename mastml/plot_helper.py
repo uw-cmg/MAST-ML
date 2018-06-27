@@ -313,3 +313,32 @@ def violin(y_true, y_pred_list, savepath, title='best worst with bars'):
 
     plot_stats(fig, dict())
     fig.savefig(savepath)
+
+@ipynb_maker
+def best_worst_per_point(y_true, y_pred_list, savepath, title='best worst per point'):
+    worsts = [max(yp, key=lambda y: abs(yt-y)) for yt, yp in zip(y_true,y_pred_list)]
+    bests  = [min(yp, key=lambda y: abs(yt-y)) for yt, yp in zip(y_true,y_pred_list)]
+
+    fig, ax = make_fig_ax(aspect='auto')
+
+    # gather max and min
+    max1 = max(max(bests), max(worsts))
+    min1 = min(min(bests), min(worsts))
+
+    make_axis_same(ax, max1, min1)
+
+    # draw dashed horizontal line
+    ax.plot([min1, max1], [min1, max1], 'k--', lw=4, zorder=1)
+
+    # set axis labels
+    ax.set_xlabel('Measured')
+    ax.set_ylabel('Predicted')
+
+    ax.scatter(y_true, bests,  c='red',  alpha=0.7, label='best',  edgecolor='darkred',  zorder=2, s=80)
+    ax.scatter(y_true, worsts, c='blue', alpha=0.7, label='worst', edgecolor='darkblue', zorder=3)
+    ax.legend()
+
+
+    plot_stats(fig, dict())
+    fig.savefig(savepath)
+    
