@@ -149,14 +149,14 @@ def clean_dataframe(df):
     df = df.dropna(axis=0, how='all')
     lost_count = before_count - df.shape[0]
     if lost_count > 0:
-        warnings.warn(f'Dropping {lost_count}/{before_count} rows for being totally empty')
+        log.warning(f'Dropping {lost_count}/{before_count} rows for being totally empty')
 
     # drop columns with any empty cells
     before_count = df.shape[1]
     df = df.select_dtypes(['number']).dropna(axis=1)
     lost_count = before_count - df.shape[1]
     if lost_count > 0:
-        warnings.warn(f'Dropping {lost_count}/{before_count} generated columns due to missing values')
+        log.warning(f'Dropping {lost_count}/{before_count} generated columns due to missing values')
     return df
 
 
