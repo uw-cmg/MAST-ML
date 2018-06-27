@@ -4,41 +4,49 @@ All classes here assume dataframe input and guarantee dataframe output.
 (So no numpy arrays.)
 """
 import pandas as pd
-from sklearn.feature_selection import GenericUnivariateSelect, SelectPercentile, SelectKBest, SelectFpr, SelectFdr, SelectFwe, VarianceThreshold
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.decomposition import PCA
-from sklearn import feature_selection
+import sklearn.feature_selection as fs
 
 from . import util_legos, lego_utils
 # list of sklearn feature selectors: http://scikit-learn.org/stable/modules/classes.html#module-sklearn.feature_selection
 
-
-
 score_func_selectors = { 
-    'SelectKBest': feature_selection.SelectKBest, #Select features according to the k highest scores.
-    'SelectFpr': feature_selection.SelectFpr, #Filter: Select the pvalues below alpha based on a FPR test.
-    'SelectFdr': feature_selection.SelectFdr, #Filter: Select the p-values for an estimated false discovery rate
-    'SelectFwe': feature_selection.SelectFwe, #Filter: Select the p-values corresponding to Family-wise error rate
-    'GenericUnivariateSelect': feature_selection.GenericUnivariateSelect, #Univariate feature selector with configurable strategy.
-    'SelectPercentile': feature_selection.SelectPercentile, #Select features according to a percentile of the highest scores.
+    'GenericUnivariateSelect': fs.GenericUnivariateSelect, # Univariate feature selector with configurable strategy.
+    'SelectFdr': fs.SelectFdr, # Filter: Select the p-values for an estimated false discovery rate
+    'SelectFpr': fs.SelectFpr, # Filter: Select the pvalues below alpha based on a FPR test.
+    'SelectFwe': fs.SelectFwe, # Filter: Select the p-values corresponding to Family-wise error rate
+    'SelectKBest': fs.SelectKBest, # Select features according to the k highest scores.
+    'SelectPercentile': fs.SelectPercentile, # Select features according to a percentile of the highest scores.
 }
 
 model_selectors = { # feature selectors which take a model instance as first parameter
-    'SelectFromModel': feature_selection.SelectFromModel, #Meta-transformer for selecting features based on importance weights.
-    'RFE': feature_selection.RFE, #Feature ranking with recursive feature elimination.
-    'RFECV': feature_selection.RFECV, #Feature ranking with recursive feature elimination and cross-validated selection of the best number of features.
+    'RFE': fs.RFE, # Feature ranking with recursive feature elimination.
+    'RFECV': fs.RFECV, # Feature ranking with recursive feature elimination and cross-validated selection of the best number of features.
+    'SelectFromModel': fs.SelectFromModel, # Meta-transformer for selecting features based on importance weights.
 }
 
 other_selectors = {
-    'VarianceThreshold': feature_selection.VarianceThreshold, #Feature selector that removes all low-variance features.
+    'VarianceThreshold': fs.VarianceThreshold, # Feature selector that removes all low-variance features.
 }
 
+name_to_constructor = {
+    'GenericUnivariateSelect': fs.GenericUnivariateSelect,
+    'RFE': fs.RFE,
+    'RFECV': fs.RFECV,
+    'SelectFdr': fs.SelectFdr,
+    'SelectFpr': fs.SelectFpr,
+    'SelectFromModel': fs.SelectFromModel,
+    'SelectFwe': fs.SelectFwe,
+    'SelectKBest': fs.SelectKBest,
+    'SelectPercentile': fs.SelectPercentile,
+    'VarianceThreshold': fs.VarianceThreshold,
+}
 
-
-
-
-
-
+# Modify all sklearn transform methods to return dataframes:
+for constructor in name_to_constructor.values():
+    constructor.old_transform = constructor.transform
+    constructor.transform = lego_utils.dataframify_selector(constructor.transform)
 
 class PassThrough(BaseEstimator, TransformerMixin):
     " Keep specific features and pass them on to the other side "
@@ -52,21 +60,6 @@ class PassThrough(BaseEstimator, TransformerMixin):
                 raise Exception(f"Specified feature '{feature}' to PassThrough not present in data file.")
     def transform(self, df):
         return df[self.features]
-
-name_to_constructor = {
-    'GenericUnivariateSelect': GenericUnivariateSelect,
-    'SelectPercentile': SelectPercentile,
-    'SelectKBest': SelectKBest,
-    'SelectFpr': SelectFpr,
-    'SelectFdr': SelectFdr,
-    'SelectFwe': SelectFwe,
-    'VarianceThreshold': VarianceThreshold,
-}
-
-# Modify all sklearn transform methods to return dataframes:
-for constructor in name_to_constructor.values():
-    constructor.old_transform = constructor.transform
-    constructor.transform = lego_utils.dataframify_selector(constructor.transform)
 
 # Mess with PCA stuff:
 old_transform = PCA.transform
@@ -82,3 +75,5 @@ name_to_constructor.update({
     'DoNothing': util_legos.DoNothing,
     'PCA': PCA,
 })
+
+# done!

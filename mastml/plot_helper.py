@@ -344,14 +344,15 @@ def violin(y_true, y_pred_list, savepath, title='best worst with bars'):
 
 @ipynb_maker
 def best_worst_per_point(y_true, y_pred_list, savepath, title='best worst per point'):
-    worsts = [max(yp, key=lambda y: abs(yt-y)) for yt, yp in zip(y_true,y_pred_list)]
-    bests  = [min(yp, key=lambda y: abs(yt-y)) for yt, yp in zip(y_true,y_pred_list)]
+    worsts = [max(yp, key=lambda y: abs(yt-y)) if yp else None for yt, yp in zip(y_true,y_pred_list)]
+    bests  = [min(yp, key=lambda y: abs(yt-y)) if yp else None for yt, yp in zip(y_true,y_pred_list)]
 
     fig, ax = make_fig_ax(aspect='auto')
 
     # gather max and min
-    max1 = max(max(bests), max(worsts))
-    min1 = min(min(bests), min(worsts))
+    all_vals = [val for val in worsts+bests if val is not None]
+    max1 = max(all_vals)
+    min1 = min(all_vals)
 
     make_axis_same(ax, max1, min1)
 
