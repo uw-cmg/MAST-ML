@@ -3,6 +3,9 @@ A collection of functions which make plots (png files) using matplotlib.
 Most of these plots take in (data, other_data, ..., savepath, stats, title).
 Where the data args are numpy arrays, savepath is a string, and stats is an
 ordered dictionary which maps names to either values, or mean-stdev pairs.
+
+A plot can also take an "outdir" instead of a savepath. If this is the case, 
+it must return a list of filenames where it saved the figures.
 """
 
 import os.path
@@ -150,6 +153,7 @@ def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False,
 
 @ipynb_maker
 def predicted_vs_true(train_triple, test_triple, outdir):
+    filenames = list()
     y_train_true, y_train_pred, train_metrics = train_triple
     y_test_true, y_test_pred, test_metrics = test_triple
 
@@ -178,7 +182,12 @@ def predicted_vs_true(train_triple, test_triple, outdir):
 
         plot_stats(fig, stats)
 
-        fig.savefig(os.path.join(outdir, 'predicted_vs_true_'+ title_addon + '.png'))
+        filename = 'predicted_vs_true_'+ title_addon + '.png'
+        filenames.append(filename)
+        fig.savefig(os.path.join(outdir, filename))
+        print("huh", os.path.join(outdir, filename))
+
+    return filenames
 
 @ipynb_maker
 def plot_best_worst(y_true_best, y_pred_best, y_true_worst, y_pred_worst, savepath,

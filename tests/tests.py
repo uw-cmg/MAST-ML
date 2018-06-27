@@ -206,8 +206,8 @@ class TestPlots(unittest.TestCase):
         y_true_fat = 10*  np.arange(90)
 
         plot_helper.predicted_vs_true((y_true_tall, y_pred_tall, self.stats2), 
-                                           (y_true_fat, y_pred_fat, self.stats2), './',
-                                           savepath='oops.png')
+                                           (y_true_fat, y_pred_fat, self.stats2), './')
+                                           
 
     def test_residuals_histogram(self):
         y_pred = np.arange(30) + sum(np.random.random_sample((30,)) for _ in range(10)) - 3
@@ -235,7 +235,7 @@ class TestPlots(unittest.TestCase):
     def test_target_histogram(self):
         y_df = pd.Series(np.concatenate([np.random.normal(4, size=(100,)), 
                                          np.random.normal(-20, 10, size=(100,))]))
-        plot_helper.target_histogram(y_df, savepath = 'targethist.p.p.png')
+        plot_helper.target_histogram(y_df, savepath = 'target_hist.png')
 
 
 

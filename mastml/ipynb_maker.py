@@ -5,6 +5,8 @@ Module for creating Jupyter Notebooks so user can modify and regenerate the plot
 import inspect
 import os
 import textwrap
+from pandas import DataFrame, Series
+import StringIO
 
 import nbformat
 
@@ -25,12 +27,17 @@ def ipynb_maker(plot_func):
         all_args = binding.arguments
 
         # if this is an outdir style function, fill in savepath and delete outdir
-        if 'savepath' not in all_args:
-            full_path = os.path.join(all_args['outdir'], plot_func.__name__ + '.png')
+        if 'savepath' in all_args:
+            ipynb_savepath = all_args['savepath']
+            knows_savepath = True
+            basename = os.path.basename(ipynb_savepath) # fix absolute path problem
+        elif 'outdir' in all_args:
+            knows_savepath = False
+            basename = plot_func.__name__
+            ipynb_savepath = os.path.join(all_args['outdir'], basename)
         else:
-            full_path = all_args['savepath']
+            raise Exception('you must have an "outdir" or "savepath" argument to use ipynb_maker')
 
-        basename = os.path.basename(full_path) # fix absolute path problem
 
 
         readme = textwrap.dedent(f"""\
@@ -68,21 +75,36 @@ def ipynb_maker(plot_func):
         arg_names = ', '.join(arg_names)
 
 
-        main = textwrap.dedent(f"""\
-            import pandas as pd
-            from IPython.core.display import Image as image
+        if knows_savepath:
+            main = textwrap.dedent(f"""\
+                import pandas as pd
+                from IPython.display import Image, display
 
 
-            {plot_func.__name__}({arg_names})
-            image(filename='{basename}')
-        """)
+                {plot_func.__name__}({arg_names})
+                display(Image(filename='{basename}'))
+            """)
+        else:
+            main = textwrap.dedent(f"""\
+                import pandas as pd
+                from IPython.display import Image, display
+
+                plot_paths = predicted_vs_true(train_triple, test_triple, outdir)
+                for plot_path in plot_paths:
+                    display(Image(filename=plot_path))
+            """)
 
         nb = nbformat.v4.new_notebook()
         readme_cell = nbformat.v4.new_markdown_cell(readme)
         text_cells = [header, func_strings, plot_func_string, args_block, main]
         cells = [readme_cell] + [nbformat.v4.new_code_cell(cell_text) for cell_text in text_cells]
         nb['cells'] = cells
-        nbformat.write(nb, full_path + '.ipynb')
+        nbformat.write(nb, ipynb_savepath + '.ipynb')
 
         return plot_func(*args, **kwargs)
     return wrapper
+
+
+def dataframe_to_string(df):
+    s = StringIO.StringIO()
+    df.to_csv(s)
