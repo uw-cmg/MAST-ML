@@ -6,8 +6,6 @@ from distutils.util import strtobool
 
 
 from configobj import ConfigObj
-# TODO don't do this. Keep conf dict sacred. Only primitives and lists. This is bad.
-from sklearn.feature_selection import f_regression, f_classif
 import logging
 
 from . import metrics, utils
