@@ -362,6 +362,10 @@ class ParamGridSearch:
 
 
         indiv_param_list = self.print_params(indiv_params)
+        try:
+            os.makedirs(indiv_path) # TODO Why do I need to make this now? I didn't before....
+        except FileExistsError:
+            pass
         with open(os.path.join(indiv_path,"param_values"), 'w') as indiv_pfile:
             indiv_pfile.writelines(indiv_param_list)
         files_to_clean=list()

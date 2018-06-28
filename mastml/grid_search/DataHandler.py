@@ -6,7 +6,6 @@ __date__ = 'October 14th, 2017'
 
 import numpy as np
 import copy
-from FeatureOperations import FeatureIO
 
 class DataHandler():
     """
@@ -106,36 +105,19 @@ class DataHandler():
         return
 
     def add_prediction(self, prediction_data):
-        fio = FeatureIO(self.data)
-        self.data = fio.add_custom_features(["Prediction"], prediction_data)
-        self.target_prediction = self.data["Prediction"]
-        return
+        self.data["Prediction"] = prediction_data
+        self.target_prediction = prediction_data
 
     def add_residuals(self, residual_data):
-        fio = FeatureIO(self.data)
-        self.data = fio.add_custom_features(["Residuals"], residual_data)
-        self.target_residuals = self.data["Residuals"]
-        return
+        self.data["Residuals"] = residual_data
+        self.target_residuals = residual_data
 
     def add_prediction_sigma(self, prediction_data_sigma):
-        fio = FeatureIO(self.data)
-        self.data = fio.add_custom_features(["Prediction Sigma"], prediction_data_sigma)
-        self.target_prediction_sigma = self.data["Prediction Sigma"]
-        return
+        self.data["Prediction Sigma"] = prediction_data_sigma
+        self.target_prediction_sigma = prediction_data_sigma
 
     def add_feature(self, feature_name, feature_data):
-        fio = FeatureIO(self.data)
-        self.data = fio.add_custom_features([feature_name], feature_data)
-        return
-
-    def add_filters(self, filter_list):
-        if filter_list is None:
-            return
-        for (feature, operator, threshold) in filter_list:
-            fio = FeatureIO(self.data)
-            self.data= fio.custom_feature_filter(feature,operator,threshold)
-        self.set_up_data_from_features()
-        return
+        self.data[feature_name] = feature_data
 
     def print_data(self, csvname="data.csv", addl_cols = list()):
         cols = list()
