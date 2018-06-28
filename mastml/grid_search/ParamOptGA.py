@@ -61,7 +61,7 @@ class ParamOptGA(ParamGridSearch):
     Raises:
 
     """
-    def __init__(self, training_dataset=None, testing_dataset=None, model=None, save_path=None, num_folds=None,
+    def __init__(self, param_strings, training_dataset=None, testing_dataset=None, model=None, save_path=None, num_folds=None,
         percent_leave_out=None, num_cvtests=20, mark_outlying_points='0,3', num_bests=10, fix_random_for_testing=0,
         processors=1, pop_upper_limit=1000000, num_gas=1, ga_pop_size=50, convergence_generations=30,
         max_generations=200, crossover_prob = 0.5, mutation_prob = 0.1, shift_prob = 0.5, gen_tol = 0.00000001):
@@ -84,7 +84,8 @@ class ParamOptGA(ParamGridSearch):
             self.ga_dict 
             self.gact 
         """
-        ParamGridSearch.__init__(self, 
+        ParamGridSearch.__init__(self,
+            param_strings=param_strings,
             training_dataset=training_dataset, 
             testing_dataset=training_dataset, 
             model=model, 
@@ -96,7 +97,7 @@ class ParamOptGA(ParamGridSearch):
             percent_leave_out = percent_leave_out,
             processors = processors,
             pop_upper_limit = pop_upper_limit,
-            num_bests = num_bests, **kwargs)
+            num_bests = num_bests)
         #Sets by keyword
         self.num_gas = int(num_gas)
         self.ga_pop_size = int(ga_pop_size)
@@ -123,9 +124,10 @@ class ParamOptGA(ParamGridSearch):
             os.mkdir(ga_dir)
         gen_save_path = os.path.join(ga_dir, "Gen_%i" % genct)
         gen_kwargs = dict()
-        for param_ct in self.param_strings.keys():
-            gen_kwargs["param_%i" % param_ct] = self.param_strings[param_ct]
-        mygen =ParamGridSearch(training_dataset=self.training_dataset,
+
+        mygen = ParamGridSearch(
+            param_strings=self.param_strings,
+            training_dataset=self.training_dataset,
             testing_dataset=self.training_dataset, #ONLY TRAIN is used
             model=self.model,
             save_path = gen_save_path,
@@ -136,7 +138,7 @@ class ParamOptGA(ParamGridSearch):
             percent_leave_out = self.percent_leave_out,
             processors = self.processors,
             pop_upper_limit = self.pop_upper_limit,
-            num_bests = self.num_bests, **gen_kwargs)
+            num_bests = self.num_bests)
         return mygen
 
     def get_parent_params(self, prev_gen):

@@ -64,11 +64,11 @@ class ParamGridSearch(SingleFit):
         ValueError if testing target data is None; CV must have testing target data
 
     """
-    def __init__(self, training_dataset=None, testing_dataset=None, model=None, save_path=None, xlabel="Measured",
+    def __init__(self, param_strings, training_dataset=None, testing_dataset=None, model=None, save_path=None, xlabel="Measured",
         ylabel="Predicted",
         #param_1 and as many param_xxx as necessary are given through **kwargs
         fix_random_for_testing=0, num_cvtests=5, mark_outlying_points='0,3', num_folds=None, percent_leave_out=None,
-        processors=1, pop_upper_limit=1000000, num_bests=10, param_strings):
+        processors=1, pop_upper_limit=1000000, num_bests=10):
         """
         Additional class attributes to parent class:
             Set by keyword:
@@ -236,7 +236,7 @@ class ParamGridSearch(SingleFit):
         indiv_dh = self.get_indiv_datahandler(indiv_params)
         #logging.debug(indiv_dh)
         indiv_path = os.path.join(self.save_path, "indiv_%s" % indiv_key)
-        if not(self.num_folds is None):
+        if not(self.num_folds is None): # MARK replace with sklearn
             with KFoldCV(training_dataset= indiv_dh,
                     testing_dataset= indiv_dh,
                     model = indiv_model,
@@ -254,7 +254,7 @@ class ParamGridSearch(SingleFit):
                 mycv.print_readme()
                 mycv_rmse = mycv.statistics['avg_fold_avg_rmses']
                 mycv_stats = dict(mycv.statistics)
-        elif not (self.percent_leave_out is None):
+        elif not (self.percent_leave_out is None): # MARK replace with sklearn shuffesplit
             with LeaveOutPercentCV(training_dataset= indiv_dh,
                     testing_dataset= indiv_dh,
                     model = indiv_model,
