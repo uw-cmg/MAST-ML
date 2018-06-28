@@ -8,7 +8,6 @@ All classes here assume dataframe input and guarantee dataframe output.
 
 import multiprocessing
 import os
-import warnings
 import logging
 
 import numpy as np

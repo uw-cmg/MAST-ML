@@ -4,12 +4,9 @@ Module for getting a mastml system call and calling all the appropriate subrouti
 
 import argparse
 import inspect
-import itertools
 import os
 import shutil
-import warnings
 import logging
-import time
 
 from collections import OrderedDict
 from os.path import join # We use join tons
