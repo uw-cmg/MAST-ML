@@ -10,7 +10,8 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.decomposition import PCA
 import sklearn.feature_selection as fs
 
-from mlxtend.feature_selection import SequentialFeatureSelector # TODO: TEST!!
+from mlxtend.feature_selection import SequentialFeatureSelector 
+# docs for above: https://rasbt.github.io/mlxtend/user_guide/feature_selection/SequentialFeatureSelector/
 
 from . import util_legos, lego_utils
 # list of sklearn feature selectors: http://scikit-learn.org/stable/modules/classes.html#module-sklearn.feature_selection
@@ -28,6 +29,7 @@ model_selectors = { # feature selectors which take a model instance as first par
     'RFE': fs.RFE, # Feature ranking with recursive feature elimination.
     'RFECV': fs.RFECV, # Feature ranking with recursive feature elimination and cross-validated selection of the best number of features.
     'SelectFromModel': fs.SelectFromModel, # Meta-transformer for selecting features based on importance weights.
+    'SequentialFeatureSelector': SequentialFeatureSelector,
 }
 
 other_selectors = {
