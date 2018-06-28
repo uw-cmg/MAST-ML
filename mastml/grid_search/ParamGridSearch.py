@@ -8,7 +8,6 @@ import os
 import numpy as np
 from plot_data.PlotHelper import PlotHelper
 from custom_features import cf_help
-from FeatureOperations import FeatureIO
 import pandas as pd
 import copy
 import logging
@@ -441,8 +440,8 @@ class ParamGridSearch:
             (feature_name,feature_data)=cf_help.get_custom_feature_data(afm,
                         starting_dataframe = indiv_df,
                         addl_feature_method_kwargs = dict(afm_kwargs))
-            fio = FeatureIO(indiv_df)
-            indiv_df = fio.add_custom_features([afm], feature_data)
+
+            indiv_df[afm] = feature_data
         return indiv_df
 
     def get_indiv_datahandler(self, indiv_params):
