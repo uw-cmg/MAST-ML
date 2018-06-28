@@ -12,7 +12,6 @@ from mastml import mastml
 from mastml import plot_helper, html_helper
 from mastml.legos.randomizers import Randomizer
 from mastml.legos.feature_normalizers import MeanStdevScaler
-from matplotlib.ticker import MaxNLocator
 from mastml.legos import feature_generators
 
 #mastml.utils.activate_logging()
