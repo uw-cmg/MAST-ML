@@ -9,9 +9,6 @@ from sklearn.model_selection import GroupKFold, GroupShuffleSplit, KFold, LeaveO
 # List of sklearn splitter classes:
 # http://scikit-learn.org/stable/modules/classes.html#module-sklearn.model_selection
 
-# TODO: leave out percent cv
-# TODO: repeated leave out percent cv
-
 class SplittersUnion(BaseEstimator, TransformerMixin):
     " Takes a list of splitters and creates a splitter which is their union "
     def __init__(self, splitters):
@@ -65,9 +62,9 @@ name_to_constructor = {
     'LeaveOneOut': LeaveOneOut,
     'LeavePOut': LeavePOut,
     'PredefinedSplit': PredefinedSplit,
-    'RepeatedKFold': RepeatedKFold,
+    'RepeatedKFold': RepeatedKFold, # NOTE: can use for repeated leave percent out / kfold
     'RepeatedStratifiedKFold': RepeatedStratifiedKFold,
-    'ShuffleSplit': ShuffleSplit,
+    'ShuffleSplit': ShuffleSplit, # NOTE: like leave percent out
     'StratifiedKFold': StratifiedKFold,
     'StratifiedShuffleSplit': StratifiedShuffleSplit,
     'TimeSeriesSplit': TimeSeriesSplit,
