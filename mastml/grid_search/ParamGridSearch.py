@@ -98,8 +98,8 @@ class ParamGridSearch:
         if not(training_dataset == testing_dataset):
             raise ValueError("Only testing_dataset will be used. Use the same values for training_dataset and testing_dataset")
 
-        self._single_fit_init____________________________(
-            training_dataset=training_dataset, #only testing_dataset is used
+        self.single_fit_init(
+            training_dataset=training_dataset, #only testing_dataset is used (???)
             testing_dataset=testing_dataset,
             model=model, 
             save_path = save_path,
@@ -143,8 +143,7 @@ class ParamGridSearch:
 
     ### SingleFit section
 
-    # if there is a god i beg him for mercy
-    def _single_fit_init____________________________(self, training_dataset=None, testing_dataset=None, model=None, save_path=None, xlabel="Measured",
+    def single_fit_init(self, training_dataset=None, testing_dataset=None, model=None, save_path=None, xlabel="Measured",
         ylabel="Predicted", plot_filter_out=None, scaler=None, *args, **kwargs):
         """Initialize class.
             Attributes that can be set through keywords:
