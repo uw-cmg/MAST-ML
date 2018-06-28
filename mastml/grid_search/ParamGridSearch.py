@@ -7,17 +7,19 @@ __date__ = 'October 14th, 2017'
 import os
 import numpy as np
 from plot_data.PlotHelper import PlotHelper
-from SingleFit import SingleFit
 from custom_features import cf_help
 from FeatureOperations import FeatureIO
 import pandas as pd
 import copy
 import logging
+import time
+from sklearn.externals import joblib
+
 logger = logging.getLogger()
 
 import sklearn.model_selection
 
-class ParamGridSearch(SingleFit):
+class ParamGridSearch:
     """Class to perform parameter optimization by grid search. Only up to 4 parameters may be optimized at a time.
    
     Args:
@@ -96,7 +98,8 @@ class ParamGridSearch(SingleFit):
         """
         if not(training_dataset == testing_dataset):
             raise ValueError("Only testing_dataset will be used. Use the same values for training_dataset and testing_dataset")
-        SingleFit.__init__(self, 
+
+        self._single_fit_init____________________________(
             training_dataset=training_dataset, #only testing_dataset is used
             testing_dataset=testing_dataset,
             model=model, 
@@ -139,6 +142,109 @@ class ParamGridSearch(SingleFit):
         self.best_params=None
         return 
 
+    ### SingleFit section
+
+    # if there is a god i beg him for mercy
+    def _single_fit_init____________________________(self, training_dataset=None, testing_dataset=None, model=None, save_path=None, xlabel="Measured",
+        ylabel="Predicted", plot_filter_out=None, scaler=None, *args, **kwargs):
+        """Initialize class.
+            Attributes that can be set through keywords:
+                self.training_dataset
+                self.testing_dataset
+                self.model
+                self.save_path
+                self.xlabel
+                self.ylabel
+                self.plot_filter_out
+            Other attributes:
+                self.analysis_name <str>
+                self.trained_model <sklearn model>: trained model
+                self.statistics <dict of float>: statistics dictionary
+                self.readme_list <dict of str>: stores lines for readme
+        """
+        # Keyword-set attributes
+        # training csv
+        if training_dataset is None:
+            raise ValueError("training_dataset is not set")
+        if type(training_dataset) is list: #allow inheriting classes to get multiple datasets; MASTML will pass list of data objects
+            self.training_dataset= copy.deepcopy(training_dataset[0]) #first item
+        else:
+            self.training_dataset = copy.deepcopy(training_dataset)
+
+        # testing csv
+        if testing_dataset is None:
+            raise ValueError("testing_dataset is not set")
+        if type(testing_dataset) is list:
+            self.testing_dataset = copy.deepcopy(testing_dataset[0])
+        else:
+            self.testing_dataset=copy.deepcopy(testing_dataset)
+        self.scaler = scaler
+
+        # model
+        if model is None:
+            raise ValueError("No model.")
+        self.model=model
+        # paths
+        if save_path is None:
+            save_path = os.getcwd()
+        save_path = os.path.abspath(save_path)
+        self.save_path = save_path
+        if not os.path.isdir(self.save_path):
+            os.mkdir(self.save_path)
+        # plot customization
+        self.xlabel = xlabel
+        self.ylabel = ylabel
+        self.plot_filter_out = self.get_plot_filter(plot_filter_out)
+        # Self-set attributes
+        self.analysis_name = os.path.basename(self.save_path)
+        self.trained_model=None
+        self.statistics=dict()
+        self.readme_list=list()
+        self.testing_dataset_filtered=None
+        #
+        logger.info("-------- %s --------" % self.analysis_name)
+        logger.info("Starting analysis at %s" % time.asctime())
+        return
+   
+    def get_plot_filter(self, plot_filter_out):
+        if (plot_filter_out is None or plot_filter_out == 'None' or plot_filter_out == ''):
+            self.plot_filter_out = None
+            return
+        pf_tuple_list = list()
+        if type(plot_filter_out) is list:
+            pfo_list = plot_filter_out
+        elif type(plot_filter_out) is str:
+            pfo_list = plot_filter_out.split(",")
+        for pfo_item in pfo_list:
+            if type(pfo_item) is tuple:
+                pf_tuple_list.append(pfo_item)
+            else:
+                pflist = pfo_item.split(";")
+                feature = pflist[0].strip()
+                symbol = pflist[1].strip()
+                rawvalue = pflist[2].strip()
+                try:
+                    value = float(rawvalue)
+                except ValueError:
+                    value = rawvalue
+                pf_tuple_list.append((feature, symbol, value))
+        return pf_tuple_list
+
+    def save_model(self):
+        pname = os.path.join(self.save_path, "model.pickle")
+        with open(pname,'wb') as pfile:
+            joblib.dump(self.model, pfile) 
+
+    def print_readme(self):
+        with open(os.path.join(self.save_path,"README"), 'w') as rfile:
+            rfile.writelines(self.readme_list)
+
+    ### noitceS tiF elgniS
+
+
+
+
+
     def run(self):
         self.set_up()
         self.evaluate_pop()
@@ -163,7 +269,7 @@ class ParamGridSearch(SingleFit):
         return
 
     def set_up_prior_to_population(self):
-        SingleFit.set_up(self)
+        self.readme_list.append("%s\n" % time.asctime())
         self.set_up_opt_dict()
         logger.debug("opt dict: %s" % self.opt_dict)
         logger.debug("opt param list: %s" % self.opt_param_list)
@@ -397,7 +503,7 @@ class ParamGridSearch(SingleFit):
         add_value = self.opt_dict[add_combined_name]
         (location, param_name) = self.get_split_name(add_combined_name)
         if len(old_dict.keys()) == 0:
-            raise ValueError("No optimized parameters in grid search? Run SingleFit or other tests instead.")
+            raise ValueError("No optimized parameters in grid search? You shouldn't be using Grid Search, silly.")
         new_dict = dict()
         for oldstr in old_dict.keys():
             newstr = oldstr
