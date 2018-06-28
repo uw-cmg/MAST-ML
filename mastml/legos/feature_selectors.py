@@ -51,7 +51,6 @@ name_to_constructor = {
     'SelectKBest': fs.SelectKBest,
     'SelectPercentile': fs.SelectPercentile,
     'VarianceThreshold': fs.VarianceThreshold,
-    'SequentialFeatureSelector': SequentialFeatureSelector,
 }
 
 # Modify all sklearn transform methods to return dataframes:
@@ -72,19 +71,31 @@ class PassThrough(BaseEstimator, TransformerMixin):
     def transform(self, df):
         return df[self.features]
 
+def dumb_transformify(transform, name):
+    def new_transform(self, df):
+        arr = transform(self, df.values)
+        labels = [name+str(i) for i in range(arr.shape[1])]
+        return pd.DataFrame(arr, columns=labels)
+    return new_transform
+
+def dumb_fitify(fit):
+    def new_fit(self, X_df, y_df):
+        return fit(self, X_df.values, y_df.values)
+    return new_fit
+
 # Mess with PCA stuff:
-old_transform = PCA.transform
-def new_transform(self, df):
-    arr = old_transform(self, df)
-    labels = ['pca_'+str(i) for i in range(arr.shape[1])]
-    return pd.DataFrame(arr, columns=labels)
-PCA.transform = new_transform
+PCA.transform = dumb_transformify(PCA.transform, 'pca_')
+
+# Mess with SFS stuff:
+SequentialFeatureSelector.transform = dumb_transformify(SequentialFeatureSelector.transform, 'sfs_')
+SequentialFeatureSelector.fit = dumb_fitify(SequentialFeatureSelector.fit)
 
 # Custom selectors don't need to be dataframified
 name_to_constructor.update({
     'PassThrough': PassThrough,
     'DoNothing': util_legos.DoNothing,
     'PCA': PCA,
+    'SequentialFeatureSelector': SequentialFeatureSelector,
 })
 
 # done!

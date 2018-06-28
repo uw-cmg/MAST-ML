@@ -9,6 +9,7 @@ python3 -m mastml.mastml tests/conf/just_model.conf tests/csv/mnist_short.csv -o
 python3 -m mastml.mastml tests/conf/just_normalization.conf tests/csv/three_clusters.csv -o results/just_normalization
 python3 -m mastml.mastml tests/conf/just_selection.conf tests/csv/3d_utility.csv -o results/just_selection
 python3 -m mastml.mastml tests/conf/pca_basic.conf tests/csv/3d_utility.csv -o results/pca_basic
-python3 -m mastml.mastml tests/conf/pca_multiname.conf tests/csv/3d_utility.csv -o results/multiple_names
+python3 -m mastml.mastml tests/conf/pca_multiname.conf tests/csv/3d_utility.csv -o results/pca_multiname
 python3 -m mastml.mastml tests/conf/regression.conf tests/csv/boston_housing.csv -o results/regression
-python3 -m mastml.mastml tests/conf/regression_basic.conf tests/csv/regression_data.csv -o results/basic_regression
+python3 -m mastml.mastml tests/conf/regression_basic.conf tests/csv/regression_data.csv -o results/regression_basic
+python3 -m mastml.mastml tests/conf/sfs_basic.conf tests/csv/3d_utility.csv -o results/sfs_basic
