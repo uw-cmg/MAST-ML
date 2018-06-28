@@ -10,7 +10,6 @@ from KFoldCV import KFoldCV
 from LeaveOutPercentCV import LeaveOutPercentCV
 from plot_data.PlotHelper import PlotHelper
 from SingleFit import SingleFit
-from SingleFit import timeit
 from custom_features import cf_help
 from FeatureOperations import FeatureIO
 import pandas as pd
@@ -140,7 +139,6 @@ class ParamGridSearch(SingleFit):
         self.best_params=None
         return 
 
-    @timeit
     def run(self):
         self.set_up()
         self.evaluate_pop()
@@ -150,7 +148,6 @@ class ParamGridSearch(SingleFit):
         self.print_readme()
         return
 
-    @timeit
     def print_results(self):
         self.print_best_params()
         self.save_best_model()
@@ -158,7 +155,6 @@ class ParamGridSearch(SingleFit):
         self.flatten_results()
         return
 
-    @timeit
     def set_up(self):
         self.set_up_prior_to_population()
         self.set_up_pop_params()
@@ -176,7 +172,6 @@ class ParamGridSearch(SingleFit):
     
 
 
-    @timeit
     def evaluate_pop(self):
         """make model and new testing dataset for each pop member
             and evaluate
@@ -508,7 +503,6 @@ class ParamGridSearch(SingleFit):
         return
 
 
-    @timeit
     def plot(self):
         self.readme_list.append("----- Plotting -----\n")
         cols=list() #repeated code; may want to reduce
