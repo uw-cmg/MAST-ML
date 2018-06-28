@@ -3,10 +3,14 @@ A collection of classes for selecting features
 All classes here assume dataframe input and guarantee dataframe output.
 (So no numpy arrays.)
 """
+
 import pandas as pd
+
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.decomposition import PCA
 import sklearn.feature_selection as fs
+
+from mlxtend.feature_selection import SequentialFeatureSelector # TODO: TEST!!
 
 from . import util_legos, lego_utils
 # list of sklearn feature selectors: http://scikit-learn.org/stable/modules/classes.html#module-sklearn.feature_selection
@@ -45,6 +49,7 @@ name_to_constructor = {
     'SelectKBest': fs.SelectKBest,
     'SelectPercentile': fs.SelectPercentile,
     'VarianceThreshold': fs.VarianceThreshold,
+    'SequentialFeatureSelector': SequentialFeatureSelector,
 }
 
 # Modify all sklearn transform methods to return dataframes:
