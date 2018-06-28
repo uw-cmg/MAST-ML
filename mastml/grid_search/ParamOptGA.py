@@ -6,7 +6,6 @@ __date__ = 'October 14th, 2017'
 
 import numpy as np
 import os
-from SingleFit import timeit
 from ParamGridSearch import ParamGridSearch
 import time
 
@@ -253,7 +252,6 @@ class ParamOptGA(ParamGridSearch):
                 logger.info("RMSE convergence is true, but generation parameters are not all the same.")
         return (converged, best_rmse, best_params)
 
-    @timeit
     def run_ga(self):
         self.ga_dict[self.gact] = dict()
         self.ga_dict[self.gact]['generations'] = dict()
@@ -314,7 +312,6 @@ class ParamOptGA(ParamGridSearch):
             self.readme_list.append("%s" % printitem)
         return
 
-    @timeit
     def run(self):
         self.set_up()
         self.readme_list.append("===== GA info =====\n")
@@ -332,7 +329,6 @@ class ParamOptGA(ParamGridSearch):
         self.print_readme()
         return
 
-    @timeit
     def set_up(self):
         ParamGridSearch.set_up(self)
         return
