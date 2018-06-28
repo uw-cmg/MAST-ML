@@ -6,8 +6,6 @@ __date__ = 'October 14th, 2017'
 
 import os
 import numpy as np
-from KFoldCV import KFoldCV
-from LeaveOutPercentCV import LeaveOutPercentCV
 from plot_data.PlotHelper import PlotHelper
 from SingleFit import SingleFit
 from custom_features import cf_help
@@ -16,6 +14,8 @@ import pandas as pd
 import copy
 import logging
 logger = logging.getLogger()
+
+import sklearn.model_selection
 
 class ParamGridSearch(SingleFit):
     """Class to perform parameter optimization by grid search. Only up to 4 parameters may be optimized at a time.
@@ -236,44 +236,27 @@ class ParamGridSearch(SingleFit):
         indiv_dh = self.get_indiv_datahandler(indiv_params)
         #logging.debug(indiv_dh)
         indiv_path = os.path.join(self.save_path, "indiv_%s" % indiv_key)
-        if not(self.num_folds is None): # MARK replace with sklearn
-            with KFoldCV(training_dataset= indiv_dh,
-                    testing_dataset= indiv_dh,
-                    model = indiv_model,
-                    save_path = indiv_path,
-                    xlabel = self.xlabel,
-                    ylabel = self.ylabel,
-                    mark_outlying_points = self.mark_outlying_points,
-                    num_cvtests = self.num_cvtests,
-                    fix_random_for_testing = self.fix_random_for_testing,
-                    num_folds = self.num_folds) as mycv:
-                #mycv.run() #run separately instead
-                mycv.set_up()
-                mycv.fit()
-                mycv.predict()
-                mycv.print_readme()
-                mycv_rmse = mycv.statistics['avg_fold_avg_rmses']
-                mycv_stats = dict(mycv.statistics)
-        elif not (self.percent_leave_out is None): # MARK replace with sklearn shuffesplit
-            with LeaveOutPercentCV(training_dataset= indiv_dh,
-                    testing_dataset= indiv_dh,
-                    model = indiv_model,
-                    save_path = indiv_path,
-                    xlabel = self.xlabel,
-                    ylabel = self.ylabel,
-                    mark_outlying_points = self.mark_outlying_points,
-                    num_cvtests = self.num_cvtests,
-                    fix_random_for_testing = self.fix_random_for_testing,
-                    percent_leave_out = self.percent_leave_out) as mycv:
-                #mycv.run() #run separately instead
-                mycv.set_up()
-                mycv.fit()
-                mycv.predict()
-                mycv.print_readme()
-                mycv_rmse = mycv.statistics['avg_rmse']
-                mycv_stats = dict(mycv.statistics)
+
+        if self.num_folds is not None: # CZECK_mARK replace with sklearn
+            splitter = sklearn.model_selection.KFold(n_splits=self.num_folds)
+        elif self.percent_leave_out is not None: # CZECK-mARK replace with sklearn shuffesplit
+            splitter = sklearn.model_selection.ShuffleSplit(percent_test=self.percent_leave_out)
         else:
             raise ValueError("Both self.num_folds and self.percent_leave_out are None. One or the other must be specified.")
+
+        #import pdb; pdb.set_trace()
+
+        X = indiv_dh.data[indiv_dh.input_features].values
+        y = indiv_dh.data[indiv_dh.target_feature].values
+        for train_index, test_index in splitter.split(X):
+            X_train, X_test = X[train_index], X[test_index]
+            y_train, y_test = y[train_index], y[test_index]
+            indiv_model.fit(X_train, y_train)
+            y_test_pred = indiv_model.predict(X_test)
+            mycv_rmse = sklearn.metrics.mean_squared_error(y_test, y_test_pred)**0.5
+            mycv_stats = dict()
+
+
         indiv_param_list = self.print_params(indiv_params)
         with open(os.path.join(indiv_path,"param_values"), 'w') as indiv_pfile:
             indiv_pfile.writelines(indiv_param_list)
@@ -363,7 +346,7 @@ class ParamGridSearch(SingleFit):
         for afm in indiv_params.keys():
             if afm == 'model':
                 continue
-            indiv_dh.input_features.append(afm)
+            indiv_dh.input_features.append(afm) # MARK
         indiv_dh.set_up_data_from_features()
         return indiv_dh
 
@@ -505,6 +488,7 @@ class ParamGridSearch(SingleFit):
 
     def plot(self):
         self.readme_list.append("----- Plotting -----\n")
+        print(list)
         cols=list() #repeated code; may want to reduce
         for opt_param in self.opt_param_list:
             self.plot_single_rmse(opt_param)

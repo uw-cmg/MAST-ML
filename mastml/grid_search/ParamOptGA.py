@@ -147,7 +147,7 @@ class ParamOptGA(ParamGridSearch):
             upper_lim = self.pop_size #refers to GA's total combinatorial space
         else:
             upper_lim = self.num_bests #number of potential parents
-        p1idx = self.random_state.randint(0, upper_lim)
+        p1idx = self.random_state.randint(0, upper_lim-1) # FUTURE NOTE this used to crash 1/n times due to limit being inclusive!!
         p2idx = p1idx
         safety_ct = 0
         while (p2idx == p1idx) and (safety_ct < 1000):
@@ -160,6 +160,7 @@ class ParamOptGA(ParamGridSearch):
             p1_params = self.pop_params[pop_keys[p1idx]]
             p2_params = self.pop_params[pop_keys[p2idx]]
         else:
+            # NOTE: i think we are actually not even getting the right individuals
             p1_params = prev_gen.best_indivs[p1idx][2] #params in third column
             p2_params = prev_gen.best_indivs[p2idx][2]
         return (p1_params, p2_params)
