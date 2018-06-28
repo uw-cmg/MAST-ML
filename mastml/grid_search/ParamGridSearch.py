@@ -27,7 +27,7 @@ class ParamGridSearch(SingleFit):
         model (sklearn model object): sklearn model
         save_path (str): Save path
 
-        param_1 (str): parameter string made up of semicolon-delimited pieces
+        param_strings (list of str): list of [parameter string made up of semicolon-delimited pieces]
 
             Piece 1: The word 'model' or a custom feature class.method string, e.g. DBTT.calculate_EffectiveFluence,
             where the custom module has the same name as the custom class, and resides inside the custom_features folder
@@ -47,7 +47,6 @@ class ParamGridSearch(SingleFit):
             (b) start, end, number of points: numpy's np.linspace or np.logspace function will be used to generate this list,
             using an inclusive start and inclusive end. A parameter with only one discrete value will not be considered as an 'optimized' parameter.
 
-        param_2 (str): See param_1. Can have up to 4 parameters, i.e. param_4
         fix_random_for_testing (int): 0 - use random numbers
                                       1 - fix randomizer for testing
         num_cvtests (int): Number of CV tests for each validation step
@@ -70,7 +69,7 @@ class ParamGridSearch(SingleFit):
         ylabel="Predicted",
         #param_1 and as many param_xxx as necessary are given through **kwargs
         fix_random_for_testing=0, num_cvtests=5, mark_outlying_points='0,3', num_folds=None, percent_leave_out=None,
-        processors=1, pop_upper_limit=1000000, num_bests=10, *args, **kwargs):
+        processors=1, pop_upper_limit=1000000, num_bests=10, param_strings):
         """
         Additional class attributes to parent class:
             Set by keyword:
@@ -82,8 +81,8 @@ class ParamGridSearch(SingleFit):
                 self.processors
                 self.pop_upper_limit
                 self.num_bests
-            Set in code:
                 self.param_strings
+            Set in code:
                 self.opt_dict
                 self.opt_param_list
                 self.nonopt_param_list
@@ -117,11 +116,17 @@ class ParamGridSearch(SingleFit):
         self.processors=int(processors)
         self.pop_upper_limit = int(pop_upper_limit)
         self.num_bests = int(num_bests)
-        self.param_strings = dict()
-        for argname in kwargs.keys():
-            if 'param_' in argname:
-                param_num = int(argname.split("_")[1].strip())
-                self.param_strings[param_num] = kwargs[argname]
+
+        ### MARK Don't do this
+        #self.param_strings = dict()
+        #for argname in kwargs.keys():
+        #    if 'param_' in argname:
+        #        param_num = int(argname.split("_")[1].strip())
+        #        self.param_strings[param_num] = kwargs[argname]
+
+        self.param_strings = param_strings # should be a list of strings in that crazy format
+
+
         # Sets later in code
         self.opt_dict=None
         self.opt_param_list=None
@@ -450,8 +455,7 @@ class ParamGridSearch(SingleFit):
         self.opt_param_list=list()
         self.nonopt_param_list=list()
         pop_size = None
-        for paramct in self.param_strings.keys():
-            paramstr = self.param_strings[paramct]
+        for paramct, paramstr in enumerate(self.param_strings):
             logger.debug(paramstr)
             paramsplit = paramstr.strip().split(";")
             location = paramsplit[0].strip()
@@ -521,7 +525,7 @@ class ParamGridSearch(SingleFit):
         """
         location=col.split(".")[0]
         param=col.split(".")[1]
-        for init_param in self.param_strings.values():
+        for init_param in self.param_strings:
             if location in init_param and param in init_param and 'log' in init_param:
                 return True
         return False
@@ -549,20 +553,20 @@ class ParamGridSearch(SingleFit):
             zdata_raw = np.array(self.flat_results[zcol].values,'float')
             zdata = np.log10(zdata_raw)
             zlabel = "log10 %s" % zcol 
-        kwargs = dict()
-        kwargs['xlabel'] = xlabel
-        kwargs['ylabel'] = ylabel
-        kwargs['labellist'] = ['xy',zlabel,'RMSE']
-        kwargs['xdatalist'] = [xdata, xdata, xdata]
-        kwargs['ydatalist'] = [ydata, zdata, self.flat_results['rmse']]
-        kwargs['xerrlist'] = [None, None, None]
-        kwargs['yerrlist'] = [None, None, None]
-        kwargs['notelist'] = list()
-        kwargs['guideline'] = 0
+        ph_kwargs = dict()
+        ph_kwargs['xlabel'] = xlabel
+        ph_kwargs['ylabel'] = ylabel
+        ph_kwargs['labellist'] = ['xy',zlabel,'RMSE']
+        ph_kwargs['xdatalist'] = [xdata, xdata, xdata]
+        ph_kwargs['ydatalist'] = [ydata, zdata, self.flat_results['rmse']]
+        ph_kwargs['xerrlist'] = [None, None, None]
+        ph_kwargs['yerrlist'] = [None, None, None]
+        ph_kwargs['notelist'] = list()
+        ph_kwargs['guideline'] = 0
         plotlabel="rmse_heatmap_3d"
-        kwargs['plotlabel'] = plotlabel
-        kwargs['save_path'] = self.save_path
-        myph = PlotHelper(**kwargs)
+        ph_kwargs['plotlabel'] = plotlabel
+        ph_kwargs['save_path'] = self.save_path
+        myph = PlotHelper(**ph_kwargs)
         myph.plot_3d_rmse_heatmap()
         self.readme_list.append("Plot %s.png created\n" % plotlabel)
         return
@@ -583,20 +587,20 @@ class ParamGridSearch(SingleFit):
             ydata_raw = np.array(self.flat_results[ycol].values,'float')
             ydata = np.log10(ydata_raw)
             ylabel = "log10 %s" % ycol 
-        kwargs = dict()
-        kwargs['xlabel'] = xlabel
-        kwargs['ylabel'] = ylabel
-        kwargs['labellist'] = ['xy','rmse']
-        kwargs['xdatalist'] = [xdata, xdata]
-        kwargs['ydatalist'] = [ydata, self.flat_results['rmse']]
-        kwargs['xerrlist'] = [None, None]
-        kwargs['yerrlist'] = [None, None]
-        kwargs['notelist'] = list()
-        kwargs['guideline'] = 0
+        ph_kwargs = dict()
+        ph_kwargs['xlabel'] = xlabel
+        ph_kwargs['ylabel'] = ylabel
+        ph_kwargs['labellist'] = ['xy','rmse']
+        ph_kwargs['xdatalist'] = [xdata, xdata]
+        ph_kwargs['ydatalist'] = [ydata, self.flat_results['rmse']]
+        ph_kwargs['xerrlist'] = [None, None]
+        ph_kwargs['yerrlist'] = [None, None]
+        ph_kwargs['notelist'] = list()
+        ph_kwargs['guideline'] = 0
         plotlabel="rmse_heatmap"
-        kwargs['plotlabel'] = plotlabel
-        kwargs['save_path'] = self.save_path
-        myph = PlotHelper(**kwargs)
+        ph_kwargs['plotlabel'] = plotlabel
+        ph_kwargs['save_path'] = self.save_path
+        myph = PlotHelper(**ph_kwargs)
         myph.plot_2d_rmse_heatmap()
         self.readme_list.append("Plot %s.png created\n" % plotlabel)
         return
@@ -610,21 +614,21 @@ class ParamGridSearch(SingleFit):
             xdata_raw = np.array(self.flat_results[col].values,'float')
             xdata = np.log10(xdata_raw)
             xlabel = "log10 %s" % col 
-        kwargs = dict()
-        kwargs['xlabel'] = xlabel
-        kwargs['ylabel'] = 'RMSE'
-        kwargs['labellist'] = [xlabel]
-        kwargs['xdatalist'] = [xdata]
-        kwargs['ydatalist'] = [self.flat_results['rmse']]
-        kwargs['xerrlist'] = list([None])
-        kwargs['yerrlist'] = list([None])
-        kwargs['notelist'] = list()
-        kwargs['guideline'] = 0
+        ph_kwargs = dict()
+        ph_kwargs['xlabel'] = xlabel
+        ph_kwargs['ylabel'] = 'RMSE'
+        ph_kwargs['labellist'] = [xlabel]
+        ph_kwargs['xdatalist'] = [xdata]
+        ph_kwargs['ydatalist'] = [self.flat_results['rmse']]
+        ph_kwargs['xerrlist'] = list([None])
+        ph_kwargs['yerrlist'] = list([None])
+        ph_kwargs['notelist'] = list()
+        ph_kwargs['guideline'] = 0
         plotlabel="rmse_vs_%s" % col
         plotlabel=plotlabel.replace(".","_") #mask periods
-        kwargs['plotlabel'] = plotlabel
-        kwargs['save_path'] = self.save_path
-        myph = PlotHelper(**kwargs)
+        ph_kwargs['plotlabel'] = plotlabel
+        ph_kwargs['save_path'] = self.save_path
+        myph = PlotHelper(**ph_kwargs)
         myph.multiple_overlay()
         self.readme_list.append("Plot %s.png created\n" % plotlabel)
         return

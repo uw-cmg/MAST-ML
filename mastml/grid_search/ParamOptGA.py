@@ -19,7 +19,7 @@ class ParamOptGA(ParamGridSearch):
         model (sklearn model object): sklearn model
         save_path (str): Save path
 
-        param_1 (str): parameter string made up of semicolon-delimited pieces
+        param_strings (list of str): list of [parameter string made up of semicolon-delimited pieces]
 
             Piece 1: The word 'model' or a custom feature class.method string, e.g. DBTT.calculate_EffectiveFluence,
             where the custom module has the same name as the custom class, and resides inside the custom_features folder
@@ -39,8 +39,7 @@ class ParamOptGA(ParamGridSearch):
             (b) start, end, number of points: numpy's np.linspace or np.logspace function will be used to generate this list,
             using an inclusive start and inclusive end. A parameter with only one discrete value will not be considered as an 'optimized' parameter.
 
-        param_2 (str): See param_1. Can have up to 4 parameters, i.e. param_4
-        fix_random_for_testing (int): 0 - use random numbers
+        fix_random_for_testing (bool?): 0 - use random numbers
                                       1 - fix randomizer for testing
         num_cvtests (int): Number of CV tests for each validation step
         num_folds (int): Number of folds for K-fold cross validation; leave blank to use LO% CV
@@ -66,8 +65,7 @@ class ParamOptGA(ParamGridSearch):
     def __init__(self, training_dataset=None, testing_dataset=None, model=None, save_path=None, num_folds=None,
         percent_leave_out=None, num_cvtests=20, mark_outlying_points='0,3', num_bests=10, fix_random_for_testing=0,
         processors=1, pop_upper_limit=1000000, num_gas=1, ga_pop_size=50, convergence_generations=30,
-        max_generations=200, crossover_prob = 0.5, mutation_prob = 0.1, shift_prob = 0.5, gen_tol = 0.00000001,
-        *args, **kwargs):
+        max_generations=200, crossover_prob = 0.5, mutation_prob = 0.1, shift_prob = 0.5, gen_tol = 0.00000001):
         """
             Additional class attributes not in parent class:
            
