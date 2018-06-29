@@ -4,7 +4,7 @@ Module for loading checking the input data file
 
 import pandas as pd
 
-def load_data(file_path, input_features=None, target_feature=None, grouping_feature=None, clustering_features=None):
+def load_data(file_path, input_features=None, target_feature=None, grouping_features=None, clustering_features=None):
     " Loads in csv from filename and ensures required columns are present. Returns dataframe. "
     # TODO: modify this to omit the target feature from the input features by default if the target feature is supplied
 
@@ -36,6 +36,8 @@ def load_data(file_path, input_features=None, target_feature=None, grouping_feat
         if feature not in df.columns:
             raise Exception(f"Data file does not have column '{feature}'")
 
-    df = df[required_features] # drop the columns we aren't using
+    # TODO implent required feature checking and inclusion for grouping features.
+    # for now, we'll just not check and include everything
+    #df = df[required_features] # drop the columns we aren't using
 
     return df, input_features, target_feature

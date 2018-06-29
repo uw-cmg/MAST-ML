@@ -31,13 +31,17 @@ def mastml_run(conf_path, data_path, outdir):
     big_metrics_dict = metrics.classification_metrics if conf['is_classification'] else metrics.regression_metrics
     metrics_dict = {name: big_metrics_dict[name] for name in conf['metrics']}
 
+    # Extract columns that some splitter need to do grouped splitting using 'grouping_column'
+    # special argument
+    splitter_to_grouping_column = _extract_grouping_columns(conf['DataSplits'], df)
+    print(conf)
+
     # Instantiate all the sections of the conf file:
     generators  = _instantiate(conf['FeatureGeneration'],    feature_generators.name_to_constructor,  'feature generator')
     normalizers = _instantiate(conf['FeatureNormalization'], feature_normalizers.name_to_constructor, 'feature normalizer')
     selectors   = _instantiate(conf['FeatureSelection'],     feature_selectors.name_to_constructor,   'feature selector')
     models      = _instantiate(conf['Models'],               model_finder.name_to_constructor,        'model')
     splitters   = _instantiate(conf['DataSplits'],           data_splitters.name_to_constructor,      'data split')
-    # MARK needs to extract splitty columns into that dict we talked about
 
     X, y = df[input_features], df[target_feature]
     plot_helper.target_histogram(y, join(outdir, 'target_histogram.png'))
@@ -119,6 +123,18 @@ def _do_combos(X, y, generators, normalizers, selectors, models, splitters,
                 all_results.extend(runs)
 
     return all_results
+
+def _extract_grouping_columns(splitter_to_kwargs, df):
+    splitter_to_grouping_column = dict()
+    for splitter_name, name_and_kwargs in splitter_to_kwargs.items():
+        _, kwargs = name_and_kwargs
+        if 'grouping_column' in kwargs:
+            import pdb; pdb.set_trace()
+            column_name = kwargs['grouping_column']
+            del kwargs['grouping_column'] # because the splitted doesn't actlly take this
+            column_array = df[column_name].values
+            splitter_to_grouping_column[splitter_name] = column_array
+    return splitter_to_grouping_column
 
 
 def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classification):
