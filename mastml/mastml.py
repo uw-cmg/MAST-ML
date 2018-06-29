@@ -263,27 +263,25 @@ def check_paths(conf_path, data_path, outdir):
     log.info(f"Saving to directory 'outdir'")
 
 
-if __name__ == '__main__':
+def get_paths():
     parser = argparse.ArgumentParser(description='MAterials Science Toolkit - Machine Learning')
-
     parser.add_argument('conf_path', type=str, help='path to mastml .conf file')
     parser.add_argument('data_path', type=str, help='path to csv or xlsx file')
     parser.add_argument('-o', action="store", dest='outdir', default='results',
                         help='Folder path to save output files to. Defaults to results/')
-
     args = parser.parse_args()
+    return (os.path.abspath(args.conf_path),
+            os.path.abspath(args.data_path),
+            os.path.abspath(args.outdir))
 
-    check_paths(os.path.abspath(args.conf_path),
-                os.path.abspath(args.data_path),
-                os.path.abspath(args.outdir))
 
-    utils.activate_logging(args.outdir, args)
-
+if __name__ == '__main__':
+    conf_path, data_path, outdir = get_paths()
+    check_paths(conf_path, data_path, outdir)
+    utils.activate_logging(outdir, (conf_path, data_path, outdir))
 
     try:
-        mastml_run(os.path.abspath(args.conf_path),
-                   os.path.abspath(args.data_path),
-                   os.path.abspath(args.outdir))
+        mastml_run(conf_path, data_path, outdir)
     except utils.MastError as e:
         # catch user errors, log and print, but don't raise and show them that nasty stack
         log.error(str(e))

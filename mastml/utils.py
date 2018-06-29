@@ -14,7 +14,7 @@ class BetweenFilter(object):
     def filter(self, logRecord):
         return self.min_level <= logRecord.levelno <= self.max_level
 
-def activate_logging(savepath, header_data, logger_name='mastml', to_screen=True, to_file=True):
+def activate_logging(savepath, paths, logger_name='mastml', to_screen=True, to_file=True):
 
     #formatter = logging.Formatter("%(filename)s : %(funcName)s %(message)s")
     time_formatter = logging.Formatter("[%(levelname)s] %(asctime)s : %(message)s")
@@ -35,7 +35,7 @@ def activate_logging(savepath, header_data, logger_name='mastml', to_screen=True
         errors_hdlr.setFormatter(time_formatter)
         rootLogger.addHandler(errors_hdlr)
 
-    log_header(header_data, rootLogger) # only shows up in files
+    log_header(paths, rootLogger) # only shows up in files
 
     if to_screen:
         stdout_hdlr = logging.StreamHandler(sys.stdout)
@@ -50,7 +50,7 @@ def activate_logging(savepath, header_data, logger_name='mastml', to_screen=True
         rootLogger.addHandler(stderr_hdlr)
 
 
-def log_header(header_data, log):
+def log_header(paths, log):
 
     logo = textwrap.dedent(f"""\
            __  ___     __________    __  _____ 
@@ -61,9 +61,9 @@ def log_header(header_data, log):
 
     date_time = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
     header = (f"\n\n{logo}\n\nMAST-ML run on {date_time} using \n"
-              f"conf file: {os.path.basename(header_data.conf_path)}\n"
-              f"csv file:  {os.path.basename(header_data.data_path)}\n"
-              f"saving to: {os.path.basename(header_data.outdir)}\n\n")
+              f"conf file: {os.path.basename(paths[0])}\n"
+              f"csv file:  {os.path.basename(paths[1])}\n"
+              f"saving to: {os.path.basename(paths[2])}\n\n")
 
     # using highest logging level so it shows up in ALL log files
     log.critical(header)
