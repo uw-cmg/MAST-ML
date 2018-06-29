@@ -37,9 +37,12 @@ def mastml_run(conf_path, data_path, outdir):
     selectors   = _instantiate(conf['FeatureSelection'],     feature_selectors.name_to_constructor,   'feature selector')
     models      = _instantiate(conf['Models'],               model_finder.name_to_constructor,        'model')
     splitters   = _instantiate(conf['DataSplits'],           data_splitters.name_to_constructor,      'data split')
+    # MARK needs to extract splitty columns into that dict we talked about
 
     X, y = df[input_features], df[target_feature]
     plot_helper.target_histogram(y, join(outdir, 'target_histogram.png'))
+
+    # MARK needs to pass in dict of 'SplitterName: np.array(0,1,0,1) or whatever
     runs = _do_combos(X, y, generators, normalizers, selectors, models, splitters,
                       metrics_dict, outdir, conf['is_classification'])
 
@@ -55,6 +58,7 @@ def mastml_run(conf_path, data_path, outdir):
     shutil.copy2(data_path, outdir)
 
 
+# MARK needs to take in dict of 'SplitterName: np.array(0,1,0,1) or whatever
 def _do_combos(X, y, generators, normalizers, selectors, models, splitters,
                metrics_dict, outdir, is_classification):
     """
@@ -98,6 +102,7 @@ def _do_combos(X, y, generators, normalizers, selectors, models, splitters,
 
             post_selection.append((normalizer_name, selector_name, X_selected))
 
+    # MARK here is where splitting happens
     splits = [(name, tuple(instance.split(X, y))) for name, instance in splitters]
 
     log.info("Fitting models to splits...")
