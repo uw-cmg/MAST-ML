@@ -9,14 +9,16 @@ from ..legos import model_finder
 from .. import mastml, utils
 
 genetic_search_user_params = [ # parameters to GridSearch initializer which user has permission to set
-    'model', 'xlabel', 'ylabel', 'fix_random_for_testing', 'num_cvtests', 'mark_outlying_points',
-    'num_folds', 'percent_leave_out', 'processors', 'pop_upper_limit', 'num_bests',
+    'param_strings', 'model', 'xlabel', 'ylabel', 'fix_random_for_testing',
+    'num_cvtests', 'mark_outlying_points', 'num_folds', 'percent_leave_out',
+    'processors', 'pop_upper_limit', 'num_bests',
 ]
 
 genetic_search_user_params = [ # parameters to GeneticSearch initializer which user has permission to set
-    'model', 'num_folds', 'percent_leave_out', 'num_cvtests', 'mark_outlying_points', 'num_bests',
-    'fix_random_for_testing', 'processors', 'pop_upper_limit', 'num_gas', 'ga_pop_size',
-    'convergence_generations', 'max_generations', 'crossover_prob', 'mutation_prob', 'shift_prob', 'gen_tol',
+    'param_strings', 'model', 'num_folds', 'percent_leave_out', 'num_cvtests',
+    'mark_outlying_points', 'num_bests', 'fix_random_for_testing', 'processors', 'pop_upper_limit',
+    'num_gas', 'ga_pop_size', 'convergence_generations', 'max_generations', 'crossover_prob',
+    'mutation_prob', 'shift_prob', 'gen_tol',
 ]
 
 def parse_conf_file(filepath):
