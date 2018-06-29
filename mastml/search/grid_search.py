@@ -20,7 +20,7 @@ from .. import plot_helper
 logger = logging.getLogger()
 
 
-class ParamGridSearch:
+class GridSearch:
     """Class to perform parameter optimization by grid search. Only up to 4 parameters may be optimized at a time.
    
     Args:

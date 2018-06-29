@@ -6,10 +6,10 @@ __date__ = 'October 14th, 2017'
 
 import numpy as np
 import os
-from .ParamGridSearch import ParamGridSearch
+from .grid_search import GridSearch
 import time
 
-class ParamOptGA(ParamGridSearch):
+class GeneticSearch(GridSearch):
     """Class to perform parameter optimization by genetic algorithm. Allows custom features.
 
     Args:
@@ -84,7 +84,7 @@ class ParamOptGA(ParamGridSearch):
             self.ga_dict 
             self.gact 
         """
-        ParamGridSearch.__init__(self,
+        GridSearch.__init__(self,
             param_strings=param_strings,
             training_dataset=training_dataset, 
             testing_dataset=training_dataset, 
@@ -125,7 +125,7 @@ class ParamOptGA(ParamGridSearch):
         gen_save_path = os.path.join(ga_dir, "Gen_%i" % genct)
         gen_kwargs = dict()
 
-        mygen = ParamGridSearch(
+        mygen = GridSearch(
             param_strings=self.param_strings,
             training_dataset=self.training_dataset,
             testing_dataset=self.training_dataset, #ONLY TRAIN is used
@@ -168,10 +168,10 @@ class ParamOptGA(ParamGridSearch):
     def get_new_pop_params(self, prev_gen):
         """
             Args:
-                prev_gen <ParamGridSearch object>
+                prev_gen <GridSearch object>
             Returns:
                 parameter dictionary for new population, to be fed
-                directly into ParamGridSearch.pop_params dictionary
+                directly into GridSearch.pop_params dictionary
         """
         pop_params = dict()
         for ict in range(0, self.ga_pop_size):
@@ -333,7 +333,7 @@ class ParamOptGA(ParamGridSearch):
         return
 
     def set_up(self):
-        ParamGridSearch.set_up(self)
+        GridSearch.set_up(self)
         return
 
     def select_final_best(self):
