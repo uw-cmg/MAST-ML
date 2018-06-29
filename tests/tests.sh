@@ -13,3 +13,4 @@ python3 -m mastml.mastml tests/conf/pca_multiname.conf tests/csv/3d_utility.csv 
 python3 -m mastml.mastml tests/conf/regression.conf tests/csv/boston_housing.csv -o results/regression
 python3 -m mastml.mastml tests/conf/regression_basic.conf tests/csv/regression_data.csv -o results/regression_basic
 python3 -m mastml.mastml tests/conf/sfs_basic.conf tests/csv/3d_utility.csv -o results/sfs_basic
+python3 -m mastml.search.search ../mastml/search/settings.conf ../mastml/search/mnist_short.csv -o results/search
