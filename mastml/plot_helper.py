@@ -383,7 +383,7 @@ def best_worst_per_point(y_true, y_pred_list, savepath, title='best worst per po
 
 def plot_1d_heatmap(xs, heats, savepath, xlabel='x', heatlabel='heats'):
     fig, ax = make_fig_ax(aspect='auto')
-    ax.scatter(xs, heats, alpha=0.6)
+    ax.bar(xs, heats)
     ax.set_xlabel(xlabel)
     ax.set_ylabel(heatlabel)
     fig.savefig(savepath)
