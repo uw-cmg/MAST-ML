@@ -300,7 +300,7 @@ class GeneticSearch(GridSearch):
             logger.debug(time.asctime())
             genpref = "Results gen %i, rmse %3.3f" % (ga_genct, gen_best_rmse)
             printlist = self.print_params(gen_best_genome)
-            logger.debug("%s: %s" % (genpref, printlist))
+            logger.info("%s: %s" % (genpref, printlist))
             ga_genct = ga_genct + 1
             (ga_converged, ga_best_rmse, ga_best_genome) = self.check_convergence(gen_bests, ga_best_rmse, ga_best_genome)
         self.ga_dict[self.gact]['best_rmse'] = ga_best_rmse 

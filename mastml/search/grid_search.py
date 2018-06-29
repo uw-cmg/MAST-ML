@@ -288,12 +288,14 @@ class GridSearch:
 
         if self.processors == 1:
             for ikey in self.pop_params.keys():
-                sys.stdout.write("\rIndividual %s/%i" % (ikey, self.pop_size)) # loading bar HACK
+                #sys.stdout.write("\rIndividual %s/%i" % (ikey, self.pop_size)) # loading bar HACK
+                sys.stdout.write(f"\rMaking individuals [{'+'*int(ikey)}{'-'*(self.pop_size-int(ikey))}]") # loading bar HACK
                 sys.stdout.flush()
                 indiv_params = self.pop_params[ikey]
                 [indiv_rmse, indiv_stats] = self.evaluate_indiv(indiv_params, ikey)
                 self.pop_stats[ikey] = indiv_stats
                 self.pop_rmses[ikey] = indiv_rmse
+            print()
             logger.debug(f'finished generation of {self.pop_size} individuals.')
         else:
             from multiprocessing import Process, Manager
@@ -751,9 +753,9 @@ class GridSearch:
                 for param in params[loc].keys():
                     colname = "%s.%s" % (loc, param)
                     val = params[loc][param]
-                    flat_results.set_value(pct, colname, val)
-            flat_results.set_value(pct, 'rmse', rmse)
-            flat_results.set_value(pct, 'key', pkey)
+                    flat_results.loc[pct, colname] = val
+            flat_results.loc[pct, 'rmse'] = rmse
+            flat_results.loc[pct, 'key'] = pkey
             pct = pct + 1
         flat_results.to_csv(os.path.join(self.save_path, "results.csv"))
         self.readme_list.append("Printed RMSE results to results.csv\n")
