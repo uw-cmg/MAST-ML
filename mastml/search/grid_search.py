@@ -680,25 +680,9 @@ class GridSearch:
             ydata = np.log10(ydata_raw)
             ylabel = "log10 %s" % ycol 
 
-        ### call to plot helper
-
-        #myph = PlotHelper(
-        #    xlabel=xlabel,
-        #    ylabel=ylabel,
-        #    labellist=['xy','rmse'],
-        #    xdatalist=[xdata, xdata],
-        #    ydatalist=[ydata, self.flat_results['rmse']],
-        #    xerrlist=[None, None],
-        #    yerrlist=[None, None],
-        #    notelist=list(),
-        #    guideline=0,
-        #   save_path=self.save_path)
-
-        ### repleh tolp ot llac
-
-        plotlabel="rmse_heatmap"
+        plotlabel = "rmse_heatmap"
         savepath = os.path.join(self.save_path, f'{plotlabel}.png')
-        plot_helper.plot_rmse_scatter(hyper_p=xdata, rmse=ydata, savepath=savepath)
+        plot_helper.plot_2d_heatmap(xdata, ydata, self.flat_results['rmse'], savepath, xlabel, ylabel, 'rmse')
         self.readme_list.append("Plot %s.png created\n" % plotlabel)
         return
 
@@ -731,7 +715,7 @@ class GridSearch:
 
         plotlabel="rmse_vs_%s" % col
         savepath = os.path.join(self.save_path, f'{plotlabel}.png')
-        plot_helper.plot_rmse_scatter(hyper_p=xdata, rmse=self.flat_results['rmse'], savepath=savepath)
+        plot_helper.plot_1d_heatmap(xdata, self.flat_results['rmse'], savepath)
         self.readme_list.append("Plot %s.png created\n" % plotlabel)
         return
 
