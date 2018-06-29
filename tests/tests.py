@@ -303,6 +303,15 @@ class TestPlots(unittest.TestCase):
         y_pred_list = [[x + np.random.normal(2, 1) for _ in "a"*20] for x in y_true]
         plot_helper.violin(y_true, y_pred_list, 'violin2.png', title='violin2.png')
 
+    def test_3d_heatmap(self):
+        xs = np.random.normal(4, 2, 100)
+        ys = np.random.normal(7, 1, 100)
+        zs = np.random.normal(0, 3, 100)
+        heats = np.random.random(100)
+
+        plot_helper.plot_3d_heatmap(xs, ys, zs, heats, '3d_heatmap.png', r'$\alpha$', r'$\beta$', r'$\gamma$', 'accuracy')
+
+
 class TestHtml(unittest.TestCase):
 
     def test_image_list(self):

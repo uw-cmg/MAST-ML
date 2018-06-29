@@ -8,7 +8,7 @@ A plot can also take an "outdir" instead of a savepath. If this is the case,
 it must return a list of filenames where it saved the figures.
 """
 
-import os.path
+from os.path import join
 import itertools
 
 import numpy as np # TODO: used?
@@ -20,7 +20,7 @@ from matplotlib import pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure, figaspect
 from matplotlib.ticker import MaxNLocator # TODO: used?
-
+from matplotlib.animation import FuncAnimation
 
 # set all font to bigger
 font = {'size'   : 18,
@@ -37,7 +37,6 @@ from .ipynb_maker import ipynb_maker # TODO: fix cyclic import
 # maybe TODO: have all plot makers start with `plot`
 
 def make_plots(run, path, is_classification):
-    join = os.path.join
     y_train_true, y_train_pred, y_test_true,  y_test_pred, train_metrics, test_metrics = \
         run['y_train_true'], run['y_train_pred'], run['y_test_true'],  run['y_test_pred'], run['train_metrics'], run['test_metrics']
 
@@ -90,6 +89,7 @@ nice_names = {
     'r2_score_noint': '$r^2$ noint',
 }
 
+
 def parse_stat(name,value):
     " Stringifies the name value pair for display within a plot "
     if name in nice_names:
@@ -112,7 +112,6 @@ def parse_stat(name,value):
     return f'{name}: {value}' # probably a string
 
 
-
 def plot_stats(fig, stats):
     #print(stats)
     """ print stats onto the image. Goes off screen if they are too long or too many in number """
@@ -121,6 +120,7 @@ def plot_stats(fig, stats):
 
     fig.text(0.69, 0.98, stat_str,
              verticalalignment='top', wrap=True)
+
 
 def make_fig_ax(aspect='equal'):
     """ using OO interface from https://matplotlib.org/gallery/api/agg_oo_sgskip.html"""
@@ -135,6 +135,7 @@ def make_fig_ax(aspect='equal'):
     ax = fig.add_subplot(gs[0, 0:3], aspect=aspect)
 
     return fig, ax
+
 
 @ipynb_maker
 def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False,
@@ -210,9 +211,21 @@ def predicted_vs_true(train_triple, test_triple, outdir):
 
         filename = 'predicted_vs_true_'+ title_addon + '.png'
         filenames.append(filename)
-        fig.savefig(os.path.join(outdir, filename))
+        fig.savefig(join(outdir, filename))
 
     return filenames
+
+
+def plot_rmse_heatmap(hyper_p, rmse, savepath):
+    fig, ax = make_fig_ax()
+
+    ax.scatter(hyper_p, rmse)
+
+    ax.set_xlabel('hyper p todo')
+    ax.set_ylabel('RMSE')
+
+    fig.savefig(savepath)
+
 
 def make_axis_same(ax, max1, min1):
     # fix up dem axis
@@ -223,6 +236,7 @@ def make_axis_same(ax, max1, min1):
         ticks = np.linspace(min1, max1, 4)
     ax.set_xticks(ticks)
     ax.set_yticks(ticks)
+
 
 @ipynb_maker
 def plot_best_worst(best_run, worst_run, savepath, stats, title='Best Worst Overlay'):
@@ -246,6 +260,7 @@ def plot_best_worst(best_run, worst_run, savepath, stats, title='Best Worst Over
     plot_stats(fig, stats)
 
     fig.savefig(savepath)
+
 
 @ipynb_maker
 def plot_residuals_histogram(y_true, y_pred, savepath, stats, title='residuals histogram'):
@@ -271,6 +286,7 @@ def plot_residuals_histogram(y_true, y_pred, savepath, stats, title='residuals h
 
     fig.savefig(savepath)
 
+
 @ipynb_maker
 def target_histogram(y_df, savepath, title='target histogram'):
 
@@ -293,6 +309,7 @@ def target_histogram(y_df, savepath, title='target histogram'):
     plot_stats(fig, dict(y_df.describe()))
 
     fig.savefig(savepath)
+
 
 @ipynb_maker
 def predicted_vs_true_bars(y_true, y_pred_list, savepath, title='best worst with bars'):
@@ -318,6 +335,7 @@ def predicted_vs_true_bars(y_true, y_pred_list, savepath, title='best worst with
     plot_stats(fig, dict())
     fig.savefig(savepath)
 
+
 @ipynb_maker
 def violin(y_true, y_pred_list, savepath, title='best worst with bars'):
     means = [np.mean(y_pred) for y_pred in y_pred_list]
@@ -341,6 +359,7 @@ def violin(y_true, y_pred_list, savepath, title='best worst with bars'):
 
     plot_stats(fig, dict())
     fig.savefig(savepath)
+
 
 @ipynb_maker
 def best_worst_per_point(y_true, y_pred_list, savepath, title='best worst per point'):
@@ -371,3 +390,29 @@ def best_worst_per_point(y_true, y_pred_list, savepath, title='best worst per po
     plot_stats(fig, dict())
     fig.savefig(savepath)
     
+
+def plot_3d_heatmap(xs, ys, zs, heats, savepath, xlabel='x', ylabel='y', zlabel='z', heatlabel='heat'):
+    # set image aspect ratio. Needs to be wide enough or plot will shrink really skinny
+    w, h = figaspect(0.6)
+    fig = Figure(figsize=(w,h))
+    FigureCanvas(fig)
+
+
+    """ Plot 3d rmse heatmap """
+    from mpl_toolkits.mplot3d import Axes3D # this import has side effects
+
+    ax = fig.add_subplot(111, projection='3d')
+    scat = ax.scatter(xs, ys, zs, c=heats) # marker='o', lw=0, s=20, cmap=cm.plasma
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    ax.set_zlabel(zlabel)
+    cb = fig.colorbar(scat)
+    cb.set_label(heatlabel)
+
+    def animate(i):
+        ax.view_init(elev=10., azim=i)
+        return [fig]
+    anim = FuncAnimation(fig, animate, frames=range(0,90,5), blit=True)
+    #anim.save(savepath+'.mp4', fps=5, extra_args=['-vcodec', 'libx264'])
+    anim.save(savepath+'.gif', fps=5, dpi=80, writer='imagemagick')
+
