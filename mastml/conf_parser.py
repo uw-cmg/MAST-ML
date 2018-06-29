@@ -52,6 +52,8 @@ def parse_conf_file(filepath):
         for name, value in parameter_dict.items():
             if isinstance(value, dict):
                 raise TypeError(f"Subsection in parameter-only section: {key}")
+            # input_features/target_feature might have column named 'y' or 'off' or whatever, so don't fix it
+            if name in ['input_features', 'target_feature']: continue 
             parameter_dict[name] = fix_types(value)
 
     # Ensure all models are either classifiers or regressors: (raises error if mixed)

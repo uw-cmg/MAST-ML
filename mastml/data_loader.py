@@ -25,6 +25,7 @@ def load_data(file_path, input_features=None, target_feature=None, grouping_feat
 
     # Collect required features:
     required_features = input_features + [target_feature]
+
     #if grouping_feature is not None:
     #    required_features.append(grouping_feature)
     #if clustering_features is not None:
