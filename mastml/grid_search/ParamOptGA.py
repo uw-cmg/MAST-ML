@@ -6,7 +6,7 @@ __date__ = 'October 14th, 2017'
 
 import numpy as np
 import os
-from ParamGridSearch import ParamGridSearch
+from .ParamGridSearch import ParamGridSearch
 import time
 
 class ParamOptGA(ParamGridSearch):

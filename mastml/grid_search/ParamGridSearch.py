@@ -13,10 +13,12 @@ import copy
 import logging
 import time
 from sklearn.externals import joblib
+import sklearn.model_selection
+
+from .. import plot_helper
 
 logger = logging.getLogger()
 
-import sklearn.model_selection
 
 class ParamGridSearch:
     """Class to perform parameter optimization by grid search. Only up to 4 parameters may be optimized at a time.
@@ -639,6 +641,9 @@ class ParamGridSearch:
             zdata_raw = np.array(self.flat_results[zcol].values,'float')
             zdata = np.log10(zdata_raw)
             zlabel = "log10 %s" % zcol 
+
+
+        ### call to plot helper
         ph_kwargs = dict()
         ph_kwargs['xlabel'] = xlabel
         ph_kwargs['ylabel'] = ylabel
@@ -654,6 +659,10 @@ class ParamGridSearch:
         ph_kwargs['save_path'] = self.save_path
         myph = PlotHelper(**ph_kwargs)
         myph.plot_3d_rmse_heatmap()
+        ### repleh tolp ot llac
+
+
+
         self.readme_list.append("Plot %s.png created\n" % plotlabel)
         return
 
@@ -673,21 +682,26 @@ class ParamGridSearch:
             ydata_raw = np.array(self.flat_results[ycol].values,'float')
             ydata = np.log10(ydata_raw)
             ylabel = "log10 %s" % ycol 
-        ph_kwargs = dict()
-        ph_kwargs['xlabel'] = xlabel
-        ph_kwargs['ylabel'] = ylabel
-        ph_kwargs['labellist'] = ['xy','rmse']
-        ph_kwargs['xdatalist'] = [xdata, xdata]
-        ph_kwargs['ydatalist'] = [ydata, self.flat_results['rmse']]
-        ph_kwargs['xerrlist'] = [None, None]
-        ph_kwargs['yerrlist'] = [None, None]
-        ph_kwargs['notelist'] = list()
-        ph_kwargs['guideline'] = 0
-        plotlabel="rmse_heatmap"
-        ph_kwargs['plotlabel'] = plotlabel
-        ph_kwargs['save_path'] = self.save_path
-        myph = PlotHelper(**ph_kwargs)
-        myph.plot_2d_rmse_heatmap()
+
+        ### call to plot helper
+
+        #myph = PlotHelper(
+        #    xlabel=xlabel,
+        #    ylabel=ylabel,
+        #    labellist=['xy','rmse'],
+        #    xdatalist=[xdata, xdata],
+        #    ydatalist=[ydata, self.flat_results['rmse']],
+        #    xerrlist=[None, None],
+        #    yerrlist=[None, None],
+        #    notelist=list(),
+        #    guideline=0,
+        #    plotlabel="rmse_heatmap",
+        #    save_path=self.save_path)
+        #savepath = os.path.join(self.save_path, 'rmse_scatter.png')
+
+        ### repleh tolp ot llac
+
+        plot_helper.plot_rmse_scatter(hyper_p=xdata, rmse=ydata, savepath=savepath)
         self.readme_list.append("Plot %s.png created\n" % plotlabel)
         return
 
