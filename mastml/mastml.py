@@ -33,7 +33,8 @@ def mastml_run(conf_path, data_path, outdir):
 
     # Extract columns that some splitter need to do grouped splitting using 'grouping_column'
     # special argument
-    splitter_to_grouping_column = _extract_grouping_columns(conf['DataSplits'], df)
+    splitter_to_groups = _extract_grouping_columns(conf['DataSplits'], df)
+    import pdb; pdb.set_trace()
     print(conf)
 
     # Instantiate all the sections of the conf file:
@@ -46,9 +47,8 @@ def mastml_run(conf_path, data_path, outdir):
     X, y = df[input_features], df[target_feature]
     plot_helper.target_histogram(y, join(outdir, 'target_histogram.png'))
 
-    # MARK needs to pass in dict of 'SplitterName: np.array(0,1,0,1) or whatever
     runs = _do_combos(X, y, generators, normalizers, selectors, models, splitters,
-                      metrics_dict, outdir, conf['is_classification'])
+                      metrics_dict, outdir, conf['is_classification'], splitter_to_groups)
 
     log.info("Making image html file...")
     html_helper.make_html(outdir)
@@ -64,7 +64,7 @@ def mastml_run(conf_path, data_path, outdir):
 
 # MARK needs to take in dict of 'SplitterName: np.array(0,1,0,1) or whatever
 def _do_combos(X, y, generators, normalizers, selectors, models, splitters,
-               metrics_dict, outdir, is_classification):
+               metrics_dict, outdir, is_classification, splitter_to_groups):
     """
     Uses cross product to generate, normalize, and select the input data, then saves it.
     Calls _do_splits for actual model fits.
@@ -107,7 +107,15 @@ def _do_combos(X, y, generators, normalizers, selectors, models, splitters,
             post_selection.append((normalizer_name, selector_name, X_selected))
 
     # MARK here is where splitting happens
-    splits = [(name, tuple(instance.split(X, y))) for name, instance in splitters]
+    splits = []
+    for name, instance in splitters:
+        group = splitter_to_groups[name] if name in splitter_to_groups else None
+        # Luke can make this back into a list comprehension if he wants
+        splits.append((name, tuple(instance.split(X, y, group))))
+
+
+
+    #splits = [(name, tuple(instance.split(X, y))) for name, instance in splitters]
 
     log.info("Fitting models to splits...")
     all_results = []
@@ -125,16 +133,15 @@ def _do_combos(X, y, generators, normalizers, selectors, models, splitters,
     return all_results
 
 def _extract_grouping_columns(splitter_to_kwargs, df):
-    splitter_to_grouping_column = dict()
+    splitter_to_groups = dict()
     for splitter_name, name_and_kwargs in splitter_to_kwargs.items():
         _, kwargs = name_and_kwargs
         if 'grouping_column' in kwargs:
-            import pdb; pdb.set_trace()
             column_name = kwargs['grouping_column']
             del kwargs['grouping_column'] # because the splitted doesn't actlly take this
             column_array = df[column_name].values
-            splitter_to_grouping_column[splitter_name] = column_array
-    return splitter_to_grouping_column
+            splitter_to_groups[splitter_name] = column_array
+    return splitter_to_groups
 
 
 def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classification):
