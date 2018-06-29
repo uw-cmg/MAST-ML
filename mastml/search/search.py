@@ -3,6 +3,10 @@
 # TODO: use standard logging?
 
 import argparse
+import logging
+
+from configobj import ConfigObj
+import pandas as pd
 
 from .grid_search import GridSearch
 from .genetic_search import GeneticSearch
@@ -10,6 +14,8 @@ from .data_handler import DataHandler
 from ..legos import model_finder
 from .. import mastml, utils
 from ..conf_parser import fix_types
+
+log = logging.getLogger('mastml')
 
 grid_search_user_params = [ # parameters to GridSearch initializer which user has permission to set
     'param_strings', 'model', 'xlabel', 'ylabel', 'fix_random_for_testing',
@@ -33,7 +39,7 @@ def parse_conf_file(filepath):
 
     section = conf['GeneralSetup']
     for param in ['target_feature', 'istest_feature',]:
-        if param not in section or param[section] == 'Auto':
+        if param not in section or section[param] == 'Auto':
             raise Exception(f"Section [GeneralSetup] cannot omit or Auto '{param}'")
     if 'input_features' not in section or section['input_features'] == 'Auto':
         section['input_features'] = None
@@ -45,7 +51,7 @@ def parse_conf_file(filepath):
                                ['GeneticSearch', genetic_search_user_params]]:
         if name not in conf: continue
         section = conf[name]
-        for param in ['param_strings', 'model']
+        for param in ['param_strings', 'model']:
             if param not in section:
                 raise Exception(f"Section [{name}] must specify parameter '{param}'")
         for param in section:
@@ -77,29 +83,29 @@ def do_run(conf_path, data_path, outdir):
     for name, constructor in [['GridSearch', GridSearch] , ['GeneticSearch', GeneticSearch]]:
         if name not in conf: continue
         section = conf[name]
-        model = model_finder.name_to_constructor[section['model']] # TODO: make nice errors
+        model = model_finder.name_to_constructor[section['model']]() # TODO: make nice errors
         params = section['param_strings'] # TODO: Any preprocessing necessary?
         del section['param_strings']
-        del conf['model']
+        del section['model']
         searcher = constructor(params, dh, dh, model, outdir, **section)
         searcher.run() # TODO: save result somehow?
     print("Done!")
 
 
 if __name__ == '__main__':
-    conf_path, data_path, outdir = mastml.get_paths()
+    conf_path, data_path, outdir = mastml.get_paths() # argparse stuff
     mastml.check_paths(conf_path, data_path, outdir)
     utils.activate_logging(outdir, (conf_path, data_path, outdir))
 
     try:
-        mastml_run(conf_path, data_path, outdir)
+        do_run(conf_path, data_path, outdir)
     except utils.MastError as e:
         # catch user errors, log and print, but don't raise and show them that nasty stack
         log.error(str(e))
     except Exception as e:
         # catch the error, save it to file, then raise it back up
         log.error('A runtime exception has occured, please go to '
-                      'https://github.com/uw-cmg/MAST-ML/issues and post your issue.')
+                  'https://github.com/uw-cmg/MAST-ML/issues and post your issue.')
         log.exception(e)
         raise e
 

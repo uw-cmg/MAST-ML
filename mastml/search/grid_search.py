@@ -6,7 +6,7 @@ __date__ = 'October 14th, 2017'
 
 import os
 import numpy as np
-from plot_data.PlotHelper import PlotHelper
+##############################################from plot_data.PlotHelper import PlotHelper
 from custom_features import cf_help
 import pandas as pd
 import copy
@@ -17,7 +17,7 @@ import sklearn.model_selection
 
 from .. import plot_helper
 
-logger = logging.getLogger()
+logger = logging.getLogger('mastml')
 
 
 class GridSearch:
@@ -338,7 +338,13 @@ class GridSearch:
         """Evaluate an individual
         """
         indiv_model = copy.deepcopy(self.model)
-        indiv_model.set_params(**indiv_params['model'])
+        try:
+            indiv_model.set_params(**indiv_params['model'])
+        except ValueError as e:
+            print('good params: ', indiv_model.get_params().keys())
+            print('your params: ', indiv_params['model'].keys())
+            raise e
+
         indiv_dh = self.get_indiv_datahandler(indiv_params)
         #logging.debug(indiv_dh)
         indiv_path = os.path.join(self.save_path, "indiv_%s" % indiv_key)
@@ -642,29 +648,16 @@ class GridSearch:
             zdata = np.log10(zdata_raw)
             zlabel = "log10 %s" % zcol 
 
-
-        ### call to plot helper
-        ph_kwargs = dict()
-        ph_kwargs['xlabel'] = xlabel
-        ph_kwargs['ylabel'] = ylabel
-        ph_kwargs['labellist'] = ['xy',zlabel,'RMSE']
-        ph_kwargs['xdatalist'] = [xdata, xdata, xdata]
-        ph_kwargs['ydatalist'] = [ydata, zdata, self.flat_results['rmse']]
-        ph_kwargs['xerrlist'] = [None, None, None]
-        ph_kwargs['yerrlist'] = [None, None, None]
-        ph_kwargs['notelist'] = list()
-        ph_kwargs['guideline'] = 0
-        plotlabel="rmse_heatmap_3d"
-        ph_kwargs['plotlabel'] = plotlabel
-        ph_kwargs['save_path'] = self.save_path
-        myph = PlotHelper(**ph_kwargs)
-        myph.plot_3d_rmse_heatmap()
-        ### repleh tolp ot llac
-
-
-
+        plotlabel = 'rmse_heatmap_3d'
+        savepath = os.path.join(self.save_path, plotlabel+'.png')
+        import pdb; pdb.set_trace()
+        if isinstance(xdata[0], str):
+            strings = list(set(xdata))
+            mapping = {string: i for i,string in enumerate(strings)}
+            xdata = xdata.map(lambda s: mapping[s])
+        plot_helper.plot_3d_heatmap(xdata, ydata, zdata, self.flat_results['rmse'], savepath,
+                                    xlabel, ylabel, zlabel, 'rmse')
         self.readme_list.append("Plot %s.png created\n" % plotlabel)
-        return
 
     def plot_2d_rmse_heatmap(self, cols):
         #adjust for log params if necessary
@@ -695,12 +688,12 @@ class GridSearch:
         #    yerrlist=[None, None],
         #    notelist=list(),
         #    guideline=0,
-        #    plotlabel="rmse_heatmap",
-        #    save_path=self.save_path)
-        #savepath = os.path.join(self.save_path, 'rmse_scatter.png')
+        #   save_path=self.save_path)
 
         ### repleh tolp ot llac
 
+        plotlabel="rmse_heatmap"
+        savepath = os.path.join(self.save_path, f'{plotlabel}.png')
         plot_helper.plot_rmse_scatter(hyper_p=xdata, rmse=ydata, savepath=savepath)
         self.readme_list.append("Plot %s.png created\n" % plotlabel)
         return
@@ -714,22 +707,27 @@ class GridSearch:
             xdata_raw = np.array(self.flat_results[col].values,'float')
             xdata = np.log10(xdata_raw)
             xlabel = "log10 %s" % col 
-        ph_kwargs = dict()
-        ph_kwargs['xlabel'] = xlabel
-        ph_kwargs['ylabel'] = 'RMSE'
-        ph_kwargs['labellist'] = [xlabel]
-        ph_kwargs['xdatalist'] = [xdata]
-        ph_kwargs['ydatalist'] = [self.flat_results['rmse']]
-        ph_kwargs['xerrlist'] = list([None])
-        ph_kwargs['yerrlist'] = list([None])
-        ph_kwargs['notelist'] = list()
-        ph_kwargs['guideline'] = 0
+
+        #ph_kwargs = dict()
+        #ph_kwargs['xlabel'] = xlabel
+        #ph_kwargs['ylabel'] = 'RMSE'
+        #ph_kwargs['labellist'] = [xlabel]
+        #ph_kwargs['xdatalist'] = [xdata]
+        #ph_kwargs['ydatalist'] = [self.flat_results['rmse']]
+        #ph_kwargs['xerrlist'] = list([None])
+        #ph_kwargs['yerrlist'] = list([None])
+        #ph_kwargs['notelist'] = list()
+        #ph_kwargs['guideline'] = 0
+        #plotlabel=plotlabel.replace(".","_") #mask periods
+        #ph_kwargs['plotlabel'] = plotlabel
+        #ph_kwargs['save_path'] = self.save_path
+        #myph = PlotHelper(**ph_kwargs)
+        #myph.multiple_overlay()
+        #self.readme_list.append("Plot %s.png created\n" % plotlabel)
+
         plotlabel="rmse_vs_%s" % col
-        plotlabel=plotlabel.replace(".","_") #mask periods
-        ph_kwargs['plotlabel'] = plotlabel
-        ph_kwargs['save_path'] = self.save_path
-        myph = PlotHelper(**ph_kwargs)
-        myph.multiple_overlay()
+        savepath = os.path.join(self.save_path, f'{plotlabel}.png')
+        plot_helper.plot_rmse_scatter(hyper_p=xdata, rmse=self.flat_results['rmse'], savepath=savepath)
         self.readme_list.append("Plot %s.png created\n" % plotlabel)
         return
 

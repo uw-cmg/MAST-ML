@@ -6,8 +6,12 @@ __date__ = 'October 14th, 2017'
 
 import numpy as np
 import os
-from .grid_search import GridSearch
 import time
+import logging
+
+from .grid_search import GridSearch
+
+logger = logging.getLogger('mastml')
 
 class GeneticSearch(GridSearch):
     """Class to perform parameter optimization by genetic algorithm. Allows custom features.
