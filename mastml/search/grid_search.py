@@ -67,11 +67,10 @@ class GridSearch:
         ValueError if testing target data is None; CV must have testing target data
 
     """
-    def __init__(self, param_strings, training_dataset=None, testing_dataset=None, model=None, save_path=None, xlabel="Measured",
-        ylabel="Predicted",
-        #param_1 and as many param_xxx as necessary are given through **kwargs
-        fix_random_for_testing=0, num_cvtests=5, mark_outlying_points='0,3', num_folds=None, percent_leave_out=None,
-        processors=1, pop_upper_limit=1000000, num_bests=10):
+    def __init__(self, param_strings, training_dataset, testing_dataset, model,
+                 save_path=None, xlabel="Measured", ylabel="Predicted", fix_random_for_testing=0,
+                 num_cvtests=5, mark_outlying_points='0,3', num_folds=None, percent_leave_out=None,
+                 processors=1, pop_upper_limit=1000000, num_bests=10):
         """
         Additional class attributes to parent class:
             Set by keyword:
@@ -145,9 +144,10 @@ class GridSearch:
 
     ### SingleFit section
 
-    def single_fit_init(self, training_dataset=None, testing_dataset=None, model=None, save_path=None, xlabel="Measured",
-        ylabel="Predicted", plot_filter_out=None, scaler=None, *args, **kwargs):
-        """Initialize class.
+    def single_fit_init(self, training_dataset=None, testing_dataset=None, model=None, save_path=None,
+                        xlabel="Measured", ylabel="Predicted", plot_filter_out=None, scaler=None):
+        """
+        Initialize class.
             Attributes that can be set through keywords:
                 self.training_dataset
                 self.testing_dataset

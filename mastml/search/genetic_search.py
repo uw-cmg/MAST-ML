@@ -61,10 +61,11 @@ class GeneticSearch(GridSearch):
     Raises:
 
     """
-    def __init__(self, param_strings, training_dataset=None, testing_dataset=None, model=None, save_path=None, num_folds=None,
-        percent_leave_out=None, num_cvtests=20, mark_outlying_points='0,3', num_bests=10, fix_random_for_testing=0,
-        processors=1, pop_upper_limit=1000000, num_gas=1, ga_pop_size=50, convergence_generations=30,
-        max_generations=200, crossover_prob = 0.5, mutation_prob = 0.1, shift_prob = 0.5, gen_tol = 0.00000001):
+    def __init__(self, param_strings, training_dataset, testing_dataset, model, save_path,
+                 num_folds=None, percent_leave_out=None, num_cvtests=20, mark_outlying_points='0,3',
+                 num_bests=10, fix_random_for_testing=0, processors=1, pop_upper_limit=1000000,
+                 num_gas=1, ga_pop_size=50, convergence_generations=30, max_generations=200,
+                 crossover_prob=0.5, mutation_prob=0.1, shift_prob=0.5, gen_tol=0.00000001):
         """
             Additional class attributes not in parent class:
            

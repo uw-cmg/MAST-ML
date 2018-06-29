@@ -52,7 +52,7 @@ def parse_conf_file(filepath):
         for name, value in parameter_dict.items():
             if isinstance(value, dict):
                 raise TypeError(f"Subsection in parameter-only section: {key}")
-            parameter_dict[name] = _fix_types(value)
+            parameter_dict[name] = fix_types(value)
 
     # Ensure all models are either classifiers or regressors: (raises error if mixed)
     is_classification = conf['is_classification'] = check_models_mixed(key.split('_')[0] for key in conf['Models'])
@@ -97,11 +97,11 @@ def parse_conf_file(filepath):
 
     return conf
 
-def _fix_types(maybe_list):
+def fix_types(maybe_list):
     " Takes user parameter string and gives true value "
 
     if isinstance(maybe_list, list):
-        return [_fix_types(item) for item in maybe_list]
+        return [fix_types(item) for item in maybe_list]
 
     try: return strtobool(maybe_list)
     except ValueError: pass
