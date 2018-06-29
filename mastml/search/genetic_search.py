@@ -269,7 +269,7 @@ class GeneticSearch(GridSearch):
         for gbidx in range(0, self.convergence_generations):
             gen_bests.append((highval, dict()))
         
-        print('running', flush=True)
+        logger.info('running')#, flush=True)
         ga_genct = 0
         ga_best_rmse = highval
         ga_best_genome = None
@@ -277,7 +277,7 @@ class GeneticSearch(GridSearch):
         previous_generation = None
 
         while (ga_converged is False) and (ga_genct < self.max_generations): 
-            print("Generation %i %s" % (ga_genct, time.asctime()), flush=True)
+            logger.info("Generation %i %s" % (ga_genct, time.asctime()))# ???, flush=True)
             mygen = self.set_up_generation(ga_genct)
             mygen.set_up_prior_to_population()
             mygen.pop_size = self.ga_pop_size
@@ -297,10 +297,10 @@ class GeneticSearch(GridSearch):
             gen_bests.pop(0)
             gen_bests.append((gen_best_rmse, gen_best_genome))
             # prints output for each generation
-            print(time.asctime())
+            logger.debug(time.asctime())
             genpref = "Results gen %i, rmse %3.3f" % (ga_genct, gen_best_rmse)
             printlist = self.print_params(gen_best_genome)
-            print("%s: %s" % (genpref, printlist))
+            logger.debug("%s: %s" % (genpref, printlist))
             ga_genct = ga_genct + 1
             (ga_converged, ga_best_rmse, ga_best_genome) = self.check_convergence(gen_bests, ga_best_rmse, ga_best_genome)
         self.ga_dict[self.gact]['best_rmse'] = ga_best_rmse 

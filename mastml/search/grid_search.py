@@ -11,6 +11,7 @@ from custom_features import cf_help
 import pandas as pd
 import copy
 import logging
+import sys
 import time
 from sklearn.externals import joblib
 import sklearn.model_selection
@@ -287,11 +288,13 @@ class GridSearch:
 
         if self.processors == 1:
             for ikey in self.pop_params.keys():
-                print("Individual %s/%i" % (ikey, self.pop_size))
+                sys.stdout.write("\rIndividual %s/%i" % (ikey, self.pop_size)) # loading bar HACK
+                sys.stdout.flush()
                 indiv_params = self.pop_params[ikey]
                 [indiv_rmse, indiv_stats] = self.evaluate_indiv(indiv_params, ikey)
                 self.pop_stats[ikey] = indiv_stats
                 self.pop_rmses[ikey] = indiv_rmse
+            logger.debug(f'finished generation of {self.pop_size} individuals.')
         else:
             from multiprocessing import Process, Manager
             manager = Manager()
@@ -315,7 +318,7 @@ class GridSearch:
                 indiv_p_list = list()
                 for iidx in range(0, len(pkey_list)):
                     ikey = pkey_list[iidx]
-                    print("Individual %s/%i" % (ikey, self.pop_size))
+                    logger.debug("Individual %s/%i" % (ikey, self.pop_size))
                     indiv_params = self.pop_params[ikey]
                     indiv_p = Process(target=self.evaluate_indiv_multiprocessing, args=(indiv_params, ikey, pop_stats_dict, pop_rmses_dict, pop_done))
                     indiv_p_list.append(indiv_p)
@@ -331,7 +334,7 @@ class GridSearch:
         pop_stats_dict[indiv_key] = indiv_stats
         pop_rmses_dict[indiv_key] = indiv_rmse
         pop_done.value += 1
-        print("Individual %s done (multiprocessing), %i/%i" % (indiv_key, pop_done.value, self.pop_size))
+        logger.debug("Individual %s done (multiprocessing), %i/%i" % (indiv_key, pop_done.value, self.pop_size))
         return
 
     def evaluate_indiv(self, indiv_params, indiv_key):
@@ -341,8 +344,8 @@ class GridSearch:
         try:
             indiv_model.set_params(**indiv_params['model'])
         except ValueError as e:
-            print('good params: ', indiv_model.get_params().keys())
-            print('your params: ', indiv_params['model'].keys())
+            logger.debug('good params: ', indiv_model.get_params().keys())
+            logger.debug('your params: ', indiv_params['model'].keys())
             raise e
 
         indiv_dh = self.get_indiv_datahandler(indiv_params)
@@ -604,7 +607,7 @@ class GridSearch:
 
     def plot(self):
         self.readme_list.append("----- Plotting -----\n")
-        print(list)
+        logger.debug(list)
         cols=list() #repeated code; may want to reduce
         for opt_param in self.opt_param_list:
             self.plot_single_rmse(opt_param)
@@ -650,7 +653,6 @@ class GridSearch:
 
         plotlabel = 'rmse_heatmap_3d'
         savepath = os.path.join(self.save_path, plotlabel+'.png')
-        import pdb; pdb.set_trace()
         if isinstance(xdata[0], str):
             strings = list(set(xdata))
             mapping = {string: i for i,string in enumerate(strings)}
