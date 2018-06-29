@@ -34,7 +34,6 @@ def mastml_run(conf_path, data_path, outdir):
     # Extract columns that some splitter need to do grouped splitting using 'grouping_column'
     # special argument
     splitter_to_groups = _extract_grouping_columns(conf['DataSplits'], df)
-    import pdb; pdb.set_trace()
     print(conf)
 
     # Instantiate all the sections of the conf file:
@@ -62,7 +61,6 @@ def mastml_run(conf_path, data_path, outdir):
     shutil.copy2(data_path, outdir)
 
 
-# MARK needs to take in dict of 'SplitterName: np.array(0,1,0,1) or whatever
 def _do_combos(X, y, generators, normalizers, selectors, models, splitters,
                metrics_dict, outdir, is_classification, splitter_to_groups):
     """
@@ -106,16 +104,12 @@ def _do_combos(X, y, generators, normalizers, selectors, models, splitters,
 
             post_selection.append((normalizer_name, selector_name, X_selected))
 
-    # MARK here is where splitting happens
     splits = []
     for name, instance in splitters:
         group = splitter_to_groups[name] if name in splitter_to_groups else None
         # Luke can make this back into a list comprehension if he wants
         splits.append((name, tuple(instance.split(X, y, group))))
 
-
-
-    #splits = [(name, tuple(instance.split(X, y))) for name, instance in splitters]
 
     log.info("Fitting models to splits...")
     all_results = []
