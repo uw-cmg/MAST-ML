@@ -379,19 +379,33 @@ def best_worst_per_point(y_true, y_pred_list, savepath, title='best worst per po
 
     plot_stats(fig, dict())
     fig.savefig(savepath)
+
+
+def plot_1d_heatmap(xs, heats, savepath, xlabel='x', heatlabel='heats'):
+    fig, ax = make_fig_ax(aspect='auto')
+    ax.scatter(xs, heats, alpha=0.6)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(heatlabel)
+    fig.savefig(savepath)
+
+
+def plot_2d_heatmap(xs, ys, heats, savepath, xlabel='x', ylabel='y', heatlabel='heat'):
+    fig, ax = make_fig_ax(aspect='auto')
+    scat = ax.scatter(xs, ys, c=heats) # marker='o', lw=0, s=20, cmap=cm.plasma
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    cb = fig.colorbar(scat)
+    cb.set_label(heatlabel)
+    fig.savefig(savepath)
     
 
 def plot_3d_heatmap(xs, ys, zs, heats, savepath, xlabel='x', ylabel='y', zlabel='z', heatlabel='heat'):
-    # set image aspect ratio. Needs to be wide enough or plot will shrink really skinny
-    w, h = figaspect(0.6)
+    from mpl_toolkits.mplot3d import Axes3D # this import has side effects, needed for 3d plots
+    w, h = figaspect(0.6) # set image aspect ratio. Needs to be wide enough or plot will shrink really skinny
     fig = Figure(figsize=(w,h))
-    FigureCanvas(fig)
-
-
-    """ Plot 3d rmse heatmap """
-    from mpl_toolkits.mplot3d import Axes3D # this import has side effects
-
+    FigureCanvas(fig) # modifies fig in place
     ax = fig.add_subplot(111, projection='3d')
+
     scat = ax.scatter(xs, ys, zs, c=heats) # marker='o', lw=0, s=20, cmap=cm.plasma
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
@@ -399,20 +413,11 @@ def plot_3d_heatmap(xs, ys, zs, heats, savepath, xlabel='x', ylabel='y', zlabel=
     cb = fig.colorbar(scat)
     cb.set_label(heatlabel)
 
+    fig.savefig(savepath)
+
     def animate(i):
         ax.view_init(elev=10., azim=i)
         return [fig]
     anim = FuncAnimation(fig, animate, frames=range(0,90,5), blit=True)
     #anim.save(savepath+'.mp4', fps=5, extra_args=['-vcodec', 'libx264'])
     anim.save(savepath+'.gif', fps=5, dpi=80, writer='imagemagick')
-
-def plot_rmse_scatter(hyper_p, rmse, savepath):
-    fig, ax = make_fig_ax()
-
-    ax.scatter(hyper_p, rmse)
-
-    ax.set_xlabel('hyper p todo')
-    ax.set_ylabel('RMSE')
-
-    fig.savefig(savepath)
-
