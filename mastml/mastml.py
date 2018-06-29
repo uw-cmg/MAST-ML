@@ -7,6 +7,7 @@ import inspect
 import os
 import shutil
 import logging
+import warnings
 
 from collections import OrderedDict
 from os.path import join # We use join tons
@@ -301,6 +302,7 @@ if __name__ == '__main__':
     conf_path, data_path, outdir = get_paths()
     check_paths(conf_path, data_path, outdir)
     utils.activate_logging(outdir, (conf_path, data_path, outdir))
+    warnings.simplefilter('error')
 
     try:
         mastml_run(conf_path, data_path, outdir)

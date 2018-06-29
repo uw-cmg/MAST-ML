@@ -45,6 +45,7 @@ class JustEachGroup(BaseEstimator, TransformerMixin):
 
     def split(self, X, y, groups):
         n_groups = self.get_n_splits(groups=groups)
+        print('n_groups', n_groups)
         lpgo = LeavePGroupsOut(n_groups=n_groups-1)
         return lpgo.split(X, y, groups)
 
