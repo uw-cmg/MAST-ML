@@ -36,7 +36,6 @@ def mastml_run(conf_path, data_path, outdir):
     # Extract columns that some splitter need to do grouped splitting using 'grouping_column'
     # special argument
     splitter_to_groups = _extract_grouping_columns(conf['DataSplits'], df)
-    print(conf)
 
     # Instantiate all the sections of the conf file:
     generators  = _instantiate(conf['FeatureGeneration'],    feature_generators.name_to_constructor,  'feature generator')
@@ -90,7 +89,7 @@ def _do_combos(X, y, generators, normalizers, selectors, models, splitters,
     X_generated = feature_selectors.name_to_constructor['VarianceThreshold']().fit_transform(X_generated)
     removed = list(before - set(X_generated.columns))
     if removed != []:
-        log.warning("Removed the following constant columns: ", removed)
+        log.warning("Removed the following constant columns: ", str(removed))
 
     post_selection = []
     for normalizer_name, normalizer_instance in normalizers:
@@ -188,14 +187,11 @@ def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classifica
 
         # collect metrics inside a warning catching block for some things we know we should ignore
         with warnings.catch_warnings():
-            # this warning is raised when you ask for Recall on something from y_true that never
+            # NOTE I tried making this more specific use warnings's regex filter but it would never
+            # catch it for some indeterminiable reason.
+            # This warning is raised when you ask for Recall on something from y_true that never
             # occors in y_pred. sklearn assumes 0.0, and we want it to do so (silently).
-            #warnings.filterwarnings('ignore', message='.*in labels with no true samples.*')#,# category=UndefinedMetricWarning#, append=True)
-            message = r'.*Precision is ill-defined and being set to 0\.0 in labels with no predicted samples.*'
-            message = '.*labels with no true samples.*'
-            message = '.*'
-            warnings.filterwarnings('ignore', message, category=UndefinedMetricWarning)
-            #warnings.simplefilter('ignore', UndefinedMetricWarning)
+            warnings.simplefilter('ignore', UndefinedMetricWarning) 
 
             train_metrics = OrderedDict((name, function(train_y, train_pred))
                                         for name,function in metrics_dict.items())
