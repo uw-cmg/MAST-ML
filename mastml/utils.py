@@ -35,7 +35,6 @@ def activate_logging(savepath, paths, logger_name='mastml', to_screen=True, to_f
         errors_hdlr.setFormatter(time_formatter)
         rootLogger.addHandler(errors_hdlr)
 
-    log_header(paths, rootLogger) # only shows up in files
 
     if to_screen:
         stdout_hdlr = logging.StreamHandler(sys.stdout)
@@ -49,6 +48,7 @@ def activate_logging(savepath, paths, logger_name='mastml', to_screen=True, to_f
         stderr_hdlr.setFormatter(level_formatter)
         rootLogger.addHandler(stderr_hdlr)
 
+    log_header(paths, rootLogger) # only shows up in files
 
 def log_header(paths, log):
 
@@ -65,8 +65,7 @@ def log_header(paths, log):
               f"csv file:  {os.path.basename(paths[1])}\n"
               f"saving to: {os.path.basename(paths[2])}\n\n")
 
-    # using highest logging level so it shows up in ALL log files
-    log.critical(header)
+    # only shows on stdout and log.log
     log.info(header)
 
 
