@@ -322,17 +322,28 @@ def get_paths():
     parser.add_argument('data_path', type=str, help='path to csv or xlsx file')
     parser.add_argument('-o', action="store", dest='outdir', default='results',
                         help='Folder path to save output files to. Defaults to results/')
+    # from https://stackoverflow.com/a/14763540
+    # we only use them to set a bool but it would be nice to have multiple levels in the future
+    parser.add_argument('-v', '--verbosity', action="count", 
+                        help="include this flag for more verbose output")
+    parser.add_argument('-q', '--quietness', action="count", 
+                        help="include this flag to hide [DEBUG] printouts, or twice to hide [INFO]")
+
     args = parser.parse_args()
+    ignore_debug = args.quietness and not args.verbosity
     return (os.path.abspath(args.conf_path),
             os.path.abspath(args.data_path),
-            os.path.abspath(args.outdir))
+            os.path.abspath(args.outdir),
+            ignore_debug)
 
 
 if __name__ == '__main__':
-    conf_path, data_path, outdir = get_paths()
+    conf_path, data_path, outdir, ignore_debug = get_paths()
     check_paths(conf_path, data_path, outdir)
-    utils.activate_logging(outdir, (conf_path, data_path, outdir))
+
+    utils.activate_logging(outdir, (conf_path, data_path, outdir), ignore_debug=ignore_debug)
     warnings.simplefilter('error')
+
 
     try:
         mastml_run(conf_path, data_path, outdir)
