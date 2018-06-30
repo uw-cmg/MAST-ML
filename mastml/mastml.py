@@ -15,6 +15,7 @@ from os.path import join # We use join tons
 import numpy as np
 import pandas as pd
 from sklearn.externals import joblib
+from sklearn.exceptions import UndefinedMetricWarning
 
 from . import conf_parser, data_loader, html_helper, plot_helper, metrics, utils
 from .legos import data_splitters, feature_generators, feature_normalizers, feature_selectors, model_finder, util_legos
@@ -172,6 +173,23 @@ def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classifica
 
         log.info("             Calculating score metrics...")
         split_path = main_path.split(os.sep)
+
+        # collect metrics inside a warning catching block for some things we know we should ignore
+        with warnings.catch_warnings():
+            # this warning is raised when you ask for Recall on something from y_true that never
+            # occors in y_pred. sklearn assumes 0.0, and we want it to do so (silently).
+            #warnings.filterwarnings('ignore', message='.*in labels with no true samples.*')#,# category=UndefinedMetricWarning#, append=True)
+            message = r'.*Precision is ill-defined and being set to 0\.0 in labels with no predicted samples.*'
+            message = '.*labels with no true samples.*'
+            message = '.*'
+            warnings.filterwarnings('ignore', message, category=UndefinedMetricWarning)
+            #warnings.simplefilter('ignore', UndefinedMetricWarning)
+
+            train_metrics = OrderedDict((name, function(train_y, train_pred))
+                                        for name,function in metrics_dict.items())
+            test_metrics = OrderedDict((name, function(test_y, test_pred))
+                                       for name,function in metrics_dict.items())
+
         split_result = OrderedDict(
             normalizer = split_path[-4],
             selector = split_path[-3],
@@ -182,10 +200,8 @@ def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classifica
             y_train_pred = train_pred,
             y_test_true  = test_y.values,
             y_test_pred  = test_pred,
-            train_metrics = OrderedDict((name, function(train_y, train_pred))
-                                        for name,function in metrics_dict.items()),
-            test_metrics  = OrderedDict((name, function(test_y, test_pred))
-                                        for name,function in metrics_dict.items()),
+            train_metrics = train_metrics,
+            test_metrics  = test_metrics
         )
 
 

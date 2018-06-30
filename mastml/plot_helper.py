@@ -113,7 +113,6 @@ def parse_stat(name,value):
 
 
 def plot_stats(fig, stats):
-    #print(stats)
     """ print stats onto the image. Goes off screen if they are too long or too many in number """
 
     stat_str = '\n\n'.join(parse_stat(name, value) for name,value in stats.items())
@@ -300,11 +299,22 @@ def target_histogram(y_df, savepath, title='target histogram'):
 
     fig.savefig(savepath)
 
+def nice_mean(ls):
+    """ Explicitly return `None` for empty list, because numpy doesn't like to do that """
+    if len(ls) > 0:
+        return np.mean(ls)
+    return np.nan
+
+def nice_std(ls):
+    """ Explicity returns `None` for empty list, without raising a warning. """
+    if len(ls) > 0:
+        return np.std(ls)
+    return np.nan
 
 @ipynb_maker
 def predicted_vs_true_bars(y_true, y_pred_list, savepath, title='best worst with bars'):
-    means = [np.mean(y_pred) for y_pred in y_pred_list]
-    standard_error_means = [np.std(y_pred)/np.sqrt(len(y_pred)) for y_pred in y_pred_list]
+    means = [nice_mean(y_pred) for y_pred in y_pred_list]
+    standard_error_means = [nice_std(y_pred)/np.sqrt(len(y_pred)) for y_pred in y_pred_list]
     fig, ax = make_fig_ax(aspect='auto')
 
     # gather max and min
@@ -328,7 +338,7 @@ def predicted_vs_true_bars(y_true, y_pred_list, savepath, title='best worst with
 
 @ipynb_maker
 def violin(y_true, y_pred_list, savepath, title='best worst with bars'):
-    means = [np.mean(y_pred) for y_pred in y_pred_list]
+    means = [nice_mean(y_pred) for y_pred in y_pred_list]
     standard_error_means = [np.std(y_pred)/np.sqrt(len(y_pred)) for y_pred in y_pred_list]
     fig, ax = make_fig_ax(aspect='auto')
 
