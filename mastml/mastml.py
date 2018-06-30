@@ -77,8 +77,20 @@ def _do_combos(X, y, generators, normalizers, selectors, models, splitters,
     generators_union = util_legos.DataFrameFeatureUnion([instance for name,instance in generators])
     X_generated = generators_union.fit_transform(X, y)
 
+
     log.info("Saving generated data to csv...")
     pd.concat([X_generated, y], 1).to_csv(join(outdir, "data_generated.csv"), index=False)
+
+    # Remove constant features, warn if we actually remove anything.
+    # TODO This may not be a good idea for small datasets. Look at mnist_short.csv for example. 
+    # A model trained on that can do better than random, but using that model would require extra
+    # difficulty if doesn't expect column '0' because we discarded it.
+    log.info("Removing constant features, regardless of feature selectors.")
+    before = set(X_generated.columns)
+    X_generated = feature_selectors.name_to_constructor['VarianceThreshold']().fit_transform(X_generated)
+    removed = list(before - set(X_generated.columns))
+    if removed != []:
+        log.warning("Removed the following constant columns: ", removed)
 
     post_selection = []
     for normalizer_name, normalizer_instance in normalizers:
