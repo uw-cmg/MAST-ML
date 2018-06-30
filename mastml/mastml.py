@@ -86,15 +86,19 @@ def _do_combos(X, y, generators, normalizers, selectors, models, splitters,
     # difficulty if doesn't expect column '0' because we discarded it.
     log.info("Removing constant features, regardless of feature selectors.")
     before = set(X_generated.columns)
-    X_generated = feature_selectors.name_to_constructor['VarianceThreshold']().fit_transform(X_generated)
+    X_generated = X_generated.loc[:, (X_generated != X_generated.iloc[0]).any()] 
     removed = list(before - set(X_generated.columns))
     if removed != []:
-        log.warning("Removed the following constant columns: ", str(removed))
+        log.warning("Removed the following constant columns: " + str(removed))
+
+    pd.concat([X_generated, y], 1).to_csv(join(outdir, "data_generated_no_constant_columns.csv"), index=False)
+    log.info("Saving generated data without constant columns to csv...")
+
 
     post_selection = []
     for normalizer_name, normalizer_instance in normalizers:
 
-        log.info("Running normalizer {normalizer_name} ...")
+        log.info(f"Running normalizer {normalizer_name} ...")
         X_normalized = normalizer_instance.fit_transform(X_generated, y)
 
         log.info("Saving normalized data to csv...")
@@ -104,6 +108,8 @@ def _do_combos(X, y, generators, normalizers, selectors, models, splitters,
 
         log.info("Running selectors...")
         for selector_name, selector_instance in selectors:
+
+            pd.concat([X_normalized, y], 1).to_csv("maybe_const_feats.csv", index=False)
 
             log.info(f"    Running selector {selector_name} ...")
             # NOTE: Changed from fit_transform because PCA's fit_transform
