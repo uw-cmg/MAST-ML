@@ -114,8 +114,8 @@ def emojify(message):
     message = str(message)
     for word, emoji in words.items():
         message = message.replace(word, emoji)
-    message = ''.join(conv[c] if c in conv else c for c in str(message))
     message = emojize(message)
+    message = ''.join(conv[c] if c in conv else c for c in str(message))
     return message.upper()
 
 def verbosalize_logger(log, verbosity):
