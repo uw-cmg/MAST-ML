@@ -100,6 +100,42 @@ def log_header(paths, log):
     # only shows on stdout and log.log
     log.info(header)
 
+class MastError(Exception):
+    """ base class for errors that should be shown to the user """
+    pass
+
+class ConfError(MastError):
+    """ error in conf file """
+    pass
+
+class MissingColumnError(MastError):
+    """ raised when your csv doesn't have the column you asked for """
+    pass
+
+class InvalidConfParameters(MastError):
+    """ invalid conf params """
+    pass
+
+class InvalidConfSubSection(MastError):
+    """ invalid section name """
+    pass
+class InvalidConfSection(MastError):
+    """ invalid section name """
+    pass
+
+class FiletypeError(MastError):
+    """ for using the wrong file extentions """
+    pass
+
+class FileNotFoundError(MastError): # sorry for re-using builtin name
+    pass
+
+class InvalidValue(MastError):
+    pass
+
+
+
+### String formatting funcs for inserting into log._log when in verbose mode
 def to_upper(message):
     return str(message).upper()
 
@@ -156,7 +192,6 @@ def emojify(message):
         message = message.replace(word, emoji)
     return message.upper()
 
-
 def verbosalize_logger(log, verbosity):
     if verbosity <= 0:
         return
@@ -171,53 +206,3 @@ def verbosalize_logger(log, verbosity):
         old_log(level, [None, to_upper, to_full_width, to_leet, deep_fry, deep_fry_2, emojify][verbosity](msg), *args, **kwargs)
 
     log._log = new_log
-    return
-
-
-
-    # no longer needed but so beautiful it needs to end up in the commit
-    levels = ['debug', 'info', 'warning', 'error', 'critical']
-    converter = [None, to_upper, to_leet, emojify][level]
-
-    for level in levels:
-        def apply_new_printer(old_printer):
-            def new_printer(message, *args, **kwargs):
-                message = converter(message)
-                old_printer(message, *args, **kwargs)
-            setattr(log, level, new_printer)
-
-        old_printer = getattr(log, level)
-        apply_new_printer(old_printer)
-
-class MastError(Exception):
-    """ base class for errors that should be shown to the user """
-    pass
-
-class ConfError(MastError):
-    """ error in conf file """
-    pass
-
-class MissingColumnError(MastError):
-    """ raised when your csv doesn't have the column you asked for """
-    pass
-
-class InvalidConfParameters(MastError):
-    """ invalid conf params """
-    pass
-
-class InvalidConfSubSection(MastError):
-    """ invalid section name """
-    pass
-class InvalidConfSection(MastError):
-    """ invalid section name """
-    pass
-
-class FiletypeError(MastError):
-    """ for using the wrong file extentions """
-    pass
-
-class FileNotFoundError(MastError): # sorry for re-using builtin name
-    pass
-
-class InvalidValue(MastError):
-    pass
