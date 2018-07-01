@@ -103,6 +103,11 @@ def make_html(outdir):
         
         make_image('target_histogram.png')
 
+        for f in os.listdir(outdir):
+            if f.endswith('.png'):
+                h4(f)
+                make_image(join(outdir, f))
+
         for combo in combos:
             # come up with a good section title
             path = os.path.normpath(relpath(combo, outdir))

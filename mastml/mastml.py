@@ -96,9 +96,6 @@ def _do_combos(X, y, generators, clusterers, normalizers, selectors, models, spl
     log.info("Saving generated data without constant columns to csv...")
 
 
-    # some random plotting
-    for column in X:
-        plot_helper.plot_scatter_plot(X[column], y, join(outdit, f'{column}_vs_target.png'))
 
     # Clustering (union)
     log.info("Doing clustering...")
@@ -106,6 +103,17 @@ def _do_combos(X, y, generators, clusterers, normalizers, selectors, models, spl
     for name, instance in clusterers:
         clustering_columns[name] = instance.fit_predict(X_generated, y)
     X_clustered = pd.concat([X_generated, pd.DataFrame.from_dict(clustering_columns)], axis=1)
+
+    # Plot each input column against y, color by cluster is applicable
+    for name, group in clustering_columns.items() if clustering_columns != dict() else (None, None):
+        for column in X_generated:
+            filename = f'{column}_vs_target_by_{name}.png' if name else '{column}_vs_target.png' 
+            plot_helper.plot_scatter(y, X_generated[column],
+                    join(outdir, filename), 
+                    clustering_columns[name],
+                    ylabel=column, xlabel='target_feature')
+
+
 
     log.info("Saving clustered data to csv...")
     pd.concat([X_clustered, y], 1).to_csv(join(outdir, "data_clustered.csv"), index=False)

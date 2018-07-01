@@ -432,8 +432,16 @@ def plot_3d_heatmap(xs, ys, zs, heats, savepath, xlabel='x', ylabel='y', zlabel=
     #anim.save(savepath+'.mp4', fps=5, extra_args=['-vcodec', 'libx264'])
     anim.save(savepath+'.gif', fps=5, dpi=80, writer='imagemagick')
 
-def plot_scatter(x, y, groups=None, savepath):
+def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y'):
     fig, ax = make_fig_ax(aspect='auto')
-    ax.scatter(xs, ys, c=groups)
+    if groups is None:
+        ax.scatter(x, y, c=groups)
+    else:
+        for group in np.unique(groups):
+            mask = groups == group
+            ax.scatter(x[mask], y[mask], label=group)
+
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
     ax.legend()
     fig.savefig(savepath)

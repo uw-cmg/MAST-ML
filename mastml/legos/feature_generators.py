@@ -24,7 +24,6 @@ from citrination_client import CitrinationClient, PifQuery, SystemQuery, Chemica
 
 import mastml
 from .util_legos import DoNothing
-from . import groupers # grouper are considered a kind of feature gen for now
 
 log = logging.getLogger('mastml')
 
