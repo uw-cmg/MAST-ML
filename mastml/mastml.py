@@ -119,7 +119,13 @@ def _do_combos(X, y, generators, clusterers, normalizers, selectors, models, spl
     pd.concat([X_clustered, y], 1).to_csv(join(outdir, "data_clustered.csv"), index=False)
 
 
-    splitter_to_groups = {split: X_clustered[col].values for split, col in splitter_to_group_names}
+    # Collect grouping columns
+    splitter_to_groups = dict()
+    for split, col in splitter_to_group_names.items():
+        if col in X_clustered.columns:
+            splitter_to_groups[split] = X_clustered[col].values 
+        else:
+            splitter_to_groups[split] = X[col].values 
 
     # FeatureNormalization (dot-product)
     post_selection = []
@@ -191,9 +197,6 @@ def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classifica
     """
     split_results = []
     for split_num, (train_indices, test_indices) in enumerate(trains_tests):
-
-        #for parameters in model_parameters_list:
-        #    pass
 
         log.info(f"        Doing split number {split_num}")
         train_X, train_y = X.loc[train_indices], y.loc[train_indices]
