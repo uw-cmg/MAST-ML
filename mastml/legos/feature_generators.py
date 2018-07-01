@@ -23,6 +23,7 @@ from citrination_client import CitrinationClient, PifQuery, SystemQuery, Chemica
 
 import mastml
 from .util_legos import DoNothing
+from . import groupers # grouper are considered a kind of feature gen for now
 
 log = logging.getLogger('mastml')
 
@@ -124,6 +125,9 @@ name_to_constructor = {
     'Magpie': Magpie,
     'Citrine': Citrine,
     'MaterialsProject': MaterialsProject,
+    # including these here for now. May get their own section eventually
+    'GroupByContainsElement': groupers.GroupByContainsElement,
+    'GroupByClusters': groupers.GroupByClusters,
 }
 
 

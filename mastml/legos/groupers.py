@@ -21,14 +21,19 @@ class GroupByContainsElement():
         self.element = element
         self.new_column_name = f'has_{self.element}'
 
-    def fit(self, df):
+    def fit(self, df, y=None):
         return self
 
-    def transform(self, df):
+    def transform(self, df, y=None):
+        import pdb; pdb.set_trace()
         compositions = df[self.composition_feature]
         has_element = compositions.apply(self._contains_element)
-        has_element.name = self.new_column_name
-        return pd.concat([compositions, has_element], axis=1)
+        #has_element.name = self.new_column_name
+        #df.add(has_element)
+        #df = df.copy()
+        #df.loc[:,self.new_column_name] = has_element
+        #return df
+        return pd.DataFrame(has_element, columns=[self.new_column_name])
 
     def _contains_element(self, comp):
         """
@@ -43,17 +48,22 @@ class GroupByContainsElement():
 class GroupByClusters():
     " Returns a new dataframe with a 'clusters' column appended. "
 
-    def __init__(self, clustering_model=None, n_splits=5):
+    def __init__(self, clustering_model=None, n_clusters=5):
         if clustering_model is None:
-            clustering_model = KMeans(n_clusters=n_splits)
+            clustering_model = KMeans(n_clusters=n_clusters)
+        else:
+            raise NotImplemented('Cannot take a clustering_model yet.')
 
         self.clustering_model = clustering_model
         self.new_column_name = 'clusters'
 
-    def fit(self, df):
+    def fit(self, df, y=None):
         self.clustering_model.fit(df)
 
-    def predict(self, df):
+    def transform(self, df, y=None):
         clusters_array = self.clustering_model.fit_predict(df)
-        clusters = pd.Series(clusters_array, name=self.new_column_name)
-        return pd.concat([???, clusters], axis=1)
+        #clusters = pd.Series(clusters_array, name=self.new_column_name)
+        #df.add(clusters)
+        #df = df.copy()
+        #df.loc[:,self.new_column_name] = clusters_array
+        return pd.DataFrame(clusters_array, columns=[self.new_column_name])

@@ -74,6 +74,7 @@ def _do_combos(X, y, generators, normalizers, selectors, models, splitters,
 
     log.info("Doing feature generation...")
     generators_union = util_legos.DataFrameFeatureUnion([instance for name,instance in generators])
+    import pdb; pdb.set_trace()
     X_generated = generators_union.fit_transform(X, y)
 
 

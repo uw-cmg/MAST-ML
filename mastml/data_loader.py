@@ -4,7 +4,7 @@ Module for loading checking the input data file
 
 import pandas as pd
 
-def load_data(file_path, input_features=None, target_feature=None, grouping_features=None, clustering_features=None):
+def load_data(file_path, input_features=None, target_feature=None, generation_features=[]):
     " Loads in csv from filename and ensures required columns are present. Returns dataframe. "
     # TODO: modify this to omit the target feature from the input features by default if the target feature is supplied
 
@@ -25,6 +25,9 @@ def load_data(file_path, input_features=None, target_feature=None, grouping_feat
 
     # Collect required features:
     required_features = input_features + [target_feature]
+
+    # Add generation features to input features so it's available downstream
+    input_features += generation_features
 
     #if grouping_feature is not None:
     #    required_features.append(grouping_feature)
