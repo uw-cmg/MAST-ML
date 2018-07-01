@@ -3,6 +3,7 @@ import logging
 import textwrap
 import time
 import os
+import random
 from os.path import join
 from collections import defaultdict
 
@@ -102,30 +103,72 @@ def log_header(paths, log):
 def to_upper(message):
     return str(message).upper()
 
+def to_full_width(message):
+    message = str(message)
+    ret = []
+    return ''.join(chr(ord(c)+0xFEE0) if c.isalnum() else c for c in message)
+
 def to_leet(message):
     conv = {'a': '4', 'b': '8', 'e': '3', 'l': '1', 'o': '0', 's': '5', 't': '7'}
     message = ''.join(conv[c] if c in conv else c for c in str(message))
     return message.upper()
 
-from emoji import emojize
+def deep_fry_helper(s):
+    for c in s:
+        if random.random() < 0.2:
+            yield chr(random.randint(1, 10000))
+        elif random.random() < 0.5:
+            yield c.upper()
+        else:
+            yield c
+def deep_fry(message):
+    return ''.join(deep_fry_helper(str(message)))
+
+def deep_fry_2_helper(s):
+    for c in s:
+        if random.random() < 0.01:
+            x = chr(random.randint(1, 10000))
+            yield ''.join(x for _ in range(random.randint(1,5)))
+        elif random.random() < 0.1:
+            yield ''.join(c for _ in range(random.randint(1,9)))
+        elif random.random() < 0.01:
+            yield chr(ord(c)*10)
+        elif random.random() < 0.2:
+            yield c.upper()
+        else:
+            yield c
+
+def deep_fry_2(message):
+    return ''.join(deep_fry_2_helper(str(message)))
+
 def emojify(message):
-    words = {'INFO': ':notebook:', 'WARNING': ':warning:', 'ERROR': ':x:', 'CRITICAL': ':fire:'}
-    conv = {'1': 'one', '2':':two:', '3':':three:', '4': ':four:'}
     message = str(message)
+    words = {'score':0x1f600, 'splits': chr(0x21A9)+chr(0x21AA), 'split': chr(0x21A9)+chr(0x21AA), 'score':0x2728, 'number':0x0023,
+             'train':0x1f682, 'test':0x1f4dd, 'models':0x1F483, 'model':0x1F483, 'plot':0x1f4ca, 'image':0x1f5bc,
+             'file': 0x1f5c4, 'files':0x1f5c3, ' to':0x27a1, '1':0x261d, '2':0x270c}
+    for word in words:
+        if type(words[word]) is int:
+            words[word] = chr(words[word])
+        words[word] += ' '
+    for word, emoji in words.items():
+        message = message.replace(' '+word+' ', ' '+emoji+' ')
     for word, emoji in words.items():
         message = message.replace(word, emoji)
-    message = emojize(message)
-    message = ''.join(conv[c] if c in conv else c for c in str(message))
     return message.upper()
+
 
 def verbosalize_logger(log, verbosity):
     if verbosity <= 0:
         return
 
+    if verbosity >= 6:
+        while True:
+            log.critical('MSATML'*random.randint(3,6))
+
     old_log = log._log
 
     def new_log(level, msg, *args, **kwargs):
-        old_log(level, [None, to_upper, to_leet, emojify][verbosity](msg), *args, **kwargs)
+        old_log(level, [None, to_upper, to_full_width, to_leet, deep_fry, deep_fry_2, emojify][verbosity](msg), *args, **kwargs)
 
     log._log = new_log
     return
