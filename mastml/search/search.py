@@ -93,9 +93,9 @@ def do_run(conf_path, data_path, outdir):
 
 
 if __name__ == '__main__':
-    conf_path, data_path, outdir, ignore_debug = mastml.get_paths() # argparse stuff
+    conf_path, data_path, outdir, verbosity = mastml.get_paths() # argparse stuff
     mastml.check_paths(conf_path, data_path, outdir)
-    utils.activate_logging(outdir, (conf_path, data_path, outdir), ignore_debug=ignore_debug)
+    utils.activate_logging(outdir, (conf_path, data_path, outdir), verbosity=verbosity)
 
     try:
         do_run(conf_path, data_path, outdir)

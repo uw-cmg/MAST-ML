@@ -330,18 +330,23 @@ def get_paths():
                         help="include this flag to hide [DEBUG] printouts, or twice to hide [INFO]")
 
     args = parser.parse_args()
-    ignore_debug = args.quietness and not args.verbosity
+    verbosity = (args.verbosity if args.verbosity else 0) - (args.quietness if args.quietness else 0)
     return (os.path.abspath(args.conf_path),
             os.path.abspath(args.data_path),
             os.path.abspath(args.outdir),
-            ignore_debug)
+            verbosity)
 
 
 if __name__ == '__main__':
-    conf_path, data_path, outdir, ignore_debug = get_paths()
+    conf_path, data_path, outdir, verbosity = get_paths()
     check_paths(conf_path, data_path, outdir)
 
-    utils.activate_logging(outdir, (conf_path, data_path, outdir), ignore_debug=ignore_debug)
+    utils.activate_logging(outdir, (conf_path, data_path, outdir), verbosity=verbosity)
+    log.debug(verbosity)
+    log.info(verbosity)
+    log.warning(verbosity)
+    log.error(verbosity)
+    log.critical(verbosity)
     warnings.simplefilter('error')
 
 
