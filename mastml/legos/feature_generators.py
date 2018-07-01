@@ -16,6 +16,7 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import PolynomialFeatures as SklearnPolynomialFeatures
 
+import pymatgen
 from pymatgen import Element, Composition
 from pymatgen.ext.matproj import MPRester
 from citrination_client import CitrinationClient, PifQuery, SystemQuery, ChemicalFieldQuery, ChemicalFilter
@@ -46,6 +47,38 @@ class PolynomialFeatures(BaseEstimator, TransformerMixin):
     def transform(self, df):
         array = df[self.features].values
         return pd.DataFrame(self.SPF.transform(array))
+
+class ContainsElement():
+    """
+    Returns a new dataframe with a row containing 1 or 0 depending on if composition feature has
+    element in it. The new column's name is saved in self.new_column_name, which you'll need.
+    """
+
+    def __init__(self, composition_feature, element, new_name):
+        self.composition_feature = composition_feature
+        self.element = element
+        self.new_column_name = new_name #f'has_{self.element}'
+
+    def fit(self, df, y=None):
+        return self
+
+    def transform(self, df, y=None):
+        compositions = df[self.composition_feature]
+        has_element = compositions.apply(self._contains_element)
+        return has_element.to_frame(name=self.new_column_name)
+
+    def _contains_element(self, comp):
+        """
+        Returns 1 if comp contains that element, and 0 if not.
+        Uses ints because sklearn and numpy like number classes better than bools. Could even be
+        something crazy like "contains {element}" and "does not contain {element}" if you really
+        wanted.
+        """
+        comp = pymatgen.Composition(comp)
+        count = comp[self.element]
+        return int(count != 0)
+
+
 
 
 class Magpie(BaseEstimator, TransformerMixin):
@@ -126,8 +159,7 @@ name_to_constructor = {
     'Citrine': Citrine,
     'MaterialsProject': MaterialsProject,
     # including these here for now. May get their own section eventually
-    'GroupByContainsElement': groupers.GroupByContainsElement,
-    'GroupByClusters': groupers.GroupByClusters,
+    'ContainsElement': ContainsElement,
 }
 
 

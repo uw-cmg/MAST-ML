@@ -20,7 +20,7 @@ def parse_conf_file(filepath):
     conf = ConfigObj(filepath)
 
     main_sections = ['GeneralSetup', 'DataSplits', 'Models']
-    feature_sections = ['FeatureNormalization', 'FeatureGeneration', 'FeatureSelection']
+    feature_sections = ['FeatureGeneration', 'Clustering',  'FeatureNormalization', 'FeatureSelection']
     feature_section_dicts = [conf[name] for name in feature_sections if name in conf]
     all_sections = main_sections + feature_sections
 

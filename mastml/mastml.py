@@ -18,7 +18,7 @@ from sklearn.externals import joblib
 from sklearn.exceptions import UndefinedMetricWarning
 
 from . import conf_parser, data_loader, html_helper, plot_helper, metrics, utils
-from .legos import data_splitters, feature_generators, feature_normalizers, feature_selectors, model_finder, util_legos
+from .legos import data_splitters, feature_generators, clustering, feature_normalizers, feature_selectors, model_finder, util_legos
 
 log = logging.getLogger('mastml')
 
@@ -39,6 +39,7 @@ def mastml_run(conf_path, data_path, outdir):
 
     # Instantiate all the sections of the conf file:
     generators  = _instantiate(conf['FeatureGeneration'],    feature_generators.name_to_constructor,  'feature generator')
+    clusterers  = _instantiate(conf['Clustering'],           clustering.name_to_constructor,          'clusterer')
     normalizers = _instantiate(conf['FeatureNormalization'], feature_normalizers.name_to_constructor, 'feature normalizer')
     selectors   = _instantiate(conf['FeatureSelection'],     feature_selectors.name_to_constructor,   'feature selector')
     models      = _instantiate(conf['Models'],               model_finder.name_to_constructor,        'model')
@@ -47,7 +48,7 @@ def mastml_run(conf_path, data_path, outdir):
     X, y = df[input_features], df[target_feature]
     plot_helper.target_histogram(y, join(outdir, 'target_histogram.png'))
 
-    runs = _do_combos(X, y, generators, normalizers, selectors, models, splitters,
+    runs = _do_combos(X, y, generators, clusterers, normalizers, selectors, models, splitters,
                       metrics_dict, outdir, conf['is_classification'], splitter_to_groups)
 
     log.info("Making image html file...")
@@ -62,7 +63,7 @@ def mastml_run(conf_path, data_path, outdir):
     shutil.copy2(data_path, outdir)
 
 
-def _do_combos(X, y, generators, normalizers, selectors, models, splitters,
+def _do_combos(X, y, generators, clusterers, normalizers, selectors, models, splitters,
                metrics_dict, outdir, is_classification, splitter_to_groups):
     """
     Uses cross product to generate, normalize, and select the input data, then saves it.
@@ -72,14 +73,14 @@ def _do_combos(X, y, generators, normalizers, selectors, models, splitters,
     log.info(f"There are {len(normalizers)} feature normalizers, {len(selectors)} feature selectors,"
           f" {len(models)} models, and {len(splitters)} splitters.")
 
+    # FeatureGeneration (union)
     log.info("Doing feature generation...")
     generators_union = util_legos.DataFrameFeatureUnion([instance for name,instance in generators])
-    import pdb; pdb.set_trace()
     X_generated = generators_union.fit_transform(X, y)
-
 
     log.info("Saving generated data to csv...")
     pd.concat([X_generated, y], 1).to_csv(join(outdir, "data_generated.csv"), index=False)
+
 
     # Remove constant features, warn if we actually remove anything.
     # TODO This may not be a good idea for small datasets. Look at mnist_short.csv for example. 
@@ -91,22 +92,32 @@ def _do_combos(X, y, generators, normalizers, selectors, models, splitters,
     removed = list(before - set(X_generated.columns))
     if removed != []:
         log.warning("Removed the following constant columns: " + str(removed))
-
     pd.concat([X_generated, y], 1).to_csv(join(outdir, "data_generated_no_constant_columns.csv"), index=False)
     log.info("Saving generated data without constant columns to csv...")
 
+    # Clustering (union)
+    log.info("Doing clustering...")
+    clustering_columns = dict()
+    for name, instance in clusterers:
+        clustering_columns[name] = instance.fit_predict(X_generated, y)
+    X_clustered = pd.concat([X_generated, pd.DataFrame.from_dict(clustering_columns)], axis=1)
 
+    log.info("Saving clustered data to csv...")
+    pd.concat([X_clustered, y], 1).to_csv(join(outdir, "data_clustered.csv"), index=False)
+
+    # FeatureNormalization (dot-product)
     post_selection = []
     for normalizer_name, normalizer_instance in normalizers:
 
         log.info(f"Running normalizer {normalizer_name} ...")
-        X_normalized = normalizer_instance.fit_transform(X_generated, y)
+        X_normalized = normalizer_instance.fit_transform(X_clustered, y)
 
         log.info("Saving normalized data to csv...")
         dirname = join(outdir, normalizer_name)
         os.mkdir(dirname)
         pd.concat([X_normalized, y], 1).to_csv(join(dirname, "normalized.csv"), index=False)
 
+        # FeatureSelection (dot-product)
         log.info("Running selectors...")
         for selector_name, selector_instance in selectors:
 
@@ -122,6 +133,7 @@ def _do_combos(X, y, generators, normalizers, selectors, models, splitters,
 
             post_selection.append((normalizer_name, selector_name, X_selected))
 
+    # DataSplits (dot-product)
     splits = []
     for name, instance in splitters:
         group = splitter_to_groups[name] if name in splitter_to_groups else None
@@ -132,6 +144,7 @@ def _do_combos(X, y, generators, normalizers, selectors, models, splitters,
     log.info("Fitting models to splits...")
     all_results = []
 
+    # Models (dot-product)
     for normalizer_name, selector_name, df in post_selection:
         for model_name, model_instance in models:
             for splitter_name, trains_tests in splits:
