@@ -95,6 +95,11 @@ def _do_combos(X, y, generators, clusterers, normalizers, selectors, models, spl
     pd.concat([X_generated, y], 1).to_csv(join(outdir, "data_generated_no_constant_columns.csv"), index=False)
     log.info("Saving generated data without constant columns to csv...")
 
+
+    # some random plotting
+    for column in X:
+        plot_helper.plot_scatter_plot(X[column], y, join(outdit, f'{column}_vs_target.png'))
+
     # Clustering (union)
     log.info("Doing clustering...")
     clustering_columns = dict()

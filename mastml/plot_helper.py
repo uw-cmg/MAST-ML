@@ -431,3 +431,9 @@ def plot_3d_heatmap(xs, ys, zs, heats, savepath, xlabel='x', ylabel='y', zlabel=
     anim = FuncAnimation(fig, animate, frames=range(0,90,5), blit=True)
     #anim.save(savepath+'.mp4', fps=5, extra_args=['-vcodec', 'libx264'])
     anim.save(savepath+'.gif', fps=5, dpi=80, writer='imagemagick')
+
+def plot_scatter(x, y, groups=None, savepath):
+    fig, ax = make_fig_ax(aspect='auto')
+    ax.scatter(xs, ys, c=groups)
+    ax.legend()
+    fig.savefig(savepath)
