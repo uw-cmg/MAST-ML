@@ -109,8 +109,6 @@ def _do_combos(X, y, generators, normalizers, selectors, models, splitters,
         log.info("Running selectors...")
         for selector_name, selector_instance in selectors:
 
-            pd.concat([X_normalized, y], 1).to_csv("maybe_const_feats.csv", index=False)
-
             log.info(f"    Running selector {selector_name} ...")
             # NOTE: Changed from fit_transform because PCA's fit_transform
             #       doesn't call transform (does transformation itself).
