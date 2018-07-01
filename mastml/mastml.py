@@ -35,7 +35,7 @@ def mastml_run(conf_path, data_path, outdir):
 
     # Extract columns that some splitter need to do grouped splitting using 'grouping_column'
     # special argument
-    splitter_to_groups = _extract_grouping_columns(conf['DataSplits'], df)
+    splitter_to_group_names = _extract_grouping_column_names(conf['DataSplits'])
 
     # Instantiate all the sections of the conf file:
     generators  = _instantiate(conf['FeatureGeneration'],    feature_generators.name_to_constructor,  'feature generator')
@@ -49,7 +49,7 @@ def mastml_run(conf_path, data_path, outdir):
     plot_helper.target_histogram(y, join(outdir, 'target_histogram.png'))
 
     runs = _do_combos(X, y, generators, clusterers, normalizers, selectors, models, splitters,
-                      metrics_dict, outdir, conf['is_classification'], splitter_to_groups)
+                      metrics_dict, outdir, conf['is_classification'], splitter_to_group_names)
 
     log.info("Making image html file...")
     html_helper.make_html(outdir)
@@ -64,7 +64,7 @@ def mastml_run(conf_path, data_path, outdir):
 
 
 def _do_combos(X, y, generators, clusterers, normalizers, selectors, models, splitters,
-               metrics_dict, outdir, is_classification, splitter_to_groups):
+               metrics_dict, outdir, is_classification, splitter_to_group_names):
     """
     Uses cross product to generate, normalize, and select the input data, then saves it.
     Calls _do_splits for actual model fits.
@@ -118,6 +118,9 @@ def _do_combos(X, y, generators, clusterers, normalizers, selectors, models, spl
     log.info("Saving clustered data to csv...")
     pd.concat([X_clustered, y], 1).to_csv(join(outdir, "data_clustered.csv"), index=False)
 
+
+    splitter_to_groups = {split: X_clustered[col].values for split, col in splitter_to_group_names}
+
     # FeatureNormalization (dot-product)
     post_selection = []
     for normalizer_name, normalizer_instance in normalizers:
@@ -170,16 +173,15 @@ def _do_combos(X, y, generators, clusterers, normalizers, selectors, models, spl
 
     return all_results
 
-def _extract_grouping_columns(splitter_to_kwargs, df):
-    splitter_to_groups = dict()
+def _extract_grouping_column_names(splitter_to_kwargs):
+    splitter_to_group_names = dict()
     for splitter_name, name_and_kwargs in splitter_to_kwargs.items():
         _, kwargs = name_and_kwargs
         if 'grouping_column' in kwargs:
             column_name = kwargs['grouping_column']
-            del kwargs['grouping_column'] # because the splitted doesn't actlly take this
-            column_array = df[column_name].values
-            splitter_to_groups[splitter_name] = column_array
-    return splitter_to_groups
+            del kwargs['grouping_column'] # because the splitter doesn't actually take this
+            splitter_to_group_names[splitter_name] = column_name
+    return splitter_to_group_names
 
 
 def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classification):
