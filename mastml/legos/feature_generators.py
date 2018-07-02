@@ -45,7 +45,8 @@ class PolynomialFeatures(BaseEstimator, TransformerMixin):
         return self
     def transform(self, df):
         array = df[self.features].values
-        return pd.DataFrame(self.SPF.transform(array))
+        new_features = self.SPF.get_feature_names(self.features)
+        return pd.DataFrame(self.SPF.transform(array), columns=new_features)
 
 class ContainsElement():
     """
