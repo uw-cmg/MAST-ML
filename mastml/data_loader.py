@@ -6,7 +6,6 @@ import pandas as pd
 
 def load_data(file_path, input_features=None, target_feature=None):
     " Loads in csv from filename and ensures required columns are present. Returns dataframe. "
-    # TODO: modify this to omit the target feature from the input features by default if the target feature is supplied
 
     # Load data
     df = pd.read_csv(file_path)
@@ -36,4 +35,5 @@ def load_data(file_path, input_features=None, target_feature=None):
     #df = df[required_features] # drop the columns we aren't using
 
     X, y = df[input_features], df[target_feature]
+    df = df.drop(target_feature, axis=1)
     return df, X, y
