@@ -23,7 +23,6 @@ from citrination_client import CitrinationClient, PifQuery, SystemQuery, Chemica
 # trouble? try: `pip install citrination_client=="2.1.0"`
 
 import mastml
-from .util_legos import DoNothing
 
 log = logging.getLogger('mastml')
 
@@ -150,9 +149,17 @@ class PassThrough(BaseEstimator, TransformerMixin):
         df = df[self.features]
         return df
 
+class NoGenerate(BaseEstimator, TransformerMixin):
+    " Returns same input "
+    def __init__(self):
+        pass
+    def fit(self, X, y=None):
+        return self
+    def transform(self, X):
+        return pd.DataFrame(index=X.index)
 
 name_to_constructor = {
-    'DoNothing': DoNothing,
+    'DoNothing': NoGenerate,
     'PolynomialFeatures': PolynomialFeatures,
     'PassThrough':PassThrough,
     'Magpie': Magpie,
