@@ -109,7 +109,7 @@ def _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models,
     if clustered_df.empty:
         # plot y against each x column
         for column in X:
-            filename = '{column}_vs_target.png' 
+            filename = f'{column}_vs_target.png' 
             plot_helper.plot_scatter(
                     X[column], y,
                     join(outdir, filename), 
