@@ -75,69 +75,57 @@ def _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models,
     log.info(f"There are {len(normalizers)} feature normalizers, {len(selectors)} feature selectors,"
           f" {len(models)} models, and {len(splitters)} splitters.")
 
-    # FeatureGeneration (union)
+    ## FeatureGeneration (union)
     log.info("Doing feature generation...")
     generators_union = util_legos.DataFrameFeatureUnion([instance for name,instance in generators])
     generated_df = generators_union.fit_transform(df, y)
+    import pdb; pdb.set_trace()
 
     log.info("Saving generated data to csv...")
     log.debug('generated cols: ', generated_df.columns)
     pd.concat([generated_df, y], 1).to_csv(join(outdir, "generated_features.csv"), index=False)
 
-
     # Remove constant features, warn if we actually remove anything.
-    # TODO This may not be a good idea for small datasets. Look at mnist_short.csv for example. 
-    # A model trained on that can do better than random, but using that model would require extra
-    # difficulty if doesn't expect column '0' because we discarded it.
-    log.info("Removing constant features, regardless of feature selectors.")
-    before = set(generated_df.columns)
-    generated_df = generated_df\
-        .loc[:, (generated_df != generated_df.iloc[0]).any()] 
-    removed = list(before - set(generated_df.columns))
-    if removed != []:
-        log.warning("Removed the following constant columns: " + str(removed))
+    generated_df = _remove_constant_feautures(generated_df)
     log.info("Saving generated data without constant columns to csv...")
-    pd.concat([generated_df, y], 1)\
-            .to_csv(join(outdir, "generated_features_no_constant_columns.csv"), index=False)
+    filename = join(outdir, "generated_features_no_constant_columns.csv")
+    pd.concat([generated_df, y], 1).to_csv(filename, index=False)
 
     # add in generated features
     # TODO this adds in some of the grouping features, can the model cheat on these?
     X = pd.concat([X, generated_df], axis=1)
 
-    # Clustering (union)
+    ## Clustering (seperate dataframe)
     log.info("Doing clustering...")
-    clustering_columns = dict()
+    clustered_df = pd.DataFrame()
     for name, instance in clusterers:
-        clustering_columns[name] = instance.fit_predict(X, y)
-    clustered_df = pd.DataFrame.from_dict(clustering_columns)
+        clustered_df[name] = instance.fit_predict(X, y)
 
-    # Plot each input column against y, color by cluster is applicable
-    for name, group in clustered_df.items() if clustered_df != dict() else (None, None):
+    if clustered_df.empty:
+        # plot y against each x column
         for column in X:
-            filename = f'{column}_vs_target_by_{name}.png' if name else '{column}_vs_target.png' 
+            filename = '{column}_vs_target.png' 
+            import pdb; pdb.set_trace()
             plot_helper.plot_scatter(
-                    y, X[column],
+                    X[column], y,
                     join(outdir, filename), 
-                    clustered_df[name],
-                    ylabel=column, xlabel='target_feature')
+                    xlabel=column, ylabel='target_feature')
+    else:
+        # for each cluster, plot y against each x column
+        for name in clustered_df.columns:
+            for column in X:
+                filename = f'{column}_vs_target_by_{name}.png'
+                plot_helper.plot_scatter(
+                        X[column], y,
+                        join(outdir, filename), 
+                        clustered_df[name], 
+                        xlabel=column, ylabel='target_feature')
 
 
     log.info("Saving clustered data to csv...")
     pd.concat([clustered_df, y], 1).to_csv(join(outdir, "clusters.csv"), index=False)
 
-    # Collect grouping columns, splitter_to_groups will be a dict of splitter name to gruping array
-    log.debug("Finding splitter-required columns in data...")
-    splitter_to_groups = dict()
-    for split, col in splitter_to_group_names.items():
-        log.debug(f"    Found {col} for {split}")
-        if col in clustering_df.columns:
-            splitter_to_groups[split] = clustered_df[col].values 
-        elif col in X.columns:
-            splitter_to_groups[split] = df[col].values 
-        else:
-            raise util.MissingColumnError(f'Data Split {split} needs column {col} but we like dont have it')
-
-    # FeatureNormalization (dot-product)
+    ## FeatureNormalization (cross-product)
     post_selection = []
     for normalizer_name, normalizer_instance in normalizers:
 
@@ -149,7 +137,7 @@ def _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models,
         os.mkdir(dirname)
         pd.concat([X_normalized, y], 1).to_csv(join(dirname, "normalized.csv"), index=False)
 
-        # FeatureSelection (dot-product)
+        # FeatureSelection (cross-product)
         log.info("Running selectors...")
         for selector_name, selector_instance in selectors:
 
@@ -165,39 +153,41 @@ def _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models,
 
             post_selection.append((normalizer_name, selector_name, X_selected))
 
-    # DataSplits (dot-product)
+    ## DataSplits (cross-product)
+    ## Collect grouping columns, splitter_to_group_names is a dict of splitter name to grouping col
+    log.debug("Finding splitter-required columns in data...")
     splits = []
     for name, instance in splitters:
-        group = splitter_to_groups[name] if name in splitter_to_groups else None
-        # Luke can make this back into a list comprehension if he wants
-        splits.append((name, tuple(instance.split(X, y, group))))
+        if name in splitter_to_group_names:
+            col = splitter_to_group_names[name]
+            log.debug(f"    Finding {col} for {split}...")
+            for df_ in [clustering_df, df]:
+                if col in df_.columns:
+                    group = df_[col].values 
+                    break # success!
+            else: # if didn't succeed
+                raise util.MissingColumnError(f'Data Split {split} needs column {col} but we like dont have it')
 
+            group = _find_column_from_list(col, [clustering_df, X]).values
+        else: 
+            group = None
+        splits.append((name, tuple(instance.split(X, y, group))))
 
     log.info("Fitting models to splits...")
     all_results = []
 
-    # Models (dot-product)
-    for normalizer_name, selector_name, df in post_selection:
+    ## Models (cross-product)
+    for normalizer_name, selector_name, XX in post_selection:
         for model_name, model_instance in models:
             for splitter_name, trains_tests in splits:
                 subdir = join(normalizer_name, selector_name, model_name, splitter_name)
                 log.info(f"    Running splits for {subdir}")
                 path = join(outdir, subdir)
                 os.makedirs(path)
-                runs = _do_splits(df, y, model_instance, path, metrics_dict, trains_tests, is_classification)
+                runs = _do_splits(XX, y, model_instance, path, metrics_dict, trains_tests, is_classification)
                 all_results.extend(runs)
 
     return all_results
-
-def _extract_grouping_column_names(splitter_to_kwargs):
-    splitter_to_group_names = dict()
-    for splitter_name, name_and_kwargs in splitter_to_kwargs.items():
-        _, kwargs = name_and_kwargs
-        if 'grouping_column' in kwargs:
-            column_name = kwargs['grouping_column']
-            del kwargs['grouping_column'] # because the splitter doesn't actually take this
-            splitter_to_group_names[splitter_name] = column_name
-    return splitter_to_group_names
 
 
 def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classification):
@@ -282,7 +272,6 @@ def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classifica
         plot_helper.plot_best_worst(best, worst, os.path.join(main_path, 'best_worst_overlay.png'), test_stats)
 
 
-
     # collect all predictions in a combo for each point in the dataset
     predictions = [[] for _ in range(X.shape[0])]
     for split_num, (train_indices, test_indices) in enumerate(trains_tests):
@@ -292,6 +281,26 @@ def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classifica
     plot_helper.best_worst_per_point(  y, predictions, join(main_path, 'best_worst_per_point.png'))
 
     return split_results
+
+
+def _extract_grouping_column_names(splitter_to_kwargs):
+    splitter_to_group_names = dict()
+    for splitter_name, name_and_kwargs in splitter_to_kwargs.items():
+        _, kwargs = name_and_kwargs
+        if 'grouping_column' in kwargs:
+            column_name = kwargs['grouping_column']
+            del kwargs['grouping_column'] # because the splitter doesn't actually take this
+            splitter_to_group_names[splitter_name] = column_name
+    return splitter_to_group_names
+
+def _remove_constant_feautures(df):
+    log.info("Removing constant features, regardless of feature selectors.")
+    before = set(df.columns)
+    df = df.loc[:, (df != df.iloc[0]).any()] 
+    removed = list(before - set(df.columns))
+    if removed != []:
+        log.warning("Removed the following constant columns: " + str(removed))
+    return df
 
 
 def _save_all_runs(runs, outdir):
@@ -319,8 +328,10 @@ def _instantiate(kwargs_dict, name_to_constructor, category):
     Uses name_to_constructor to instantiate every item in kwargs_dict and return
     the list of instantiations
     """
+
     instantiations = []
     for long_name, (name, kwargs) in kwargs_dict.items():
+        log.debug(f'instantiation: {long_name}, {name}({kwargs})')
         try:
             instantiations.append((long_name, name_to_constructor[name](**kwargs)))
         except TypeError:
