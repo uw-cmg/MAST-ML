@@ -317,6 +317,7 @@ def nice_std(ls):
 
 @ipynb_maker
 def predicted_vs_true_bars(y_true, y_pred_list, savepath, title='best worst with bars'):
+    " EVERYTHING MUST BE ARRAYS DONT GIVE ME DEM DF "
     means = [nice_mean(y_pred) for y_pred in y_pred_list]
     standard_error_means = [nice_std(y_pred)/np.sqrt(len(y_pred)) for y_pred in y_pred_list]
     fig, ax = make_fig_ax(aspect='auto')

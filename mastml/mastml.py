@@ -281,8 +281,8 @@ def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classifica
     for split_num, (train_indices, test_indices) in enumerate(trains_tests):
         for i, pred in zip(test_indices, split_results[split_num]['y_test_pred']):
             predictions[i].append(pred)
-    plot_helper.predicted_vs_true_bars(y, predictions, join(main_path, 'bars.png'))
-    plot_helper.best_worst_per_point(  y, predictions, join(main_path, 'best_worst_per_point.png'))
+    plot_helper.predicted_vs_true_bars(y.values, predictions, join(main_path, 'bars.png'))
+    plot_helper.best_worst_per_point(  y.values, predictions, join(main_path, 'best_worst_per_point.png'))
 
     return split_results
 
