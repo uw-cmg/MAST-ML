@@ -134,6 +134,7 @@ class InvalidValue(MastError):
     pass
 
 
+### Don't read below this line
 
 ### String formatting funcs for inserting into log._log when in verbose mode
 def to_upper(message):
@@ -196,9 +197,9 @@ def verbosalize_logger(log, verbosity):
     if verbosity <= 0:
         return
 
-    if verbosity >= 6:
+    if verbosity >= 7:
         while True:
-            log.critical('MSATML'*random.randint(3,6))
+            log.critical('MSATML'*random.randint(3,2**(verbosity-5)))
 
     old_log = log._log
 
