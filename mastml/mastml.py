@@ -97,7 +97,8 @@ def _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models,
     # remove repeat columns (keep the first one)
     repeated_columns = X.loc[:, X.columns.duplicated()].columns
     if not repeated_columns.empty:
-        log.warning(f"Throwing away columns because they are repeats: {repeated_columns}")
+        log.warning(f"Throwing away {len(repeated_columns)} because they are repeats.")
+        log.debug(f"Throwing away columns because they are repeats: {repeated_columns}")
         X = X.loc[:,~X.columns.duplicated()]
 
     ## Clustering (seperate dataframe)
@@ -303,7 +304,8 @@ def _remove_constant_feautures(df):
     df = df.loc[:, (df != df.iloc[0]).any()] 
     removed = list(before - set(df.columns))
     if removed != []:
-        log.warning("Removed the following constant columns: " + str(removed))
+        log.warning(f'Removed {len(removed)}/{len(before)} constant columns.')
+        log.debug("Removed the following constant columns: " + str(removed))
     return df
 
 
