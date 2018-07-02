@@ -25,10 +25,13 @@
 
 
 import sklearn.cluster as sc
+from .util_legos import DoNothing
+
 
 
 
 name_to_constructor = {
+    'DoNothing': DoNothing,
     'AffinityPropagation': sc.AffinityPropagation, # Perform Affinity Propagation Clustering of data.
     'AgglomerativeClustering': sc.AgglomerativeClustering, # Agglomerative Clustering
     'Birch': sc.Birch, # Implements the Birch clustering algorithm.
