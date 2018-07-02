@@ -402,7 +402,7 @@ if __name__ == '__main__':
     log.warning(verbosity)
     log.error(verbosity)
     log.critical(verbosity)
-    warnings.simplefilter('error')
+    #warnings.simplefilter('error')
 
 
     try:
