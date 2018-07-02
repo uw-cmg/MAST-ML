@@ -35,4 +35,5 @@ def load_data(file_path, input_features=None, target_feature=None):
     # for now, we'll just not check and include everything
     #df = df[required_features] # drop the columns we aren't using
 
-    return df, input_features, target_feature
+    X, y = df[input_features], df[target_feature]
+    return df, X, y

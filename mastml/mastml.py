@@ -27,7 +27,9 @@ def mastml_run(conf_path, data_path, outdir):
 
     # Load in and parse the configuration and data files:
     conf = conf_parser.parse_conf_file(conf_path)
-    df, input_features, target_feature = data_loader.load_data(data_path, **conf['GeneralSetup'])
+    # df is used by feature generators, clustering, and grouping_column to create more features for x
+    # X is model input, y is target feature for model
+    df, X, y = data_loader.load_data(data_path, **conf['GeneralSetup'])
 
     # Get the appropriate collection of metrics:
     big_metrics_dict = metrics.classification_metrics if conf['is_classification'] else metrics.regression_metrics
@@ -36,6 +38,7 @@ def mastml_run(conf_path, data_path, outdir):
     # Extract columns that some splitter need to do grouped splitting using 'grouping_column'
     # special argument
     splitter_to_group_names = _extract_grouping_column_names(conf['DataSplits'])
+    log.debug('splitter_to_group_names:\n' + str(splitter_to_group_names))
 
     # Instantiate all the sections of the conf file:
     generators  = _instantiate(conf['FeatureGeneration'],    feature_generators.name_to_constructor,  'feature generator')
@@ -45,10 +48,9 @@ def mastml_run(conf_path, data_path, outdir):
     models      = _instantiate(conf['Models'],               model_finder.name_to_constructor,        'model')
     splitters   = _instantiate(conf['DataSplits'],           data_splitters.name_to_constructor,      'data split')
 
-    X, y = df[input_features], df[target_feature]
     plot_helper.target_histogram(y, join(outdir, 'target_histogram.png'))
 
-    runs = _do_combos(X, y, generators, clusterers, normalizers, selectors, models, splitters,
+    runs = _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models, splitters,
                       metrics_dict, outdir, conf['is_classification'], splitter_to_group_names)
 
     log.info("Making image html file...")
@@ -63,7 +65,7 @@ def mastml_run(conf_path, data_path, outdir):
     shutil.copy2(data_path, outdir)
 
 
-def _do_combos(X, y, generators, clusterers, normalizers, selectors, models, splitters,
+def _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models, splitters,
                metrics_dict, outdir, is_classification, splitter_to_group_names):
     """
     Uses cross product to generate, normalize, and select the input data, then saves it.
@@ -76,10 +78,11 @@ def _do_combos(X, y, generators, clusterers, normalizers, selectors, models, spl
     # FeatureGeneration (union)
     log.info("Doing feature generation...")
     generators_union = util_legos.DataFrameFeatureUnion([instance for name,instance in generators])
-    X_generated = generators_union.fit_transform(X, y)
+    generated_df = generators_union.fit_transform(df, y)
 
     log.info("Saving generated data to csv...")
-    pd.concat([X_generated, y], 1).to_csv(join(outdir, "data_generated.csv"), index=False)
+    log.debug('generated cols: ', generated_df.columns)
+    pd.concat([generated_df, y], 1).to_csv(join(outdir, "generated_features.csv"), index=False)
 
 
     # Remove constant features, warn if we actually remove anything.
@@ -87,52 +90,59 @@ def _do_combos(X, y, generators, clusterers, normalizers, selectors, models, spl
     # A model trained on that can do better than random, but using that model would require extra
     # difficulty if doesn't expect column '0' because we discarded it.
     log.info("Removing constant features, regardless of feature selectors.")
-    before = set(X_generated.columns)
-    X_generated = X_generated.loc[:, (X_generated != X_generated.iloc[0]).any()] 
-    removed = list(before - set(X_generated.columns))
+    before = set(generated_df.columns)
+    generated_df = generated_df\
+        .loc[:, (generated_df != generated_df.iloc[0]).any()] 
+    removed = list(before - set(generated_df.columns))
     if removed != []:
         log.warning("Removed the following constant columns: " + str(removed))
-    pd.concat([X_generated, y], 1).to_csv(join(outdir, "data_generated_no_constant_columns.csv"), index=False)
     log.info("Saving generated data without constant columns to csv...")
+    pd.concat([generated_df, y], 1)\
+            .to_csv(join(outdir, "generated_features_no_constant_columns.csv"), index=False)
 
-
+    # add in generated features
+    # TODO this adds in some of the grouping features, can the model cheat on these?
+    X = pd.concat([X, generated_df], axis=1)
 
     # Clustering (union)
     log.info("Doing clustering...")
     clustering_columns = dict()
     for name, instance in clusterers:
-        clustering_columns[name] = instance.fit_predict(X_generated, y)
-    X_clustered = pd.concat([X_generated, pd.DataFrame.from_dict(clustering_columns)], axis=1)
+        clustering_columns[name] = instance.fit_predict(X, y)
+    clustered_df = pd.DataFrame.from_dict(clustering_columns)
 
     # Plot each input column against y, color by cluster is applicable
-    for name, group in clustering_columns.items() if clustering_columns != dict() else (None, None):
-        for column in X_generated:
+    for name, group in clustered_df.items() if clustered_df != dict() else (None, None):
+        for column in X:
             filename = f'{column}_vs_target_by_{name}.png' if name else '{column}_vs_target.png' 
-            plot_helper.plot_scatter(y, X_generated[column],
+            plot_helper.plot_scatter(
+                    y, X[column],
                     join(outdir, filename), 
-                    clustering_columns[name],
+                    clustered_df[name],
                     ylabel=column, xlabel='target_feature')
 
 
-
     log.info("Saving clustered data to csv...")
-    pd.concat([X_clustered, y], 1).to_csv(join(outdir, "data_clustered.csv"), index=False)
+    pd.concat([clustered_df, y], 1).to_csv(join(outdir, "clusters.csv"), index=False)
 
-
-    # Collect grouping columns
+    # Collect grouping columns, splitter_to_groups will be a dict of splitter name to gruping array
+    log.debug("Finding splitter-required columns in data...")
     splitter_to_groups = dict()
     for split, col in splitter_to_group_names.items():
-        if col in X_clustered.columns:
-            splitter_to_groups[split] = X_clustered[col].values 
+        log.debug(f"    Found {col} for {split}")
+        if col in clustering_df.columns:
+            splitter_to_groups[split] = clustered_df[col].values 
+        elif col in X.columns:
+            splitter_to_groups[split] = df[col].values 
         else:
-            splitter_to_groups[split] = X[col].values 
+            raise util.MissingColumnError(f'Data Split {split} needs column {col} but we like dont have it')
 
     # FeatureNormalization (dot-product)
     post_selection = []
     for normalizer_name, normalizer_instance in normalizers:
 
         log.info(f"Running normalizer {normalizer_name} ...")
-        X_normalized = normalizer_instance.fit_transform(X_clustered, y)
+        X_normalized = normalizer_instance.fit_transform(X, y)
 
         log.info("Saving normalized data to csv...")
         dirname = join(outdir, normalizer_name)
