@@ -79,10 +79,9 @@ def _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models,
     log.info("Doing feature generation...")
     generators_union = util_legos.DataFrameFeatureUnion([instance for name,instance in generators])
     generated_df = generators_union.fit_transform(df, y)
-    import pdb; pdb.set_trace()
 
     log.info("Saving generated data to csv...")
-    log.debug('generated cols: ', generated_df.columns)
+    log.debug(f'generated cols: {generated_df.columns}')
     pd.concat([generated_df, y], 1).to_csv(join(outdir, "generated_features.csv"), index=False)
 
     # Remove constant features, warn if we actually remove anything.
@@ -95,6 +94,12 @@ def _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models,
     # TODO this adds in some of the grouping features, can the model cheat on these?
     X = pd.concat([X, generated_df], axis=1)
 
+    # remove repeat columns (keep the first one)
+    repeated_columns = X.loc[:, X.columns.duplicated()].columns
+    if not repeated_columns.empty:
+        log.warning(f"Throwing away columns because they are repeats: {repeated_columns}")
+        X = X.loc[:,~X.columns.duplicated()]
+
     ## Clustering (seperate dataframe)
     log.info("Doing clustering...")
     clustered_df = pd.DataFrame()
@@ -105,7 +110,6 @@ def _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models,
         # plot y against each x column
         for column in X:
             filename = '{column}_vs_target.png' 
-            import pdb; pdb.set_trace()
             plot_helper.plot_scatter(
                     X[column], y,
                     join(outdir, filename), 

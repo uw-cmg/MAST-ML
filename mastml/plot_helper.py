@@ -318,8 +318,8 @@ def predicted_vs_true_bars(y_true, y_pred_list, savepath, title='best worst with
     fig, ax = make_fig_ax(aspect='auto')
 
     # gather max and min
-    max1 = max(np.max(y_true), np.max(means))
-    min1 = min(np.min(y_true), np.min(means))
+    max1 = max(np.nanmax(y_true), np.nanmax(means))
+    min1 = min(np.nanmin(y_true), np.nanmin(means))
 
     make_axis_same(ax, max1, min1)
 
