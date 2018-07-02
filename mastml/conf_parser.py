@@ -29,6 +29,12 @@ def parse_conf_file(filepath):
         if name not in conf:
             conf[name] = dict()
 
+
+    # If you don't have models, you don't take any input features
+    if conf['Models'] == dict() and 'input_features' not in conf['GeneralSetup']:
+        conf['GeneralSetup']['input_features'] = []
+
+
     # Are there any invalid sections?
     for section_name in conf:
         if section_name not in all_sections:
