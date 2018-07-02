@@ -10,6 +10,10 @@ it must return a list of filenames where it saved the figures.
 
 from os.path import join
 import itertools
+import warnings
+
+# Ignore the harmless warning about the gelsd driver on mac.
+warnings.filterwarnings(action="ignore", module="scipy", message="^internal gelsd") 
 
 import numpy as np # TODO: used?
 
