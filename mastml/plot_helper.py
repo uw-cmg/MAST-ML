@@ -444,8 +444,8 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y'):
         for group in np.unique(groups):
             mask = groups == group
             ax.scatter(x[mask], y[mask], label=group)
+        ax.legend()
 
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
-    ax.legend()
     fig.savefig(savepath)
