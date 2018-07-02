@@ -66,6 +66,9 @@ def parse_conf_file(filepath):
 
     for name in feature_sections:
         if name not in conf or conf[name] == dict():
+            if name == 'Clustering':
+                conf[name] = dict()
+                continue
             conf[name] = {'DoNothing': dict()}
 
     for name in ['input_features', 'target_feature']:
