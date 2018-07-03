@@ -282,24 +282,30 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, savepath, title='best worst
 
 @ipynb_maker
 def plot_violin(y_true, y_pred_list, savepath, title='best worst with bars'):
-    means = [nice_mean(y_pred) for y_pred in y_pred_list]
-    standard_error_means = [np.std(y_pred)/np.sqrt(len(y_pred)) for y_pred in y_pred_list]
+    # Make new data without empty prediction lists:
+    y_true_new = []
+    y_pred_list_new = []
+    means = []
+    for i in range(y_true.shape[0]):
+        if len(y_pred_list[i]) > 0:
+            y_true_new.append(y_true[i])
+            y_pred_list_new.append(y_pred_list[i])
+            means.append(np.nanmean(y_pred_list[i]))
+
     fig, ax = make_fig_ax(aspect='auto')
 
     # gather max and min
-    max1 = max(np.max(y_true), np.max(means))
-    min1 = min(np.min(y_true), np.min(means))
+    max1 = max(np.nanmax(y_true_new), np.nanmax(means))
+    min1 = min(np.nanmin(y_true_new), np.nanmin(means))
 
     make_axis_same(ax, max1, min1)
 
     # draw dashed horizontal line
     ax.plot([min1, max1], [min1, max1], 'k--', lw=4, zorder=1)
 
-    # set axis labels
     ax.set_xlabel('Measured')
     ax.set_ylabel('Predicted')
-
-    ax.violinplot(y_pred_list, y_true)
+    ax.violinplot(y_pred_list_new, y_true_new)
 
     plot_stats(fig, dict())
     fig.savefig(savepath)
@@ -307,8 +313,8 @@ def plot_violin(y_true, y_pred_list, savepath, title='best worst with bars'):
 
 @ipynb_maker
 def plot_best_worst_per_point(y_true, y_pred_list, savepath, title='best worst per point'):
-    worsts = [max(yp, key=lambda y: abs(yt-y)) if yp else None for yt, yp in zip(y_true,y_pred_list)]
-    bests  = [min(yp, key=lambda y: abs(yt-y)) if yp else None for yt, yp in zip(y_true,y_pred_list)]
+    worsts = [max(ypl, key=lambda y: abs(yt-y)) if len(ypl)>0 else None for yt, ypl in zip(y_true,y_pred_list)]
+    bests  = [min(ypl, key=lambda y: abs(yt-y)) if len(ypl)>0 else None for yt, ypl in zip(y_true,y_pred_list)]
 
     fig, ax = make_fig_ax(aspect='auto')
 
@@ -378,6 +384,7 @@ def plot_3d_heatmap(xs, ys, zs, heats, savepath, xlabel='x', ylabel='y', zlabel=
 
 
 def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y'):
+    # TODO: shrink margin
     fig, ax = make_fig_ax(aspect='auto')
     if groups is None:
         ax.scatter(x, y, c=groups)
