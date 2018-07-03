@@ -110,10 +110,10 @@ def _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models,
     if clustered_df.empty:
         # plot y against each x column
         for column in X:
-            filename = f'{column}_vs_target.png' 
+            filename = f'{column}_vs_target.png'
             plot_helper.plot_scatter(
                     X[column], y,
-                    join(outdir, filename), 
+                    join(outdir, filename),
                     xlabel=column, ylabel='target_feature')
     else:
         # for each cluster, plot y against each x column
@@ -122,8 +122,8 @@ def _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models,
                 filename = f'{column}_vs_target_by_{name}.png'
                 plot_helper.plot_scatter(
                         X[column], y,
-                        join(outdir, filename), 
-                        clustered_df[name], 
+                        join(outdir, filename),
+                        clustered_df[name],
                         xlabel=column, ylabel='target_feature')
 
 
@@ -168,13 +168,13 @@ def _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models,
             log.debug(f"    Finding {col} for {split}...")
             for df_ in [clustering_df, df]:
                 if col in df_.columns:
-                    group = df_[col].values 
+                    group = df_[col].values
                     break # success!
             else: # if didn't succeed
                 raise util.MissingColumnError(f'Data Split {split} needs column {col} but we like dont have it')
 
             group = _find_column_from_list(col, [clustering_df, X]).values
-        else: 
+        else:
             group = None
         splits.append((name, tuple(instance.split(X, y, group))))
 
@@ -232,7 +232,7 @@ def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classifica
             # catch it for some indeterminiable reason.
             # This warning is raised when you ask for Recall on something from y_true that never
             # occors in y_pred. sklearn assumes 0.0, and we want it to do so (silently).
-            warnings.simplefilter('ignore', UndefinedMetricWarning) 
+            warnings.simplefilter('ignore', UndefinedMetricWarning)
 
             train_metrics = OrderedDict((name, function(train_y, train_pred))
                                         for name,function in metrics_dict.items())
@@ -255,7 +255,7 @@ def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classifica
 
 
         log.info("             Making plots...")
-        plot_helper.make_plots(split_result, path, is_classification)
+        plot_helper.make_main_plots(split_result, path, is_classification)
 
         split_results.append(split_result)
 
@@ -301,7 +301,7 @@ def _extract_grouping_column_names(splitter_to_kwargs):
 def _remove_constant_feautures(df):
     log.info("Removing constant features, regardless of feature selectors.")
     before = set(df.columns)
-    df = df.loc[:, (df != df.iloc[0]).any()] 
+    df = df.loc[:, (df != df.iloc[0]).any()]
     removed = list(before - set(df.columns))
     if removed != []:
         log.warning(f'Removed {len(removed)}/{len(before)} constant columns.')
@@ -381,9 +381,9 @@ def get_paths():
                         help='Folder path to save output files to. Defaults to results/')
     # from https://stackoverflow.com/a/14763540
     # we only use them to set a bool but it would be nice to have multiple levels in the future
-    parser.add_argument('-v', '--verbosity', action="count", 
+    parser.add_argument('-v', '--verbosity', action="count",
                         help="include this flag for more verbose output")
-    parser.add_argument('-q', '--quietness', action="count", 
+    parser.add_argument('-q', '--quietness', action="count",
                         help="include this flag to hide [DEBUG] printouts, or twice to hide [INFO]")
 
     args = parser.parse_args()

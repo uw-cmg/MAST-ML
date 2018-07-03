@@ -4,19 +4,18 @@ Most of these plots take in (data, other_data, ..., savepath, stats, title).
 Where the data args are numpy arrays, savepath is a string, and stats is an
 ordered dictionary which maps names to either values, or mean-stdev pairs.
 
-A plot can also take an "outdir" instead of a savepath. If this is the case, 
+A plot can also take an "outdir" instead of a savepath. If this is the case,
 it must return a list of filenames where it saved the figures.
 """
 
-from os.path import join
 import itertools
 import warnings
+from os.path import join
 
 # Ignore the harmless warning about the gelsd driver on mac.
-warnings.filterwarnings(action="ignore", module="scipy", message="^internal gelsd") 
+warnings.filterwarnings(action="ignore", module="scipy", message="^internal gelsd")
 
-import numpy as np # TODO: used?
-
+import numpy as np
 from sklearn.metrics import confusion_matrix
 
 import matplotlib
@@ -26,46 +25,12 @@ from matplotlib.figure import Figure, figaspect
 from matplotlib.ticker import MaxNLocator # TODO: used?
 from matplotlib.animation import FuncAnimation
 
-# set all font to bigger
-font = {'size'   : 18,
-        'family' : 'sans-serif'}
-matplotlib.rc('font', **font)
-
-# turn on autolayout (why is it not default?)
-matplotlib.rc('figure', autolayout=True)
+matplotlib.rc('font', size=18, family='sans-serif') # set all font to bigger
+matplotlib.rc('figure', autolayout=True) # turn on autolayout
 
 # HEADERENDER don't delete this line, it's used by ipynb maker
 
 from .ipynb_maker import ipynb_maker # TODO: fix cyclic import
-
-# maybe TODO: have all plot makers start with `plot`
-
-def make_plots(run, path, is_classification):
-    y_train_true, y_train_pred, y_test_true,  y_test_pred, train_metrics, test_metrics = \
-        run['y_train_true'], run['y_train_pred'], run['y_test_true'],  run['y_test_pred'], run['train_metrics'], run['test_metrics']
-
-    if is_classification:
-        title = 'train_confusion_matrix'
-        plot_confusion_matrix(y_train_true, y_train_pred, join(path, title+'.png'), train_metrics, title=title)
-        title = 'test_confusion_matrix'
-        plot_confusion_matrix(y_test_true,  y_test_pred, join(path, title+'.png'), test_metrics, title=title)
-
-    else: # is_regression
-        predicted_vs_true((y_train_true, y_train_pred, train_metrics),
-                          (y_test_true,  y_test_pred,  test_metrics), path)
-
-        title = 'train_residuals_histogram'
-        plot_residuals_histogram(y_train_true, y_train_pred, join(path, title+'.png'), train_metrics, title=title)
-        title = 'test_residuals_histogram'
-        plot_residuals_histogram(y_test_true,  y_test_pred, join(path, title+'.png'), test_metrics, title=title)
-
-    with open(join(path, 'stats.txt'), 'w') as f:
-        f.write("TRAIN:\n")
-        for name,score in train_metrics.items():
-            f.write(f"{name}: {score}\n")
-        f.write("TEST:\n")
-        for name,score in test_metrics.items():
-            f.write(f"{name}: {score}\n")
 
 
 nice_names = {
@@ -94,51 +59,35 @@ nice_names = {
 }
 
 
-def parse_stat(name,value):
-    " Stringifies the name value pair for display within a plot "
-    if name in nice_names:
-        name = nice_names[name]
-    else:
-        name = name.replace('_', ' ')
+def make_main_plots(run, path, is_classification):
+    y_train_true, y_train_pred, y_test_true,  y_test_pred, train_metrics, test_metrics = \
+        run['y_train_true'], run['y_train_pred'], run['y_test_true'],  run['y_test_pred'], run['train_metrics'], run['test_metrics']
 
-    # has a name only
-    if not value:
-        return name
-    # has a mean and std
-    if isinstance(value, tuple):
-        mean, std = value
-        return f'{name}:' + '\n\t' + f'{mean:.3f}' + r'$\pm$' + f'{std:.3f}'
-    # has a name and value only
-    if isinstance(value, int) or (isinstance(value, float) and value%1 == 0):
-        return f'{name}: {int(value)}'
-    if isinstance(value, float):
-        return f'{name}: {value:.3f}'
-    return f'{name}: {value}' # probably a string
+    if is_classification:
+        title = 'train_confusion_matrix'
+        plot_confusion_matrix(y_train_true, y_train_pred, join(path, title+'.png'), train_metrics, title=title)
+        title = 'test_confusion_matrix'
+        plot_confusion_matrix(y_test_true,  y_test_pred, join(path, title+'.png'), test_metrics, title=title)
 
+    else: # is_regression
+        predicted_vs_true((y_train_true, y_train_pred, train_metrics),
+                          (y_test_true,  y_test_pred,  test_metrics), path)
 
-def plot_stats(fig, stats):
-    """ print stats onto the image. Goes off screen if they are too long or too many in number """
+        title = 'train_residuals_histogram'
+        plot_residuals_histogram(y_train_true, y_train_pred, join(path, title+'.png'), train_metrics, title=title)
+        title = 'test_residuals_histogram'
+        plot_residuals_histogram(y_test_true,  y_test_pred, join(path, title+'.png'), test_metrics, title=title)
 
-    stat_str = '\n\n'.join(parse_stat(name, value) for name,value in stats.items())
-
-    fig.text(0.69, 0.98, stat_str,
-             verticalalignment='top', wrap=True)
+    with open(join(path, 'stats.txt'), 'w') as f:
+        f.write("TRAIN:\n")
+        for name,score in train_metrics.items():
+            f.write(f"{name}: {score}\n")
+        f.write("TEST:\n")
+        for name,score in test_metrics.items():
+            f.write(f"{name}: {score}\n")
 
 
-def make_fig_ax(aspect='equal'):
-    """ using OO interface from https://matplotlib.org/gallery/api/agg_oo_sgskip.html"""
-    # set image aspect ratio. Needs to be wide enough or plot will shrink really skinny
-    w, h = figaspect(0.6)
-    fig = Figure(figsize=(w,h))
-    FigureCanvas(fig)
-
-    # these two lines are where the magic happens, trapping the figure on the left side
-    # so we can make print text beside it
-    gs = plt.GridSpec(1, 5)
-    ax = fig.add_subplot(gs[0, 0:3], aspect=aspect)
-
-    return fig, ax
-
+### Core plotting utilities:
 
 @ipynb_maker
 def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False,
@@ -219,18 +168,6 @@ def predicted_vs_true(train_triple, test_triple, outdir):
     return filenames
 
 
-
-def make_axis_same(ax, max1, min1):
-    # fix up dem axis
-    if max1 - min1 > 5:
-        step = (int(max1) - int(min1)) // 3
-        ticks = range(int(min1), int(max1)+step, step)
-    else:
-        ticks = np.linspace(min1, max1, 4)
-    ax.set_xticks(ticks)
-    ax.set_yticks(ticks)
-
-
 @ipynb_maker
 def plot_best_worst(best_run, worst_run, savepath, stats, title='Best Worst Overlay'):
     fig, ax = make_fig_ax()
@@ -303,17 +240,6 @@ def target_histogram(y_df, savepath, title='target histogram'):
 
     fig.savefig(savepath)
 
-def nice_mean(ls):
-    """ Explicitly return `None` for empty list, because numpy doesn't like to do that """
-    if len(ls) > 0:
-        return np.mean(ls)
-    return np.nan
-
-def nice_std(ls):
-    """ Explicity returns `None` for empty list, without raising a warning. """
-    if len(ls) > 0:
-        return np.std(ls)
-    return np.nan
 
 @ipynb_maker
 def predicted_vs_true_bars(y_true, y_pred_list, savepath, title='best worst with bars'):
@@ -412,7 +338,7 @@ def plot_2d_heatmap(xs, ys, heats, savepath, xlabel='x', ylabel='y', heatlabel='
     cb = fig.colorbar(scat)
     cb.set_label(heatlabel)
     fig.savefig(savepath)
-    
+
 
 def plot_3d_heatmap(xs, ys, zs, heats, savepath, xlabel='x', ylabel='y', zlabel='z', heatlabel='heat'):
     from mpl_toolkits.mplot3d import Axes3D # this import has side effects, needed for 3d plots
@@ -437,6 +363,7 @@ def plot_3d_heatmap(xs, ys, zs, heats, savepath, xlabel='x', ylabel='y', zlabel=
     #anim.save(savepath+'.mp4', fps=5, extra_args=['-vcodec', 'libx264'])
     anim.save(savepath+'.gif', fps=5, dpi=80, writer='imagemagick')
 
+
 def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y'):
     fig, ax = make_fig_ax(aspect='auto')
     if groups is None:
@@ -450,3 +377,76 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y'):
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     fig.savefig(savepath)
+
+
+### Helpers:
+
+def parse_stat(name,value):
+    " Stringifies the name value pair for display within a plot "
+    if name in nice_names:
+        name = nice_names[name]
+    else:
+        name = name.replace('_', ' ')
+
+    # has a name only
+    if not value:
+        return name
+    # has a mean and std
+    if isinstance(value, tuple):
+        mean, std = value
+        return f'{name}:' + '\n\t' + f'{mean:.3f}' + r'$\pm$' + f'{std:.3f}'
+    # has a name and value only
+    if isinstance(value, int) or (isinstance(value, float) and value%1 == 0):
+        return f'{name}: {int(value)}'
+    if isinstance(value, float):
+        return f'{name}: {value:.3f}'
+    return f'{name}: {value}' # probably a string
+
+
+def plot_stats(fig, stats):
+    """ print stats onto the image. Goes off screen if they are too long or too many in number """
+
+    stat_str = '\n\n'.join(parse_stat(name, value) for name,value in stats.items())
+
+    fig.text(0.69, 0.98, stat_str,
+             verticalalignment='top', wrap=True)
+
+
+def make_fig_ax(aspect='equal'):
+    """ using OO interface from https://matplotlib.org/gallery/api/agg_oo_sgskip.html"""
+    # set image aspect ratio. Needs to be wide enough or plot will shrink really skinny
+    w, h = figaspect(0.6)
+    fig = Figure(figsize=(w,h))
+    FigureCanvas(fig)
+
+    # these two lines are where the magic happens, trapping the figure on the left side
+    # so we can make print text beside it
+    gs = plt.GridSpec(1, 5)
+    ax = fig.add_subplot(gs[0, 0:3], aspect=aspect)
+
+    return fig, ax
+
+
+def make_axis_same(ax, max1, min1):
+    # fix up dem axis
+    if max1 - min1 > 5:
+        step = (int(max1) - int(min1)) // 3
+        ticks = range(int(min1), int(max1)+step, step)
+    else:
+        ticks = np.linspace(min1, max1, 4)
+    ax.set_xticks(ticks)
+    ax.set_yticks(ticks)
+
+
+def nice_mean(ls):
+    """ Explicitly return `None` for empty list, because numpy doesn't like to do that """
+    if len(ls) > 0:
+        return np.mean(ls)
+    return np.nan
+
+
+def nice_std(ls):
+    """ Explicity returns `None` for empty list, without raising a warning. """
+    if len(ls) > 0:
+        return np.std(ls)
+    return np.nan
