@@ -68,13 +68,25 @@ def mastml_run(conf_path, data_path, outdir):
     splitter_to_group_names = _extract_grouping_column_names(conf['DataSplits'])
     log.debug('splitter_to_group_names:\n' + str(splitter_to_group_names))
 
+    # Instantiate models first so we can snatch them and pass them into feature selectors
+    models      = _instantiate(conf['Models'],               model_finder.name_to_constructor,        'model')
+    from pprint import pformat as p # experiement
+    log.debug(f'models, pre-snatching: \n{p(models)}')
+    _snatch_models(models, conf['FeatureSelection'])
+    log.debug(f'models: \n{p(models)}')
+
     # Instantiate all the sections of the conf file:
     generators  = _instantiate(conf['FeatureGeneration'],    feature_generators.name_to_constructor,  'feature generator')
     clusterers  = _instantiate(conf['Clustering'],           clustering.name_to_constructor,          'clusterer')
     normalizers = _instantiate(conf['FeatureNormalization'], feature_normalizers.name_to_constructor, 'feature normalizer')
     selectors   = _instantiate(conf['FeatureSelection'],     feature_selectors.name_to_constructor,   'feature selector')
-    models      = _instantiate(conf['Models'],               model_finder.name_to_constructor,        'model')
     splitters   = _instantiate(conf['DataSplits'],           data_splitters.name_to_constructor,      'data split')
+
+    log.debug(f'generators: \n{p(generators)}')
+    log.debug(f'clusterers: \n{p(clusterers)}')
+    log.debug(f'normalizers: \n{p(normalizers)}')
+    log.debug(f'selectors: \n{p(selectors)}')
+    log.debug(f'splitters: \n{p(splitters)}')
 
     plot_helper.plot_target_histogram(y, join(outdir, 'target_histogram.png'))
 
@@ -91,7 +103,6 @@ def mastml_run(conf_path, data_path, outdir):
     log.info("Copying input files to output directory...")
     shutil.copy2(conf_path, outdir)
     shutil.copy2(data_path, outdir)
-
 
 def _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models, splitters,
                metrics_dict, outdir, is_classification, splitter_to_group_names):
@@ -222,7 +233,6 @@ def _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models,
 
     return all_results
 
-
 def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classification):
     """
     For a fixed normalizer,selector,model,splitter,
@@ -314,6 +324,16 @@ def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classifica
 
     return split_results
 
+def _snatch_models(models, conf_feature_selection):
+    for _, args_dict in conf_feature_selection.values():
+        if 'estimator' in args_dict:
+            model_name = args_dict['estimator']
+            for i, (name, instance) in enumerate(models):
+                if name == model_name:
+                    log.info(f"I AM SNATCHING {instance}. BE WARNED.")
+                    args_dict['estimator'] = instance
+                    del models[i]
+                    break
 
 def _extract_grouping_column_names(splitter_to_kwargs):
     splitter_to_group_names = dict()
@@ -335,7 +355,6 @@ def _remove_constant_feautures(df):
         log.debug("Removed the following constant columns: " + str(removed))
     return df
 
-
 def _save_all_runs(runs, outdir):
     """
     Produces a giant html table of all stats for all runs
@@ -354,7 +373,6 @@ def _save_all_runs(runs, outdir):
                 od[name] = value
         table.append(od)
     pd.DataFrame(table).to_html(join(outdir, 'all_runs_table.html'))
-
 
 def _instantiate(kwargs_dict, name_to_constructor, category):
     """
@@ -398,7 +416,6 @@ def check_paths(conf_path, data_path, outdir):
         shutil.rmtree(outdir)
     os.makedirs(outdir)
     log.info(f"Saving to directory 'outdir'")
-
 
 def get_paths():
     parser = argparse.ArgumentParser(description='MAterials Science Toolkit - Machine Learning')

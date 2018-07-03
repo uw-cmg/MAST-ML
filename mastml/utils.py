@@ -18,7 +18,7 @@ class BetweenFilter(object):
 
 def activate_logging(savepath, paths, logger_name='mastml', to_screen=True, to_file=True,
         verbosity = 0):
-    """ 
+    """
     savepath is a dir for where to save log
     paths list of 3 strings we show so the user knows what is being ran
     verbosity: argument for what is shown on screen (does not affect files):
@@ -72,7 +72,7 @@ def activate_logging(savepath, paths, logger_name='mastml', to_screen=True, to_f
         stdout_hdlr.setFormatter(level_formatter)
         rootLogger.addHandler(stdout_hdlr)
 
-        # send WARNING and above to stderr, 
+        # send WARNING and above to stderr,
         # verbosity of -3 sets WARNING, -4 sets  ERROR, and -5 sets CRITICAL
         lower_level = max(-10*verbosity + 10, logging.WARNING)
         stderr_hdlr = logging.StreamHandler(sys.stderr)
@@ -85,8 +85,8 @@ def activate_logging(savepath, paths, logger_name='mastml', to_screen=True, to_f
 def log_header(paths, log):
 
     logo = textwrap.dedent(f"""\
-           __  ___     __________    __  _____ 
-          /  |/  /__ _/ __/_  __/___/  |/  / / 
+           __  ___     __________    __  _____
+          /  |/  /__ _/ __/_  __/___/  |/  / /
          / /|_/ / _ `/\ \  / / /___/ /|_/ / /__
         /_/  /_/\_,_/___/ /_/     /_/  /_/____/
     """)
@@ -106,6 +106,10 @@ class MastError(Exception):
 
 class ConfError(MastError):
     """ error in conf file """
+    pass
+
+class InvalidModel(MastError):
+    """ Model does not exist """
     pass
 
 class MissingColumnError(MastError):

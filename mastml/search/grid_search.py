@@ -23,7 +23,7 @@ logger = logging.getLogger('mastml')
 
 class GridSearch:
     """Class to perform parameter optimization by grid search. Only up to 4 parameters may be optimized at a time.
-   
+
     Args:
         training_dataset (DataHandler object): Training dataset handler
         testing_dataset (DataHandler object): Testing dataset handler
@@ -103,7 +103,7 @@ class GridSearch:
         self.single_fit_init(
             training_dataset=training_dataset, #only testing_dataset is used (???)
             testing_dataset=testing_dataset,
-            model=model, 
+            model=model,
             save_path = save_path,
             xlabel=xlabel,
             ylabel=ylabel)
@@ -141,7 +141,7 @@ class GridSearch:
         self.flat_results=None
         self.best_indivs=None
         self.best_params=None
-        return 
+        return
 
     ### SingleFit section
 
@@ -206,7 +206,7 @@ class GridSearch:
         logger.info("-------- %s --------" % self.analysis_name)
         logger.info("Starting analysis at %s" % time.asctime())
         return
-   
+
     def get_plot_filter(self, plot_filter_out):
         if (plot_filter_out is None or plot_filter_out == 'None' or plot_filter_out == ''):
             self.plot_filter_out = None
@@ -234,7 +234,7 @@ class GridSearch:
     def save_model(self):
         pname = os.path.join(self.save_path, "model.pickle")
         with open(pname,'wb') as pfile:
-            joblib.dump(self.model, pfile) 
+            joblib.dump(self.model, pfile)
 
     def print_readme(self):
         with open(os.path.join(self.save_path,"README"), 'w') as rfile:
@@ -276,7 +276,7 @@ class GridSearch:
         logger.debug("opt param list: %s" % self.opt_param_list)
         logger.debug("nonopt param list: %s" % self.nonopt_param_list)
         return
-    
+
 
 
     def evaluate_pop(self):
@@ -360,8 +360,6 @@ class GridSearch:
             splitter = sklearn.model_selection.ShuffleSplit(percent_test=self.percent_leave_out)
         else:
             raise ValueError("Both self.num_folds and self.percent_leave_out are None. One or the other must be specified.")
-
-        #import pdb; pdb.set_trace()
 
         X = indiv_dh.data[indiv_dh.input_features].values
         y = indiv_dh.data[indiv_dh.target_feature].values
@@ -451,7 +449,7 @@ class GridSearch:
         """
         for afm in indiv_params.keys():
             if afm == 'model': #model dealt with separately
-                continue 
+                continue
             afm_kwargs = dict(indiv_params[afm])
             (feature_name,feature_data)=cf_help.get_custom_feature_data(afm,
                         starting_dataframe = indiv_df,
@@ -499,7 +497,7 @@ class GridSearch:
             new_dict = dict()
             for oldstr in old_dict.keys():
                 for addct in range(0, len(add_vals)):
-                    newstr = "%s_%i" % (oldstr, addct) 
+                    newstr = "%s_%i" % (oldstr, addct)
                     new_dict[newstr] = dict()
                     for oloc in old_dict[oldstr].keys():
                         if not oloc in new_dict[newstr].keys():
@@ -510,7 +508,7 @@ class GridSearch:
                         new_dict[newstr][location]=dict()
                     new_dict[newstr][location][param_name] = add_vals[addct]
         return new_dict
-    
+
     def grow_param_dict_nonopt(self, old_dict, add_combined_name):
         """Add nonoptimized parameters (single value) to parameter
             dictionary.
@@ -564,7 +562,7 @@ class GridSearch:
                 raise ValueError("Parameter type %s must be one of int, float, bool, or str. Exiting." % paramtype)
             rangetype = paramsplit[3].strip().lower()
             if not(rangetype in ['discrete','continuous','continuous-log']):
-                raise ValueError("Range type %s must be 'discrete' or 'continuous' or 'continuous-log'. Exiting." % rangetype) 
+                raise ValueError("Range type %s must be 'discrete' or 'continuous' or 'continuous-log'. Exiting." % rangetype)
             if paramtype in ['bool', 'str']:
                 if not(rangetype in ['discrete']):
                     raise ValueError("Range type %s must be discrete for parameter type of %s" % (rangetype, paramtype))
@@ -628,7 +626,7 @@ class GridSearch:
             if location in init_param and param in init_param and 'log' in init_param:
                 return True
         return False
-    
+
     def plot_3d_rmse_heatmap(self, cols):
         #adjust for log params if necessary
         xcol = cols[0]
@@ -639,19 +637,19 @@ class GridSearch:
         if self.is_log_param(xcol):
             xdata_raw = np.array(self.flat_results[xcol].values,'float')
             xdata = np.log10(xdata_raw)
-            xlabel = "log10 %s" % xcol 
+            xlabel = "log10 %s" % xcol
         ydata = self.flat_results[ycol]
         ylabel = ycol
         if self.is_log_param(ycol):
             ydata_raw = np.array(self.flat_results[ycol].values,'float')
             ydata = np.log10(ydata_raw)
-            ylabel = "log10 %s" % ycol 
+            ylabel = "log10 %s" % ycol
         zdata = self.flat_results[zcol]
         zlabel = zcol
         if self.is_log_param(zcol):
             zdata_raw = np.array(self.flat_results[zcol].values,'float')
             zdata = np.log10(zdata_raw)
-            zlabel = "log10 %s" % zcol 
+            zlabel = "log10 %s" % zcol
 
         plotlabel = 'rmse_heatmap_3d'
         savepath = os.path.join(self.save_path, plotlabel+'.png')
@@ -672,13 +670,13 @@ class GridSearch:
         if self.is_log_param(xcol):
             xdata_raw = np.array(self.flat_results[xcol].values,'float')
             xdata = np.log10(xdata_raw)
-            xlabel = "log10 %s" % xcol 
+            xlabel = "log10 %s" % xcol
         ydata = np.array(self.flat_results[ycol])
         ylabel = ycol
         if self.is_log_param(ycol):
             ydata_raw = np.array(self.flat_results[ycol].values,'float')
             ydata = np.log10(ydata_raw)
-            ylabel = "log10 %s" % ycol 
+            ylabel = "log10 %s" % ycol
 
         plotlabel = "rmse_heatmap"
         savepath = os.path.join(self.save_path, f'{plotlabel}.png')
@@ -694,7 +692,7 @@ class GridSearch:
             import numpy as np
             xdata_raw = np.array(self.flat_results[col].values,'float')
             xdata = np.log10(xdata_raw)
-            xlabel = "log10 %s" % col 
+            xlabel = "log10 %s" % col
 
         #ph_kwargs = dict()
         #ph_kwargs['xlabel'] = xlabel
@@ -745,5 +743,3 @@ class GridSearch:
         self.readme_list.append("Printed RMSE results to results.csv\n")
         self.flat_results = flat_results
         return
-
-

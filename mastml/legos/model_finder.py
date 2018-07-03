@@ -7,6 +7,8 @@ import warnings
 import sklearn.base
 import sklearn.utils.testing
 
+from .. import utils
+
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     name_to_constructor = dict(sklearn.utils.testing.all_estimators())
@@ -16,7 +18,7 @@ def find_model(model_name):
     try:
         return name_to_constructor[model_name]
     except KeyError:
-        raise KeyError(f"Model '{model_name}' does not exist in scikit-learn.")
+        raise utils.InvalidModel(f"Model '{model_name}' does not exist in scikit-learn.")
 
 def check_models_mixed(model_names):
     """ raises MixedModelsError if models are not all class or all regress """

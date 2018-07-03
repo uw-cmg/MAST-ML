@@ -59,7 +59,7 @@ def parse_conf_file(filepath):
             if isinstance(value, dict):
                 raise TypeError(f"Subsection in parameter-only section: {key}")
             # input_features/target_feature might have column named 'y' or 'off' or whatever, so don't fix it
-            if name in ['input_features', 'target_feature']: continue 
+            if name in ['input_features', 'target_feature']: continue
             parameter_dict[name] = fix_types(value)
 
     # Ensure all models are either classifiers or regressors: (raises error if mixed)
@@ -141,13 +141,4 @@ def _handle_selectors_references(selectors, is_classification):
                 except KeyError:
                     raise utils.InvalidValue(f"Score function '{args_dict['score_func']}' not valid for {task} tasks (inside feature selector {selector_name}). Valid score functions: name_to_func.keys()")
             else:
-                args_dict['score_func'] = name_to_func['f_classif' if is_classification else 'f_regression']  
-        elif selector_name in feature_selectors.model_selectors:
-            if 'estimator' in args_dict:
-                log.warning('Feature selectors will not use your paramaters for models. This will be added in later versions.')
-                if '_' in args_dict['estimator']:
-                    raise NotImplementedError("Right now you can't specify custom models inside feature selection instances.")
-                args_dict['estimator'] = model_finder.name_to_constructor[args_dict['estimator']]()
-            else: # give some good default models
-                args_dict['estimator'] =  model_finder.name_to_constructor['LinearSVC' if is_classification else 'LinearRegression']()
-    
+                args_dict['score_func'] = name_to_func['f_classif' if is_classification else 'f_regression']

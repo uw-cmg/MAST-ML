@@ -8,7 +8,6 @@ def climb_hill(model_constructor, X, y, param_dict, score_func):
     best_params = {key: random.choice(values) for key,values in param_dict.items()}
     non_singleton_params = [param for param in param_dict if len(param_dict[param]) > 1]
     X_train, X_test, y_train, y_test = train_test_split(X, y)
-    #import pdb; pdb.set_trace()
     for step in range(100):
         print(f"Step {step}/100")
         if step % 10 == 0:
@@ -56,7 +55,7 @@ def test():
     y_train = df_train['digit']
     X_test = df_test.drop(['digit', 'testonly'], axis=1)
     y_test = df_test['digit']
-    
+
     param_dict = dict(
             n_neighbors=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],
             p=[1,2,3],
