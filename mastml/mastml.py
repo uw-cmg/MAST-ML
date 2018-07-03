@@ -233,7 +233,6 @@ def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classifica
             # This warning is raised when you ask for Recall on something from y_true that never
             # occors in y_pred. sklearn assumes 0.0, and we want it to do so (silently).
             warnings.simplefilter('ignore', UndefinedMetricWarning)
-
             train_metrics = OrderedDict((name, function(train_y, train_pred))
                                         for name,function in metrics_dict.items())
             test_metrics = OrderedDict((name, function(test_y, test_pred))
