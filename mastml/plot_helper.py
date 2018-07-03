@@ -90,14 +90,6 @@ def make_main_plots(run, path, is_classification):
                                  join(path, title+'.png'), test_metrics,
                                  title=title)
 
-    with open(join(path, 'stats.txt'), 'w') as f:
-        f.write("TRAIN:\n")
-        for name,score in train_metrics.items():
-            f.write(f"{name}: {score}\n")
-        f.write("TEST:\n")
-        for name,score in test_metrics.items():
-                f.write(f"{name}: {score}\n")
-
 
 ### Core plotting utilities:
 

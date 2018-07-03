@@ -22,7 +22,7 @@ def parse_conf_file(filepath):
     main_sections = ['GeneralSetup', 'DataSplits', 'Models']
     feature_sections = ['FeatureGeneration', 'Clustering',  'FeatureNormalization', 'FeatureSelection']
     feature_section_dicts = [conf[name] for name in feature_sections if name in conf]
-    all_sections = main_sections + feature_sections
+    all_sections = main_sections + feature_sections + ['PlotSettings']
 
     # Are all required sections present in the file?
     for name in main_sections:
@@ -105,6 +105,29 @@ def parse_conf_file(filepath):
     for dictionary in [conf['DataSplits'], conf['Models']] + [conf[name] for name in feature_sections]:
         for name, settings in dictionary.items():
             dictionary[name] = (name.split('_')[0], settings)
+
+
+    plot_settings = ['basic_plots', 'target_histogram',
+                     'TODOFIGURETHISOUTONOUT', 'predicted_vs_true',
+                     'predicted_vs_true_bars', 'best_worst_per_point',
+                     'feature_vs_target']
+    if 'PlotSettings' not in conf:
+        conf['PlotSettings'] = dict()
+        for name in plot_settings:
+            conf[name] = True
+    else:
+        for name, value in conf['PlotSettings'].items():
+            if name not in plot_settings:
+                raise utils.InvalidConfParameters(
+                        f"[PlotSettings] parameter '{name}' is invalid")
+            try:
+                conf['PlotSettings'][name] = strtobool(value)
+            except ValueError:
+                raise utils.InvalidConfParameters(
+                    f"[PlotSettings] parameter '{name}' must be a boolean")
+        for name in plot_settings:
+            if name not in conf['PlotSettings']:
+                conf[name] = True
 
     return conf
 

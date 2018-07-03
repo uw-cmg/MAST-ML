@@ -138,7 +138,7 @@ class InvalidValue(MastError):
     pass
 
 
-### Don't read below this line
+#### DO NOT READ BELOW THIS LINE ####
 
 ### String formatting funcs for inserting into log._log when in verbose mode
 def to_upper(message):
@@ -162,6 +162,7 @@ def deep_fry_helper(s):
             yield c.upper()
         else:
             yield c
+
 def deep_fry(message):
     return ''.join(deep_fry_helper(str(message)))
 

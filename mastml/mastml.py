@@ -88,10 +88,11 @@ def mastml_run(conf_path, data_path, outdir):
     log.debug(f'selectors: \n{p(selectors)}')
     log.debug(f'splitters: \n{p(splitters)}')
 
-    plot_helper.plot_target_histogram(y, join(outdir, 'target_histogram.png'))
+    if conf['PlotSettings']['target_histogram']:
+        plot_helper.plot_target_histogram(y, join(outdir, 'target_histogram.png'))
 
     runs = _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models, splitters,
-                      metrics_dict, outdir, conf['is_classification'], splitter_to_group_names)
+                      metrics_dict, outdir, conf['is_classification'], splitter_to_group_names, conf['PlotSettings'])
 
     log.info("Making image html file...")
     html_helper.make_html(outdir)
@@ -105,7 +106,7 @@ def mastml_run(conf_path, data_path, outdir):
     shutil.copy2(data_path, outdir)
 
 def _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models, splitters,
-               metrics_dict, outdir, is_classification, splitter_to_group_names):
+               metrics_dict, outdir, is_classification, splitter_to_group_names, PlotSettings):
     """
     Uses cross product to generate, normalize, and select the input data, then saves it.
     Calls _do_splits for actual model fits.
@@ -146,24 +147,25 @@ def _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models,
     for name, instance in clusterers:
         clustered_df[name] = instance.fit_predict(X, y)
 
-    if clustered_df.empty:
-        # plot y against each x column
-        for column in X:
-            filename = f'{column}_vs_target.png'
-            plot_helper.plot_scatter(
-                    X[column], y,
-                    join(outdir, filename),
-                    xlabel=column, ylabel='target_feature')
-    else:
-        # for each cluster, plot y against each x column
-        for name in clustered_df.columns:
+    if PlotSettings['feature_vs_target']:
+        if clustered_df.empty:
+            # plot y against each x column
             for column in X:
-                filename = f'{column}_vs_target_by_{name}.png'
+                filename = f'{column}_vs_target.png'
                 plot_helper.plot_scatter(
                         X[column], y,
                         join(outdir, filename),
-                        clustered_df[name],
                         xlabel=column, ylabel='target_feature')
+        else:
+            # for each cluster, plot y against each x column
+            for name in clustered_df.columns:
+                for column in X:
+                    filename = f'{column}_vs_target_by_{name}.png'
+                    plot_helper.plot_scatter(
+                            X[column], y,
+                            join(outdir, filename),
+                            clustered_df[name],
+                            xlabel=column, ylabel='target_feature')
 
 
     log.info("Saving clustered data to csv...")
@@ -228,12 +230,12 @@ def _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models,
                 log.info(f"    Running splits for {subdir}")
                 path = join(outdir, subdir)
                 os.makedirs(path)
-                runs = _do_splits(XX, y, model_instance, path, metrics_dict, trains_tests, is_classification)
+                runs = _do_splits(XX, y, model_instance, path, metrics_dict, trains_tests, is_classification, PlotSettings)
                 all_results.extend(runs)
 
     return all_results
 
-def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classification):
+def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classification, PlotSettings):
     """
     For a fixed normalizer,selector,model,splitter,
     train and test the model on each split that the splitter makes
@@ -292,7 +294,11 @@ def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classifica
 
 
         log.info("             Making plots...")
-        plot_helper.make_main_plots(split_result, path, is_classification)
+        if PlotSettings['TODOFIGURETHISOUTONOUT']:
+            plot_helper.make_main_plots(split_result, path, is_classification)
+        _write_stats(split_result['train_metrics'],
+                     split_result['test_metrics'],
+                     outdir)
 
         split_results.append(split_result)
 
@@ -310,7 +316,7 @@ def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classifica
     split_results.sort(key=lambda run: list(run['test_metrics'].items())[0][1]) # sort splits by the test score of first metric
     worst, median, best = split_results[0], split_results[len(split_results)//2], split_results[-1]
 
-    if not is_classification:
+    if not is_classification and PlotSettings['predicted_vs_true']:
         plot_helper.plot_best_worst(best, worst, os.path.join(main_path, 'best_worst_overlay.png'), test_stats)
 
 
@@ -319,8 +325,10 @@ def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classifica
     for split_num, (train_indices, test_indices) in enumerate(trains_tests):
         for i, pred in zip(test_indices, split_results[split_num]['y_test_pred']):
             predictions[i].append(pred)
-    plot_helper.plot_predicted_vs_true_bars(y.values, predictions, join(main_path, 'bars.png'))
-    plot_helper.plot_best_worst_per_point( y.values, predictions, join(main_path, 'best_worst_per_point.png'))
+    if PlotSettings['predicted_vs_true_bars']:
+        plot_helper.plot_predicted_vs_true_bars(y.values, predictions, join(main_path, 'bars.png'))
+    if PlotSettings['best_worst_per_point']:
+        plot_helper.plot_best_worst_per_point( y.values, predictions, join(main_path, 'best_worst_per_point.png'))
 
     return split_results
 
@@ -395,6 +403,16 @@ def _instantiate(kwargs_dict, name_to_constructor, category):
                 f"There is no {category} called '{name}'."
                 f"All valid {category}: {list(name_to_constructor.keys())}")
     return instantiations
+
+def _write_stats(train_metrics, test_metrics, outdir):
+    with open(join(outdir, 'stats.txt'), 'w') as f:
+        f.write("TRAIN:\n")
+        for name,score in train_metrics.items():
+            f.write(f"{name}: {score}\n")
+        f.write("TEST:\n")
+        for name,score in test_metrics.items():
+                f.write(f"{name}: {score}\n")
+
 
 def check_paths(conf_path, data_path, outdir):
 
