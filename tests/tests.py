@@ -208,16 +208,16 @@ class TestPlots(unittest.TestCase):
             ('bar', 123.45660923904908),
             ('baz', 'impossoble'),
             ('rosco', 123e-500),
-            ('math', r"My long label with $\sqrt{2}$ $\Sigma_{C}$ math" "\n"
-                r"continues here with $\pi$"),
+            #('math', r"My long label with $\sqrt{2}$ $\Sigma_{C}$ math" "\n"
+            #    r"continues here with $\pi$"),
         ])
 
         self.stats2 = dict([
             ('Mean over 10 tests', None),
             ('5-fold average RMSE', (0.27, 0.01)),
             ('5 fold mean error', (0.00 , 0.01)),
-            ('R-squared', 0.97),
-            ('R-squared (no int)', 0.97)
+            ('R-squared', (0.97, .4)),
+            ('R-squared (no int)', (0.97, 37))
         ])
 
         self.y_true = np.random.random(20) * 20
@@ -266,7 +266,7 @@ class TestPlots(unittest.TestCase):
         best_run = dict(y_test_true=y_true, y_test_pred=y_pred,
                         test_metrics=self.stats)
         worst_run = dict(y_test_true=y_true, y_test_pred=y_pred_bad,
-                         test_metrics=self.stats2)
+                         test_metrics=self.stats)
         plot_helper.plot_best_worst(
                 best_run, worst_run, 'results/best_worst.png',
                 self.stats2, title='mest morst Overlay')

@@ -11,6 +11,7 @@ it must return a list of filenames where it saved the figures.
 import itertools
 import warnings
 from os.path import join
+from collections import OrderedDict
 
 # Ignore the harmless warning about the gelsd driver on mac.
 warnings.filterwarnings(action="ignore", module="scipy",
@@ -63,7 +64,7 @@ nice_names = {
 def make_main_plots(run, path, is_classification):
     y_train_true, y_train_pred, y_test_true = \
         run['y_train_true'], run['y_train_pred'], run['y_test_true']
-    y_test_pred, train_metrics, test_metrics) = \
+    y_test_pred, train_metrics, test_metrics = \
         run['y_test_pred'], run['train_metrics'], run['test_metrics']
 
     if is_classification:
@@ -186,11 +187,11 @@ def plot_best_worst(best_run, worst_run, savepath,
                     stats, title='Best Worst Overlay'):
     #fig, ax = make_fig_ax(aspect_ratio=0.3333333333333333333333333333333)
     # Set image aspect ratio:
-    w, h = figaspect(0.33333333)
+    w, h = figaspect(0.25)
     fig = Figure(figsize=(w,h))
     FigureCanvas(fig)
     # Trap figure on left side:
-    gs = plt.GridSpec(1, 3)
+    gs = plt.GridSpec(1, 4)
     ax = fig.add_subplot(gs[0, 0:1], aspect='equal')
 
     # make diagonal line from absolute min to absolute max of any data point
@@ -213,13 +214,20 @@ def plot_best_worst(best_run, worst_run, savepath,
 
     #font_dict = {'size'   : 10, 'family' : 'sans-serif'}
 
-    s = 3/9
-    d = 2/9
-    plot_stats(fig, stats, x_align=s)#, font_dict=font_dict)
-    plot_stats(fig, best_run['test_metrics'], x_align=s+d)
-    plot_stats(fig, worst_run['test_metrics'], x_align=s+d+d)
+    # Duplicate the stats dicts with an additional label
+    average_stats = OrderedDict([('Average Run', None)])
+    average_stats.update(stats)
+    best_stats = OrderedDict([('Best Run', None)])
+    best_stats.update(best_run['test_metrics'])
+    worst_stats = OrderedDict([('worst Run', None)])
+    worst_stats.update(worst_run['test_metrics'])
 
-    fig.savefig(savepath)
+    plot_stats(fig, average_stats, x_align=8/24)#, font_dict=font_dict)
+    plot_stats(fig, best_stats, x_align= 13/24)
+    plot_stats(fig, worst_stats, x_align=18/24)
+
+    fig.tight_layout()
+    fig.savefig(savepath, dpi=200)
 
 
 @ipynb_maker
@@ -459,7 +467,7 @@ def plot_stats(fig, stats, x_align=0.69, font_dict=dict()):
     Goes off screen if they are too long or too many in number
     """
 
-    stat_str = '\n\n'.join(parse_stat(name, value)
+    stat_str = '\n'.join(parse_stat(name, value)
                            for name,value in stats.items())
 
     fig.text(x_align, 0.98, stat_str,
