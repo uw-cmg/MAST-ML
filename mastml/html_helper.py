@@ -88,7 +88,7 @@ def make_html(outdir):
 
             # extract links to important csvs and conf
             for f in files:
-                ext = os.path.splitext(f)[1] 
+                ext = os.path.splitext(f)[1]
                 if (ext == '.csv' and f not in ['train.csv', 'test.csv']) or\
                         ext in ['.conf', '.log']:
                     link_sections.append(join(root, f))
@@ -100,13 +100,15 @@ def make_html(outdir):
             simple_section(path, outdir)
 
         h1('Plots')
-        
-        make_image('target_histogram.png')
 
+        make_image('target_histogram.png')
+        h1('outch')
+
+        # show all the images
         for f in os.listdir(outdir):
             if f.endswith('.png'):
-                h4(f)
-                make_image(join(outdir, f))
+                make_image(f, f)
+                h1('oops')
 
         for combo in combos:
             # come up with a good section title
@@ -144,4 +146,3 @@ def make_image(src, title=None):
         d += h4(title)
         #d += p(a(title))
     d += img(src=src, width='500')
-
