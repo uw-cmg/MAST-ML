@@ -21,7 +21,7 @@ from mastml.legos.feature_normalizers import MeanStdevScaler
 #mastml.utils.activate_logging()
 
 class TestLogging(unittest.TestCase):
-    """ only run one at a time or you might get like double logging or something """
+    " only run one at a time or you might get like double logging or something "
     def test_log_levels(self):
         mastml.utils.activate_logging()
 
@@ -82,11 +82,12 @@ class TestFeatureSelectionDefaults(unittest.TestCase):
         pprint(conf)
 
     def test_regression(self):
-        conf = conf_parser.parse_conf_file(string_to_filename(self.regress_conf))
+        conf = conf_parser.parse_conf_file(
+                string_to_filename(self.regress_conf))
         pprint(conf)
 
 class TestPlotToPython(unittest.TestCase):
-    """ How to convert a call to plot to a .py file that the user can modify """
+    " How to convert a call to plot to a .py file that the user can modify "
     def test_test(self):
         header = textwrap.dedent("""\
             import os.path
@@ -109,19 +110,18 @@ class TestPlotToPython(unittest.TestCase):
             matplotlib.rc('figure', autolayout=True)
         """)
 
-        from mastml.plot_helper import parse_stat, plot_stats, make_fig_ax, plot_predicted_vs_true
+        core_funcs = [plot_helper.parse_stat,
+                      plot_helper.plot_stats,
+                      plot_helper.make_fig_ax]
+        func_strings = '\n\n'.join(inspect.getsource(func)
+                                   for func in core_funcs)
 
-        core_funcs = [parse_stat, plot_stats, make_fig_ax]
-        func_strings = '\n\n'.join(inspect.getsource(func) for func in core_funcs)
-
-        plot_func = plot_predicted_vs_true
+        plot_func = plot_helper.plot_predicted_vs_true
         plot_func_string = inspect.getsource(plot_func)
 
         csv_file = 'tests/csv/predicted_vs_measured.csv'
         stats = [('some stats',),
                  ('foo', 20)]
-
-
 
         main = textwrap.dedent(f"""\
             import pandas as pd
@@ -139,7 +139,8 @@ class TestPlotToPython(unittest.TestCase):
 
         nb = nbformat.v4.new_notebook()
         text_cells = [header, func_strings, plot_func_string, main]
-        cells = [nbformat.v4.new_code_cell(cell_text) for cell_text in text_cells]
+        cells = [nbformat.v4.new_code_cell(cell_text)
+                 for cell_text in text_cells]
         nb['cells'] = cells
         nbformat.write(nb, 'test.ipynb')
 
@@ -155,7 +156,8 @@ class TestGeneration(unittest.TestCase):
 
     def test_materials_project(self):
         df = pd.read_csv('tests/csv/common_materials.csv')
-        materials_project = feature_generators.MaterialsProject('Material', 'TtAHFCrZhQa7cwEy')
+        materials_project = feature_generators.MaterialsProject(
+                'Material', 'TtAHFCrZhQa7cwEy')
 
         materials_project.fit(df)
         df = materials_project.transform(df)
@@ -163,7 +165,8 @@ class TestGeneration(unittest.TestCase):
 
     def test_citrine(self):
         df = pd.read_csv('tests/csv/feature_generation.csv')
-        citrine = feature_generators.Citrine('MaterialComp', 'amQVQutFrr7etr4ufQQh0gtt')
+        citrine = feature_generators.Citrine(
+                'MaterialComp', 'amQVQutFrr7etr4ufQQh0gtt')
 
         citrine.fit(df)
         df = citrine.transform(df)
@@ -196,11 +199,8 @@ class TestGeneration(unittest.TestCase):
             print()
 
 class TestPlots(unittest.TestCase):
-    """ don't mind the mismatched naming conventions for [true actual y_true] and [pred prediction
-    y_pred] """
 
     def setUp(self):
-
         np.random.seed(1)
         # TODO: update this test
         self.stats = dict([
@@ -222,8 +222,9 @@ class TestPlots(unittest.TestCase):
 
         self.y_true = np.random.random(20) * 20
         self.y_pred = self.y_true + np.random.normal(0, 1, 20)
-        self.y_pred_list = np.array([np.random.normal(x, 8, np.random.randint(0,10))
-                                    for x in self.y_true])
+        self.y_pred_list = np.array(
+                [np.random.normal(x, 8, np.random.randint(0,10))
+                 for x in self.y_true])
 
         self.xs = np.random.normal(4, 2, 100)
         self.ys = np.random.normal(7, 1, 100)
@@ -240,47 +241,67 @@ class TestPlots(unittest.TestCase):
         y_pred = np.array([names[x] for x in y_pred] + ['a', 'a', 'a'])
         y_true = np.array([names[x] for x in y_true] + ['b', 'b', 'b'])
 
-        plot_helper.plot_confusion_matrix(y_true, y_pred, 'results/confuse.png', self.stats)
+        plot_helper.plot_confusion_matrix(y_true, y_pred,
+                                          'results/confuse.png', self.stats)
 
     def test_predicted_vs_true(self):
-        y_pred_tall = 10 * (np.arange(90) + np.random.random_sample((90,)) * 10 - 3) + 0.5
-        y_pred_fat = 100 * (np.arange(90) + np.random.random_sample((90,)) * 10 - 3) + 0.5
+        y_pred_tall = 10 * (np.arange(90) \
+                + np.random.random_sample((90,)) * 10 - 3) + 0.5
+        y_pred_fat = 100 * (np.arange(90) \
+                + np.random.random_sample((90,)) * 10 - 3) + 0.5
         y_true_tall = 100 * np.arange(90)
         y_true_fat = 10*  np.arange(90)
 
-        plot_helper.plot_predicted_vs_true((y_true_tall, y_pred_tall, self.stats2),
-                                           (y_true_fat, y_pred_fat, self.stats2), 'results')
+        plot_helper.plot_predicted_vs_true(
+                (y_true_tall, y_pred_tall, self.stats2),
+                (y_true_fat, y_pred_fat, self.stats2),
+                'results')
 
     def test_best_worst(self):
         y_true = np.arange(90)
-        y_pred = np.arange(90) + 9*sum(np.random.random_sample((90,)) for _ in range(10)) - 54
-        y_pred_bad = 0.5*np.arange(90) + 20*sum(np.random.random_sample((90,)) for _ in range(10)) - 54
-        best_run = dict(y_test_true=y_true, y_test_pred=y_pred, test_metrics=self.stats)
-        worst_run = dict(y_test_true=y_true, y_test_pred=y_pred_bad, test_metrics=self.stats2)
-        plot_helper.plot_best_worst(best_run, worst_run, 'results/best_worst.png', self.stats2, title='mest morst Overlay')
+        y_pred = np.arange(90) + 9*sum(np.random.random_sample((90,))
+                                       for _ in range(10)) - 54
+        y_pred_bad = 0.5*np.arange(90) + 20*sum(np.random.random_sample((90,))
+                                                for _ in range(10)) - 54
+        best_run = dict(y_test_true=y_true, y_test_pred=y_pred,
+                        test_metrics=self.stats)
+        worst_run = dict(y_test_true=y_true, y_test_pred=y_pred_bad,
+                         test_metrics=self.stats2)
+        plot_helper.plot_best_worst(
+                best_run, worst_run, 'results/best_worst.png',
+                self.stats2, title='mest morst Overlay')
 
     def test_residuals_histogram(self):
-        plot_helper.plot_residuals_histogram(self.y_true, self.y_pred, 'results/residuals.png', self.stats)
+        plot_helper.plot_residuals_histogram(
+                self.y_true, self.y_pred, 'results/residuals.png', self.stats)
 
     def test_target_histogram(self):
-        y_df = pd.Series(np.concatenate([np.random.normal(4, size=(100,)),
-                                         np.random.normal(-20, 10, size=(100,))]))
-        plot_helper.plot_target_histogram(y_df, savepath = 'results/target_hist.png')
+        y_df = pd.Series(np.concatenate(
+                [np.random.normal(4, size=(100,)),
+                 np.random.normal(-20, 10, size=(100,))]))
+        plot_helper.plot_target_histogram(y_df, 'results/target_hist.png')
 
     def test_predicted_vs_true_bars(self):
-        plot_helper.plot_predicted_vs_true_bars(self.y_true, self.y_pred_list, 'results/bars.png', title='test best worst with bars')
+        plot_helper.plot_predicted_vs_true_bars(
+                self.y_true, self.y_pred_list,
+                'results/bars.png', title='test best worst with bars')
 
     def test_violin(self):
-        plot_helper.plot_violin(self.y_true, self.y_pred_list, 'results/violin.png', title='violin.png')
+        plot_helper.plot_violin(self.y_true, self.y_pred_list,
+                                'results/violin.png', title='violin.png')
 
     def test_best_worst_per_point(self):
-        plot_helper.plot_best_worst_per_point(self.y_true, self.y_pred_list, 'results/best_worst_per_point.png')
+        plot_helper.plot_best_worst_per_point(
+                self.y_true, self.y_pred_list,
+                'results/best_worst_per_point.png')
 
     def test_1d_heatmap(self):
-        plot_helper.plot_1d_heatmap(self.xs, self.heats, 'results/1d_heatmap.png')
+        plot_helper.plot_1d_heatmap(self.xs, self.heats,
+                                    'results/1d_heatmap.png')
 
     def test_2d_heatmap(self):
-        plot_helper.plot_2d_heatmap(self.xs, self.ys, self.heats, 'results/2d_heatmap.png')
+        plot_helper.plot_2d_heatmap(self.xs, self.ys, self.heats,
+                                    'results/2d_heatmap.png')
 
     def test_3d_heatmap(self):
         plot_helper.plot_3d_heatmap(self.xs, self.ys, self.zs, self.heats,
@@ -288,14 +309,17 @@ class TestPlots(unittest.TestCase):
                                     r'$\beta$', r'$\gamma$', 'accuracy')
 
     def test_scatter(self):
-        plot_helper.plot_scatter(self.y_true, self.y_pred, 'results/scatter.png')
+        plot_helper.plot_scatter(self.y_true, self.y_pred,
+                                 'results/scatter.png')
 
 class TestHtml(unittest.TestCase):
 
     def test_image_list(self):
+        pass
         #imgs = ['cf.png', 'rh.png', 'pred-vs-true.png']
-        #html_helper.make_html(imgs, 'tests/csv/three_clusters.csv', 'tests/conf/fullrun.conf', 'oop.txt', './')
-        html_helper.make_html('results/regression_test')
+        #html_helper.make_html(imgs, 'tests/csv/three_clusters.csv',
+        #                      'tests/conf/fullrun.conf', 'oop.txt', './')
+        #html_helper.make_html('results/regression_test')
         #html_helper.make_html('results/generation')
         #html_helper.make_html('results/classification')
         #html_helper.make_html('results/regression')
@@ -317,7 +341,7 @@ class TestNormalization(unittest.TestCase):
 
     def test_normalization(self):
 
-        d1 = pd.DataFrame(np.random.random((7,3)), columns=['a','b','c']) * 4 + 6 # some random data
+        d1 = pd.DataFrame(np.random.random((7,3)), columns=['a','b','c'])* 4 + 6
 
         fn = MeanStdevScaler(features=['a','c'], mean=-2, stdev=5)
         fn.fit()

@@ -13,7 +13,8 @@ import warnings
 from os.path import join
 
 # Ignore the harmless warning about the gelsd driver on mac.
-warnings.filterwarnings(action="ignore", module="scipy", message="^internal gelsd")
+warnings.filterwarnings(action="ignore", module="scipy",
+                        message="^internal gelsd")
 
 import numpy as np
 from sklearn.metrics import confusion_matrix
@@ -168,7 +169,8 @@ def plot_predicted_vs_true(train_triple, test_triple, outdir):
 
 
 @ipynb_maker
-def plot_best_worst(best_run, worst_run, savepath, stats, title='Best Worst Overlay'):
+def plot_best_worst(best_run, worst_run, savepath,
+                    stats, title='Best Worst Overlay'):
     #fig, ax = make_fig_ax(aspect_ratio=0.3333333333333333333333333333333)
     # set image aspect ratio. Needs to be wide enough or plot will shrink really skinny
     w, h = figaspect(0.33333333)
@@ -206,7 +208,8 @@ def plot_best_worst(best_run, worst_run, savepath, stats, title='Best Worst Over
 
 
 @ipynb_maker
-def plot_residuals_histogram(y_true, y_pred, savepath, stats, title='residuals histogram'):
+def plot_residuals_histogram(y_true, y_pred, savepath,
+                            stats, title='residuals histogram'):
 
     fig, ax = make_fig_ax(aspect='auto')
 
@@ -255,10 +258,12 @@ def plot_target_histogram(y_df, savepath, title='target histogram'):
 
 
 @ipynb_maker
-def plot_predicted_vs_true_bars(y_true, y_pred_list, savepath, title='best worst with bars'):
+def plot_predicted_vs_true_bars(y_true, y_pred_list,
+                                savepath, title='best worst with bars'):
     " EVERYTHING MUST BE ARRAYS DONT GIVE ME DEM DF "
     means = [nice_mean(y_pred) for y_pred in y_pred_list]
-    standard_error_means = [nice_std(y_pred)/np.sqrt(len(y_pred)) for y_pred in y_pred_list]
+    standard_error_means = [nice_std(y_pred)/np.sqrt(len(y_pred))
+                            for y_pred in y_pred_list]
     fig, ax = make_fig_ax(aspect='auto')
 
     # gather max and min
@@ -312,7 +317,8 @@ def plot_violin(y_true, y_pred_list, savepath, title='best worst with bars'):
 
 
 @ipynb_maker
-def plot_best_worst_per_point(y_true, y_pred_list, savepath, title='best worst per point'):
+def plot_best_worst_per_point(y_true, y_pred_list,
+                              savepath, title='best worst per point'):
     worsts = [max(ypl, key=lambda y: abs(yt-y)) if len(ypl)>0 else None for yt, ypl in zip(y_true,y_pred_list)]
     bests  = [min(ypl, key=lambda y: abs(yt-y)) if len(ypl)>0 else None for yt, ypl in zip(y_true,y_pred_list)]
 
@@ -349,7 +355,8 @@ def plot_1d_heatmap(xs, heats, savepath, xlabel='x', heatlabel='heats'):
     fig.savefig(savepath)
 
 
-def plot_2d_heatmap(xs, ys, heats, savepath, xlabel='x', ylabel='y', heatlabel='heat'):
+def plot_2d_heatmap(xs, ys, heats, savepath,
+                    xlabel='x', ylabel='y', heatlabel='heat'):
     fig, ax = make_fig_ax(aspect='auto')
     scat = ax.scatter(xs, ys, c=heats) # marker='o', lw=0, s=20, cmap=cm.plasma
     ax.set_xlabel(xlabel)
@@ -359,7 +366,8 @@ def plot_2d_heatmap(xs, ys, heats, savepath, xlabel='x', ylabel='y', heatlabel='
     fig.savefig(savepath)
 
 
-def plot_3d_heatmap(xs, ys, zs, heats, savepath, xlabel='x', ylabel='y', zlabel='z', heatlabel='heat'):
+def plot_3d_heatmap(xs, ys, zs, heats, savepath,
+                    xlabel='x', ylabel='y', zlabel='z', heatlabel='heat'):
     from mpl_toolkits.mplot3d import Axes3D # this import has side effects, needed for 3d plots
     w, h = figaspect(0.6) # set image aspect ratio. Needs to be wide enough or plot will shrink really skinny
     fig = Figure(figsize=(w,h))
@@ -459,7 +467,9 @@ def make_axis_same(ax, max1, min1):
 
 
 def nice_mean(ls):
-    """ Explicitly return `None` for empty list, because numpy doesn't like to do that """
+    """
+    Returns NaN for empty list
+    """
     if len(ls) > 0:
         return np.mean(ls)
     return np.nan
