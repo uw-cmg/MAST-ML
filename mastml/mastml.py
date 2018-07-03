@@ -22,6 +22,34 @@ from .legos import data_splitters, feature_generators, clustering, feature_norma
 
 log = logging.getLogger('mastml')
 
+def main(conf_path, data_path, outdir, verbosity=0):
+    check_paths(conf_path, data_path, outdir)
+
+    utils.activate_logging(outdir, (conf_path, data_path, outdir), verbosity=verbosity)
+    #log.debug(verbosity)
+    #log.info(verbosity)
+    #log.warning(verbosity)
+    #log.error(verbosity)
+    #log.critical(verbosity)
+
+    if verbosity >= 1:
+        warnings.simplefilter('error') # turn warnings into errors
+    elif verbosity <= -1:
+        warnings.simplefilter('ignore') # ignore warnings
+
+
+    try:
+        mastml_run(conf_path, data_path, outdir)
+    except utils.MastError as e:
+        # catch user errors, log and print, but don't raise and show them that nasty stack
+        log.error(str(e))
+    except Exception as e:
+        # catch the error, save it to file, then raise it back up
+        log.error('A runtime exception has occured, please go to '
+                      'https://github.com/uw-cmg/MAST-ML/issues and post your issue.')
+        log.exception(e)
+        raise e
+
 def mastml_run(conf_path, data_path, outdir):
     " Runs operations specifed in conf_path on data_path and puts results in outdir "
 
@@ -282,7 +310,7 @@ def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classifica
         for i, pred in zip(test_indices, split_results[split_num]['y_test_pred']):
             predictions[i].append(pred)
     plot_helper.plot_predicted_vs_true_bars(y.values, predictions, join(main_path, 'bars.png'))
-    plot_helper.best_worst_per_point(  y.values, predictions, join(main_path, 'best_worst_per_point.png'))
+    plot_helper.plot_best_worst_per_point( y.values, predictions, join(main_path, 'best_worst_per_point.png'))
 
     return split_results
 
@@ -394,32 +422,6 @@ def get_paths():
             os.path.abspath(args.outdir),
             verbosity)
 
-
 if __name__ == '__main__':
     conf_path, data_path, outdir, verbosity = get_paths()
-    check_paths(conf_path, data_path, outdir)
-
-    utils.activate_logging(outdir, (conf_path, data_path, outdir), verbosity=verbosity)
-    #log.debug(verbosity)
-    #log.info(verbosity)
-    #log.warning(verbosity)
-    #log.error(verbosity)
-    #log.critical(verbosity)
-
-    if verbosity >= 1:
-        warnings.simplefilter('error') # turn warnings into errors
-    elif verbosity <= -1:
-        warnings.simplefilter('ignore') # ignore warnings
-
-
-    try:
-        mastml_run(conf_path, data_path, outdir)
-    except utils.MastError as e:
-        # catch user errors, log and print, but don't raise and show them that nasty stack
-        log.error(str(e))
-    except Exception as e:
-        # catch the error, save it to file, then raise it back up
-        log.error('A runtime exception has occured, please go to '
-                      'https://github.com/uw-cmg/MAST-ML/issues and post your issue.')
-        log.exception(e)
-        raise e
+    main(conf_path, data_path, outdir, verbosity=0)
