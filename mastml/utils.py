@@ -30,9 +30,6 @@ def activate_logging(savepath, paths, logger_name='mastml', to_screen=True, to_f
         -5 hides all output
     """
 
-
-
-
     #formatter = logging.Formatter("%(filename)s : %(funcName)s %(message)s")
     time_formatter = logging.Formatter("[%(levelname)s] %(asctime)s : %(message)s")
     level_formatter = logging.Formatter("[%(levelname)s] %(message)s")
@@ -54,7 +51,6 @@ def activate_logging(savepath, paths, logger_name='mastml', to_screen=True, to_f
         errors_hdlr.setLevel(logging.WARNING)
         errors_hdlr.setFormatter(time_formatter)
         rootLogger.addHandler(errors_hdlr)
-
 
     if to_screen:
         # send INFO and DEBUG (if not suprressed) to stdout
@@ -100,6 +96,8 @@ def log_header(paths, log):
     # only shows on stdout and log.log
     log.info(header)
 
+## Custom errors for mastml:
+
 class MastError(Exception):
     """ base class for errors that should be shown to the user """
     pass
@@ -123,6 +121,7 @@ class InvalidConfParameters(MastError):
 class InvalidConfSubSection(MastError):
     """ invalid section name """
     pass
+
 class InvalidConfSection(MastError):
     """ invalid section name """
     pass
@@ -138,7 +137,7 @@ class InvalidValue(MastError):
     pass
 
 
-#### DO NOT READ BELOW THIS LINE ####
+## Joke functions:
 
 ### String formatting funcs for inserting into log._log when in verbose mode
 def to_upper(message):

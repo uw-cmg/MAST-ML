@@ -33,33 +33,7 @@ matplotlib.rc('figure', autolayout=True) # turn on autolayout
 # HEADERENDER don't delete this line, it's used by ipynb maker
 
 from .ipynb_maker import ipynb_maker # TODO: fix cyclic import
-
-
-nice_names = {
-    'accuracy_score': 'Acc',
-    'confusion_matrix': 'Confusion Matrix',
-    'f1_score': 'f1',
-    'fbeta_score': 'fbeta score',
-    'hamming_loss': 'Hamming Loss',
-    'jaccard_similarity_score': 'Jaccard Similarity Score',
-    'log_loss': 'Log Loss',
-    'matthews_corrcoef': 'Matthews',
-    'precision_recall_fscore_support': 'pr fscore',
-    'precision_score': 'p',
-    'recall_score': 'r',
-    'roc_auc_score': 'roc auc',
-    'roc_curve': 'roc',
-    'zero_one_loss': '10ss',
-    'explained_variance_score': 'explained variance',
-    'mean_absolute_error': 'MAE',
-    'mean_squared_error': 'MSE',
-    'root_mean_squared_error': 'RMSE',
-    'mean_squared_log_error': 'MSLE',
-    'median_absolute_error': 'MeAE',
-    'r2_score': '$r^2$',
-    'r2_score_noint': '$r^2$ noint',
-}
-
+from .metrics import nice_names
 
 def make_main_plots(run, path, is_classification):
     y_train_true, y_train_pred, y_test_true = \
@@ -89,7 +63,6 @@ def make_main_plots(run, path, is_classification):
         plot_residuals_histogram(y_test_true,  y_test_pred,
                                  join(path, title+'.png'), test_metrics,
                                  title=title)
-
 
 ### Core plotting utilities:
 
@@ -136,7 +109,6 @@ def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False,
     ax.set_xlabel('Predicted label')
     fig.savefig(savepath)
 
-
 @ipynb_maker
 def plot_predicted_vs_true(train_triple, test_triple, outdir):
     filenames = list()
@@ -173,6 +145,68 @@ def plot_predicted_vs_true(train_triple, test_triple, outdir):
 
     return filenames
 
+@ipynb_maker
+def plot_residuals_histogram(y_true, y_pred, savepath,
+                            stats, title='residuals histogram'):
+
+    fig, ax = make_fig_ax(aspect='auto')
+
+    ax.set_title(title)
+    # do the actual plotting
+    residuals = y_true - y_pred
+    ax.hist(residuals, bins=30)
+
+    # normal text stuff
+    ax.set_xlabel('residual')
+    ax.set_ylabel('frequency')
+
+    # make y axis ints, because it is discrete
+    #ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+
+    # shrink those margins
+    fig.tight_layout()
+
+    plot_stats(fig, stats)
+
+    fig.savefig(savepath)
+
+@ipynb_maker
+def plot_target_histogram(y_df, savepath, title='target histogram'):
+
+    fig, ax = make_fig_ax(aspect='auto')
+
+    ax.set_title(title)
+    # do the actual plotting
+    ax.hist(y_df)#, histtype='stepfilled')
+
+    # normal text stuff
+    ax.set_xlabel('y values')
+    ax.set_ylabel('frequency')
+
+    # make y axis ints, because it is discrete
+    #ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+
+    # shrink those margins
+    fig.tight_layout()
+
+    plot_stats(fig, dict(y_df.describe()))
+
+    fig.savefig(savepath)
+
+def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y'):
+    # TODO: shrink margin
+    fig, ax = make_fig_ax(aspect='auto')
+    if groups is None:
+        ax.scatter(x, y, c=groups)
+    else:
+        for group in np.unique(groups):
+            mask = groups == group
+            ax.scatter(x[mask], y[mask], label=group)
+        ax.legend()
+
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    fig.savefig(savepath)
 
 @ipynb_maker
 def plot_best_worst(best_run, worst_run, savepath,
@@ -221,116 +255,6 @@ def plot_best_worst(best_run, worst_run, savepath,
     fig.tight_layout()
     fig.savefig(savepath, dpi=200)
 
-
-@ipynb_maker
-def plot_residuals_histogram(y_true, y_pred, savepath,
-                            stats, title='residuals histogram'):
-
-    fig, ax = make_fig_ax(aspect='auto')
-
-    ax.set_title(title)
-    # do the actual plotting
-    residuals = y_true - y_pred
-    ax.hist(residuals, bins=30)
-
-    # normal text stuff
-    ax.set_xlabel('residual')
-    ax.set_ylabel('frequency')
-
-    # make y axis ints, because it is discrete
-    #ax.yaxis.set_major_locator(MaxNLocator(integer=True))
-
-    # shrink those margins
-    fig.tight_layout()
-
-    plot_stats(fig, stats)
-
-    fig.savefig(savepath)
-
-
-@ipynb_maker
-def plot_target_histogram(y_df, savepath, title='target histogram'):
-
-    fig, ax = make_fig_ax(aspect='auto')
-
-    ax.set_title(title)
-    # do the actual plotting
-    ax.hist(y_df)#, histtype='stepfilled')
-
-    # normal text stuff
-    ax.set_xlabel('y values')
-    ax.set_ylabel('frequency')
-
-    # make y axis ints, because it is discrete
-    #ax.yaxis.set_major_locator(MaxNLocator(integer=True))
-
-    # shrink those margins
-    fig.tight_layout()
-
-    plot_stats(fig, dict(y_df.describe()))
-
-    fig.savefig(savepath)
-
-
-@ipynb_maker
-def plot_predicted_vs_true_bars(y_true, y_pred_list,
-                                savepath, title='best worst with bars'):
-    " EVERYTHING MUST BE ARRAYS DONT GIVE ME DEM DF "
-    means = [nice_mean(y_pred) for y_pred in y_pred_list]
-    standard_error_means = [nice_std(y_pred)/np.sqrt(len(y_pred))
-                            for y_pred in y_pred_list]
-    fig, ax = make_fig_ax(aspect='auto')
-
-    # gather max and min
-    max1 = max(np.nanmax(y_true), np.nanmax(means))
-    min1 = min(np.nanmin(y_true), np.nanmin(means))
-
-    make_axis_same(ax, max1, min1)
-
-    # draw dashed horizontal line
-    ax.plot([min1, max1], [min1, max1], 'k--', lw=4, zorder=1)
-
-    # set axis labels
-    ax.set_xlabel('Measured')
-    ax.set_ylabel('Predicted')
-
-    ax.errorbar(y_true, means, yerr=standard_error_means, fmt='o', capsize=3)
-
-    plot_stats(fig, dict())
-    fig.savefig(savepath)
-
-
-@ipynb_maker
-def plot_violin(y_true, y_pred_list, savepath, title='best worst with bars'):
-    # Make new data without empty prediction lists:
-    y_true_new = []
-    y_pred_list_new = []
-    means = []
-    for i in range(y_true.shape[0]):
-        if len(y_pred_list[i]) > 0:
-            y_true_new.append(y_true[i])
-            y_pred_list_new.append(y_pred_list[i])
-            means.append(np.nanmean(y_pred_list[i]))
-
-    fig, ax = make_fig_ax(aspect='auto')
-
-    # gather max and min
-    max1 = max(np.nanmax(y_true_new), np.nanmax(means))
-    min1 = min(np.nanmin(y_true_new), np.nanmin(means))
-
-    make_axis_same(ax, max1, min1)
-
-    # draw dashed horizontal line
-    ax.plot([min1, max1], [min1, max1], 'k--', lw=4, zorder=1)
-
-    ax.set_xlabel('Measured')
-    ax.set_ylabel('Predicted')
-    ax.violinplot(y_pred_list_new, y_true_new)
-
-    plot_stats(fig, dict())
-    fig.savefig(savepath)
-
-
 @ipynb_maker
 def plot_best_worst_per_point(y_true, y_pred_list,
                               savepath, title='best worst per point'):
@@ -365,6 +289,62 @@ def plot_best_worst_per_point(y_true, y_pred_list,
     plot_stats(fig, dict())
     fig.savefig(savepath)
 
+@ipynb_maker
+def plot_predicted_vs_true_bars(y_true, y_pred_list,
+                                savepath, title='best worst with bars'):
+    " EVERYTHING MUST BE ARRAYS DONT GIVE ME DEM DF "
+    means = [nice_mean(y_pred) for y_pred in y_pred_list]
+    standard_error_means = [nice_std(y_pred)/np.sqrt(len(y_pred))
+                            for y_pred in y_pred_list]
+    fig, ax = make_fig_ax(aspect='auto')
+
+    # gather max and min
+    max1 = max(np.nanmax(y_true), np.nanmax(means))
+    min1 = min(np.nanmin(y_true), np.nanmin(means))
+
+    make_axis_same(ax, max1, min1)
+
+    # draw dashed horizontal line
+    ax.plot([min1, max1], [min1, max1], 'k--', lw=4, zorder=1)
+
+    # set axis labels
+    ax.set_xlabel('Measured')
+    ax.set_ylabel('Predicted')
+
+    ax.errorbar(y_true, means, yerr=standard_error_means, fmt='o', capsize=3)
+
+    plot_stats(fig, dict())
+    fig.savefig(savepath)
+
+@ipynb_maker
+def plot_violin(y_true, y_pred_list, savepath, title='best worst with bars'):
+    # Make new data without empty prediction lists:
+    y_true_new = []
+    y_pred_list_new = []
+    means = []
+    for i in range(y_true.shape[0]):
+        if len(y_pred_list[i]) > 0:
+            y_true_new.append(y_true[i])
+            y_pred_list_new.append(y_pred_list[i])
+            means.append(np.nanmean(y_pred_list[i]))
+
+    fig, ax = make_fig_ax(aspect='auto')
+
+    # gather max and min
+    max1 = max(np.nanmax(y_true_new), np.nanmax(means))
+    min1 = min(np.nanmin(y_true_new), np.nanmin(means))
+
+    make_axis_same(ax, max1, min1)
+
+    # draw dashed horizontal line
+    ax.plot([min1, max1], [min1, max1], 'k--', lw=4, zorder=1)
+
+    ax.set_xlabel('Measured')
+    ax.set_ylabel('Predicted')
+    ax.violinplot(y_pred_list_new, y_true_new)
+
+    plot_stats(fig, dict())
+    fig.savefig(savepath)
 
 def plot_1d_heatmap(xs, heats, savepath, xlabel='x', heatlabel='heats'):
     fig, ax = make_fig_ax(aspect='auto')
@@ -372,7 +352,6 @@ def plot_1d_heatmap(xs, heats, savepath, xlabel='x', heatlabel='heats'):
     ax.set_xlabel(xlabel)
     ax.set_ylabel(heatlabel)
     fig.savefig(savepath)
-
 
 def plot_2d_heatmap(xs, ys, heats, savepath,
                     xlabel='x', ylabel='y', heatlabel='heat'):
@@ -383,7 +362,6 @@ def plot_2d_heatmap(xs, ys, heats, savepath,
     cb = fig.colorbar(scat)
     cb.set_label(heatlabel)
     fig.savefig(savepath)
-
 
 def plot_3d_heatmap(xs, ys, zs, heats, savepath,
                     xlabel='x', ylabel='y', zlabel='z', heatlabel='heat'):
@@ -412,23 +390,6 @@ def plot_3d_heatmap(xs, ys, zs, heats, savepath,
     #anim.save(savepath+'.mp4', fps=5, extra_args=['-vcodec', 'libx264'])
     anim.save(savepath+'.gif', fps=5, dpi=80, writer='imagemagick')
 
-
-def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y'):
-    # TODO: shrink margin
-    fig, ax = make_fig_ax(aspect='auto')
-    if groups is None:
-        ax.scatter(x, y, c=groups)
-    else:
-        for group in np.unique(groups):
-            mask = groups == group
-            ax.scatter(x[mask], y[mask], label=group)
-        ax.legend()
-
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
-    fig.savefig(savepath)
-
-
 ### Helpers:
 
 def parse_stat(name,value):
@@ -452,7 +413,6 @@ def parse_stat(name,value):
         return f'{name}: {value:.3f}'
     return f'{name}: {value}' # probably a string
 
-
 def plot_stats(fig, stats, x_align=0.69, font_dict=dict()):
     """
     Print stats onto the image
@@ -464,7 +424,6 @@ def plot_stats(fig, stats, x_align=0.69, font_dict=dict()):
 
     fig.text(x_align, 0.98, stat_str,
              verticalalignment='top', wrap=True, fontdict=font_dict)
-
 
 def make_fig_ax(aspect='equal', aspect_ratio=0.6):
     """
@@ -483,7 +442,6 @@ def make_fig_ax(aspect='equal', aspect_ratio=0.6):
 
     return fig, ax
 
-
 def make_axis_same(ax, max1, min1):
     # fix up dem axis
     if max1 - min1 > 5:
@@ -494,7 +452,6 @@ def make_axis_same(ax, max1, min1):
     ax.set_xticks(ticks)
     ax.set_yticks(ticks)
 
-
 def nice_mean(ls):
     """
     Returns NaN for empty list
@@ -502,7 +459,6 @@ def nice_mean(ls):
     if len(ls) > 0:
         return np.mean(ls)
     return np.nan
-
 
 def nice_std(ls):
     """ Explicity returns `None` for empty list, without raising a warning. """

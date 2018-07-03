@@ -39,14 +39,12 @@ def ipynb_maker(plot_func):
         else:
             raise Exception('you must have an "outdir" or "savepath" argument to use ipynb_maker')
 
-
-
         readme = textwrap.dedent(f"""\
             This notebook was automatically generated from your MAST-ML run so you can recreate the
             plots. Some things are a bit different from the usual way of creating plots - we are
             using the [object oriented
             interface](https://matplotlib.org/tutorials/introductory/lifecycle.html) instead of
-            pyplot to create the `fig` and `ax` instances. 
+            pyplot to create the `fig` and `ax` instances.
         """)
 
         # get source of the top of plot_helper.py
@@ -111,5 +109,3 @@ def ipynb_maker(plot_func):
 
         return plot_func(*args, **kwargs)
     return wrapper
-
-

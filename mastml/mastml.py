@@ -8,7 +8,6 @@ import os
 import shutil
 import logging
 import warnings
-
 from collections import OrderedDict
 from os.path import join # We use join tons
 
@@ -23,20 +22,15 @@ from .legos import data_splitters, feature_generators, clustering, feature_norma
 log = logging.getLogger('mastml')
 
 def main(conf_path, data_path, outdir, verbosity=0):
+    " Sets up logger and error catching, then starts the run "
     check_paths(conf_path, data_path, outdir)
 
     utils.activate_logging(outdir, (conf_path, data_path, outdir), verbosity=verbosity)
-    #log.debug(verbosity)
-    #log.info(verbosity)
-    #log.warning(verbosity)
-    #log.error(verbosity)
-    #log.critical(verbosity)
 
     if verbosity >= 1:
         warnings.simplefilter('error') # turn warnings into errors
     elif verbosity <= -1:
         warnings.simplefilter('ignore') # ignore warnings
-
 
     try:
         mastml_run(conf_path, data_path, outdir)
@@ -332,10 +326,35 @@ def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classifica
 
     return split_results
 
+def _instantiate(kwargs_dict, name_to_constructor, category):
+    """
+    Uses name_to_constructor to instantiate every item in kwargs_dict and return
+    the list of instantiations
+    """
+
+    instantiations = []
+    for long_name, (name, kwargs) in kwargs_dict.items():
+        log.debug(f'instantiation: {long_name}, {name}({kwargs})')
+        try:
+            instantiations.append((long_name, name_to_constructor[name](**kwargs)))
+        except TypeError:
+            log.info(f"ARGUMENTS FOR '{name}': {inspect.signature(name_to_constructor[name])}")
+            raise utils.InvalidConfParameters(
+                f"The {category} '{name}' has invalid parameters: {kwargs}\n"
+                f"Signature for '{name}': {inspect.signature(name_to_constructor[name])}")
+        except KeyError:
+            raise utils.InvalidConfSubSection(
+                f"There is no {category} called '{name}'."
+                f"All valid {category}: {list(name_to_constructor.keys())}")
+    return instantiations
+
 def _snatch_models(models, conf_feature_selection):
     for _, args_dict in conf_feature_selection.values():
         if 'estimator' in args_dict:
             model_name = args_dict['estimator']
+            if model_name not in feature_selectors.good_models:
+                raise utils.MastError(f"Model '{model_name}' will not work for feature selection. "
+                                      f"Good models for feature selection: {feature_selectors.good_models}")
             for i, (name, instance) in enumerate(models):
                 if name == model_name:
                     log.info(f"I AM SNATCHING {instance}. BE WARNED.")
@@ -382,28 +401,6 @@ def _save_all_runs(runs, outdir):
         table.append(od)
     pd.DataFrame(table).to_html(join(outdir, 'all_runs_table.html'))
 
-def _instantiate(kwargs_dict, name_to_constructor, category):
-    """
-    Uses name_to_constructor to instantiate every item in kwargs_dict and return
-    the list of instantiations
-    """
-
-    instantiations = []
-    for long_name, (name, kwargs) in kwargs_dict.items():
-        log.debug(f'instantiation: {long_name}, {name}({kwargs})')
-        try:
-            instantiations.append((long_name, name_to_constructor[name](**kwargs)))
-        except TypeError:
-            log.info(f"ARGUMENTS FOR '{name}': {inspect.signature(name_to_constructor[name])}")
-            raise utils.InvalidConfParameters(
-                f"The {category} '{name}' has invalid parameters: {kwargs}\n"
-                f"Signature for '{name}': {inspect.signature(name_to_constructor[name])}")
-        except KeyError:
-            raise utils.InvalidConfSubSection(
-                f"There is no {category} called '{name}'."
-                f"All valid {category}: {list(name_to_constructor.keys())}")
-    return instantiations
-
 def _write_stats(train_metrics, test_metrics, outdir):
     with open(join(outdir, 'stats.txt'), 'w') as f:
         f.write("TRAIN:\n")
@@ -412,7 +409,6 @@ def _write_stats(train_metrics, test_metrics, outdir):
         f.write("TEST:\n")
         for name,score in test_metrics.items():
                 f.write(f"{name}: {score}\n")
-
 
 def check_paths(conf_path, data_path, outdir):
 
@@ -435,7 +431,7 @@ def check_paths(conf_path, data_path, outdir):
     os.makedirs(outdir)
     log.info(f"Saving to directory 'outdir'")
 
-def get_paths():
+def get_commandline_args():
     parser = argparse.ArgumentParser(description='MAterials Science Toolkit - Machine Learning')
     parser.add_argument('conf_path', type=str, help='path to mastml .conf file')
     parser.add_argument('data_path', type=str, help='path to csv or xlsx file')
@@ -458,5 +454,5 @@ def get_paths():
             verbosity)
 
 if __name__ == '__main__':
-    conf_path, data_path, outdir, verbosity = get_paths()
-    main(conf_path, data_path, outdir, verbosity=0)
+    conf_path, data_path, outdir, verbosity = get_commandline_args()
+    main(conf_path, data_path, outdir, verbosity)

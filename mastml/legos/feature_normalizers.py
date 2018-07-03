@@ -4,14 +4,27 @@ All classes here assume dataframe input and guarantee dataframe output.
 (So no numpy arrays.)
 """
 
+from functools import wraps
+
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import MinMaxScaler, Binarizer
 
-from . import util_legos, lego_utils
+from . import util_legos
 
 # TODO: add all sklearn preprocessors
 # http://scikit-learn.org/stable/modules/classes.html#module-sklearn.preprocessing
+
+def dataframify(transform):
+    """
+    Decorator to make a transformer's transform method work on dataframes
+    Assumes columns will be preserved
+    """
+    @wraps(transform)
+    def new_transform(self, df):
+        arr = transform(self, df.values)
+        return pd.DataFrame(arr, columns=df.columns, index=df.index)
+    return new_transform
 
 class MeanStdevScaler(BaseEstimator, TransformerMixin):
     " Scales the mean and standard deviation of specified features to specified values "
@@ -42,8 +55,8 @@ class MeanStdevScaler(BaseEstimator, TransformerMixin):
         changed = pd.DataFrame(array, columns=self.features, index=df.index)
         return pd.concat([same, changed], axis=1)
 
-MinMaxScaler.transform = lego_utils.dataframify(MinMaxScaler.transform)
-Binarizer.transform = lego_utils.dataframify(Binarizer.transform)
+MinMaxScaler.transform = dataframify(MinMaxScaler.transform)
+Binarizer.transform = dataframify(Binarizer.transform)
 
 name_to_constructor = {
     'Binarizer': Binarizer,

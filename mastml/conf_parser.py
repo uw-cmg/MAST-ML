@@ -4,7 +4,6 @@ Module for handling, parsing, and checking configuration files
 
 from distutils.util import strtobool
 
-
 from configobj import ConfigObj
 import logging
 
@@ -106,28 +105,7 @@ def parse_conf_file(filepath):
         for name, settings in dictionary.items():
             dictionary[name] = (name.split('_')[0], settings)
 
-
-    plot_settings = ['basic_plots', 'target_histogram',
-                     'TODOFIGURETHISOUTONOUT', 'predicted_vs_true',
-                     'predicted_vs_true_bars', 'best_worst_per_point',
-                     'feature_vs_target']
-    if 'PlotSettings' not in conf:
-        conf['PlotSettings'] = dict()
-        for name in plot_settings:
-            conf[name] = True
-    else:
-        for name, value in conf['PlotSettings'].items():
-            if name not in plot_settings:
-                raise utils.InvalidConfParameters(
-                        f"[PlotSettings] parameter '{name}' is invalid")
-            try:
-                conf['PlotSettings'][name] = strtobool(value)
-            except ValueError:
-                raise utils.InvalidConfParameters(
-                    f"[PlotSettings] parameter '{name}' must be a boolean")
-        for name in plot_settings:
-            if name not in conf['PlotSettings']:
-                conf[name] = True
+    _handle_plot_settings(conf)
 
     return conf
 
@@ -148,20 +126,50 @@ def fix_types(maybe_list):
 
     return str(maybe_list)
 
+def _handle_plot_settings(conf):
+    plot_settings = ['basic_plots', 'target_histogram',
+                     'TODOFIGURETHISOUTONOUT', 'predicted_vs_true',
+                     'predicted_vs_true_bars', 'best_worst_per_point',
+                     'feature_vs_target']
+    if 'PlotSettings' not in conf:
+        conf['PlotSettings'] = dict()
+        for name in plot_settings:
+            conf['PlotSettings'][name] = True
+    else:
+        for name, value in conf['PlotSettings'].items():
+            if name not in plot_settings:
+                raise utils.InvalidConfParameters(
+                        f"[PlotSettings] parameter '{name}' is invalid")
+            try:
+                conf['PlotSettings'][name] = strtobool(value)
+            except ValueError:
+                raise utils.InvalidConfParameters(
+                    f"[PlotSettings] parameter '{name}' must be a boolean")
+        for name in plot_settings:
+            if name not in conf['PlotSettings']:
+                conf['PlotSettings'][name] = True
+
 def _handle_selectors_references(selectors, is_classification):
     """
-    Modifies each selector in `selectors` in place, turning strings referencing
-    score_funcs and models into actual score_funcs and models
+    Modifies each selector in `selectors` in place,
+    turning strings referencing score_funcs into actual score_funcs
     """
     task = 'classification' if is_classification else 'regression'
     for selector_name, args_dict in selectors.items():
         selector_name = selector_name.split('_')[0]
-        if selector_name in feature_selectors.score_func_selectors: # This selector requires a score func
-            name_to_func = metrics.classification_score_funcs if is_classification else metrics.regression_score_funcs
-            if 'score_func' in args_dict:
-                try:
-                    args_dict['score_func'] = name_to_func[args_dict['score_func']]
-                except KeyError:
-                    raise utils.InvalidValue(f"Score function '{args_dict['score_func']}' not valid for {task} tasks (inside feature selector {selector_name}). Valid score functions: name_to_func.keys()")
-            else:
-                args_dict['score_func'] = name_to_func['f_classif' if is_classification else 'f_regression']
+        if selector_name not in feature_selectors.score_func_selectors: continue
+        name_to_func = metrics.classification_score_funcs if is_classification\
+                       else metrics.regression_score_funcs
+        if 'score_func' in args_dict:
+            try:
+                args_dict['score_func'] = name_to_func[args_dict['score_func']]
+            except KeyError:
+                raise utils.InvalidValue(
+                        f"Score function '{args_dict['score_func']}' not valid"
+                        f"for {task} tasks (inside feature selector"
+                        f"{selector_name}). Valid score functions:"
+                        f"name_to_func.keys()")
+        else:
+            args_dict['score_func'] =\
+                    name_to_func['f_classif' if is_classification
+                                 else 'f_regression']
