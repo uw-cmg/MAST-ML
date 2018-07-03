@@ -61,23 +61,33 @@ nice_names = {
 
 
 def make_main_plots(run, path, is_classification):
-    y_train_true, y_train_pred, y_test_true,  y_test_pred, train_metrics, test_metrics = \
-        run['y_train_true'], run['y_train_pred'], run['y_test_true'],  run['y_test_pred'], run['train_metrics'], run['test_metrics']
+    y_train_true, y_train_pred, y_test_true = \
+        run['y_train_true'], run['y_train_pred'], run['y_test_true']
+    y_test_pred, train_metrics, test_metrics) = \
+        run['y_test_pred'], run['train_metrics'], run['test_metrics']
 
     if is_classification:
         title = 'train_confusion_matrix'
-        plot_confusion_matrix(y_train_true, y_train_pred, join(path, title+'.png'), train_metrics, title=title)
+        plot_confusion_matrix(y_train_true, y_train_pred,
+                              join(path, title+'.png'), train_metrics,
+                              title=title)
         title = 'test_confusion_matrix'
-        plot_confusion_matrix(y_test_true,  y_test_pred, join(path, title+'.png'), test_metrics, title=title)
+        plot_confusion_matrix(y_test_true, y_test_pred,
+                              join(path, title+'.png'), test_metrics,
+                              title=title)
 
     else: # is_regression
         plot_predicted_vs_true((y_train_true, y_train_pred, train_metrics),
                           (y_test_true,  y_test_pred,  test_metrics), path)
 
         title = 'train_residuals_histogram'
-        plot_residuals_histogram(y_train_true, y_train_pred, join(path, title+'.png'), train_metrics, title=title)
+        plot_residuals_histogram(y_train_true, y_train_pred,
+                                 join(path, title+'.png'), train_metrics,
+                                 title=title)
         title = 'test_residuals_histogram'
-        plot_residuals_histogram(y_test_true,  y_test_pred, join(path, title+'.png'), test_metrics, title=title)
+        plot_residuals_histogram(y_test_true,  y_test_pred,
+                                 join(path, title+'.png'), test_metrics,
+                                 title=title)
 
     with open(join(path, 'stats.txt'), 'w') as f:
         f.write("TRAIN:\n")
@@ -141,10 +151,13 @@ def plot_predicted_vs_true(train_triple, test_triple, outdir):
     y_test_true, y_test_pred, test_metrics = test_triple
 
     # make diagonal line from absolute min to absolute max of any data point
-    max1 = max(y_train_true.max(), y_train_pred.max(), y_test_true.max(), y_test_pred.max())
-    min1 = min(y_train_true.min(), y_train_pred.min(), y_test_true.min(), y_test_pred.min())
+    max1 = max(y_train_true.max(), y_train_pred.max(),
+               y_test_true.max(), y_test_pred.max())
+    min1 = min(y_train_true.min(), y_train_pred.min(),
+               y_test_true.min(), y_test_pred.min())
 
-    for y_true, y_pred, stats, title_addon in (train_triple+('train',), test_triple+('test',)):
+    for y_true, y_pred, stats, title_addon in \
+            (train_triple+('train',), test_triple+('test',)):
         fig, ax = make_fig_ax()
 
         ax.set_title('Predicted vs. True ' + title_addon)
@@ -172,35 +185,37 @@ def plot_predicted_vs_true(train_triple, test_triple, outdir):
 def plot_best_worst(best_run, worst_run, savepath,
                     stats, title='Best Worst Overlay'):
     #fig, ax = make_fig_ax(aspect_ratio=0.3333333333333333333333333333333)
-    # set image aspect ratio. Needs to be wide enough or plot will shrink really skinny
+    # Set image aspect ratio:
     w, h = figaspect(0.33333333)
     fig = Figure(figsize=(w,h))
     FigureCanvas(fig)
-    # these two lines are where the magic happens, trapping the figure on the left side
-    # so we can make print text beside it
+    # Trap figure on left side:
     gs = plt.GridSpec(1, 3)
     ax = fig.add_subplot(gs[0, 0:1], aspect='equal')
 
     # make diagonal line from absolute min to absolute max of any data point
-    all_y = [best_run['y_test_true'], best_run['y_test_pred'], worst_run['y_test_true'], worst_run['y_test_pred']]
+    all_y = [best_run['y_test_true'], best_run['y_test_pred'],
+             worst_run['y_test_true'], worst_run['y_test_pred']]
     maxx = max(y.max() for y in all_y)
     minn = min(y.min() for y in all_y)
     ax.plot([minn, maxx], [minn, maxx], 'k--', lw=4, zorder=1)
 
     # do the actual plotting
-    ax.scatter(best_run['y_test_true'],  best_run['y_test_pred'],  c='red',  alpha=0.7, label='best',  edgecolor='darkred',  zorder=2, s=80)
-    ax.scatter(worst_run['y_test_true'], worst_run['y_test_pred'], c='blue', alpha=0.7, label='worst', edgecolor='darkblue', zorder=3)
+    ax.scatter(best_run['y_test_true'],  best_run['y_test_pred'],  c='red',
+               alpha=0.7, label='best',  edgecolor='darkred',  zorder=2, s=80)
+    ax.scatter(worst_run['y_test_true'], worst_run['y_test_pred'], c='blue',
+               alpha=0.7, label='worst', edgecolor='darkblue', zorder=3)
     ax.legend()
 
     # set axis labels
     ax.set_xlabel('Measured')
     ax.set_ylabel('Predicted')
 
-    font_dict = {'size'   : 10, 'family' : 'sans-serif'}
+    #font_dict = {'size'   : 10, 'family' : 'sans-serif'}
 
     s = 3/9
     d = 2/9
-    plot_stats(fig, stats, x_align=s, font_dict=font_dict)
+    plot_stats(fig, stats, x_align=s)#, font_dict=font_dict)
     plot_stats(fig, best_run['test_metrics'], x_align=s+d)
     plot_stats(fig, worst_run['test_metrics'], x_align=s+d+d)
 
@@ -319,8 +334,10 @@ def plot_violin(y_true, y_pred_list, savepath, title='best worst with bars'):
 @ipynb_maker
 def plot_best_worst_per_point(y_true, y_pred_list,
                               savepath, title='best worst per point'):
-    worsts = [max(ypl, key=lambda y: abs(yt-y)) if len(ypl)>0 else None for yt, ypl in zip(y_true,y_pred_list)]
-    bests  = [min(ypl, key=lambda y: abs(yt-y)) if len(ypl)>0 else None for yt, ypl in zip(y_true,y_pred_list)]
+    worsts = [max(ypl, key=lambda y: abs(yt-y)) if len(ypl)>0 else None
+              for yt, ypl in zip(y_true,y_pred_list)]
+    bests  = [min(ypl, key=lambda y: abs(yt-y)) if len(ypl)>0 else None
+              for yt, ypl in zip(y_true,y_pred_list)]
 
     fig, ax = make_fig_ax(aspect='auto')
 
@@ -338,8 +355,10 @@ def plot_best_worst_per_point(y_true, y_pred_list,
     ax.set_xlabel('Measured')
     ax.set_ylabel('Predicted')
 
-    ax.scatter(y_true, bests,  c='red',  alpha=0.7, label='best',  edgecolor='darkred',  zorder=2, s=80)
-    ax.scatter(y_true, worsts, c='blue', alpha=0.7, label='worst', edgecolor='darkblue', zorder=3)
+    ax.scatter(y_true, bests,  c='red',  alpha=0.7, label='best',
+               edgecolor='darkred',  zorder=2, s=80)
+    ax.scatter(y_true, worsts, c='blue', alpha=0.7, label='worst',
+               edgecolor='darkblue', zorder=3)
     ax.legend()
 
 
@@ -368,13 +387,16 @@ def plot_2d_heatmap(xs, ys, heats, savepath,
 
 def plot_3d_heatmap(xs, ys, zs, heats, savepath,
                     xlabel='x', ylabel='y', zlabel='z', heatlabel='heat'):
-    from mpl_toolkits.mplot3d import Axes3D # this import has side effects, needed for 3d plots
-    w, h = figaspect(0.6) # set image aspect ratio. Needs to be wide enough or plot will shrink really skinny
+    # this import has side effects, needed for 3d plots:
+    from mpl_toolkits.mplot3d import Axes3D
+    # Set image aspect ratio:
+    # (eeds to be wide enough or plot will shrink really skinny)
+    w, h = figaspect(0.6)
     fig = Figure(figsize=(w,h))
     FigureCanvas(fig) # modifies fig in place
     ax = fig.add_subplot(111, projection='3d')
 
-    scat = ax.scatter(xs, ys, zs, c=heats) # marker='o', lw=0, s=20, cmap=cm.plasma
+    scat = ax.scatter(xs, ys, zs, c=heats)
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.set_zlabel(zlabel)
@@ -432,23 +454,30 @@ def parse_stat(name,value):
 
 
 def plot_stats(fig, stats, x_align=0.69, font_dict=dict()):
-    """ print stats onto the image. Goes off screen if they are too long or too many in number """
+    """
+    Print stats onto the image
+    Goes off screen if they are too long or too many in number
+    """
 
-    stat_str = '\n\n'.join(parse_stat(name, value) for name,value in stats.items())
+    stat_str = '\n\n'.join(parse_stat(name, value)
+                           for name,value in stats.items())
 
     fig.text(x_align, 0.98, stat_str,
              verticalalignment='top', wrap=True, fontdict=font_dict)
 
 
 def make_fig_ax(aspect='equal', aspect_ratio=0.6):
-    """ using OO interface from https://matplotlib.org/gallery/api/agg_oo_sgskip.html"""
-    # set image aspect ratio. Needs to be wide enough or plot will shrink really skinny
+    """
+    Using Object Oriented interface from
+    https://matplotlib.org/gallery/api/agg_oo_sgskip.html
+    """
+    # Set image aspect ratio:
     w, h = figaspect(aspect_ratio)
     fig = Figure(figsize=(w,h))
     FigureCanvas(fig)
 
-    # these two lines are where the magic happens, trapping the figure on the left side
-    # so we can make print text beside it
+    # these two lines are where the magic happens, trapping the figure on the
+    # left side so we can make print text beside it
     gs = plt.GridSpec(1, 5)
     ax = fig.add_subplot(gs[0, 0:3], aspect=aspect)
 
