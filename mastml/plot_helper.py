@@ -116,19 +116,19 @@ def parse_stat(name,value):
     return f'{name}: {value}' # probably a string
 
 
-def plot_stats(fig, stats):
+def plot_stats(fig, stats, x_align=0.69, font_dict=dict()):
     """ print stats onto the image. Goes off screen if they are too long or too many in number """
 
     stat_str = '\n\n'.join(parse_stat(name, value) for name,value in stats.items())
 
-    fig.text(0.69, 0.98, stat_str,
-             verticalalignment='top', wrap=True)
+    fig.text(x_align, 0.98, stat_str,
+             verticalalignment='top', wrap=True, fontdict=font_dict)
 
 
 def make_fig_ax(aspect='equal'):
     """ using OO interface from https://matplotlib.org/gallery/api/agg_oo_sgskip.html"""
     # set image aspect ratio. Needs to be wide enough or plot will shrink really skinny
-    w, h = figaspect(0.6)
+    w, h = figaspect(aspect_ratio)
     fig = Figure(figsize=(w,h))
     FigureCanvas(fig)
 
@@ -233,8 +233,19 @@ def make_axis_same(ax, max1, min1):
 
 @ipynb_maker
 def plot_best_worst(best_run, worst_run, savepath, stats, title='Best Worst Overlay'):
-    fig, ax = make_fig_ax()
-    #ax.set_title(title)
+    #fig, ax = make_fig_ax(aspect_ratio=0.3333333333333333333333333333333)
+
+
+
+    # set image aspect ratio. Needs to be wide enough or plot will shrink really skinny
+    w, h = figaspect(0.33333333)
+    fig = Figure(figsize=(w,h))
+    FigureCanvas(fig)
+    # these two lines are where the magic happens, trapping the figure on the left side
+    # so we can make print text beside it
+    gs = plt.GridSpec(1, 3)
+    ax = fig.add_subplot(gs[0, 0:1], aspect='equal')
+
     # make diagonal line from absolute min to absolute max of any data point
     all_y = [best_run['y_test_true'], best_run['y_test_pred'], worst_run['y_test_true'], worst_run['y_test_pred']]
     maxx = max(y.max() for y in all_y)
@@ -250,7 +261,13 @@ def plot_best_worst(best_run, worst_run, savepath, stats, title='Best Worst Over
     ax.set_xlabel('Measured')
     ax.set_ylabel('Predicted')
 
-    plot_stats(fig, stats)
+    font_dict = {'size'   : 10, 'family' : 'sans-serif'}
+
+    s = 3/9
+    d = 2/9
+    plot_stats(fig, stats, x_align=s, font_dict=font_dict)
+    plot_stats(fig, best_run['test_metrics'], x_align=s+d)
+    plot_stats(fig, worst_run['test_metrics'], x_align=s+d+d)
 
     fig.savefig(savepath)
 

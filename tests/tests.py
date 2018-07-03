@@ -277,7 +277,9 @@ class TestPlots(unittest.TestCase):
         y_true = np.arange(90)
         y_pred = np.arange(90) + 9*sum(np.random.random_sample((90,)) for _ in range(10)) - 54
         y_pred_bad = 0.5*np.arange(90) + 20*sum(np.random.random_sample((90,)) for _ in range(10)) - 54
-        plot_helper.plot_best_worst(y_true, y_pred, y_true, y_pred_bad, 'best-worst.png', self.stats2)
+        best_run = dict(y_test_true=y_true, y_test_pred=y_pred, test_metrics=self.stats)
+        worst_run = dict(y_test_true=y_true, y_test_pred=y_pred_bad, test_metrics=self.stats2)
+        plot_helper.plot_best_worst(best_run, worst_run, 'best_worst.png', self.stats2, title='mest morst Overlay')
 
     def test_target_histogram(self):
         y_df = pd.Series(np.concatenate([np.random.normal(4, size=(100,)), 
