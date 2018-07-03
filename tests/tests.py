@@ -33,7 +33,7 @@ class TestLogging(unittest.TestCase):
     """ only run one at a time or you might get like double logging or something """
     def test_log_levels(self):
         mastml.utils.activate_logging()
-            
+
         warnings.warn('a warning messgage!')
 
         logging.debug("logging, A DEBUG message")
@@ -46,7 +46,7 @@ class TestLogging(unittest.TestCase):
 
     def test_try_catch_error_log(self):
         mastml.utils.activate_logging()
-            
+
         try:
             warnings.warn('a warning messgage!')
 
@@ -246,21 +246,6 @@ class TestPlots(unittest.TestCase):
             ('R-squared (no int)', 0.97)
         ])
 
-    def test_plot_predicted_vs_true(self):
-        y_pred_tall = 10 * (np.arange(90) + np.random.random_sample((90,)) * 10 - 3) + 0.5
-        y_pred_fat = 100 * (np.arange(90) + np.random.random_sample((90,)) * 10 - 3) + 0.5
-        y_true_tall = 100 * np.arange(90)
-        y_true_fat = 10*  np.arange(90)
-
-        plot_helper.predicted_vs_true((y_true_tall, y_pred_tall, self.stats2), 
-                                           (y_true_fat, y_pred_fat, self.stats2), './')
-                                           
-
-    def test_residuals_histogram(self):
-        y_pred = np.arange(30) + sum(np.random.random_sample((30,)) for _ in range(10)) - 3
-        y_true = np.arange(30)
-        plot_helper.plot_residuals_histogram(y_true, y_pred, 'residuals.png', self.stats)
-
     def test_confusion_matrix(self):
         y_true = np.random.randint(4, size=(50,))
         y_pred = y_true.copy()
@@ -273,6 +258,15 @@ class TestPlots(unittest.TestCase):
 
         plot_helper.plot_confusion_matrix(y_true, y_pred, 'confuse.png', self.stats)
 
+    def test_predicted_vs_true(self):
+        y_pred_tall = 10 * (np.arange(90) + np.random.random_sample((90,)) * 10 - 3) + 0.5
+        y_pred_fat = 100 * (np.arange(90) + np.random.random_sample((90,)) * 10 - 3) + 0.5
+        y_true_tall = 100 * np.arange(90)
+        y_true_fat = 10*  np.arange(90)
+
+        plot_helper.predicted_vs_true((y_true_tall, y_pred_tall, self.stats2),
+                                           (y_true_fat, y_pred_fat, self.stats2), './')
+
     def test_best_worst(self):
         y_true = np.arange(90)
         y_pred = np.arange(90) + 9*sum(np.random.random_sample((90,)) for _ in range(10)) - 54
@@ -281,11 +275,15 @@ class TestPlots(unittest.TestCase):
         worst_run = dict(y_test_true=y_true, y_test_pred=y_pred_bad, test_metrics=self.stats2)
         plot_helper.plot_best_worst(best_run, worst_run, 'best_worst.png', self.stats2, title='mest morst Overlay')
 
+    def test_residuals_histogram(self):
+        y_pred = np.arange(30) + sum(np.random.random_sample((30,)) for _ in range(10)) - 3
+        y_true = np.arange(30)
+        plot_helper.plot_residuals_histogram(y_true, y_pred, 'residuals.png', self.stats)
+
     def test_target_histogram(self):
-        y_df = pd.Series(np.concatenate([np.random.normal(4, size=(100,)), 
+        y_df = pd.Series(np.concatenate([np.random.normal(4, size=(100,)),
                                          np.random.normal(-20, 10, size=(100,))]))
         plot_helper.target_histogram(y_df, savepath = 'target_hist.png')
-
 
     def test_predicted_vs_true_bars(self):
         y_true = np.arange(90) + 9*sum(np.random.random_sample((90,)) for _ in range(10)) - 54
@@ -305,6 +303,15 @@ class TestPlots(unittest.TestCase):
         y_pred_list = [[x + np.random.normal(2, 1) for _ in "a"*20] for x in y_true]
         plot_helper.violin(y_true, y_pred_list, 'violin2.png', title='violin2.png')
 
+    def test_best_worst_per_point(self):
+        pass
+
+    def test_1d_heatmap(self):
+        pass
+
+    def test_2d_heatmap(self):
+        pass
+
     def test_3d_heatmap(self):
         xs = np.random.normal(4, 2, 100)
         ys = np.random.normal(7, 1, 100)
@@ -313,6 +320,8 @@ class TestPlots(unittest.TestCase):
 
         plot_helper.plot_3d_heatmap(xs, ys, zs, heats, '3d_heatmap.png', r'$\alpha$', r'$\beta$', r'$\gamma$', 'accuracy')
 
+    def test_scatter(self):
+        pass
 
 class TestHtml(unittest.TestCase):
 
