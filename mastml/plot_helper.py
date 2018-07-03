@@ -70,7 +70,7 @@ def make_main_plots(run, path, is_classification):
         plot_confusion_matrix(y_test_true,  y_test_pred, join(path, title+'.png'), test_metrics, title=title)
 
     else: # is_regression
-        predicted_vs_true((y_train_true, y_train_pred, train_metrics),
+        plot_predicted_vs_true((y_train_true, y_train_pred, train_metrics),
                           (y_test_true,  y_test_pred,  test_metrics), path)
 
         title = 'train_residuals_histogram'
@@ -134,7 +134,7 @@ def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False,
 
 
 @ipynb_maker
-def predicted_vs_true(train_triple, test_triple, outdir):
+def plot_predicted_vs_true(train_triple, test_triple, outdir):
     filenames = list()
     y_train_true, y_train_pred, train_metrics = train_triple
     y_test_true, y_test_pred, test_metrics = test_triple
@@ -231,7 +231,7 @@ def plot_residuals_histogram(y_true, y_pred, savepath, stats, title='residuals h
 
 
 @ipynb_maker
-def target_histogram(y_df, savepath, title='target histogram'):
+def plot_target_histogram(y_df, savepath, title='target histogram'):
 
     fig, ax = make_fig_ax(aspect='auto')
 
@@ -255,7 +255,7 @@ def target_histogram(y_df, savepath, title='target histogram'):
 
 
 @ipynb_maker
-def predicted_vs_true_bars(y_true, y_pred_list, savepath, title='best worst with bars'):
+def plot_predicted_vs_true_bars(y_true, y_pred_list, savepath, title='best worst with bars'):
     " EVERYTHING MUST BE ARRAYS DONT GIVE ME DEM DF "
     means = [nice_mean(y_pred) for y_pred in y_pred_list]
     standard_error_means = [nice_std(y_pred)/np.sqrt(len(y_pred)) for y_pred in y_pred_list]
@@ -281,7 +281,7 @@ def predicted_vs_true_bars(y_true, y_pred_list, savepath, title='best worst with
 
 
 @ipynb_maker
-def violin(y_true, y_pred_list, savepath, title='best worst with bars'):
+def plot_violin(y_true, y_pred_list, savepath, title='best worst with bars'):
     means = [nice_mean(y_pred) for y_pred in y_pred_list]
     standard_error_means = [np.std(y_pred)/np.sqrt(len(y_pred)) for y_pred in y_pred_list]
     fig, ax = make_fig_ax(aspect='auto')
@@ -306,7 +306,7 @@ def violin(y_true, y_pred_list, savepath, title='best worst with bars'):
 
 
 @ipynb_maker
-def best_worst_per_point(y_true, y_pred_list, savepath, title='best worst per point'):
+def plot_best_worst_per_point(y_true, y_pred_list, savepath, title='best worst per point'):
     worsts = [max(yp, key=lambda y: abs(yt-y)) if yp else None for yt, yp in zip(y_true,y_pred_list)]
     bests  = [min(yp, key=lambda y: abs(yt-y)) if yp else None for yt, yp in zip(y_true,y_pred_list)]
 
@@ -423,7 +423,6 @@ def plot_stats(fig, stats, x_align=0.69, font_dict=dict()):
 
     fig.text(x_align, 0.98, stat_str,
              verticalalignment='top', wrap=True, fontdict=font_dict)
-
 
 
 def make_fig_ax(aspect='equal', aspect_ratio=0.6):

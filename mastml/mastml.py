@@ -48,7 +48,7 @@ def mastml_run(conf_path, data_path, outdir):
     models      = _instantiate(conf['Models'],               model_finder.name_to_constructor,        'model')
     splitters   = _instantiate(conf['DataSplits'],           data_splitters.name_to_constructor,      'data split')
 
-    plot_helper.target_histogram(y, join(outdir, 'target_histogram.png'))
+    plot_helper.plot_target_histogram(y, join(outdir, 'target_histogram.png'))
 
     runs = _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models, splitters,
                       metrics_dict, outdir, conf['is_classification'], splitter_to_group_names)
@@ -281,7 +281,7 @@ def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classifica
     for split_num, (train_indices, test_indices) in enumerate(trains_tests):
         for i, pred in zip(test_indices, split_results[split_num]['y_test_pred']):
             predictions[i].append(pred)
-    plot_helper.predicted_vs_true_bars(y.values, predictions, join(main_path, 'bars.png'))
+    plot_helper.plot_predicted_vs_true_bars(y.values, predictions, join(main_path, 'bars.png'))
     plot_helper.best_worst_per_point(  y.values, predictions, join(main_path, 'best_worst_per_point.png'))
 
     return split_results

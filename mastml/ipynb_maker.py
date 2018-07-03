@@ -97,7 +97,7 @@ def ipynb_maker(plot_func):
                 import pandas as pd
                 from IPython.display import Image, display
 
-                plot_paths = predicted_vs_true(train_triple, test_triple, outdir)
+                plot_paths = plot_predicted_vs_true(train_triple, test_triple, outdir)
                 for plot_path in plot_paths:
                     display(Image(filename=plot_path))
             """)
