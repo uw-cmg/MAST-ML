@@ -285,7 +285,6 @@ def plot_best_worst_per_point(y_true, y_pred_list,
                edgecolor='darkblue', zorder=3)
     ax.legend()
 
-
     plot_stats(fig, dict())
     fig.savefig(savepath)
 

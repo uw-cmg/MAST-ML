@@ -19,7 +19,6 @@ from .. import plot_helper
 
 logger = logging.getLogger('mastml')
 
-
 class GridSearch:
     """Class to perform parameter optimization by grid search. Only up to 4 parameters may be optimized at a time.
 
@@ -127,7 +126,6 @@ class GridSearch:
         #        self.param_strings[param_num] = kwargs[argname]
 
         self.param_strings = param_strings # should be a list of strings in that crazy format
-
 
         # Sets later in code
         self.opt_dict=None
@@ -239,12 +237,6 @@ class GridSearch:
         with open(os.path.join(self.save_path,"README"), 'w') as rfile:
             rfile.writelines(self.readme_list)
 
-    ### noitceS tiF elgniS
-
-
-
-
-
     def run(self):
         self.set_up()
         self.evaluate_pop()
@@ -275,8 +267,6 @@ class GridSearch:
         logger.debug("opt param list: %s" % self.opt_param_list)
         logger.debug("nonopt param list: %s" % self.nonopt_param_list)
         return
-
-
 
     def evaluate_pop(self):
         """make model and new testing dataset for each pop member
@@ -369,7 +359,6 @@ class GridSearch:
             y_test_pred = indiv_model.predict(X_test)
             mycv_rmse = sklearn.metrics.mean_squared_error(y_test, y_test_pred)**0.5
             mycv_stats = dict()
-
 
         indiv_param_list = self.print_params(indiv_params)
         try:
@@ -467,7 +456,6 @@ class GridSearch:
             indiv_dh.input_features.append(afm) # MARK
         indiv_dh.set_up_data_from_features()
         return indiv_dh
-
 
     def get_split_name(self, combined_name):
         """ model.param or package.class.param to
@@ -603,7 +591,6 @@ class GridSearch:
         self.pop_size = pop_size
         return
 
-
     def plot(self):
         self.readme_list.append("----- Plotting -----\n")
         logger.debug(list)
@@ -715,7 +702,6 @@ class GridSearch:
         plot_helper.plot_1d_heatmap(xdata, self.flat_results['rmse'], savepath)
         self.readme_list.append("Plot %s.png created\n" % plotlabel)
         return
-
 
     def flatten_results(self):
         """Flatten results into a csv

@@ -182,7 +182,6 @@ def clean_dataframe(df):
         log.warning(f'Dropping {lost_count}/{before_count} generated columns due to missing values')
     return df
 
-
 class MagpieFeatureGeneration(object):
 
     def __init__(self, dataframe, composition_feature):
@@ -476,7 +475,6 @@ class CitrineFeatureGeneration(object):
     Class to generate new features using Citrine data and dataframe containing material compositions
     Datarame must have a column named "Material compositions".
 
-
     Args:
         configdict (dict) : MASTML configfile object as dict
         dataframe (pandas dataframe) : dataframe containing x and y data and feature names
@@ -538,7 +536,6 @@ class CitrineFeatureGeneration(object):
             # Merge magpie feature dataframe with originally supplied dataframe
             dataframe = DataframeUtilities().merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_citrine)
 
-
         return dataframe
 
     def _load_composition(self, composition):
@@ -547,7 +544,6 @@ class CitrineFeatureGeneration(object):
         #print("Citrine Feature Generation: ", composition, property_name_list, property_value_list)
         property_names_unique, parsed_property_min, parsed_property_max, parsed_property_avg = self._parse_pifquery_property_list(property_name_list=property_name_list, property_value_list=property_value_list)
         return parsed_property_min, parsed_property_max, parsed_property_avg
-
 
     def _get_pifquery(self, composition):
         # TODO: does this stop csv generation on first invalid composition?
@@ -582,8 +578,6 @@ class CitrineFeatureGeneration(object):
                         property_name_list.pop(-1)
                         continue
 
-
-
         #for result_number, results in enumerate(pifquery):
         #    property_value = results['system']['properties']
         #    for list_index, list_element in enumerate(property_value):
@@ -600,13 +594,7 @@ class CitrineFeatureGeneration(object):
         #                            property_name_list.pop(-1)
         #                            continue
 
-
-
-
-
-
         return property_name_list, property_value_list
-
 
     def _parse_pifquery_property_list(self, property_name_list, property_value_list):
         parsed_property_max = dict()

@@ -80,12 +80,10 @@ def ipynb_maker(plot_func):
                       '\n'.join(arg_assignments))
         arg_names = ', '.join(arg_names)
 
-
         if knows_savepath:
             main = textwrap.dedent(f"""\
                 import pandas as pd
                 from IPython.display import Image, display
-
 
                 {plot_func.__name__}({arg_names})
                 display(Image(filename='{basename}'))

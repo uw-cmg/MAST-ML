@@ -161,7 +161,6 @@ def _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models,
                             clustered_df[name],
                             xlabel=column, ylabel='target_feature')
 
-
     log.info("Saving clustered data to csv...")
     pd.concat([clustered_df, y], 1).to_csv(join(outdir, "clusters.csv"), index=False)
 
@@ -286,7 +285,6 @@ def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classifica
             test_metrics  = test_metrics
         )
 
-
         log.info("             Making plots...")
         if PlotSettings['TODOFIGURETHISOUTONOUT']:
             plot_helper.make_main_plots(split_result, path, is_classification)
@@ -312,7 +310,6 @@ def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classifica
 
     if not is_classification and PlotSettings['predicted_vs_true']:
         plot_helper.plot_best_worst(best, worst, os.path.join(main_path, 'best_worst_overlay.png'), test_stats)
-
 
     # collect all predictions in a combo for each point in the dataset
     predictions = [[] for _ in range(X.shape[0])]

@@ -136,7 +136,6 @@ class FileNotFoundError(MastError): # sorry for re-using builtin name
 class InvalidValue(MastError):
     pass
 
-
 ## Joke functions:
 
 ### String formatting funcs for inserting into log._log when in verbose mode

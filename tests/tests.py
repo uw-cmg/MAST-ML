@@ -356,7 +356,6 @@ class TestNormalization(unittest.TestCase):
         self.assertTrue(set(d1.columns) == set(d3.columns))
         self.assertTrue((abs(d3 - d1) < .001).all().all())
 
-
 def string_to_filename(st):
     f = NamedTemporaryFile(mode='w', delete=False)
     f.write(st)
