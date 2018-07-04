@@ -49,7 +49,6 @@ model_selectors = { # feature selectors which take a model instance as first par
     'RFE': fs.RFE, # Feature ranking with recursive feature elimination.
     'RFECV': fs.RFECV, # Feature ranking with recursive feature elimination and cross-validated selection of the best number of features.
     'SelectFromModel': fs.SelectFromModel, # Meta-transformer for selecting features based on importance weights.
-    'SequentialFeatureSelector': SequentialFeatureSelector,
 }
 
 other_selectors = {
@@ -58,11 +57,6 @@ other_selectors = {
 
 # Union together the above dicts for the primary export:
 name_to_constructor = dict(**score_func_selectors, **model_selectors, **other_selectors)
-
-# Models which work for feature selection:
-good_models = ['RidgeClassifier', 'LinearSVC', 'SGDClassifier', 'Perceptron',
-               'PassiveAggressiveClassifier', 'BernoulliNB', 'MultinomialNB',
-               'KNeighborsClassifier', 'NearestCentroid', 'RandomForestClassifier']
 
 # Modify all sklearn transform methods to return dataframes:
 for constructor in name_to_constructor.values():
@@ -88,6 +82,9 @@ PCA.transform = dataframify_new_column_names(PCA.transform, 'pca_')
 # Mess with SFS stuff:
 SequentialFeatureSelector.transform = dataframify_new_column_names(SequentialFeatureSelector.transform, 'sfs_')
 SequentialFeatureSelector.fit = fitify_just_use_values(SequentialFeatureSelector.fit)
+model_selectors['SequentialFeatureSelector'] = SequentialFeatureSelector
+name_to_constructor['SequentialFeatureSelector'] = SequentialFeatureSelector
+
 
 # Custom selectors don't need to be dataframified
 name_to_constructor.update({

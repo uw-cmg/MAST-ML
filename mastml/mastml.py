@@ -8,6 +8,7 @@ import os
 import shutil
 import logging
 import warnings
+from datetime import datetime
 from collections import OrderedDict
 from os.path import join # We use join tons
 
@@ -23,7 +24,7 @@ log = logging.getLogger('mastml')
 
 def main(conf_path, data_path, outdir, verbosity=0):
     " Sets up logger and error catching, then starts the run "
-    check_paths(conf_path, data_path, outdir)
+    conf_path, data_path, outdir = check_paths(conf_path, data_path, outdir)
 
     utils.activate_logging(outdir, (conf_path, data_path, outdir), verbosity=verbosity)
 
@@ -46,6 +47,11 @@ def main(conf_path, data_path, outdir, verbosity=0):
 
 def mastml_run(conf_path, data_path, outdir):
     " Runs operations specifed in conf_path on data_path and puts results in outdir "
+
+    # Copy the original input files to the output directory for easy reference
+    log.info("Copying input files to output directory...")
+    shutil.copy2(conf_path, outdir)
+    shutil.copy2(data_path, outdir)
 
     # Load in and parse the configuration and data files:
     conf = conf_parser.parse_conf_file(conf_path)
@@ -93,11 +99,6 @@ def mastml_run(conf_path, data_path, outdir):
 
     log.info("Making html file of all runs stats...")
     _save_all_runs(runs, outdir)
-
-    # Copy the original input files to the output directory for easy reference
-    log.info("Copying input files to output directory...")
-    shutil.copy2(conf_path, outdir)
-    shutil.copy2(data_path, outdir)
 
 def _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models, splitters,
                metrics_dict, outdir, is_classification, splitter_to_group_names, PlotSettings):
@@ -199,15 +200,15 @@ def _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models,
     for name, instance in splitters:
         if name in splitter_to_group_names:
             col = splitter_to_group_names[name]
-            log.debug(f"    Finding {col} for {split}...")
-            for df_ in [clustering_df, df]:
+            log.debug(f"    Finding {col} for {name}...")
+            for df_ in [clustered_df, df]:
                 if col in df_.columns:
                     group = df_[col].values
                     break # success!
             else: # if didn't succeed
                 raise util.MissingColumnError(f'Data Split {split} needs column {col} but we like dont have it')
 
-            group = _find_column_from_list(col, [clustering_df, X]).values
+            group = _find_column_from_list(col, [clustered_df, X]).values
         else:
             group = None
         splits.append((name, tuple(instance.split(X, y, group))))
@@ -346,18 +347,16 @@ def _instantiate(kwargs_dict, name_to_constructor, category):
     return instantiations
 
 def _snatch_models(models, conf_feature_selection):
-    for _, args_dict in conf_feature_selection.values():
+    for selector_name, (_, args_dict) in conf_feature_selection.items():
         if 'estimator' in args_dict:
             model_name = args_dict['estimator']
-            if model_name not in feature_selectors.good_models:
-                raise utils.MastError(f"Model '{model_name}' will not work for feature selection. "
-                                      f"Good models for feature selection: {feature_selectors.good_models}")
             for i, (name, instance) in enumerate(models):
                 if name == model_name:
-                    log.info(f"I AM SNATCHING {instance}. BE WARNED.")
                     args_dict['estimator'] = instance
                     del models[i]
                     break
+            else:
+                raise utils.MastError(f"The selector {selector_name} specified model {model_name}, which was not found in the [Models] section")
 
 def _extract_grouping_column_names(splitter_to_kwargs):
     splitter_to_group_names = dict()
@@ -423,10 +422,14 @@ def check_paths(conf_path, data_path, outdir):
 
     # Check output directory:
     if os.path.exists(outdir):
-        log.warning("Output dir already exists. Deleting...")
-        shutil.rmtree(outdir)
+        now = datetime.now()
+        outdir = f"{outdir}_{now.year}_{now.month:02d}_{now.day:02d}_{now.hour:02d}_{now.minute:02d}_{now.second:02d}"
+        log.warning(f"Outdir already exists. Renaming to {outdir}")
+        #shutil.rmtree(outdir)
     os.makedirs(outdir)
-    log.info(f"Saving to directory 'outdir'")
+    log.info(f"Saving to directory '{outdir}'")
+
+    return conf_path, data_path, outdir
 
 def get_commandline_args():
     parser = argparse.ArgumentParser(description='MAterials Science Toolkit - Machine Learning')
