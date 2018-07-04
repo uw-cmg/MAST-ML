@@ -201,17 +201,12 @@ def _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models,
         if name in splitter_to_group_names:
             col = splitter_to_group_names[name]
             log.debug(f"    Finding {col} for {name}...")
-            for df_ in [clustered_df, df]:
+            for df_ in [clustered_df, X, df]: # TODO: Are these the right objects to check?
                 if col in df_.columns:
-                    group = df_[col].values
-                    break # success!
-            else: # if didn't succeed
-                raise util.MissingColumnError(f'Data Split {split} needs column {col} but we like dont have it')
-
-            group = _find_column_from_list(col, [clustered_df, X]).values
-        else:
-            group = None
-        splits.append((name, tuple(instance.split(X, y, group))))
+                    splits.append((name, tuple(instance.split(X, y, df_[col].values))))
+                    break
+            else:
+                raise utils.MissingColumnError(f'DataSplit {name} needs column {col}, which was neither generated nor given by input')
 
     log.info("Fitting models to splits...")
     all_results = []
