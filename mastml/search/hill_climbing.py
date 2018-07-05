@@ -3,27 +3,30 @@ from copy import copy
 
 from sklearn.model_selection import train_test_split
 
-def climb_hill(model_constructor, X, y, param_dict, score_func):
-    best_score = -float('inf')
-    best_params = {key: random.choice(values) for key,values in param_dict.items()}
-    non_singleton_params = [param for param in param_dict if len(param_dict[param]) > 1]
-    X_train, X_test, y_train, y_test = train_test_split(X, y)
-    for step in range(100):
-        print(f"Step {step}/100")
-        if step % 10 == 0:
-            X_train, X_test, y_train, y_test = train_test_split(X, y)
-        # get random subset of parameters
-        params = copy(best_params)
-        subset = random_subset(non_singleton_params)
-        params.update((key, random.choice(param_dict[key])) for key in subset)
-        model = model_constructor(**params)
-        model.fit(X_train, y_train)
-        y_pred = model.predict(X_test)
-        score = score_func(y_test, y_pred)
-        if score > best_score:
-            best_score = score
-            best_params = params
-    return best_score, best_params
+def climb_hill(model_constructor, X, y, param_dict, score_func, num_steps=100, num_restarts=5):
+    pairs = []
+    for _ in range(num_restarts):
+        best_score = -float('inf')
+        best_params = {key: random.choice(values) for key,values in param_dict.items()}
+        non_singleton_params = [param for param in param_dict if len(param_dict[param]) > 1]
+        X_train, X_test, y_train, y_test = train_test_split(X, y)
+        for step in range(100):
+            print(f"Step {step}/100")
+            if step % 10 == 0:
+                X_train, X_test, y_train, y_test = train_test_split(X, y)
+            # get random subset of parameters
+            params = copy(best_params)
+            subset = random_subset(non_singleton_params)
+            params.update((key, random.choice(param_dict[key])) for key in subset)
+            model = model_constructor(**params)
+            model.fit(X_train, y_train)
+            y_pred = model.predict(X_test)
+            score = score_func(y_test, y_pred)
+            if score > best_score:
+                best_score = score
+                best_params = params
+        pairs.append(best_score, best_params)
+    return max(pairs, key=lambda pair: pair[0])
 
 def random_subset(list1):
     return random.sample(list1, random_power(len(list1)))
