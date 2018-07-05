@@ -70,10 +70,9 @@ def mastml_run(conf_path, data_path, outdir):
 
     # Instantiate models first so we can snatch them and pass them into feature selectors
     models      = _instantiate(conf['Models'],               model_finder.name_to_constructor,        'model')
-    from pprint import pformat as p # experiement
-    log.debug(f'models, pre-snatching: \n{p(models)}')
+    log.debug(f'models, pre-snatching: \n{models}')
     _snatch_models(models, conf['FeatureSelection'])
-    log.debug(f'models: \n{p(models)}')
+    log.debug(f'models: \n{models}')
 
     # Instantiate all the sections of the conf file:
     generators  = _instantiate(conf['FeatureGeneration'],    feature_generators.name_to_constructor,  'feature generator')
@@ -82,11 +81,11 @@ def mastml_run(conf_path, data_path, outdir):
     selectors   = _instantiate(conf['FeatureSelection'],     feature_selectors.name_to_constructor,   'feature selector')
     splitters   = _instantiate(conf['DataSplits'],           data_splitters.name_to_constructor,      'data split')
 
-    log.debug(f'generators: \n{p(generators)}')
-    log.debug(f'clusterers: \n{p(clusterers)}')
-    log.debug(f'normalizers: \n{p(normalizers)}')
-    log.debug(f'selectors: \n{p(selectors)}')
-    log.debug(f'splitters: \n{p(splitters)}')
+    log.debug(f'generators: \n{generators}')
+    log.debug(f'clusterers: \n{clusterers}')
+    log.debug(f'normalizers: \n{normalizers}')
+    log.debug(f'selectors: \n{selectors}')
+    log.debug(f'splitters: \n{splitters}')
 
     if conf['PlotSettings']['target_histogram']:
         plot_helper.plot_target_histogram(y, join(outdir, 'target_histogram.png'))
@@ -108,7 +107,7 @@ def _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models,
     """
 
     log.info(f"There are {len(normalizers)} feature normalizers, {len(selectors)} feature selectors,"
-          f" {len(models)} models, and {len(splitters)} splitters.")
+             f" {len(models)} models, and {len(splitters)} splitters.")
 
     ## FeatureGeneration (union)
     log.info("Doing feature generation...")
@@ -171,32 +170,7 @@ def _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models,
     pd.concat([clustered_df, y], 1).to_csv(join(outdir, "clusters.csv"), index=False)
 
     ## FeatureNormalization (cross-product)
-    post_selection = []
-    for normalizer_name, normalizer_instance in normalizers:
-
-        log.info(f"Running normalizer {normalizer_name} ...")
-        X_normalized = normalizer_instance.fit_transform(X, y)
-
-        log.info("Saving normalized data to csv...")
-        dirname = join(outdir, normalizer_name)
-        os.mkdir(dirname)
-        pd.concat([X_normalized, y], 1).to_csv(join(dirname, "normalized.csv"), index=False)
-
-        # FeatureSelection (cross-product)
-        log.info("Running selectors...")
-        for selector_name, selector_instance in selectors:
-
-            log.info(f"    Running selector {selector_name} ...")
-            # NOTE: Changed from fit_transform because PCA's fit_transform
-            #       doesn't call transform (does transformation itself).
-            X_selected = selector_instance.fit(X_normalized, y).transform(X_normalized)
-
-            log.info("    Saving selected features to csv...")
-            dirname = join(outdir, normalizer_name, selector_name)
-            os.mkdir(dirname)
-            pd.concat([X_selected, y], 1).to_csv(join(dirname, "selected.csv"), index=False)
-
-            post_selection.append((normalizer_name, selector_name, X_selected))
+    post_selection = normalize_and_select(normalizers, selectors, X, y, outdir)
 
     ## DataSplits (cross-product)
     ## Collect grouping columns, splitter_to_group_names is a dict of splitter name to grouping col
@@ -339,6 +313,35 @@ def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classifica
 
     return split_results
 
+def normalize_and_select(normalizers, selectors, X, y, outdir):
+    triples = []
+    for normalizer_name, normalizer_instance in normalizers:
+
+        log.info(f"Running normalizer {normalizer_name} ...")
+        X_normalized = normalizer_instance.fit_transform(X, y)
+
+        log.info("Saving normalized data to csv...")
+        dirname = join(outdir, normalizer_name)
+        os.mkdir(dirname)
+        pd.concat([X_normalized, y], 1).to_csv(join(dirname, "normalized.csv"), index=False)
+
+        # FeatureSelection (cross-product)
+        log.info("Running selectors...")
+        for selector_name, selector_instance in selectors:
+
+            log.info(f"    Running selector {selector_name} ...")
+            # NOTE: Changed from fit_transform because PCA's fit_transform
+            #       doesn't call transform (does transformation itself).
+            X_selected = selector_instance.fit(X_normalized, y).transform(X_normalized)
+
+            log.info("    Saving selected features to csv...")
+            dirname = join(outdir, normalizer_name, selector_name)
+            os.mkdir(dirname)
+            pd.concat([X_selected, y], 1).to_csv(join(dirname, "selected.csv"), index=False)
+
+            triples.append((normalizer_name, selector_name, X_selected))
+    return triples
+
 def _instantiate(kwargs_dict, name_to_constructor, category):
     """
     Uses name_to_constructor to instantiate every item in kwargs_dict and return
@@ -422,7 +425,6 @@ def _write_stats(train_metrics, test_metrics, outdir):
                 f.write(f"{name}: {score}\n")
 
 def check_paths(conf_path, data_path, outdir):
-
     # Check conf path:
     if os.path.splitext(conf_path)[1] != '.conf':
         raise utils.FiletypeError(f"Conf file does not end in .conf: '{conf_path}'")
