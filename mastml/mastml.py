@@ -207,6 +207,8 @@ def _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models,
                     break
             else:
                 raise utils.MissingColumnError(f'DataSplit {name} needs column {col}, which was neither generated nor given by input')
+        else:
+            splits.append((name, tuple(instance.split(X, y))))
 
     log.info("Fitting models to splits...")
     all_results = []
@@ -304,18 +306,18 @@ def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classifica
     split_results.sort(key=lambda run: list(run['test_metrics'].items())[0][1]) # sort splits by the test score of first metric
     worst, median, best = split_results[0], split_results[len(split_results)//2], split_results[-1]
 
-    if not is_classification and PlotSettings['predicted_vs_true']:
-        plot_helper.plot_best_worst(best, worst, os.path.join(main_path, 'best_worst_overlay.png'), test_stats)
-
     # collect all predictions in a combo for each point in the dataset
-    predictions = [[] for _ in range(X.shape[0])]
-    for split_num, (train_indices, test_indices) in enumerate(trains_tests):
-        for i, pred in zip(test_indices, split_results[split_num]['y_test_pred']):
-            predictions[i].append(pred)
-    if PlotSettings['predicted_vs_true_bars']:
-        plot_helper.plot_predicted_vs_true_bars(y.values, predictions, join(main_path, 'bars.png'))
-    if PlotSettings['best_worst_per_point']:
-        plot_helper.plot_best_worst_per_point( y.values, predictions, join(main_path, 'best_worst_per_point.png'))
+    if not is_classification:
+        if PlotSettings['predicted_vs_true']:
+            plot_helper.plot_best_worst(best, worst, os.path.join(main_path, 'best_worst_overlay.png'), test_stats)
+        predictions = [[] for _ in range(X.shape[0])]
+        for split_num, (train_indices, test_indices) in enumerate(trains_tests):
+            for i, pred in zip(test_indices, split_results[split_num]['y_test_pred']):
+                predictions[i].append(pred)
+        if PlotSettings['predicted_vs_true_bars']:
+            plot_helper.plot_predicted_vs_true_bars(y.values, predictions, join(main_path, 'bars.png'))
+        if PlotSettings['best_worst_per_point']:
+            plot_helper.plot_best_worst_per_point( y.values, predictions, join(main_path, 'best_worst_per_point.png'))
 
     return split_results
 
