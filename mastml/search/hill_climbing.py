@@ -68,4 +68,4 @@ def test():
     y_pred = knc.predict(X_test)
     print("FINAL SCORE: ", accuracy_score(y_test, y_pred))
 
-test()
+#test()

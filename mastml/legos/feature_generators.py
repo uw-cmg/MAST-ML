@@ -1,10 +1,8 @@
 """
-A collection of classes for generating extra features.
-All classes here assume dataframe input and guarantee dataframe output.
-(So no numpy arrays.)
+A collection of classes for generating extra features
+All classes here assume dataframe input and guarantee dataframe output
+(So no numpy arrays)
 """
-
-# TODO: implement API feature generation!!
 
 import multiprocessing
 import os
@@ -22,15 +20,12 @@ from pymatgen.ext.matproj import MPRester
 from citrination_client import CitrinationClient, PifQuery, SystemQuery, ChemicalFieldQuery, ChemicalFilter
 # trouble? try: `pip install citrination_client=="2.1.0"`
 
-import mastml
-
-log = logging.getLogger('mastml')
-
 # locate path to directory containing AtomicNumber.table, AtomicRadii.table AtomicVolume.table, etc
-# needs to do it the hard way becuase python -m sets cwd to wherever python is ran from.
+# (needs to do it the hard way becuase python -m sets cwd to wherever python is ran from)
+import mastml
+log = logging.getLogger('mastml')
 print('mastml dir: ', mastml.__path__)
 MAGPIE_DATA_PATH = os.path.join(mastml.__path__[0], '../magpie/')
-
 
 class PolynomialFeatures(BaseEstimator, TransformerMixin):
     def __init__(self, features=None, degree=2, interaction_only=False, include_bias=True):
@@ -77,10 +72,8 @@ class ContainsElement():
         count = comp[self.element]
         return int(count != 0)
 
-
-
-
 class Magpie(BaseEstimator, TransformerMixin):
+    " Wraps MagpieFeatureGeneration "
     def __init__(self, composition_feature):
         self.composition_feature = composition_feature
 
@@ -99,8 +92,8 @@ class Magpie(BaseEstimator, TransformerMixin):
         assert self.composition_feature not in df.columns
         return df
 
-
 class MaterialsProject(BaseEstimator, TransformerMixin):
+    " Wraps MaterialsProjectFeatureGeneration "
     def __init__(self, composition_feature, api_key):
         self.composition_feature = composition_feature
         self.api_key = api_key
@@ -121,6 +114,7 @@ class MaterialsProject(BaseEstimator, TransformerMixin):
         return df
 
 class Citrine(BaseEstimator, TransformerMixin):
+    " Wraps CitrineFeatureGeneration "
     def __init__(self, composition_feature, api_key):
         self.composition_feature = composition_feature
         self.api_key = api_key
@@ -169,19 +163,6 @@ name_to_constructor = {
     'ContainsElement': ContainsElement,
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 def clean_dataframe(df):
     """ Delete missing values or non-numerics """
     df = df.apply(pd.to_numeric, errors='coerce') # convert non-number to NaN
@@ -201,8 +182,7 @@ def clean_dataframe(df):
         log.warning(f'Dropping {lost_count}/{before_count} generated columns due to missing values')
     return df
 
-
-class MagpieFeatureGeneration(object): #TODO update docs once tests are passing
+class MagpieFeatureGeneration(object):
 
     def __init__(self, dataframe, composition_feature):
         self.dataframe = dataframe
@@ -384,7 +364,6 @@ class MagpieFeatureGeneration(object): #TODO update docs once tests are passing
 
         return element_list, atoms_per_formula_unit
 
-
 class MaterialsProjectFeatureGeneration(object):
     """
     Class to generate new features using Materials Project data and dataframe containing material compositions
@@ -491,12 +470,10 @@ class MaterialsProjectFeatureGeneration(object):
             log.info(f'MAterials Project Feature Generation {composition} {structure_data_dict_condensed}')
         return structure_data_dict_condensed
 
-
 class CitrineFeatureGeneration(object):
     """
     Class to generate new features using Citrine data and dataframe containing material compositions
     Datarame must have a column named "Material compositions".
-
 
     Args:
         configdict (dict) : MASTML configfile object as dict
@@ -559,7 +536,6 @@ class CitrineFeatureGeneration(object):
             # Merge magpie feature dataframe with originally supplied dataframe
             dataframe = DataframeUtilities().merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_citrine)
 
-
         return dataframe
 
     def _load_composition(self, composition):
@@ -568,7 +544,6 @@ class CitrineFeatureGeneration(object):
         #print("Citrine Feature Generation: ", composition, property_name_list, property_value_list)
         property_names_unique, parsed_property_min, parsed_property_max, parsed_property_avg = self._parse_pifquery_property_list(property_name_list=property_name_list, property_value_list=property_value_list)
         return parsed_property_min, parsed_property_max, parsed_property_avg
-
 
     def _get_pifquery(self, composition):
         # TODO: does this stop csv generation on first invalid composition?
@@ -603,8 +578,6 @@ class CitrineFeatureGeneration(object):
                         property_name_list.pop(-1)
                         continue
 
-
-
         #for result_number, results in enumerate(pifquery):
         #    property_value = results['system']['properties']
         #    for list_index, list_element in enumerate(property_value):
@@ -621,13 +594,7 @@ class CitrineFeatureGeneration(object):
         #                            property_name_list.pop(-1)
         #                            continue
 
-
-
-
-
-
         return property_name_list, property_value_list
-
 
     def _parse_pifquery_property_list(self, property_name_list, property_value_list):
         parsed_property_max = dict()
@@ -660,7 +627,6 @@ class CitrineFeatureGeneration(object):
                 parsed_property_avg[str(unique_name) + "_avg"] = unique_property_avg
 
         return property_names_unique, parsed_property_min, parsed_property_max, parsed_property_avg
-
 
 class DataframeUtilities(object):
     """

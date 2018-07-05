@@ -6,6 +6,7 @@ python3 -m mastml.mastml $1 tests/conf/classification.conf tests/csv/three_clust
 python3 -m mastml.mastml $1 tests/conf/feature_gen.conf tests/csv/feature_generation.csv -o results/feature_gen
 python3 -m mastml.mastml $1 tests/conf/just_generation.conf tests/csv/feature_generation.csv -o results/just_generation
 python3 -m mastml.mastml $1 tests/conf/just_model.conf tests/csv/mnist_short.csv -o results/just_model
+python3 -m mastml.mastml $1 tests/conf/just_model_no_plots.conf tests/csv/mnist_short.csv -o results/just_model_no_plots
 python3 -m mastml.mastml $1 tests/conf/just_normalization.conf tests/csv/three_clusters.csv -o results/just_normalization
 python3 -m mastml.mastml $1 tests/conf/just_selection.conf tests/csv/3d_utility.csv -o results/just_selection
 python3 -m mastml.mastml $1 tests/conf/pca_basic.conf tests/csv/3d_utility.csv -o results/pca_basic

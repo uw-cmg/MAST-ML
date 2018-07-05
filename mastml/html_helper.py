@@ -12,61 +12,8 @@ from dominate.tags import *
 
 log = logging.getLogger('mastml')
 
-
-def is_train_image(path):
-    basename = os.path.basename(path)
-    return os.path.splitext(basename)[1] == '.png' and 'train' in basename
-
-def is_test_image(path):
-    basename = os.path.basename(path)
-    return os.path.splitext(basename)[1] == '.png' and 'test' in basename
-
-def show_combo(combo_dir, outdir):
-
-    # collect test image, train image, and other file links
-    links = list()
-    train_images = list()
-    test_images = list()
-    for f in os.listdir(combo_dir):
-        if is_train_image(f):
-            train_images.append(join(combo_dir, f))
-        elif is_test_image(f):
-            test_images.append(join(combo_dir, f))
-        else:
-            links.append(join(combo_dir, f))
-
-    # have a header for split_0 split_1 etc
-    h2(combo_dir.split(os.sep)[-1])
-
-
-    # loop seperately so we can control order
-    for train_image, test_image in zip(sorted(train_images), sorted(test_images)):
-        make_image(relpath(train_image, outdir), 'train')
-        make_image(relpath(test_image, outdir), 'test')
-        br();br()
-
-    h3('links')
-    for l in links:
-        make_link(relpath(l, outdir))
-        span('  ')
-
-def simple_section(filepath, outdir):
-
-    # come up with a good section title
-    path = os.path.normpath(relpath(filepath, outdir))
-    paths = path.split(os.sep)
-    title = " - ".join(paths)
-
-    a(b(title))
-
-    make_link(relpath(filepath, outdir))
-
-    br()
-
-
 def make_html(outdir):
     with document(title='MASTML') as doc:
-
         # title and date
         h1('MAterial Science Tools - Machine Learning')
         h4(strftime("%Y-%m-%d %H:%M:%S", gmtime()))
@@ -93,7 +40,6 @@ def make_html(outdir):
                         ext in ['.conf', '.log']:
                     link_sections.append(join(root, f))
                     #simple_section(join(root, f), outdir)
-
 
         h1('Files')
         for path in link_sections:
@@ -129,11 +75,46 @@ def make_html(outdir):
                 if fname.startswith('split_'):
                     show_combo(join(combo, fname), outdir)
 
-
     with open(join(outdir, 'index.html'), 'w') as f:
         f.write(doc.render())
 
     log.info('wrote ' + join(outdir, 'index.html'))
+
+def show_combo(combo_dir, outdir):
+    # collect test image, train image, and other file links
+    links = list()
+    train_images = list()
+    test_images = list()
+    for f in os.listdir(combo_dir):
+        if is_train_image(f):
+            train_images.append(join(combo_dir, f))
+        elif is_test_image(f):
+            test_images.append(join(combo_dir, f))
+        else:
+            links.append(join(combo_dir, f))
+
+    # have a header for split_0 split_1 etc
+    h2(combo_dir.split(os.sep)[-1])
+
+    # loop seperately so we can control order
+    for train_image, test_image in zip(sorted(train_images), sorted(test_images)):
+        make_image(relpath(train_image, outdir), 'train')
+        make_image(relpath(test_image, outdir), 'test')
+        br();br()
+
+    h3('links')
+    for l in links:
+        make_link(relpath(l, outdir))
+        span('  ')
+
+def simple_section(filepath, outdir):
+    # come up with a good section title
+    path = os.path.normpath(relpath(filepath, outdir))
+    paths = path.split(os.sep)
+    title = " - ".join(paths)
+    a(b(title))
+    make_link(relpath(filepath, outdir))
+    br()
 
 def make_link(href):
     " Make a link where text is filename of href "
@@ -146,3 +127,11 @@ def make_image(src, title=None):
         d += h4(title)
         #d += p(a(title))
     d += img(src=src, width='500')
+
+def is_train_image(path):
+    basename = os.path.basename(path)
+    return os.path.splitext(basename)[1] == '.png' and 'train' in basename
+
+def is_test_image(path):
+    basename = os.path.basename(path)
+    return os.path.splitext(basename)[1] == '.png' and 'test' in basename

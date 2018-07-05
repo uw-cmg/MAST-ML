@@ -4,7 +4,7 @@ a dataframe or a numpy array.
 """
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.model_selection import GroupKFold, GroupShuffleSplit, KFold, LeaveOneGroupOut, LeavePGroupsOut, LeaveOneOut, LeavePOut, PredefinedSplit, RepeatedKFold, RepeatedStratifiedKFold, ShuffleSplit, StratifiedKFold, StratifiedShuffleSplit, TimeSeriesSplit
+import sklearn.model_selection as ms
 
 # List of sklearn splitter classes:
 # http://scikit-learn.org/stable/modules/classes.html#module-sklearn.model_selection
@@ -55,20 +55,20 @@ class WithoutElement(BaseEstimator, TransformerMixin):
 
 name_to_constructor = {
     # sklearn splitters:
-    'GroupKFold': GroupKFold,
-    'GroupShuffleSplit': GroupShuffleSplit,
-    'KFold': KFold,
-    'LeaveOneGroupOut': LeaveOneGroupOut,
-    'LeavePGroupsOut': LeavePGroupsOut,
-    'LeaveOneOut': LeaveOneOut,
-    'LeavePOut': LeavePOut,
-    'PredefinedSplit': PredefinedSplit,
-    'RepeatedKFold': RepeatedKFold, # NOTE: can use for repeated leave percent out / kfold
-    'RepeatedStratifiedKFold': RepeatedStratifiedKFold,
-    'ShuffleSplit': ShuffleSplit, # NOTE: like leave percent out
-    'StratifiedKFold': StratifiedKFold,
-    'StratifiedShuffleSplit': StratifiedShuffleSplit,
-    'TimeSeriesSplit': TimeSeriesSplit,
+    'GroupKFold': ms.GroupKFold,
+    'GroupShuffleSplit': ms.GroupShuffleSplit,
+    'KFold': ms.KFold,
+    'LeaveOneGroupOut': ms.LeaveOneGroupOut,
+    'LeavePGroupsOut': ms.LeavePGroupsOut,
+    'LeaveOneOut': ms.LeaveOneOut,
+    'LeavePOut': ms.LeavePOut,
+    'PredefinedSplit': ms.PredefinedSplit,
+    'RepeatedKFold': ms.RepeatedKFold, # NOTE: can use for repeated leave percent out / kfold
+    'RepeatedStratifiedKFold': ms.RepeatedStratifiedKFold,
+    'ShuffleSplit': ms.ShuffleSplit, # NOTE: like leave percent out
+    'StratifiedKFold': ms.StratifiedKFold,
+    'StratifiedShuffleSplit': ms.StratifiedShuffleSplit,
+    'TimeSeriesSplit': ms.TimeSeriesSplit,
 
     # mastml splitters
     'NoSplit': NoSplit,

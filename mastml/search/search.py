@@ -30,7 +30,6 @@ genetic_search_user_params = [ # parameters to GeneticSearch initializer which u
     'mutation_prob', 'shift_prob', 'gen_tol',
 ]
 
-
 def parse_conf_file(filepath):
     "Accepts the filepath of a conf file and returns its parsed dictionary"
     conf = ConfigObj(filepath)
@@ -91,9 +90,8 @@ def do_run(conf_path, data_path, outdir):
         searcher.run() # TODO: save result somehow?
     print("Done!")
 
-
 if __name__ == '__main__':
-    conf_path, data_path, outdir, verbosity = mastml.get_paths() # argparse stuff
+    conf_path, data_path, outdir, verbosity = mastml.get_commandline_args() # argparse stuff
     mastml.check_paths(conf_path, data_path, outdir)
     utils.activate_logging(outdir, (conf_path, data_path, outdir), verbosity=verbosity)
 
@@ -108,4 +106,3 @@ if __name__ == '__main__':
                   'https://github.com/uw-cmg/MAST-ML/issues and post your issue.')
         log.exception(e)
         raise e
-
