@@ -8,6 +8,7 @@ import sklearn.base
 import sklearn.utils.testing
 import numpy as np
 
+from . import keras_models
 from .. import utils
 
 with warnings.catch_warnings():
@@ -35,6 +36,7 @@ class RandomGuesser(sklearn.base.RegressorMixin):
 custom_models = {
     'AlwaysFive': AlwaysFive,
     'RandomGuesser': RandomGuesser,
+    'DNNClassifier': keras_models.DNNClassifier
 }
 
 name_to_constructor.update(custom_models)
