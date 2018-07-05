@@ -84,7 +84,7 @@ def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False,
 
     # create the colorbar, not really needed but everyones got 'em
     mappable = ax.imshow(cm, interpolation='nearest', cmap=cmap)
-    fig.colorbar(mappable)
+    #fig.colorbar(mappable)
 
     # set x and y ticks to labels
     tick_marks = range(len(classes))
