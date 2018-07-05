@@ -44,11 +44,11 @@ setup(
         "matplotlib>=1.5.3",
         "configobj>=5.0.6",
         "scikit-learn>=0.18.1",
-        "dominate"
+        "dominate",
         "pymatgen",
         "citrination-client",
         "mlxtend",
-        ],
+    ],
     author="MAST Development Team, University of Wisconsin-Madison Computational Materials Group",
     author_email="ddmorgan@wisc.edu",
     url="https://github.com/uw-cmg/MAST-ML",
