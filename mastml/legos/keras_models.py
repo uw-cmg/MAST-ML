@@ -22,6 +22,7 @@ from sklearn.model_selection import KFold
 from sklearn.preprocessing import LabelEncoder
 from sklearn.pipeline import Pipeline
 
+from sklearn.preprocessing import OneHotEncoder
 
 import sklearn.base
 
@@ -49,44 +50,59 @@ def make_keras_picklable():
 
 make_keras_picklable()
 
-def create_classifier_model(in_feats, out_classes):
-    # create model
-    model = Sequential()
-    model.add(Dense(12, input_dim=in_feats, activation='relu'))
-    model.add(Dense(8, activation='relu'))
-    model.add(Dense(out_classes, activation='sigmoid'))
-    # Compile model
-    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-    return model
+def create_classifier_model_maker(in_feats, out_classes):
+    def create_classifier_model():
+        # create model
+        model = Sequential()
+        model.add(Dense(12, input_dim=in_feats, activation='relu'))
+        model.add(Dense(8, activation='relu'))
+        model.add(Dense(out_classes, activation='sigmoid'))
+        # Compile model
+        model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+        return model
+    return create_classifier_model
 
 
 
-class DNNClassifier2(KerasClassifier):
-    def __call__(self):
-        return create_classifier_model()
-    def predict(self, X, groups=None):
-        pred = KerasClassifier.predict(self, X)
-        return np.reshape(pred, pred.shape[0])
+#class DNNClassifier2(KerasClassifier):
+#    def __call__(self):
+#        self.model = create_classifier_model()
+#        return self.model
+#
+#    def fit(self, X, y, groups=None):
+#        self.model = create_classifier_model()
+#        self.label_encoder = LabelEncoder()
+#        self.label_encoder.fit(y)
+#        encoded_y = self.label_encoder.transform(y)
+#        return KerasClassifier.predict(self, X, encoded_y)
+#
+#    def predict(self, X, groups=None):
+#        pred = KerasClassifier.predict(self, X)
+#        return np.reshape(pred, pred.shape[0])
+#
 
 class DNNClassifier(sklearn.base.ClassifierMixin):
-    def __init__(self):
-        pass
-
-    def __call___(self):
-        print('foooooooooooooooooooooooooooo')
-        return self.sk_model
+    def __init__(self, epochs=20, batch_size=5):
+        self.epochs = epochs
+        self.batch_size = batch_size
 
     def fit(self, X, y):
-        model = create_classifier_model(X.shape[0], y.shape[0])
-        self.sk_model = KerasClassifier(build_fn=model, epochs=20, batch_size=5, verbose=1)
+        X = np.array(X)
+        y = np.array(y)
+        self.label_encoder = OneHotEncoder()
+        self.label_encoder.fit(y.reshape(-1, 1))
+        encoded_y = self.label_encoder.transform(y.reshape(-1, 1)).toarray()
+        print('fit y: ', encoded_y)
 
-        self.label_encoder = LabelEncoder()
-        self.label_encoder.fit(y)
-        encoded_y = self.label_encoder.transform(y)
+        build_fun = create_classifier_model_maker(X.shape[1], self.label_encoder.n_values_)
+        self.sk_model = KerasClassifier(build_fn=build_fun, epochs=self.epochs, batch_size=self.batch_size, verbose=1)
 
         self.sk_model.fit(X, encoded_y)
 
-    def predict(self, y):
-        encoded_y = self.label_encoder.transform(y)
-        pred = self.sk_model.predict(encoded_y)
-        return np.reshape(pred, pred.shape[0])
+    def predict(self, X):
+        X = np.array(X)
+        pred = self.sk_model.predict(X)
+        #pred_flat = np.reshape(pred, pred.shape[:-1])
+        #decoded = np.argmax(pred_flat, axis=1)
+        return pred
+

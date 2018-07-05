@@ -143,10 +143,13 @@ def _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models,
         clustered_df[name] = instance.fit_predict(X, y)
 
     if PlotSettings['feature_vs_target']:
+        plots_made = 0
         if clustered_df.empty:
             # plot y against each x column
             for column in X:
                 filename = f'{column}_vs_target.png'
+                plots_made += 1
+                if plots_made > 10: break
                 plot_helper.plot_scatter(
                         X[column], y,
                         join(outdir, filename),
@@ -156,6 +159,8 @@ def _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models,
             for name in clustered_df.columns:
                 for column in X:
                     filename = f'{column}_vs_target_by_{name}.png'
+                    plots_made += 1
+                    if plots_made > 10: break
                     plot_helper.plot_scatter(
                             X[column], y,
                             join(outdir, filename),
@@ -213,6 +218,19 @@ def _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models,
     log.info("Fitting models to splits...")
     all_results = []
 
+    # OOPS want moar plts
+    for normalizer_name, selector_name, XX in post_selection:
+        if selector_name == 'DoNothing': continue
+        if PlotSettings['feature_vs_target']:
+            # for each selector/normalier, plot y against each x column
+            for column in XX:
+                filename = f'{column}_vs_target_by_{normalizer_name}_{selector_name}.png'
+                plot_helper.plot_scatter(
+                        XX[column], y,
+                        join(outdir, filename),
+                        #clustered_df[name],
+                        xlabel=column, ylabel='target_feature')
+
     ## Models (cross-product)
     for normalizer_name, selector_name, XX in post_selection:
         for model_name, model_instance in models:
@@ -243,7 +261,7 @@ def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classifica
 
         log.info("             Fitting model and making predictions...")
         model.fit(train_X, train_y)
-        joblib.dump(model, join(path, "trained_model.pkl"))
+        #joblib.dump(model, join(path, "trained_model.pkl"))
         train_pred = model.predict(train_X)
         test_pred  = model.predict(test_X)
 

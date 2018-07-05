@@ -76,7 +76,8 @@ def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False,
     """
     # calculate confusion matrix and lables in correct order
     cm = confusion_matrix(y_true, y_pred)
-    classes = sorted(list(set(y_true).intersection(set(y_pred))))
+    #classes = sorted(list(set(y_true).intersection(set(y_pred))))
+    classes = sorted(list(set(y_true).union(set(y_pred))))
 
     fig, ax = make_fig_ax()
 
