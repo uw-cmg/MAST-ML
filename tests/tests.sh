@@ -1,6 +1,6 @@
 #! /bin/bash -v
 pwd
-python3 -m mastml.mastml $1 tests/conf/keras_classifier.conf tests/csv/classification.csv -o results/keras_classifier
+python3 -m mastml.mastml $1 tests/conf/keras_classifier.conf tests/csv/mnist.csv  -o results/keras_classifier
 python3 -m mastml.mastml $1 tests/conf/advanced_feature_selection_classification.conf tests/csv/classification.csv -o results/advanced_feature_classification
 python3 -m mastml.mastml $1 tests/conf/advanced_feature_selection_regression.conf tests/csv/regression_data.csv -o results/advanced_feature_regression
 python3 -m mastml.mastml $1 tests/conf/classification.conf tests/csv/three_clusters.csv -o results/classification
