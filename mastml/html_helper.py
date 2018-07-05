@@ -47,14 +47,10 @@ def make_html(outdir):
 
         h1('Plots')
 
-        make_image('target_histogram.png')
-        h1('outch')
-
         # show all the images
         for f in os.listdir(outdir):
             if f.endswith('.png'):
                 make_image(f, f)
-                h1('oops')
 
         for combo in combos:
             # come up with a good section title
@@ -126,7 +122,7 @@ def make_image(src, title=None):
     if title:
         d += h4(title)
         #d += p(a(title))
-    d += img(src=src, width='500')
+    d += img(src=src, height='200')
 
 def is_train_image(path):
     basename = os.path.basename(path)
