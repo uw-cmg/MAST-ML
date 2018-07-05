@@ -4,3 +4,4 @@ results/
 .ipynb_checkpoints/
 build/
 dist/
+mastml.egg-info/
