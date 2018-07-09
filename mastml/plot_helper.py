@@ -296,7 +296,7 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
 
     ax.scatter(new_y_true, bests,  c='red',  alpha=0.7, label='best',
                edgecolor='darkred',  zorder=2, s=80)
-    ax.scatter(new_y_true, worsts, c='orange', alpha=0.7, label='worst',
+    ax.scatter(new_y_true, worsts, c='blue', alpha=0.7, label='worst',
                edgecolor='darkblue', zorder=3)
     ax.legend()
 
