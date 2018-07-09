@@ -3,12 +3,15 @@ A collection of functions which take a y_correct vector and y_predicted vector
 and give some score of them
 """
 
+import numpy as np
 import sklearn.metrics as sm
 import sklearn.feature_selection as fs
 from sklearn.linear_model import LinearRegression # for r2_score_noint
 
 def r2_score_noint(y_true, y_pred):
     " Get the R^2 coefficient without intercept "
+    y_true = np.array(y_true)
+    y_true = y_true.reshape(y_true.shape[0], 1)
     lr = LinearRegression(fit_intercept=False)
     lr.fit(y_true, y_pred)
     return lr.score(y_true, y_pred)
@@ -56,26 +59,26 @@ regression_score_funcs = {
 nice_names = {
     'accuracy_score': 'Acc',
     'confusion_matrix': 'Confusion Matrix',
+    'explained_variance_score': 'expl var',
     'f1_score': 'f1',
     'fbeta_score': 'fbeta score',
     'hamming_loss': 'Hamming Loss',
     'jaccard_similarity_score': 'Jaccard Similarity Score',
     'log_loss': 'Log Loss',
     'matthews_corrcoef': 'Matthews',
-    'precision_recall_fscore_support': 'pr fscore',
-    'precision_score': 'p',
-    'recall_score': 'r',
-    'roc_auc_score': 'roc auc',
-    'roc_curve': 'roc',
-    'zero_one_loss': '10ss',
-    'explained_variance_score': 'explained variance',
     'mean_absolute_error': 'MAE',
     'mean_squared_error': 'MSE',
-    'root_mean_squared_error': 'RMSE',
     'mean_squared_log_error': 'MSLE',
     'median_absolute_error': 'MeAE',
+    'precision_recall_fscore_support': 'pr fscore',
+    'precision_score': 'Prec',
     'r2_score': '$r^2$',
     'r2_score_noint': '$r^2$ noint',
+    'recall_score': 'Rec',
+    'roc_auc_score': 'roc auc',
+    'roc_curve': 'roc',
+    'root_mean_squared_error': 'RMSE',
+    'zero_one_loss': '10ss',
 }
 
 def check_names(metric_names, is_classification):

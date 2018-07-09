@@ -309,7 +309,7 @@ def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classifica
         if PlotSettings['predicted_vs_true_bars']:
             plot_helper.plot_predicted_vs_true_bars(y.values, predictions, join(main_path, 'bars.png'))
         if PlotSettings['best_worst_per_point']:
-            plot_helper.plot_best_worst_per_point( y.values, predictions, join(main_path, 'best_worst_per_point.png'))
+            plot_helper.plot_best_worst_per_point(y.values, predictions, join(main_path, 'best_worst_per_point.png'), metrics_dict, test_stats)
 
     return split_results
 

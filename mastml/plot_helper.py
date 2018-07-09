@@ -148,7 +148,7 @@ def plot_predicted_vs_true(train_triple, test_triple, outdir):
 
 @ipynb_maker
 def plot_residuals_histogram(y_true, y_pred, savepath,
-                            stats, title='residuals histogram'):
+                             stats, title='residuals histogram'):
 
     fig, ax = make_fig_ax(aspect='auto')
 
@@ -254,14 +254,31 @@ def plot_best_worst_split(best_run, worst_run, savepath,
     fig.savefig(savepath, dpi=200)
 
 @ipynb_maker
-def plot_best_worst_per_point(y_true, y_pred_list,
-                              savepath, title='best worst per point'):
-    worsts = [max(ypl, key=lambda y: abs(yt-y)) if len(ypl)>0 else None
-              for yt, ypl in zip(y_true,y_pred_list)]
-    bests  = [min(ypl, key=lambda y: abs(yt-y)) if len(ypl)>0 else None
-              for yt, ypl in zip(y_true,y_pred_list)]
+def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
+                              avg_stats, title='best worst per point'):
 
-    fig, ax = make_fig_ax(aspect='auto')
+    worsts = []
+    bests = []
+    new_y_true = []
+    for yt, y_pred in zip(y_true, y_pred_list):
+        if len(y_pred) == 0 or np.nan in y_pred_list or yt == np.nan:
+            continue
+        worsts.append(max(y_pred, key=lambda yp: abs(yp-yt)))
+        bests.append( min(y_pred, key=lambda yp: abs(yp-yt)))
+        new_y_true.append(yt)
+
+    worst_stats = OrderedDict([('Worst combined:', None)])
+    best_stats = OrderedDict([('Worst combined:', None)])
+    for name, func in metrics_dict.items():
+        worst_stats[name] = func(new_y_true, worsts)
+        best_stats[name] = func(new_y_true, bests)
+
+    w, h = figaspect(0.333)
+    fig = Figure(figsize=(w,h))
+    FigureCanvas(fig)
+    # Trap figure on left side:
+    gs = plt.GridSpec(1, 3)
+    ax = fig.add_subplot(gs[0, 0:1], aspect='equal')
 
     # gather max and min
     all_vals = [val for val in worsts+bests if val is not None]
@@ -277,13 +294,15 @@ def plot_best_worst_per_point(y_true, y_pred_list,
     ax.set_xlabel('Measured')
     ax.set_ylabel('Predicted')
 
-    ax.scatter(y_true, bests,  c='red',  alpha=0.7, label='best',
+    ax.scatter(new_y_true, bests,  c='red',  alpha=0.7, label='best',
                edgecolor='darkred',  zorder=2, s=80)
-    ax.scatter(y_true, worsts, c='blue', alpha=0.7, label='worst',
+    ax.scatter(new_y_true, worsts, c='orange', alpha=0.7, label='worst',
                edgecolor='darkblue', zorder=3)
     ax.legend()
 
-    plot_stats(fig, dict())
+    plot_stats(fig, avg_stats, x_align=10/25)
+    plot_stats(fig, worst_stats, x_align=15/25)
+    plot_stats(fig, best_stats, x_align=20/25)
     fig.savefig(savepath)
 
 @ipynb_maker

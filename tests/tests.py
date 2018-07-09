@@ -12,7 +12,7 @@ from tempfile import NamedTemporaryFile
 import numpy as np
 import pandas as pd
 
-from mastml import plot_helper, conf_parser
+from mastml import plot_helper, conf_parser, metrics
 import mastml.utils
 from mastml.legos import feature_generators
 from mastml.legos.randomizers import Randomizer
@@ -291,9 +291,12 @@ class TestPlots(unittest.TestCase):
                                 'results/violin.png', title='violin.png')
 
     def test_best_worst_per_point(self):
+        d = dict(metrics.regression_metrics)
+        del d['mean_squared_log_error']
         plot_helper.plot_best_worst_per_point(
                 self.y_true, self.y_pred_list,
-                'results/best_worst_per_point.png')
+                'results/best_worst_per_point.png',
+                d, self.stats2)
 
     def test_1d_heatmap(self):
         plot_helper.plot_1d_heatmap(self.xs, self.heats,
