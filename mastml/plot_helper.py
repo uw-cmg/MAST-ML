@@ -19,6 +19,7 @@ warnings.filterwarnings(action="ignore", module="scipy",
 
 import numpy as np
 from sklearn.metrics import confusion_matrix
+from sklearn.model_selection import learning_curve
 
 import matplotlib
 from matplotlib import pyplot as plt
@@ -256,8 +257,6 @@ def plot_best_worst_split(best_run, worst_run, savepath,
 @ipynb_maker
 def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
                               avg_stats, title='best worst per point'):
-
-    import pdb; pdb.set_trace()
     worsts = []
     bests = []
     new_y_true = []
@@ -406,6 +405,16 @@ def plot_3d_heatmap(xs, ys, zs, heats, savepath,
     anim = FuncAnimation(fig, animate, frames=range(0,90,5), blit=True)
     #anim.save(savepath+'.mp4', fps=5, extra_args=['-vcodec', 'libx264'])
     anim.save(savepath+'.gif', fps=5, dpi=80, writer='imagemagick')
+
+def plot_sample_learning_curve(model, X, y, scoring, cv=2, savepath='sample_learning_curve.png'):
+    train_sizes, train_scores, valid_scores = learning_curve(model, X, y, scoring=scoring, cv=cv)
+    fig, ax = make_fig_ax(aspect='auto')
+    h1 = ax.plot(train_sizes, train_scores, '-o', c='blue')[0]
+    h2 = ax.plot(train_sizes, valid_scores, '-o', c='red')[0]
+    ax.legend([h1, h2], ['train', 'test'])
+    ax.set_xlabel('number of training samples')
+    ax.set_ylabel(scoring + ' score')
+    fig.savefig(savepath)
 
 ### Helpers:
 

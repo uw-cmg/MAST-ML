@@ -192,11 +192,18 @@ def _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models,
     log.info("Fitting models to splits...")
     all_results = []
 
-    # OOPS want moar plts
+
     for normalizer_name, selector_name, XX in post_selection:
-        if selector_name == 'DoNothing': continue
-        if PlotSettings['feature_vs_target']:
-            # for each selector/normalier, plot y against each x column
+        savepath = join(outdir, f'{normalizer_name}_{selector_name}_learning_curve.png')
+        learning_curve_model = model_finder.name_to_constructor['LogisticRegression' if is_classification else 'LinearRegression']()
+        learning_curve_score = 'f1' if is_classification else 'r2'
+        plot_helper.plot_sample_learning_curve(learning_curve_model, XX, y, learning_curve_score, 2, savepath)
+
+
+    if PlotSettings['feature_vs_target']:
+        for normalizer_name, selector_name, XX in post_selection:
+            if selector_name == 'DoNothing': continue
+            # for each selector/normalizer, plot y against each x column
             for column in XX:
                 filename = f'{column}_vs_target_by_{normalizer_name}_{selector_name}.png'
                 plot_helper.plot_scatter(
