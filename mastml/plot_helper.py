@@ -210,7 +210,7 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y'):
     fig.savefig(savepath)
 
 @ipynb_maker
-def plot_best_worst(best_run, worst_run, savepath,
+def plot_best_worst_split(best_run, worst_run, savepath,
                     stats, title='Best Worst Overlay'):
     #fig, ax = make_fig_ax(aspect_ratio=0.3333333333333333333333333333333)
     # Set image aspect ratio:

@@ -257,7 +257,7 @@ class TestPlots(unittest.TestCase):
                 (y_true_fat, y_pred_fat, self.stats2),
                 'results')
 
-    def test_best_worst(self):
+    def test_best_worst_split(self):
         y_true = np.arange(90)
         y_pred = np.arange(90) + 9*sum(np.random.random_sample((90,))
                                        for _ in range(10)) - 54
@@ -267,7 +267,7 @@ class TestPlots(unittest.TestCase):
                         test_metrics=self.stats)
         worst_run = dict(y_test_true=y_true, y_test_pred=y_pred_bad,
                          test_metrics=self.stats)
-        plot_helper.plot_best_worst(
+        plot_helper.plot_best_worst_split(
                 best_run, worst_run, 'results/best_worst.png',
                 self.stats2, title='mest morst Overlay')
 

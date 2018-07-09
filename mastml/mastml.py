@@ -301,7 +301,7 @@ def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classifica
     # collect all predictions in a combo for each point in the dataset
     if not is_classification:
         if PlotSettings['predicted_vs_true']:
-            plot_helper.plot_best_worst(best, worst, os.path.join(main_path, 'best_worst_overlay.png'), test_stats)
+            plot_helper.plot_best_worst_split(best, worst, os.path.join(main_path, 'best_worst_overlay.png'), test_stats)
         predictions = [[] for _ in range(X.shape[0])]
         for split_num, (train_indices, test_indices) in enumerate(trains_tests):
             for i, pred in zip(test_indices, split_results[split_num]['y_test_pred']):
