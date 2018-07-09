@@ -280,7 +280,7 @@ def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classifica
             plot_helper.make_main_plots(split_result, path, is_classification)
         _write_stats(split_result['train_metrics'],
                      split_result['test_metrics'],
-                     outdir)
+                     main_path) ### ??? outdir)
 
         split_results.append(split_result)
 
