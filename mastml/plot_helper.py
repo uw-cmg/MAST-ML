@@ -211,14 +211,14 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y'):
 
 @ipynb_maker
 def plot_best_worst_split(best_run, worst_run, savepath,
-                    stats, title='Best Worst Overlay'):
+                          title='Best Worst Overlay'):
     #fig, ax = make_fig_ax(aspect_ratio=0.3333333333333333333333333333333)
     # Set image aspect ratio:
-    w, h = figaspect(0.25)
+    w, h = figaspect(0.333)
     fig = Figure(figsize=(w,h))
     FigureCanvas(fig)
     # Trap figure on left side:
-    gs = plt.GridSpec(1, 4)
+    gs = plt.GridSpec(1, 3)
     ax = fig.add_subplot(gs[0, 0:1], aspect='equal')
 
     # make diagonal line from absolute min to absolute max of any data point
@@ -242,18 +242,15 @@ def plot_best_worst_split(best_run, worst_run, savepath,
     #font_dict = {'size'   : 10, 'family' : 'sans-serif'}
 
     # Duplicate the stats dicts with an additional label
-    average_stats = OrderedDict([('Average Run', None)])
-    average_stats.update(stats)
     best_stats = OrderedDict([('Best Run', None)])
     best_stats.update(best_run['test_metrics'])
     worst_stats = OrderedDict([('worst Run', None)])
     worst_stats.update(worst_run['test_metrics'])
 
-    plot_stats(fig, average_stats, x_align=8/24)#, font_dict=font_dict)
-    plot_stats(fig, best_stats, x_align= 13/24)
-    plot_stats(fig, worst_stats, x_align=18/24)
+    plot_stats(fig, best_stats, x_align=6/12)
+    plot_stats(fig, worst_stats, x_align=9/12)
 
-    fig.tight_layout()
+    #fig.tight_layout()
     fig.savefig(savepath, dpi=200)
 
 @ipynb_maker
