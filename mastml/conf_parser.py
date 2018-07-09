@@ -122,7 +122,7 @@ def fix_types(maybe_list):
 
 def _handle_plot_settings(conf):
     plot_settings = ['basic_plots', 'target_histogram',
-                     'TODOFIGURETHISOUTONOUT', 'predicted_vs_true',
+                     'main_plots', 'predicted_vs_true',
                      'predicted_vs_true_bars', 'best_worst_per_point',
                      'feature_vs_target']
     if 'PlotSettings' not in conf:
