@@ -257,6 +257,7 @@ def plot_best_worst_split(best_run, worst_run, savepath,
 def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
                               avg_stats, title='best worst per point'):
 
+    import pdb; pdb.set_trace()
     worsts = []
     bests = []
     new_y_true = []
