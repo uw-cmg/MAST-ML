@@ -18,7 +18,8 @@ from sklearn.externals import joblib
 from sklearn.exceptions import UndefinedMetricWarning
 
 from . import conf_parser, data_loader, html_helper, plot_helper, metrics, utils
-from .legos import data_splitters, feature_generators, clustering, feature_normalizers, feature_selectors, model_finder, util_legos
+from .legos import (data_splitters, feature_generators, clusterers, feature_normalizers,
+                    feature_selectors, model_finder, util_legos)
 
 log = logging.getLogger('mastml')
 
@@ -55,12 +56,15 @@ def mastml_run(conf_path, data_path, outdir):
 
     # Load in and parse the configuration and data files:
     conf = conf_parser.parse_conf_file(conf_path)
-    # df is used by feature generators, clustering, and grouping_column to create more features for x
+    # The df is used by feature generators, clusterers, and grouping_column to 
+    # create more features for x.
     # X is model input, y is target feature for model
     df, X, y = data_loader.load_data(data_path, **conf['GeneralSetup'])
 
     # Get the appropriate collection of metrics:
-    big_metrics_dict = metrics.classification_metrics if conf['is_classification'] else metrics.regression_metrics
+    big_metrics_dict = (metrics.classification_metrics
+                        if conf['is_classification']
+                        else metrics.regression_metrics)
     metrics_dict = {name: big_metrics_dict[name] for name in conf['metrics']}
 
     # Extract columns that some splitter need to do grouped splitting using 'grouping_column'
@@ -69,17 +73,29 @@ def mastml_run(conf_path, data_path, outdir):
     log.debug('splitter_to_group_names:\n' + str(splitter_to_group_names))
 
     # Instantiate models first so we can snatch them and pass them into feature selectors
-    models      = _instantiate(conf['Models'],               model_finder.name_to_constructor,        'model')
+    models      = _instantiate(conf['Models'],
+                               model_finder.name_to_constructor,
+                               'model')
     log.debug(f'models, pre-snatching: \n{models}')
     _snatch_models(models, conf['FeatureSelection'])
     log.debug(f'models: \n{models}')
 
     # Instantiate all the sections of the conf file:
-    generators  = _instantiate(conf['FeatureGeneration'],    feature_generators.name_to_constructor,  'feature generator')
-    clusterers  = _instantiate(conf['Clustering'],           clustering.name_to_constructor,          'clusterer')
-    normalizers = _instantiate(conf['FeatureNormalization'], feature_normalizers.name_to_constructor, 'feature normalizer')
-    selectors   = _instantiate(conf['FeatureSelection'],     feature_selectors.name_to_constructor,   'feature selector')
-    splitters   = _instantiate(conf['DataSplits'],           data_splitters.name_to_constructor,      'data split')
+    generators  = _instantiate(conf['FeatureGeneration'],
+                               feature_generators.name_to_constructor,
+                               'featuregenerator')
+    clusterers  = _instantiate(conf['Clustering'],
+                               clustering.name_to_constructor,
+                               'clusterer')
+    normalizers = _instantiate(conf['FeatureNormalization'],
+                               feature_normalizers.name_to_constructor,
+                               'featurenormalizer')
+    selectors   = _instantiate(conf['FeatureSelection'],
+                               feature_selectors.name_to_constructor,
+                               'featureselector')
+    splitters   = _instantiate(conf['DataSplits'],
+                               data_splitters.name_to_constructor,
+                               'datasplit')
 
     log.debug(f'generators: \n{generators}')
     log.debug(f'clusterers: \n{clusterers}')
@@ -90,8 +106,9 @@ def mastml_run(conf_path, data_path, outdir):
     if conf['PlotSettings']['target_histogram']:
         plot_helper.plot_target_histogram(y, join(outdir, 'target_histogram.png'))
 
-    runs = _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models, splitters,
-                      metrics_dict, outdir, conf['is_classification'], splitter_to_group_names, conf['PlotSettings'])
+    instances = generators, clusterers, normalizers, selectors, models, splitters
+    runs = _do_combos(df, X, y, instances, metrics_dict, outdir,
+                      conf['is_classification'], splitter_to_group_names, conf['PlotSettings'])
 
     log.info("Making image html file...")
     html_helper.make_html(outdir)
@@ -99,15 +116,13 @@ def mastml_run(conf_path, data_path, outdir):
     log.info("Making html file of all runs stats...")
     _save_all_runs(runs, outdir)
 
-def _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models, splitters,
-               metrics_dict, outdir, is_classification, splitter_to_group_names, PlotSettings):
-    """
-    Uses cross product to generate, normalize, and select the input data, then saves it.
-    Calls _do_splits for actual model fits.
-    """
+def _do_combos(df, X, y, instances, metrics_dict, outdir, is_classification,
+               splitter_to_group_names, PlotSettings):
 
-    log.info(f"There are {len(normalizers)} feature normalizers, {len(selectors)} feature selectors,"
-             f" {len(models)} models, and {len(splitters)} splitters.")
+    generators, clusterers, normalizers, selectors, models, splitters = instances
+
+    log.info(f"There are {len(normalizers)} feature normalizers, {len(selectors)} feature"
+             f"selectors {len(models)} models, and {len(splitters)} splitters.")
 
     ## FeatureGeneration (union)
     log.info("Doing feature generation...")
@@ -149,10 +164,8 @@ def _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models,
                 filename = f'{column}_vs_target.png'
                 plots_made += 1
                 if plots_made > 10: break
-                plot_helper.plot_scatter(
-                        X[column], y,
-                        join(outdir, filename),
-                        xlabel=column, ylabel='target_feature')
+                plot_helper.plot_scatter(X[column], y, join(outdir, filename),
+                                         xlabel=column, ylabel='target_feature')
         else:
             # for each cluster, plot y against each x column
             for name in clustered_df.columns:
@@ -160,11 +173,9 @@ def _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models,
                     filename = f'{column}_vs_target_by_{name}.png'
                     plots_made += 1
                     if plots_made > 10: break
-                    plot_helper.plot_scatter(
-                            X[column], y,
-                            join(outdir, filename),
-                            clustered_df[name],
-                            xlabel=column, ylabel='target_feature')
+                    plot_helper.plot_scatter(X[column], y, join(outdir, filename),
+                                            clustered_df[name], xlabel=column,
+                                            ylabel='target_feature')
 
     log.info("Saving clustered data to csv...")
     pd.concat([clustered_df, y], 1).to_csv(join(outdir, "clusters.csv"), index=False)
@@ -185,47 +196,48 @@ def _do_combos(df, X, y, generators, clusterers, normalizers, selectors, models,
                     splits.append((name, tuple(instance.split(X, y, df_[col].values))))
                     break
             else:
-                raise utils.MissingColumnError(f'DataSplit {name} needs column {col}, which was neither generated nor given by input')
+                raise utils.MissingColumnError(f'DataSplit {name} needs column {col},'
+                                               f'which was neither generated nor given by input')
         else:
             splits.append((name, tuple(instance.split(X, y))))
 
     log.info("Fitting models to splits...")
+
+    return all_results
+
+def _do_models_splits(post_selection, models, outdir, PlotSettings):
     all_results = []
-
-
-    for normalizer_name, selector_name, XX in post_selection:
-        savepath = join(outdir, f'{normalizer_name}_{selector_name}_learning_curve.png')
-        learning_curve_model = model_finder.name_to_constructor['LogisticRegression' if is_classification else 'LinearRegression']()
+    for normalizer_name, selector_name, X in post_selection:
+        path = join(outdir, normalizer_name, selector_name)
+        savepath = join(path, f'learning_curve.png')
+        # TODO: go fetch a model
+        learning_curve_model = model_finder.name_to_constructor[\
+                'LogisticRegression' if is_classification else 'LinearRegression']()
         learning_curve_score = 'f1' if is_classification else 'r2'
-        plot_helper.plot_sample_learning_curve(learning_curve_model, XX, y, learning_curve_score, 2, savepath)
+        plot_helper.plot_sample_learning_curve(learning_curve_model, X, y,
+                                               learning_curve_score, 2, savepath)
 
-
-    if PlotSettings['feature_vs_target']:
-        for normalizer_name, selector_name, XX in post_selection:
+        if PlotSettings['feature_vs_target']:
             if selector_name == 'DoNothing': continue
             # for each selector/normalizer, plot y against each x column
-            for column in XX:
+            for column in X:
                 filename = f'{column}_vs_target_by_{normalizer_name}_{selector_name}.png'
-                plot_helper.plot_scatter(
-                        XX[column], y,
-                        join(outdir, filename),
-                        #clustered_df[name],
-                        xlabel=column, ylabel='target_feature')
+                plot_helper.plot_scatter(X[column], y, join(outdir, filename),
+                                         xlabel=column, ylabel='target_feature')
 
-    ## Models (cross-product)
-    for normalizer_name, selector_name, XX in post_selection:
         for model_name, model_instance in models:
             for splitter_name, trains_tests in splits:
                 subdir = join(normalizer_name, selector_name, model_name, splitter_name)
                 log.info(f"    Running splits for {subdir}")
                 path = join(outdir, subdir)
                 os.makedirs(path)
-                runs = _do_splits(XX, y, model_instance, path, metrics_dict, trains_tests, is_classification, PlotSettings)
+                runs = _do_splitter(X, y, model_instance, path, metrics_dict,
+                                    trains_tests, is_classification, PlotSettings)
                 all_results.extend(runs)
-
     return all_results
 
-def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classification, PlotSettings):
+def _do_splitter(X, y, model, main_path, metrics_dict, trains_tests,
+                 is_classification, PlotSettings):
     """
     For a fixed normalizer,selector,model,splitter,
     train and test the model on each split that the splitter makes
@@ -249,9 +261,11 @@ def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classifica
         # Save train and test data and results to csv:
         log.info("             Saving train/test data and predictions to csv...")
         train_pred_series = pd.DataFrame(train_pred, columns=['train_pred'], index=train_indices)
-        pd.concat([train_X, train_y, train_pred_series], 1).to_csv(join(path, 'train.csv'), index=False)
+        pd.concat([train_X, train_y, train_pred_series], 1)\
+                .to_csv(join(path, 'train.csv'), index=False)
         test_pred_series = pd.DataFrame(test_pred,   columns=['test_pred'],  index=test_indices)
-        pd.concat([test_X,  test_y,  test_pred_series],  1).to_csv(join(path, 'test.csv'),  index=False)
+        pd.concat([test_X,  test_y,  test_pred_series],  1)\
+                .to_csv(join(path, 'test.csv'),  index=False)
 
         log.info("             Calculating score metrics...")
         split_path = main_path.split(os.sep)
@@ -298,25 +312,32 @@ def _do_splits(X, y, model, main_path, metrics_dict, trains_tests, is_classifica
     for name in metrics_dict:
         train_values = [split_result['train_metrics'][name] for split_result in split_results]
         test_values  = [split_result['test_metrics'][name]  for split_result in split_results]
-        train_stats[name] = (np.mean(train_values), np.std(train_values) / np.sqrt(len(train_values)))
-        test_stats[name]  = (np.mean(test_values),  np.std(test_values) / np.sqrt(len(test_values)))
+        train_stats[name] = (np.mean(train_values),
+                             np.std(train_values) / np.sqrt(len(train_values)))
+        test_stats[name]  = (np.mean(test_values),
+                             np.std(test_values) / np.sqrt(len(test_values)))
 
     log.info("    Making best/worst plots...")
-    split_results.sort(key=lambda run: list(run['test_metrics'].items())[0][1]) # sort splits by the test score of first metric
+    # sort splits by the test score of first metric:
+    split_results.sort(key=lambda run: list(run['test_metrics'].items())[0][1])
     worst, median, best = split_results[0], split_results[len(split_results)//2], split_results[-1]
 
     # collect all predictions in a combo for each point in the dataset
     if not is_classification:
         if PlotSettings['predicted_vs_true']:
-            plot_helper.plot_best_worst_split(best, worst, os.path.join(main_path, 'best_worst_overlay.png'))
+            plot_helper.plot_best_worst_split(best, worst,
+                                              join(main_path, 'best_worst_overlay.png'))
         predictions = [[] for _ in range(X.shape[0])]
         for split_num, (train_indices, test_indices) in enumerate(trains_tests):
             for i, pred in zip(test_indices, split_results[split_num]['y_test_pred']):
                 predictions[i].append(pred)
         if PlotSettings['predicted_vs_true_bars']:
-            plot_helper.plot_predicted_vs_true_bars(y.values, predictions, join(main_path, 'bars.png'))
+            plot_helper.plot_predicted_vs_true_bars(y.values, predictions,
+                                                    join(main_path, 'bars.png'))
         if PlotSettings['best_worst_per_point']:
-            plot_helper.plot_best_worst_per_point(y.values, predictions, join(main_path, 'best_worst_per_point.png'), metrics_dict, test_stats)
+            plot_helper.plot_best_worst_per_point(y.values, predictions,
+                                                  join(main_path, 'best_worst_per_point.png'),
+                                                  metrics_dict, test_stats)
 
     return split_results
 
@@ -381,7 +402,8 @@ def _snatch_models(models, conf_feature_selection):
                     del models[i]
                     break
             else:
-                raise utils.MastError(f"The selector {selector_name} specified model {model_name}, which was not found in the [Models] section")
+                raise utils.MastError(f"The selector {selector_name} specified model {model_name},"
+                                      f"which was not found in the [Models] section")
 
 def _extract_grouping_column_names(splitter_to_kwargs):
     splitter_to_group_names = dict()
@@ -445,11 +467,15 @@ def check_paths(conf_path, data_path, outdir):
         raise utils.FileNotFoundError(f"No such file: {data_path}")
 
     # Check output directory:
+
     if os.path.exists(outdir):
-        now = datetime.now()
-        outdir = f"{outdir}_{now.year}_{now.month:02d}_{now.day:02d}_{now.hour:02d}_{now.minute:02d}_{now.second:02d}"
-        log.warning(f"Outdir already exists. Renaming to {outdir}")
-        #shutil.rmtree(outdir)
+        try:
+            os.rmdir(outdir) # succeeds if empty
+        except OSError: # directory not empty
+            log.warning(f"{outdir} not empty. Renaming...")
+            now = datetime.now()
+            outdir = f"{outdir}_{now.month:02d}_{now.day:02d}" \
+                     f"_{now.hour:02d}_{now.minute:02d}_{now.second:02d}"
     os.makedirs(outdir)
     log.info(f"Saving to directory '{outdir}'")
 
