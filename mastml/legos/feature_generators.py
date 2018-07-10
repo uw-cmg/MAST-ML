@@ -42,7 +42,7 @@ class PolynomialFeatures(BaseEstimator, TransformerMixin):
         new_features = self.SPF.get_feature_names(self.features)
         return pd.DataFrame(self.SPF.transform(array), columns=new_features)
 
-class ContainsElement():
+class ContainsElement(BaseEstimator, TransformerMixin):
     """
     Returns a new dataframe with a row containing 1 or 0 depending on if composition feature has
     element in it. The new column's name is saved in self.new_column_name, which you'll need.

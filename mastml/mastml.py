@@ -125,44 +125,54 @@ def _do_combos(df, X, y, instances, metrics_dict, outdir, is_classification,
     log.info(f"There are {len(normalizers)} feature normalizers, {len(selectors)} feature"
              f"selectors {len(models)} models, and {len(splitters)} splitters.")
 
-    ## FeatureGeneration (union)
-    log.info("Doing feature generation...")
-    generators_union = util_legos.DataFrameFeatureUnion([instance for name,instance in generators])
-    generated_df = generators_union.fit_transform(df, y)
+    def generate_features():
+        log.info("Doing feature generation...")
+        dataframes = [instance.fit_transform(df, y) for _, instance in generators]
+        dataframe = pd.concat(dataframes, 1)
 
-    log.info("Saving generated data to csv...")
-    log.debug(f'generated cols: {generated_df.columns}')
-    pd.concat([generated_df, y], 1).to_csv(join(outdir, "generated_features.csv"), index=False)
+        log.info("Saving generated data to csv...")
+        log.debug(f'generated cols: {dataframe.columns}')
+        filename = join(outdir, "generated_features.csv")
+        pd.concat([dataframe, y], 1).to_csv(filename, index=False)
+        return dataframe
+    generated_df = generate_features()
 
-    # Remove constant features, warn if we actually remove anything.
-    generated_df = _remove_constant_feautures(generated_df)
-    log.info("Saving generated data without constant columns to csv...")
-    filename = join(outdir, "generated_features_no_constant_columns.csv")
-    pd.concat([generated_df, y], 1).to_csv(filename, index=False)
+    def remove_constants():
+        dataframe = _remove_constant_features(generated_df)
+        log.info("Saving generated data without constant columns to csv...")
+        filename = join(outdir, "generated_features_no_constant_columns.csv")
+        pd.concat([dataframe, y], 1).to_csv(filename, index=False)
+        return dataframe
+    generated_df = remove_constants()
 
     # add in generated features
     # TODO this adds in some of the grouping features, can the model cheat on these?
     X = pd.concat([X, generated_df], axis=1)
 
     # remove repeat columns (keep the first one)
-    repeated_columns = X.loc[:, X.columns.duplicated()].columns
-    if not repeated_columns.empty:
-        log.warning(f"Throwing away {len(repeated_columns)} because they are repeats.")
-        log.debug(f"Throwing away columns because they are repeats: {repeated_columns}")
-        X = X.loc[:,~X.columns.duplicated()]
+    def remove_repeats(X):
+        repeated_columns = X.loc[:, X.columns.duplicated()].columns
+        if not repeated_columns.empty:
+            log.warning(f"Throwing away {len(repeated_columns)} because they are repeats.")
+            log.debug(f"Throwing away columns because they are repeats: {repeated_columns}")
+            X = X.loc[:,~X.columns.duplicated()]
+        return X
+    X = remove_repeats(X)
 
-    ## Clustering (seperate dataframe)
-    log.info("Doing clustering...")
-    clustered_df = pd.DataFrame()
-    for name, instance in clusterers:
-        clustered_df[name] = instance.fit_predict(X, y)
+    def make_clusters():
+        log.info("Doing clustering...")
+        clustered_df = pd.DataFrame()
+        for name, instance in clusterers:
+            clustered_df[name] = instance.fit_predict(X, y)
+        return clustered_df
+    clustered_df = make_clusters()
 
-    if PlotSettings['feature_vs_target']:
+    def plot_scatters(): # put it in a function for namespace preserving
         plots_made = 0
         if clustered_df.empty:
             # plot y against each x column
             for column in X:
-                filename = f'{column}_vs_target.png'
+                filename = f'{column}_vs_target_scatter.png'
                 plots_made += 1
                 if plots_made > 10: break
                 plot_helper.plot_scatter(X[column], y, join(outdir, filename),
@@ -171,75 +181,103 @@ def _do_combos(df, X, y, instances, metrics_dict, outdir, is_classification,
             # for each cluster, plot y against each x column
             for name in clustered_df.columns:
                 for column in X:
-                    filename = f'{column}_vs_target_by_{name}.png'
+                    filename = f'{column}_vs_target_by_{name}_scatter.png'
                     plots_made += 1
                     if plots_made > 10: break
                     plot_helper.plot_scatter(X[column], y, join(outdir, filename),
                                             clustered_df[name], xlabel=column,
                                             ylabel='target_feature')
+    if PlotSettings['feature_vs_target']:
+        plot_scatters()
 
     log.info("Saving clustered data to csv...")
     pd.concat([clustered_df, y], 1).to_csv(join(outdir, "clusters.csv"), index=False)
 
-    ## FeatureNormalization (cross-product)
-    post_selection = normalize_and_select(normalizers, selectors, X, y, outdir)
+    def normalize_and_select():
+        triples = []
+        for normalizer_name, normalizer_instance in normalizers:
+
+            log.info(f"Running normalizer {normalizer_name} ...")
+            X_normalized = normalizer_instance.fit_transform(X, y)
+
+            log.info("Saving normalized data to csv...")
+            dirname = join(outdir, normalizer_name)
+            os.mkdir(dirname)
+            pd.concat([X_normalized, y], 1).to_csv(join(dirname, "normalized.csv"), index=False)
+
+            # FeatureSelection (cross-product)
+            log.info("Running selectors...")
+            for selector_name, selector_instance in selectors:
+
+                log.info(f"    Running selector {selector_name} ...")
+                # NOTE: Changed from fit_transform because PCA's fit_transform
+                #       doesn't call transform (does transformation itself).
+                X_selected = selector_instance.fit(X_normalized, y).transform(X_normalized)
+
+                log.info("    Saving selected features to csv...")
+                dirname = join(outdir, normalizer_name, selector_name)
+                os.mkdir(dirname)
+                pd.concat([X_selected, y], 1).to_csv(join(dirname, "selected.csv"), index=False)
+
+                triples.append((normalizer_name, selector_name, X_selected))
+        return triples
+    post_selection = normalize_and_select()
 
     ## DataSplits (cross-product)
     ## Collect grouping columns, splitter_to_group_names is a dict of splitter name to grouping col
     log.debug("Finding splitter-required columns in data...")
-    splits = []
-    for name, instance in splitters:
-        if name in splitter_to_group_names:
-            col = splitter_to_group_names[name]
-            log.debug(f"    Finding {col} for {name}...")
-            for df_ in [clustered_df, X, df]: # TODO: Are these the right objects to check?
-                if col in df_.columns:
-                    splits.append((name, tuple(instance.split(X, y, df_[col].values))))
-                    break
+    def make_splits():
+        splits = []
+        for name, instance in splitters:
+            if name in splitter_to_group_names:
+                col = splitter_to_group_names[name]
+                log.debug(f"    Finding {col} for {name}...")
+                for df_ in [clustered_df, X, df]: # TODO: Are these the right objects to check?
+                    if col in df_.columns:
+                        splits.append((name, tuple(instance.split(X, y, df_[col].values))))
+                        break
+                else:
+                    raise utils.MissingColumnError(f'DataSplit {name} needs column {col}, which'
+                                                   f'was neither generated nor given by input')
             else:
-                raise utils.MissingColumnError(f'DataSplit {name} needs column {col},'
-                                               f'which was neither generated nor given by input')
-        else:
-            splits.append((name, tuple(instance.split(X, y))))
+                splits.append((name, tuple(instance.split(X, y))))
+        return splits
+    splits = make_splits()
 
     log.info("Fitting models to splits...")
 
-    return _do_models_splits(post_selection, y, models, splits, outdir,
-                             metrics_dict, PlotSettings, is_classification)
+    def do_models_splits():
+        all_results = []
+        for normalizer_name, selector_name, X in post_selection:
+            subdir = join(outdir, normalizer_name, selector_name)
+            learning_curve_model = model_finder.name_to_constructor[\
+                    'LogisticRegression' if is_classification else 'LinearRegression']()
+            learning_curve_score = 'f1' if is_classification else 'r2'
+            try:
+                plot_helper.plot_sample_learning_curve(
+                        learning_curve_model, X, y, learning_curve_score,
+                        2, join(subdir, f'learning_curve.png'))
+            except:
+                log.warning("Learning curve failed")
+            if PlotSettings['feature_vs_target']:
+                if selector_name == 'DoNothing': continue
+                # for each selector/normalizer, plot y against each x column
+                for column in X:
+                    filename = f'{column}_vs_target.png'
+                    plot_helper.plot_scatter(X[column], y, join(subdir, filename),
+                                             xlabel=column, ylabel='target_feature')
+            for model_name, model_instance in models:
+                for splitter_name, trains_tests in splits:
+                    subdir = join(normalizer_name, selector_name, model_name, splitter_name)
+                    log.info(f"    Running splits for {subdir}")
+                    subsubdir = join(outdir, subdir)
+                    os.makedirs(subsubdir)
+                    runs = _do_splitter(X, y, model_instance, subsubdir, metrics_dict,
+                                        trains_tests, is_classification, PlotSettings)
+                    all_results.extend(runs)
+        return all_results
 
-def _do_models_splits(post_selection, y, models, splits, outdir,
-                      metrics_dict, PlotSettings, is_classification):
-
-    all_results = []
-
-    for normalizer_name, selector_name, X in post_selection:
-
-        subdir = join(outdir, normalizer_name, selector_name)
-        learning_curve_model = model_finder.name_to_constructor[\
-                'LogisticRegression' if is_classification else 'LinearRegression']()
-        learning_curve_score = 'f1' if is_classification else 'r2'
-        plot_helper.plot_sample_learning_curve(learning_curve_model, X, y, learning_curve_score,
-                                               2, join(subdir, f'learning_curve.png'))
-
-        if PlotSettings['feature_vs_target']:
-            if selector_name == 'DoNothing': continue
-            # for each selector/normalizer, plot y against each x column
-            for column in X:
-                filename = f'{column}_vs_target.png'
-                plot_helper.plot_scatter(X[column], y, join(subdir, filename),
-                                         xlabel=column, ylabel='target_feature')
-
-        for model_name, model_instance in models:
-            for splitter_name, trains_tests in splits:
-                subdir = join(normalizer_name, selector_name, model_name, splitter_name)
-                log.info(f"    Running splits for {subdir}")
-                subsubdir = join(outdir, subdir)
-                os.makedirs(subsubdir)
-                runs = _do_splitter(X, y, model_instance, subsubdir, metrics_dict,
-                                    trains_tests, is_classification, PlotSettings)
-                all_results.extend(runs)
-
-    return all_results
+    return do_models_splits()
 
 def _do_splitter(X, y, model, main_path, metrics_dict, trains_tests,
                  is_classification, PlotSettings):
@@ -247,9 +285,8 @@ def _do_splitter(X, y, model, main_path, metrics_dict, trains_tests,
     For a fixed normalizer,selector,model,splitter,
     train and test the model on each split that the splitter makes
     """
-    split_results = []
-    for split_num, (train_indices, test_indices) in enumerate(trains_tests):
 
+    def one_fit(split_num, train_indices, test_indices):
         log.info(f"        Doing split number {split_num}")
         train_X, train_y = X.loc[train_indices], y.loc[train_indices]
         test_X,  test_y  = X.loc[test_indices],  y.loc[test_indices]
@@ -306,21 +343,27 @@ def _do_splitter(X, y, model, main_path, metrics_dict, trains_tests,
             plot_helper.make_main_plots(split_result, path, is_classification)
         _write_stats(split_result['train_metrics'],
                      split_result['test_metrics'],
-                     main_path) ### ??? outdir)
+                     main_path)
 
-        split_results.append(split_result)
+        return split_result
+
+    split_results = []
+    for split_num, (train_indices, test_indices) in enumerate(trains_tests):
+        split_results.append(one_fit(split_num, train_indices, test_indices))
 
     log.info("    Calculating mean and stdev of scores...")
-    # TODO: move the below stats into plot_helper maybe
-    train_stats = OrderedDict()
-    test_stats  = OrderedDict()
-    for name in metrics_dict:
-        train_values = [split_result['train_metrics'][name] for split_result in split_results]
-        test_values  = [split_result['test_metrics'][name]  for split_result in split_results]
-        train_stats[name] = (np.mean(train_values),
-                             np.std(train_values) / np.sqrt(len(train_values)))
-        test_stats[name]  = (np.mean(test_values),
-                             np.std(test_values) / np.sqrt(len(test_values)))
+    def make_stats():
+        train_stats = OrderedDict()
+        test_stats  = OrderedDict()
+        for name in metrics_dict:
+            train_values = [split_result['train_metrics'][name] for split_result in split_results]
+            test_values  = [split_result['test_metrics'][name]  for split_result in split_results]
+            train_stats[name] = (np.mean(train_values),
+                                 np.std(train_values) / np.sqrt(len(train_values)))
+            test_stats[name]  = (np.mean(test_values),
+                                 np.std(test_values) / np.sqrt(len(test_values)))
+        return train_stats, test_stats
+    train_stats, test_stats = make_stats()
 
     log.info("    Making best/worst plots...")
     # sort splits by the test score of first metric:
@@ -328,52 +371,25 @@ def _do_splitter(X, y, model, main_path, metrics_dict, trains_tests,
     worst, median, best = split_results[0], split_results[len(split_results)//2], split_results[-1]
 
     # collect all predictions in a combo for each point in the dataset
-    if not is_classification:
+    def do_plots():
         if PlotSettings['predicted_vs_true']:
             plot_helper.plot_best_worst_split(best, worst,
-                                              join(main_path, 'best_worst_overlay.png'))
+                                              join(main_path, 'best_worst_split.png'))
         predictions = [[] for _ in range(X.shape[0])]
         for split_num, (train_indices, test_indices) in enumerate(trains_tests):
             for i, pred in zip(test_indices, split_results[split_num]['y_test_pred']):
                 predictions[i].append(pred)
         if PlotSettings['predicted_vs_true_bars']:
             plot_helper.plot_predicted_vs_true_bars(y.values, predictions,
-                                                    join(main_path, 'bars.png'))
+                                                    join(main_path, 'best_worst_average.png'))
         if PlotSettings['best_worst_per_point']:
             plot_helper.plot_best_worst_per_point(y.values, predictions,
                                                   join(main_path, 'best_worst_per_point.png'),
                                                   metrics_dict, test_stats)
+    if not is_classification:
+        do_plots()
 
     return split_results
-
-def normalize_and_select(normalizers, selectors, X, y, outdir):
-    triples = []
-    for normalizer_name, normalizer_instance in normalizers:
-
-        log.info(f"Running normalizer {normalizer_name} ...")
-        X_normalized = normalizer_instance.fit_transform(X, y)
-
-        log.info("Saving normalized data to csv...")
-        dirname = join(outdir, normalizer_name)
-        os.mkdir(dirname)
-        pd.concat([X_normalized, y], 1).to_csv(join(dirname, "normalized.csv"), index=False)
-
-        # FeatureSelection (cross-product)
-        log.info("Running selectors...")
-        for selector_name, selector_instance in selectors:
-
-            log.info(f"    Running selector {selector_name} ...")
-            # NOTE: Changed from fit_transform because PCA's fit_transform
-            #       doesn't call transform (does transformation itself).
-            X_selected = selector_instance.fit(X_normalized, y).transform(X_normalized)
-
-            log.info("    Saving selected features to csv...")
-            dirname = join(outdir, normalizer_name, selector_name)
-            os.mkdir(dirname)
-            pd.concat([X_selected, y], 1).to_csv(join(dirname, "selected.csv"), index=False)
-
-            triples.append((normalizer_name, selector_name, X_selected))
-    return triples
 
 def _instantiate(kwargs_dict, name_to_constructor, category):
     """
@@ -420,7 +436,7 @@ def _extract_grouping_column_names(splitter_to_kwargs):
             splitter_to_group_names[splitter_name] = column_name
     return splitter_to_group_names
 
-def _remove_constant_feautures(df):
+def _remove_constant_features(df):
     log.info("Removing constant features, regardless of feature selectors.")
     before = set(df.columns)
     df = df.loc[:, (df != df.iloc[0]).any()]

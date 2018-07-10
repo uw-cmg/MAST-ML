@@ -6,7 +6,6 @@ __date__ = 'October 14th, 2017'
 
 import os
 import numpy as np
-from custom_features import cf_help # TODO resolve this import
 import pandas as pd
 import copy
 import logging
