@@ -204,9 +204,11 @@ def _do_combos(df, X, y, instances, metrics_dict, outdir, is_classification,
 
     log.info("Fitting models to splits...")
 
-    return _do_models_splits(post_selection, y, models, splits, outdir, metrics_dict, PlotSettings, is_classification)
+    return _do_models_splits(post_selection, y, models, splits, outdir,
+                             metrics_dict, PlotSettings, is_classification)
 
-def _do_models_splits(post_selection, y, models, splits, outdir, metrics_dict, PlotSettings, is_classification):
+def _do_models_splits(post_selection, y, models, splits, outdir,
+                      metrics_dict, PlotSettings, is_classification):
 
     all_results = []
 
@@ -495,7 +497,7 @@ def get_commandline_args():
     parser.add_argument('-v', '--verbosity', action="count",
                         help="include this flag for more verbose output")
     parser.add_argument('-q', '--quietness', action="count",
-                        help="include this flag to hide [DEBUG] printouts, or twice to hide [INFO]")
+                       help="include this flag to hide [DEBUG] printouts, or twice to hide [INFO]")
 
     args = parser.parse_args()
     verbosity = (args.verbosity if args.verbosity else 0)\
