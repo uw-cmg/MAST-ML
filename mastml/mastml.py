@@ -18,8 +18,9 @@ from sklearn.externals import joblib
 from sklearn.exceptions import UndefinedMetricWarning
 
 from . import conf_parser, data_loader, html_helper, plot_helper, metrics, utils
-from .legos import (data_splitters, feature_generators, clusterers, feature_normalizers,
+from .legos import (data_splitters, feature_generators, feature_normalizers,
                     feature_selectors, model_finder, util_legos)
+from .legos import clusterers as legos_clusterers
 
 log = logging.getLogger('mastml')
 
@@ -85,7 +86,7 @@ def mastml_run(conf_path, data_path, outdir):
                                feature_generators.name_to_constructor,
                                'featuregenerator')
     clusterers  = _instantiate(conf['Clustering'],
-                               clustering.name_to_constructor,
+                               legos_clusterers.name_to_constructor,
                                'clusterer')
     normalizers = _instantiate(conf['FeatureNormalization'],
                                feature_normalizers.name_to_constructor,
@@ -203,37 +204,39 @@ def _do_combos(df, X, y, instances, metrics_dict, outdir, is_classification,
 
     log.info("Fitting models to splits...")
 
-    return all_results
+    return _do_models_splits(post_selection, y, models, splits, outdir, metrics_dict, PlotSettings, is_classification)
 
-def _do_models_splits(post_selection, models, outdir, PlotSettings):
+def _do_models_splits(post_selection, y, models, splits, outdir, metrics_dict, PlotSettings, is_classification):
+
     all_results = []
+
     for normalizer_name, selector_name, X in post_selection:
-        path = join(outdir, normalizer_name, selector_name)
-        savepath = join(path, f'learning_curve.png')
-        # TODO: go fetch a model
+
+        subdir = join(outdir, normalizer_name, selector_name)
         learning_curve_model = model_finder.name_to_constructor[\
                 'LogisticRegression' if is_classification else 'LinearRegression']()
         learning_curve_score = 'f1' if is_classification else 'r2'
-        plot_helper.plot_sample_learning_curve(learning_curve_model, X, y,
-                                               learning_curve_score, 2, savepath)
+        plot_helper.plot_sample_learning_curve(learning_curve_model, X, y, learning_curve_score,
+                                               2, join(subdir, f'learning_curve.png'))
 
         if PlotSettings['feature_vs_target']:
             if selector_name == 'DoNothing': continue
             # for each selector/normalizer, plot y against each x column
             for column in X:
-                filename = f'{column}_vs_target_by_{normalizer_name}_{selector_name}.png'
-                plot_helper.plot_scatter(X[column], y, join(outdir, filename),
+                filename = f'{column}_vs_target.png'
+                plot_helper.plot_scatter(X[column], y, join(subdir, filename),
                                          xlabel=column, ylabel='target_feature')
 
         for model_name, model_instance in models:
             for splitter_name, trains_tests in splits:
                 subdir = join(normalizer_name, selector_name, model_name, splitter_name)
                 log.info(f"    Running splits for {subdir}")
-                path = join(outdir, subdir)
-                os.makedirs(path)
-                runs = _do_splitter(X, y, model_instance, path, metrics_dict,
+                subsubdir = join(outdir, subdir)
+                os.makedirs(subsubdir)
+                runs = _do_splitter(X, y, model_instance, subsubdir, metrics_dict,
                                     trains_tests, is_classification, PlotSettings)
                 all_results.extend(runs)
+
     return all_results
 
 def _do_splitter(X, y, model, main_path, metrics_dict, trains_tests,
