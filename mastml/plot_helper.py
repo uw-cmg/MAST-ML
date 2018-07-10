@@ -215,7 +215,7 @@ def plot_best_worst_split(best_run, worst_run, savepath,
                           title='Best Worst Overlay'):
     #fig, ax = make_fig_ax(aspect_ratio=0.3333333333333333333333333333333)
     # Set image aspect ratio:
-    w, h = figaspect(0.333)
+    w, h = figaspect(0.5)
     fig = Figure(figsize=(w,h))
     FigureCanvas(fig)
     # Trap figure on left side:
@@ -248,8 +248,8 @@ def plot_best_worst_split(best_run, worst_run, savepath,
     worst_stats = OrderedDict([('worst Run', None)])
     worst_stats.update(worst_run['test_metrics'])
 
-    plot_stats(fig, best_stats, x_align=6/12)
-    plot_stats(fig, worst_stats, x_align=9/12)
+    plot_stats(fig, best_stats, x_align=11/24)
+    plot_stats(fig, worst_stats, x_align=18/24)
 
     #fig.tight_layout()
     fig.savefig(savepath, dpi=200)
@@ -268,7 +268,7 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
         new_y_true.append(yt)
 
     worst_stats = OrderedDict([('Worst combined:', None)])
-    best_stats = OrderedDict([('Worst combined:', None)])
+    best_stats = OrderedDict([('Best combined:', None)])
     for name, func in metrics_dict.items():
         worst_stats[name] = func(new_y_true, worsts)
         best_stats[name] = func(new_y_true, bests)
@@ -306,7 +306,7 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
     fig.savefig(savepath)
 
 @ipynb_maker
-def plot_predicted_vs_true_bars(y_true, y_pred_list,
+def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
                                 savepath, title='best worst with bars'):
     " EVERYTHING MUST BE ARRAYS DONT GIVE ME DEM DF "
     means = [nice_mean(y_pred) for y_pred in y_pred_list]
@@ -329,7 +329,7 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list,
 
     ax.errorbar(y_true, means, yerr=standard_error_means, fmt='o', capsize=3)
 
-    plot_stats(fig, dict())
+    plot_stats(fig, avg_stats)
     fig.savefig(savepath)
 
 @ipynb_maker
