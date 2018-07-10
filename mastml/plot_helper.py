@@ -204,7 +204,7 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y'):
         for group in np.unique(groups):
             mask = groups == group
             ax.scatter(x[mask], y[mask], label=group)
-        ax.legend()
+        ax.legend(loc='lower left', bbox_to_anchor=(1, -.2))
 
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
@@ -219,7 +219,7 @@ def plot_best_worst_split(best_run, worst_run, savepath,
     fig = Figure(figsize=(w,h))
     FigureCanvas(fig)
     # Trap figure on left side:
-    gs = plt.GridSpec(1, 3)
+    gs = plt.GridSpec(1, 2)
     ax = fig.add_subplot(gs[0, 0:1], aspect='equal')
 
     # make diagonal line from absolute min to absolute max of any data point
@@ -234,7 +234,7 @@ def plot_best_worst_split(best_run, worst_run, savepath,
                alpha=0.7, label='best',  edgecolor='darkred',  zorder=2, s=80)
     ax.scatter(worst_run['y_test_true'], worst_run['y_test_pred'], c='blue',
                alpha=0.7, label='worst', edgecolor='darkblue', zorder=3)
-    ax.legend()
+    ax.legend(loc='lower left', bbox_to_anchor=(1, 0))
 
     # set axis labels
     ax.set_xlabel('Measured')
@@ -248,7 +248,7 @@ def plot_best_worst_split(best_run, worst_run, savepath,
     worst_stats = OrderedDict([('worst Run', None)])
     worst_stats.update(worst_run['test_metrics'])
 
-    plot_stats(fig, best_stats, x_align=11/24)
+    plot_stats(fig, best_stats, x_align=12/24)
     plot_stats(fig, worst_stats, x_align=18/24)
 
     #fig.tight_layout()
@@ -298,7 +298,7 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
                edgecolor='darkred',  zorder=2, s=80)
     ax.scatter(new_y_true, worsts, c='blue', alpha=0.7, label='worst',
                edgecolor='darkblue', zorder=3)
-    ax.legend()
+    ax.legend(loc='lower left', bbox_to_anchor=(1, -.2))
 
     plot_stats(fig, avg_stats, x_align=10/25)
     plot_stats(fig, worst_stats, x_align=15/25)
@@ -411,7 +411,7 @@ def plot_sample_learning_curve(model, X, y, scoring, cv=2, savepath='sample_lear
     fig, ax = make_fig_ax(aspect='auto')
     h1 = ax.plot(train_sizes, train_scores, '-o', c='blue')[0]
     h2 = ax.plot(train_sizes, valid_scores, '-o', c='red')[0]
-    ax.legend([h1, h2], ['train', 'test'])
+    ax.legend([h1, h2], ['train', 'test'], loc='lower left', bbox_to_anchor=(1, -.2))
     ax.set_xlabel('number of training samples')
     ax.set_ylabel(scoring + ' score')
     fig.savefig(savepath)

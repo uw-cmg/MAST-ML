@@ -353,8 +353,8 @@ def _do_splitter(X, y, model, main_path, metrics_dict, trains_tests,
 
     log.info("    Calculating mean and stdev of scores...")
     def make_stats():
-        train_stats = OrderedDict()
-        test_stats  = OrderedDict()
+        train_stats = OrderedDict([('Average Train', None)])
+        test_stats  = OrderedDict([('Average Test', None)])
         for name in metrics_dict:
             train_values = [split_result['train_metrics'][name] for split_result in split_results]
             test_values  = [split_result['test_metrics'][name]  for split_result in split_results]
@@ -363,7 +363,7 @@ def _do_splitter(X, y, model, main_path, metrics_dict, trains_tests,
             test_stats[name]  = (np.mean(test_values),
                                  np.std(test_values) / np.sqrt(len(test_values)))
         return train_stats, test_stats
-    train_stats, test_stats = make_stats()
+    avg_train_stats, avg_test_stats = make_stats()
 
     log.info("    Making best/worst plots...")
     # sort splits by the test score of first metric:
@@ -380,12 +380,12 @@ def _do_splitter(X, y, model, main_path, metrics_dict, trains_tests,
             for i, pred in zip(test_indices, split_results[split_num]['y_test_pred']):
                 predictions[i].append(pred)
         if PlotSettings['predicted_vs_true_bars']:
-            plot_helper.plot_predicted_vs_true_bars(y.values, predictions,
+            plot_helper.plot_predicted_vs_true_bars(y.values, predictions, avg_test_stats,
                                                     join(main_path, 'best_worst_average.png'))
         if PlotSettings['best_worst_per_point']:
             plot_helper.plot_best_worst_per_point(y.values, predictions,
                                                   join(main_path, 'best_worst_per_point.png'),
-                                                  metrics_dict, test_stats)
+                                                  metrics_dict, avg_test_stats)
     if not is_classification:
         do_plots()
 
