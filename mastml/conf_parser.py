@@ -47,9 +47,7 @@ def parse_conf_file(filepath):
 
     # Collect all subsections which contain only parameters (no subsubsections):
     def parameter_dict_type_check_and_cast():
-        parameter_dicts = ([conf['GeneralSetup']]
-                           + conf['Models'].values()
-                           + conf['DataSplits'].values())
+        parameter_dicts = conf['Models'].values() + conf['DataSplits'].values()
         for feature_section in feature_section_dicts:
             parameter_dicts.extend(feature_section.values())
 
@@ -60,7 +58,6 @@ def parse_conf_file(filepath):
                 if isinstance(value, dict):
                     raise TypeError(f"Subsection in parameter-only section: {key}")
                 # input_features and target_feature are always strings
-                if name in ['input_features', 'target_feature']: continue
                 parameter_dict[name] = fix_types(value)
     parameter_dict_type_check_and_cast()
 
@@ -80,28 +77,33 @@ def parse_conf_file(filepath):
                     conf[name] = {'DoNothing': dict()}
     make_empty_default_sections()
 
-    def replace_auto_default():
-        settings = ['input_features', 'target_feature']
-        for name in settings:
-            if (name not in conf['GeneralSetup']) or (conf['GeneralSetup'][name] == 'Auto'):
-                conf['GeneralSetup'][name] = None
+    GS = conf['GeneralSetup']
+
+    def set_default_features():
+        for name in ['input_features', 'target_feature']:
+            if (name not in GS) or (GS[name] == 'Auto'):
+                GS[name] = None
+    set_default_features()
+
+    def check_learning_curve():
+        for name in ['learning_curve_model', 'learning_curve_score']:
+            if name not in GS:
+                GS[name] = None
+                    pass
     replace_auto_default()
 
     def move_metrics():
-        if 'metrics' in conf['GeneralSetup']:
-            conf['metrics'] = conf['GeneralSetup']['metrics']
-            del conf['GeneralSetup']['metrics']
-        if 'metrics' not in conf or conf['metrics'] == 'Auto':
+        if 'metrics' not in GS or or GS['metrics'] == 'Auto':
             if is_classification:
-                conf['metrics'] = ['accuracy_score', 'precision_score', 'recall_score']
+                GS['metrics'] = ['accuracy_score', 'precision_score', 'recall_score']
             else:
-                conf['metrics'] = ['r2_score', 'root_mean_squared_error',
+                GS['metrics'] = ['r2_score', 'root_mean_squared_error',
                                    'mean_absolute_error', 'explained_variance_score']
         else: # User has specified their own specific metrics:
-            metrics.check_names(conf['metrics'], is_classification)
+            metrics.check_names(GS['metrics'], is_classification)
     move_metrics()
 
-    def _handle_selectors_references():
+    def change_selector_score_func_references():
         """
         Modifies each selector in `selectors` in place,
         turning strings referencing score_funcs into actual score_funcs
@@ -121,12 +123,9 @@ def parse_conf_file(filepath):
                             f"tasks (inside feature selector {selector_name}). Valid score"
                             f"functions: name_to_func.keys()")
             else:
-                args_dict['score_func'] =\
-                        name_to_func['f_classif' if is_classification
-                                     else 'f_regression']
-
-        return conf
-    _handle_selectors_references()
+                args_dict['score_func'] = \
+                        name_to_func['f_classif' if is_classification else 'f_regression']
+    change_selector_score_func_references()
 
     def make_long_name_short_name_pairs():
         dictionaries = ([conf['DataSplits'], conf['Models']]
@@ -136,27 +135,24 @@ def parse_conf_file(filepath):
                 dictionary[name] = (name.split('_')[0], settings)
     make_long_name_short_name_pairs()
 
-    def handle_plot_settings():
+    def check_and_boolify_plot_settings():
         plot_settings = ['target_histogram', 'main_plots', 'predicted_vs_true',
-                         'predicted_vs_true_bars', 'best_worst_per_point', 'feature_vs_target']
+                         'predicted_vs_true_bars', 'best_worst_per_point',
+                         'feature_vs_target', 'data_learning_curve']
         if 'PlotSettings' not in conf:
             conf['PlotSettings'] = dict()
-            for name in plot_settings:
-                conf['PlotSettings'][name] = True
-        else:
-            for name, value in conf['PlotSettings'].items():
-                if name not in plot_settings:
-                    raise utils.InvalidConfParameters(
-                            f"[PlotSettings] parameter '{name}' is invalid")
-                try:
-                    conf['PlotSettings'][name] = strtobool(value)
-                except ValueError:
-                    raise utils.InvalidConfParameters(
-                        f"[PlotSettings] parameter '{name}' must be a boolean")
-            for name in plot_settings:
-                if name not in conf['PlotSettings']:
-                    conf['PlotSettings'][name] = True
-    handle_plot_settings()
+        for name, value in conf['PlotSettings'].items():
+            if name not in plot_settings:
+                raise utils.InvalidConfParameters(f"[PlotSettings] parameter '{name}' is unknown")
+            try:
+                conf['PlotSettings'][name] = strtobool(value)
+            except ValueError:
+                raise utils.InvalidConfParameters(
+                    f"[PlotSettings] parameter '{name}' must be a boolean")
+        for name in plot_settings:
+            if name not in conf['PlotSettings']:
+                conf['PlotSettings'][name] = True # all plots on by default
+    check_and_boolify_plot_settings()
 
     return conf
 
