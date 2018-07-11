@@ -81,9 +81,13 @@ nice_names = {
     'zero_one_loss': '10ss',
 }
 
-def check_names(metric_names, is_classification):
+def check_and_fetch_names(metric_names, is_classification):
+    " Ensures all metrics are appropriate for task "
     task = 'classification' if is_classification else 'regression'
     metrics_dict = classification_metrics if is_classification else regression_metrics
+    functions = {}
     for name in metric_names:
         if name not in metrics_dict:
             raise Exception(f"Metric '{name}' is not supported for {task}.")
+        functions[name] = metrics_dict[name]
+    return functions

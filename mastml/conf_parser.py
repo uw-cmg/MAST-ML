@@ -79,29 +79,30 @@ def parse_conf_file(filepath):
 
     GS = conf['GeneralSetup']
 
+    def check_unknown_general_setup():
+        all_settings =  ['input_features', 'target_feature',
+                         'learning_curve_model', 'learning_curve_score']
+        for name in GS:
+            if name not in all_settings:
+                raise utils.InvalidConfParameters(
+                        f"[GeneralSetup] contains unknown setting {name}")
+    check_unknown_general_setup()
+
     def set_default_features():
         for name in ['input_features', 'target_feature']:
             if (name not in GS) or (GS[name] == 'Auto'):
                 GS[name] = None
     set_default_features()
 
-    def check_learning_curve():
-        for name in ['learning_curve_model', 'learning_curve_score']:
-            if name not in GS:
-                GS[name] = None
-                    pass
-    replace_auto_default()
-
-    def move_metrics():
-        if 'metrics' not in GS or or GS['metrics'] == 'Auto':
+    def verify_metrics():
+        if 'metrics' not in GS or GS['metrics'] == 'Auto':
             if is_classification:
                 GS['metrics'] = ['accuracy_score', 'precision_score', 'recall_score']
             else:
                 GS['metrics'] = ['r2_score', 'root_mean_squared_error',
                                    'mean_absolute_error', 'explained_variance_score']
-        else: # User has specified their own specific metrics:
-            metrics.check_names(GS['metrics'], is_classification)
-    move_metrics()
+        GS['metrics'] = metrics.check_and_fetch_names(GS['metrics'], is_classification)
+    verify_metrics()
 
     def change_selector_score_func_references():
         """
@@ -136,23 +137,41 @@ def parse_conf_file(filepath):
     make_long_name_short_name_pairs()
 
     def check_and_boolify_plot_settings():
-        plot_settings = ['target_histogram', 'main_plots', 'predicted_vs_true',
-                         'predicted_vs_true_bars', 'best_worst_per_point',
-                         'feature_vs_target', 'data_learning_curve']
+        default_false = ['feature_vs_target', 'data_learning_curve']
+        default_true  = ['target_histogram', 'main_plots', 'predicted_vs_true',
+                         'predicted_vs_true_bars', 'best_worst_per_point']
+        all_settings = default_false + default_true
         if 'PlotSettings' not in conf:
             conf['PlotSettings'] = dict()
-        for name, value in conf['PlotSettings'].items():
-            if name not in plot_settings:
+        PS = conf['PlotSettings']
+        for name, value in PS.items():
+            if name not in all_settings:
                 raise utils.InvalidConfParameters(f"[PlotSettings] parameter '{name}' is unknown")
             try:
-                conf['PlotSettings'][name] = strtobool(value)
+                PS[name] = bool(strtobool(value))
             except ValueError:
                 raise utils.InvalidConfParameters(
                     f"[PlotSettings] parameter '{name}' must be a boolean")
-        for name in plot_settings:
-            if name not in conf['PlotSettings']:
-                conf['PlotSettings'][name] = True # all plots on by default
+        for name in default_false:
+            if name not in PS:
+                PS[name] = False
+        for name in default_true:
+            if name not in PS:
+                PS[name] = True
     check_and_boolify_plot_settings()
+
+    def check_learning_curve_settings():
+        if 'learning_curve_model' not in GS:
+            raise utils.InvalidConfParameters("You enabled data_learning_curve plots but you did"
+                                              "not specify learning_curve_model in [GeneralSetup]")
+        if 'learning_curve_score' not in GS:
+            raise utils.InvalidConfParameters("You enabled data_learning_curve plots but you did"
+                                              "not specify learning_curve_score in [GeneralSetup]")
+        score_name = GS['learning_curve_score']
+        d = metrics.check_and_fetch_names([score_name], is_classification)
+        GS['learning_curve_score'] = d[score_name]
+    if conf['PlotSettings']['data_learning_curve'] is True:
+        check_learning_curve_settings()
 
     return conf
 
@@ -162,7 +181,7 @@ def fix_types(maybe_list):
     if isinstance(maybe_list, list):
         return [fix_types(item) for item in maybe_list]
 
-    try: return strtobool(maybe_list)
+    try: return bool(strtobool(maybe_list))
     except ValueError: pass
 
     try: return int(maybe_list)

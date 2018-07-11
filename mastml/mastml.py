@@ -17,7 +17,7 @@ import pandas as pd
 from sklearn.externals import joblib
 from sklearn.exceptions import UndefinedMetricWarning
 
-from . import conf_parser, data_loader, html_helper, plot_helper, metrics, utils
+from . import conf_parser, data_loader, html_helper, plot_helper, utils
 from .legos import (data_splitters, feature_generators, feature_normalizers,
                     feature_selectors, model_finder, util_legos)
 from .legos import clusterers as legos_clusterers
@@ -65,10 +65,7 @@ def mastml_run(conf_path, data_path, outdir):
                                      conf['GeneralSetup']['target_feature'])
 
     # Get the appropriate collection of metrics:
-    big_metrics_dict = (metrics.classification_metrics
-                        if conf['is_classification']
-                        else metrics.regression_metrics)
-    metrics_dict = {name: big_metrics_dict[name] for name in conf['GeneralSetup']['metrics']}
+    metrics_dict = conf['GeneralSetup']['metrics']
 
     # Extract columns that some splitter need to do grouped splitting using 'grouping_column'
     # special argument
@@ -79,9 +76,13 @@ def mastml_run(conf_path, data_path, outdir):
     models = _instantiate(conf['Models'],
                           model_finder.name_to_constructor,
                           'model')
+    models = OrderedDict(models) # for easier modification
     _snatch_models(models, conf['FeatureSelection'])
-    if PlotSettings['data_learning_curve']:
-        if conf['GeneralSetup']['learning_curve_model'] is None:
+    if conf['PlotSettings']['data_learning_curve']:
+        name = conf['GeneralSetup']['learning_curve_model']
+        conf['GeneralSetup']['learning_curve_model'] = models[name]
+        del models[name]
+    models = list(models.items())
 
     # Instantiate all the sections of the conf file:
     generators  = _instantiate(conf['FeatureGeneration'],
@@ -420,12 +421,10 @@ def _snatch_models(models, conf_feature_selection):
     for selector_name, (_, args_dict) in conf_feature_selection.items():
         if 'estimator' in args_dict:
             model_name = args_dict['estimator']
-            for i, (name, instance) in enumerate(models):
-                if name == model_name:
-                    args_dict['estimator'] = instance
-                    del models[i]
-                    break
-            else:
+            try:
+                args_dict['estimator'] = models[estimator]
+                del models[estimator]
+            except KeyError:
                 raise utils.MastError(f"The selector {selector_name} specified model {model_name},"
                                       f"which was not found in the [Models] section")
     log.debug(f'models, post-snatching: \n{models}')
