@@ -4,6 +4,7 @@ Module for handling, parsing, and checking configuration files
 
 from distutils.util import strtobool
 
+from sklearn.metrics import make_scorer
 from configobj import ConfigObj
 import logging
 
@@ -167,9 +168,9 @@ def parse_conf_file(filepath):
         if 'learning_curve_score' not in GS:
             raise utils.InvalidConfParameters("You enabled data_learning_curve plots but you did"
                                               "not specify learning_curve_score in [GeneralSetup]")
-        score_name = GS['learning_curve_score']
-        d = metrics.check_and_fetch_names([score_name], is_classification)
-        GS['learning_curve_score'] = d[score_name]
+        #score_name = GS['learning_curve_score']
+        #metrics.check_and_fetch_names([score_name], is_classification)
+        #GS['learning_curve_score'] = make_scorer(d[score_name])
     if conf['PlotSettings']['data_learning_curve'] is True:
         check_learning_curve_settings()
 
