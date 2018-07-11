@@ -47,7 +47,9 @@ def parse_conf_file(filepath):
 
     # Collect all subsections which contain only parameters (no subsubsections):
     def parameter_dict_type_check_and_cast():
-        parameter_dicts = [conf['GeneralSetup']] + conf['Models'].values() + conf['DataSplits'].values()
+        parameter_dicts = ([conf['GeneralSetup']]
+                           + conf['Models'].values()
+                           + conf['DataSplits'].values())
         for feature_section in feature_section_dicts:
             parameter_dicts.extend(feature_section.values())
 
@@ -57,13 +59,14 @@ def parse_conf_file(filepath):
             for name, value in parameter_dict.items():
                 if isinstance(value, dict):
                     raise TypeError(f"Subsection in parameter-only section: {key}")
-                # input_features/target_feature might have column named 'y' or 'off' or whatever, so don't fix it
+                # input_features and target_feature are always strings
                 if name in ['input_features', 'target_feature']: continue
                 parameter_dict[name] = fix_types(value)
     parameter_dict_type_check_and_cast()
 
     # Ensure all models are either classifiers or regressors: (raises error if mixed)
-    is_classification = conf['is_classification'] = check_models_mixed(key.split('_')[0] for key in conf['Models'])
+    is_classification = conf['is_classification'] = check_models_mixed(
+            key.split('_')[0] for key in conf['Models'])
 
     if conf['DataSplits'] == dict():
         conf['DataSplits']['NoSplit'] = dict()
@@ -78,7 +81,8 @@ def parse_conf_file(filepath):
     make_empty_default_sections()
 
     def replace_auto_default():
-        for name in ['input_features', 'target_feature']:
+        settings = ['input_features', 'target_feature']
+        for name in settings:
             if (name not in conf['GeneralSetup']) or (conf['GeneralSetup'][name] == 'Auto'):
                 conf['GeneralSetup'][name] = None
     replace_auto_default()
@@ -91,7 +95,8 @@ def parse_conf_file(filepath):
             if is_classification:
                 conf['metrics'] = ['accuracy_score', 'precision_score', 'recall_score']
             else:
-                conf['metrics'] = ['r2_score', 'root_mean_squared_error', 'mean_absolute_error', 'explained_variance_score']
+                conf['metrics'] = ['r2_score', 'root_mean_squared_error',
+                                   'mean_absolute_error', 'explained_variance_score']
         else: # User has specified their own specific metrics:
             metrics.check_names(conf['metrics'], is_classification)
     move_metrics()
@@ -112,10 +117,9 @@ def parse_conf_file(filepath):
                     args_dict['score_func'] = name_to_func[args_dict['score_func']]
                 except KeyError:
                     raise utils.InvalidValue(
-                            f"Score function '{args_dict['score_func']}' not valid"
-                            f"for {task} tasks (inside feature selector"
-                            f"{selector_name}). Valid score functions:"
-                            f"name_to_func.keys()")
+                            f"Score function '{args_dict['score_func']}' not valid for {task}"
+                            f"tasks (inside feature selector {selector_name}). Valid score"
+                            f"functions: name_to_func.keys()")
             else:
                 args_dict['score_func'] =\
                         name_to_func['f_classif' if is_classification
@@ -125,16 +129,16 @@ def parse_conf_file(filepath):
     _handle_selectors_references()
 
     def make_long_name_short_name_pairs():
-        for dictionary in [conf['DataSplits'], conf['Models']] + [conf[name] for name in feature_sections]:
+        dictionaries = ([conf['DataSplits'], conf['Models']]
+                        + [conf[name] for name in feature_sections])
+        for dictionary in dictionaries:
             for name, settings in dictionary.items():
                 dictionary[name] = (name.split('_')[0], settings)
     make_long_name_short_name_pairs()
 
     def handle_plot_settings():
-        plot_settings = ['target_histogram',
-                         'main_plots', 'predicted_vs_true',
-                         'predicted_vs_true_bars', 'best_worst_per_point',
-                         'feature_vs_target']
+        plot_settings = ['target_histogram', 'main_plots', 'predicted_vs_true',
+                         'predicted_vs_true_bars', 'best_worst_per_point', 'feature_vs_target']
         if 'PlotSettings' not in conf:
             conf['PlotSettings'] = dict()
             for name in plot_settings:
