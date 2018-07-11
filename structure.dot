@@ -1,0 +1,42 @@
+digraph graphname {
+
+subgraph cluster0 {
+    style=filled;
+    color=grey98;
+    Normalization [shape=septagon]
+    Selection [shape=septagon]
+    DataSplits [shape=septagon]
+    Models [shape=septagon]
+}
+//{rank = same; Normalization; Selection; DataSplits; Models;}
+
+X [shape=box]
+y [shape=box]
+df [shape=box]
+{rank = same; X; y; df;}
+
+grouped [overlap=true]
+
+df -> Generation
+df -> grouped
+X -> concat
+y -> Selection
+y -> DataSplits
+
+concat [label="concat" shape=circle width=0.7 margin=0 ]
+Generation -> concat [xlabel="df generated"]
+concat -> Clustering
+concat -> Normalization
+Normalization -> Selection [xlabel="     X normalized"]
+Selection -> DataSplits [xlabel="     X selected"]
+
+Clustering -> grouped
+grouped -> DataSplits 
+DataSplits [lhead=grouped]
+
+DataSplits -> Models [xlabel="     X,y[test.train]"]
+
+Models -> Prediction [xlabel="     predction"]
+Prediction [style=invis]
+
+}
