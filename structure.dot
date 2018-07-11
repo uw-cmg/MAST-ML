@@ -1,3 +1,5 @@
+// Build using:
+// dot structure.dot -Tpng -o structure.png
 digraph graphname {
 
 concat [shape=egg width=0.7 margin=0 group=g1]
