@@ -1,0 +1,49 @@
+// Build using:
+// dot structure.dot -Tpng -o structure.png
+digraph graphname {
+
+concat [shape=egg width=0.7 margin=0 group=g1]
+Generation [group=g1]
+df [shape=box group=g1]
+subgraph cluster0 {
+    style=filled;
+    color=grey98;
+    Normalization [shape=septagon group=g1]
+    Selection [shape=septagon group=g1]
+    DataSplits [shape=septagon group=g1]
+    Models [shape=septagon group=g1]
+}
+//{rank = same; Normalization; Selection; DataSplits; Models;}
+
+X [shape=box]
+y [shape=box]
+{rank = same; X; y; df;}
+
+grouped [overlap=true]
+
+df -> Generation
+df -> grouped
+X -> concat
+y -> Selection
+y -> DataSplits
+
+grouped [label="grouping" shape=egg width=0.8 margin=0 ]
+
+Generation -> concat [xlabel="df generated  " ]
+concat -> Clustering
+concat -> Normalization
+Normalization -> Selection [xlabel="X normalized  ",]
+Selection -> DataSplits [xlabel="X selected  "]
+
+Clustering -> grouped
+grouped -> DataSplits 
+DataSplits [lhead=grouped]
+
+DataSplits -> Models [xlabel="X,y[test,train] array  " fontcolor=firebrick color=firebrick]
+
+Models -> predictions [xlabel="prediction array  " fontcolor=firebrick color=firebrick]
+predictions [shape=box]
+
+
+
+}
