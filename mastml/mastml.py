@@ -60,13 +60,15 @@ def mastml_run(conf_path, data_path, outdir):
     # The df is used by feature generators, clusterers, and grouping_column to 
     # create more features for x.
     # X is model input, y is target feature for model
-    df, X, y = data_loader.load_data(data_path, **conf['GeneralSetup'])
+    df, X, y = data_loader.load_data(data_path,
+                                     conf['GeneralSetup']['input_features'],
+                                     conf['GeneralSetup']['target_feature'])
 
     # Get the appropriate collection of metrics:
     big_metrics_dict = (metrics.classification_metrics
                         if conf['is_classification']
                         else metrics.regression_metrics)
-    metrics_dict = {name: big_metrics_dict[name] for name in conf['metrics']}
+    metrics_dict = {name: big_metrics_dict[name] for name in conf['GeneralSetup']['metrics']}
 
     # Extract columns that some splitter need to do grouped splitting using 'grouping_column'
     # special argument
@@ -74,12 +76,12 @@ def mastml_run(conf_path, data_path, outdir):
     log.debug('splitter_to_group_names:\n' + str(splitter_to_group_names))
 
     # Instantiate models first so we can snatch them and pass them into feature selectors
-    models      = _instantiate(conf['Models'],
-                               model_finder.name_to_constructor,
-                               'model')
-    log.debug(f'models, pre-snatching: \n{models}')
+    models = _instantiate(conf['Models'],
+                          model_finder.name_to_constructor,
+                          'model')
     _snatch_models(models, conf['FeatureSelection'])
-    log.debug(f'models: \n{models}')
+    if PlotSettings['data_learning_curve']:
+        if conf['GeneralSetup']['learning_curve_model'] is None:
 
     # Instantiate all the sections of the conf file:
     generators  = _instantiate(conf['FeatureGeneration'],
@@ -414,6 +416,7 @@ def _instantiate(kwargs_dict, name_to_constructor, category):
     return instantiations
 
 def _snatch_models(models, conf_feature_selection):
+    log.debug(f'models, pre-snatching: \n{models}')
     for selector_name, (_, args_dict) in conf_feature_selection.items():
         if 'estimator' in args_dict:
             model_name = args_dict['estimator']
@@ -425,6 +428,7 @@ def _snatch_models(models, conf_feature_selection):
             else:
                 raise utils.MastError(f"The selector {selector_name} specified model {model_name},"
                                       f"which was not found in the [Models] section")
+    log.debug(f'models, post-snatching: \n{models}')
 
 def _extract_grouping_column_names(splitter_to_kwargs):
     splitter_to_group_names = dict()
