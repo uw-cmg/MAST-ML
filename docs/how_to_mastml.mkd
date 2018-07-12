@@ -53,6 +53,9 @@ df, X, y = data_loader.load_data(data_path,
                                  conf['GeneralSetup']['target_feature'])
 ```
 
+`df` has every column except for the `target_feature`, `y` has only the
+`target_feature`, and `x` has only the user specified `input_features` 
+
 It's important that `conf` is never passed in it's entirety to anyone who
 doesn't need to see it, based in the
 [principle of least privilege](http://wiki.c2.com/?PrincipleOfLeastPrivilege).
@@ -103,3 +106,72 @@ if conf['PlotSettings']['data_learning_curve']:
 models = list(models.items())
 ...
 ```
+
+### Do Combos
+
+This code section processes the data we retrieved using the sections we
+instantiated. Its process is the one shown in the diagram at the beginning. The
+heptagon shaped sections (Normalization, Selection, DataSplits, Models) do a
+"cross product" of their subsections. That is, if you have 2 normalizers, 2 selectors, 3
+data splits, and 4 models, you will end up with 24 "combos". 
+
+
+```
+
+├── MeanStdevScaler
+│   ├── SelectKBest
+│   │   ├── GaussianProcessRegressor
+│   │   │   ├── KFold
+│   │   │   └── NoSplit
+│   │   ├── KNeighborsRegressor
+│   │   │   ├── KFold
+│   │   │   └── NoSplit
+│   │   ├── learning_curve.png
+│   │   └── selected.csv
+│   └── SelectPercentile
+│       ├── GaussianProcessRegressor
+│       │   ├── KFold
+│       │   └── NoSplit
+│       └── KNeighborsRegressor
+│           ├── KFold
+│           └── NoSplit
+└── MinMaxScaler
+    ├── SelectKBest
+    │   ├── GaussianProcessRegressor
+    │   │   ├── KFold
+    │   │   └── NoSplit
+    │   ├── KNeighborsRegressor
+    │   │   ├── KFold
+    │   │   └── NoSplit
+    │   ├── learning_curve.png
+    │   └── selected.csv
+    └── SelectPercentile
+        ├── GaussianProcessRegressor
+        │   ├── KFold
+        │   └── NoSplit
+        └── KNeighborsRegressor
+            ├── KFold
+            └── NoSplit
+
+[FeatureNormalization]
+    [[DoNothing]]
+    [[MinMaxScaler]]
+        feature_range = 0.1, 0.9
+
+[FeatureSelection]
+    [[SelectKBest]]
+        k = 5
+    [[SelectPercentile]]
+        score_func = f_regression
+        percentile=20
+
+[DataSplits]
+    [[NoSplit]]
+    [[KFold]]
+        n_splits = 3
+
+[Models]
+    [[KNeighborsRegressor]]
+    [[GaussianProcessRegressor]]
+    [[Ridge]]                       
+                                    
