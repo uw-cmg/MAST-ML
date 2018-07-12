@@ -98,10 +98,10 @@ def parse_conf_file(filepath):
     def verify_metrics():
         if 'metrics' not in GS or GS['metrics'] == 'Auto':
             if is_classification:
-                GS['metrics'] = ['accuracy_score', 'precision_score', 'recall_score']
+                GS['metrics'] = ['accuracy', 'precision_weighed', 'recall_weighed']
             else:
-                GS['metrics'] = ['r2_score', 'root_mean_squared_error',
-                                   'mean_absolute_error', 'explained_variance_score']
+                GS['metrics'] = ['r2', 'root_mean_squared_error',
+                                   'mean_absolute_error', 'explained_variance']
         GS['metrics'] = metrics.check_and_fetch_names(GS['metrics'], is_classification)
     verify_metrics()
 
@@ -114,8 +114,8 @@ def parse_conf_file(filepath):
         for selector_name, args_dict in conf['FeatureSelection'].items():
             selector_name = selector_name.split('_')[0]
             if selector_name not in feature_selectors.score_func_selectors: continue
-            name_to_func = metrics.classification_score_funcs if is_classification\
-                           else metrics.regression_score_funcs
+            name_to_func = (metrics.classification_score_funcs if is_classification
+                            else metrics.regression_score_funcs)
             if 'score_func' in args_dict:
                 try:
                     args_dict['score_func'] = name_to_func[args_dict['score_func']]

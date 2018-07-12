@@ -3,47 +3,78 @@ A collection of functions which take a y_correct vector and y_predicted vector
 and give some score of them
 """
 
-import numpy as np
-import sklearn.metrics as sm
 import sklearn.feature_selection as fs
 from sklearn.linear_model import LinearRegression # for r2_score_noint
+from sklearn.metrics import scorer
 
-def r2_score_noint(y_true, y_pred):
+
+
+# list of score functions: http://scikit-learn.org/stable/modules/model_evaluation.html
+classification_metrics = [
+    'accuracy',
+    'average_precision',
+    'f1',
+    'f1_macro',
+    'f1_micro',
+    'f1_samples',
+    'f1_weighted',
+    'neg_log_loss',
+    'precision',
+    'precision_macro',
+    'precision_micro',
+    'precision_samples',
+    'precision_weighted',
+    'recall',
+    'recall_macro',
+    'recall_micro',
+    'recall_samples',
+    'recall_weighted',
+    'roc_auc',
+]
+classification_metrics = {name: scorer.SCORERS[name] for name in classification_metrics}
+
+regression_metrics = [
+    'explained_variance',
+    'log_loss',
+    'neg_mean_absolute_error',
+    'neg_mean_squared_error',
+    'neg_mean_squared_log_error',
+    'neg_median_absolute_error',
+    'mean_absolute_error',
+    'mean_squared_error',
+    'median_absolute_error',
+    'r2',
+]
+regression_metrics = {name: scorer.SCORERS[name] for name in regression_metrics}
+
+def r2_score_noint(estimator, X, y_true):
     " Get the R^2 coefficient without intercept "
-    y_true = np.array(y_true)
-    y_true = y_true.reshape(y_true.shape[0], 1)
+    y_pred = estimator.predict(X)
     lr = LinearRegression(fit_intercept=False)
     lr.fit(y_true, y_pred)
     return lr.score(y_true, y_pred)
+def root_mean_squared_error(estimator, X, y_true):
+    return regression_metrics['mean_squared_error'](estimator, X, y_true)**0.5
+def neg_root_mean_squared_error(estimator, X, y_true):
+    return -regression_metrics['mean_squared_error'](estimator, X, y_true)**0.5
 
-classification_metrics = {
-    'accuracy_score': sm.accuracy_score,  # Accuracy classification score.
-    'classification_report': sm.classification_report,  # Build a text report showing the main classification metrics
-    'confusion_matrix': sm.confusion_matrix,  # Compute confusion matrix to evaluate the accuracy of a classification
-    'f1_score': sm.f1_score,  # Compute the F1 score, also known as balanced F-score or F-measure
-    'fbeta_score': sm.fbeta_score,  # Compute the F-beta score
-    'hamming_loss': sm.hamming_loss,  # Compute the average Hamming loss.
-    'jaccard_similarity_score': sm.jaccard_similarity_score,  # Jaccard similarity coefficient score
-    'log_loss': sm.log_loss,  # Log loss, aka logistic loss or cross-entropy loss.
-    'matthews_corrcoef': sm.matthews_corrcoef,  # Compute the Matthews correlation coefficient (MCC)
-    'precision_recall_fscore_support': sm.precision_recall_fscore_support,  # Compute precision, recall, F-measure and support for each class
-    'precision_score': lambda y_true, y_pred: sm.precision_score(y_true, y_pred, average='weighted'),  # Compute the precision
-    'recall_score': lambda y_true, y_pred: sm.recall_score(y_true, y_pred, average='weighted'),  # Compute the recall
-    'roc_auc_score': sm.roc_auc_score,  # Compute Area Under the Receiver Operating Characteristic Curve (ROC AUC) from prediction scores.
-    'roc_curve': sm.roc_curve,  # Compute Receiver operating characteristic (ROC)
-    'zero_one_loss': sm.zero_one_loss,  # Zero-one classification loss.
-}
+regression_metrics['r2_noint'] = r2_score_noint
+regression_metrics['root_mean_squared_error'] = root_mean_squared_error
+regression_metrics['neg_root_mean_squared_error'] = neg_root_mean_squared_error
 
-regression_metrics = {
-    'explained_variance_score': sm.explained_variance_score,  # Explained variance regression score function
-    'mean_absolute_error': sm.mean_absolute_error,  # Mean absolute error regression loss
-    'mean_squared_error': sm.mean_squared_error,  # Mean squared error regression loss
-    'root_mean_squared_error': lambda y_true, y_pred: sm.mean_squared_error(y_true, y_pred)**0.5,
-    'mean_squared_log_error': sm.mean_squared_log_error,  # Mean squared logarithmic error regression loss
-    'median_absolute_error': sm.median_absolute_error,  # Median absolute error regression loss
-    'r2_score': sm.r2_score,  # R^2 (coefficient of determination) regression score function.
-    'r2_score_noint': r2_score_noint,
-}
+
+#clustering_metrics = [
+#    'adjusted_mutual_info_score',
+#    'adjusted_rand_score',
+#    'completeness_score',
+#    'fowlkes_mallows_score',
+#    'homogeneity_score',
+#    'mutual_info_score',
+#    'normalized_mutual_info_score',
+#    'v_measure_score',
+#]
+#clustering_metrics = {name: scorer.SCORERS[name] for name in clustering_metrics}
+
 
 classification_score_funcs = {
     'chi2': fs.chi2, # Compute chi-squared stats between each non-negative feature and class.
@@ -57,28 +88,40 @@ regression_score_funcs = {
 }
 
 nice_names = {
-    'accuracy_score': 'Acc',
-    'confusion_matrix': 'Confusion Matrix',
-    'explained_variance_score': 'expl var',
-    'f1_score': 'f1',
-    'fbeta_score': 'fbeta score',
-    'hamming_loss': 'Hamming Loss',
-    'jaccard_similarity_score': 'Jaccard Similarity Score',
-    'log_loss': 'Log Loss',
-    'matthews_corrcoef': 'Matthews',
-    'mean_absolute_error': 'MAE',
-    'mean_squared_error': 'MSE',
-    'mean_squared_log_error': 'MSLE',
-    'median_absolute_error': 'MeAE',
-    'precision_recall_fscore_support': 'pr fscore',
-    'precision_score': 'Prec',
-    'r2_score': '$r^2$',
-    'r2_score_noint': '$r^2$ noint',
-    'recall_score': 'Rec',
-    'roc_auc_score': 'roc auc',
-    'roc_curve': 'roc',
-    'root_mean_squared_error': 'RMSE',
-    'zero_one_loss': '10ss',
+    # classification:
+    'accuracy': 'accuracy',
+    'average_precision': 'avg_prec',
+    'f1': 'f1',
+    'f1_macro': 'f1_macro',
+    'f1_micro': 'f1_micro',
+    'f1_samples': 'f1_samples',
+    'f1_weighted': 'f1_weighted',
+    'neg_log_loss': 'neg_log_loss',
+    'precision': 'precision',
+    'precision_macro': 'prec_macro',
+    'precision_micro': 'prec_micro',
+    'precision_samples': 'prec_samples',
+    'precision_weighted': 'prec_weighted',
+    'recall': 'recall',
+    'recall_macro': 'recall_macro',
+    'recall_micro': 'recall_micro',
+    'recall_samples': 'recall_samples',
+    'recall_weighted': 'recall_weighted',
+    'roc_auc': 'roc_auc',
+    # regression: '',
+    'explained_variance': 'explained_var',
+    'log_loss': 'log_loss',
+    'neg_mean_absolute_error': '-MAE',
+    'neg_mean_squared_error': '-MSE',
+    'neg_mean_squared_log_error': '-MSLE',
+    'neg_median_absolute_error': '-MedAE',
+    'neg_root_mean_squared_error': '-RMSE',
+    'mean_absolute_error': '+MAE',
+    'mean_squared_error': '+MSE',
+    'root_mean_squared_error': '+RMSE',
+    'median_absolute_error': '+MedAE',
+    'r2': 'r2',
+    'r2_noint': 'r2_noint',
 }
 
 def check_and_fetch_names(metric_names, is_classification):

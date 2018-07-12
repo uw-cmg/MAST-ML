@@ -304,10 +304,10 @@ def mastml_run(conf_path, data_path, outdir):
                 # This warning is raised when you ask for Recall on something from y_true that never
                 # occors in y_pred. sklearn assumes 0.0, and we want it to do so (silently).
                 warnings.simplefilter('ignore', UndefinedMetricWarning)
-                train_metrics = OrderedDict((name, function(train_y, train_pred))
-                                            for name,function in metrics_dict.items())
-                test_metrics = OrderedDict((name, function(test_y, test_pred))
-                                           for name,function in metrics_dict.items())
+                train_metrics = OrderedDict((name, function(model, train_X, train_y))
+                                            for name, function in metrics_dict.items())
+                test_metrics = OrderedDict((name, function(model, test_X, test_y))
+                                           for name, function in metrics_dict.items())
 
             split_result = OrderedDict(
                 normalizer = split_path[-4],
