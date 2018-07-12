@@ -4,77 +4,50 @@ and give some score of them
 """
 
 import sklearn.feature_selection as fs
+import sklearn.metrics as sm
 from sklearn.linear_model import LinearRegression # for r2_score_noint
-from sklearn.metrics import scorer
-
-
 
 # list of score functions: http://scikit-learn.org/stable/modules/model_evaluation.html
-classification_metrics = [
-    'accuracy',
-    'average_precision',
-    'f1',
-    'f1_macro',
-    'f1_micro',
-    'f1_samples',
-    'f1_weighted',
-    'neg_log_loss',
-    'precision',
-    'precision_macro',
-    'precision_micro',
-    'precision_samples',
-    'precision_weighted',
-    'recall',
-    'recall_macro',
-    'recall_micro',
-    'recall_samples',
-    'recall_weighted',
-    'roc_auc',
-]
-classification_metrics = {name: scorer.SCORERS[name] for name in classification_metrics}
+classification_metrics = {
+    'accuracy': sm.accuracy_score,
+    'f1_binary':          lambda yt, yp: sm.f1_score(yt, yp, average='binary'),
+    'f1_macro':           lambda yt, yp: sm.f1_score(yt, yp, average='macro'),
+    'f1_micro':           lambda yt, yp: sm.f1_score(yt, yp, average='micro'),
+    'f1_samples':         lambda yt, yp: sm.f1_score(yt, yp, average='samples'),
+    'f1_weighted':        lambda yt, yp: sm.f1_score(yt, yp, average='weighted'),
+    'neg_log_loss':       lambda yt, yp: -sm.log_loss(yt, yp),
+    'precision_binary':   lambda yt, yp: sm.precision_score(yt, yp, average='binary'),
+    'precision_macro':    lambda yt, yp: sm.precision_score(yt, yp, average='macro'),
+    'precision_micro':    lambda yt, yp: sm.precision_score(yt, yp, average='micro'),
+    'precision_samples':  lambda yt, yp: sm.precision_score(yt, yp, average='samples'),
+    'precision_weighted': lambda yt, yp: sm.precision_score(yt, yp, average='weighted'),
+    'recall_binary':      lambda yt, yp: sm.recall_score(yt, yp, average='binary'),
+    'recall_macro':       lambda yt, yp: sm.recall_score(yt, yp, average='macro'),
+    'recall_micro':       lambda yt, yp: sm.recall_score(yt, yp, average='micro'),
+    'recall_samples':     lambda yt, yp: sm.recall_score(yt, yp, average='samples'),
+    'recall_weighted':    lambda yt, yp: sm.recall_score(yt, yp, average='weighted'),
+    'roc_auc': sm.roc_auc_score,
+}
 
-regression_metrics = [
-    'explained_variance',
-    'log_loss',
-    'neg_mean_absolute_error',
-    'neg_mean_squared_error',
-    'neg_mean_squared_log_error',
-    'neg_median_absolute_error',
-    'mean_absolute_error',
-    'mean_squared_error',
-    'median_absolute_error',
-    'r2',
-]
-regression_metrics = {name: scorer.SCORERS[name] for name in regression_metrics}
+regression_metrics = {
+    'explained_variance': sm.explained_variance_score,
+    'neg_mean_absolute_error':    lambda yt, yp: -sm.mean_absolute_error(yt, yp),
+    'neg_mean_squared_error':     lambda yt, yp: -sm.mean_squared_error(yt, yp),
+    'neg_mean_squared_log_error': lambda yt, yp: -sm.mean_squared_log_error(yt, yp),
+    'neg_median_absolute_error':  lambda yt, yp: -sm.median_absolute_error(yt, yp),
+    'r2': sm.r2_score,
+}
 
-def r2_score_noint(estimator, X, y_true):
+def r2_score_noint(y_true, y_pred):
     " Get the R^2 coefficient without intercept "
-    y_pred = estimator.predict(X)
     lr = LinearRegression(fit_intercept=False)
     lr.fit(y_true, y_pred)
     return lr.score(y_true, y_pred)
-def root_mean_squared_error(estimator, X, y_true):
-    return regression_metrics['mean_squared_error'](estimator, X, y_true)**0.5
-def neg_root_mean_squared_error(estimator, X, y_true):
-    return -regression_metrics['mean_squared_error'](estimator, X, y_true)**0.5
-
 regression_metrics['r2_noint'] = r2_score_noint
-regression_metrics['root_mean_squared_error'] = root_mean_squared_error
+
+def neg_root_mean_squared_error(y_true, y_pred):
+    return -sm.mean_squared_error(y_true, y_pred)**0.5
 regression_metrics['neg_root_mean_squared_error'] = neg_root_mean_squared_error
-
-
-#clustering_metrics = [
-#    'adjusted_mutual_info_score',
-#    'adjusted_rand_score',
-#    'completeness_score',
-#    'fowlkes_mallows_score',
-#    'homogeneity_score',
-#    'mutual_info_score',
-#    'normalized_mutual_info_score',
-#    'v_measure_score',
-#]
-#clustering_metrics = {name: scorer.SCORERS[name] for name in clustering_metrics}
-
 
 classification_score_funcs = {
     'chi2': fs.chi2, # Compute chi-squared stats between each non-negative feature and class.
@@ -90,36 +63,31 @@ regression_score_funcs = {
 nice_names = {
     # classification:
     'accuracy': 'accuracy',
-    'average_precision': 'avg_prec',
-    'f1': 'f1',
+    'f1_binary': 'f1',
     'f1_macro': 'f1_macro',
     'f1_micro': 'f1_micro',
     'f1_samples': 'f1_samples',
     'f1_weighted': 'f1_weighted',
     'neg_log_loss': 'neg_log_loss',
-    'precision': 'precision',
+    'precision_binary': 'precision',
     'precision_macro': 'prec_macro',
     'precision_micro': 'prec_micro',
     'precision_samples': 'prec_samples',
     'precision_weighted': 'prec_weighted',
-    'recall': 'recall',
-    'recall_macro': 'recall_macro',
-    'recall_micro': 'recall_micro',
-    'recall_samples': 'recall_samples',
-    'recall_weighted': 'recall_weighted',
-    'roc_auc': 'roc_auc',
-    # regression: '',
-    'explained_variance': 'explained_var',
+    'recall_binary': 'rcl',
+    'recall_macro': 'rcl_macro',
+    'recall_micro': 'rcl_micro',
+    'recall_samples': 'rcl_samples',
+    'recall_weighted': 'rcl_weighted',
+    'roc_auc': 'ROC_AUC',
+    # regression:
+    'explained_variance': 'expl_var',
     'log_loss': 'log_loss',
     'neg_mean_absolute_error': '-MAE',
     'neg_mean_squared_error': '-MSE',
     'neg_mean_squared_log_error': '-MSLE',
     'neg_median_absolute_error': '-MedAE',
     'neg_root_mean_squared_error': '-RMSE',
-    'mean_absolute_error': '+MAE',
-    'mean_squared_error': '+MSE',
-    'root_mean_squared_error': '+RMSE',
-    'median_absolute_error': '+MedAE',
     'r2': 'r2',
     'r2_noint': 'r2_noint',
 }

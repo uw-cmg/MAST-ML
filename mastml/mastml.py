@@ -241,15 +241,12 @@ def mastml_run(conf_path, data_path, outdir):
             all_results = []
             for normalizer_name, selector_name, X in post_selection:
                 subdir = join(outdir, normalizer_name, selector_name)
-                learning_curve_model = conf['GeneralSetup']['learning_curve_model']
-                learning_curve_score = conf['GeneralSetup']['learning_curve_score']
-                print("LOOKATMELOOKATME model:", learning_curve_model, "score:", learning_curve_score)
-                #try:
-                plot_helper.plot_sample_learning_curve(
-                        learning_curve_model, X, y, learning_curve_score,
-                        2, join(subdir, f'learning_curve.png'))
-                #except:
-                #    log.warning("Learning curve failed")
+                if conf['PlotSettings']['data_learning_curve']:
+                    learning_curve_model = conf['GeneralSetup']['learning_curve_model']
+                    learning_curve_score = conf['GeneralSetup']['learning_curve_score']
+                    plot_helper.plot_sample_learning_curve(
+                            learning_curve_model, X, y, learning_curve_score,
+                            2, join(subdir, f'learning_curve.png'))
                 if PlotSettings['feature_vs_target']:
                     if selector_name == 'DoNothing': continue
                     # for each selector/normalizer, plot y against each x column
@@ -304,9 +301,9 @@ def mastml_run(conf_path, data_path, outdir):
                 # This warning is raised when you ask for Recall on something from y_true that never
                 # occors in y_pred. sklearn assumes 0.0, and we want it to do so (silently).
                 warnings.simplefilter('ignore', UndefinedMetricWarning)
-                train_metrics = OrderedDict((name, function(model, train_X, train_y))
+                train_metrics = OrderedDict((name, function(train_y, train_pred))
                                             for name, function in metrics_dict.items())
-                test_metrics = OrderedDict((name, function(model, test_X, test_y))
+                test_metrics = OrderedDict((name, function(test_y, test_pred))
                                            for name, function in metrics_dict.items())
 
             split_result = OrderedDict(
