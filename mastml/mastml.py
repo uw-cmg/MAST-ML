@@ -83,10 +83,16 @@ def mastml_run(conf_path, data_path, outdir):
                           'model')
     models = OrderedDict(models) # for easier modification
     _snatch_models(models, conf['FeatureSelection'])
-    if conf['PlotSettings']['data_learning_curve']:
-        name = conf['GeneralSetup']['learning_curve_model']
-        conf['GeneralSetup']['learning_curve_model'] = models[name]
-        del models[name]
+
+    def snatch_model_for_learning_curve():
+        PS = conf['PlotSettings']
+        GS = conf['GeneralSetup']
+        if PS['data_learning_curve'] or PS['feature_learning_curve']:
+            name = GS['learning_curve_model']
+            GS['learning_curve_model'] = models[name]
+            del models[name]
+    snatch_model_for_learning_curve()
+
     models = list(models.items())
 
     # Instantiate all the sections of the conf file:
@@ -247,6 +253,14 @@ def mastml_run(conf_path, data_path, outdir):
                     plot_helper.plot_sample_learning_curve(
                             learning_curve_model, X, y, learning_curve_score,
                             2, join(subdir, f'learning_curve.png'))
+
+                if conf['PlotSettings']['feature_learning_curve']:
+                    learning_curve_model = conf['GeneralSetup']['learning_curve_model']
+                    learning_curve_score = conf['GeneralSetup']['learning_curve_score']
+                    plot_helper.plot_sample_learning_curve(
+                            learning_curve_model, X, y, learning_curve_score,
+                            join(subdir, f'learning_curve.png'))
+
                 if PlotSettings['feature_vs_target']:
                     if selector_name == 'DoNothing': continue
                     # for each selector/normalizer, plot y against each x column
