@@ -29,6 +29,8 @@ from matplotlib.figure import Figure, figaspect
 from matplotlib.ticker import MaxNLocator # TODO: used?
 from matplotlib.animation import FuncAnimation
 
+from .utils import RFECV_train_test
+
 matplotlib.rc('font', size=18, family='sans-serif') # set all font to bigger
 matplotlib.rc('figure', autolayout=True) # turn on autolayout
 
@@ -421,7 +423,7 @@ def plot_sample_learning_curve(model, X, y, scoring, cv=2, savepath='sample_lear
 def plot_feature_learning_curve(model, X, y, scoring=None, savepath='feature_learning_curve.png'):
     #RFECV.transform = RFECV.old_transform # damn you
     print(dir(RFECV))
-    rfe = RFECV(model, scoring=scoring)
+    rfe = RFECV_train_test(model, scoring=scoring)
     rfe = rfe.fit(X, y)
     '''
     >>> oops
