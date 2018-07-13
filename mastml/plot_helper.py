@@ -20,6 +20,7 @@ warnings.filterwarnings(action="ignore", module="scipy",
 import numpy as np
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import learning_curve
+from sklearn.feature_selection import RFECV # for feature learning curve
 
 import matplotlib
 from matplotlib import pyplot as plt
@@ -369,6 +370,7 @@ def plot_1d_heatmap(xs, heats, savepath, xlabel='x', heatlabel='heats'):
     ax.set_ylabel(heatlabel)
     fig.savefig(savepath)
 
+
 def plot_2d_heatmap(xs, ys, heats, savepath,
                     xlabel='x', ylabel='y', heatlabel='heat'):
     fig, ax = make_fig_ax(aspect='auto')
@@ -414,6 +416,29 @@ def plot_sample_learning_curve(model, X, y, scoring, cv=2, savepath='sample_lear
     ax.legend([h1, h2], ['train', 'test'], loc='lower left', bbox_to_anchor=(1, -.2))
     ax.set_xlabel('number of training samples')
     ax.set_ylabel(scoring + ' score')
+    fig.savefig(savepath)
+
+def plot_feature_learning_curve(model, X, y, scoring=None, savepath='feature_learning_curve.png'):
+    #RFECV.transform = RFECV.old_transform # damn you
+    print(dir(RFECV))
+    rfe = RFECV(model, scoring=scoring)
+    rfe = rfe.fit(X, y)
+    '''
+    >>> oops
+    (Pdb) rfe.support_
+    >>> array([ True,  True,  True,  True,  True, False, False,  True,  True, False], dtype=bool)
+    (Pdb) rfe.ranking_
+    >>> array([1, 1, 1, 1, 1, 4, 2, 1, 1, 3])
+    (Pdb) rfe.grid_scores_
+    >>> array([ 0.11704555,  0.02829977,  0.09502728,  0.11660331,  0.11178014,
+    >>>        0.09861614,  0.14987966,  0.14267309,  0.13662161,  0.14129173])
+    '''
+    fig, ax = make_fig_ax_square(aspect='auto')
+    ax.set_xlabel("Number of features selected")
+    ax.set_ylabel("CV score")
+    ax.plot(range(1, len(rfe.grid_scores_) + 1), rfe.grid_scores_, label='test')
+    ax.plot(range(1, len(rfe.grid_train_scores_) + 1), rfe.grid_train_scores_, label='train')
+    ax.legend()
     fig.savefig(savepath)
 
 ### Helpers:
@@ -465,6 +490,19 @@ def make_fig_ax(aspect='equal', aspect_ratio=0.6):
     # left side so we can make print text beside it
     gs = plt.GridSpec(1, 5)
     ax = fig.add_subplot(gs[0, 0:3], aspect=aspect)
+
+    return fig, ax
+
+def make_fig_ax_square(aspect='equal', aspect_ratio=1):
+    """
+    Using Object Oriented interface from
+    https://matplotlib.org/gallery/api/agg_oo_sgskip.html
+    """
+    # Set image aspect ratio:
+    w, h = figaspect(aspect_ratio)
+    fig = Figure(figsize=(w,h))
+    FigureCanvas(fig)
+    ax = fig.add_subplot(111, aspect=aspect)
 
     return fig, ax
 

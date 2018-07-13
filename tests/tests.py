@@ -231,6 +231,13 @@ class TestPlots(unittest.TestCase):
         self.zs = np.random.normal(0, 3, 100)
         self.heats = np.random.random(100)
 
+    def test_feature_learning_curve(self):
+        from sklearn.datasets import make_friedman1
+        from sklearn.svm import SVR
+        X, y = make_friedman1(n_samples=50, n_features=10, random_state=0)
+        model = SVR(kernel="linear")
+        plot_helper.plot_feature_learning_curve(model, X, y)
+
     def test_confusion_matrix(self):
         y_true = np.random.randint(4, size=(50,))
         y_pred = y_true.copy()

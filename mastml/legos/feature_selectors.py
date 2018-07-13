@@ -21,7 +21,10 @@ def dataframify_selector(transform):
     " Special dataframify which preserves column names for feature selectors "
     @wraps(transform)
     def new_transform(self, df):
-        return df[df.columns[self.get_support(indices=True)]]
+        if isinstance(df, pd.DataFrame):
+            return df[df.columns[self.get_support(indices=True)]]
+        else: # just in case you try to use it with an array ;)
+            return df
     return new_transform
 
 def dataframify_new_column_names(transform, name):
