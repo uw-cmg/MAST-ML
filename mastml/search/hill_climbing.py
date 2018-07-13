@@ -25,7 +25,7 @@ def climb_hill(model_constructor, X, y, param_dict, score_func, num_steps=100, n
             if score > best_score:
                 best_score = score
                 best_params = params
-        pairs.append(best_score, best_params)
+        pairs.append((best_score, best_params))
     return max(pairs, key=lambda pair: pair[0])
 
 def random_subset(list1):
