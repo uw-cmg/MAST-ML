@@ -2,8 +2,6 @@
 Module for handling, parsing, and checking configuration files
 """
 
-from distutils.util import strtobool
-
 from sklearn.metrics import make_scorer
 from configobj import ConfigObj
 import logging
@@ -149,7 +147,7 @@ def parse_conf_file(filepath):
             if name not in all_settings:
                 raise utils.InvalidConfParameters(f"[PlotSettings] parameter '{name}' is unknown")
             try:
-                PS[name] = bool(strtobool(value))
+                PS[name] = mybool(value)
             except ValueError:
                 raise utils.InvalidConfParameters(
                     f"[PlotSettings] parameter '{name}' must be a boolean")
@@ -182,7 +180,7 @@ def fix_types(maybe_list):
     if isinstance(maybe_list, list):
         return [fix_types(item) for item in maybe_list]
 
-    try: return bool(strtobool(maybe_list))
+    try: return mybool(maybe_list)
     except ValueError: pass
 
     try: return int(maybe_list)
@@ -193,3 +191,9 @@ def fix_types(maybe_list):
 
     return str(maybe_list)
 
+def mybool(string):
+    if string.lower() == 'true':
+        return True
+    if string.lower() == 'false':
+        return False
+    raise ValueError
