@@ -53,7 +53,6 @@ setup(
         "jsonschema==2.6.0",
         "jupyter-core==4.4.0",
         "kiwisolver==1.0.1",
-        "mastml==1.2.5",
         "matplotlib==2.2.2",
         "mlxtend==0.12.0",
         "monty==1.0.3",
