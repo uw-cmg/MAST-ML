@@ -4,6 +4,7 @@ Module for handling, parsing, and checking configuration files
 
 from distutils.util import strtobool
 
+from sklearn.metrics import make_scorer
 from configobj import ConfigObj
 import logging
 
@@ -97,10 +98,10 @@ def parse_conf_file(filepath):
     def verify_metrics():
         if 'metrics' not in GS or GS['metrics'] == 'Auto':
             if is_classification:
-                GS['metrics'] = ['accuracy_score', 'precision_score', 'recall_score']
+                GS['metrics'] = ['accuracy', 'precision_weighted', 'recall_weighted']
             else:
-                GS['metrics'] = ['r2_score', 'root_mean_squared_error',
-                                   'mean_absolute_error', 'explained_variance_score']
+                GS['metrics'] = ['r2', 'neg_root_mean_squared_error',
+                                 'neg_mean_absolute_error', 'explained_variance']
         GS['metrics'] = metrics.check_and_fetch_names(GS['metrics'], is_classification)
     verify_metrics()
 
@@ -113,8 +114,8 @@ def parse_conf_file(filepath):
         for selector_name, args_dict in conf['FeatureSelection'].items():
             selector_name = selector_name.split('_')[0]
             if selector_name not in feature_selectors.score_func_selectors: continue
-            name_to_func = metrics.classification_score_funcs if is_classification\
-                           else metrics.regression_score_funcs
+            name_to_func = (metrics.classification_score_funcs if is_classification
+                            else metrics.regression_score_funcs)
             if 'score_func' in args_dict:
                 try:
                     args_dict['score_func'] = name_to_func[args_dict['score_func']]
@@ -167,9 +168,9 @@ def parse_conf_file(filepath):
         if 'learning_curve_score' not in GS:
             raise utils.InvalidConfParameters("You enabled data_learning_curve plots but you did"
                                               "not specify learning_curve_score in [GeneralSetup]")
-        score_name = GS['learning_curve_score']
-        d = metrics.check_and_fetch_names([score_name], is_classification)
-        GS['learning_curve_score'] = d[score_name]
+        #score_name = GS['learning_curve_score']
+        #metrics.check_and_fetch_names([score_name], is_classification)
+        #GS['learning_curve_score'] = make_scorer(d[score_name])
     if conf['PlotSettings']['data_learning_curve'] is True:
         check_learning_curve_settings()
 
