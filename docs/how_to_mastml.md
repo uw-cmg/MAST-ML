@@ -113,7 +113,7 @@ This code section processes the data we retrieved using the sections we
 instantiated. Its process is the one shown in the diagram at the beginning. The
 heptagon shaped sections (Normalization, Selection, DataSplits, Models) do a
 "cross product" of their subsections. That is, if you have 2 normalizers, 2 selectors, 2
-data splits, and 3 models, you will end up with 8 "combos", each of which runs all three models.
+data splits, and 3 models, you will end up with 8 "combos", each of which runs all 3 models.
 
 For instance, this conf file:
 ```
