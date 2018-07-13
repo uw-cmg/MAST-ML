@@ -1,4 +1,4 @@
-% How To Mastml
+# How To Mastml
 
 MASTML is written in a fairly modular way, to allow new
 sections and subsections to be added without too great of a headache.
