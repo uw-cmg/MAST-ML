@@ -112,14 +112,40 @@ models = list(models.items())
 This code section processes the data we retrieved using the sections we
 instantiated. Its process is the one shown in the diagram at the beginning. The
 heptagon shaped sections (Normalization, Selection, DataSplits, Models) do a
-"cross product" of their subsections. That is, if you have 2 normalizers, 2 selectors, 3
-data splits, and 4 models, you will end up with 24 "combos". 
+"cross product" of their subsections. That is, if you have 2 normalizers, 2 selectors, 2
+data splits, and 3 models, you will end up with 8 "combos", each of which runs all three models.
 
+For instance, this conf file:
+```
+[FeatureNormalization]
+    [[DoNothing]]
+    [[MinMaxScaler]]
+        feature_range = 0.1, 0.9
 
+[FeatureSelection]
+    [[SelectKBest]]
+        k = 5
+    [[SelectPercentile]]
+        score_func = f_regression
+        percentile=20
+
+[DataSplits]
+    [[NoSplit]]
+    [[KFold]]
+        n_splits = 3
+
+[Models]
+    [[KNeighborsRegressor]]
+    [[GaussianProcessRegressor]]
+    [[Ridge]]                       
 ```
 
-├── MeanStdevScaler
-│   ├── SelectKBest
+ will branch out like this::
+
+```
+.
+├── MeanStdevScaler                               
+│   ├── SelectKBest                   
 │   │   ├── GaussianProcessRegressor
 │   │   │   ├── KFold
 │   │   │   └── NoSplit
@@ -128,7 +154,7 @@ data splits, and 4 models, you will end up with 24 "combos".
 │   │   │   └── NoSplit
 │   │   ├── learning_curve.png
 │   │   └── selected.csv
-│   └── SelectPercentile
+│   └── SelectPercentil
 │       ├── GaussianProcessRegressor
 │       │   ├── KFold
 │       │   └── NoSplit
@@ -152,26 +178,19 @@ data splits, and 4 models, you will end up with 24 "combos".
         └── KNeighborsRegressor
             ├── KFold
             └── NoSplit
+```
 
-[FeatureNormalization]
-    [[DoNothing]]
-    [[MinMaxScaler]]
-        feature_range = 0.1, 0.9
 
-[FeatureSelection]
-    [[SelectKBest]]
-        k = 5
-    [[SelectPercentile]]
-        score_func = f_regression
-        percentile=20
+## Plots
 
-[DataSplits]
-    [[NoSplit]]
-    [[KFold]]
-        n_splits = 3
+Plotting is done by invoking the ancient tome "matplotlib" who's sacred runes
+strike awe in even the most fearless pythons. 
 
-[Models]
-    [[KNeighborsRegressor]]
-    [[GaussianProcessRegressor]]
-    [[Ridge]]                       
-                                    
+Plotting is done throughout this process. A plot function should take in some
+arrays or dataframe, a `savepath` (or `outdir` for multiple plot outputs), an
+optional `title` and sometimes a `stats` `{name: value}` dictionary. You might
+see this funny `@ipynb_maker` decorator above most plotting functions. These
+cause the code to output a jupyter notebook alongside the corresponding plots
+which can reproduce the plots. See `apologies.md` for more details on
+`ipynb_maker` and other dirty hacks that require justification.
+
