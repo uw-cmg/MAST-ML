@@ -99,6 +99,7 @@ def check_and_fetch_names(metric_names, is_classification):
     functions = {}
     for name in metric_names:
         if name not in metrics_dict:
-            raise Exception(f"Metric '{name}' is not supported for {task}.")
+            raise Exception(f"Metric '{name}' is not supported for {task}.\n"
+                            f"Valid metrics for {task}: {list(metrics_dict.keys())}")
         functions[name] = metrics_dict[name]
     return functions
