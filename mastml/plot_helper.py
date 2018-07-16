@@ -417,7 +417,8 @@ def plot_sample_learning_curve(model, X, y, scoring, cv=2, savepath='sample_lear
     h2 = ax.plot(train_sizes, valid_scores, '-o', c='red')[0]
     ax.legend([h1, h2], ['train', 'test'], loc='lower left', bbox_to_anchor=(1, -.2))
     ax.set_xlabel('number of training samples')
-    ax.set_ylabel(scoring + ' score')
+    scoring_name = scoring._score_func.__name__
+    ax.set_ylabel(scoring_name + ' score')
     fig.savefig(savepath)
 
 def plot_feature_learning_curve(model, X, y, scoring=None, savepath='feature_learning_curve.png'):
