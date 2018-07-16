@@ -272,7 +272,7 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
 
     worst_stats = OrderedDict([('Worst combined:', None)])
     best_stats = OrderedDict([('Best combined:', None)])
-    for name, func in metrics_dict.items():
+    for name, (_, func) in metrics_dict.items():
         worst_stats[name] = func(new_y_true, worsts)
         best_stats[name] = func(new_y_true, bests)
 

@@ -79,7 +79,7 @@ def parse_conf_file(filepath):
     GS = conf['GeneralSetup']
 
     def check_unknown_general_setup():
-        all_settings =  ['input_features', 'target_feature',
+        all_settings =  ['input_features', 'target_feature', 'metrics',
                          'learning_curve_model', 'learning_curve_score']
         for name in GS:
             if name not in all_settings:
@@ -98,8 +98,8 @@ def parse_conf_file(filepath):
             if is_classification:
                 GS['metrics'] = ['accuracy', 'precision_weighted', 'recall_weighted']
             else:
-                GS['metrics'] = ['r2', 'neg_root_mean_squared_error',
-                                 'neg_mean_absolute_error', 'explained_variance']
+                GS['metrics'] = ['r2', 'root_mean_squared_error',
+                                 'mean_absolute_error', 'explained_variance']
         GS['metrics'] = metrics.check_and_fetch_names(GS['metrics'], is_classification)
     verify_metrics()
 

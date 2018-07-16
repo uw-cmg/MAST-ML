@@ -316,9 +316,9 @@ def mastml_run(conf_path, data_path, outdir):
                 # occors in y_pred. sklearn assumes 0.0, and we want it to do so (silently).
                 warnings.simplefilter('ignore', UndefinedMetricWarning)
                 train_metrics = OrderedDict((name, function(train_y, train_pred))
-                                            for name, function in metrics_dict.items())
+                                            for name, (_, function) in metrics_dict.items())
                 test_metrics = OrderedDict((name, function(test_y, test_pred))
-                                           for name, function in metrics_dict.items())
+                                           for name, (_, function) in metrics_dict.items())
 
             split_result = OrderedDict(
                 normalizer = split_path[-4],
@@ -362,9 +362,13 @@ def mastml_run(conf_path, data_path, outdir):
         avg_train_stats, avg_test_stats = make_stats()
 
         log.info("    Making best/worst plots...")
-        # sort splits by the test score of first metric:
-        split_results.sort(key=lambda run: list(run['test_metrics'].items())[0][1])
-        worst, median, best = split_results[0], split_results[len(split_results)//2], split_results[-1]
+        def get_best_worst_median():
+            # sort splits by the test score of first metric:
+            greater_is_better, _ = next(iter(metrics_dict.values())) # get first value pair
+            scalar = 1 if greater_is_better else -1
+            s = sorted(split_results, key=lambda run: scalar*next(iter(run['test_metrics'])))
+            return s[0], s[len(split_results)//2], s[-1]
+        worst, median, best = get_best_worst_median()
 
         # collect all predictions in a combo for each point in the dataset
         def do_plots():
@@ -500,6 +504,7 @@ def check_paths(conf_path, data_path, outdir):
         except OSError: # directory not empty
             log.warning(f"{outdir} not empty. Renaming...")
             now = datetime.now()
+            outdir = outdir.rstrip(os.sep) # remove trailing slash
             outdir = f"{outdir}_{now.month:02d}_{now.day:02d}" \
                      f"_{now.hour:02d}_{now.minute:02d}_{now.second:02d}"
     os.makedirs(outdir)
