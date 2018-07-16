@@ -46,6 +46,7 @@ def main(conf_path, data_path, outdir, verbosity=0):
                       'https://github.com/uw-cmg/MAST-ML/issues and post your issue.')
         log.exception(e)
         raise e
+    return outdir # so a calling program can know where we actually saved it
 
 def mastml_run(conf_path, data_path, outdir):
     " Runs operations specifed in conf_path on data_path and puts results in outdir "
