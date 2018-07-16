@@ -168,8 +168,9 @@ def parse_conf_file(filepath):
                                               "not specify learning_curve_score in [GeneralSetup]")
         #score_name = GS['learning_curve_score']
         #metrics.check_and_fetch_names([score_name], is_classification)
-        #GS['learning_curve_score'] = make_scorer(d[score_name])
-    if conf['PlotSettings']['data_learning_curve'] is True:
+        #GS['learning_curve_score'] = make_scorer([score_name])
+    PS = conf['PlotSettings']
+    if PS['data_learning_curve'] is True or PS['feature_learning_curve'] is True:
         check_learning_curve_settings()
 
     return conf

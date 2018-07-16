@@ -258,7 +258,7 @@ def mastml_run(conf_path, data_path, outdir):
                 if conf['PlotSettings']['feature_learning_curve']:
                     learning_curve_model = conf['GeneralSetup']['learning_curve_model']
                     learning_curve_score = conf['GeneralSetup']['learning_curve_score']
-                    plot_helper.plot_sample_learning_curve(
+                    plot_helper.plot_feature_learning_curve(
                             learning_curve_model, X, y, learning_curve_score,
                             join(subdir, f'learning_curve.png'))
 
