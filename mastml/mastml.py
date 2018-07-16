@@ -46,6 +46,7 @@ def main(conf_path, data_path, outdir, verbosity=0):
                       'https://github.com/uw-cmg/MAST-ML/issues and post your issue.')
         log.exception(e)
         raise e
+    return outdir # so a calling program can know where we actually saved it
 
 def mastml_run(conf_path, data_path, outdir):
     " Runs operations specifed in conf_path on data_path and puts results in outdir "
@@ -257,7 +258,7 @@ def mastml_run(conf_path, data_path, outdir):
                 if conf['PlotSettings']['feature_learning_curve']:
                     learning_curve_model = conf['GeneralSetup']['learning_curve_model']
                     learning_curve_score = conf['GeneralSetup']['learning_curve_score']
-                    plot_helper.plot_sample_learning_curve(
+                    plot_helper.plot_feature_learning_curve(
                             learning_curve_model, X, y, learning_curve_score,
                             join(subdir, f'learning_curve.png'))
 
