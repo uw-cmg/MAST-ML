@@ -68,7 +68,10 @@ def parse_conf_file(filepath):
         if 'score_func' not in HC:
             raise Exception(f"HillCimbing requires score_func parameter")
         is_c = is_classifier(HC['model'])
-        metrics_dict = metrics.classification_metrics if is_c else metrics.regression_metrics
+        metrics_dict =  metrics.classification_metrics if is_c else metrics.regression_metrics
+        metrics_dict = {name: (func if greater_is_better else (lambda yt, yp: -func(yt, yp)))
+                        for name, (greater_is_better, func) in metrics_dict.items()}
+                                             
         task = 'classification' if is_c else 'regression'
         if HC['score_func'] not in metrics_dict:
             raise Exception(f"score_func {HC['score_func']} is not valid for {task}")
