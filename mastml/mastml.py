@@ -424,8 +424,8 @@ def _snatch_models(models, conf_feature_selection):
         if 'estimator' in args_dict:
             model_name = args_dict['estimator']
             try:
-                args_dict['estimator'] = models[estimator]
-                del models[estimator]
+                args_dict['estimator'] = models[model_name]
+                del models[model_name]
             except KeyError:
                 raise utils.MastError(f"The selector {selector_name} specified model {model_name},"
                                       f"which was not found in the [Models] section")
