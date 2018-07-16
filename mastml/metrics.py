@@ -47,9 +47,16 @@ def r2_score_noint(y_true, y_pred):
     return lr.score(y_true, y_pred)
 regression_metrics['r2_noint'] = (True, r2_score_noint)
 
+
 def root_mean_squared_error(y_true, y_pred):
     return sm.mean_squared_error(y_true, y_pred)**0.5
 regression_metrics['root_mean_squared_error'] = (False, root_mean_squared_error)
+
+def rmse_over_stdev(y_true, y_pred):
+    stdev = np.std(y_true)
+    rmse = root_mean_squared_error(y_true, y_pred)
+    return rmse / stdev
+regression_metrics['rmse_over_stdev'] = (False, rmse_over_stdev)
 
 classification_score_funcs = {
     'chi2': fs.chi2, # Compute chi-squared stats between each non-negative feature and class.
@@ -89,8 +96,9 @@ nice_names = {
     'mean_squared_log_error': 'MSLE',
     'median_absolute_error': 'MedAE',
     'root_mean_squared_error': 'RMSE',
-    'r2': 'r2',
-    'r2_noint': 'r2_noint',
+    'rmse_over_stdev': r'RMSE/$\sigma_y$',
+    'r2': '$r^2$',
+    'r2_noint': '$r^2$_noint',
 }
 
 def check_and_fetch_names(metric_names, is_classification):
