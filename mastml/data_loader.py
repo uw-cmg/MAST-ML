@@ -32,11 +32,13 @@ def load_data(file_path, input_features=None, target_feature=None):
 
     X, y = df[input_features], df[target_feature]
 
-    # Held out data for prediction only
-    n = 30
-    X_held_out, X = X[n:], X[:n]
-    y_held_out, y = y[n:], y[:n]
-    df_held_out, df = df[n:], df[:n] # ??? uh
+    ## Held out data for prediction only
+    #n = 3* len(X) // 4
+    #X_held_out, X = X[n:], X[:n]
+    #y_held_out, y = y[n:], y[:n]
+    #df_held_out, df = df[n:], df[:n] # ??? uh
+    X_held_out = None
+    y_held_out = None
 
     df = df.drop(target_feature, axis=1)
     return df, X, y, (X_held_out, y_held_out)

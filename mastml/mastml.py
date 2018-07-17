@@ -303,10 +303,10 @@ def mastml_run(conf_path, data_path, outdir):
             train_pred = model.predict(train_X)
             test_pred  = model.predict(test_X)
 
-            if True: # GS["samesprediciftnme'):
-                log.info("             Saving train/test data and predictions to csv...")
-                clean_predictions = mode.predict(testing_only[0])
-            import pdb; pdb.set_trace()
+            #if True: # GS["samesprediciftnme'):
+            #    log.info("             Saving train/test data and predictions to csv...")
+            #    clean_predictions = mode.predict(testing_only[0])
+            #import pdb; pdb.set_trace()
             
 
             # Save train and test data and results to csv:
