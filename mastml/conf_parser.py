@@ -178,7 +178,8 @@ def parse_conf_file(filepath):
         check_learning_curve_settings()
         score_name = GS['learning_curve_score']
         d = metrics.check_and_fetch_names([score_name], is_classification)
-        GS['learning_curve_score'] = make_scorer(d[score_name])
+        greater_is_better, score_func = d[score_name]
+        GS['learning_curve_score'] = make_scorer(score_func, greater_is_better)
 
     return conf
 
