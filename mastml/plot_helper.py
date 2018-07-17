@@ -39,7 +39,7 @@ matplotlib.rc('figure', autolayout=True) # turn on autolayout
 from .ipynb_maker import ipynb_maker # TODO: fix cyclic import
 from .metrics import nice_names
 
-def make_main_plots(run, path, is_classification):
+def make_train_test_plots(run, path, is_classification):
     y_train_true, y_train_pred, y_test_true = \
         run['y_train_true'], run['y_train_pred'], run['y_test_true']
     y_test_pred, train_metrics, test_metrics = \

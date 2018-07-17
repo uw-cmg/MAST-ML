@@ -13,6 +13,7 @@ from dominate.tags import *
 log = logging.getLogger('mastml')
 
 def make_html(outdir):
+    " Create the main index.html file " 
     with document(title='MASTML') as doc:
         # title and date
         h1('MAterial Science Tools - Machine Learning')
@@ -77,6 +78,7 @@ def make_html(outdir):
     log.info('wrote ' + join(outdir, 'index.html'))
 
 def show_combo(combo_dir, outdir):
+    " Add one combo to the output html "
     # collect test image, train image, and other file links
     links = list()
     train_images = list()
@@ -104,7 +106,7 @@ def show_combo(combo_dir, outdir):
         span('  ')
 
 def simple_section(filepath, outdir):
-    # come up with a good section title
+    " Create a section for a combo "
     path = os.path.normpath(relpath(filepath, outdir))
     paths = path.split(os.sep)
     title = " - ".join(paths)
