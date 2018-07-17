@@ -80,7 +80,7 @@ def parse_conf_file(filepath):
 
     def check_unknown_general_setup():
         all_settings =  ['input_features', 'target_feature', 'metrics',
-                         'learning_curve_model', 'learning_curve_score']
+                         'learning_curve_model', 'learning_curve_score', 'randomizer']
         for name in GS:
             if name not in all_settings:
                 raise utils.InvalidConfParameters(

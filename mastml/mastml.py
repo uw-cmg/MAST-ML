@@ -67,6 +67,10 @@ def mastml_run(conf_path, data_path, outdir):
                                      conf['GeneralSetup']['input_features'],
                                      conf['GeneralSetup']['target_feature'])
 
+    # randomly shuffly y values if randomizer is on
+    if conf['GeneralSetup']['randomizer'] is True:
+        y = y.sample(frac=1)
+
     if conf['PlotSettings']['target_histogram']:
         plot_helper.plot_target_histogram(y, join(outdir, 'target_histogram.png'))
 
