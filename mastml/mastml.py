@@ -63,7 +63,7 @@ def mastml_run(conf_path, data_path, outdir):
     # The df is used by feature generators, clusterers, and grouping_column to 
     # create more features for x.
     # X is model input, y is target feature for model
-    df, X, y = data_loader.load_data(data_path,
+    df, X, y, testing_only = data_loader.load_data(data_path,
                                      conf['GeneralSetup']['input_features'],
                                      conf['GeneralSetup']['target_feature'])
 
@@ -301,6 +301,12 @@ def mastml_run(conf_path, data_path, outdir):
             train_pred = model.predict(train_X)
             test_pred  = model.predict(test_X)
 
+            if True: # GS["samesprediciftnme'):
+                log.info("             Saving train/test data and predictions to csv...")
+                clean_predictions = mode.predict(testing_only[0])
+            import pdb; pdb.set_trace()
+            
+
             # Save train and test data and results to csv:
             log.info("             Saving train/test data and predictions to csv...")
             train_pred_series = pd.DataFrame(train_pred, columns=['train_pred'], index=train_indices)
@@ -309,6 +315,7 @@ def mastml_run(conf_path, data_path, outdir):
             test_pred_series = pd.DataFrame(test_pred,   columns=['test_pred'],  index=test_indices)
             pd.concat([test_X,  test_y,  test_pred_series],  1)\
                     .to_csv(join(path, 'test.csv'),  index=False)
+
 
             log.info("             Calculating score metrics...")
             split_path = main_path.split(os.sep)
