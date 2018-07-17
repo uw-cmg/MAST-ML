@@ -69,7 +69,9 @@ def mastml_run(conf_path, data_path, outdir):
 
     # randomly shuffly y values if randomizer is on
     if conf['GeneralSetup']['randomizer'] is True:
-        y = y.sample(frac=1)
+        log.warn("Randomizer is enabled, so target feature will be shuffled,"
+                 " and results should be garbage")
+        y = y.sample(frac=1).reset_index(drop=True)
 
     if conf['PlotSettings']['target_histogram']:
         plot_helper.plot_target_histogram(y, join(outdir, 'target_histogram.png'))
@@ -385,8 +387,9 @@ def mastml_run(conf_path, data_path, outdir):
                 for i, pred in zip(test_indices, split_results[split_num]['y_test_pred']):
                     predictions[i].append(pred)
             if PlotSettings['predicted_vs_true_bars']:
-                plot_helper.plot_predicted_vs_true_bars(y.values, predictions, avg_test_stats,
-                                                        join(main_path, 'best_worst_average.png'))
+                plot_helper.plot_predicted_vs_true_bars(
+                        y.values, predictions, avg_test_stats,
+                        join(main_path, 'average_points_with_bars.png'))
             if PlotSettings['best_worst_per_point']:
                 plot_helper.plot_best_worst_per_point(y.values, predictions,
                                                       join(main_path, 'best_worst_per_point.png'),
