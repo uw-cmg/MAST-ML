@@ -1,6 +1,6 @@
 """
 A collection of functions which take a y_correct vector and y_predicted vector
-and give some score of them
+and give some score of them, such as the accuracy or the root mean squared error
 """
 
 import numpy as np
