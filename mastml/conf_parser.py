@@ -183,7 +183,7 @@ def parse_conf_file(filepath):
     return conf
 
 def fix_types(maybe_list):
-    " Takes user parameter string and gives true value "
+    "Takes user parameter string and gives python value"
 
     if isinstance(maybe_list, list):
         return [fix_types(item) for item in maybe_list]
@@ -200,6 +200,7 @@ def fix_types(maybe_list):
     return str(maybe_list)
 
 def mybool(string):
+    "Turn string representing bool into actual bool"
     if string.lower() == 'true':
         return True
     if string.lower() == 'false':
