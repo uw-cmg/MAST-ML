@@ -329,7 +329,7 @@ def mastml_run(conf_path, data_path, outdir):
             )
 
             log.info("             Making plots...")
-            if PlotSettings['main_plots']:
+            if PlotSettings['train_test_plots']:
                 plot_helper.make_train_test_plots(split_result, path, is_classification)
             _write_stats(split_result['train_metrics'],
                          split_result['test_metrics'],
