@@ -19,44 +19,43 @@ def parse_conf_file(filepath):
 
     main_sections = ['GeneralSetup', 'DataSplits', 'Models']
     feature_sections = ['FeatureGeneration', 'Clustering',
-                       'FeatureNormalization', 'FeatureSelection']
+                        'FeatureNormalization', 'FeatureSelection']
     feature_section_dicts = [conf[name] for name in feature_sections if name in conf]
 
-    def verify_required_sections():
+    def set_required_sections_to_empty():
         for name in main_sections:
             if name not in conf:
                 conf[name] = dict()
-    verify_required_sections()
+    set_required_sections_to_empty()
 
-    def check_invalid_sections():
+    def check_unknown_sections():
         all_sections = main_sections + feature_sections + ['PlotSettings']
         for section_name in conf:
             if section_name not in all_sections:
                 raise Exception(f'[{section_name}] is not a valid section!'
                                 f' Valid sections: {all_sections}')
-    check_invalid_sections()
+    check_unknown_sections()
 
     def verify_subsection_only_sections():
-        dict_dicts = [conf, conf['DataSplits'], conf['Models']] + feature_section_dicts
-        for dictionary in dict_dicts:
+        for dictionary in [conf, conf['DataSplits'], conf['Models']] + feature_section_dicts:
             for name, value in dictionary.items():
                 if not isinstance(value, dict):
-                    raise TypeError(f"Parameter in subsection-only section: {name}={value}")
+                    raise utils.InvalidConfSubSection(
+                            f"Parameter in subsection-only section: {name}={value}")
     verify_subsection_only_sections()
 
-    # Collect all subsections which contain only parameters (no subsubsections):
     def parameter_dict_type_check_and_cast():
         parameter_dicts = conf['Models'].values() + conf['DataSplits'].values()
         for feature_section in feature_section_dicts:
             parameter_dicts.extend(feature_section.values())
 
-        # Do any parameter sections contain a subsection?
-        # Also, cast the strings to their respective types
         for parameter_dict in parameter_dicts:
             for name, value in parameter_dict.items():
+                # Does this parameter-only section include a subsection?
                 if isinstance(value, dict):
-                    raise TypeError(f"Subsection in parameter-only section: {key}")
-                # input_features and target_feature are always strings
+                    raise utils.InvalidConfSubSection(
+                            f"Subsection in parameter-only section: {key}")
+                # cast the strings to their respective types
                 parameter_dict[name] = fix_types(value)
     parameter_dict_type_check_and_cast()
 
@@ -64,28 +63,37 @@ def parse_conf_file(filepath):
     is_classification = conf['is_classification'] = check_models_mixed(
             key.split('_')[0] for key in conf['Models'])
 
+    # Add the empty splitter if no splitters are specified:
     if conf['DataSplits'] == dict():
         conf['DataSplits']['NoSplit'] = dict()
 
-    def make_empty_default_sections():
+    def set_unspecified_sections_to_empty_dict():
         for name in feature_sections:
             if name not in conf or conf[name] == dict():
                 if name == 'Clustering':
                     conf[name] = dict()
                 else:
                     conf[name] = {'DoNothing': dict()}
-    make_empty_default_sections()
+    set_unspecified_sections_to_empty_dict()
 
     GS = conf['GeneralSetup']
 
-    def check_unknown_general_setup():
+    def check_general_setup_settings_are_valid():
         all_settings =  ['input_features', 'target_feature', 'metrics',
                          'learning_curve_model', 'learning_curve_score', 'randomizer']
         for name in GS:
             if name not in all_settings:
                 raise utils.InvalidConfParameters(
                         f"[GeneralSetup] contains unknown setting {name}")
-    check_unknown_general_setup()
+    check_general_setup_settings_are_valid()
+
+    def set_randomizer_setting():
+        if 'randomizer' in GS:
+            GS['randomizer'] = mybool(GS['randomizer'])
+        else:
+            GS['randomizer'] = False
+    set_randomizer_setting()
+
 
     def set_default_features():
         for name in ['input_features', 'target_feature']:
@@ -93,39 +101,38 @@ def parse_conf_file(filepath):
                 GS[name] = None
     set_default_features()
 
-    def verify_metrics():
+    def set_default_metrics():
         if 'metrics' not in GS or GS['metrics'] == 'Auto':
             if is_classification:
                 GS['metrics'] = ['accuracy', 'precision_weighted', 'recall_weighted']
             else:
                 GS['metrics'] = ['r2', 'root_mean_squared_error',
                                  'mean_absolute_error', 'explained_variance']
-        GS['metrics'] = metrics.check_and_fetch_names(GS['metrics'], is_classification)
-    verify_metrics()
+    set_default_metrics()
 
-    def change_selector_score_func_references():
-        """
-        Modifies each selector in `selectors` in place,
-        turning strings referencing score_funcs into actual score_funcs
-        """
-        task = 'classification' if is_classification else 'regression'
+    # Turn names of metrics into actual metrics:
+    GS['metrics'] = metrics.check_and_fetch_names(GS['metrics'], is_classification)
+
+    def change_score_func_strings_into_actual_score_funcs():
         for selector_name, args_dict in conf['FeatureSelection'].items():
-            selector_name = selector_name.split('_')[0]
-            if selector_name not in feature_selectors.score_func_selectors: continue
-            name_to_func = (metrics.classification_score_funcs if is_classification
+            class_name = selector_name.split('_')[0]
+            if class_name not in feature_selectors.score_func_selectors: continue
+            name_to_func = (metrics.classification_score_funcs
+                            if is_classification
                             else metrics.regression_score_funcs)
             if 'score_func' in args_dict:
                 try:
                     args_dict['score_func'] = name_to_func[args_dict['score_func']]
                 except KeyError:
+                    task = 'classification' if is_classification else 'regression'
                     raise utils.InvalidValue(
                             f"Score function '{args_dict['score_func']}' not valid for {task}"
-                            f"tasks (inside feature selector {selector_name}). Valid score"
-                            f"functions: name_to_func.keys()")
-            else:
+                            f" tasks (inside feature selector {selector_name}). Valid score"
+                            f" functions: {list(name_to_func.keys())}")
+            else: # default to f_classif or f_regression
                 args_dict['score_func'] = \
                         name_to_func['f_classif' if is_classification else 'f_regression']
-    change_selector_score_func_references()
+    change_score_func_strings_into_actual_score_funcs()
 
     def make_long_name_short_name_pairs():
         dictionaries = ([conf['DataSplits'], conf['Models']]
@@ -176,7 +183,7 @@ def parse_conf_file(filepath):
     return conf
 
 def fix_types(maybe_list):
-    " Takes user parameter string and gives true value "
+    "Takes user parameter string and gives python value"
 
     if isinstance(maybe_list, list):
         return [fix_types(item) for item in maybe_list]
@@ -193,6 +200,7 @@ def fix_types(maybe_list):
     return str(maybe_list)
 
 def mybool(string):
+    "Turn string representing bool into actual bool"
     if string.lower() == 'true':
         return True
     if string.lower() == 'false':
