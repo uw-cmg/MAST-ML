@@ -268,6 +268,7 @@ def mastml_run(conf_path, data_path, outdir):
                         log.info(f"    Running splits for {subdir}")
                         subsubdir = join(outdir, subdir)
                         os.makedirs(subsubdir)
+                        # NOTE: do_one_splitter is a big old function, does lots
                         runs = do_one_splitter(X, model_instance, subsubdir, trains_tests,)
                         all_results.extend(runs)
             return all_results
