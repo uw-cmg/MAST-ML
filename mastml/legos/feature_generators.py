@@ -134,15 +134,6 @@ class Citrine(BaseEstimator, TransformerMixin):
         assert self.composition_feature not in df.columns
         return df
 
-class PassThrough(BaseEstimator, TransformerMixin):
-    def __init__(self, features):
-        self.features = features
-    def fit(self, df, y=None):
-        return self
-    def transform(self, df):
-        df = df[self.features]
-        return df
-
 class NoGenerate(BaseEstimator, TransformerMixin):
     " Returns same input "
     def __init__(self):
@@ -155,7 +146,6 @@ class NoGenerate(BaseEstimator, TransformerMixin):
 name_to_constructor = {
     'DoNothing': NoGenerate,
     'PolynomialFeatures': PolynomialFeatures,
-    'PassThrough':PassThrough,
     'Magpie': Magpie,
     'Citrine': Citrine,
     'MaterialsProject': MaterialsProject,
