@@ -144,7 +144,7 @@ def parse_conf_file(filepath):
 
     def check_and_boolify_plot_settings():
         default_false = ['feature_vs_target', 'data_learning_curve', 'feature_learning_curve']
-        default_true  = ['target_histogram', 'main_plots', 'predicted_vs_true',
+        default_true  = ['target_histogram', 'train_test_plots', 'predicted_vs_true',
                          'predicted_vs_true_bars', 'best_worst_per_point']
         all_settings = default_false + default_true
         if 'PlotSettings' not in conf:

@@ -39,7 +39,7 @@ matplotlib.rc('figure', autolayout=True) # turn on autolayout
 from .ipynb_maker import ipynb_maker # TODO: fix cyclic import
 from .metrics import nice_names
 
-def make_main_plots(run, path, is_classification):
+def make_train_test_plots(run, path, is_classification):
     y_train_true, y_train_pred, y_test_true = \
         run['y_train_true'], run['y_train_pred'], run['y_test_true']
     y_test_pred, train_metrics, test_metrics = \
@@ -446,7 +446,7 @@ def plot_feature_learning_curve(model, X, y, scoring=None, savepath='feature_lea
 
 ### Helpers:
 
-def parse_stat(name,value):
+def stat_to_string(name, value):
     " Stringifies the name value pair for display within a plot "
     if name in nice_names:
         name = nice_names[name]
@@ -473,7 +473,7 @@ def plot_stats(fig, stats, x_align=0.69, font_dict=dict()):
     Goes off screen if they are too long or too many in number
     """
 
-    stat_str = '\n'.join(parse_stat(name, value)
+    stat_str = '\n'.join(stat_to_string(name, value)
                            for name,value in stats.items())
 
     fig.text(x_align, 0.98, stat_str,
@@ -520,15 +520,13 @@ def make_axis_same(ax, max1, min1):
     ax.set_yticks(ticks)
 
 def nice_mean(ls):
-    """
-    Returns NaN for empty list
-    """
+    " Returns NaN for empty list "
     if len(ls) > 0:
         return np.mean(ls)
     return np.nan
 
 def nice_std(ls):
-    """ Explicity returns `None` for empty list, without raising a warning. """
+    " Returns NaN for empty list "
     if len(ls) > 0:
         return np.std(ls)
     return np.nan

@@ -1,3 +1,7 @@
+"""
+A collection of random little utilities and errors used throughout mastml
+"""
+
 import sys
 import logging
 import textwrap
@@ -210,7 +214,6 @@ def verbosalize_logger(log, verbosity):
         old_log(level, [None, to_upper, to_full_width, to_leet, deep_fry, deep_fry_2, emojify][verbosity](msg), *args, **kwargs)
 
     log._log = new_log
-
 
 
 

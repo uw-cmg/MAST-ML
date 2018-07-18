@@ -58,6 +58,7 @@ def mastml_run(conf_path, data_path, outdir):
 
     # Load in and parse the configuration and data files:
     conf = conf_parser.parse_conf_file(conf_path)
+    import pdb; pdb.set_trace()
     PlotSettings = conf['PlotSettings']
     is_classification = conf['is_classification']
     # The df is used by feature generators, clusterers, and grouping_column to 
@@ -125,7 +126,7 @@ def mastml_run(conf_path, data_path, outdir):
     log.debug(f'selectors: \n{selectors}')
     log.debug(f'splitters: \n{splitters}')
 
-    def do_combos(X):
+    def do_all_combos(X):
         log.info(f"There are {len(normalizers)} feature normalizers, {len(selectors)} feature"
                  f"selectors {len(models)} models, and {len(splitters)} splitters.")
 
@@ -169,96 +170,82 @@ def mastml_run(conf_path, data_path, outdir):
         y_held_out, y = y[n:], y[:n]
         df_held_out, df = df[n:], df[:n] # ??? uh
 
-        def make_clusters():
+        def make_clustered_df():
             log.info("Doing clustering...")
             clustered_df = pd.DataFrame()
             for name, instance in clusterers:
                 clustered_df[name] = instance.fit_predict(X, y)
             return clustered_df
-        clustered_df = make_clusters()
+        clustered_df = make_clustered_df() # Each column is a clustering algorithm
 
-        def plot_scatters(): # put it in a function for namespace preserving
-            plots_made = 0
+        def make_feature_vs_target_plots():
             if clustered_df.empty:
-                # plot y against each x column
-                for column in X:
+                for column in X: # plot y against each x column
                     filename = f'{column}_vs_target_scatter.png'
-                    plots_made += 1
-                    if plots_made > 10: break
                     plot_helper.plot_scatter(X[column], y, join(outdir, filename),
                                              xlabel=column, ylabel='target_feature')
             else:
-                # for each cluster, plot y against each x column
-                for name in clustered_df.columns:
+                for name in clustered_df.columns: # for each cluster, plot y against each x column
                     for column in X:
                         filename = f'{column}_vs_target_by_{name}_scatter.png'
-                        plots_made += 1
-                        if plots_made > 10: break
                         plot_helper.plot_scatter(X[column], y, join(outdir, filename),
                                                 clustered_df[name], xlabel=column,
                                                 ylabel='target_feature')
         if PlotSettings['feature_vs_target']:
-            plot_scatters()
+            make_feature_vs_target_plots()
 
         log.info("Saving clustered data to csv...")
         pd.concat([clustered_df, y], 1).to_csv(join(outdir, "clusters.csv"), index=False)
 
-        def normalize_and_select():
+        def make_normalizer_selector_dataframe_triples():
             triples = []
             for normalizer_name, normalizer_instance in normalizers:
-
                 log.info(f"Running normalizer {normalizer_name} ...")
                 X_normalized = normalizer_instance.fit_transform(X, y)
-
                 log.info("Saving normalized data to csv...")
                 dirname = join(outdir, normalizer_name)
                 os.mkdir(dirname)
                 pd.concat([X_normalized, y], 1).to_csv(join(dirname, "normalized.csv"), index=False)
-
-                # FeatureSelection (cross-product)
                 log.info("Running selectors...")
                 for selector_name, selector_instance in selectors:
-
                     log.info(f"    Running selector {selector_name} ...")
-                    # NOTE: Changed from fit_transform because PCA's fit_transform
-                    #       doesn't call transform (does transformation itself).
+                    # NOTE: Changed from .fit_transform to .fit.transform
+                    # because PCA.fit_transform doesn't call PCA.transform
                     X_selected = selector_instance.fit(X_normalized, y).transform(X_normalized)
-
                     log.info("    Saving selected features to csv...")
                     dirname = join(outdir, normalizer_name, selector_name)
                     os.mkdir(dirname)
                     pd.concat([X_selected, y], 1).to_csv(join(dirname, "selected.csv"), index=False)
-
                     triples.append((normalizer_name, selector_name, X_selected))
             return triples
-        post_selection = normalize_and_select()
+        normalizer_selector_dataframe_triples = make_normalizer_selector_dataframe_triples()
 
         ## DataSplits (cross-product)
         ## Collect grouping columns, splitter_to_group_names is a dict of splitter name to grouping col
         log.debug("Finding splitter-required columns in data...")
-        def make_splits():
-            splits = []
+        def make_splittername_splitlist_pairs():
+            pairs = []
             for name, instance in splitters:
-                if name in splitter_to_group_names:
+                if name in splitter_to_group_names: # if this splitter depends on grouping
                     col = splitter_to_group_names[name]
                     log.debug(f"    Finding {col} for {name}...")
-                    for df_ in [clustered_df, X, df]: # TODO: Are these the right objects to check?
+                    for df_ in [clustered_df, X, df]:
                         if col in df_.columns:
-                            splits.append((name, tuple(instance.split(X, y, df_[col].values))))
+                            pairs.append((name, tuple(instance.split(X, y, df_[col].values))))
                             break
                     else:
                         raise utils.MissingColumnError(f'DataSplit {name} needs column {col}, which'
                                                        f'was neither generated nor given by input')
                 else:
-                    splits.append((name, tuple(instance.split(X, y))))
-            return splits
-        splits = make_splits()
+                   pairs.append((name, tuple(instance.split(X, y))))
+            return pairs
+        splittername_splitlist_pairs = make_splittername_splitlist_pairs()
 
         log.info("Fitting models to splits...")
 
         def do_models_splits():
             all_results = []
-            for normalizer_name, selector_name, X in post_selection:
+            for normalizer_name, selector_name, X in normalizer_selector_dataframe_triples:
                 subdir = join(outdir, normalizer_name, selector_name)
                 if conf['PlotSettings']['data_learning_curve']:
                     learning_curve_model = conf['GeneralSetup']['learning_curve_model']
@@ -282,18 +269,19 @@ def mastml_run(conf_path, data_path, outdir):
                         plot_helper.plot_scatter(X[column], y, join(subdir, filename),
                                                  xlabel=column, ylabel='target_feature')
                 for model_name, model_instance in models:
-                    for splitter_name, trains_tests in splits:
+                    for splitter_name, trains_tests in splittername_splitlist_pairs:
                         subdir = join(normalizer_name, selector_name, model_name, splitter_name)
                         log.info(f"    Running splits for {subdir}")
                         subsubdir = join(outdir, subdir)
                         os.makedirs(subsubdir)
-                        runs = do_splitter(X, model_instance, subsubdir, trains_tests,)
+                        # NOTE: do_one_splitter is a big old function, does lots
+                        runs = do_one_splitter(X, model_instance, subsubdir, trains_tests,)
                         all_results.extend(runs)
             return all_results
 
         return do_models_splits()
 
-    def do_splitter(X, model, main_path, trains_tests):
+    def do_one_splitter(X, model, main_path, trains_tests):
 
         def one_fit(split_num, train_indices, test_indices):
             log.info(f"        Doing split number {split_num}")
@@ -356,8 +344,8 @@ def mastml_run(conf_path, data_path, outdir):
             )
 
             log.info("             Making plots...")
-            if PlotSettings['main_plots']:
-                plot_helper.make_main_plots(split_result, path, is_classification)
+            if PlotSettings['train_test_plots']:
+                plot_helper.make_train_test_plots(split_result, path, is_classification)
             _write_stats(split_result['train_metrics'],
                          split_result['test_metrics'],
                          main_path)
@@ -369,7 +357,7 @@ def mastml_run(conf_path, data_path, outdir):
             split_results.append(one_fit(split_num, train_indices, test_indices))
 
         log.info("    Calculating mean and stdev of scores...")
-        def make_stats():
+        def make_train_test_average_and_std_stats():
             train_stats = OrderedDict([('Average Train', None)])
             test_stats  = OrderedDict([('Average Test', None)])
             for name in metrics_dict:
@@ -380,19 +368,18 @@ def mastml_run(conf_path, data_path, outdir):
                 test_stats[name]  = (np.mean(test_values),
                                      np.std(test_values) / np.sqrt(len(test_values)))
             return train_stats, test_stats
-        avg_train_stats, avg_test_stats = make_stats()
+        avg_train_stats, avg_test_stats = make_train_test_average_and_std_stats()
 
         log.info("    Making best/worst plots...")
-        def get_best_worst_median():
+        def get_best_worst_median_runs():
             # sort splits by the test score of first metric:
             greater_is_better, _ = next(iter(metrics_dict.values())) # get first value pair
             scalar = 1 if greater_is_better else -1
             s = sorted(split_results, key=lambda run: scalar*next(iter(run['test_metrics'])))
             return s[0], s[len(split_results)//2], s[-1]
-        worst, median, best = get_best_worst_median()
+        worst, median, best = get_best_worst_median_runs()
 
-        # collect all predictions in a combo for each point in the dataset
-        def do_plots():
+        def make_pred_vs_true_plots():
             if PlotSettings['predicted_vs_true']:
                 plot_helper.plot_best_worst_split(best, worst,
                                                   join(main_path, 'best_worst_split.png'))
@@ -409,12 +396,11 @@ def mastml_run(conf_path, data_path, outdir):
                                                       join(main_path, 'best_worst_per_point.png'),
                                                       metrics_dict, avg_test_stats)
         if not is_classification:
-            do_plots()
+            make_pred_vs_true_plots()
 
         return split_results
 
-
-    runs = do_combos(X)
+    runs = do_all_combos(X)
 
     log.info("Making image html file...")
     html_helper.make_html(outdir)
