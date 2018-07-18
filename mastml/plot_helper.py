@@ -150,6 +150,19 @@ def plot_predicted_vs_true(train_triple, test_triple, outdir):
 
     return filenames
 
+def get_histogram_bins(y_df):
+    bin_dividers = np.linspace(y_df.shape[0], round(0.05*y_df.shape[0]), y_df.shape[0])
+    bin_list = list()
+    for divider in bin_dividers:
+        bins = int((y_df.shape[0])/divider)
+        if bins < y_df.shape[0]/2:
+            bin_list.append(bins)
+    if len(bin_list) > 0:
+        num_bins = max(bin_list)
+    else:
+        num_bins = 10
+    return num_bins
+
 @ipynb_maker
 def plot_residuals_histogram(y_true, y_pred, savepath,
                              stats, title='residuals histogram'):
@@ -159,7 +172,9 @@ def plot_residuals_histogram(y_true, y_pred, savepath,
     ax.set_title(title)
     # do the actual plotting
     residuals = y_true - y_pred
-    ax.hist(residuals, bins=30, color='b', edgecolor='k')
+    #Get num_bins using smarter method
+    num_bins = get_histogram_bins(y_df=residuals)
+    ax.hist(residuals, bins=num_bins, color='b', edgecolor='k')
 
     # normal text stuff
     ax.set_xlabel('residual')
@@ -181,8 +196,12 @@ def plot_target_histogram(y_df, savepath, title='target histogram'):
     fig, ax = make_fig_ax(aspect='auto')
 
     ax.set_title(title)
+
+    #Get num_bins using smarter method
+    num_bins = get_histogram_bins(y_df=y_df)
+
     # do the actual plotting
-    ax.hist(y_df, color='b', edgecolor='k')#, histtype='stepfilled')
+    ax.hist(y_df, bins=num_bins, color='b', edgecolor='k')#, histtype='stepfilled')
 
     # normal text stuff
     ax.set_xlabel('y values')
