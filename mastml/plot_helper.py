@@ -112,7 +112,7 @@ def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False,
 
     ax.set_ylabel('True label')
     ax.set_xlabel('Predicted label')
-    fig.savefig(savepath)
+    fig.savefig(savepath, dpi=250)
 
 @ipynb_maker
 def plot_predicted_vs_true(train_triple, test_triple, outdir):
@@ -146,7 +146,7 @@ def plot_predicted_vs_true(train_triple, test_triple, outdir):
 
         filename = 'predicted_vs_true_'+ title_addon + '.png'
         filenames.append(filename)
-        fig.savefig(join(outdir, filename))
+        fig.savefig(join(outdir, filename), dpi=250)
 
     return filenames
 
@@ -173,7 +173,7 @@ def plot_residuals_histogram(y_true, y_pred, savepath,
 
     plot_stats(fig, stats)
 
-    fig.savefig(savepath)
+    fig.savefig(savepath, dpi=250)
 
 @ipynb_maker
 def plot_target_histogram(y_df, savepath, title='target histogram'):
@@ -196,7 +196,7 @@ def plot_target_histogram(y_df, savepath, title='target histogram'):
 
     plot_stats(fig, dict(y_df.describe()))
 
-    fig.savefig(savepath)
+    fig.savefig(savepath, dpi=250)
 
 def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y'):
     # TODO: shrink margin
@@ -211,7 +211,7 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y'):
 
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
-    fig.savefig(savepath)
+    fig.savefig(savepath, dpi=250)
 
 @ipynb_maker
 def plot_best_worst_split(best_run, worst_run, savepath,
@@ -363,14 +363,14 @@ def plot_violin(y_true, y_pred_list, savepath, title='best worst with bars'):
     ax.violinplot(y_pred_list_new, y_true_new)
 
     plot_stats(fig, dict())
-    fig.savefig(savepath)
+    fig.savefig(savepath, dpi=250)
 
 def plot_1d_heatmap(xs, heats, savepath, xlabel='x', heatlabel='heats'):
     fig, ax = make_fig_ax(aspect='auto')
     ax.bar(xs, heats)
     ax.set_xlabel(xlabel)
     ax.set_ylabel(heatlabel)
-    fig.savefig(savepath)
+    fig.savefig(savepath, dpi=250)
 
 
 def plot_2d_heatmap(xs, ys, heats, savepath,
@@ -381,7 +381,7 @@ def plot_2d_heatmap(xs, ys, heats, savepath,
     ax.set_ylabel(ylabel)
     cb = fig.colorbar(scat)
     cb.set_label(heatlabel)
-    fig.savefig(savepath)
+    fig.savefig(savepath, dpi=250)
 
 def plot_3d_heatmap(xs, ys, zs, heats, savepath,
                     xlabel='x', ylabel='y', zlabel='z', heatlabel='heat'):
@@ -401,7 +401,7 @@ def plot_3d_heatmap(xs, ys, zs, heats, savepath,
     cb = fig.colorbar(scat)
     cb.set_label(heatlabel)
 
-    fig.savefig(savepath)
+    fig.savefig(savepath, dpi=250)
 
     def animate(i):
         ax.view_init(elev=10., azim=i)
@@ -419,7 +419,7 @@ def plot_sample_learning_curve(model, X, y, scoring, cv=2, savepath='sample_lear
     ax.set_xlabel('number of training samples')
     scoring_name = scoring._score_func.__name__
     ax.set_ylabel(scoring_name + ' score')
-    fig.savefig(savepath)
+    fig.savefig(savepath, dpi=250)
 
 def plot_feature_learning_curve(model, X, y, scoring=None, savepath='feature_learning_curve.png'):
     #RFECV.transform = RFECV.old_transform # damn you
@@ -442,7 +442,7 @@ def plot_feature_learning_curve(model, X, y, scoring=None, savepath='feature_lea
     ax.plot(range(1, len(rfe.grid_scores_) + 1), rfe.grid_scores_, label='test')
     ax.plot(range(1, len(rfe.grid_train_scores_) + 1), rfe.grid_train_scores_, label='train')
     ax.legend()
-    fig.savefig(savepath)
+    fig.savefig(savepath, dpi=250)
 
 ### Helpers:
 
