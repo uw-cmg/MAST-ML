@@ -411,10 +411,6 @@ def plot_3d_heatmap(xs, ys, zs, heats, savepath,
     anim.save(savepath+'.gif', fps=5, dpi=80, writer='imagemagick')
 
 def plot_sample_learning_curve(model, X, y, scoring, cv=2, savepath='sample_learning_curve.png'):
-    print('owwwww')
-    import pdb; pdb.set_trace()
-    print(model, scoring)
-    print('oooof outch')
     train_sizes, train_scores, valid_scores = learning_curve(model, X, y, scoring=scoring, cv=cv)
     fig, ax = make_fig_ax(aspect='auto')
     h1 = ax.plot(train_sizes, train_scores, '-o', c='blue')[0]

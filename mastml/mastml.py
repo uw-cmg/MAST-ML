@@ -63,7 +63,7 @@ def mastml_run(conf_path, data_path, outdir):
     # The df is used by feature generators, clusterers, and grouping_column to 
     # create more features for x.
     # X is model input, y is target feature for model
-    df, X, y, testing_only = data_loader.load_data(data_path,
+    df, X, y = data_loader.load_data(data_path,
                                      conf['GeneralSetup']['input_features'],
                                      conf['GeneralSetup']['target_feature'])
 
@@ -162,6 +162,12 @@ def mastml_run(conf_path, data_path, outdir):
                 X = X.loc[:,~X.columns.duplicated()]
             return X
         X = remove_repeats(X)
+
+        # Held out data for prediction only
+        n = len(X) - 3
+        X_held_out, X = X[n:], X[:n]
+        y_held_out, y = y[n:], y[:n]
+        df_held_out, df = df[n:], df[:n] # ??? uh
 
         def make_clusters():
             log.info("Doing clustering...")
@@ -303,10 +309,11 @@ def mastml_run(conf_path, data_path, outdir):
             train_pred = model.predict(train_X)
             test_pred  = model.predict(test_X)
 
-            #if True: # GS["samesprediciftnme'):
-            #    log.info("             Saving train/test data and predictions to csv...")
-            #    clean_predictions = mode.predict(testing_only[0])
-            #import pdb; pdb.set_trace()
+            import pdb; pdb.set_trace()
+            if True: # GS["samesprediciftnme'):
+                log.info("             Making predictions on prediction_only data...")
+                clean_predictions = model.predict(X_held_out)
+            import pdb; pdb.set_trace()
             
 
             # Save train and test data and results to csv:
