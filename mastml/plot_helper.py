@@ -131,12 +131,12 @@ def plot_predicted_vs_true(train_triple, test_triple, outdir):
         fig, ax = make_fig_ax()
 
         ax.set_title('Predicted vs. True ' + title_addon)
-        ax.plot([min1, max1], [min1, max1], 'k--', lw=4, zorder=1)
+        ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
 
         make_axis_same(ax, max1, min1)
 
         # do the actual plotting
-        ax.scatter(y_true, y_pred, edgecolors=(0, 0, 0), zorder=2)
+        ax.scatter(y_true, y_pred, color='blue', edgecolors='black', zorder=2)
 
         # set axis labels
         ax.set_xlabel('Measured')
@@ -202,7 +202,7 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y'):
     # TODO: shrink margin
     fig, ax = make_fig_ax(aspect='auto')
     if groups is None:
-        ax.scatter(x, y, c=groups, edgecolor='black',  zorder=2, s=80)
+        ax.scatter(x, y, c='b', edgecolor='black',  zorder=2, s=80, alpha=0.7)
     else:
         for group in np.unique(groups):
             mask = groups == group
@@ -211,6 +211,7 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y'):
 
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
+    fig.tight_layout()
     fig.savefig(savepath, dpi=250)
 
 @ipynb_maker
@@ -315,6 +316,7 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
     means = [nice_mean(y_pred) for y_pred in y_pred_list]
     standard_error_means = [nice_std(y_pred)/np.sqrt(len(y_pred))
                             for y_pred in y_pred_list]
+    standard_errors = [nice_std(y_pred) for y_pred in y_pred_list]
     fig, ax = make_fig_ax(aspect='auto')
 
     # gather max and min
@@ -324,13 +326,13 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
     make_axis_same(ax, max1, min1)
 
     # draw dashed horizontal line
-    ax.plot([min1, max1], [min1, max1], 'k--', lw=4, zorder=1)
+    ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
 
     # set axis labels
     ax.set_xlabel('Measured')
     ax.set_ylabel('Predicted')
 
-    ax.errorbar(y_true, means, yerr=standard_error_means, fmt='o', capsize=3)
+    ax.errorbar(y_true, means, yerr=standard_errors, fmt='o', markerfacecolor='blue', markeredgecolor='black', alpha=0.7, capsize=3)
 
     plot_stats(fig, avg_stats)
     fig.savefig(savepath, dpi=250)
