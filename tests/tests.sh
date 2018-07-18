@@ -6,6 +6,7 @@ python3 -m mastml.mastml $1 tests/conf/advanced_feature_selection_regression.con
 python3 -m mastml.mastml $1 tests/conf/classification.conf tests/csv/three_clusters.csv -o results/classification
 python3 -m mastml.mastml $1 tests/conf/feature_gen.conf tests/csv/feature_generation.csv -o results/feature_gen
 python3 -m mastml.mastml $1 tests/conf/just_generation.conf tests/csv/feature_generation.csv -o results/just_generation
+python3 -m mastml.mastml $1 tests/conf/validation.conf tests/csv/validation.csv -o results/validation
 python3 -m mastml.mastml $1 tests/conf/just_model.conf tests/csv/mnist_short.csv -o results/just_model
 python3 -m mastml.mastml $1 tests/conf/just_model_no_plots.conf tests/csv/mnist_short.csv -o results/just_model_no_plots
 python3 -m mastml.mastml $1 tests/conf/just_normalization.conf tests/csv/three_clusters.csv -o results/just_normalization
