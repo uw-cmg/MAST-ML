@@ -58,7 +58,6 @@ def mastml_run(conf_path, data_path, outdir):
 
     # Load in and parse the configuration and data files:
     conf = conf_parser.parse_conf_file(conf_path)
-    import pdb; pdb.set_trace()
     PlotSettings = conf['PlotSettings']
     is_classification = conf['is_classification']
     # The df is used by feature generators, clusterers, and grouping_column to 
@@ -73,6 +72,13 @@ def mastml_run(conf_path, data_path, outdir):
         log.warn("Randomizer is enabled, so target feature will be shuffled,"
                  " and results should be garbage")
         y = y.sample(frac=1).reset_index(drop=True)
+
+    # get parameters out for 'validation_column'
+    is_validation = 'validation_column' in conf['GeneralSetup']
+    if is_validation:
+        validation_column_name = conf['GeneralSetup']['validation_column']
+        validation_column = df[validation_column_name]
+
 
     if conf['PlotSettings']['target_histogram']:
         plot_helper.plot_target_histogram(y, join(outdir, 'target_histogram.png'))
@@ -126,7 +132,7 @@ def mastml_run(conf_path, data_path, outdir):
     log.debug(f'selectors: \n{selectors}')
     log.debug(f'splitters: \n{splitters}')
 
-    def do_all_combos(X):
+    def do_all_combos(X, y, df):
         log.info(f"There are {len(normalizers)} feature normalizers, {len(selectors)} feature"
                  f"selectors {len(models)} models, and {len(splitters)} splitters.")
 
@@ -163,12 +169,6 @@ def mastml_run(conf_path, data_path, outdir):
                 X = X.loc[:,~X.columns.duplicated()]
             return X
         X = remove_repeats(X)
-
-        # Held out data for prediction only
-        n = len(X) - 3
-        X_held_out, X = X[n:], X[:n]
-        y_held_out, y = y[n:], y[:n]
-        df_held_out, df = df[n:], df[:n] # ??? uh
 
         def make_clustered_df():
             log.info("Doing clustering...")
@@ -224,20 +224,30 @@ def mastml_run(conf_path, data_path, outdir):
         ## Collect grouping columns, splitter_to_group_names is a dict of splitter name to grouping col
         log.debug("Finding splitter-required columns in data...")
         def make_splittername_splitlist_pairs():
+            n = 5
+
+            # exclude the testing_only rows from use in splits
+            if is_validation:
+                X_, y_ = _exclude_validation(X, validation_column), _exclude_validation(y, validation_column)
+            else:
+                X_, y_ = X, y
+
             pairs = []
             for name, instance in splitters:
                 if name in splitter_to_group_names: # if this splitter depends on grouping
                     col = splitter_to_group_names[name]
                     log.debug(f"    Finding {col} for {name}...")
-                    for df_ in [clustered_df, X, df]:
+                    for df_ in [clustered_df, X_, df]:
+                        if is_validation: # also exclude for df_ so that rows match up
+                            df = _exclude_validation(df, validation_column)
                         if col in df_.columns:
-                            pairs.append((name, tuple(instance.split(X, y, df_[col].values))))
+                            pairs.append((name, tuple(instance.split(X_, y_, df_[col].values))))
                             break
                     else:
                         raise utils.MissingColumnError(f'DataSplit {name} needs column {col}, which'
                                                        f'was neither generated nor given by input')
                 else:
-                   pairs.append((name, tuple(instance.split(X, y))))
+                   pairs.append((name, tuple(instance.split(X_, y_))))
             return pairs
         splittername_splitlist_pairs = make_splittername_splitlist_pairs()
 
@@ -275,15 +285,16 @@ def mastml_run(conf_path, data_path, outdir):
                         subsubdir = join(outdir, subdir)
                         os.makedirs(subsubdir)
                         # NOTE: do_one_splitter is a big old function, does lots
-                        runs = do_one_splitter(X, model_instance, subsubdir, trains_tests,)
+                        runs = do_one_splitter(X, y, model_instance, subsubdir, trains_tests,)
                         all_results.extend(runs)
             return all_results
 
         return do_models_splits()
 
-    def do_one_splitter(X, model, main_path, trains_tests):
+    def do_one_splitter(X, y, model, main_path, trains_tests):
 
         def one_fit(split_num, train_indices, test_indices):
+
             log.info(f"        Doing split number {split_num}")
             train_X, train_y = X.loc[train_indices], y.loc[train_indices]
             test_X,  test_y  = X.loc[test_indices],  y.loc[test_indices]
@@ -297,11 +308,19 @@ def mastml_run(conf_path, data_path, outdir):
             train_pred = model.predict(train_X)
             test_pred  = model.predict(test_X)
 
-            import pdb; pdb.set_trace()
-            if True: # GS["samesprediciftnme'):
+            blacklist = [1,2,3]
+            # MARK here is where we need to collect testing_only stats
+            if is_validation:
+                validation_X = _only_validation(X, validation_column)
+                validation_y = _only_validation(y, validation_column)
                 log.info("             Making predictions on prediction_only data...")
-                clean_predictions = model.predict(X_held_out)
-            import pdb; pdb.set_trace()
+                validation_predictions = model.predict(validation_X)
+
+                # save them as 'predicitons.csv'
+                validation_predictions_series = pd.Series(validation_predictions, name='clean_predictions', index=validation_X.index)
+                pd.concat([validation_X,  validation_y,  validation_predictions_series],  1)\
+                        .to_csv(join(path, 'predictions.csv'),  index=False)
+
             
 
             # Save train and test data and results to csv:
@@ -400,7 +419,7 @@ def mastml_run(conf_path, data_path, outdir):
 
         return split_results
 
-    runs = do_all_combos(X)
+    runs = do_all_combos(X, y, df) # calls do_one_splitter internally
 
     log.info("Making image html file...")
     html_helper.make_html(outdir)
@@ -490,6 +509,12 @@ def _write_stats(train_metrics, test_metrics, outdir):
         f.write("TEST:\n")
         for name,score in test_metrics.items():
                 f.write(f"{name}: {score}\n")
+
+
+def _exclude_validation(df, validation_column):
+    return df.loc[validation_column != 1]
+def _only_validation(df, validation_column):
+    return df.loc[validation_column == 1]
 
 def check_paths(conf_path, data_path, outdir):
     # Check conf path:

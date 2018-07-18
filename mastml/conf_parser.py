@@ -80,11 +80,12 @@ def parse_conf_file(filepath):
 
     def check_general_setup_settings_are_valid():
         all_settings =  ['input_features', 'target_feature', 'metrics',
-                         'learning_curve_model', 'learning_curve_score', 'randomizer']
+                         'learning_curve_model', 'learning_curve_score', 'randomizer', 'validation_column']
         for name in GS:
             if name not in all_settings:
                 raise utils.InvalidConfParameters(
-                        f"[GeneralSetup] contains unknown setting {name}")
+                        f"[GeneralSetup] contains unknown setting {name}.\n"
+                        f"Valid GeneralSetup options are: {all_settings}")
     check_general_setup_settings_are_valid()
 
     def set_randomizer_setting():
