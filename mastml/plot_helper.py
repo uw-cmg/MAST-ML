@@ -39,7 +39,7 @@ matplotlib.rc('figure', autolayout=True) # turn on autolayout
 from .ipynb_maker import ipynb_maker # TODO: fix cyclic import
 from .metrics import nice_names
 
-def make_train_test_plots(run, path, is_classification):
+def make_main_plots(run, path, is_classification):
     y_train_true, y_train_pred, y_test_true = \
         run['y_train_true'], run['y_train_pred'], run['y_test_true']
     y_test_pred, train_metrics, test_metrics = \
@@ -202,7 +202,7 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y'):
     # TODO: shrink margin
     fig, ax = make_fig_ax(aspect='auto')
     if groups is None:
-        ax.scatter(x, y, c=groups)
+        ax.scatter(x, y, c=groups, edgecolor='black',  zorder=2, s=80)
     else:
         for group in np.unique(groups):
             mask = groups == group
@@ -230,7 +230,7 @@ def plot_best_worst_split(best_run, worst_run, savepath,
              worst_run['y_test_true'], worst_run['y_test_pred']]
     maxx = max(y.max() for y in all_y)
     minn = min(y.min() for y in all_y)
-    ax.plot([minn, maxx], [minn, maxx], 'k--', lw=4, zorder=1)
+    ax.plot([minn, maxx], [minn, maxx], 'k--', lw=2, zorder=1)
 
     # do the actual plotting
     ax.scatter(best_run['y_test_true'],  best_run['y_test_pred'],  c='red',
@@ -255,7 +255,7 @@ def plot_best_worst_split(best_run, worst_run, savepath,
     plot_stats(fig, worst_stats, x_align=18/24)
 
     #fig.tight_layout()
-    fig.savefig(savepath, dpi=200)
+    fig.savefig(savepath, dpi=250)
 
 @ipynb_maker
 def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
@@ -291,7 +291,7 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
     make_axis_same(ax, max1, min1)
 
     # draw dashed horizontal line
-    ax.plot([min1, max1], [min1, max1], 'k--', lw=4, zorder=1)
+    ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
 
     # set axis labels
     ax.set_xlabel('Measured')
@@ -306,7 +306,7 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
     plot_stats(fig, avg_stats, x_align=10/25)
     plot_stats(fig, worst_stats, x_align=15/25)
     plot_stats(fig, best_stats, x_align=20/25)
-    fig.savefig(savepath)
+    fig.savefig(savepath, dpi=250)
 
 @ipynb_maker
 def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
@@ -333,7 +333,7 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
     ax.errorbar(y_true, means, yerr=standard_error_means, fmt='o', capsize=3)
 
     plot_stats(fig, avg_stats)
-    fig.savefig(savepath)
+    fig.savefig(savepath, dpi=250)
 
 @ipynb_maker
 def plot_violin(y_true, y_pred_list, savepath, title='best worst with bars'):
@@ -446,7 +446,7 @@ def plot_feature_learning_curve(model, X, y, scoring=None, savepath='feature_lea
 
 ### Helpers:
 
-def stat_to_string(name, value):
+def parse_stat(name,value):
     " Stringifies the name value pair for display within a plot "
     if name in nice_names:
         name = nice_names[name]
@@ -473,7 +473,7 @@ def plot_stats(fig, stats, x_align=0.69, font_dict=dict()):
     Goes off screen if they are too long or too many in number
     """
 
-    stat_str = '\n'.join(stat_to_string(name, value)
+    stat_str = '\n'.join(parse_stat(name, value)
                            for name,value in stats.items())
 
     fig.text(x_align, 0.98, stat_str,
@@ -520,13 +520,15 @@ def make_axis_same(ax, max1, min1):
     ax.set_yticks(ticks)
 
 def nice_mean(ls):
-    " Returns NaN for empty list "
+    """
+    Returns NaN for empty list
+    """
     if len(ls) > 0:
         return np.mean(ls)
     return np.nan
 
 def nice_std(ls):
-    " Returns NaN for empty list "
+    """ Explicity returns `None` for empty list, without raising a warning. """
     if len(ls) > 0:
         return np.std(ls)
     return np.nan
