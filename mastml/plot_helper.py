@@ -8,7 +8,6 @@ A plot can also take an "outdir" instead of a savepath. If this is the case,
 it must return a list of filenames where it saved the figures.
 """
 import math
-import pandas as pd
 import itertools
 import warnings
 from os.path import join
@@ -29,6 +28,7 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure, figaspect
 from matplotlib.ticker import MaxNLocator # TODO: used?
 from matplotlib.animation import FuncAnimation
+from matplotlib.font_manager import FontProperties
 
 from .utils import RFECV_train_test
 
@@ -129,16 +129,17 @@ def plot_predicted_vs_true(train_triple, test_triple, outdir):
 
     for y_true, y_pred, stats, title_addon in \
             (train_triple+('train',), test_triple+('test',)):
+
+        # Set image aspect ratio:
         fig, ax = make_fig_ax()
 
-        ax.set_title('Predicted vs. True ' + title_addon)
+        #ax.set_title('Predicted vs. True ' + title_addon)
         ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
 
         # set tick labels
         maxx = round(max((max(y_pred), max(y_true))))
         minn = round(min((min(y_pred), min(y_true))))
         divisor = get_divisor(maxx, minn)
-        print(divisor)
         max_tick = round_up(maxx, divisor)
         min_tick = round_down(minn, divisor=divisor)
         tickvals = np.linspace(min_tick, max_tick, num=5)
@@ -152,17 +153,18 @@ def plot_predicted_vs_true(train_triple, test_triple, outdir):
         make_axis_same(ax, max1, min1)
 
         # do the actual plotting
-        ax.scatter(y_true, y_pred, color='blue', edgecolors='black', zorder=2)
+        ax.scatter(y_true, y_pred, color='blue', edgecolors='black', zorder=2, alpha=0.7)
+        ax.legend(loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12, frameon=False)
 
         # set axis labels
         ax.set_xlabel('Measured')
         ax.set_ylabel('Predicted')
 
-        plot_stats(fig, stats)
+        plot_stats(fig, stats, x_align=16/24, y_align=0.90)
 
         filename = 'predicted_vs_true_'+ title_addon + '.png'
         filenames.append(filename)
-        fig.savefig(join(outdir, filename), dpi=250)
+        fig.savefig(join(outdir, filename), dpi=250, bbox_inches='tight')
 
     return filenames
 
@@ -186,14 +188,16 @@ def get_histogram_bins(y_df):
 def plot_residuals_histogram(y_true, y_pred, savepath,
                              stats, title='residuals histogram'):
 
-    fig, ax = make_fig_ax(aspect='auto')
+    # Set image aspect ratio:
+    fig, ax = make_fig_ax()
 
-    ax.set_title(title)
+    #ax.set_title(title)
     # do the actual plotting
     residuals = y_true - y_pred
     #Get num_bins using smarter method
     num_bins = get_histogram_bins(y_df=residuals)
     ax.hist(residuals, bins=num_bins, color='b', edgecolor='k')
+    ax.legend(loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12, frameon=False)
 
     # normal text stuff
     ax.set_xlabel('residual')
@@ -205,22 +209,24 @@ def plot_residuals_histogram(y_true, y_pred, savepath,
     # shrink those margins
     fig.tight_layout()
 
-    plot_stats(fig, stats)
+    plot_stats(fig, stats, x_align=16/24, y_align=0.90)
 
-    fig.savefig(savepath, dpi=250)
+    fig.savefig(savepath, dpi=250, bbox_inches='tight')
 
 @ipynb_maker
 def plot_target_histogram(y_df, savepath, title='target histogram'):
 
-    fig, ax = make_fig_ax(aspect='auto')
+    # Set image aspect ratio:
+    fig, ax = make_fig_ax(aspect_ratio=0.5)
 
-    ax.set_title(title)
+    #ax.set_title(title)
 
     #Get num_bins using smarter method
     num_bins = get_histogram_bins(y_df=y_df)
 
     # do the actual plotting
     ax.hist(y_df, bins=num_bins, color='b', edgecolor='k')#, histtype='stepfilled')
+    #ax.legend(loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12, frameon=False)
 
     # normal text stuff
     ax.set_xlabel('y values')
@@ -232,23 +238,22 @@ def plot_target_histogram(y_df, savepath, title='target histogram'):
     # shrink those margins
     fig.tight_layout()
 
-    plot_stats(fig, dict(y_df.describe()))
+    plot_stats(fig, dict(y_df.describe()), x_align=0.70, y_align=0.90, fontsize=14)
     # Save input data stats to csv
     savepath_parse = savepath.split('target_histogram.png')[0]
     y_df.describe().to_csv(savepath_parse+'/''input_data_statistics.csv')
 
-    fig.savefig(savepath, dpi=250)
+    fig.savefig(savepath, dpi=250, bbox_inches='tight')
 
 def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y'):
-    # TODO: shrink margin
-    fig, ax = make_fig_ax(aspect='auto')
+    # Set image aspect ratio:
+    fig, ax = make_fig_ax()
 
     # set tick labels
 
     maxx = round(max((max(x), max(y))))
     minn = round(min((min(x), min(y))))
     divisor = get_divisor(maxx, minn)
-    print(divisor)
     max_tick = round_up(maxx, divisor)
     min_tick = round_down(minn, divisor)
     tickvals = np.linspace(min_tick, max_tick, num=5)
@@ -258,7 +263,6 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y'):
     ticklabels = [str(tick) for tick in tickvals]
     ax.set_xticklabels(labels=ticklabels)
     ax.set_yticklabels(labels=ticklabels)
-
 
     if groups is None:
         ax.scatter(x, y, c='b', edgecolor='black',  zorder=2, s=80, alpha=0.7)
@@ -271,19 +275,13 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y'):
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     fig.tight_layout()
-    fig.savefig(savepath, dpi=250)
+    fig.savefig(savepath, dpi=250, bbox_inches='tight')
 
 @ipynb_maker
 def plot_best_worst_split(best_run, worst_run, savepath,
                           title='Best Worst Overlay'):
-    #fig, ax = make_fig_ax(aspect_ratio=0.3333333333333333333333333333333)
     # Set image aspect ratio:
-    w, h = figaspect(0.5)
-    fig = Figure(figsize=(w,h))
-    FigureCanvas(fig)
-    # Trap figure on left side:
-    gs = plt.GridSpec(1, 2)
-    ax = fig.add_subplot(gs[0, 0:1], aspect='equal')
+    fig, ax = make_fig_ax()
 
     # make diagonal line from absolute min to absolute max of any data point
     all_y = [best_run['y_test_true'], best_run['y_test_pred'],
@@ -297,13 +295,12 @@ def plot_best_worst_split(best_run, worst_run, savepath,
                alpha=0.7, label='best',  edgecolor='darkred',  zorder=2, s=80)
     ax.scatter(worst_run['y_test_true'], worst_run['y_test_pred'], c='blue',
                alpha=0.7, label='worst', edgecolor='darkblue', zorder=3)
-    ax.legend(loc='lower left', bbox_to_anchor=(1, 0))
+    ax.legend(loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12)
 
     # set tick labels
     maxx = round(maxx)
     minn = round(minn)
     divisor = get_divisor(maxx, minn)
-    print(divisor)
     max_tick = round_up(maxx, divisor)
     min_tick = round_down(minn, divisor)
     tickvals = np.linspace(min_tick, max_tick, num=5)
@@ -326,11 +323,11 @@ def plot_best_worst_split(best_run, worst_run, savepath,
     worst_stats = OrderedDict([('worst Run', None)])
     worst_stats.update(worst_run['test_metrics'])
 
-    plot_stats(fig, best_stats, x_align=12/24)
-    plot_stats(fig, worst_stats, x_align=18/24)
+    plot_stats(fig, best_stats, x_align=16/24, y_align=0.90)
+    plot_stats(fig, worst_stats, x_align=16/24, y_align=0.60)
 
     #fig.tight_layout()
-    fig.savefig(savepath, dpi=250)
+    fig.savefig(savepath, dpi=250, bbox_inches='tight')
 
 @ipynb_maker
 def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
@@ -351,12 +348,7 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
         worst_stats[name] = func(new_y_true, worsts)
         best_stats[name] = func(new_y_true, bests)
 
-    w, h = figaspect(0.33)
-    fig = Figure(figsize=(w,h))
-    FigureCanvas(fig)
-    # Trap figure on left side:
-    gs = plt.GridSpec(1, 3)
-    ax = fig.add_subplot(gs[0, 0:1], aspect='equal')
+    fig, ax = make_fig_ax()
 
     # gather max and min
     all_vals = [val for val in worsts+bests if val is not None]
@@ -376,7 +368,6 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
     maxx = round(max((max(bests), max(worsts), max(new_y_true))))
     minn = round(min((min(bests), min(worsts), min(new_y_true))))
     divisor = get_divisor(maxx, minn)
-    print(divisor)
     max_tick = round_up(maxx, divisor)
     min_tick = round_down(minn, divisor)
     tickvals = np.linspace(min_tick, max_tick, num=5)
@@ -391,12 +382,12 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
                edgecolor='darkred',  zorder=2, s=80)
     ax.scatter(new_y_true, worsts, c='blue', alpha=0.7, label='worst',
                edgecolor='darkblue', zorder=3)
-    ax.legend(loc='lower left', bbox_to_anchor=(1, -.2))
+    ax.legend(loc='lower right', bbox_to_anchor=(1.25, -0.1), fontsize=12)
 
-    plot_stats(fig, avg_stats, x_align=10/25)
-    plot_stats(fig, worst_stats, x_align=15/25)
-    plot_stats(fig, best_stats, x_align=20/25)
-    fig.savefig(savepath, dpi=250)
+    plot_stats(fig, avg_stats, x_align=15.5/24, y_align=0.57, fontsize=10)
+    plot_stats(fig, worst_stats, x_align=15.5/24, y_align=0.77, fontsize=10)
+    plot_stats(fig, best_stats, x_align=15.5/24, y_align=0.95, fontsize=10)
+    fig.savefig(savepath, dpi=250, bbox_inches='tight')
 
 @ipynb_maker
 def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
@@ -406,7 +397,7 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
     standard_error_means = [nice_std(y_pred)/np.sqrt(len(y_pred))
                             for y_pred in y_pred_list]
     standard_errors = [nice_std(y_pred) for y_pred in y_pred_list]
-    fig, ax = make_fig_ax(aspect='auto')
+    fig, ax = make_fig_ax()
 
     # gather max and min
     max1 = max(np.nanmax(y_true), np.nanmax(means))
@@ -425,7 +416,6 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
     maxx = round(max((max(means), max(y_true))))
     minn = round(min((min(means), min(y_true))))
     divisor = get_divisor(maxx, minn)
-    print(divisor)
     max_tick = round_up(maxx, divisor)
     min_tick = round_down(minn, divisor)
     tickvals = np.linspace(min_tick, max_tick, num=5)
@@ -437,9 +427,10 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
     ax.set_yticklabels(labels=ticklabels)
 
     ax.errorbar(y_true, means, yerr=standard_errors, fmt='o', markerfacecolor='blue', markeredgecolor='black', alpha=0.7, capsize=3)
+    ax.legend(loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12, frameon=False)
 
-    plot_stats(fig, avg_stats)
-    fig.savefig(savepath, dpi=250)
+    plot_stats(fig, avg_stats, x_align=16/24, y_align=0.90)
+    fig.savefig(savepath, dpi=250, bbox_inches='tight')
 
 @ipynb_maker
 def plot_violin(y_true, y_pred_list, savepath, title='best worst with bars'):
@@ -518,7 +509,7 @@ def plot_3d_heatmap(xs, ys, zs, heats, savepath,
 
 def plot_sample_learning_curve(model, X, y, scoring, cv=2, savepath='sample_learning_curve.png'):
     train_sizes, train_scores, valid_scores = learning_curve(model, X, y, scoring=scoring, cv=cv)
-    fig, ax = make_fig_ax(aspect='auto')
+    fig, ax = make_fig_ax()
     h1 = ax.plot(train_sizes, train_scores, '-o', c='blue')[0]
     h2 = ax.plot(train_sizes, valid_scores, '-o', c='red')[0]
     ax.legend([h1, h2], ['train', 'test'], loc='lower left', bbox_to_anchor=(1, -.2))
@@ -573,7 +564,7 @@ def parse_stat(name,value):
         return f'{name}: {value:.3f}'
     return f'{name}: {value}' # probably a string
 
-def plot_stats(fig, stats, x_align=0.69, font_dict=dict()):
+def plot_stats(fig, stats, x_align=0.65, y_align=0.90, font_dict=dict(), fontsize=14):
     """
     Print stats onto the image
     Goes off screen if they are too long or too many in number
@@ -582,10 +573,10 @@ def plot_stats(fig, stats, x_align=0.69, font_dict=dict()):
     stat_str = '\n'.join(parse_stat(name, value)
                            for name,value in stats.items())
 
-    fig.text(x_align, 0.98, stat_str,
-             verticalalignment='top', wrap=True, fontdict=font_dict)
+    fig.text(x_align, y_align, stat_str,
+             verticalalignment='top', wrap=True, fontdict=font_dict, fontproperties=FontProperties(size=fontsize))
 
-def make_fig_ax(aspect='equal', aspect_ratio=0.6):
+def make_fig_ax(aspect_ratio=0.5):
     """
     Using Object Oriented interface from
     https://matplotlib.org/gallery/api/agg_oo_sgskip.html
@@ -597,9 +588,9 @@ def make_fig_ax(aspect='equal', aspect_ratio=0.6):
 
     # these two lines are where the magic happens, trapping the figure on the
     # left side so we can make print text beside it
-    gs = plt.GridSpec(2, 5)
-    ax = fig.add_subplot(gs[0:, 0:3], aspect=aspect)
-
+    gs = plt.GridSpec(1, 3)
+    #ax = fig.add_subplot(gs[0:, 0:3], aspect=aspect)
+    ax = fig.add_subplot(gs[0:, 0:2])
     return fig, ax
 
 def make_fig_ax_square(aspect='equal', aspect_ratio=1):
