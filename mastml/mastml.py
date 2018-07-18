@@ -81,7 +81,7 @@ def mastml_run(conf_path, data_path, outdir):
 
 
     if conf['PlotSettings']['target_histogram']:
-        plot_helper.plot_target_histogram(y, join(outdir, 'target_histogram.png'))
+        plot_helper.plot_target_histogram(y, join(outdir, 'target_histogram.png'), xlabel=y.name)
 
     # Get the appropriate collection of metrics:
     metrics_dict = conf['GeneralSetup']['metrics']

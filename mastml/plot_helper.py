@@ -152,7 +152,7 @@ def plot_predicted_vs_true(train_triple, test_triple, outdir):
 
 @ipynb_maker
 def plot_residuals_histogram(y_true, y_pred, savepath,
-                             stats, title='residuals histogram'):
+                             stats, title='residuals histogram', xlabel='residuals'):
 
     fig, ax = make_fig_ax(aspect='auto')
 
@@ -162,7 +162,7 @@ def plot_residuals_histogram(y_true, y_pred, savepath,
     ax.hist(residuals, bins=30)
 
     # normal text stuff
-    ax.set_xlabel('residual')
+    ax.set_xlabel(xlabel)
     ax.set_ylabel('frequency')
 
     # make y axis ints, because it is discrete
@@ -176,7 +176,7 @@ def plot_residuals_histogram(y_true, y_pred, savepath,
     fig.savefig(savepath)
 
 @ipynb_maker
-def plot_target_histogram(y_df, savepath, title='target histogram'):
+def plot_target_histogram(y_df, savepath, title='target histogram', xlabel='y values'):
 
     fig, ax = make_fig_ax(aspect='auto')
 
@@ -185,7 +185,7 @@ def plot_target_histogram(y_df, savepath, title='target histogram'):
     ax.hist(y_df)#, histtype='stepfilled')
 
     # normal text stuff
-    ax.set_xlabel('y values')
+    ax.set_xlabel(xlabel)
     ax.set_ylabel('frequency')
 
     # make y axis ints, because it is discrete
