@@ -7,7 +7,7 @@ ordered dictionary which maps names to either values, or mean-stdev pairs.
 A plot can also take an "outdir" instead of a savepath. If this is the case,
 it must return a list of filenames where it saved the figures.
 """
-
+import math
 import itertools
 import warnings
 from os.path import join
@@ -133,6 +133,21 @@ def plot_predicted_vs_true(train_triple, test_triple, outdir):
         ax.set_title('Predicted vs. True ' + title_addon)
         ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
 
+        # set tick labels
+        maxx = round(max((max(y_pred), max(y_true))))
+        minn = round(min((min(y_pred), min(y_true))))
+        divisor = get_divisor(maxx, minn)
+        print(divisor)
+        max_tick = round_up(maxx, divisor)
+        min_tick = round_down(minn, divisor=divisor)
+        tickvals = np.linspace(min_tick, max_tick, num=5)
+        tickvals = [int(val) for val in tickvals]
+        ax.set_xticks(ticks=tickvals)
+        ax.set_yticks(ticks=tickvals)
+        ticklabels = [str(tick) for tick in tickvals]
+        ax.set_xticklabels(labels=ticklabels)
+        ax.set_yticklabels(labels=ticklabels)
+
         make_axis_same(ax, max1, min1)
 
         # do the actual plotting
@@ -153,10 +168,13 @@ def plot_predicted_vs_true(train_triple, test_triple, outdir):
 def get_histogram_bins(y_df):
     bin_dividers = np.linspace(y_df.shape[0], round(0.05*y_df.shape[0]), y_df.shape[0])
     bin_list = list()
-    for divider in bin_dividers:
-        bins = int((y_df.shape[0])/divider)
-        if bins < y_df.shape[0]/2:
-            bin_list.append(bins)
+    try:
+        for divider in bin_dividers:
+            bins = int((y_df.shape[0])/divider)
+            if bins < y_df.shape[0]/2:
+                bin_list.append(bins)
+    except:
+        num_bins = 10
     if len(bin_list) > 0:
         num_bins = max(bin_list)
     else:
@@ -220,6 +238,24 @@ def plot_target_histogram(y_df, savepath, title='target histogram'):
 def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y'):
     # TODO: shrink margin
     fig, ax = make_fig_ax(aspect='auto')
+
+    # set tick labels
+
+    maxx = round(max((max(x), max(y))))
+    minn = round(min((min(x), min(y))))
+    divisor = get_divisor(maxx, minn)
+    print(divisor)
+    max_tick = round_up(maxx, divisor)
+    min_tick = round_down(minn, divisor)
+    tickvals = np.linspace(min_tick, max_tick, num=5)
+    tickvals = [int(val) for val in tickvals]
+    ax.set_xticks(ticks=tickvals)
+    ax.set_yticks(ticks=tickvals)
+    ticklabels = [str(tick) for tick in tickvals]
+    ax.set_xticklabels(labels=ticklabels)
+    ax.set_yticklabels(labels=ticklabels)
+
+
     if groups is None:
         ax.scatter(x, y, c='b', edgecolor='black',  zorder=2, s=80, alpha=0.7)
     else:
@@ -259,6 +295,21 @@ def plot_best_worst_split(best_run, worst_run, savepath,
                alpha=0.7, label='worst', edgecolor='darkblue', zorder=3)
     ax.legend(loc='lower left', bbox_to_anchor=(1, 0))
 
+    # set tick labels
+    maxx = round(maxx)
+    minn = round(minn)
+    divisor = get_divisor(maxx, minn)
+    print(divisor)
+    max_tick = round_up(maxx, divisor)
+    min_tick = round_down(minn, divisor)
+    tickvals = np.linspace(min_tick, max_tick, num=5)
+    tickvals = [int(val) for val in tickvals]
+    ax.set_xticks(ticks=tickvals)
+    ax.set_yticks(ticks=tickvals)
+    ticklabels = [str(tick) for tick in tickvals]
+    ax.set_xticklabels(labels=ticklabels)
+    ax.set_yticklabels(labels=ticklabels)
+
     # set axis labels
     ax.set_xlabel('Measured')
     ax.set_ylabel('Predicted')
@@ -296,7 +347,7 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
         worst_stats[name] = func(new_y_true, worsts)
         best_stats[name] = func(new_y_true, bests)
 
-    w, h = figaspect(0.333)
+    w, h = figaspect(0.33)
     fig = Figure(figsize=(w,h))
     FigureCanvas(fig)
     # Trap figure on left side:
@@ -316,6 +367,21 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
     # set axis labels
     ax.set_xlabel('Measured')
     ax.set_ylabel('Predicted')
+
+    # set tick labels
+    maxx = round(max((max(bests), max(worsts), max(new_y_true))))
+    minn = round(min((min(bests), min(worsts), min(new_y_true))))
+    divisor = get_divisor(maxx, minn)
+    print(divisor)
+    max_tick = round_up(maxx, divisor)
+    min_tick = round_down(minn, divisor)
+    tickvals = np.linspace(min_tick, max_tick, num=5)
+    tickvals = [int(val) for val in tickvals]
+    ax.set_xticks(ticks=tickvals)
+    ax.set_yticks(ticks=tickvals)
+    ticklabels = [str(tick) for tick in tickvals]
+    ax.set_xticklabels(labels=ticklabels)
+    ax.set_yticklabels(labels=ticklabels)
 
     ax.scatter(new_y_true, bests,  c='red',  alpha=0.7, label='best',
                edgecolor='darkred',  zorder=2, s=80)
@@ -350,6 +416,21 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
     # set axis labels
     ax.set_xlabel('Measured')
     ax.set_ylabel('Predicted')
+
+    # set tick labels
+    maxx = round(max((max(means), max(y_true))))
+    minn = round(min((min(means), min(y_true))))
+    divisor = get_divisor(maxx, minn)
+    print(divisor)
+    max_tick = round_up(maxx, divisor)
+    min_tick = round_down(minn, divisor)
+    tickvals = np.linspace(min_tick, max_tick, num=5)
+    tickvals = [int(val) for val in tickvals]
+    ax.set_xticks(ticks=tickvals)
+    ax.set_yticks(ticks=tickvals)
+    ticklabels = [str(tick) for tick in tickvals]
+    ax.set_xticklabels(labels=ticklabels)
+    ax.set_yticklabels(labels=ticklabels)
 
     ax.errorbar(y_true, means, yerr=standard_errors, fmt='o', markerfacecolor='blue', markeredgecolor='black', alpha=0.7, capsize=3)
 
@@ -553,3 +634,24 @@ def nice_std(ls):
     if len(ls) > 0:
         return np.std(ls)
     return np.nan
+
+def round_down(num, divisor):
+    return num - (num%divisor)
+
+def round_up(num, divisor):
+    return float(math.ceil(num / divisor)) * divisor
+
+def get_divisor(high, low):
+    delta = high-low
+    divisor = 10
+    if delta > 100:
+        divisor = 10
+    if delta < 100:
+        if delta > 10:
+            divisor = 1
+        if delta < 10:
+            if delta > 1:
+                divisor = 0.1
+            if delta < 1:
+                divisor = 0.05
+    return divisor
