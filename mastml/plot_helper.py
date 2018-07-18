@@ -8,6 +8,7 @@ A plot can also take an "outdir" instead of a savepath. If this is the case,
 it must return a list of filenames where it saved the figures.
 """
 import math
+import pandas as pd
 import itertools
 import warnings
 from os.path import join
@@ -232,6 +233,9 @@ def plot_target_histogram(y_df, savepath, title='target histogram'):
     fig.tight_layout()
 
     plot_stats(fig, dict(y_df.describe()))
+    # Save input data stats to csv
+    savepath_parse = savepath.split('target_histogram.png')[0]
+    y_df.describe().to_csv(savepath_parse+'/''input_data_statistics.csv')
 
     fig.savefig(savepath, dpi=250)
 
@@ -593,8 +597,8 @@ def make_fig_ax(aspect='equal', aspect_ratio=0.6):
 
     # these two lines are where the magic happens, trapping the figure on the
     # left side so we can make print text beside it
-    gs = plt.GridSpec(1, 5)
-    ax = fig.add_subplot(gs[0, 0:3], aspect=aspect)
+    gs = plt.GridSpec(2, 5)
+    ax = fig.add_subplot(gs[0:, 0:3], aspect=aspect)
 
     return fig, ax
 
