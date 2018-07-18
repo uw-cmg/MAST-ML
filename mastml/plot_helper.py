@@ -159,7 +159,7 @@ def plot_residuals_histogram(y_true, y_pred, savepath,
     ax.set_title(title)
     # do the actual plotting
     residuals = y_true - y_pred
-    ax.hist(residuals, bins=30)
+    ax.hist(residuals, bins=30, color='b', edgecolor='k')
 
     # normal text stuff
     ax.set_xlabel('residual')
@@ -182,7 +182,7 @@ def plot_target_histogram(y_df, savepath, title='target histogram'):
 
     ax.set_title(title)
     # do the actual plotting
-    ax.hist(y_df)#, histtype='stepfilled')
+    ax.hist(y_df, color='b', edgecolor='k')#, histtype='stepfilled')
 
     # normal text stuff
     ax.set_xlabel('y values')
