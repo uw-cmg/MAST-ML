@@ -200,8 +200,8 @@ def plot_residuals_histogram(y_true, y_pred, savepath,
     ax.legend(loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12, frameon=False)
 
     # normal text stuff
-    ax.set_xlabel('Value of '+label)
-    ax.set_ylabel('Number of occurences')
+    ax.set_xlabel('Value of '+label, fontsize=16)
+    ax.set_ylabel('Number of occurences', fontsize=16)
 
     # make y axis ints, because it is discrete
     #ax.yaxis.set_major_locator(MaxNLocator(integer=True))
@@ -229,8 +229,8 @@ def plot_target_histogram(y_df, savepath, title='target histogram', label='targe
     #ax.legend(loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12, frameon=False)
 
     # normal text stuff
-    ax.set_xlabel('Value of '+label)
-    ax.set_ylabel('Number of occurences')
+    ax.set_xlabel('Value of '+label, fontsize=16)
+    ax.set_ylabel('Number of occurences', fontsize=16)
 
     # make y axis ints, because it is discrete
     #ax.yaxis.set_major_locator(MaxNLocator(integer=True))
@@ -261,8 +261,8 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y', label='tar
     ax.set_xticks(ticks=tickvals)
     ax.set_yticks(ticks=tickvals)
     ticklabels = [str(tick) for tick in tickvals]
-    ax.set_xticklabels(labels=ticklabels)
-    ax.set_yticklabels(labels=ticklabels)
+    ax.set_xticklabels(labels=ticklabels, fontsize=14)
+    ax.set_yticklabels(labels=ticklabels, fontsize=14)
 
     if groups is None:
         ax.scatter(x, y, c='b', edgecolor='black',  zorder=2, s=80, alpha=0.7)
@@ -272,8 +272,8 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y', label='tar
             ax.scatter(x[mask], y[mask], label=group)
         ax.legend(loc='lower left', bbox_to_anchor=(1, -.2))
 
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel('Value of '+label)
+    ax.set_xlabel(xlabel, fontsize=16)
+    ax.set_ylabel('Value of '+label, fontsize=16)
     fig.tight_layout()
     fig.savefig(savepath, dpi=250, bbox_inches='tight')
 
@@ -308,12 +308,12 @@ def plot_best_worst_split(best_run, worst_run, savepath,
     ax.set_xticks(ticks=tickvals)
     ax.set_yticks(ticks=tickvals)
     ticklabels = [str(tick) for tick in tickvals]
-    ax.set_xticklabels(labels=ticklabels)
-    ax.set_yticklabels(labels=ticklabels)
+    ax.set_xticklabels(labels=ticklabels, fontsize=14)
+    ax.set_yticklabels(labels=ticklabels, fontsize=14)
 
     # set axis labels
-    ax.set_xlabel('True '+label)
-    ax.set_ylabel('Predicted '+label)
+    ax.set_xlabel('True '+label, fontsize=16)
+    ax.set_ylabel('Predicted '+label, fontsize=16)
 
     #font_dict = {'size'   : 10, 'family' : 'sans-serif'}
 
@@ -361,8 +361,8 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
     ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
 
     # set axis labels
-    ax.set_xlabel('True '+label)
-    ax.set_ylabel('Predicted '+label)
+    ax.set_xlabel('True '+label, fontsize=16)
+    ax.set_ylabel('Predicted '+label, fontsize=16)
 
     # set tick labels
     maxx = round(max((max(bests), max(worsts), max(new_y_true))))
@@ -375,8 +375,8 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
     ax.set_xticks(ticks=tickvals)
     ax.set_yticks(ticks=tickvals)
     ticklabels = [str(tick) for tick in tickvals]
-    ax.set_xticklabels(labels=ticklabels)
-    ax.set_yticklabels(labels=ticklabels)
+    ax.set_xticklabels(labels=ticklabels, fontsize=14)
+    ax.set_yticklabels(labels=ticklabels, fontsize=14)
 
     ax.scatter(new_y_true, bests,  c='red',  alpha=0.7, label='best',
                edgecolor='darkred',  zorder=2, s=80)
@@ -409,8 +409,8 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
     ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
 
     # set axis labels
-    ax.set_xlabel('True '+label)
-    ax.set_ylabel('Predicted '+label)
+    ax.set_xlabel('True '+label, fontsize=16)
+    ax.set_ylabel('Predicted '+label, fontsize=16)
 
     # set tick labels
     maxx = round(max((max(means), max(y_true))))
@@ -423,8 +423,8 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
     ax.set_xticks(ticks=tickvals)
     ax.set_yticks(ticks=tickvals)
     ticklabels = [str(tick) for tick in tickvals]
-    ax.set_xticklabels(labels=ticklabels)
-    ax.set_yticklabels(labels=ticklabels)
+    ax.set_xticklabels(labels=ticklabels, fontsize=14)
+    ax.set_yticklabels(labels=ticklabels, fontsize=14)
 
     ax.errorbar(y_true, means, yerr=standard_errors, fmt='o', markerfacecolor='blue', markeredgecolor='black', alpha=0.7, capsize=3)
     ax.legend(loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12, frameon=False)
