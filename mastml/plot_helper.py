@@ -153,8 +153,8 @@ def plot_residuals_histogram(y_true, y_pred, savepath,
     # shrink those margins
     fig.tight_layout()
 
-    plot_stats(fig, stats, x_align=16/24, y_align=0.90)
-    plot_stats(fig, pd.DataFrame(residuals).describe().to_dict()[0], x_align=16/24, y_align=0.60)
+    plot_stats(fig, stats, x_align=0.64, y_align=0.90)
+    plot_stats(fig, pd.DataFrame(residuals).describe().to_dict()[0], x_align=0.64, y_align=0.60)
 
     fig.savefig(savepath, dpi=250, bbox_inches='tight')
 
@@ -222,20 +222,20 @@ def plot_predicted_vs_true(train_triple, test_triple, outdir, label):
         ax.set_xticks(ticks=tickvals)
         ax.set_yticks(ticks=tickvals)
         ticklabels = [str(tick) for tick in tickvals]
-        ax.set_xticklabels(labels=ticklabels)
-        ax.set_yticklabels(labels=ticklabels)
+        ax.set_xticklabels(labels=ticklabels, fontsize=14)
+        ax.set_yticklabels(labels=ticklabels, fontsize=14)
 
         make_axis_same(ax, max1, min1)
 
         # do the actual plotting
-        ax.scatter(y_true, y_pred, color='blue', edgecolors='black', zorder=2, alpha=0.7)
+        ax.scatter(y_true, y_pred, color='blue', edgecolors='black', s=100, zorder=2, alpha=0.7)
         ax.legend(loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12, frameon=False)
 
         # set axis labels
-        ax.set_xlabel('True '+label)
-        ax.set_ylabel('Predicted '+label)
+        ax.set_xlabel('True '+label, fontsize=16)
+        ax.set_ylabel('Predicted '+label, fontsize=16)
 
-        plot_stats(fig, stats, x_align=16/24, y_align=0.90)
+        plot_stats(fig, stats, x_align=0.64, y_align=0.90)
 
         filename = 'predicted_vs_true_'+ title_addon + '.png'
         filenames.append(filename)
@@ -271,11 +271,15 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y', label='tar
     ax.set_yticklabels(labels=ticklabels_y, fontsize=14)
 
     if groups is None:
-        ax.scatter(x, y, c='b', edgecolor='black',  zorder=2, s=80, alpha=0.7)
+        ax.scatter(x, y, c='b', edgecolor='darkblue', zorder=2, s=100, alpha=0.7)
     else:
+        groupcount = 0
         for group in np.unique(groups):
+            colors = ['blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow']
+            shapes = []
             mask = groups == group
-            ax.scatter(x[mask], y[mask], label=group)
+            ax.scatter(x[mask], y[mask], label=group, color=colors[groupcount], s=100, alpha=0.7)
+            groupcount += 1
         ax.legend(loc='lower left', bbox_to_anchor=(1, -.2))
 
     ax.set_xlabel(xlabel, fontsize=16)
@@ -316,9 +320,9 @@ def plot_best_worst_split(y_true, best_run, worst_run, savepath,
 
     # do the actual plotting
     ax.scatter(best_run['y_test_true'],  best_run['y_test_pred'],  c='red',
-               alpha=0.7, label='best',  edgecolor='darkred',  zorder=2, s=80)
+               alpha=0.7, label='best',  edgecolor='darkred',  zorder=2, s=100)
     ax.scatter(worst_run['y_test_true'], worst_run['y_test_pred'], c='blue',
-               alpha=0.7, label='worst', edgecolor='darkblue', zorder=3)
+               alpha=0.7, label='worst', edgecolor='darkblue', zorder=3, s=80)
     ax.legend(loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12)
 
     # set axis labels
@@ -333,8 +337,8 @@ def plot_best_worst_split(y_true, best_run, worst_run, savepath,
     worst_stats = OrderedDict([('worst Run', None)])
     worst_stats.update(worst_run['test_metrics'])
 
-    plot_stats(fig, best_stats, x_align=16/24, y_align=0.90)
-    plot_stats(fig, worst_stats, x_align=16/24, y_align=0.60)
+    plot_stats(fig, best_stats, x_align=0.64, y_align=0.90)
+    plot_stats(fig, worst_stats, x_align=0.64, y_align=0.60)
 
     #fig.tight_layout()
     fig.savefig(savepath, dpi=250, bbox_inches='tight')
@@ -389,13 +393,13 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
     make_axis_same(ax, max1, min1)
 
     ax.scatter(new_y_true, bests,  c='red',  alpha=0.7, label='best',
-               edgecolor='darkred',  zorder=2, s=80)
+               edgecolor='darkred',  zorder=2, s=100)
     ax.scatter(new_y_true, worsts, c='blue', alpha=0.7, label='worst',
-               edgecolor='darkblue', zorder=3)
-    ax.legend(loc='lower right', bbox_to_anchor=(1.25, -0.1), fontsize=12)
+               edgecolor='darkblue', zorder=3, s=80)
+    ax.legend(loc='lower right', bbox_to_anchor=(1.25, -0.2), fontsize=12)
 
-    plot_stats(fig, avg_stats, x_align=15.5/24, y_align=0.57, fontsize=10)
-    plot_stats(fig, worst_stats, x_align=15.5/24, y_align=0.77, fontsize=10)
+    plot_stats(fig, avg_stats, x_align=15.5/24, y_align=0.51, fontsize=10)
+    plot_stats(fig, worst_stats, x_align=15.5/24, y_align=0.73, fontsize=10)
     plot_stats(fig, best_stats, x_align=15.5/24, y_align=0.95, fontsize=10)
     fig.savefig(savepath, dpi=250, bbox_inches='tight')
 
@@ -436,10 +440,11 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
 
     make_axis_same(ax, max1, min1)
 
-    ax.errorbar(y_true, means, yerr=standard_errors, fmt='o', markerfacecolor='blue', markeredgecolor='black', alpha=0.7, capsize=3)
+    ax.errorbar(y_true, means, yerr=standard_errors, fmt='o', markerfacecolor='blue', markeredgecolor='black', markersize=10,
+                alpha=0.7, capsize=3)
     ax.legend(loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12, frameon=False)
 
-    plot_stats(fig, avg_stats, x_align=16/24, y_align=0.90)
+    plot_stats(fig, avg_stats, x_align=0.64, y_align=0.90)
     fig.savefig(savepath, dpi=250, bbox_inches='tight')
 
 @ipynb_maker

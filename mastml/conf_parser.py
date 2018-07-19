@@ -107,8 +107,8 @@ def parse_conf_file(filepath):
             if is_classification:
                 GS['metrics'] = ['accuracy', 'precision_weighted', 'recall_weighted']
             else:
-                GS['metrics'] = ['r2', 'root_mean_squared_error',
-                                 'mean_absolute_error', 'explained_variance']
+                GS['metrics'] = ['R2', 'root_mean_squared_error',
+                                 'mean_absolute_error', 'rmse_over_stdev']
     set_default_metrics()
 
     # Turn names of metrics into actual metrics:

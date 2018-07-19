@@ -36,7 +36,6 @@ regression_metrics = {
     'mean_squared_error':     (False, sm.mean_squared_error),
     'mean_squared_log_error': (False, sm.mean_squared_log_error),
     'median_absolute_error':  (False, sm.median_absolute_error),
-    'r2':                     (True, sm.r2_score),
 }
 
 def r2_score_noint(y_true, y_pred):
@@ -45,8 +44,15 @@ def r2_score_noint(y_true, y_pred):
     y_true = np.array(y_true).reshape(-1,1) # turn it from an n-vector to nx1-matrix
     lr.fit(y_true, y_pred)
     return lr.score(y_true, y_pred)
-regression_metrics['r2_noint'] = (True, r2_score_noint)
+regression_metrics['R2_noint'] = (True, r2_score_noint)
 
+def r2_score(y_true, y_pred):
+    " Get the R^2 coefficient with intercept "
+    lr = LinearRegression(fit_intercept=True)
+    y_true = np.array(y_true).reshape(-1,1) # turn it from an n-vector to nx1-matrix
+    lr.fit(y_true, y_pred)
+    return lr.score(y_true, y_pred)
+regression_metrics['R2'] = (True, r2_score)
 
 def root_mean_squared_error(y_true, y_pred):
     return sm.mean_squared_error(y_true, y_pred)**0.5
@@ -97,8 +103,8 @@ nice_names = {
     'median_absolute_error': 'MedAE',
     'root_mean_squared_error': 'RMSE',
     'rmse_over_stdev': r'RMSE/$\sigma_y$',
-    'r2': '$r^2$',
-    'r2_noint': '$r^2$_noint',
+    'R2': '$R^2$',
+    'R2_noint': '$R^2$_noint',
 }
 
 def check_and_fetch_names(metric_names, is_classification):

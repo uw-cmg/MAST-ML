@@ -274,7 +274,7 @@ def mastml_run(conf_path, data_path, outdir):
                             join(subdir, f'learning_curve.png'))
 
                 if PlotSettings['feature_vs_target']:
-                    if selector_name == 'DoNothing': continue
+                    #if selector_name == 'DoNothing': continue
                     # for each selector/normalizer, plot y against each x column
                     for column in X:
                         filename = f'{column}_vs_target.png'
