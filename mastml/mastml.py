@@ -235,6 +235,14 @@ def mastml_run(conf_path, data_path, outdir):
                 X_, y_ = X, y
 
             pairs = []
+            def proper_index(splits):
+                """ For example, if X's indexs are [1,4,6] and you split 
+                [ [[0],[1,2]], [[1],[0,2]] ] then we would get 
+                [ [[1],[4,6]], [[4],[1,6]] ] 
+                Needed only for valdation row stuff.
+                """
+                return tuple(tuple(X_.index.values[part] for part in split) for split in splits)
+
             for name, instance in splitters:
                 if name in splitter_to_group_names: # if this splitter depends on grouping
                     col = splitter_to_group_names[name]
@@ -243,13 +251,15 @@ def mastml_run(conf_path, data_path, outdir):
                         if is_validation: # also exclude for df_ so that rows match up
                             df_ = _exclude_validation(df, validation_column)
                         if col in df_.columns:
-                            pairs.append((name, tuple(instance.split(X_, y_, df_[col].values))))
+                            split = proper_index(instance.split(X_, y_, df_[col].values))
+                            pairs.append((name, split))
                             break
                     else:
                         raise utils.MissingColumnError(f'DataSplit {name} needs column {col}, which'
                                                        f'was neither generated nor given by input')
                 else:
-                   pairs.append((name, tuple(instance.split(X_, y_))))
+                   split = proper_index(instance.split(X_, y_))
+                   pairs.append((name, split))
             return pairs
         splittername_splitlist_pairs = make_splittername_splitlist_pairs()
 
@@ -316,6 +326,8 @@ def mastml_run(conf_path, data_path, outdir):
                 validation_y = _only_validation(y, validation_column)
                 log.info("             Making predictions on prediction_only data...")
                 validation_predictions = model.predict(validation_X)
+                print('ooooouuutuch')
+                print(validation_y)
 
                 # save them as 'predicitons.csv'
                 validation_predictions_series = pd.Series(validation_predictions, name='clean_predictions', index=validation_X.index)
