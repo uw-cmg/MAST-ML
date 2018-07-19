@@ -70,11 +70,11 @@ def mastml_run(conf_path, data_path, outdir):
     # randomly shuffly y values if randomizer is on
     if conf['GeneralSetup']['randomizer'] is True:
         log.warn("Randomizer is enabled, so target feature will be shuffled,"
-                 " and results should be garbage")
+                 " and results should be null for a given model")
         y = y.sample(frac=1).reset_index(drop=True)
 
     if conf['PlotSettings']['target_histogram']:
-        plot_helper.plot_target_histogram(y, join(outdir, 'target_histogram.png'))
+        plot_helper.plot_target_histogram(y, join(outdir, 'target_histogram.png'), label=y.name)
 
     # Get the appropriate collection of metrics:
     metrics_dict = conf['GeneralSetup']['metrics']
@@ -171,7 +171,7 @@ def mastml_run(conf_path, data_path, outdir):
             return clustered_df
         clustered_df = make_clusters()
 
-        def plot_scatters(): # put it in a function for namespace preserving
+        def plot_scatters(label): # put it in a function for namespace preserving
             plots_made = 0
             if clustered_df.empty:
                 # plot y against each x column
@@ -190,9 +190,9 @@ def mastml_run(conf_path, data_path, outdir):
                         if plots_made > 10: break
                         plot_helper.plot_scatter(X[column], y, join(outdir, filename),
                                                 clustered_df[name], xlabel=column,
-                                                ylabel='target_feature')
+                                                ylabel='target_feature', label=label)
         if PlotSettings['feature_vs_target']:
-            plot_scatters()
+            plot_scatters(label=y.name)
 
         log.info("Saving clustered data to csv...")
         pd.concat([clustered_df, y], 1).to_csv(join(outdir, "clusters.csv"), index=False)
@@ -269,12 +269,12 @@ def mastml_run(conf_path, data_path, outdir):
                             join(subdir, f'learning_curve.png'))
 
                 if PlotSettings['feature_vs_target']:
-                    if selector_name == 'DoNothing': continue
+                    #if selector_name == 'DoNothing': continue
                     # for each selector/normalizer, plot y against each x column
                     for column in X:
                         filename = f'{column}_vs_target.png'
                         plot_helper.plot_scatter(X[column], y, join(subdir, filename),
-                                                 xlabel=column, ylabel='target_feature')
+                                                 xlabel=column, ylabel='target_feature', label=y.name)
                 for model_name, model_instance in models:
                     for splitter_name, trains_tests in splits:
                         subdir = join(normalizer_name, selector_name, model_name, splitter_name)
@@ -343,7 +343,7 @@ def mastml_run(conf_path, data_path, outdir):
 
             log.info("             Making plots...")
             if PlotSettings['main_plots']:
-                plot_helper.make_main_plots(split_result, path, is_classification)
+                plot_helper.make_main_plots(split_result, path, is_classification, label=y.name)
             _write_stats(split_result['train_metrics'],
                          split_result['test_metrics'],
                          main_path)
@@ -381,7 +381,7 @@ def mastml_run(conf_path, data_path, outdir):
         def do_plots():
             if PlotSettings['predicted_vs_true']:
                 plot_helper.plot_best_worst_split(best, worst,
-                                                  join(main_path, 'best_worst_split.png'))
+                                                  join(main_path, 'best_worst_split.png'), label=y.name)
             predictions = [[] for _ in range(X.shape[0])]
             for split_num, (train_indices, test_indices) in enumerate(trains_tests):
                 for i, pred in zip(test_indices, split_results[split_num]['y_test_pred']):
@@ -389,11 +389,11 @@ def mastml_run(conf_path, data_path, outdir):
             if PlotSettings['predicted_vs_true_bars']:
                 plot_helper.plot_predicted_vs_true_bars(
                         y.values, predictions, avg_test_stats,
-                        join(main_path, 'average_points_with_bars.png'))
+                        join(main_path, 'average_points_with_bars.png'), label=y.name)
             if PlotSettings['best_worst_per_point']:
                 plot_helper.plot_best_worst_per_point(y.values, predictions,
                                                       join(main_path, 'best_worst_per_point.png'),
-                                                      metrics_dict, avg_test_stats)
+                                                      metrics_dict, avg_test_stats, label=y.name)
         if not is_classification:
             do_plots()
 

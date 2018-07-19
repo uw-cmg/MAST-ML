@@ -40,7 +40,7 @@ matplotlib.rc('figure', autolayout=True) # turn on autolayout
 from .ipynb_maker import ipynb_maker # TODO: fix cyclic import
 from .metrics import nice_names
 
-def make_main_plots(run, path, is_classification):
+def make_main_plots(run, path, is_classification, label):
     y_train_true, y_train_pred, y_test_true = \
         run['y_train_true'], run['y_train_pred'], run['y_test_true']
     y_test_pred, train_metrics, test_metrics = \
@@ -58,16 +58,16 @@ def make_main_plots(run, path, is_classification):
 
     else: # is_regression
         plot_predicted_vs_true((y_train_true, y_train_pred, train_metrics),
-                          (y_test_true,  y_test_pred,  test_metrics), path)
+                          (y_test_true,  y_test_pred,  test_metrics), path, label=label)
 
         title = 'train_residuals_histogram'
         plot_residuals_histogram(y_train_true, y_train_pred,
                                  join(path, title+'.png'), train_metrics,
-                                 title=title)
+                                 title=title, label=label)
         title = 'test_residuals_histogram'
         plot_residuals_histogram(y_test_true,  y_test_pred,
                                  join(path, title+'.png'), test_metrics,
-                                 title=title)
+                                 title=title, label=label)
 
 ### Core plotting utilities:
 
@@ -116,7 +116,7 @@ def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False,
     fig.savefig(savepath, dpi=250)
 
 @ipynb_maker
-def plot_predicted_vs_true(train_triple, test_triple, outdir):
+def plot_predicted_vs_true(train_triple, test_triple, outdir, label):
     filenames = list()
     y_train_true, y_train_pred, train_metrics = train_triple
     y_test_true, y_test_pred, test_metrics = test_triple
@@ -157,8 +157,8 @@ def plot_predicted_vs_true(train_triple, test_triple, outdir):
         ax.legend(loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12, frameon=False)
 
         # set axis labels
-        ax.set_xlabel('Measured')
-        ax.set_ylabel('Predicted')
+        ax.set_xlabel('True '+label)
+        ax.set_ylabel('Predicted '+label)
 
         plot_stats(fig, stats, x_align=16/24, y_align=0.90)
 
@@ -186,7 +186,7 @@ def get_histogram_bins(y_df):
 
 @ipynb_maker
 def plot_residuals_histogram(y_true, y_pred, savepath,
-                             stats, title='residuals histogram'):
+                             stats, title='residuals histogram', label='residuals'):
 
     # Set image aspect ratio:
     fig, ax = make_fig_ax()
@@ -200,8 +200,8 @@ def plot_residuals_histogram(y_true, y_pred, savepath,
     ax.legend(loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12, frameon=False)
 
     # normal text stuff
-    ax.set_xlabel('residual')
-    ax.set_ylabel('frequency')
+    ax.set_xlabel('Value of '+label)
+    ax.set_ylabel('Number of occurences')
 
     # make y axis ints, because it is discrete
     #ax.yaxis.set_major_locator(MaxNLocator(integer=True))
@@ -214,7 +214,7 @@ def plot_residuals_histogram(y_true, y_pred, savepath,
     fig.savefig(savepath, dpi=250, bbox_inches='tight')
 
 @ipynb_maker
-def plot_target_histogram(y_df, savepath, title='target histogram'):
+def plot_target_histogram(y_df, savepath, title='target histogram', label='target values'):
 
     # Set image aspect ratio:
     fig, ax = make_fig_ax(aspect_ratio=0.5)
@@ -229,8 +229,8 @@ def plot_target_histogram(y_df, savepath, title='target histogram'):
     #ax.legend(loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12, frameon=False)
 
     # normal text stuff
-    ax.set_xlabel('y values')
-    ax.set_ylabel('frequency')
+    ax.set_xlabel('Value of '+label)
+    ax.set_ylabel('Number of occurences')
 
     # make y axis ints, because it is discrete
     #ax.yaxis.set_major_locator(MaxNLocator(integer=True))
@@ -245,7 +245,7 @@ def plot_target_histogram(y_df, savepath, title='target histogram'):
 
     fig.savefig(savepath, dpi=250, bbox_inches='tight')
 
-def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y'):
+def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y', label='target data'):
     # Set image aspect ratio:
     fig, ax = make_fig_ax()
 
@@ -273,13 +273,13 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y'):
         ax.legend(loc='lower left', bbox_to_anchor=(1, -.2))
 
     ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
+    ax.set_ylabel('Value of '+label)
     fig.tight_layout()
     fig.savefig(savepath, dpi=250, bbox_inches='tight')
 
 @ipynb_maker
 def plot_best_worst_split(best_run, worst_run, savepath,
-                          title='Best Worst Overlay'):
+                          title='Best Worst Overlay', label='target_value'):
     # Set image aspect ratio:
     fig, ax = make_fig_ax()
 
@@ -312,8 +312,8 @@ def plot_best_worst_split(best_run, worst_run, savepath,
     ax.set_yticklabels(labels=ticklabels)
 
     # set axis labels
-    ax.set_xlabel('Measured')
-    ax.set_ylabel('Predicted')
+    ax.set_xlabel('True '+label)
+    ax.set_ylabel('Predicted '+label)
 
     #font_dict = {'size'   : 10, 'family' : 'sans-serif'}
 
@@ -331,7 +331,7 @@ def plot_best_worst_split(best_run, worst_run, savepath,
 
 @ipynb_maker
 def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
-                              avg_stats, title='best worst per point'):
+                              avg_stats, title='best worst per point', label='target_value'):
     worsts = []
     bests = []
     new_y_true = []
@@ -361,8 +361,8 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
     ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
 
     # set axis labels
-    ax.set_xlabel('Measured')
-    ax.set_ylabel('Predicted')
+    ax.set_xlabel('True '+label)
+    ax.set_ylabel('Predicted '+label)
 
     # set tick labels
     maxx = round(max((max(bests), max(worsts), max(new_y_true))))
@@ -391,7 +391,7 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
 
 @ipynb_maker
 def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
-                                savepath, title='best worst with bars'):
+                                savepath, title='best worst with bars', label='target_value'):
     " EVERYTHING MUST BE ARRAYS DONT GIVE ME DEM DF "
     means = [nice_mean(y_pred) for y_pred in y_pred_list]
     standard_error_means = [nice_std(y_pred)/np.sqrt(len(y_pred))
@@ -409,8 +409,8 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
     ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
 
     # set axis labels
-    ax.set_xlabel('Measured')
-    ax.set_ylabel('Predicted')
+    ax.set_xlabel('True '+label)
+    ax.set_ylabel('Predicted '+label)
 
     # set tick labels
     maxx = round(max((max(means), max(y_true))))
