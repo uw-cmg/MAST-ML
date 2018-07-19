@@ -153,13 +153,10 @@ def plot_residuals_histogram(y_true, y_pred, savepath,
     # make y axis ints, because it is discrete
     #ax.yaxis.set_major_locator(MaxNLocator(integer=True))
 
-    # shrink those margins
-    fig.tight_layout()
-
     plot_stats(fig, stats, x_align=x_align, y_align=0.90)
     plot_stats(fig, pd.DataFrame(residuals).describe().to_dict()[0], x_align=x_align, y_align=0.60)
 
-    fig.savefig(savepath, dpi=250, bbox_inches='tight')
+    fig.savefig(savepath, dpi=250)
 
 @ipynb_maker
 def plot_target_histogram(y_df, savepath, title='target histogram', label='target values'):
@@ -183,15 +180,13 @@ def plot_target_histogram(y_df, savepath, title='target histogram', label='targe
     # make y axis ints, because it is discrete
     #ax.yaxis.set_major_locator(MaxNLocator(integer=True))
 
-    # shrink those margins
-    fig.tight_layout()
 
     plot_stats(fig, dict(y_df.describe()), x_align=x_align, y_align=0.90, fontsize=14)
     # Save input data stats to csv
     savepath_parse = savepath.split('target_histogram.png')[0]
     y_df.describe().to_csv(savepath_parse+'/''input_data_statistics.csv')
 
-    fig.savefig(savepath, dpi=250, bbox_inches='tight')
+    fig.savefig(savepath, dpi=250)
 
 @ipynb_maker
 def plot_predicted_vs_true(train_triple, test_triple, outdir, label):
@@ -233,7 +228,7 @@ def plot_predicted_vs_true(train_triple, test_triple, outdir, label):
 
         filename = 'predicted_vs_true_'+ title_addon + '.png'
         filenames.append(filename)
-        fig.savefig(join(outdir, filename), dpi=250, bbox_inches='tight')
+        fig.savefig(join(outdir, filename), dpi=250)
 
     return filenames
 
@@ -263,8 +258,7 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y', label='tar
 
     ax.set_xlabel(xlabel, fontsize=16)
     ax.set_ylabel('Value of '+label, fontsize=16)
-    fig.tight_layout()
-    fig.savefig(savepath, dpi=250, bbox_inches='tight')
+    fig.savefig(savepath, dpi=250)
 
 @ipynb_maker
 def plot_best_worst_split(y_true, best_run, worst_run, savepath,
@@ -302,8 +296,7 @@ def plot_best_worst_split(y_true, best_run, worst_run, savepath,
     plot_stats(fig, best_stats, x_align=x_align, y_align=0.90)
     plot_stats(fig, worst_stats, x_align=x_align, y_align=0.60)
 
-    #fig.tight_layout()
-    fig.savefig(savepath, dpi=250, bbox_inches='tight')
+    fig.savefig(savepath, dpi=250)
 
 @ipynb_maker
 def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
@@ -355,7 +348,7 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
     plot_stats(fig, avg_stats, x_align=x_align, y_align=0.51, fontsize=10)
     plot_stats(fig, worst_stats, x_align=x_align, y_align=0.73, fontsize=10)
     plot_stats(fig, best_stats, x_align=x_align, y_align=0.95, fontsize=10)
-    fig.savefig(savepath, dpi=250, bbox_inches='tight')
+    fig.savefig(savepath, dpi=250)
 
 @ipynb_maker
 def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
@@ -390,7 +383,7 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
                 alpha=0.7, capsize=3)
 
     plot_stats(fig, avg_stats, x_align=x_align, y_align=0.90)
-    fig.savefig(savepath, dpi=250, bbox_inches='tight')
+    fig.savefig(savepath, dpi=250)
 
 def plot_1d_heatmap(xs, heats, savepath, xlabel='x', heatlabel='heats'):
     fig, ax = make_fig_ax(aspect='auto')
@@ -479,7 +472,7 @@ def plot_sample_learning_curve(model, X, y, scoring, savepath='data_learning_cur
     for s in scoring_name.split('_'):
         scoring_name_nice += s + ' '
     ax.set_ylabel(scoring_name_nice, fontsize=16)
-    fig.savefig(savepath, dpi=250, bbox_to_inches='tight')
+    fig.savefig(savepath, dpi=250)
 
 def plot_feature_learning_curve(model, X, y, scoring=None, savepath='feature_learning_curve.png'):
     #RFECV.transform = RFECV.old_transform # damn you
@@ -514,7 +507,7 @@ def plot_feature_learning_curve(model, X, y, scoring=None, savepath='feature_lea
     h1 = ax.plot(features, scores, '-o', color='blue', markersize=10, alpha=0.7)[0]
 
     ax.legend([h1], ['test score'], loc='upper right', fontsize=12)
-    fig.savefig(savepath, dpi=250, bbox_to_inches='tight')
+    fig.savefig(savepath, dpi=250)
 
 ### Helpers:
 
