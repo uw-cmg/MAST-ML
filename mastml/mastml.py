@@ -183,14 +183,14 @@ def mastml_run(conf_path, data_path, outdir):
                 for column in X: # plot y against each x column
                     filename = f'{column}_vs_target_scatter.png'
                     plot_helper.plot_scatter(X[column], y, join(outdir, filename),
-                                             xlabel=column, ylabel='target_feature')
+                                             xlabel=column, groups=None, ylabel='target_feature', label=y.name)
             else:
                 for name in clustered_df.columns: # for each cluster, plot y against each x column
                     for column in X:
                         filename = f'{column}_vs_target_by_{name}_scatter.png'
                         plot_helper.plot_scatter(X[column], y, join(outdir, filename),
                                                 clustered_df[name], xlabel=column,
-                                                ylabel='target_feature')
+                                                ylabel='target_feature', label=y.name)
         if PlotSettings['feature_vs_target']:
             make_feature_vs_target_plots()
 
@@ -365,7 +365,7 @@ def mastml_run(conf_path, data_path, outdir):
 
             log.info("             Making plots...")
             if PlotSettings['train_test_plots']:
-                plot_helper.make_train_test_plots(split_result, path, is_classification)
+                plot_helper.make_train_test_plots(split_result, path, is_classification, label=y.name)
             _write_stats(split_result['train_metrics'],
                          split_result['test_metrics'],
                          main_path)
