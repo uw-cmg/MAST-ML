@@ -308,8 +308,7 @@ def mastml_run(conf_path, data_path, outdir):
             train_pred = model.predict(train_X)
             test_pred  = model.predict(test_X)
 
-            blacklist = [1,2,3]
-            # MARK here is where we need to collect testing_only stats
+            # here is where we need to collect validation stats
             if is_validation:
                 validation_X = _only_validation(X, validation_column)
                 validation_y = _only_validation(y, validation_column)
