@@ -14,7 +14,7 @@ import warnings
 from os.path import join
 from collections import OrderedDict
 from sklearn.model_selection import RepeatedKFold
-from sklearn.feature_selection import RFECV
+from sklearn.feature_selection import RFECV, RFE
 
 # Ignore the harmless warning about the gelsd driver on mac.
 warnings.filterwarnings(action="ignore", module="scipy",
@@ -585,6 +585,38 @@ def plot_feature_learning_curve(model, X, y, scoring=None, savepath='feature_lea
     X = np.array(X)
     y = np.array(y).reshape(-1, 1)
 
+    """
+    # Need to revisit how the averaging stats are done over CV steps
+    stats_dict = dict()
+    train_means = list()
+    train_stds = list()
+    test_means = list()
+    test_stds = list()
+    num_features = X.shape[1]
+    feature_list = [f+1 for f in range(num_features)]
+    for feature in range(num_features):
+        rfe = RFE(estimator=model, n_features_to_select=feature+1, step=1)
+        Xnew = rfe.fit_transform(X,y)
+        # Now do KFoldCV on model containing feature number of features
+        rkf = RepeatedKFold(n_splits=5, n_repeats=5)
+        cv_number=1
+        train_scores = dict()
+        test_scores = dict()
+        for trains, tests in rkf.split(Xnew, y):
+            model = model.fit(Xnew[trains], y[trains])
+            train_vals = model.predict(Xnew[trains])
+            test_vals = model.predict(Xnew[tests])
+            train_scores[cv_number] = scoring._score_func(train_vals, y[trains])
+            test_scores[cv_number] = scoring._score_func(test_vals, y[tests])
+            cv_number += 1
+        train_means.append(np.mean(list(train_scores.values())))
+        train_stds.append(np.std(list(train_scores.values())))
+        test_means.append(np.mean(list(test_scores.values())))
+        test_stds.append(np.std(list(test_scores.values())))    
+    """
+
+
+
     try:
         rfe = RFECV(estimator=model, step=1, cv=RepeatedKFold(n_splits=5, n_repeats=5), scoring=scoring)
         rfe = rfe.fit(X, y)
@@ -592,6 +624,7 @@ def plot_feature_learning_curve(model, X, y, scoring=None, savepath='feature_lea
         print('Feature learning curve is made using recursive feature elimination, which requires a sklearn model with'
               'either a coef_ or feature_importances_ attribute. For regression tasks, use one of: LinearRegression, SVR,'
               'Lasso, or RandomForestRegressor')
+
 
     # Set image aspect ratio (do custom for learning curve):
     w, h = figaspect(0.75)
@@ -610,16 +643,17 @@ def plot_feature_learning_curve(model, X, y, scoring=None, savepath='feature_lea
     features = range(len(rfe.grid_scores_))
     scores = rfe.grid_scores_
 
-    #print(features, features.shape)
-    #print(scores, scores.shape)
-
     h1 = ax.plot(features, scores, '-o', color='blue', markersize=10, alpha=0.7)[0]
-    #ax.fill_between(train_sizes, mean_train_scores-train_scores_stdev, mean_train_scores+train_scores_stdev,
-    #                 alpha=0.1, color='blue')
-    #h2 = ax.plot(train_sizes, mean_test_scores, '-o', color='red', markersize=10, alpha=0.7)[0]
-    #ax.fill_between(train_sizes, mean_test_scores-test_scores_stdev, mean_test_scores+test_scores_stdev,
-    #                 alpha=0.1, color='red')
-    #ax.legend([h1, h2], ['train score', 'test score'], loc='lower right', fontsize=12)
+    """
+    # This is plotting for regular RFE method commented out above
+    h1 = ax.plot(feature_list, train_means, '-o', color='blue', markersize=10, alpha=0.7)
+    ax.fill_between(feature_list, np.array(train_means)-np.array(train_stds), np.array(train_means)+np.array(train_stds),
+                    alpha=0.1, color='blue')
+    h2 = ax.plot(feature_list, test_means, '-o', color='red', markersize=10, alpha=0.7)[0]
+    ax.fill_between(feature_list, np.array(test_means)-np.array(test_stds), np.array(test_means)+np.array(test_stds),
+                    alpha=0.1, color='red')
+    ax.legend([h1, h2], ['train score', 'test score'], loc='lower right', fontsize=12)
+    """
     ax.legend([h1], ['test score'], loc='upper right', fontsize=12)
     fig.savefig(savepath, dpi=250, bbox_to_inches='tight')
 
