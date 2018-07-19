@@ -239,7 +239,7 @@ def mastml_run(conf_path, data_path, outdir):
                     log.debug(f"    Finding {col} for {name}...")
                     for df_ in [clustered_df, X_, df]:
                         if is_validation: # also exclude for df_ so that rows match up
-                            df = _exclude_validation(df, validation_column)
+                            df_ = _exclude_validation(df, validation_column)
                         if col in df_.columns:
                             pairs.append((name, tuple(instance.split(X_, y_, df_[col].values))))
                             break
