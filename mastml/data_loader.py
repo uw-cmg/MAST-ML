@@ -8,7 +8,10 @@ def load_data(file_path, input_features=None, target_feature=None):
     " Loads in csv from filename and ensures required columns are present. Returns dataframe. "
 
     # Load data
-    df = pd.read_csv(file_path)
+    try:
+        df = pd.read_csv(file_path)
+    except:
+        df = pd.read_excel(file_path)
 
     # Assign default values to input_features and target_feature;
     if input_features is None and target_feature is None: # input is first n-1 and target is just n

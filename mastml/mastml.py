@@ -70,7 +70,7 @@ def mastml_run(conf_path, data_path, outdir):
     # randomly shuffly y values if randomizer is on
     if conf['GeneralSetup']['randomizer'] is True:
         log.warning("Randomizer is enabled, so target feature will be shuffled,"
-                 " and results should be garbage")
+                 " and results should be null for a given model")
         y = y.sample(frac=1).reset_index(drop=True)
 
     # get parameters out for 'validation_column'
@@ -83,7 +83,7 @@ def mastml_run(conf_path, data_path, outdir):
     if conf['PlotSettings']['target_histogram']:
         # First, save input data stats to csv
         y.describe().to_csv(join(outdir, 'input_data_statistics.csv'))
-        plot_helper.plot_target_histogram(y, join(outdir, 'target_histogram.png'), xlabel=y.name)
+        plot_helper.plot_target_histogram(y, join(outdir, 'target_histogram.png'), label=y.name)
 
     # Get the appropriate collection of metrics:
     metrics_dict = conf['GeneralSetup']['metrics']
@@ -185,14 +185,14 @@ def mastml_run(conf_path, data_path, outdir):
                 for column in X: # plot y against each x column
                     filename = f'{column}_vs_target_scatter.png'
                     plot_helper.plot_scatter(X[column], y, join(outdir, filename),
-                                             xlabel=column, ylabel='target_feature')
+                                             xlabel=column, groups=None, ylabel='target_feature', label=y.name)
             else:
                 for name in clustered_df.columns: # for each cluster, plot y against each x column
                     for column in X:
                         filename = f'{column}_vs_target_by_{name}_scatter.png'
                         plot_helper.plot_scatter(X[column], y, join(outdir, filename),
                                                 clustered_df[name], xlabel=column,
-                                                ylabel='target_feature')
+                                                ylabel='target_feature', label=y.name)
         if PlotSettings['feature_vs_target']:
             make_feature_vs_target_plots()
 
@@ -255,7 +255,7 @@ def mastml_run(conf_path, data_path, outdir):
                             pairs.append((name, split))
                             break
                     else:
-                        raise utils.MissingColumnError(f'DataSplit {name} needs column {col}, which'
+                        raise utils.MissingColumnError(f'DataSplit {name} needs column {col}, which '
                                                        f'was neither generated nor given by input')
                 else:
                    split = proper_index(instance.split(X_, y_))
@@ -273,23 +273,21 @@ def mastml_run(conf_path, data_path, outdir):
                     learning_curve_model = conf['GeneralSetup']['learning_curve_model']
                     learning_curve_score = conf['GeneralSetup']['learning_curve_score']
                     plot_helper.plot_sample_learning_curve(
-                            learning_curve_model, X, y, learning_curve_score,
-                            2, join(subdir, f'learning_curve.png'))
+                            learning_curve_model, X, y, learning_curve_score, join(subdir, f'data_learning_curve.png'))
 
                 if conf['PlotSettings']['feature_learning_curve']:
                     learning_curve_model = conf['GeneralSetup']['learning_curve_model']
                     learning_curve_score = conf['GeneralSetup']['learning_curve_score']
                     plot_helper.plot_feature_learning_curve(
-                            learning_curve_model, X, y, learning_curve_score,
-                            join(subdir, f'learning_curve.png'))
+                            learning_curve_model, X, y, learning_curve_score, join(subdir, f'feature_learning_curve.png'))
 
                 if PlotSettings['feature_vs_target']:
-                    if selector_name == 'DoNothing': continue
+                    #if selector_name == 'DoNothing': continue
                     # for each selector/normalizer, plot y against each x column
                     for column in X:
                         filename = f'{column}_vs_target.png'
                         plot_helper.plot_scatter(X[column], y, join(subdir, filename),
-                                                 xlabel=column, ylabel='target_feature')
+                                                 xlabel=column, ylabel='target_feature', label=y.name)
                 for model_name, model_instance in models:
                     for splitter_name, trains_tests in splittername_splitlist_pairs:
                         subdir = join(normalizer_name, selector_name, model_name, splitter_name)
@@ -372,12 +370,14 @@ def mastml_run(conf_path, data_path, outdir):
                 y_test_true  = test_y.values,
                 y_test_pred  = test_pred,
                 train_metrics = train_metrics,
-                test_metrics  = test_metrics
+                test_metrics  = test_metrics,
+                train_indices = train_indices,
+                test_indices = test_indices
             )
 
             log.info("             Making plots...")
             if PlotSettings['train_test_plots']:
-                plot_helper.make_train_test_plots(split_result, path, is_classification)
+                plot_helper.make_train_test_plots(split_result, path, is_classification, label=y.name)
             _write_stats(split_result['train_metrics'],
                          split_result['test_metrics'],
                          main_path)
@@ -395,10 +395,8 @@ def mastml_run(conf_path, data_path, outdir):
             for name in metrics_dict:
                 train_values = [split_result['train_metrics'][name] for split_result in split_results]
                 test_values  = [split_result['test_metrics'][name]  for split_result in split_results]
-                train_stats[name] = (np.mean(train_values),
-                                     np.std(train_values) / np.sqrt(len(train_values)))
-                test_stats[name]  = (np.mean(test_values),
-                                     np.std(test_values) / np.sqrt(len(test_values)))
+                train_stats[name] = (np.mean(train_values), np.std(train_values))
+                test_stats[name]  = (np.mean(test_values), np.std(test_values))
             return train_stats, test_stats
         avg_train_stats, avg_test_stats = make_train_test_average_and_std_stats()
 
@@ -413,8 +411,8 @@ def mastml_run(conf_path, data_path, outdir):
 
         def make_pred_vs_true_plots():
             if PlotSettings['predicted_vs_true']:
-                plot_helper.plot_best_worst_split(best, worst,
-                                                  join(main_path, 'best_worst_split.png'))
+                plot_helper.plot_best_worst_split(y.values, best, worst,
+                                                  join(main_path, 'best_worst_split.png'), label=y.name)
             predictions = [[] for _ in range(X.shape[0])]
             for split_num, (train_indices, test_indices) in enumerate(trains_tests):
                 for i, pred in zip(test_indices, split_results[split_num]['y_test_pred']):
@@ -422,11 +420,11 @@ def mastml_run(conf_path, data_path, outdir):
             if PlotSettings['predicted_vs_true_bars']:
                 plot_helper.plot_predicted_vs_true_bars(
                         y.values, predictions, avg_test_stats,
-                        join(main_path, 'average_points_with_bars.png'))
+                        join(main_path, 'average_points_with_bars.png'), label=y.name)
             if PlotSettings['best_worst_per_point']:
                 plot_helper.plot_best_worst_per_point(y.values, predictions,
                                                       join(main_path, 'best_worst_per_point.png'),
-                                                      metrics_dict, avg_test_stats)
+                                                      metrics_dict, avg_test_stats, label=y.name)
         if not is_classification:
             make_pred_vs_true_plots()
 

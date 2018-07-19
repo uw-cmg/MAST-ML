@@ -8,10 +8,13 @@ A plot can also take an "outdir" instead of a savepath. If this is the case,
 it must return a list of filenames where it saved the figures.
 """
 import math
+import pandas as pd
 import itertools
 import warnings
 from os.path import join
 from collections import OrderedDict
+from sklearn.model_selection import RepeatedKFold
+from sklearn.feature_selection import RFECV
 
 # Ignore the harmless warning about the gelsd driver on mac.
 warnings.filterwarnings(action="ignore", module="scipy",
@@ -40,7 +43,7 @@ matplotlib.rc('figure', autolayout=True) # turn on autolayout
 from .ipynb_maker import ipynb_maker # TODO: fix cyclic import
 from .metrics import nice_names
 
-def make_train_test_plots(run, path, is_classification):
+def make_train_test_plots(run, path, is_classification, label):
     y_train_true, y_train_pred, y_test_true = \
         run['y_train_true'], run['y_train_pred'], run['y_test_true']
     y_test_pred, train_metrics, test_metrics = \
@@ -58,16 +61,16 @@ def make_train_test_plots(run, path, is_classification):
 
     else: # is_regression
         plot_predicted_vs_true((y_train_true, y_train_pred, train_metrics),
-                          (y_test_true,  y_test_pred,  test_metrics), path)
+                          (y_test_true,  y_test_pred,  test_metrics), path, label=label)
 
         title = 'train_residuals_histogram'
         plot_residuals_histogram(y_train_true, y_train_pred,
                                  join(path, title+'.png'), train_metrics,
-                                 title=title)
+                                 title=title, label=label)
         title = 'test_residuals_histogram'
         plot_residuals_histogram(y_test_true,  y_test_pred,
                                  join(path, title+'.png'), test_metrics,
-                                 title=title)
+                                 title=title, label=label)
 
 ### Core plotting utilities:
 
@@ -115,38 +118,54 @@ def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False,
     ax.set_xlabel('Predicted label')
     fig.savefig(savepath, dpi=250)
 
-
 @ipynb_maker
 def plot_residuals_histogram(y_true, y_pred, savepath,
-                             stats, title='residuals histogram', xlabel='residuals'):
+                             stats, title='residuals histogram', label='residuals'):
 
     # Set image aspect ratio:
     fig, ax = make_fig_ax(x_align=16/24)
 
+    #ax.set_title(title)
     # do the actual plotting
     residuals = y_true - y_pred
+
+    #Output residuals data and stats to spreadsheet
+    split = savepath.split('/')
+    pathlist = split[0:len(split)-1]
+    path = ''
+    for p in pathlist:
+        if p != '':
+            path += '/'+str(p)
+    savepath_parse = savepath.split('/')[-1].split('.png')[0]
+    pd.DataFrame(residuals).describe().to_csv(path+'/'+savepath_parse+'_'+'residual_statistics.csv')
+    pd.DataFrame(residuals).to_csv(path+'/'+savepath_parse+'_'+'residuals.csv')
+
     #Get num_bins using smarter method
     num_bins = get_histogram_bins(y_df=residuals)
     ax.hist(residuals, bins=num_bins, color='b', edgecolor='k')
 
     # normal text stuff
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel('frequency')
+    ax.set_xlabel('Value of '+label, fontsize=16)
+    ax.set_ylabel('Number of occurences', fontsize=16)
 
     # make y axis ints, because it is discrete
     #ax.yaxis.set_major_locator(MaxNLocator(integer=True))
 
+    # shrink those margins
+    fig.tight_layout()
 
-    plot_stats(fig, stats, x_align=16/24, y_align=0.90)
+    plot_stats(fig, stats, x_align=0.64, y_align=0.90)
+    plot_stats(fig, pd.DataFrame(residuals).describe().to_dict()[0], x_align=0.64, y_align=0.60)
 
-    fig.savefig(savepath, dpi=250)
+    fig.savefig(savepath, dpi=250, bbox_inches='tight')
 
 @ipynb_maker
-def plot_target_histogram(y_df, savepath, title='target histogram', xlabel='y values'):
+def plot_target_histogram(y_df, savepath, title='target histogram', label='target values'):
 
     # Set image aspect ratio:
     fig, ax = make_fig_ax(aspect_ratio=0.5, x_align=0.70)
 
+    #ax.set_title(title)
 
     #Get num_bins using smarter method
     num_bins = get_histogram_bins(y_df=y_df)
@@ -155,18 +174,24 @@ def plot_target_histogram(y_df, savepath, title='target histogram', xlabel='y va
     ax.hist(y_df, bins=num_bins, color='b', edgecolor='k')#, histtype='stepfilled')
 
     # normal text stuff
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel('frequency')
+    ax.set_xlabel('Value of '+label, fontsize=16)
+    ax.set_ylabel('Number of occurences', fontsize=16)
 
     # make y axis ints, because it is discrete
     #ax.yaxis.set_major_locator(MaxNLocator(integer=True))
 
-    plot_stats(fig, dict(y_df.describe()), x_align=0.70, y_align=0.90, fontsize=14)
+    # shrink those margins
+    fig.tight_layout()
 
-    fig.savefig(savepath, dpi=250)
+    plot_stats(fig, dict(y_df.describe()), x_align=0.70, y_align=0.90, fontsize=14)
+    # Save input data stats to csv
+    savepath_parse = savepath.split('target_histogram.png')[0]
+    y_df.describe().to_csv(savepath_parse+'/''input_data_statistics.csv')
+
+    fig.savefig(savepath, dpi=250, bbox_inches='tight')
 
 @ipynb_maker
-def plot_predicted_vs_true(train_triple, test_triple, outdir):
+def plot_predicted_vs_true(train_triple, test_triple, outdir, label):
     filenames = list()
     y_train_true, y_train_pred, train_metrics = train_triple
     y_test_true, y_test_pred, test_metrics = test_triple
@@ -183,78 +208,128 @@ def plot_predicted_vs_true(train_triple, test_triple, outdir):
         # Set image aspect ratio:
         fig, ax = make_fig_ax(x_align=16/24)
 
+        #ax.set_title('Predicted vs. True ' + title_addon)
         ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
 
         # set tick labels
+        # TODO make this into a function again
+        # 🤕
         maxx = round(max((max(y_pred), max(y_true))))
         minn = round(min((min(y_pred), min(y_true))))
-        _set_tick_labels(ax, maxx, minn)
+        divisor = get_divisor(maxx, minn)
+        max_tick = round_up(maxx, divisor)
+        min_tick = round_down(minn, divisor=divisor)
+        tickvals = np.linspace(min_tick, max_tick, num=5)
+        tickvals = [int(val) for val in tickvals]
+        ax.set_xticks(ticks=tickvals)
+        ax.set_yticks(ticks=tickvals)
+        ticklabels = [str(tick) for tick in tickvals]
+        ax.set_xticklabels(labels=ticklabels, fontsize=14)
+        ax.set_yticklabels(labels=ticklabels, fontsize=14)
 
+        make_axis_same(ax, max1, min1)
 
         # do the actual plotting
-        ax.scatter(y_true, y_pred, color='blue', edgecolors='black', zorder=2, alpha=0.7)
+        ax.scatter(y_true, y_pred, color='blue', edgecolors='black', s=100, zorder=2, alpha=0.7)
+        ax.legend(loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12, frameon=False)
 
         # set axis labels
-        ax.set_xlabel('Measured')
-        ax.set_ylabel('Predicted')
+        ax.set_xlabel('True '+label, fontsize=16)
+        ax.set_ylabel('Predicted '+label, fontsize=16)
 
-        plot_stats(fig, stats, x_align=16/24, y_align=0.90)
+        plot_stats(fig, stats, x_align=0.64, y_align=0.90)
 
         filename = 'predicted_vs_true_'+ title_addon + '.png'
         filenames.append(filename)
-        fig.savefig(join(outdir, filename), dpi=250)
+        fig.savefig(join(outdir, filename), dpi=250, bbox_inches='tight')
 
     return filenames
 
-def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y'):
+def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y', label='target data'):
     # Set image aspect ratio:
     fig, ax = make_fig_ax()
 
     # set tick labels
-    maxx = round(max((max(x), max(y))))
-    minn = round(min((min(x), min(y))))
-    _set_tick_labels(ax, maxx, minn)
+
+    #maxx = round(max((max(x), max(y))))
+    #minn = round(min((min(x), min(y))))
+    #divisor_x = get_divisor(max(x), min(x))
+    #max_tick_x = round_up(max(x), divisor_x)
+    #min_tick_x = round_down(min(x), divisor_x)
+    max_tick_x = max(x)
+    min_tick_x = min(x)
+    tickvals_x = np.linspace(min_tick_x, max_tick_x, num=5)
+    tickvals_x = [round(float(val),1) for val in tickvals_x]
+    divisor_y = get_divisor(max(y), min(y))
+    max_tick_y = round_up(max(y), divisor_y)
+    min_tick_y = round_down(min(y), divisor_y)
+    tickvals_y = np.linspace(min_tick_y, max_tick_y, num=5)
+    tickvals_y = [round(float(val),1) for val in tickvals_y]
+    ax.set_xticks(ticks=tickvals_x)
+    ax.set_yticks(ticks=tickvals_y)
+    ticklabels_x = [str(tick) for tick in tickvals_x]
+    ticklabels_y = [str(tick) for tick in tickvals_y]
+    ax.set_xticklabels(labels=ticklabels_x, fontsize=14)
+    ax.set_yticklabels(labels=ticklabels_y, fontsize=14)
 
     if groups is None:
-        ax.scatter(x, y, c='b', edgecolor='black',  zorder=2, s=80, alpha=0.7)
+        ax.scatter(x, y, c='b', edgecolor='darkblue', zorder=2, s=100, alpha=0.7)
     else:
+        groupcount = 0
         for group in np.unique(groups):
+            colors = ['blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow']
+            shapes = []
             mask = groups == group
-            ax.scatter(x[mask], y[mask], label=group)
+            ax.scatter(x[mask], y[mask], label=group, color=colors[groupcount], s=100, alpha=0.7)
+            groupcount += 1
 
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
-    fig.savefig(savepath, dpi=250)
+    ax.set_xlabel(xlabel, fontsize=16)
+    ax.set_ylabel('Value of '+label, fontsize=16)
+    fig.tight_layout()
+    fig.savefig(savepath, dpi=250, bbox_inches='tight')
 
 @ipynb_maker
-def plot_best_worst_split(best_run, worst_run, savepath,
-                          title='Best Worst Overlay'):
+def plot_best_worst_split(y_true, best_run, worst_run, savepath,
+                          title='Best Worst Overlay', label='target_value'):
     # Set image aspect ratio:
     fig, ax = make_fig_ax(x_align=16/24)
 
     # make diagonal line from absolute min to absolute max of any data point
-    all_y = [best_run['y_test_true'], best_run['y_test_pred'],
-             worst_run['y_test_true'], worst_run['y_test_pred']]
-    maxx = max(y.max() for y in all_y)
-    minn = min(y.min() for y in all_y)
-    ax.plot([minn, maxx], [minn, maxx], 'k--', lw=4, zorder=1)
+    #all_y = [best_run['y_test_true'], best_run['y_test_pred'],
+    #         worst_run['y_test_true'], worst_run['y_test_pred']]
+    #maxx = max(y.max() for y in all_y)
+    #minn = min(y.min() for y in all_y)
+    maxx = max(y_true)
+    minn = min(y_true)
+    ax.plot([minn, maxx], [minn, maxx], 'k--', lw=2, zorder=1)
+
+    # set tick labels
+    # TODO fix this 🤕
+    maxx = round(maxx)
+    minn = round(minn)
+    divisor = get_divisor(maxx, minn)
+    max_tick = round_up(maxx, divisor)
+    min_tick = round_down(minn, divisor)
+    tickvals = np.linspace(min_tick, max_tick, num=5)
+    tickvals = [int(val) for val in tickvals]
+    ax.set_xticks(ticks=tickvals)
+    ax.set_yticks(ticks=tickvals)
+    ticklabels = [str(tick) for tick in tickvals]
+    ax.set_xticklabels(labels=ticklabels, fontsize=14)
+    ax.set_yticklabels(labels=ticklabels, fontsize=14)
+
+    make_axis_same(ax, maxx, minn)
 
     # do the actual plotting
     ax.scatter(best_run['y_test_true'],  best_run['y_test_pred'],  c='red',
-               alpha=0.7, label='best',  edgecolor='darkred',  zorder=2, s=80)
+               alpha=0.7, label='best',  edgecolor='darkred',  zorder=2, s=100)
     ax.scatter(worst_run['y_test_true'], worst_run['y_test_pred'], c='blue',
-               alpha=0.7, label='worst', edgecolor='darkblue', zorder=3)
-
-    # set tick labels
-    maxx = round(maxx)
-    minn = round(minn)
-    _set_tick_labels(ax, maxx, minn)
-
-
+               alpha=0.7, label='worst', edgecolor='darkblue', zorder=3, s=80)
+    ax.legend(loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12)
 
     # set axis labels
-    ax.set_xlabel('Measured')
-    ax.set_ylabel('Predicted')
+    ax.set_xlabel('True '+label, fontsize=16)
+    ax.set_ylabel('Predicted '+label, fontsize=16)
 
     #font_dict = {'size'   : 10, 'family' : 'sans-serif'}
 
@@ -264,14 +339,15 @@ def plot_best_worst_split(best_run, worst_run, savepath,
     worst_stats = OrderedDict([('worst Run', None)])
     worst_stats.update(worst_run['test_metrics'])
 
-    plot_stats(fig, best_stats, x_align=16/24, y_align=0.90)
-    plot_stats(fig, worst_stats, x_align=16/24, y_align=0.60)
+    plot_stats(fig, best_stats, x_align=0.64, y_align=0.90)
+    plot_stats(fig, worst_stats, x_align=0.64, y_align=0.60)
 
-    fig.savefig(savepath, dpi=250)
+    #fig.tight_layout()
+    fig.savefig(savepath, dpi=250, bbox_inches='tight')
 
 @ipynb_maker
 def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
-                              avg_stats, title='best worst per point'):
+                              avg_stats, title='best worst per point', label='target_value'):
     worsts = []
     bests = []
     new_y_true = []
@@ -295,32 +371,42 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
     max1 = max(all_vals)
     min1 = min(all_vals)
 
-
     # draw dashed horizontal line
-    ax.plot([min1, max1], [min1, max1], 'k--', lw=4, zorder=1)
+    ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
 
     # set axis labels
-    ax.set_xlabel('Measured')
-    ax.set_ylabel('Predicted')
+    ax.set_xlabel('True '+label, fontsize=16)
+    ax.set_ylabel('Predicted '+label, fontsize=16)
 
     # set tick labels
     maxx = round(max((max(bests), max(worsts), max(new_y_true))))
     minn = round(min((min(bests), min(worsts), min(new_y_true))))
-    _set_tick_labels(ax, maxx, minn)
+    divisor = get_divisor(maxx, minn)
+    max_tick = round_up(maxx, divisor)
+    min_tick = round_down(minn, divisor)
+    tickvals = np.linspace(min_tick, max_tick, num=5)
+    tickvals = [int(val) for val in tickvals]
+    ax.set_xticks(ticks=tickvals)
+    ax.set_yticks(ticks=tickvals)
+    ticklabels = [str(tick) for tick in tickvals]
+    ax.set_xticklabels(labels=ticklabels, fontsize=14)
+    ax.set_yticklabels(labels=ticklabels, fontsize=14)
+
+    make_axis_same(ax, max1, min1)
 
     ax.scatter(new_y_true, bests,  c='red',  alpha=0.7, label='best',
-               edgecolor='darkred',  zorder=2, s=80)
+               edgecolor='darkred',  zorder=2, s=100)
     ax.scatter(new_y_true, worsts, c='blue', alpha=0.7, label='worst',
-               edgecolor='darkblue', zorder=3)
+               edgecolor='darkblue', zorder=3, s=80)
 
-    plot_stats(fig, avg_stats, x_align=15.5/24, y_align=0.57, fontsize=10)
-    plot_stats(fig, worst_stats, x_align=15.5/24, y_align=0.77, fontsize=10)
+    plot_stats(fig, avg_stats, x_align=15.5/24, y_align=0.51, fontsize=10)
+    plot_stats(fig, worst_stats, x_align=15.5/24, y_align=0.73, fontsize=10)
     plot_stats(fig, best_stats, x_align=15.5/24, y_align=0.95, fontsize=10)
-    fig.savefig(savepath, dpi=250)
+    fig.savefig(savepath, dpi=250, bbox_inches='tight')
 
 @ipynb_maker
 def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
-                                savepath, title='best worst with bars'):
+                                savepath, title='best worst with bars', label='target_value'):
     " EVERYTHING MUST BE ARRAYS DONT GIVE ME DEM DF "
     means = [nice_mean(y_pred) for y_pred in y_pred_list]
     standard_error_means = [nice_std(y_pred)/np.sqrt(len(y_pred))
@@ -332,23 +418,33 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
     max1 = max(np.nanmax(y_true), np.nanmax(means))
     min1 = min(np.nanmin(y_true), np.nanmin(means))
 
-
     # draw dashed horizontal line
     ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
 
     # set axis labels
-    ax.set_xlabel('Measured')
-    ax.set_ylabel('Predicted')
+    ax.set_xlabel('True '+label, fontsize=16)
+    ax.set_ylabel('Predicted '+label, fontsize=16)
 
     # set tick labels
     maxx = round(max((max(means), max(y_true))))
     minn = round(min((min(means), min(y_true))))
-    _set_tick_labels(ax, maxx, minn)
+    divisor = get_divisor(maxx, minn)
+    max_tick = round_up(maxx, divisor)
+    min_tick = round_down(minn, divisor)
+    tickvals = np.linspace(min_tick, max_tick, num=5)
+    tickvals = [int(val) for val in tickvals]
+    ax.set_xticks(ticks=tickvals)
+    ax.set_yticks(ticks=tickvals)
+    ticklabels = [str(tick) for tick in tickvals]
+    ax.set_xticklabels(labels=ticklabels, fontsize=14)
+    ax.set_yticklabels(labels=ticklabels, fontsize=14)
 
-    ax.errorbar(y_true, means, yerr=standard_errors, fmt='o', markerfacecolor='blue', markeredgecolor='black', alpha=0.7, capsize=3)
 
-    plot_stats(fig, avg_stats, x_align=16/24, y_align=0.90)
-    fig.savefig(savepath, dpi=250)
+    ax.errorbar(y_true, means, yerr=standard_errors, fmt='o', markerfacecolor='blue', markeredgecolor='black', markersize=10,
+                alpha=0.7, capsize=3)
+
+    plot_stats(fig, avg_stats, x_align=0.64, y_align=0.90)
+    fig.savefig(savepath, dpi=250, bbox_inches='tight')
 
 @ipynb_maker
 def plot_violin(y_true, y_pred_list, savepath, title='best worst with bars'):
@@ -368,7 +464,7 @@ def plot_violin(y_true, y_pred_list, savepath, title='best worst with bars'):
     max1 = max(np.nanmax(y_true_new), np.nanmax(means))
     min1 = min(np.nanmin(y_true_new), np.nanmin(means))
 
-    _set_tick_labels(ax, maxx, minn)
+    make_axis_same(ax, max1, min1)
 
     # draw dashed horizontal line
     ax.plot([min1, max1], [min1, max1], 'k--', lw=4, zorder=1)
@@ -425,39 +521,104 @@ def plot_3d_heatmap(xs, ys, zs, heats, savepath,
     #anim.save(savepath+'.mp4', fps=5, extra_args=['-vcodec', 'libx264'])
     anim.save(savepath+'.gif', fps=5, dpi=80, writer='imagemagick')
 
-def plot_sample_learning_curve(model, X, y, scoring, cv=2, savepath='sample_learning_curve.png'):
-    train_sizes, train_scores, valid_scores = learning_curve(model, X, y, scoring=scoring, cv=cv)
-    fig, ax = make_fig_ax()
-    h1 = ax.plot(train_sizes, train_scores, '-o', c='blue')[0]
-    h2 = ax.plot(train_sizes, valid_scores, '-o', c='red')[0]
-    ax.legend([h1, h2], ['train', 'test'], loc='lower left', bbox_to_anchor=(1, -.2))
-    ax.set_xlabel('number of training samples')
+def plot_sample_learning_curve(model, X, y, scoring, savepath='data_learning_curve.png'):
+
+    train_sizes = np.linspace(0.1, 1.0, 20)
+    train_sizes, train_scores, valid_scores = learning_curve(model, X, y, train_sizes=train_sizes, scoring=scoring,
+                                                             cv=RepeatedKFold(n_splits=5, n_repeats=5))
+    mean_train_scores = np.mean(train_scores, axis=1)
+    mean_test_scores = np.mean(valid_scores, axis=1)
+    train_scores_stdev = np.std(train_scores, axis=1)
+    test_scores_stdev = np.std(valid_scores, axis=1)
+
+    # Set image aspect ratio (do custom for learning curve):
+    w, h = figaspect(0.75)
+    fig = Figure(figsize=(w,h))
+    FigureCanvas(fig)
+    gs = plt.GridSpec(1, 1)
+    ax = fig.add_subplot(gs[0:, 0:])
+
+    # set tick labels
+    max_x = max(train_sizes)
+    min_x = min(train_sizes)
+    max_y = round(max(max(mean_train_scores),max(mean_train_scores+train_scores_stdev),max(mean_train_scores-train_scores_stdev),
+                     max(mean_test_scores),max(mean_test_scores+test_scores_stdev),max(mean_test_scores-test_scores_stdev)))
+    min_y = round(min(min(mean_train_scores),min(mean_train_scores+train_scores_stdev),min(mean_train_scores-train_scores_stdev),
+                     min(mean_test_scores),min(mean_test_scores+test_scores_stdev),min(mean_test_scores-test_scores_stdev)))
+    divisor_y = get_divisor(max_y, min_y)
+    divisor_x = get_divisor(max_x, min_x)
+    max_tick_y = round_up(max_y, divisor_y)
+    min_tick_y = round_down(min_y, divisor_y)
+    max_tick_x = round_up(max_x, divisor_x)
+    min_tick_x = round_down(min_x, divisor_x)
+    tickvals_y = np.linspace(min_tick_y, max_tick_y, num=5)
+    tickvals_y = [float(val) for val in tickvals_y]
+    tickvals_x = np.linspace(min_tick_x, max_tick_x, num=5)
+    tickvals_x = [int(val) for val in tickvals_x]
+    ax.set_xticks(ticks=tickvals_x)
+    ax.set_yticks(ticks=tickvals_y)
+    ticklabels_y = [str(tick) for tick in tickvals_y]
+    ticklabels_x = [str(tick) for tick in tickvals_x]
+    ax.set_xticklabels(labels=ticklabels_x, fontsize=14)
+    ax.set_yticklabels(labels=ticklabels_y, fontsize=14)
+
+    h1 = ax.plot(train_sizes, mean_train_scores, '-o', color='blue', markersize=10, alpha=0.7)[0]
+    ax.fill_between(train_sizes, mean_train_scores-train_scores_stdev, mean_train_scores+train_scores_stdev,
+                     alpha=0.1, color='blue')
+    h2 = ax.plot(train_sizes, mean_test_scores, '-o', color='red', markersize=10, alpha=0.7)[0]
+    ax.fill_between(train_sizes, mean_test_scores-test_scores_stdev, mean_test_scores+test_scores_stdev,
+                     alpha=0.1, color='red')
+    ax.legend([h1, h2], ['train score', 'test score'], loc='lower right', fontsize=12)
+    ax.set_xlabel('Number of data points', fontsize=16)
     scoring_name = scoring._score_func.__name__
-    ax.set_ylabel(scoring_name + ' score')
-    fig.savefig(savepath, dpi=250)
+    scoring_name_nice = ''
+    for s in scoring_name.split('_'):
+        scoring_name_nice += s + ' '
+    ax.set_ylabel(scoring_name_nice, fontsize=16)
+    fig.savefig(savepath, dpi=250, bbox_to_inches='tight')
 
 def plot_feature_learning_curve(model, X, y, scoring=None, savepath='feature_learning_curve.png'):
     #RFECV.transform = RFECV.old_transform # damn you
-    print(dir(RFECV))
-    rfe = RFECV_train_test(model, scoring=scoring)
-    rfe = rfe.fit(X, y)
-    '''
-    >>> oops
-    (Pdb) rfe.support_
-    >>> array([ True,  True,  True,  True,  True, False, False,  True,  True, False], dtype=bool)
-    (Pdb) rfe.ranking_
-    >>> array([1, 1, 1, 1, 1, 4, 2, 1, 1, 3])
-    (Pdb) rfe.grid_scores_
-    >>> array([ 0.11704555,  0.02829977,  0.09502728,  0.11660331,  0.11178014,
-    >>>        0.09861614,  0.14987966,  0.14267309,  0.13662161,  0.14129173])
-    '''
-    fig, ax = make_fig_ax_square(aspect='auto')
-    ax.set_xlabel("Number of features selected")
-    ax.set_ylabel("CV score")
-    ax.plot(range(1, len(rfe.grid_scores_) + 1), rfe.grid_scores_, label='test')
-    ax.plot(range(1, len(rfe.grid_train_scores_) + 1), rfe.grid_train_scores_, label='train')
-    ax.legend()
-    fig.savefig(savepath, dpi=250)
+    X = np.array(X)
+    y = np.array(y).reshape(-1, 1)
+
+    try:
+        rfe = RFECV(estimator=model, step=1, cv=RepeatedKFold(n_splits=5, n_repeats=5), scoring=scoring)
+        rfe = rfe.fit(X, y)
+    except AttributeError:
+        print('Feature learning curve is made using recursive feature elimination, which requires a sklearn model with'
+              'either a coef_ or feature_importances_ attribute. For regression tasks, use one of: LinearRegression, SVR,'
+              'Lasso, or RandomForestRegressor')
+
+    # Set image aspect ratio (do custom for learning curve):
+    w, h = figaspect(0.75)
+    fig = Figure(figsize=(w,h))
+    FigureCanvas(fig)
+    gs = plt.GridSpec(1, 1)
+    ax = fig.add_subplot(gs[0:, 0:])
+
+    ax.set_xlabel('Number of features selected', fontsize=16)
+    scoring_name = scoring._score_func.__name__
+    scoring_name_nice = ''
+    for s in scoring_name.split('_'):
+        scoring_name_nice += s + ' '
+    ax.set_ylabel(scoring_name_nice, fontsize=16)
+
+    features = range(len(rfe.grid_scores_))
+    scores = rfe.grid_scores_
+
+    #print(features, features.shape)
+    #print(scores, scores.shape)
+
+    h1 = ax.plot(features, scores, '-o', color='blue', markersize=10, alpha=0.7)[0]
+    #ax.fill_between(train_sizes, mean_train_scores-train_scores_stdev, mean_train_scores+train_scores_stdev,
+    #                 alpha=0.1, color='blue')
+    #h2 = ax.plot(train_sizes, mean_test_scores, '-o', color='red', markersize=10, alpha=0.7)[0]
+    #ax.fill_between(train_sizes, mean_test_scores-test_scores_stdev, mean_test_scores+test_scores_stdev,
+    #                 alpha=0.1, color='red')
+    #ax.legend([h1, h2], ['train score', 'test score'], loc='lower right', fontsize=12)
+    ax.legend([h1], ['test score'], loc='upper right', fontsize=12)
+    fig.savefig(savepath, dpi=250, bbox_to_inches='tight')
 
 ### Helpers:
 
@@ -548,19 +709,15 @@ def make_fig_ax_square(aspect='equal', aspect_ratio=1):
 
     return fig, ax
 
-def _set_tick_labels(ax, maxx, minn):
-    " Fix up x and y ticks using neat divisors algorithms "
-    divisor = get_divisor(maxx, minn)
-    max_tick = round_up(maxx, divisor)
-    min_tick = round_down(minn, divisor)
-    tickvals = np.linspace(min_tick, max_tick, num=5)
-    tickvals = [int(val) for val in tickvals]
-    ax.set_xticks(ticks=tickvals)
-    ax.set_yticks(ticks=tickvals)
-    ticklabels = [str(tick) for tick in tickvals]
-    ax.set_xticklabels(labels=ticklabels)
-    ax.set_yticklabels(labels=ticklabels)
-
+def make_axis_same(ax, max1, min1):
+    # fix up dem axis
+    if max1 - min1 > 5:
+        step = (int(max1) - int(min1)) // 3
+        ticks = range(int(min1), int(max1)+step, step)
+    else:
+        ticks = np.linspace(min1, max1, 5)
+    ax.set_xticks(ticks)
+    ax.set_yticks(ticks)
 
 def nice_mean(ls):
     " Returns NaN for empty list "
@@ -583,14 +740,20 @@ def round_up(num, divisor):
 def get_divisor(high, low):
     delta = high-low
     divisor = 10
-    if delta > 100:
-        divisor = 10
-    if delta < 100:
-        if delta > 10:
-            divisor = 1
-        if delta < 10:
-            if delta > 1:
-                divisor = 0.1
-            if delta < 1:
-                divisor = 0.05
+    if delta > 1000:
+        divisor = 100
+    if delta < 1000:
+        if delta > 100:
+            divisor = 10
+        if delta < 100:
+            if delta > 10:
+                divisor = 1
+            if delta < 10:
+                if delta > 1:
+                    divisor = 0.1
+                if delta < 1:
+                    if delta > 0.01:
+                        divisor = 0.001
+                else:
+                    divisor = 0.001
     return divisor

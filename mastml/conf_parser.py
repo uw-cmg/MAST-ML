@@ -107,8 +107,8 @@ def parse_conf_file(filepath):
             if is_classification:
                 GS['metrics'] = ['accuracy', 'precision_weighted', 'recall_weighted']
             else:
-                GS['metrics'] = ['r2', 'root_mean_squared_error',
-                                 'mean_absolute_error', 'explained_variance']
+                GS['metrics'] = ['R2', 'root_mean_squared_error',
+                                 'mean_absolute_error', 'rmse_over_stdev']
     set_default_metrics()
 
     # Turn names of metrics into actual metrics:
@@ -180,7 +180,7 @@ def parse_conf_file(filepath):
         score_name = GS['learning_curve_score']
         d = metrics.check_and_fetch_names([score_name], is_classification)
         greater_is_better, score_func = d[score_name]
-        GS['learning_curve_score'] = make_scorer(score_func, greater_is_better)
+        GS['learning_curve_score'] = make_scorer(score_func, greater_is_better=True)
 
     return conf
 
