@@ -60,7 +60,7 @@ def mastml_run(conf_path, data_path, outdir):
     conf = conf_parser.parse_conf_file(conf_path)
     PlotSettings = conf['PlotSettings']
     is_classification = conf['is_classification']
-    # The df is used by feature generators, clusterers, and grouping_column to
+    # The df is used by feature generators, clusterers, and grouping_column to 
     # create more features for x.
     # X is model input, y is target feature for model
     df, X, y = data_loader.load_data(data_path,
@@ -69,7 +69,7 @@ def mastml_run(conf_path, data_path, outdir):
 
     # randomly shuffly y values if randomizer is on
     if conf['GeneralSetup']['randomizer'] is True:
-        log.warn("Randomizer is enabled, so target feature will be shuffled,"
+        log.warning("Randomizer is enabled, so target feature will be shuffled,"
                  " and results should be null for a given model")
         y = y.sample(frac=1).reset_index(drop=True)
 
@@ -81,6 +81,8 @@ def mastml_run(conf_path, data_path, outdir):
 
 
     if conf['PlotSettings']['target_histogram']:
+        # First, save input data stats to csv
+        y.describe().to_csv(join(outdir, 'input_data_statistics.csv'))
         plot_helper.plot_target_histogram(y, join(outdir, 'target_histogram.png'), label=y.name)
 
     # Get the appropriate collection of metrics:
@@ -239,7 +241,7 @@ def mastml_run(conf_path, data_path, outdir):
                     log.debug(f"    Finding {col} for {name}...")
                     for df_ in [clustered_df, X_, df]:
                         if is_validation: # also exclude for df_ so that rows match up
-                            df = _exclude_validation(df, validation_column)
+                            df_ = _exclude_validation(df, validation_column)
                         if col in df_.columns:
                             pairs.append((name, tuple(instance.split(X_, y_, df_[col].values))))
                             break
@@ -272,7 +274,7 @@ def mastml_run(conf_path, data_path, outdir):
                             join(subdir, f'learning_curve.png'))
 
                 if PlotSettings['feature_vs_target']:
-                    #if selector_name == 'DoNothing': continue
+                    if selector_name == 'DoNothing': continue
                     # for each selector/normalizer, plot y against each x column
                     for column in X:
                         filename = f'{column}_vs_target.png'
@@ -320,7 +322,7 @@ def mastml_run(conf_path, data_path, outdir):
                 pd.concat([validation_X,  validation_y,  validation_predictions_series],  1)\
                         .to_csv(join(path, 'predictions.csv'),  index=False)
 
-
+            
 
             # Save train and test data and results to csv:
             log.info("             Saving train/test data and predictions to csv...")
