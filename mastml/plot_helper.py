@@ -139,18 +139,9 @@ def plot_predicted_vs_true(train_triple, test_triple, outdir):
         # set tick labels
         maxx = round(max((max(y_pred), max(y_true))))
         minn = round(min((min(y_pred), min(y_true))))
-        divisor = get_divisor(maxx, minn)
-        max_tick = round_up(maxx, divisor)
-        min_tick = round_down(minn, divisor=divisor)
-        tickvals = np.linspace(min_tick, max_tick, num=5)
-        tickvals = [int(val) for val in tickvals]
-        ax.set_xticks(ticks=tickvals)
-        ax.set_yticks(ticks=tickvals)
-        ticklabels = [str(tick) for tick in tickvals]
-        ax.set_xticklabels(labels=ticklabels)
-        ax.set_yticklabels(labels=ticklabels)
+        _set_tick_labels(ax, maxx, minn)
 
-        make_axis_same(ax, max1, min1)
+        #redundant, might overwrite?? make_axis_same(ax, max1, min1)
 
         # do the actual plotting
         ax.scatter(y_true, y_pred, color='blue', edgecolors='black', zorder=2, alpha=0.7)
@@ -250,19 +241,9 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y'):
     fig, ax = make_fig_ax()
 
     # set tick labels
-
     maxx = round(max((max(x), max(y))))
     minn = round(min((min(x), min(y))))
-    divisor = get_divisor(maxx, minn)
-    max_tick = round_up(maxx, divisor)
-    min_tick = round_down(minn, divisor)
-    tickvals = np.linspace(min_tick, max_tick, num=5)
-    tickvals = [int(val) for val in tickvals]
-    ax.set_xticks(ticks=tickvals)
-    ax.set_yticks(ticks=tickvals)
-    ticklabels = [str(tick) for tick in tickvals]
-    ax.set_xticklabels(labels=ticklabels)
-    ax.set_yticklabels(labels=ticklabels)
+    _set_tick_labels(ax, maxx, minn)
 
     if groups is None:
         ax.scatter(x, y, c='b', edgecolor='black',  zorder=2, s=80, alpha=0.7)
@@ -300,16 +281,9 @@ def plot_best_worst_split(best_run, worst_run, savepath,
     # set tick labels
     maxx = round(maxx)
     minn = round(minn)
-    divisor = get_divisor(maxx, minn)
-    max_tick = round_up(maxx, divisor)
-    min_tick = round_down(minn, divisor)
-    tickvals = np.linspace(min_tick, max_tick, num=5)
-    tickvals = [int(val) for val in tickvals]
-    ax.set_xticks(ticks=tickvals)
-    ax.set_yticks(ticks=tickvals)
-    ticklabels = [str(tick) for tick in tickvals]
-    ax.set_xticklabels(labels=ticklabels)
-    ax.set_yticklabels(labels=ticklabels)
+    _set_tick_labels(ax, maxx, minn)
+
+
 
     # set axis labels
     ax.set_xlabel('Measured')
@@ -367,16 +341,7 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
     # set tick labels
     maxx = round(max((max(bests), max(worsts), max(new_y_true))))
     minn = round(min((min(bests), min(worsts), min(new_y_true))))
-    divisor = get_divisor(maxx, minn)
-    max_tick = round_up(maxx, divisor)
-    min_tick = round_down(minn, divisor)
-    tickvals = np.linspace(min_tick, max_tick, num=5)
-    tickvals = [int(val) for val in tickvals]
-    ax.set_xticks(ticks=tickvals)
-    ax.set_yticks(ticks=tickvals)
-    ticklabels = [str(tick) for tick in tickvals]
-    ax.set_xticklabels(labels=ticklabels)
-    ax.set_yticklabels(labels=ticklabels)
+    _set_tick_labels(ax, maxx, minn)
 
     ax.scatter(new_y_true, bests,  c='red',  alpha=0.7, label='best',
                edgecolor='darkred',  zorder=2, s=80)
@@ -415,16 +380,7 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
     # set tick labels
     maxx = round(max((max(means), max(y_true))))
     minn = round(min((min(means), min(y_true))))
-    divisor = get_divisor(maxx, minn)
-    max_tick = round_up(maxx, divisor)
-    min_tick = round_down(minn, divisor)
-    tickvals = np.linspace(min_tick, max_tick, num=5)
-    tickvals = [int(val) for val in tickvals]
-    ax.set_xticks(ticks=tickvals)
-    ax.set_yticks(ticks=tickvals)
-    ticklabels = [str(tick) for tick in tickvals]
-    ax.set_xticklabels(labels=ticklabels)
-    ax.set_yticklabels(labels=ticklabels)
+    _set_tick_labels(ax, maxx, minn)
 
     ax.errorbar(y_true, means, yerr=standard_errors, fmt='o', markerfacecolor='blue', markeredgecolor='black', alpha=0.7, capsize=3)
     ax.legend(loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12, frameon=False)
@@ -605,6 +561,21 @@ def make_fig_ax_square(aspect='equal', aspect_ratio=1):
     ax = fig.add_subplot(111, aspect=aspect)
 
     return fig, ax
+
+
+
+
+def _set_tick_labels(ax, maxx, minn):
+    divisor = get_divisor(maxx, minn)
+    max_tick = round_up(maxx, divisor)
+    min_tick = round_down(minn, divisor)
+    tickvals = np.linspace(min_tick, max_tick, num=5)
+    tickvals = [int(val) for val in tickvals]
+    ax.set_xticks(ticks=tickvals)
+    ax.set_yticks(ticks=tickvals)
+    ticklabels = [str(tick) for tick in tickvals]
+    ax.set_xticklabels(labels=ticklabels)
+    ax.set_yticklabels(labels=ticklabels)
 
 def make_axis_same(ax, max1, min1):
     # fix up dem axis

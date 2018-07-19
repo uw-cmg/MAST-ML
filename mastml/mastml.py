@@ -69,7 +69,7 @@ def mastml_run(conf_path, data_path, outdir):
 
     # randomly shuffly y values if randomizer is on
     if conf['GeneralSetup']['randomizer'] is True:
-        log.warn("Randomizer is enabled, so target feature will be shuffled,"
+        log.warning("Randomizer is enabled, so target feature will be shuffled,"
                  " and results should be garbage")
         y = y.sample(frac=1).reset_index(drop=True)
 
