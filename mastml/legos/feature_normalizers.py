@@ -8,7 +8,7 @@ from functools import wraps
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.preprocessing import MinMaxScaler, Binarizer, StandardScaler
+from sklearn.preprocessing import MinMaxScaler, Binarizer
 
 from . import util_legos
 
@@ -55,7 +55,6 @@ class MeanStdevScaler(BaseEstimator, TransformerMixin):
         changed = pd.DataFrame(array, columns=self.features, index=df.index)
         return pd.concat([same, changed], axis=1)
 
-StandardScaler.transform = dataframify(StandardScaler.transform)
 MinMaxScaler.transform = dataframify(MinMaxScaler.transform)
 Binarizer.transform = dataframify(Binarizer.transform)
 
@@ -64,5 +63,4 @@ name_to_constructor = {
     'MeanStdevScaler': MeanStdevScaler,
     'MinMaxScaler': MinMaxScaler,
     'DoNothing': util_legos.DoNothing,
-    'StandardScaler' : StandardScaler
 }

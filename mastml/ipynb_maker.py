@@ -55,7 +55,7 @@ def ipynb_maker(plot_func):
                     break
                 header += line
 
-        core_funcs = [plot_helper.parse_stat, plot_helper.plot_stats, plot_helper.make_fig_ax]
+        core_funcs = [plot_helper.stat_to_string, plot_helper.plot_stats, plot_helper.make_fig_ax]
         func_strings = '\n\n'.join(inspect.getsource(func) for func in core_funcs)
 
         plot_func_string = inspect.getsource(plot_func)
