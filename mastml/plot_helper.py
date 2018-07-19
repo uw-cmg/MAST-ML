@@ -143,7 +143,7 @@ def plot_predicted_vs_true(train_triple, test_triple, outdir):
 
         # do the actual plotting
         ax.scatter(y_true, y_pred, color='blue', edgecolors='black', zorder=2, alpha=0.7)
-        ax.legend(loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12, frameon=False)
+        ax.legend([], [], loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12, frameon=False)
 
         # set axis labels
         ax.set_xlabel('Measured')
@@ -185,7 +185,7 @@ def plot_residuals_histogram(y_true, y_pred, savepath,
     #Get num_bins using smarter method
     num_bins = get_histogram_bins(y_df=residuals)
     ax.hist(residuals, bins=num_bins, color='b', edgecolor='k')
-    ax.legend(loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12, frameon=False)
+    ax.legend([], [], loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12, frameon=False)
 
     # normal text stuff
     ax.set_xlabel(xlabel)
@@ -211,7 +211,7 @@ def plot_target_histogram(y_df, savepath, title='target histogram', xlabel='y va
 
     # do the actual plotting
     ax.hist(y_df, bins=num_bins, color='b', edgecolor='k')#, histtype='stepfilled')
-    #ax.legend(loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12, frameon=False)
+    #ax.legend([], [], loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12, frameon=False)
 
     # normal text stuff
     ax.set_xlabel(xlabel)
@@ -239,7 +239,7 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y'):
         for group in np.unique(groups):
             mask = groups == group
             ax.scatter(x[mask], y[mask], label=group)
-        ax.legend(loc='lower left', bbox_to_anchor=(1, -.2))
+        ax.legend([], [], loc='lower left', bbox_to_anchor=(1, -.2))
 
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
@@ -263,7 +263,7 @@ def plot_best_worst_split(best_run, worst_run, savepath,
                alpha=0.7, label='best',  edgecolor='darkred',  zorder=2, s=80)
     ax.scatter(worst_run['y_test_true'], worst_run['y_test_pred'], c='blue',
                alpha=0.7, label='worst', edgecolor='darkblue', zorder=3)
-    ax.legend(loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12)
+    ax.legend([], [], loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12)
 
     # set tick labels
     maxx = round(maxx)
@@ -332,7 +332,7 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
                edgecolor='darkred',  zorder=2, s=80)
     ax.scatter(new_y_true, worsts, c='blue', alpha=0.7, label='worst',
                edgecolor='darkblue', zorder=3)
-    ax.legend(loc='lower right', bbox_to_anchor=(1.25, -0.1), fontsize=12)
+    ax.legend([], [], loc='lower right', bbox_to_anchor=(1.25, -0.1), fontsize=12)
 
     plot_stats(fig, avg_stats, x_align=15.5/24, y_align=0.57, fontsize=10)
     plot_stats(fig, worst_stats, x_align=15.5/24, y_align=0.77, fontsize=10)
@@ -367,7 +367,7 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
     _set_tick_labels(ax, maxx, minn)
 
     ax.errorbar(y_true, means, yerr=standard_errors, fmt='o', markerfacecolor='blue', markeredgecolor='black', alpha=0.7, capsize=3)
-    ax.legend(loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12, frameon=False)
+    ax.legend([], [], loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12, frameon=False)
 
     plot_stats(fig, avg_stats, x_align=16/24, y_align=0.90)
     fig.savefig(savepath, dpi=250)
