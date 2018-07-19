@@ -122,8 +122,9 @@ def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False,
 def plot_residuals_histogram(y_true, y_pred, savepath,
                              stats, title='residuals histogram', label='residuals'):
 
-    # Set image aspect ratio:
-    fig, ax = make_fig_ax(x_align=16/24)
+    # make fig and ax, use x_align when placing text so things don't overlap
+    x_align = 0.64
+    fig, ax = make_fig_ax(x_align=x_align)
 
     #ax.set_title(title)
     # do the actual plotting
@@ -154,16 +155,17 @@ def plot_residuals_histogram(y_true, y_pred, savepath,
     # shrink those margins
     fig.tight_layout()
 
-    plot_stats(fig, stats, x_align=0.64, y_align=0.90)
-    plot_stats(fig, pd.DataFrame(residuals).describe().to_dict()[0], x_align=0.64, y_align=0.60)
+    plot_stats(fig, stats, x_align=x_align, y_align=0.90)
+    plot_stats(fig, pd.DataFrame(residuals).describe().to_dict()[0], x_align=x_align, y_align=0.60)
 
     fig.savefig(savepath, dpi=250, bbox_inches='tight')
 
 @ipynb_maker
 def plot_target_histogram(y_df, savepath, title='target histogram', label='target values'):
 
-    # Set image aspect ratio:
-    fig, ax = make_fig_ax(aspect_ratio=0.5, x_align=0.70)
+    # make fig and ax, use x_align when placing text so things don't overlap
+    x_align = 0.70
+    fig, ax = make_fig_ax(aspect_ratio=0.5, x_align=x_align)
 
     #ax.set_title(title)
 
@@ -183,7 +185,7 @@ def plot_target_histogram(y_df, savepath, title='target histogram', label='targe
     # shrink those margins
     fig.tight_layout()
 
-    plot_stats(fig, dict(y_df.describe()), x_align=0.70, y_align=0.90, fontsize=14)
+    plot_stats(fig, dict(y_df.describe()), x_align=x_align, y_align=0.90, fontsize=14)
     # Save input data stats to csv
     savepath_parse = savepath.split('target_histogram.png')[0]
     y_df.describe().to_csv(savepath_parse+'/''input_data_statistics.csv')
@@ -205,8 +207,9 @@ def plot_predicted_vs_true(train_triple, test_triple, outdir, label):
     for y_true, y_pred, stats, title_addon in \
             (train_triple+('train',), test_triple+('test',)):
 
-        # Set image aspect ratio:
-        fig, ax = make_fig_ax(x_align=16/24)
+        # make fig and ax, use x_align when placing text so things don't overlap
+        x_align=0.64
+        fig, ax = make_fig_ax(x_align=x_align)
 
         #ax.set_title('Predicted vs. True ' + title_addon)
         ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
@@ -237,7 +240,7 @@ def plot_predicted_vs_true(train_triple, test_triple, outdir, label):
         ax.set_xlabel('True '+label, fontsize=16)
         ax.set_ylabel('Predicted '+label, fontsize=16)
 
-        plot_stats(fig, stats, x_align=0.64, y_align=0.90)
+        plot_stats(fig, stats, x_align=x_align, y_align=0.90)
 
         filename = 'predicted_vs_true_'+ title_addon + '.png'
         filenames.append(filename)
@@ -291,8 +294,10 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y', label='tar
 @ipynb_maker
 def plot_best_worst_split(y_true, best_run, worst_run, savepath,
                           title='Best Worst Overlay', label='target_value'):
-    # Set image aspect ratio:
-    fig, ax = make_fig_ax(x_align=16/24)
+
+    # make fig and ax, use x_align when placing text so things don't overlap
+    x_align = 0.64
+    fig, ax = make_fig_ax(x_align=x_align)
 
     # make diagonal line from absolute min to absolute max of any data point
     #all_y = [best_run['y_test_true'], best_run['y_test_pred'],
@@ -339,8 +344,8 @@ def plot_best_worst_split(y_true, best_run, worst_run, savepath,
     worst_stats = OrderedDict([('worst Run', None)])
     worst_stats.update(worst_run['test_metrics'])
 
-    plot_stats(fig, best_stats, x_align=0.64, y_align=0.90)
-    plot_stats(fig, worst_stats, x_align=0.64, y_align=0.60)
+    plot_stats(fig, best_stats, x_align=x_align, y_align=0.90)
+    plot_stats(fig, worst_stats, x_align=x_align, y_align=0.60)
 
     #fig.tight_layout()
     fig.savefig(savepath, dpi=250, bbox_inches='tight')
@@ -364,7 +369,9 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
         worst_stats[name] = func(new_y_true, worsts)
         best_stats[name] = func(new_y_true, bests)
 
-    fig, ax = make_fig_ax(x_align=15.5/24)
+    # make fig and ax, use x_align when placing text so things don't overlap
+    x_align = 15.5/24 #mmm yum
+    fig, ax = make_fig_ax(x_align=x_align)
 
     # gather max and min
     all_vals = [val for val in worsts+bests if val is not None]
@@ -399,9 +406,9 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
     ax.scatter(new_y_true, worsts, c='blue', alpha=0.7, label='worst',
                edgecolor='darkblue', zorder=3, s=80)
 
-    plot_stats(fig, avg_stats, x_align=15.5/24, y_align=0.51, fontsize=10)
-    plot_stats(fig, worst_stats, x_align=15.5/24, y_align=0.73, fontsize=10)
-    plot_stats(fig, best_stats, x_align=15.5/24, y_align=0.95, fontsize=10)
+    plot_stats(fig, avg_stats, x_align=x_align, y_align=0.51, fontsize=10)
+    plot_stats(fig, worst_stats, x_align=x_align, y_align=0.73, fontsize=10)
+    plot_stats(fig, best_stats, x_align=x_align, y_align=0.95, fontsize=10)
     fig.savefig(savepath, dpi=250, bbox_inches='tight')
 
 @ipynb_maker
@@ -412,7 +419,10 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
     standard_error_means = [nice_std(y_pred)/np.sqrt(len(y_pred))
                             for y_pred in y_pred_list]
     standard_errors = [nice_std(y_pred) for y_pred in y_pred_list]
-    fig, ax = make_fig_ax(x_align=16/24)
+    
+    # make fig and ax, use x_align when placing text so things don't overlap
+    x_align = 0.64
+    fig, ax = make_fig_ax(x_align=x_align)
 
     # gather max and min
     max1 = max(np.nanmax(y_true), np.nanmax(means))
@@ -443,7 +453,7 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
     ax.errorbar(y_true, means, yerr=standard_errors, fmt='o', markerfacecolor='blue', markeredgecolor='black', markersize=10,
                 alpha=0.7, capsize=3)
 
-    plot_stats(fig, avg_stats, x_align=0.64, y_align=0.90)
+    plot_stats(fig, avg_stats, x_align=x_align, y_align=0.90)
     fig.savefig(savepath, dpi=250, bbox_inches='tight')
 
 @ipynb_maker
@@ -673,7 +683,7 @@ def plot_stats(fig, stats, x_align=0.65, y_align=0.90, font_dict=dict(), fontsiz
     fig.text(x_align, y_align, stat_str,
              verticalalignment='top', wrap=True, fontdict=font_dict, fontproperties=FontProperties(size=fontsize))
 
-def make_fig_ax(aspect_ratio=0.5, x_align=0.66):
+def make_fig_ax(aspect_ratio=0.5, x_align=0.65):
     """
     Using Object Oriented interface from
     https://matplotlib.org/gallery/api/agg_oo_sgskip.html
