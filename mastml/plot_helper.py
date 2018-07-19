@@ -131,7 +131,7 @@ def plot_predicted_vs_true(train_triple, test_triple, outdir):
             (train_triple+('train',), test_triple+('test',)):
 
         # Set image aspect ratio:
-        fig, ax = make_fig_ax()
+        fig, ax = make_fig_ax(x_align=16/24)
 
         ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
 
@@ -143,7 +143,6 @@ def plot_predicted_vs_true(train_triple, test_triple, outdir):
 
         # do the actual plotting
         ax.scatter(y_true, y_pred, color='blue', edgecolors='black', zorder=2, alpha=0.7)
-        ax.legend([], [], loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12, frameon=False)
 
         # set axis labels
         ax.set_xlabel('Measured')
@@ -178,14 +177,13 @@ def plot_residuals_histogram(y_true, y_pred, savepath,
                              stats, title='residuals histogram', xlabel='residuals'):
 
     # Set image aspect ratio:
-    fig, ax = make_fig_ax()
+    fig, ax = make_fig_ax(x_align=16/24)
 
     # do the actual plotting
     residuals = y_true - y_pred
     #Get num_bins using smarter method
     num_bins = get_histogram_bins(y_df=residuals)
     ax.hist(residuals, bins=num_bins, color='b', edgecolor='k')
-    ax.legend([], [], loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12, frameon=False)
 
     # normal text stuff
     ax.set_xlabel(xlabel)
@@ -203,7 +201,7 @@ def plot_residuals_histogram(y_true, y_pred, savepath,
 def plot_target_histogram(y_df, savepath, title='target histogram', xlabel='y values'):
 
     # Set image aspect ratio:
-    fig, ax = make_fig_ax(aspect_ratio=0.5)
+    fig, ax = make_fig_ax(aspect_ratio=0.5, x_align=0.70)
 
 
     #Get num_bins using smarter method
@@ -211,7 +209,6 @@ def plot_target_histogram(y_df, savepath, title='target histogram', xlabel='y va
 
     # do the actual plotting
     ax.hist(y_df, bins=num_bins, color='b', edgecolor='k')#, histtype='stepfilled')
-    #ax.legend([], [], loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12, frameon=False)
 
     # normal text stuff
     ax.set_xlabel(xlabel)
@@ -239,7 +236,6 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y'):
         for group in np.unique(groups):
             mask = groups == group
             ax.scatter(x[mask], y[mask], label=group)
-        ax.legend([], [], loc='lower left', bbox_to_anchor=(1, -.2))
 
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
@@ -249,7 +245,7 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y'):
 def plot_best_worst_split(best_run, worst_run, savepath,
                           title='Best Worst Overlay'):
     # Set image aspect ratio:
-    fig, ax = make_fig_ax()
+    fig, ax = make_fig_ax(x_align=16/24)
 
     # make diagonal line from absolute min to absolute max of any data point
     all_y = [best_run['y_test_true'], best_run['y_test_pred'],
@@ -263,7 +259,6 @@ def plot_best_worst_split(best_run, worst_run, savepath,
                alpha=0.7, label='best',  edgecolor='darkred',  zorder=2, s=80)
     ax.scatter(worst_run['y_test_true'], worst_run['y_test_pred'], c='blue',
                alpha=0.7, label='worst', edgecolor='darkblue', zorder=3)
-    ax.legend([], [], loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12)
 
     # set tick labels
     maxx = round(maxx)
@@ -308,7 +303,7 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
         worst_stats[name] = func(new_y_true, worsts)
         best_stats[name] = func(new_y_true, bests)
 
-    fig, ax = make_fig_ax()
+    fig, ax = make_fig_ax(x_align=15.5/24)
 
     # gather max and min
     all_vals = [val for val in worsts+bests if val is not None]
@@ -332,7 +327,6 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
                edgecolor='darkred',  zorder=2, s=80)
     ax.scatter(new_y_true, worsts, c='blue', alpha=0.7, label='worst',
                edgecolor='darkblue', zorder=3)
-    ax.legend([], [], loc='lower right', bbox_to_anchor=(1.25, -0.1), fontsize=12)
 
     plot_stats(fig, avg_stats, x_align=15.5/24, y_align=0.57, fontsize=10)
     plot_stats(fig, worst_stats, x_align=15.5/24, y_align=0.77, fontsize=10)
@@ -347,7 +341,7 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
     standard_error_means = [nice_std(y_pred)/np.sqrt(len(y_pred))
                             for y_pred in y_pred_list]
     standard_errors = [nice_std(y_pred) for y_pred in y_pred_list]
-    fig, ax = make_fig_ax()
+    fig, ax = make_fig_ax(x_align=16/24)
 
     # gather max and min
     max1 = max(np.nanmax(y_true), np.nanmax(means))
@@ -367,7 +361,6 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
     _set_tick_labels(ax, maxx, minn)
 
     ax.errorbar(y_true, means, yerr=standard_errors, fmt='o', markerfacecolor='blue', markeredgecolor='black', alpha=0.7, capsize=3)
-    ax.legend([], [], loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12, frameon=False)
 
     plot_stats(fig, avg_stats, x_align=16/24, y_align=0.90)
     fig.savefig(savepath, dpi=250)
@@ -516,7 +509,7 @@ def plot_stats(fig, stats, x_align=0.65, y_align=0.90, font_dict=dict(), fontsiz
     fig.text(x_align, y_align, stat_str,
              verticalalignment='top', wrap=True, fontdict=font_dict, fontproperties=FontProperties(size=fontsize))
 
-def make_fig_ax(aspect_ratio=0.5):
+def make_fig_ax(aspect_ratio=0.5, x_align=0.66):
     """
     Using Object Oriented interface from
     https://matplotlib.org/gallery/api/agg_oo_sgskip.html
@@ -526,11 +519,15 @@ def make_fig_ax(aspect_ratio=0.5):
     fig = Figure(figsize=(w,h))
     FigureCanvas(fig)
 
-    # these two lines are where the magic happens, trapping the figure on the
-    # left side so we can make print text beside it
-    gs = plt.GridSpec(1, 3)
-    #ax = fig.add_subplot(gs[0:, 0:3], aspect=aspect)
-    ax = fig.add_subplot(gs[0:, 0:2])
+    # Set custom positioning, see this guide for more details:
+    # https://python4astronomers.github.io/plotting/advanced.html
+    left   = 0.10
+    bottom = 0.15
+    right  = 0.01
+    top    = 0.05
+    width = x_align - left - right
+    height = 1 - bottom - top
+    ax = fig.add_axes((left, bottom, width, height), frameon=True)
     return fig, ax
 
 def make_fig_ax_square(aspect='equal', aspect_ratio=1):
