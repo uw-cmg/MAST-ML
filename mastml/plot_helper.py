@@ -248,13 +248,11 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y', label='tar
     if groups is None:
         ax.scatter(x, y, c='b', edgecolor='darkblue', zorder=2, s=100, alpha=0.7)
     else:
-        groupcount = 0 # TODO refactor into enumerate(...)
-        for group in np.unique(groups):
+        for groupcount, group in enumerate(np.unique(groups)):
             colors = ['blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow']
             shapes = []
             mask = groups == group
             ax.scatter(x[mask], y[mask], label=group, color=colors[groupcount], s=100, alpha=0.7)
-            groupcount += 1
 
     ax.set_xlabel(xlabel, fontsize=16)
     ax.set_ylabel('Value of '+label, fontsize=16)
