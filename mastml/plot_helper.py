@@ -141,7 +141,6 @@ def plot_predicted_vs_true(train_triple, test_triple, outdir):
         minn = round(min((min(y_pred), min(y_true))))
         _set_tick_labels(ax, maxx, minn)
 
-        #redundant, might overwrite?? make_axis_same(ax, max1, min1)
 
         # do the actual plotting
         ax.scatter(y_true, y_pred, color='blue', edgecolors='black', zorder=2, alpha=0.7)
@@ -322,7 +321,6 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
     max1 = max(all_vals)
     min1 = min(all_vals)
 
-    make_axis_same(ax, max1, min1)
 
     # draw dashed horizontal line
     ax.plot([min1, max1], [min1, max1], 'k--', lw=4, zorder=1)
@@ -361,7 +359,6 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
     max1 = max(np.nanmax(y_true), np.nanmax(means))
     min1 = min(np.nanmin(y_true), np.nanmin(means))
 
-    make_axis_same(ax, max1, min1)
 
     # draw dashed horizontal line
     ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
@@ -399,7 +396,7 @@ def plot_violin(y_true, y_pred_list, savepath, title='best worst with bars'):
     max1 = max(np.nanmax(y_true_new), np.nanmax(means))
     min1 = min(np.nanmin(y_true_new), np.nanmin(means))
 
-    make_axis_same(ax, max1, min1)
+    _set_tick_labels(ax, maxx, minn)
 
     # draw dashed horizontal line
     ax.plot([min1, max1], [min1, max1], 'k--', lw=4, zorder=1)
@@ -556,6 +553,7 @@ def make_fig_ax_square(aspect='equal', aspect_ratio=1):
     return fig, ax
 
 def _set_tick_labels(ax, maxx, minn):
+    " Fix up x and y ticks using neat divisors algorithms "
     divisor = get_divisor(maxx, minn)
     max_tick = round_up(maxx, divisor)
     min_tick = round_down(minn, divisor)
@@ -567,15 +565,6 @@ def _set_tick_labels(ax, maxx, minn):
     ax.set_xticklabels(labels=ticklabels)
     ax.set_yticklabels(labels=ticklabels)
 
-def make_axis_same(ax, max1, min1):
-    # fix up dem axis
-    if max1 - min1 > 5:
-        step = (int(max1) - int(min1)) // 3
-        ticks = range(int(min1), int(max1)+step, step)
-    else:
-        ticks = np.linspace(min1, max1, 4)
-    ax.set_xticks(ticks)
-    ax.set_yticks(ticks)
 
 def nice_mean(ls):
     " Returns NaN for empty list "
