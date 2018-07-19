@@ -13,6 +13,7 @@ import itertools
 import warnings
 from os.path import join
 from collections import OrderedDict
+from sklearn.model_selection import RepeatedKFold
 
 # Ignore the harmless warning about the gelsd driver on mac.
 warnings.filterwarnings(action="ignore", module="scipy",
@@ -522,16 +523,61 @@ def plot_3d_heatmap(xs, ys, zs, heats, savepath,
     #anim.save(savepath+'.mp4', fps=5, extra_args=['-vcodec', 'libx264'])
     anim.save(savepath+'.gif', fps=5, dpi=80, writer='imagemagick')
 
-def plot_sample_learning_curve(model, X, y, scoring, cv=2, savepath='sample_learning_curve.png'):
-    train_sizes, train_scores, valid_scores = learning_curve(model, X, y, scoring=scoring, cv=cv)
-    fig, ax = make_fig_ax()
-    h1 = ax.plot(train_sizes, train_scores, '-o', c='blue')[0]
-    h2 = ax.plot(train_sizes, valid_scores, '-o', c='red')[0]
-    ax.legend([h1, h2], ['train', 'test'], loc='lower left', bbox_to_anchor=(1, -.2))
-    ax.set_xlabel('number of training samples')
+def plot_sample_learning_curve(model, X, y, scoring, savepath='data_learning_curve.png'):
+
+    train_sizes = np.linspace(0.1, 1.0, 20)
+    train_sizes, train_scores, valid_scores = learning_curve(model, X, y, train_sizes=train_sizes, scoring=scoring,
+                                                             cv=RepeatedKFold(n_splits=5, n_repeats=5))
+    mean_train_scores = np.mean(train_scores, axis=1)
+    mean_test_scores = np.mean(valid_scores, axis=1)
+    train_scores_stdev = np.std(train_scores, axis=1)
+    test_scores_stdev = np.std(valid_scores, axis=1)
+
+    # Set image aspect ratio (do custom for learning curve):
+    w, h = figaspect(0.75)
+    fig = Figure(figsize=(w,h))
+    FigureCanvas(fig)
+    gs = plt.GridSpec(1, 1)
+    ax = fig.add_subplot(gs[0:, 0:])
+
+    # set tick labels
+    max_x = max(train_sizes)
+    min_x = min(train_sizes)
+    max_y = round(max(max(mean_train_scores),max(mean_train_scores+train_scores_stdev),max(mean_train_scores-train_scores_stdev),
+                     max(mean_test_scores),max(mean_test_scores+test_scores_stdev),max(mean_test_scores-test_scores_stdev)))
+    min_y = round(min(min(mean_train_scores),min(mean_train_scores+train_scores_stdev),min(mean_train_scores-train_scores_stdev),
+                     min(mean_test_scores),min(mean_test_scores+test_scores_stdev),min(mean_test_scores-test_scores_stdev)))
+    divisor_y = get_divisor(max_y, min_y)
+    divisor_x = get_divisor(max_x, min_x)
+    max_tick_y = round_up(max_y, divisor_y)
+    min_tick_y = round_down(min_y, divisor_y)
+    max_tick_x = round_up(max_x, divisor_x)
+    min_tick_x = round_down(min_x, divisor_x)
+    tickvals_y = np.linspace(min_tick_y, max_tick_y, num=5)
+    tickvals_y = [float(val) for val in tickvals_y]
+    tickvals_x = np.linspace(min_tick_x, max_tick_x, num=5)
+    tickvals_x = [int(val) for val in tickvals_x]
+    ax.set_xticks(ticks=tickvals_x)
+    ax.set_yticks(ticks=tickvals_y)
+    ticklabels_y = [str(tick) for tick in tickvals_y]
+    ticklabels_x = [str(tick) for tick in tickvals_x]
+    ax.set_xticklabels(labels=ticklabels_x, fontsize=14)
+    ax.set_yticklabels(labels=ticklabels_y, fontsize=14)
+
+    h1 = ax.plot(train_sizes, mean_train_scores, '-o', color='blue', markersize=10, alpha=0.7)[0]
+    ax.fill_between(train_sizes, mean_train_scores-train_scores_stdev, mean_train_scores+train_scores_stdev,
+                     alpha=0.1, color='blue')
+    h2 = ax.plot(train_sizes, mean_test_scores, '-o', color='red', markersize=10, alpha=0.7)[0]
+    ax.fill_between(train_sizes, mean_test_scores-test_scores_stdev, mean_test_scores+test_scores_stdev,
+                     alpha=0.1, color='red')
+    ax.legend([h1, h2], ['train score', 'test score'], loc='lower right', fontsize=12)
+    ax.set_xlabel('Number of data points', fontsize=16)
     scoring_name = scoring._score_func.__name__
-    ax.set_ylabel(scoring_name + ' score')
-    fig.savefig(savepath, dpi=250)
+    scoring_name_nice = ''
+    for s in scoring_name.split('_'):
+        scoring_name_nice += s + ' '
+    ax.set_ylabel(scoring_name_nice, fontsize=16)
+    fig.savefig(savepath, dpi=250, bbox_to_inches='tight')
 
 def plot_feature_learning_curve(model, X, y, scoring=None, savepath='feature_learning_curve.png'):
     #RFECV.transform = RFECV.old_transform # damn you

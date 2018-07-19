@@ -246,7 +246,7 @@ def mastml_run(conf_path, data_path, outdir):
                             pairs.append((name, tuple(instance.split(X_, y_, df_[col].values))))
                             break
                     else:
-                        raise utils.MissingColumnError(f'DataSplit {name} needs column {col}, which'
+                        raise utils.MissingColumnError(f'DataSplit {name} needs column {col}, which '
                                                        f'was neither generated nor given by input')
                 else:
                    pairs.append((name, tuple(instance.split(X_, y_))))
@@ -263,15 +263,13 @@ def mastml_run(conf_path, data_path, outdir):
                     learning_curve_model = conf['GeneralSetup']['learning_curve_model']
                     learning_curve_score = conf['GeneralSetup']['learning_curve_score']
                     plot_helper.plot_sample_learning_curve(
-                            learning_curve_model, X, y, learning_curve_score,
-                            2, join(subdir, f'learning_curve.png'))
+                            learning_curve_model, X, y, learning_curve_score, join(subdir, f'data_learning_curve.png'))
 
                 if conf['PlotSettings']['feature_learning_curve']:
                     learning_curve_model = conf['GeneralSetup']['learning_curve_model']
                     learning_curve_score = conf['GeneralSetup']['learning_curve_score']
                     plot_helper.plot_feature_learning_curve(
-                            learning_curve_model, X, y, learning_curve_score,
-                            join(subdir, f'learning_curve.png'))
+                            learning_curve_model, X, y, learning_curve_score, join(subdir, f'feature_learning_curve.png'))
 
                 if PlotSettings['feature_vs_target']:
                     #if selector_name == 'DoNothing': continue
