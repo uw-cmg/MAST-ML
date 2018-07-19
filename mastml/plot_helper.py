@@ -249,18 +249,20 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y', label='tar
 
     # set tick labels
 
-    maxx = round(max((max(x), max(y))))
-    minn = round(min((min(x), min(y))))
-    divisor_x = get_divisor(max(x), min(x))
-    max_tick_x = round_up(max(x), divisor_x)
-    min_tick_x = round_down(min(x), divisor_x)
+    #maxx = round(max((max(x), max(y))))
+    #minn = round(min((min(x), min(y))))
+    #divisor_x = get_divisor(max(x), min(x))
+    #max_tick_x = round_up(max(x), divisor_x)
+    #min_tick_x = round_down(min(x), divisor_x)
+    max_tick_x = max(x)
+    min_tick_x = min(x)
     tickvals_x = np.linspace(min_tick_x, max_tick_x, num=5)
-    tickvals_x = [int(val) for val in tickvals_x]
+    tickvals_x = [round(float(val),1) for val in tickvals_x]
     divisor_y = get_divisor(max(y), min(y))
     max_tick_y = round_up(max(y), divisor_y)
     min_tick_y = round_down(min(y), divisor_y)
     tickvals_y = np.linspace(min_tick_y, max_tick_y, num=5)
-    tickvals_y = [int(val) for val in tickvals_y]
+    tickvals_y = [round(float(val),1) for val in tickvals_y]
     ax.set_xticks(ticks=tickvals_x)
     ax.set_yticks(ticks=tickvals_y)
     ticklabels_x = [str(tick) for tick in tickvals_x]
