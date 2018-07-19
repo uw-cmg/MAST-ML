@@ -161,6 +161,8 @@ def get_histogram_bins(y_df):
     bin_list = list()
     try:
         for divider in bin_dividers:
+            if divider == 0:
+                continue
             bins = int((y_df.shape[0])/divider)
             if bins < y_df.shape[0]/2:
                 bin_list.append(bins)
@@ -528,6 +530,8 @@ def make_fig_ax(aspect_ratio=0.5, x_align=0.66):
     width = x_align - left - right
     height = 1 - bottom - top
     ax = fig.add_axes((left, bottom, width, height), frameon=True)
+    fig.set_tight_layout(False)
+    
     return fig, ax
 
 def make_fig_ax_square(aspect='equal', aspect_ratio=1):
