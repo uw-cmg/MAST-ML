@@ -8,6 +8,7 @@ A plot can also take an "outdir" instead of a savepath. If this is the case,
 it must return a list of filenames where it saved the figures.
 """
 import math
+import pandas as pd
 import itertools
 import warnings
 from os.path import join
@@ -194,6 +195,18 @@ def plot_residuals_histogram(y_true, y_pred, savepath,
     #ax.set_title(title)
     # do the actual plotting
     residuals = y_true - y_pred
+
+    #Output residuals data and stats to spreadsheet
+    split = savepath.split('/')
+    pathlist = split[0:len(split)-1]
+    path = ''
+    for p in pathlist:
+        if p != '':
+            path += '/'+str(p)
+    savepath_parse = savepath.split('/')[-1].split('.png')[0]
+    pd.DataFrame(residuals).describe().to_csv(path+'/'+savepath_parse+'_'+'residual_statistics.csv')
+    pd.DataFrame(residuals).to_csv(path+'/'+savepath_parse+'_'+'residuals.csv')
+
     #Get num_bins using smarter method
     num_bins = get_histogram_bins(y_df=residuals)
     ax.hist(residuals, bins=num_bins, color='b', edgecolor='k')
@@ -210,6 +223,7 @@ def plot_residuals_histogram(y_true, y_pred, savepath,
     fig.tight_layout()
 
     plot_stats(fig, stats, x_align=16/24, y_align=0.90)
+    plot_stats(fig, pd.DataFrame(residuals).describe().to_dict()[0], x_align=16/24, y_align=0.60)
 
     fig.savefig(savepath, dpi=250, bbox_inches='tight')
 
