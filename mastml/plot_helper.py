@@ -155,7 +155,7 @@ def plot_predicted_vs_true(train_triple, test_triple, outdir):
 
         filename = 'predicted_vs_true_'+ title_addon + '.png'
         filenames.append(filename)
-        fig.savefig(join(outdir, filename), dpi=250, bbox_inches='tight')
+        fig.savefig(join(outdir, filename), dpi=250)
 
     return filenames
 
@@ -197,12 +197,10 @@ def plot_residuals_histogram(y_true, y_pred, savepath,
     # make y axis ints, because it is discrete
     #ax.yaxis.set_major_locator(MaxNLocator(integer=True))
 
-    # shrink those margins
-    fig.tight_layout()
 
     plot_stats(fig, stats, x_align=16/24, y_align=0.90)
 
-    fig.savefig(savepath, dpi=250, bbox_inches='tight')
+    fig.savefig(savepath, dpi=250)
 
 @ipynb_maker
 def plot_target_histogram(y_df, savepath, title='target histogram', xlabel='y values'):
@@ -226,15 +224,12 @@ def plot_target_histogram(y_df, savepath, title='target histogram', xlabel='y va
     # make y axis ints, because it is discrete
     #ax.yaxis.set_major_locator(MaxNLocator(integer=True))
 
-    # shrink those margins
-    fig.tight_layout()
-
     plot_stats(fig, dict(y_df.describe()), x_align=0.70, y_align=0.90, fontsize=14)
     # Save input data stats to csv
     savepath_parse = savepath.split('target_histogram.png')[0]
     y_df.describe().to_csv(savepath_parse+'/''input_data_statistics.csv')
 
-    fig.savefig(savepath, dpi=250, bbox_inches='tight')
+    fig.savefig(savepath, dpi=250)
 
 def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y'):
     # Set image aspect ratio:
@@ -255,8 +250,7 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y'):
 
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
-    fig.tight_layout()
-    fig.savefig(savepath, dpi=250, bbox_inches='tight')
+    fig.savefig(savepath, dpi=250)
 
 @ipynb_maker
 def plot_best_worst_split(best_run, worst_run, savepath,
@@ -300,8 +294,7 @@ def plot_best_worst_split(best_run, worst_run, savepath,
     plot_stats(fig, best_stats, x_align=16/24, y_align=0.90)
     plot_stats(fig, worst_stats, x_align=16/24, y_align=0.60)
 
-    #fig.tight_layout()
-    fig.savefig(savepath, dpi=250, bbox_inches='tight')
+    fig.savefig(savepath, dpi=250)
 
 @ipynb_maker
 def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
@@ -352,7 +345,7 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
     plot_stats(fig, avg_stats, x_align=15.5/24, y_align=0.57, fontsize=10)
     plot_stats(fig, worst_stats, x_align=15.5/24, y_align=0.77, fontsize=10)
     plot_stats(fig, best_stats, x_align=15.5/24, y_align=0.95, fontsize=10)
-    fig.savefig(savepath, dpi=250, bbox_inches='tight')
+    fig.savefig(savepath, dpi=250)
 
 @ipynb_maker
 def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
@@ -386,7 +379,7 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
     ax.legend(loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12, frameon=False)
 
     plot_stats(fig, avg_stats, x_align=16/24, y_align=0.90)
-    fig.savefig(savepath, dpi=250, bbox_inches='tight')
+    fig.savefig(savepath, dpi=250)
 
 @ipynb_maker
 def plot_violin(y_true, y_pred_list, savepath, title='best worst with bars'):
@@ -561,9 +554,6 @@ def make_fig_ax_square(aspect='equal', aspect_ratio=1):
     ax = fig.add_subplot(111, aspect=aspect)
 
     return fig, ax
-
-
-
 
 def _set_tick_labels(ax, maxx, minn):
     divisor = get_divisor(maxx, minn)
