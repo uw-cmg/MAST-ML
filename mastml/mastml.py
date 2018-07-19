@@ -180,7 +180,7 @@ def mastml_run(conf_path, data_path, outdir):
                     plots_made += 1
                     if plots_made > 10: break
                     plot_helper.plot_scatter(X[column], y, join(outdir, filename),
-                                             xlabel=column, ylabel='target_feature')
+                                             xlabel=column, ylabel='target_feature', label=label)
             else:
                 # for each cluster, plot y against each x column
                 for name in clustered_df.columns:
@@ -338,7 +338,9 @@ def mastml_run(conf_path, data_path, outdir):
                 y_test_true  = test_y.values,
                 y_test_pred  = test_pred,
                 train_metrics = train_metrics,
-                test_metrics  = test_metrics
+                test_metrics  = test_metrics,
+                train_indices = train_indices,
+                test_indices = test_indices
             )
 
             log.info("             Making plots...")
@@ -361,10 +363,8 @@ def mastml_run(conf_path, data_path, outdir):
             for name in metrics_dict:
                 train_values = [split_result['train_metrics'][name] for split_result in split_results]
                 test_values  = [split_result['test_metrics'][name]  for split_result in split_results]
-                train_stats[name] = (np.mean(train_values),
-                                     np.std(train_values) / np.sqrt(len(train_values)))
-                test_stats[name]  = (np.mean(test_values),
-                                     np.std(test_values) / np.sqrt(len(test_values)))
+                train_stats[name] = (np.mean(train_values), np.std(train_values))
+                test_stats[name]  = (np.mean(test_values), np.std(test_values))
             return train_stats, test_stats
         avg_train_stats, avg_test_stats = make_stats()
 

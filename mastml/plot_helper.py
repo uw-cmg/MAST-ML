@@ -117,75 +117,6 @@ def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False,
     fig.savefig(savepath, dpi=250)
 
 @ipynb_maker
-def plot_predicted_vs_true(train_triple, test_triple, outdir, label):
-    filenames = list()
-    y_train_true, y_train_pred, train_metrics = train_triple
-    y_test_true, y_test_pred, test_metrics = test_triple
-
-    # make diagonal line from absolute min to absolute max of any data point
-    max1 = max(y_train_true.max(), y_train_pred.max(),
-               y_test_true.max(), y_test_pred.max())
-    min1 = min(y_train_true.min(), y_train_pred.min(),
-               y_test_true.min(), y_test_pred.min())
-
-    for y_true, y_pred, stats, title_addon in \
-            (train_triple+('train',), test_triple+('test',)):
-
-        # Set image aspect ratio:
-        fig, ax = make_fig_ax()
-
-        #ax.set_title('Predicted vs. True ' + title_addon)
-        ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
-
-        # set tick labels
-        maxx = round(max((max(y_pred), max(y_true))))
-        minn = round(min((min(y_pred), min(y_true))))
-        divisor = get_divisor(maxx, minn)
-        max_tick = round_up(maxx, divisor)
-        min_tick = round_down(minn, divisor=divisor)
-        tickvals = np.linspace(min_tick, max_tick, num=5)
-        tickvals = [int(val) for val in tickvals]
-        ax.set_xticks(ticks=tickvals)
-        ax.set_yticks(ticks=tickvals)
-        ticklabels = [str(tick) for tick in tickvals]
-        ax.set_xticklabels(labels=ticklabels)
-        ax.set_yticklabels(labels=ticklabels)
-
-        make_axis_same(ax, max1, min1)
-
-        # do the actual plotting
-        ax.scatter(y_true, y_pred, color='blue', edgecolors='black', zorder=2, alpha=0.7)
-        ax.legend(loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12, frameon=False)
-
-        # set axis labels
-        ax.set_xlabel('True '+label)
-        ax.set_ylabel('Predicted '+label)
-
-        plot_stats(fig, stats, x_align=16/24, y_align=0.90)
-
-        filename = 'predicted_vs_true_'+ title_addon + '.png'
-        filenames.append(filename)
-        fig.savefig(join(outdir, filename), dpi=250, bbox_inches='tight')
-
-    return filenames
-
-def get_histogram_bins(y_df):
-    bin_dividers = np.linspace(y_df.shape[0], round(0.05*y_df.shape[0]), y_df.shape[0])
-    bin_list = list()
-    try:
-        for divider in bin_dividers:
-            bins = int((y_df.shape[0])/divider)
-            if bins < y_df.shape[0]/2:
-                bin_list.append(bins)
-    except:
-        num_bins = 10
-    if len(bin_list) > 0:
-        num_bins = max(bin_list)
-    else:
-        num_bins = 10
-    return num_bins
-
-@ipynb_maker
 def plot_residuals_histogram(y_true, y_pred, savepath,
                              stats, title='residuals histogram', label='residuals'):
 
@@ -259,6 +190,59 @@ def plot_target_histogram(y_df, savepath, title='target histogram', label='targe
 
     fig.savefig(savepath, dpi=250, bbox_inches='tight')
 
+@ipynb_maker
+def plot_predicted_vs_true(train_triple, test_triple, outdir, label):
+    filenames = list()
+    y_train_true, y_train_pred, train_metrics = train_triple
+    y_test_true, y_test_pred, test_metrics = test_triple
+
+    # make diagonal line from absolute min to absolute max of any data point
+    max1 = max(y_train_true.max(), y_train_pred.max(),
+               y_test_true.max(), y_test_pred.max())
+    min1 = min(y_train_true.min(), y_train_pred.min(),
+               y_test_true.min(), y_test_pred.min())
+
+    for y_true, y_pred, stats, title_addon in \
+            (train_triple+('train',), test_triple+('test',)):
+
+        # Set image aspect ratio:
+        fig, ax = make_fig_ax()
+
+        #ax.set_title('Predicted vs. True ' + title_addon)
+        ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
+
+        # set tick labels
+        maxx = round(max((max(y_pred), max(y_true))))
+        minn = round(min((min(y_pred), min(y_true))))
+        divisor = get_divisor(maxx, minn)
+        max_tick = round_up(maxx, divisor)
+        min_tick = round_down(minn, divisor=divisor)
+        tickvals = np.linspace(min_tick, max_tick, num=5)
+        tickvals = [int(val) for val in tickvals]
+        ax.set_xticks(ticks=tickvals)
+        ax.set_yticks(ticks=tickvals)
+        ticklabels = [str(tick) for tick in tickvals]
+        ax.set_xticklabels(labels=ticklabels)
+        ax.set_yticklabels(labels=ticklabels)
+
+        make_axis_same(ax, max1, min1)
+
+        # do the actual plotting
+        ax.scatter(y_true, y_pred, color='blue', edgecolors='black', zorder=2, alpha=0.7)
+        ax.legend(loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12, frameon=False)
+
+        # set axis labels
+        ax.set_xlabel('True '+label)
+        ax.set_ylabel('Predicted '+label)
+
+        plot_stats(fig, stats, x_align=16/24, y_align=0.90)
+
+        filename = 'predicted_vs_true_'+ title_addon + '.png'
+        filenames.append(filename)
+        fig.savefig(join(outdir, filename), dpi=250, bbox_inches='tight')
+
+    return filenames
+
 def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y', label='target data'):
     # Set image aspect ratio:
     fig, ax = make_fig_ax()
@@ -267,16 +251,22 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y', label='tar
 
     maxx = round(max((max(x), max(y))))
     minn = round(min((min(x), min(y))))
-    divisor = get_divisor(maxx, minn)
-    max_tick = round_up(maxx, divisor)
-    min_tick = round_down(minn, divisor)
-    tickvals = np.linspace(min_tick, max_tick, num=5)
-    tickvals = [int(val) for val in tickvals]
-    ax.set_xticks(ticks=tickvals)
-    ax.set_yticks(ticks=tickvals)
-    ticklabels = [str(tick) for tick in tickvals]
-    ax.set_xticklabels(labels=ticklabels, fontsize=14)
-    ax.set_yticklabels(labels=ticklabels, fontsize=14)
+    divisor_x = get_divisor(max(x), min(x))
+    max_tick_x = round_up(max(x), divisor_x)
+    min_tick_x = round_down(min(x), divisor_x)
+    tickvals_x = np.linspace(min_tick_x, max_tick_x, num=5)
+    tickvals_x = [int(val) for val in tickvals_x]
+    divisor_y = get_divisor(max(y), min(y))
+    max_tick_y = round_up(max(y), divisor_y)
+    min_tick_y = round_down(min(y), divisor_y)
+    tickvals_y = np.linspace(min_tick_y, max_tick_y, num=5)
+    tickvals_y = [int(val) for val in tickvals_y]
+    ax.set_xticks(ticks=tickvals_x)
+    ax.set_yticks(ticks=tickvals_y)
+    ticklabels_x = [str(tick) for tick in tickvals_x]
+    ticklabels_y = [str(tick) for tick in tickvals_y]
+    ax.set_xticklabels(labels=ticklabels_x, fontsize=14)
+    ax.set_yticklabels(labels=ticklabels_y, fontsize=14)
 
     if groups is None:
         ax.scatter(x, y, c='b', edgecolor='black',  zorder=2, s=80, alpha=0.7)
@@ -556,6 +546,22 @@ def plot_feature_learning_curve(model, X, y, scoring=None, savepath='feature_lea
     fig.savefig(savepath, dpi=250)
 
 ### Helpers:
+
+def get_histogram_bins(y_df):
+    bin_dividers = np.linspace(y_df.shape[0], round(0.05*y_df.shape[0]), y_df.shape[0])
+    bin_list = list()
+    try:
+        for divider in bin_dividers:
+            bins = int((y_df.shape[0])/divider)
+            if bins < y_df.shape[0]/2:
+                bin_list.append(bins)
+    except:
+        num_bins = 10
+    if len(bin_list) > 0:
+        num_bins = max(bin_list)
+    else:
+        num_bins = 10
+    return num_bins
 
 def parse_stat(name,value):
     " Stringifies the name value pair for display within a plot "
