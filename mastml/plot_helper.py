@@ -115,64 +115,6 @@ def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False,
     ax.set_xlabel('Predicted label')
     fig.savefig(savepath, dpi=250)
 
-@ipynb_maker
-def plot_predicted_vs_true(train_triple, test_triple, outdir):
-    filenames = list()
-    y_train_true, y_train_pred, train_metrics = train_triple
-    y_test_true, y_test_pred, test_metrics = test_triple
-
-    # make diagonal line from absolute min to absolute max of any data point
-    max1 = max(y_train_true.max(), y_train_pred.max(),
-               y_test_true.max(), y_test_pred.max())
-    min1 = min(y_train_true.min(), y_train_pred.min(),
-               y_test_true.min(), y_test_pred.min())
-
-    for y_true, y_pred, stats, title_addon in \
-            (train_triple+('train',), test_triple+('test',)):
-
-        # Set image aspect ratio:
-        fig, ax = make_fig_ax(x_align=16/24)
-
-        ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
-
-        # set tick labels
-        maxx = round(max((max(y_pred), max(y_true))))
-        minn = round(min((min(y_pred), min(y_true))))
-        _set_tick_labels(ax, maxx, minn)
-
-
-        # do the actual plotting
-        ax.scatter(y_true, y_pred, color='blue', edgecolors='black', zorder=2, alpha=0.7)
-
-        # set axis labels
-        ax.set_xlabel('Measured')
-        ax.set_ylabel('Predicted')
-
-        plot_stats(fig, stats, x_align=16/24, y_align=0.90)
-
-        filename = 'predicted_vs_true_'+ title_addon + '.png'
-        filenames.append(filename)
-        fig.savefig(join(outdir, filename), dpi=250)
-
-    return filenames
-
-def get_histogram_bins(y_df):
-    bin_dividers = np.linspace(y_df.shape[0], round(0.05*y_df.shape[0]), y_df.shape[0])
-    bin_list = list()
-    try:
-        for divider in bin_dividers:
-            if divider == 0:
-                continue
-            bins = int((y_df.shape[0])/divider)
-            if bins < y_df.shape[0]/2:
-                bin_list.append(bins)
-    except:
-        num_bins = 10
-    if len(bin_list) > 0:
-        num_bins = max(bin_list)
-    else:
-        num_bins = 10
-    return num_bins
 
 @ipynb_maker
 def plot_residuals_histogram(y_true, y_pred, savepath,
@@ -222,6 +164,52 @@ def plot_target_histogram(y_df, savepath, title='target histogram', xlabel='y va
     plot_stats(fig, dict(y_df.describe()), x_align=0.70, y_align=0.90, fontsize=14)
 
     fig.savefig(savepath, dpi=250)
+
+
+
+
+@ipynb_maker
+def plot_predicted_vs_true(train_triple, test_triple, outdir):
+    filenames = list()
+    y_train_true, y_train_pred, train_metrics = train_triple
+    y_test_true, y_test_pred, test_metrics = test_triple
+
+    # make diagonal line from absolute min to absolute max of any data point
+    max1 = max(y_train_true.max(), y_train_pred.max(),
+               y_test_true.max(), y_test_pred.max())
+    min1 = min(y_train_true.min(), y_train_pred.min(),
+               y_test_true.min(), y_test_pred.min())
+
+    for y_true, y_pred, stats, title_addon in \
+            (train_triple+('train',), test_triple+('test',)):
+
+        # Set image aspect ratio:
+        fig, ax = make_fig_ax(x_align=16/24)
+
+        ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
+
+        # set tick labels
+        maxx = round(max((max(y_pred), max(y_true))))
+        minn = round(min((min(y_pred), min(y_true))))
+        _set_tick_labels(ax, maxx, minn)
+
+
+        # do the actual plotting
+        ax.scatter(y_true, y_pred, color='blue', edgecolors='black', zorder=2, alpha=0.7)
+
+        # set axis labels
+        ax.set_xlabel('Measured')
+        ax.set_ylabel('Predicted')
+
+        plot_stats(fig, stats, x_align=16/24, y_align=0.90)
+
+        filename = 'predicted_vs_true_'+ title_addon + '.png'
+        filenames.append(filename)
+        fig.savefig(join(outdir, filename), dpi=250)
+
+    return filenames
+
+
 
 def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y'):
     # Set image aspect ratio:
@@ -477,6 +465,24 @@ def plot_feature_learning_curve(model, X, y, scoring=None, savepath='feature_lea
     fig.savefig(savepath, dpi=250)
 
 ### Helpers:
+
+def get_histogram_bins(y_df):
+    bin_dividers = np.linspace(y_df.shape[0], round(0.05*y_df.shape[0]), y_df.shape[0])
+    bin_list = list()
+    try:
+        for divider in bin_dividers:
+            if divider == 0:
+                continue
+            bins = int((y_df.shape[0])/divider)
+            if bins < y_df.shape[0]/2:
+                bin_list.append(bins)
+    except:
+        num_bins = 10
+    if len(bin_list) > 0:
+        num_bins = max(bin_list)
+    else:
+        num_bins = 10
+    return num_bins
 
 def stat_to_string(name, value):
     " Stringifies the name value pair for display within a plot "
