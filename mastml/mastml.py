@@ -58,7 +58,6 @@ def mastml_run(conf_path, data_path, outdir):
 
     # Load in and parse the configuration and data files:
     conf = conf_parser.parse_conf_file(conf_path)
-    import pdb; pdb.set_trace()
     PlotSettings = conf['PlotSettings']
     is_classification = conf['is_classification']
     # The df is used by feature generators, clusterers, and grouping_column to 
