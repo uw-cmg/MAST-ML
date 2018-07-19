@@ -81,6 +81,8 @@ def mastml_run(conf_path, data_path, outdir):
 
 
     if conf['PlotSettings']['target_histogram']:
+        # First, save input data stats to csv
+        y.describe().to_csv(join(outdir, 'input_data_statistics.csv'))
         plot_helper.plot_target_histogram(y, join(outdir, 'target_histogram.png'), xlabel=y.name)
 
     # Get the appropriate collection of metrics:

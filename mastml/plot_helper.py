@@ -221,9 +221,6 @@ def plot_target_histogram(y_df, savepath, title='target histogram', xlabel='y va
     #ax.yaxis.set_major_locator(MaxNLocator(integer=True))
 
     plot_stats(fig, dict(y_df.describe()), x_align=0.70, y_align=0.90, fontsize=14)
-    # Save input data stats to csv
-    savepath_parse = savepath.split('target_histogram.png')[0]
-    y_df.describe().to_csv(savepath_parse+'/''input_data_statistics.csv')
 
     fig.savefig(savepath, dpi=250)
 
