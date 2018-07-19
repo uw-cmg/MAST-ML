@@ -282,24 +282,19 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y', label='tar
     fig.savefig(savepath, dpi=250, bbox_inches='tight')
 
 @ipynb_maker
-def plot_best_worst_split(best_run, worst_run, savepath,
+def plot_best_worst_split(y_true, best_run, worst_run, savepath,
                           title='Best Worst Overlay', label='target_value'):
     # Set image aspect ratio:
     fig, ax = make_fig_ax()
 
     # make diagonal line from absolute min to absolute max of any data point
-    all_y = [best_run['y_test_true'], best_run['y_test_pred'],
-             worst_run['y_test_true'], worst_run['y_test_pred']]
-    maxx = max(y.max() for y in all_y)
-    minn = min(y.min() for y in all_y)
+    #all_y = [best_run['y_test_true'], best_run['y_test_pred'],
+    #         worst_run['y_test_true'], worst_run['y_test_pred']]
+    #maxx = max(y.max() for y in all_y)
+    #minn = min(y.min() for y in all_y)
+    maxx = max(y_true)
+    minn = min(y_true)
     ax.plot([minn, maxx], [minn, maxx], 'k--', lw=2, zorder=1)
-
-    # do the actual plotting
-    ax.scatter(best_run['y_test_true'],  best_run['y_test_pred'],  c='red',
-               alpha=0.7, label='best',  edgecolor='darkred',  zorder=2, s=80)
-    ax.scatter(worst_run['y_test_true'], worst_run['y_test_pred'], c='blue',
-               alpha=0.7, label='worst', edgecolor='darkblue', zorder=3)
-    ax.legend(loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12)
 
     # set tick labels
     maxx = round(maxx)
@@ -314,6 +309,15 @@ def plot_best_worst_split(best_run, worst_run, savepath,
     ticklabels = [str(tick) for tick in tickvals]
     ax.set_xticklabels(labels=ticklabels, fontsize=14)
     ax.set_yticklabels(labels=ticklabels, fontsize=14)
+
+    make_axis_same(ax, maxx, minn)
+
+    # do the actual plotting
+    ax.scatter(best_run['y_test_true'],  best_run['y_test_pred'],  c='red',
+               alpha=0.7, label='best',  edgecolor='darkred',  zorder=2, s=80)
+    ax.scatter(worst_run['y_test_true'], worst_run['y_test_pred'], c='blue',
+               alpha=0.7, label='worst', edgecolor='darkblue', zorder=3)
+    ax.legend(loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12)
 
     # set axis labels
     ax.set_xlabel('True '+label, fontsize=16)
@@ -359,8 +363,6 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
     max1 = max(all_vals)
     min1 = min(all_vals)
 
-    make_axis_same(ax, max1, min1)
-
     # draw dashed horizontal line
     ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
 
@@ -381,6 +383,8 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
     ticklabels = [str(tick) for tick in tickvals]
     ax.set_xticklabels(labels=ticklabels, fontsize=14)
     ax.set_yticklabels(labels=ticklabels, fontsize=14)
+
+    make_axis_same(ax, max1, min1)
 
     ax.scatter(new_y_true, bests,  c='red',  alpha=0.7, label='best',
                edgecolor='darkred',  zorder=2, s=80)
@@ -407,8 +411,6 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
     max1 = max(np.nanmax(y_true), np.nanmax(means))
     min1 = min(np.nanmin(y_true), np.nanmin(means))
 
-    make_axis_same(ax, max1, min1)
-
     # draw dashed horizontal line
     ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
 
@@ -429,6 +431,8 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
     ticklabels = [str(tick) for tick in tickvals]
     ax.set_xticklabels(labels=ticklabels, fontsize=14)
     ax.set_yticklabels(labels=ticklabels, fontsize=14)
+
+    make_axis_same(ax, max1, min1)
 
     ax.errorbar(y_true, means, yerr=standard_errors, fmt='o', markerfacecolor='blue', markeredgecolor='black', alpha=0.7, capsize=3)
     ax.legend(loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12, frameon=False)
@@ -632,7 +636,7 @@ def make_axis_same(ax, max1, min1):
         step = (int(max1) - int(min1)) // 3
         ticks = range(int(min1), int(max1)+step, step)
     else:
-        ticks = np.linspace(min1, max1, 4)
+        ticks = np.linspace(min1, max1, 5)
     ax.set_xticks(ticks)
     ax.set_yticks(ticks)
 
@@ -659,14 +663,20 @@ def round_up(num, divisor):
 def get_divisor(high, low):
     delta = high-low
     divisor = 10
-    if delta > 100:
-        divisor = 10
-    if delta < 100:
-        if delta > 10:
-            divisor = 1
-        if delta < 10:
-            if delta > 1:
-                divisor = 0.1
-            if delta < 1:
-                divisor = 0.05
+    if delta > 1000:
+        divisor = 100
+    if delta < 1000:
+        if delta > 100:
+            divisor = 10
+        if delta < 100:
+            if delta > 10:
+                divisor = 1
+            if delta < 10:
+                if delta > 1:
+                    divisor = 0.1
+                if delta < 1:
+                    if delta > 0.01:
+                        divisor = 0.001
+                else:
+                    divisor = 0.001
     return divisor

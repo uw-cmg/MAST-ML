@@ -380,7 +380,7 @@ def mastml_run(conf_path, data_path, outdir):
         # collect all predictions in a combo for each point in the dataset
         def do_plots():
             if PlotSettings['predicted_vs_true']:
-                plot_helper.plot_best_worst_split(best, worst,
+                plot_helper.plot_best_worst_split(y.values, best, worst,
                                                   join(main_path, 'best_worst_split.png'), label=y.name)
             predictions = [[] for _ in range(X.shape[0])]
             for split_num, (train_indices, test_indices) in enumerate(trains_tests):
