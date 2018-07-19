@@ -30,10 +30,8 @@ def load_data(file_path, input_features=None, target_feature=None):
         if feature not in df.columns:
             raise Exception(f"Data file does not have column '{feature}'")
 
-    # TODO implent required feature checking and inclusion for grouping features.
-    # for now, we'll just not check and include everything
-    #df = df[required_features] # drop the columns we aren't using
-
     X, y = df[input_features], df[target_feature]
+
+
     df = df.drop(target_feature, axis=1)
     return df, X, y
