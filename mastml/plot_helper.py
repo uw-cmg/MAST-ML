@@ -133,7 +133,6 @@ def plot_predicted_vs_true(train_triple, test_triple, outdir):
         # Set image aspect ratio:
         fig, ax = make_fig_ax()
 
-        #ax.set_title('Predicted vs. True ' + title_addon)
         ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
 
         # set tick labels
@@ -181,7 +180,6 @@ def plot_residuals_histogram(y_true, y_pred, savepath,
     # Set image aspect ratio:
     fig, ax = make_fig_ax()
 
-    #ax.set_title(title)
     # do the actual plotting
     residuals = y_true - y_pred
     #Get num_bins using smarter method
@@ -207,7 +205,6 @@ def plot_target_histogram(y_df, savepath, title='target histogram', xlabel='y va
     # Set image aspect ratio:
     fig, ax = make_fig_ax(aspect_ratio=0.5)
 
-    #ax.set_title(title)
 
     #Get num_bins using smarter method
     num_bins = get_histogram_bins(y_df=y_df)
