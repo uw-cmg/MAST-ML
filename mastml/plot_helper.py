@@ -165,9 +165,6 @@ def plot_target_histogram(y_df, savepath, title='target histogram', xlabel='y va
 
     fig.savefig(savepath, dpi=250)
 
-
-
-
 @ipynb_maker
 def plot_predicted_vs_true(train_triple, test_triple, outdir):
     filenames = list()
@@ -208,8 +205,6 @@ def plot_predicted_vs_true(train_triple, test_triple, outdir):
         fig.savefig(join(outdir, filename), dpi=250)
 
     return filenames
-
-
 
 def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y'):
     # Set image aspect ratio:
