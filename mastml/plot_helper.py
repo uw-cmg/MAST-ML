@@ -14,6 +14,7 @@ import warnings
 from os.path import join
 from collections import OrderedDict
 from sklearn.model_selection import RepeatedKFold
+from sklearn.feature_selection import RFECV
 
 # Ignore the harmless warning about the gelsd driver on mac.
 warnings.filterwarnings(action="ignore", module="scipy",
@@ -581,26 +582,46 @@ def plot_sample_learning_curve(model, X, y, scoring, savepath='data_learning_cur
 
 def plot_feature_learning_curve(model, X, y, scoring=None, savepath='feature_learning_curve.png'):
     #RFECV.transform = RFECV.old_transform # damn you
-    print(dir(RFECV))
-    rfe = RFECV_train_test(model, scoring=scoring)
-    rfe = rfe.fit(X, y)
-    '''
-    >>> oops
-    (Pdb) rfe.support_
-    >>> array([ True,  True,  True,  True,  True, False, False,  True,  True, False], dtype=bool)
-    (Pdb) rfe.ranking_
-    >>> array([1, 1, 1, 1, 1, 4, 2, 1, 1, 3])
-    (Pdb) rfe.grid_scores_
-    >>> array([ 0.11704555,  0.02829977,  0.09502728,  0.11660331,  0.11178014,
-    >>>        0.09861614,  0.14987966,  0.14267309,  0.13662161,  0.14129173])
-    '''
-    fig, ax = make_fig_ax_square(aspect='auto')
-    ax.set_xlabel("Number of features selected")
-    ax.set_ylabel("CV score")
-    ax.plot(range(1, len(rfe.grid_scores_) + 1), rfe.grid_scores_, label='test')
-    ax.plot(range(1, len(rfe.grid_train_scores_) + 1), rfe.grid_train_scores_, label='train')
-    ax.legend()
-    fig.savefig(savepath, dpi=250)
+    X = np.array(X)
+    y = np.array(y).reshape(-1, 1)
+
+    try:
+        rfe = RFECV(estimator=model, step=1, cv=RepeatedKFold(n_splits=5, n_repeats=5), scoring=scoring)
+        rfe = rfe.fit(X, y)
+    except AttributeError:
+        print('Feature learning curve is made using recursive feature elimination, which requires a sklearn model with'
+              'either a coef_ or feature_importances_ attribute. For regression tasks, use one of: LinearRegression, SVR,'
+              'Lasso, or RandomForestRegressor')
+
+    # Set image aspect ratio (do custom for learning curve):
+    w, h = figaspect(0.75)
+    fig = Figure(figsize=(w,h))
+    FigureCanvas(fig)
+    gs = plt.GridSpec(1, 1)
+    ax = fig.add_subplot(gs[0:, 0:])
+
+    ax.set_xlabel('Number of features selected', fontsize=16)
+    scoring_name = scoring._score_func.__name__
+    scoring_name_nice = ''
+    for s in scoring_name.split('_'):
+        scoring_name_nice += s + ' '
+    ax.set_ylabel(scoring_name_nice, fontsize=16)
+
+    features = range(len(rfe.grid_scores_))
+    scores = rfe.grid_scores_
+
+    #print(features, features.shape)
+    #print(scores, scores.shape)
+
+    h1 = ax.plot(features, scores, '-o', color='blue', markersize=10, alpha=0.7)[0]
+    #ax.fill_between(train_sizes, mean_train_scores-train_scores_stdev, mean_train_scores+train_scores_stdev,
+    #                 alpha=0.1, color='blue')
+    #h2 = ax.plot(train_sizes, mean_test_scores, '-o', color='red', markersize=10, alpha=0.7)[0]
+    #ax.fill_between(train_sizes, mean_test_scores-test_scores_stdev, mean_test_scores+test_scores_stdev,
+    #                 alpha=0.1, color='red')
+    #ax.legend([h1, h2], ['train score', 'test score'], loc='lower right', fontsize=12)
+    ax.legend([h1], ['test score'], loc='upper right', fontsize=12)
+    fig.savefig(savepath, dpi=250, bbox_to_inches='tight')
 
 ### Helpers:
 
