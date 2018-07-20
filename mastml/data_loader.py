@@ -35,6 +35,10 @@ def load_data(file_path, input_features=None, target_feature=None):
 
     X, y = df[input_features], df[target_feature]
 
-
     df = df.drop(target_feature, axis=1)
+
+    # Clean data here to remove NaN. Replace later with good cleaning routines
+    df = df.dropna(axis=1, how='any')
+    X = X.dropna(axis=1, how='any')
+
     return df, X, y

@@ -75,6 +75,8 @@ def make_train_test_plots(run, path, is_classification, label, groups=None):
                           (y_test_true,  y_test_pred,  test_metrics, test_groups), 
                           path, label=label)
 
+        #plot_metric_per_group
+
         title = 'train_residuals_histogram'
         plot_residuals_histogram(y_train_true, y_train_pred,
                                  join(path, title+'.png'), train_metrics,
@@ -207,11 +209,12 @@ def plot_predicted_vs_true(train_quad, test_quad, outdir, label):
 
     # make diagonal line from absolute min to absolute max of any data point
     # using round because Ryan did - but won't that ruin small numbers??? TODO this
-    max1 = round(max(y_train_true.max(), y_train_pred.max(),
-               y_test_true.max(), y_test_pred.max()))
-    min1 = round(min(y_train_true.min(), y_train_pred.min(),
-               y_test_true.min(), y_test_pred.min()))
-
+    max1 = max(y_train_true.max(), y_train_pred.max(),
+               y_test_true.max(), y_test_pred.max())
+    min1 = min(y_train_true.min(), y_train_pred.min(),
+               y_test_true.min(), y_test_pred.min())
+    max1 = round(float(max1), rounder(max1-min1))
+    min1 = round(float(min1), rounder(max1-min1))
     for y_true, y_pred, stats, groups, title_addon in \
             (train_quad+('train',), test_quad+('test',)):
 
@@ -234,12 +237,24 @@ def plot_predicted_vs_true(train_quad, test_quad, outdir, label):
             handles = dict()
             unique_groups = np.unique(np.concatenate((train_groups, test_groups), axis=0))
             log.debug(' '*12 + 'unique groups: ' +str(list(unique_groups)))
+            colors = ['blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow',
+                      'blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow',
+                      'blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow',
+                      'blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow',
+                      'blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow',
+                      'blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow']
+            markers = ['o', 'o', 'o', 'o', 'o', 'o', 'o',
+                       'v', 'v', 'v', 'v', 'v', 'v', 'v',
+                       '^', '^', '^', '^', '^', '^', '^',
+                       's', 's', 's', 's', 's', 's', 's',
+                       'p', 'p', 'p', 'p', 'p', 'p', 'p',
+                       'h', 'h', 'h', 'h', 'h', 'h', 'h']
             for groupcount, group in enumerate(unique_groups):
-                colors = ['blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow']
-                shapes = []
+                markercount = groupcount*len(colors)-groupcount
                 mask = groups == group
                 log.debug(' '*12 + f'{group} group_percent = {np.count_nonzero(mask) / len(groups)}')
-                handles[group] = ax.scatter(y_true[mask], y_pred[mask], label=group, color=colors[groupcount], s=100, alpha=0.7)
+                handles[group] = ax.scatter(y_true[mask], y_pred[mask], label=group, color=colors[groupcount],
+                                            marker=markers[groupcount], s=100, alpha=0.7)
             ax.legend(handles.values(), handles.keys(), loc='lower right', fontsize=12)
 
         # set axis labels
@@ -259,11 +274,14 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y', label='tar
     fig, ax = make_fig_ax()
 
     # set tick labels
-    max_tick_x = round(max(x))
-    min_tick_x = round(min(x))
-    max_tick_y = round(max(y))
-    min_tick_y = round(min(y))
-
+    max_tick_x = max(x)
+    min_tick_x = min(x)
+    max_tick_y = max(y)
+    min_tick_y = min(y)
+    max_tick_x = round(float(max_tick_x), rounder(max_tick_x-min_tick_x))
+    min_tick_x = round(float(min_tick_x), rounder(max_tick_x-min_tick_x))
+    max_tick_y = round(float(max_tick_y), rounder(max_tick_y-min_tick_y))
+    min_tick_y = round(float(min_tick_y), rounder(max_tick_y-min_tick_y))
     #divisor_y = get_divisor(max(y), min(y))
     #max_tick_y = round_up(max(y), divisor_y)
     #min_tick_y = round_down(min(y), divisor_y)
@@ -277,6 +295,7 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y', label='tar
             shapes = []
             mask = groups == group
             ax.scatter(x[mask], y[mask], label=group, color=colors[groupcount], s=100, alpha=0.7)
+            ax.legend(bbox_to_handle=(1.1, 0))
 
     ax.set_xlabel(xlabel, fontsize=16)
     ax.set_ylabel('Value of '+label, fontsize=16)
@@ -290,8 +309,10 @@ def plot_best_worst_split(y_true, best_run, worst_run, savepath,
     x_align = 0.64
     fig, ax = make_fig_ax(x_align=x_align)
 
-    maxx = round(max(y_true)) # TODO is round the right thing here?
-    minn = round(min(y_true))
+    maxx = max(y_true) # TODO is round the right thing here?
+    minn = min(y_true)
+    maxx = round(float(maxx), rounder(maxx-minn))
+    minn = round(float(minn), rounder(maxx-minn))
     ax.plot([minn, maxx], [minn, maxx], 'k--', lw=2, zorder=1)
 
     # set tick labels
@@ -345,8 +366,8 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
 
     # gather max and min
     all_vals = [val for val in worsts+bests if val is not None]
-    max1 = round(max(y_true))
-    min1 = round(min(y_true))
+    max1 = max(y_true)
+    min1 = min(y_true)
 
     # draw dashed horizontal line
     ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
@@ -361,6 +382,8 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
     #maxx = round(max(new_y_true))
     #minn = round(min(new_y_true))
     maxx, minn = recursive_max_and_min([bests, worsts, new_y_true])
+    maxx = round(float(maxx), rounder(maxx-minn))
+    minn = round(float(minn), rounder(maxx-minn))
     _set_tick_labels(ax, maxx, minn)
 
     ax.scatter(new_y_true, bests,  c='red',  alpha=0.7, label='best',
@@ -400,6 +423,8 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
 
     # set tick labels
     maxx, minn = recursive_max_and_min([means, y_true])
+    maxx = round(float(maxx), rounder(maxx-minn))
+    minn = round(float(minn), rounder(maxx-minn))
     _set_tick_labels(ax, maxx, minn)
 
     ax.errorbar(y_true, means, yerr=standard_errors, fmt='o', markerfacecolor='blue', markeredgecolor='black', markersize=10,
@@ -486,8 +511,11 @@ def plot_sample_learning_curve(model, X, y, scoring, savepath='data_learning_cur
         mean_test_scores - test_scores_stdev,
         ])
 
+    max_x = round(float(max_x), rounder(max_x-min_x))
+    min_x = round(float(min_x), rounder(max_x-min_x))
+    max_y = round(float(max_y), rounder(max_y-min_y))
+    min_y = round(float(min_y), rounder(max_y-min_y))
     _set_tick_labels_different(ax, max_x, min_x, max_y, min_y)
-
 
     # plot and collect handles h1 and h2 for making legend
     h1 = ax.plot(train_sizes, mean_train_scores, '-o', color='blue', markersize=10, alpha=0.7)[0]
@@ -575,6 +603,10 @@ def plot_feature_learning_curve(model, X, y, scoring=None, savepath='feature_lea
         np.array(test_means)+np.array(test_stds),
         ])
 
+    max_x = round(float(max_x), rounder(max_x-min_x))
+    min_x = round(float(min_x), rounder(max_x-min_x))
+    max_y = round(float(max_y), rounder(max_y-min_y))
+    min_y = round(float(min_y), rounder(max_y-min_y))
     _set_tick_labels_different(ax, max_x, min_x, max_y, min_y)
     ax.set_xlabel('Number of features selected', fontsize=16)
     scoring_name = scoring._score_func.__name__
@@ -603,6 +635,18 @@ def plot_feature_learning_curve(model, X, y, scoring=None, savepath='feature_lea
     fig.savefig(savepath, dpi=DPI, bbox_to_inches='tight')
 
 ### Helpers:
+
+def rounder(delta):
+    if 0.001 <= delta < 0.01:
+        return 3
+    elif 0.01 <= delta < 0.1:
+        return 2
+    elif 0.1 <= delta < 1:
+        return 1
+    elif 1 <= delta < 100000:
+        return 0
+    else:
+        return 0
 
 def get_histogram_bins(y_df):
     bin_dividers = np.linspace(y_df.shape[0], 0.05*y_df.shape[0], y_df.shape[0])
