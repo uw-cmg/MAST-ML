@@ -243,25 +243,36 @@ def mastml_run(conf_path, data_path, outdir):
                 """
                 return tuple(tuple(X_.index.values[part] for part in split) for split in splits)
 
+            # Collect all the grouping columns, `None` if not needed
+            splitter_to_group_column = dict()
             for name, instance in splitters:
-                if name in splitter_to_group_names: # if this splitter depends on grouping
+                # if this splitter depends on grouping
+                if name in splitter_to_group_names: 
                     col = splitter_to_group_names[name]
                     log.debug(f"    Finding {col} for {name}...")
+                    # Locate the grouping column among all dataframes
                     for df_ in [clustered_df, X_, df]:
                         if is_validation: # also exclude for df_ so that rows match up
                             df_ = _exclude_validation(df, validation_column)
                         if col in df_.columns:
-                            split = proper_index(instance.split(X_, y_, df_[col].values))
-                            pairs.append((name, split))
+                            # there it is
+                            splitter_to_group_column[name] = df_[col].values
                             break
+                    # If we didn't find that column anywhere, raise
                     else:
                         raise utils.MissingColumnError(f'DataSplit {name} needs column {col}, which '
                                                        f'was neither generated nor given by input')
-                else:
-                   split = proper_index(instance.split(X_, y_))
-                   pairs.append((name, split))
-            return pairs
-        splittername_splitlist_pairs = make_splittername_splitlist_pairs()
+                # If we don't need grouping column
+                else: 
+                    splitter_to_group_column[name] = None
+
+            # Iterate seperately to do the actual splitting, because the above loop is too big
+            for name, instance in splitters:
+                grouping_data = splitter_to_group_column[name]
+                split = proper_index(instance.split(X_, y_, grouping_data))
+                pairs.append((name, split))
+            return pairs, splitter_to_group_column 
+        splittername_splitlist_pairs, splitter_to_group_column = make_splittername_splitlist_pairs()
 
         log.info("Fitting models to splits...")
 
@@ -290,24 +301,32 @@ def mastml_run(conf_path, data_path, outdir):
                                                  xlabel=column, ylabel='target_feature', label=y.name)
                 for model_name, model_instance in models:
                     for splitter_name, trains_tests in splittername_splitlist_pairs:
+                        grouping_data = splitter_to_group_column[splitter_name]
                         subdir = join(normalizer_name, selector_name, model_name, splitter_name)
                         log.info(f"    Running splits for {subdir}")
                         subsubdir = join(outdir, subdir)
                         os.makedirs(subsubdir)
                         # NOTE: do_one_splitter is a big old function, does lots
-                        runs = do_one_splitter(X, y, model_instance, subsubdir, trains_tests,)
+
+                        runs = do_one_splitter(X, y, model_instance, subsubdir, trains_tests, grouping_data)
                         all_results.extend(runs)
             return all_results
 
         return do_models_splits()
 
-    def do_one_splitter(X, y, model, main_path, trains_tests):
+    def do_one_splitter(X, y, model, main_path, trains_tests, grouping_data):
 
         def one_fit(split_num, train_indices, test_indices):
 
             log.info(f"        Doing split number {split_num}")
             train_X, train_y = X.loc[train_indices], y.loc[train_indices]
             test_X,  test_y  = X.loc[test_indices],  y.loc[test_indices]
+
+            # split up groups into train and test as well
+            if grouping_data is not None:
+                train_groups, test_groups = grouping_data[train_indices], grouping_data[test_indices]
+            else:
+                train_groups, test_groups = None, None
 
             path = join(main_path, f"split_{split_num}")
             os.mkdir(path)
@@ -370,12 +389,17 @@ def mastml_run(conf_path, data_path, outdir):
                 train_metrics = train_metrics,
                 test_metrics  = test_metrics,
                 train_indices = train_indices,
-                test_indices = test_indices
+                test_indices = test_indices,
+                train_groups = train_groups,
+                test_groups = test_groups,
             )
+
 
             log.info("             Making plots...")
             if PlotSettings['train_test_plots']:
-                plot_helper.make_train_test_plots(split_result, path, is_classification, label=y.name)
+                plot_helper.make_train_test_plots(
+                        split_result, path, is_classification, 
+                        label=y.name, groups=grouping_data)
             _write_stats(split_result['train_metrics'],
                          split_result['test_metrics'],
                          main_path)
@@ -423,6 +447,7 @@ def mastml_run(conf_path, data_path, outdir):
                 plot_helper.plot_best_worst_per_point(y.values, predictions,
                                                       join(main_path, 'best_worst_per_point.png'),
                                                       metrics_dict, avg_test_stats, label=y.name)
+
         if not is_classification:
             make_pred_vs_true_plots()
 
