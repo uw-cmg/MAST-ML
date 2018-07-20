@@ -11,6 +11,7 @@ import math
 import pandas as pd
 import itertools
 import warnings
+import logging
 from collections import Iterable
 from os.path import join
 from collections import OrderedDict
@@ -39,16 +40,24 @@ from .utils import RFECV_train_test
 matplotlib.rc('font', size=18, family='sans-serif') # set all font to bigger
 matplotlib.rc('figure', autolayout=True) # turn on autolayout
 
+# adding dpi as a constant global so it can be changed later
+DPI = 250
+
+log = logging.getLogger() # only used inside ipynb_maker I guess
+
 # HEADERENDER don't delete this line, it's used by ipynb maker
+
+log = logging.getLogger('mastml') # the real logger
 
 from .ipynb_maker import ipynb_maker # TODO: fix cyclic import
 from .metrics import nice_names
 
-def make_train_test_plots(run, path, is_classification, label):
+def make_train_test_plots(run, path, is_classification, label, groups=None):
     y_train_true, y_train_pred, y_test_true = \
         run['y_train_true'], run['y_train_pred'], run['y_test_true']
     y_test_pred, train_metrics, test_metrics = \
         run['y_test_pred'], run['train_metrics'], run['test_metrics']
+    train_groups, test_groups = run['train_groups'], run['test_groups']
 
     if is_classification:
         title = 'train_confusion_matrix'
@@ -61,8 +70,9 @@ def make_train_test_plots(run, path, is_classification, label):
                               title=title)
 
     else: # is_regression
-        plot_predicted_vs_true((y_train_true, y_train_pred, train_metrics),
-                          (y_test_true,  y_test_pred,  test_metrics), path, label=label)
+        plot_predicted_vs_true((y_train_true, y_train_pred, train_metrics, train_groups),
+                          (y_test_true,  y_test_pred,  test_metrics, test_groups), 
+                          path, label=label)
 
         title = 'train_residuals_histogram'
         plot_residuals_histogram(y_train_true, y_train_pred,
@@ -186,23 +196,24 @@ def plot_target_histogram(y_df, savepath, title='target histogram', label='targe
     savepath_parse = savepath.split('target_histogram.png')[0]
     y_df.describe().to_csv(savepath_parse+'/''input_data_statistics.csv')
 
-    fig.savefig(savepath, dpi=250)
+    fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
 
 @ipynb_maker
-def plot_predicted_vs_true(train_triple, test_triple, outdir, label):
+def plot_predicted_vs_true(train_quad, test_quad, outdir, label):
     filenames = list()
-    y_train_true, y_train_pred, train_metrics = train_triple
-    y_test_true, y_test_pred, test_metrics = test_triple
+    y_train_true, y_train_pred, train_metrics, train_groups = train_quad
+    y_test_true, y_test_pred, test_metrics, test_groups = test_quad
 
     # make diagonal line from absolute min to absolute max of any data point
     # using round because Ryan did - but won't that ruin small numbers??? TODO this
-    max1 = round(max(y_train_true.max(), y_train_pred.max(),
-               y_test_true.max(), y_test_pred.max()))
-    min1 = round(min(y_train_true.min(), y_train_pred.min(),
-               y_test_true.min(), y_test_pred.min()))
+    max1 = max(y_train_true.max(), y_train_pred.max(),
+               y_test_true.max(), y_test_pred.max())
+    min1 = min(y_train_true.min(), y_train_pred.min(),
+               y_test_true.min(), y_test_pred.min())
 
-    for y_true, y_pred, stats, title_addon in \
-            (train_triple+('train',), test_triple+('test',)):
+
+    for y_true, y_pred, stats, groups, title_addon in \
+            (train_quad+('train',), test_quad+('test',)):
 
         # make fig and ax, use x_align when placing text so things don't overlap
         x_align=0.64
@@ -218,7 +229,17 @@ def plot_predicted_vs_true(train_triple, test_triple, outdir, label):
         ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
 
         # do the actual plotting
-        ax.scatter(y_true, y_pred, color='blue', edgecolors='black', s=100, zorder=2, alpha=0.7)
+        if groups is None:
+            ax.scatter(y_true, y_pred, color='blue', edgecolors='black', s=100, zorder=2, alpha=0.7)
+        else:
+            unique_groups = np.unique(np.concatenate((train_groups, test_groups), axis=0))
+            log.debug('unique groups: ', list(unique_groups))
+            for groupcount, group in enumerate(unique_groups):
+                colors = ['blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow']
+                shapes = []
+                mask = groups == group
+                print(y_true[mask], y_pred[mask], sep='\n\n')
+                ax.scatter(y_true[mask], y_pred[mask], label=group, color=colors[groupcount], s=100, alpha=0.7)
 
         # set axis labels
         ax.set_xlabel('True '+label, fontsize=16)
