@@ -329,7 +329,8 @@ def mastml_run(conf_path, data_path, outdir):
                 validation_predictions_series = pd.Series(validation_predictions, name='clean_predictions', index=validation_X.index)
                 pd.concat([validation_X,  validation_y,  validation_predictions_series],  1)\
                         .to_csv(join(path, 'predictions.csv'),  index=False)
-
+            else:
+                validation_y = None
             
 
             # Save train and test data and results to csv:
@@ -356,6 +357,9 @@ def mastml_run(conf_path, data_path, outdir):
                                             for name, (_, function) in metrics_dict.items())
                 test_metrics = OrderedDict((name, function(test_y, test_pred))
                                            for name, (_, function) in metrics_dict.items())
+                if is_validation:
+                    prediction_metrics = OrderedDict((name, function(validation_y, validation_predictions))
+                                           for name, (_, function) in metrics_dict.items())
 
             split_result = OrderedDict(
                 normalizer = split_path[-4],
@@ -373,11 +377,19 @@ def mastml_run(conf_path, data_path, outdir):
                 test_indices = test_indices
             )
 
+            if is_validation:
+                split_result['y_validation_true'] = validation_y.values
+                split_result['y_validation_pred'] = validation_predictions
+                split_result['prediction_metrics'] = prediction_metrics
+            else:
+                split_result['prediction_metrics'] = None
+
             log.info("             Making plots...")
             if PlotSettings['train_test_plots']:
                 plot_helper.make_train_test_plots(split_result, path, is_classification, label=y.name)
             _write_stats(split_result['train_metrics'],
                          split_result['test_metrics'],
+                         split_result['prediction_metrics'],
                          main_path)
 
             return split_result
@@ -510,15 +522,18 @@ def _save_all_runs(runs, outdir):
         table.append(od)
     pd.DataFrame(table).to_html(join(outdir, 'all_runs_table.html'))
 
-def _write_stats(train_metrics, test_metrics, outdir):
+def _write_stats(train_metrics, test_metrics, prediction_metrics, outdir):
     with open(join(outdir, 'stats.txt'), 'w') as f:
         f.write("TRAIN:\n")
         for name,score in train_metrics.items():
-            f.write(f"{name}: {score}\n")
+            f.write(f"{name}: {'%.3f'%float(score)}\n")
         f.write("TEST:\n")
         for name,score in test_metrics.items():
-                f.write(f"{name}: {score}\n")
-
+                f.write(f"{name}: {'%.3f'%float(score)}\n")
+        if prediction_metrics:
+            f.write("PREDICTION:\n")
+            for name, score in prediction_metrics.items():
+                f.write(f"{name}: {'%.3f'%float(score)}\n")
 
 def _exclude_validation(df, validation_column):
     return df.loc[validation_column != 1]
