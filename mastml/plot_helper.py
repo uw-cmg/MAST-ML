@@ -117,7 +117,7 @@ def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False,
 
     ax.set_ylabel('True label')
     ax.set_xlabel('Predicted label')
-    fig.savefig(savepath, dpi=250)
+    fig.savefig(savepath, dpi=250, bbox_to_inches='tight')
 
 @ipynb_maker
 def plot_residuals_histogram(y_true, y_pred, savepath,
@@ -156,7 +156,7 @@ def plot_residuals_histogram(y_true, y_pred, savepath,
     plot_stats(fig, stats, x_align=x_align, y_align=0.90)
     plot_stats(fig, pd.DataFrame(residuals).describe().to_dict()[0], x_align=x_align, y_align=0.60)
 
-    fig.savefig(savepath, dpi=250)
+    fig.savefig(savepath, dpi=250, bbox_to_inches='tight')
 
 @ipynb_maker
 def plot_target_histogram(y_df, savepath, title='target histogram', label='target values'):
@@ -186,7 +186,7 @@ def plot_target_histogram(y_df, savepath, title='target histogram', label='targe
     savepath_parse = savepath.split('target_histogram.png')[0]
     y_df.describe().to_csv(savepath_parse+'/''input_data_statistics.csv')
 
-    fig.savefig(savepath, dpi=250)
+    fig.savefig(savepath, dpi=250, bbox_to_inches='tight')
 
 @ipynb_maker
 def plot_predicted_vs_true(train_triple, test_triple, outdir, label):
@@ -228,7 +228,7 @@ def plot_predicted_vs_true(train_triple, test_triple, outdir, label):
 
         filename = 'predicted_vs_true_'+ title_addon + '.png'
         filenames.append(filename)
-        fig.savefig(join(outdir, filename), dpi=250)
+        fig.savefig(join(outdir, filename), dpi=250, bbox_to_inches='tight')
 
     return filenames
 
@@ -238,7 +238,7 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y', label='tar
 
     # set tick labels
     max_tick_x = max(x)
-    max_tick_y = min(x)
+    min_tick_x = min(x)
 
     divisor_y = get_divisor(max(y), min(y))
     max_tick_y = round_up(max(y), divisor_y)
@@ -256,7 +256,7 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y', label='tar
 
     ax.set_xlabel(xlabel, fontsize=16)
     ax.set_ylabel('Value of '+label, fontsize=16)
-    fig.savefig(savepath, dpi=250)
+    fig.savefig(savepath, dpi=250, bbox_to_inches='tight')
 
 @ipynb_maker
 def plot_best_worst_split(y_true, best_run, worst_run, savepath,
@@ -294,7 +294,7 @@ def plot_best_worst_split(y_true, best_run, worst_run, savepath,
     plot_stats(fig, best_stats, x_align=x_align, y_align=0.90)
     plot_stats(fig, worst_stats, x_align=x_align, y_align=0.60)
 
-    fig.savefig(savepath, dpi=250)
+    fig.savefig(savepath, dpi=250, bbox_to_inches='tight')
 
 @ipynb_maker
 def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
@@ -346,7 +346,7 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
     plot_stats(fig, avg_stats, x_align=x_align, y_align=0.51, fontsize=10)
     plot_stats(fig, worst_stats, x_align=x_align, y_align=0.73, fontsize=10)
     plot_stats(fig, best_stats, x_align=x_align, y_align=0.95, fontsize=10)
-    fig.savefig(savepath, dpi=250)
+    fig.savefig(savepath, dpi=250, bbox_to_inches='tight')
 
 @ipynb_maker
 def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
@@ -381,25 +381,25 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
                 alpha=0.7, capsize=3)
 
     plot_stats(fig, avg_stats, x_align=x_align, y_align=0.90)
-    fig.savefig(savepath, dpi=250)
+    fig.savefig(savepath, dpi=250, bbox_to_inches='tight')
 
 def plot_1d_heatmap(xs, heats, savepath, xlabel='x', heatlabel='heats'):
-    fig, ax = make_fig_ax(aspect='auto')
+    fig, ax = make_fig_ax()
     ax.bar(xs, heats)
     ax.set_xlabel(xlabel)
     ax.set_ylabel(heatlabel)
-    fig.savefig(savepath, dpi=250)
+    fig.savefig(savepath, dpi=250, bbox_to_inches='tight')
 
 
 def plot_2d_heatmap(xs, ys, heats, savepath,
                     xlabel='x', ylabel='y', heatlabel='heat'):
-    fig, ax = make_fig_ax(aspect='auto')
+    fig, ax = make_fig_ax()
     scat = ax.scatter(xs, ys, c=heats) # marker='o', lw=0, s=20, cmap=cm.plasma
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     cb = fig.colorbar(scat)
     cb.set_label(heatlabel)
-    fig.savefig(savepath, dpi=250)
+    fig.savefig(savepath, dpi=250, bbox_to_inches='tight')
 
 def plot_3d_heatmap(xs, ys, zs, heats, savepath,
                     xlabel='x', ylabel='y', zlabel='z', heatlabel='heat'):
@@ -470,7 +470,7 @@ def plot_sample_learning_curve(model, X, y, scoring, savepath='data_learning_cur
     for s in scoring_name.split('_'):
         scoring_name_nice += s + ' '
     ax.set_ylabel(scoring_name_nice, fontsize=16)
-    fig.savefig(savepath, dpi=250)
+    fig.savefig(savepath, dpi=250, bbox_to_inches='tight')
 
 def plot_feature_learning_curve(model, X, y, scoring=None, savepath='feature_learning_curve.png'):
     X = np.array(X)
