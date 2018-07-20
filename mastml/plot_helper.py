@@ -208,9 +208,8 @@ def plot_predicted_vs_true(train_triple, test_triple, outdir, label):
         x_align=0.64
         fig, ax = make_fig_ax(x_align=x_align)
 
-
         # set tick labels
-        # notice that we use the same max and min for all three. Don't 
+        # notice that we use the same max and min for all three. Don't
         # calculate those inside the loop, because all the should be on the same scale and axis
         _set_tick_labels(ax, max1, min1)
 
@@ -530,6 +529,13 @@ def plot_feature_learning_curve(model, X, y, scoring=None, savepath='feature_lea
     gs = plt.GridSpec(1, 1)
     ax = fig.add_subplot(gs[0:, 0:])
 
+    max_x = max(feature_list)
+    min_x = min(feature_list)
+    max_y = round(max(max(train_means),max(np.array(train_means)-np.array(train_stds)),max(np.array(train_means)+np.array(train_stds)),
+                     max(test_means),max(np.array(test_means)-np.array(test_stds)),max(np.array(test_means)+np.array(test_stds))))
+    min_y = round(min(min(train_means),min(np.array(train_means)-np.array(train_stds)),min(np.array(train_means)+np.array(train_stds)),
+                      min(test_means),min(np.array(test_means)-np.array(test_stds)),min(np.array(test_means)+np.array(test_stds))))
+    _set_tick_labels_different_2(ax, max_x, min_x, max_y, min_y)
     ax.set_xlabel('Number of features selected', fontsize=16)
     scoring_name = scoring._score_func.__name__
     scoring_name_nice = ''
