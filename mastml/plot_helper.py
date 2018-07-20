@@ -231,7 +231,6 @@ def plot_predicted_vs_true(train_quad, test_quad, outdir, label):
         if groups is None:
             ax.scatter(y_true, y_pred, color='blue', edgecolors='black', s=100, zorder=2, alpha=0.7)
         else:
-            import pdb; pdb.set_trace()
             handles = dict()
             unique_groups = np.unique(np.concatenate((train_groups, test_groups), axis=0))
             log.debug(' '*12 + 'unique groups: ' +str(list(unique_groups)))
