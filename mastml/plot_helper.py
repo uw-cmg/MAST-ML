@@ -581,13 +581,10 @@ def plot_sample_learning_curve(model, X, y, scoring, savepath='data_learning_cur
     fig.savefig(savepath, dpi=250, bbox_to_inches='tight')
 
 def plot_feature_learning_curve(model, X, y, scoring=None, savepath='feature_learning_curve.png'):
-    #RFECV.transform = RFECV.old_transform # damn you
     X = np.array(X)
     y = np.array(y).reshape(-1, 1)
 
-    """
     # Need to revisit how the averaging stats are done over CV steps
-    stats_dict = dict()
     train_means = list()
     train_stds = list()
     test_means = list()
@@ -597,6 +594,18 @@ def plot_feature_learning_curve(model, X, y, scoring=None, savepath='feature_lea
     for feature in range(num_features):
         rfe = RFE(estimator=model, n_features_to_select=feature+1, step=1)
         Xnew = rfe.fit_transform(X,y)
+        Xnew = pd.DataFrame(Xnew)
+        ranking_list = list(rfe.ranking_)
+        top_features = list()
+        for i, ranking in enumerate(ranking_list):
+            if ranking == 1:
+                top_features.append(i)
+        # Lame transform here but it works
+        df_dict = dict()
+        for feature in top_features:
+            df_dict[feature] = Xnew[feature]
+        Xnew = pd.DataFrame(df_dict)
+        Xnew = np.array(Xnew)
         # Now do KFoldCV on model containing feature number of features
         rkf = RepeatedKFold(n_splits=5, n_repeats=5)
         cv_number=1
@@ -613,18 +622,14 @@ def plot_feature_learning_curve(model, X, y, scoring=None, savepath='feature_lea
         train_stds.append(np.std(list(train_scores.values())))
         test_means.append(np.mean(list(test_scores.values())))
         test_stds.append(np.std(list(test_scores.values())))    
-    """
 
-
-
-    try:
-        rfe = RFECV(estimator=model, step=1, cv=RepeatedKFold(n_splits=5, n_repeats=5), scoring=scoring)
-        rfe = rfe.fit(X, y)
-    except AttributeError:
-        print('Feature learning curve is made using recursive feature elimination, which requires a sklearn model with'
-              'either a coef_ or feature_importances_ attribute. For regression tasks, use one of: LinearRegression, SVR,'
-              'Lasso, or RandomForestRegressor')
-
+    #try:
+    #    rfe = RFECV(estimator=model, step=1, cv=RepeatedKFold(n_splits=5, n_repeats=5), scoring=scoring)
+    #    rfe = rfe.fit(X, y)
+    #except AttributeError:
+    #    print('Feature learning curve is made using recursive feature elimination, which requires a sklearn model with'
+    #          'either a coef_ or feature_importances_ attribute. For regression tasks, use one of: LinearRegression, SVR,'
+    #          'Lasso, or RandomForestRegressor')
 
     # Set image aspect ratio (do custom for learning curve):
     w, h = figaspect(0.75)
@@ -640,21 +645,22 @@ def plot_feature_learning_curve(model, X, y, scoring=None, savepath='feature_lea
         scoring_name_nice += s + ' '
     ax.set_ylabel(scoring_name_nice, fontsize=16)
 
-    features = range(len(rfe.grid_scores_))
-    scores = rfe.grid_scores_
-
-    h1 = ax.plot(features, scores, '-o', color='blue', markersize=10, alpha=0.7)[0]
     """
-    # This is plotting for regular RFE method commented out above
-    h1 = ax.plot(feature_list, train_means, '-o', color='blue', markersize=10, alpha=0.7)
+    features = range(len(rfe.grid_scores_))
+    scores = rfe.grid_scores_    
+    """
+
+    #h1 = ax.plot(features, scores, '-o', color='blue', markersize=10, alpha=0.7)[0]
+
+    h1 = ax.plot(feature_list, train_means, '-o', color='blue', markersize=10, alpha=0.7)[0]
     ax.fill_between(feature_list, np.array(train_means)-np.array(train_stds), np.array(train_means)+np.array(train_stds),
                     alpha=0.1, color='blue')
     h2 = ax.plot(feature_list, test_means, '-o', color='red', markersize=10, alpha=0.7)[0]
     ax.fill_between(feature_list, np.array(test_means)-np.array(test_stds), np.array(test_means)+np.array(test_stds),
                     alpha=0.1, color='red')
     ax.legend([h1, h2], ['train score', 'test score'], loc='lower right', fontsize=12)
-    """
-    ax.legend([h1], ['test score'], loc='upper right', fontsize=12)
+
+    #ax.legend([h1], ['test score'], loc='upper right', fontsize=12)
     fig.savefig(savepath, dpi=250, bbox_to_inches='tight')
 
 ### Helpers:
