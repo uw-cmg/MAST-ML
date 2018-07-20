@@ -3,8 +3,10 @@ Module for loading checking the input data file
 """
 
 import pandas as pd
+import logging
+log = logging.getLogger('mastml')
 
-def load_data(file_path, input_features=None, target_feature=None):
+def load_data(file_path, input_features=None, target_feature=None, feature_blacklist=[]):
     " Loads in csv from filename and ensures required columns are present. Returns dataframe. "
 
     # Load data
@@ -34,6 +36,12 @@ def load_data(file_path, input_features=None, target_feature=None):
             raise Exception(f"Data file does not have column '{feature}'")
 
     X, y = df[input_features], df[target_feature]
+
+    log.info('blacklisted features, either from "not_input_features" or a "grouping_column":' +
+                 str(feature_blacklist))
+    # take blacklisted features out of X:
+    for feature in set(feature_blacklist):
+        X = X.drop(feature, axis=1)
 
 
     df = df.drop(target_feature, axis=1)

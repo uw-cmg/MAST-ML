@@ -80,13 +80,35 @@ def parse_conf_file(filepath):
 
     def check_general_setup_settings_are_valid():
         all_settings =  ['input_features', 'target_feature', 'metrics',
-                         'learning_curve_model', 'learning_curve_score', 'randomizer', 'validation_column']
+                         'learning_curve_model', 'learning_curve_score', 'randomizer', 
+                         'validation_column', 'not_input_features']
         for name in GS:
             if name not in all_settings:
                 raise utils.InvalidConfParameters(
                         f"[GeneralSetup] contains unknown setting {name}.\n"
                         f"Valid GeneralSetup options are: {all_settings}")
     check_general_setup_settings_are_valid()
+
+    # Find grouping features and 'not_input_features' to blacklist out of X (see data loader)
+    def collect_grouping_features():
+        for section in conf:
+            if not isinstance(conf[section], dict):
+                continue
+            for subsection in conf[section]:
+                SS = conf[section][subsection]
+                if not isinstance(SS, dict):
+                    continue
+                if 'grouping_feature' in SS:
+                    logging.debug('found grouping_feature: ' + SS['grouping_feature'])
+                    yield SS['grouping_feature']
+    feature_blacklist = list(collect_grouping_features())
+
+    # default not_input_features to a list
+    if 'not_input_features' not in GS:
+        GS['not_input_features'] = []
+
+    # and add the discovered ones to the list
+    GS['not_input_features'] += feature_blacklist
 
     def set_randomizer_setting():
         if 'randomizer' in GS:

@@ -65,7 +65,8 @@ def mastml_run(conf_path, data_path, outdir):
     # X is model input, y is target feature for model
     df, X, y = data_loader.load_data(data_path,
                                      conf['GeneralSetup']['input_features'],
-                                     conf['GeneralSetup']['target_feature'])
+                                     conf['GeneralSetup']['target_feature'],
+                                     conf['GeneralSetup']['not_input_features'])
 
     # randomly shuffly y values if randomizer is on
     if conf['GeneralSetup']['randomizer'] is True:
