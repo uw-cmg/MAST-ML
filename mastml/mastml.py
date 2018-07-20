@@ -324,8 +324,6 @@ def mastml_run(conf_path, data_path, outdir):
                 validation_y = _only_validation(y, validation_column)
                 log.info("             Making predictions on prediction_only data...")
                 validation_predictions = model.predict(validation_X)
-                print('ooooouuutuch')
-                print(validation_y)
 
                 # save them as 'predicitons.csv'
                 validation_predictions_series = pd.Series(validation_predictions, name='clean_predictions', index=validation_X.index)
