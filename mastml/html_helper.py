@@ -36,9 +36,12 @@ def make_html(outdir):
 
             # extract links to important csvs and conf
             for f in files:
+                csv_whitelist = [
+                    'clusters.csv', 'generated_features.csv',
+                    'generated_features_no_constant_columns.csv', 'grouped.csv',
+                    'input_data_statistics.csv', 'normalized.csv', 'selected.csv', ]
                 ext = os.path.splitext(f)[1]
-                if (ext == '.csv' and f not in ['train.csv', 'test.csv', 'predictions.csv']) or\
-                        ext in ['.conf', '.log']:
+                if f in csv_whitelist or ext in ['.conf', '.log']:
                     link_sections.append(join(root, f))
                     #simple_section(join(root, f), outdir)
 
