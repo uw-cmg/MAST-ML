@@ -207,11 +207,10 @@ def plot_predicted_vs_true(train_quad, test_quad, outdir, label):
 
     # make diagonal line from absolute min to absolute max of any data point
     # using round because Ryan did - but won't that ruin small numbers??? TODO this
-    max1 = max(y_train_true.max(), y_train_pred.max(),
-               y_test_true.max(), y_test_pred.max())
-    min1 = min(y_train_true.min(), y_train_pred.min(),
-               y_test_true.min(), y_test_pred.min())
-
+    max1 = round(max(y_train_true.max(), y_train_pred.max(),
+               y_test_true.max(), y_test_pred.max()))
+    min1 = round(min(y_train_true.min(), y_train_pred.min(),
+               y_test_true.min(), y_test_pred.min()))
 
     for y_true, y_pred, stats, groups, title_addon in \
             (train_quad+('train',), test_quad+('test',)):
@@ -224,6 +223,7 @@ def plot_predicted_vs_true(train_quad, test_quad, outdir, label):
         # notice that we use the same max and min for all three. Don't
         # calculate those inside the loop, because all the should be on the same scale and axis
         _set_tick_labels(ax, max1, min1)
+        make_axis_same(ax, max1, min1)
 
         # plot diagonal line
         ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
@@ -260,12 +260,14 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y', label='tar
     fig, ax = make_fig_ax()
 
     # set tick labels
-    max_tick_x = max(x)
-    min_tick_x = min(x)
+    max_tick_x = round(max(x))
+    min_tick_x = round(min(x))
+    max_tick_y = round(max(y))
+    min_tick_y = round(min(y))
 
-    divisor_y = get_divisor(max(y), min(y))
-    max_tick_y = round_up(max(y), divisor_y)
-    min_tick_y = round_down(min(y), divisor_y)
+    #divisor_y = get_divisor(max(y), min(y))
+    #max_tick_y = round_up(max(y), divisor_y)
+    #min_tick_y = round_down(min(y), divisor_y)
     _set_tick_labels_different(ax, max_tick_x, min_tick_x, max_tick_y, min_tick_y)
 
     if groups is None:
@@ -289,8 +291,8 @@ def plot_best_worst_split(y_true, best_run, worst_run, savepath,
     x_align = 0.64
     fig, ax = make_fig_ax(x_align=x_align)
 
-    maxx = max(y_true) # TODO is round the right thing here?
-    minn = min(y_true)
+    maxx = round(max(y_true)) # TODO is round the right thing here?
+    minn = round(min(y_true))
     ax.plot([minn, maxx], [minn, maxx], 'k--', lw=2, zorder=1)
 
     # set tick labels
@@ -344,8 +346,8 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
 
     # gather max and min
     all_vals = [val for val in worsts+bests if val is not None]
-    max1 = max(all_vals)
-    min1 = min(all_vals)
+    max1 = round(max(y_true))
+    min1 = round(min(y_true))
 
     # draw dashed horizontal line
     ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
@@ -355,11 +357,11 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
     ax.set_ylabel('Predicted '+label, fontsize=16)
 
     # set tick labels
-    maxx = max((max(bests), max(worsts), max(new_y_true)))
-    minn = min((min(bests), min(worsts), min(new_y_true)))
+    #maxx = max((max(bests), max(worsts), max(new_y_true)))
+    #minn = min((min(bests), min(worsts), min(new_y_true)))
+    maxx = round(max(new_y_true))
+    minn = round(min(new_y_true))
     _set_tick_labels(ax, maxx, minn)
-
-    make_axis_same(ax, max1, min1)
 
     ax.scatter(new_y_true, bests,  c='red',  alpha=0.7, label='best',
                edgecolor='darkred',  zorder=2, s=100)
@@ -397,8 +399,8 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
     ax.set_ylabel('Predicted '+label, fontsize=16)
 
     # set tick labels
-    maxx = max((max(means), max(y_true)))
-    minn = min((min(means), min(y_true)))
+    maxx = round(max((max(means), max(y_true))))
+    minn = round(min((min(means), min(y_true))))
     _set_tick_labels(ax, maxx, minn)
 
     ax.errorbar(y_true, means, yerr=standard_errors, fmt='o', markerfacecolor='blue', markeredgecolor='black', markersize=10,
