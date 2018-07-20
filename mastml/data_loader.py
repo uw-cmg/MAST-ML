@@ -6,7 +6,7 @@ import pandas as pd
 import logging
 log = logging.getLogger('mastml')
 
-def load_data(file_path, input_features=None, target_feature=None, feature_blacklist=[]):
+def load_data(file_path, input_features=None, target_feature=None, feature_blacklist=list()):
     " Loads in csv from filename and ensures required columns are present. Returns dataframe. "
 
     # Load data
@@ -42,7 +42,6 @@ def load_data(file_path, input_features=None, target_feature=None, feature_black
     # take blacklisted features out of X:
     for feature in set(feature_blacklist):
         X = X.drop(feature, axis=1)
-
 
     df = df.drop(target_feature, axis=1)
 

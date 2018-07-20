@@ -98,17 +98,25 @@ def parse_conf_file(filepath):
                 SS = conf[section][subsection]
                 if not isinstance(SS, dict):
                     continue
-                if 'grouping_feature' in SS:
-                    logging.debug('found grouping_feature: ' + SS['grouping_feature'])
-                    yield SS['grouping_feature']
+                if 'grouping_column' in SS.keys():
+                    logging.debug('found grouping_feature: ' + SS['grouping_column'])
+                    yield SS['grouping_column']
     feature_blacklist = list(collect_grouping_features())
 
     # default not_input_features to a list
     if 'not_input_features' not in GS:
-        GS['not_input_features'] = []
+        GS['not_input_features'] = list()
+    else:
+        if type(GS['not_input_features']) is str:
+            new_list = list()
+            new_list.append(GS['not_input_features'])
+            GS['not_input_features'] = new_list
+        elif type(GS['not_input_features']) is list:
+            pass
 
     # and add the discovered ones to the list
     GS['not_input_features'] += feature_blacklist
+    #GS['not_input_features'] = [f for f in feature_blacklist if f not in GS['not_input_features']]
 
     def set_randomizer_setting():
         if 'randomizer' in GS:
