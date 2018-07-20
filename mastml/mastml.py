@@ -235,13 +235,18 @@ def mastml_run(conf_path, data_path, outdir):
                 X_, y_ = X, y
 
             pairs = []
+
+            def fix_index(array):
+                return X_.index.values[array] 
+
             def proper_index(splits):
                 """ For example, if X's indexs are [1,4,6] and you split 
                 [ [[0],[1,2]], [[1],[0,2]] ] then we would get 
                 [ [[1],[4,6]], [[4],[1,6]] ] 
                 Needed only for valdation row stuff.
                 """
-                return tuple(tuple(X_.index.values[part] for part in split) for split in splits)
+                return tuple(tuple(fix_index(part) for part in split) for split in splits)
+
 
             # Collect all the grouping columns, `None` if not needed
             splitter_to_group_column = dict()
@@ -252,10 +257,10 @@ def mastml_run(conf_path, data_path, outdir):
                     log.debug(f"    Finding {col} for {name}...")
                     # Locate the grouping column among all dataframes
                     for df_ in [clustered_df, X_, df]:
-                        if is_validation: # also exclude for df_ so that rows match up
-                            df_ = _exclude_validation(df, validation_column)
                         if col in df_.columns:
-                            # there it is
+                            # FOund it!
+                            # include everything, including valdiation, 
+                            # otherwise the split indices will be off when plotting
                             splitter_to_group_column[name] = df_[col].values
                             break
                     # If we didn't find that column anywhere, raise
@@ -268,7 +273,9 @@ def mastml_run(conf_path, data_path, outdir):
 
             # Iterate seperately to do the actual splitting, because the above loop is too big
             for name, instance in splitters:
-                grouping_data = splitter_to_group_column[name]
+                # exlude valdation here, because later we'll need the whole thing out of splitter_to_group_column
+                grouping_data = _exclude_validation(pd.DataFrame(splitter_to_group_column[name]), validation_column)
+                # Do the actual split
                 split = proper_index(instance.split(X_, y_, grouping_data))
                 pairs.append((name, split))
             return pairs, splitter_to_group_column 
