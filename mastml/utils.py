@@ -160,6 +160,10 @@ def _nice_range_helper(lower, upper):
     steps = 8
     diff = abs(lower - upper)
 
+    # special case where lower and upper are the same
+    if diff == 0:
+        return [lower,]
+
     # the exact step needed
     step = diff / steps
 
