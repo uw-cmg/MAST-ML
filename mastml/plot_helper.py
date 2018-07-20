@@ -11,6 +11,7 @@ import math
 import pandas as pd
 import itertools
 import warnings
+from collections import Iterable
 from os.path import join
 from collections import OrderedDict
 from sklearn.model_selection import RepeatedKFold
@@ -122,8 +123,9 @@ def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False,
 def plot_residuals_histogram(y_true, y_pred, savepath,
                              stats, title='residuals histogram', label='residuals'):
 
-    # Set image aspect ratio:
-    fig, ax = make_fig_ax()
+    # make fig and ax, use x_align when placing text so things don't overlap
+    x_align = 0.64
+    fig, ax = make_fig_ax(x_align=x_align)
 
     #ax.set_title(title)
     # do the actual plotting
@@ -143,7 +145,6 @@ def plot_residuals_histogram(y_true, y_pred, savepath,
     #Get num_bins using smarter method
     num_bins = get_histogram_bins(y_df=residuals)
     ax.hist(residuals, bins=num_bins, color='b', edgecolor='k')
-    ax.legend(loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12, frameon=False)
 
     # normal text stuff
     ax.set_xlabel('Value of '+label, fontsize=16)
@@ -152,19 +153,17 @@ def plot_residuals_histogram(y_true, y_pred, savepath,
     # make y axis ints, because it is discrete
     #ax.yaxis.set_major_locator(MaxNLocator(integer=True))
 
-    # shrink those margins
-    fig.tight_layout()
+    plot_stats(fig, stats, x_align=x_align, y_align=0.90)
+    plot_stats(fig, pd.DataFrame(residuals).describe().to_dict()[0], x_align=x_align, y_align=0.60)
 
-    plot_stats(fig, stats, x_align=0.64, y_align=0.90)
-    plot_stats(fig, pd.DataFrame(residuals).describe().to_dict()[0], x_align=0.64, y_align=0.60)
-
-    fig.savefig(savepath, dpi=250, bbox_inches='tight')
+    fig.savefig(savepath, dpi=250)
 
 @ipynb_maker
 def plot_target_histogram(y_df, savepath, title='target histogram', label='target values'):
 
-    # Set image aspect ratio:
-    fig, ax = make_fig_ax(aspect_ratio=0.5)
+    # make fig and ax, use x_align when placing text so things don't overlap
+    x_align = 0.70
+    fig, ax = make_fig_ax(aspect_ratio=0.5, x_align=x_align)
 
     #ax.set_title(title)
 
@@ -173,7 +172,6 @@ def plot_target_histogram(y_df, savepath, title='target histogram', label='targe
 
     # do the actual plotting
     ax.hist(y_df, bins=num_bins, color='b', edgecolor='k')#, histtype='stepfilled')
-    #ax.legend(loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12, frameon=False)
 
     # normal text stuff
     ax.set_xlabel('Value of '+label, fontsize=16)
@@ -182,15 +180,13 @@ def plot_target_histogram(y_df, savepath, title='target histogram', label='targe
     # make y axis ints, because it is discrete
     #ax.yaxis.set_major_locator(MaxNLocator(integer=True))
 
-    # shrink those margins
-    fig.tight_layout()
 
-    plot_stats(fig, dict(y_df.describe()), x_align=0.70, y_align=0.90, fontsize=14)
+    plot_stats(fig, dict(y_df.describe()), x_align=x_align, y_align=0.90, fontsize=14)
     # Save input data stats to csv
     savepath_parse = savepath.split('target_histogram.png')[0]
     y_df.describe().to_csv(savepath_parse+'/''input_data_statistics.csv')
 
-    fig.savefig(savepath, dpi=250, bbox_inches='tight')
+    fig.savefig(savepath, dpi=250)
 
 @ipynb_maker
 def plot_predicted_vs_true(train_triple, test_triple, outdir, label):
@@ -199,49 +195,40 @@ def plot_predicted_vs_true(train_triple, test_triple, outdir, label):
     y_test_true, y_test_pred, test_metrics = test_triple
 
     # make diagonal line from absolute min to absolute max of any data point
-    max1 = max(y_train_true.max(), y_train_pred.max(),
-               y_test_true.max(), y_test_pred.max())
-    min1 = min(y_train_true.min(), y_train_pred.min(),
-               y_test_true.min(), y_test_pred.min())
+    # using round because Ryan did - but won't that ruin small numbers??? TODO this
+    max1 = round(max(y_train_true.max(), y_train_pred.max(),
+               y_test_true.max(), y_test_pred.max()))
+    min1 = round(min(y_train_true.min(), y_train_pred.min(),
+               y_test_true.min(), y_test_pred.min()))
 
     for y_true, y_pred, stats, title_addon in \
             (train_triple+('train',), test_triple+('test',)):
 
-        # Set image aspect ratio:
-        fig, ax = make_fig_ax()
+        # make fig and ax, use x_align when placing text so things don't overlap
+        x_align=0.64
+        fig, ax = make_fig_ax(x_align=x_align)
 
-        #ax.set_title('Predicted vs. True ' + title_addon)
-        ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
 
         # set tick labels
-        maxx = round(max((max(y_pred), max(y_true))))
-        minn = round(min((min(y_pred), min(y_true))))
-        divisor = get_divisor(maxx, minn)
-        max_tick = round_up(maxx, divisor)
-        min_tick = round_down(minn, divisor=divisor)
-        tickvals = np.linspace(min_tick, max_tick, num=5)
-        tickvals = [int(val) for val in tickvals]
-        ax.set_xticks(ticks=tickvals)
-        ax.set_yticks(ticks=tickvals)
-        ticklabels = [str(tick) for tick in tickvals]
-        ax.set_xticklabels(labels=ticklabels, fontsize=14)
-        ax.set_yticklabels(labels=ticklabels, fontsize=14)
+        # notice that we use the same max and min for all three. Don't 
+        # calculate those inside the loop, because all the should be on the same scale and axis
+        _set_tick_labels(ax, max1, min1)
 
-        make_axis_same(ax, max1, min1)
+        # plot diagonal line
+        ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
 
         # do the actual plotting
         ax.scatter(y_true, y_pred, color='blue', edgecolors='black', s=100, zorder=2, alpha=0.7)
-        ax.legend(loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12, frameon=False)
 
         # set axis labels
         ax.set_xlabel('True '+label, fontsize=16)
         ax.set_ylabel('Predicted '+label, fontsize=16)
 
-        plot_stats(fig, stats, x_align=0.64, y_align=0.90)
+        plot_stats(fig, stats, x_align=x_align, y_align=0.90)
 
         filename = 'predicted_vs_true_'+ title_addon + '.png'
         filenames.append(filename)
-        fig.savefig(join(outdir, filename), dpi=250, bbox_inches='tight')
+        fig.savefig(join(outdir, filename), dpi=250)
 
     return filenames
 
@@ -250,82 +237,47 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y', label='tar
     fig, ax = make_fig_ax()
 
     # set tick labels
-
-    #maxx = round(max((max(x), max(y))))
-    #minn = round(min((min(x), min(y))))
-    #divisor_x = get_divisor(max(x), min(x))
-    #max_tick_x = round_up(max(x), divisor_x)
-    #min_tick_x = round_down(min(x), divisor_x)
     max_tick_x = max(x)
-    min_tick_x = min(x)
-    tickvals_x = np.linspace(min_tick_x, max_tick_x, num=5)
-    tickvals_x = [round(float(val),1) for val in tickvals_x]
+    max_tick_y = min(x)
+
     divisor_y = get_divisor(max(y), min(y))
     max_tick_y = round_up(max(y), divisor_y)
     min_tick_y = round_down(min(y), divisor_y)
-    tickvals_y = np.linspace(min_tick_y, max_tick_y, num=5)
-    tickvals_y = [round(float(val),1) for val in tickvals_y]
-    ax.set_xticks(ticks=tickvals_x)
-    ax.set_yticks(ticks=tickvals_y)
-    ticklabels_x = [str(tick) for tick in tickvals_x]
-    ticklabels_y = [str(tick) for tick in tickvals_y]
-    ax.set_xticklabels(labels=ticklabels_x, fontsize=14)
-    ax.set_yticklabels(labels=ticklabels_y, fontsize=14)
+    _set_tick_labels_different(ax, max_tick_x, min_tick_x, max_tick_y, min_tick_y)
 
     if groups is None:
         ax.scatter(x, y, c='b', edgecolor='darkblue', zorder=2, s=100, alpha=0.7)
     else:
-        groupcount = 0
-        for group in np.unique(groups):
+        for groupcount, group in enumerate(np.unique(groups)):
             colors = ['blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow']
             shapes = []
             mask = groups == group
             ax.scatter(x[mask], y[mask], label=group, color=colors[groupcount], s=100, alpha=0.7)
-            groupcount += 1
-        ax.legend(loc='lower left', bbox_to_anchor=(1, -.2))
 
     ax.set_xlabel(xlabel, fontsize=16)
     ax.set_ylabel('Value of '+label, fontsize=16)
-    fig.tight_layout()
-    fig.savefig(savepath, dpi=250, bbox_inches='tight')
+    fig.savefig(savepath, dpi=250)
 
 @ipynb_maker
 def plot_best_worst_split(y_true, best_run, worst_run, savepath,
                           title='Best Worst Overlay', label='target_value'):
-    # Set image aspect ratio:
-    fig, ax = make_fig_ax()
 
-    # make diagonal line from absolute min to absolute max of any data point
-    #all_y = [best_run['y_test_true'], best_run['y_test_pred'],
-    #         worst_run['y_test_true'], worst_run['y_test_pred']]
-    #maxx = max(y.max() for y in all_y)
-    #minn = min(y.min() for y in all_y)
-    maxx = max(y_true)
-    minn = min(y_true)
+    # make fig and ax, use x_align when placing text so things don't overlap
+    x_align = 0.64
+    fig, ax = make_fig_ax(x_align=x_align)
+
+    maxx = round(max(y_true)) # TODO is round the right thing here?
+    minn = round(min(y_true))
     ax.plot([minn, maxx], [minn, maxx], 'k--', lw=2, zorder=1)
 
     # set tick labels
-    maxx = round(maxx)
-    minn = round(minn)
-    divisor = get_divisor(maxx, minn)
-    max_tick = round_up(maxx, divisor)
-    min_tick = round_down(minn, divisor)
-    tickvals = np.linspace(min_tick, max_tick, num=5)
-    tickvals = [int(val) for val in tickvals]
-    ax.set_xticks(ticks=tickvals)
-    ax.set_yticks(ticks=tickvals)
-    ticklabels = [str(tick) for tick in tickvals]
-    ax.set_xticklabels(labels=ticklabels, fontsize=14)
-    ax.set_yticklabels(labels=ticklabels, fontsize=14)
-
-    make_axis_same(ax, maxx, minn)
+    _set_tick_labels(ax, maxx, minn)
 
     # do the actual plotting
     ax.scatter(best_run['y_test_true'],  best_run['y_test_pred'],  c='red',
                alpha=0.7, label='best',  edgecolor='darkred',  zorder=2, s=100)
     ax.scatter(worst_run['y_test_true'], worst_run['y_test_pred'], c='blue',
                alpha=0.7, label='worst', edgecolor='darkblue', zorder=3, s=80)
-    ax.legend(loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12)
 
     # set axis labels
     ax.set_xlabel('True '+label, fontsize=16)
@@ -339,11 +291,10 @@ def plot_best_worst_split(y_true, best_run, worst_run, savepath,
     worst_stats = OrderedDict([('worst Run', None)])
     worst_stats.update(worst_run['test_metrics'])
 
-    plot_stats(fig, best_stats, x_align=0.64, y_align=0.90)
-    plot_stats(fig, worst_stats, x_align=0.64, y_align=0.60)
+    plot_stats(fig, best_stats, x_align=x_align, y_align=0.90)
+    plot_stats(fig, worst_stats, x_align=x_align, y_align=0.60)
 
-    #fig.tight_layout()
-    fig.savefig(savepath, dpi=250, bbox_inches='tight')
+    fig.savefig(savepath, dpi=250)
 
 @ipynb_maker
 def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
@@ -364,7 +315,9 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
         worst_stats[name] = func(new_y_true, worsts)
         best_stats[name] = func(new_y_true, bests)
 
-    fig, ax = make_fig_ax()
+    # make fig and ax, use x_align when placing text so things don't overlap
+    x_align = 15.5/24 #mmm yum
+    fig, ax = make_fig_ax(x_align=x_align)
 
     # gather max and min
     all_vals = [val for val in worsts+bests if val is not None]
@@ -381,16 +334,7 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
     # set tick labels
     maxx = round(max((max(bests), max(worsts), max(new_y_true))))
     minn = round(min((min(bests), min(worsts), min(new_y_true))))
-    divisor = get_divisor(maxx, minn)
-    max_tick = round_up(maxx, divisor)
-    min_tick = round_down(minn, divisor)
-    tickvals = np.linspace(min_tick, max_tick, num=5)
-    tickvals = [int(val) for val in tickvals]
-    ax.set_xticks(ticks=tickvals)
-    ax.set_yticks(ticks=tickvals)
-    ticklabels = [str(tick) for tick in tickvals]
-    ax.set_xticklabels(labels=ticklabels, fontsize=14)
-    ax.set_yticklabels(labels=ticklabels, fontsize=14)
+    _set_tick_labels(ax, maxx, minn)
 
     make_axis_same(ax, max1, min1)
 
@@ -398,12 +342,11 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
                edgecolor='darkred',  zorder=2, s=100)
     ax.scatter(new_y_true, worsts, c='blue', alpha=0.7, label='worst',
                edgecolor='darkblue', zorder=3, s=80)
-    ax.legend(loc='lower right', bbox_to_anchor=(1.25, -0.2), fontsize=12)
 
-    plot_stats(fig, avg_stats, x_align=15.5/24, y_align=0.51, fontsize=10)
-    plot_stats(fig, worst_stats, x_align=15.5/24, y_align=0.73, fontsize=10)
-    plot_stats(fig, best_stats, x_align=15.5/24, y_align=0.95, fontsize=10)
-    fig.savefig(savepath, dpi=250, bbox_inches='tight')
+    plot_stats(fig, avg_stats, x_align=x_align, y_align=0.51, fontsize=10)
+    plot_stats(fig, worst_stats, x_align=x_align, y_align=0.73, fontsize=10)
+    plot_stats(fig, best_stats, x_align=x_align, y_align=0.95, fontsize=10)
+    fig.savefig(savepath, dpi=250)
 
 @ipynb_maker
 def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
@@ -413,7 +356,10 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
     standard_error_means = [nice_std(y_pred)/np.sqrt(len(y_pred))
                             for y_pred in y_pred_list]
     standard_errors = [nice_std(y_pred) for y_pred in y_pred_list]
-    fig, ax = make_fig_ax()
+    
+    # make fig and ax, use x_align when placing text so things don't overlap
+    x_align = 0.64
+    fig, ax = make_fig_ax(x_align=x_align)
 
     # gather max and min
     max1 = max(np.nanmax(y_true), np.nanmax(means))
@@ -429,54 +375,12 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
     # set tick labels
     maxx = round(max((max(means), max(y_true))))
     minn = round(min((min(means), min(y_true))))
-    divisor = get_divisor(maxx, minn)
-    max_tick = round_up(maxx, divisor)
-    min_tick = round_down(minn, divisor)
-    tickvals = np.linspace(min_tick, max_tick, num=5)
-    tickvals = [int(val) for val in tickvals]
-    ax.set_xticks(ticks=tickvals)
-    ax.set_yticks(ticks=tickvals)
-    ticklabels = [str(tick) for tick in tickvals]
-    ax.set_xticklabels(labels=ticklabels, fontsize=14)
-    ax.set_yticklabels(labels=ticklabels, fontsize=14)
-
-    make_axis_same(ax, max1, min1)
+    _set_tick_labels(ax, maxx, minn)
 
     ax.errorbar(y_true, means, yerr=standard_errors, fmt='o', markerfacecolor='blue', markeredgecolor='black', markersize=10,
                 alpha=0.7, capsize=3)
-    ax.legend(loc='lower right', bbox_to_anchor=(1.25, 0), fontsize=12, frameon=False)
 
-    plot_stats(fig, avg_stats, x_align=0.64, y_align=0.90)
-    fig.savefig(savepath, dpi=250, bbox_inches='tight')
-
-@ipynb_maker
-def plot_violin(y_true, y_pred_list, savepath, title='best worst with bars'):
-    # Make new data without empty prediction lists:
-    y_true_new = []
-    y_pred_list_new = []
-    means = []
-    for i in range(y_true.shape[0]):
-        if len(y_pred_list[i]) > 0:
-            y_true_new.append(y_true[i])
-            y_pred_list_new.append(y_pred_list[i])
-            means.append(np.nanmean(y_pred_list[i]))
-
-    fig, ax = make_fig_ax(aspect='auto')
-
-    # gather max and min
-    max1 = max(np.nanmax(y_true_new), np.nanmax(means))
-    min1 = min(np.nanmin(y_true_new), np.nanmin(means))
-
-    make_axis_same(ax, max1, min1)
-
-    # draw dashed horizontal line
-    ax.plot([min1, max1], [min1, max1], 'k--', lw=4, zorder=1)
-
-    ax.set_xlabel('Measured')
-    ax.set_ylabel('Predicted')
-    ax.violinplot(y_pred_list_new, y_true_new)
-
-    plot_stats(fig, dict())
+    plot_stats(fig, avg_stats, x_align=x_align, y_align=0.90)
     fig.savefig(savepath, dpi=250)
 
 def plot_1d_heatmap(xs, heats, savepath, xlabel='x', heatlabel='heats'):
@@ -544,27 +448,15 @@ def plot_sample_learning_curve(model, X, y, scoring, savepath='data_learning_cur
     # set tick labels
     max_x = max(train_sizes)
     min_x = min(train_sizes)
+    # TODO there's a better way
     max_y = round(max(max(mean_train_scores),max(mean_train_scores+train_scores_stdev),max(mean_train_scores-train_scores_stdev),
                      max(mean_test_scores),max(mean_test_scores+test_scores_stdev),max(mean_test_scores-test_scores_stdev)))
     min_y = round(min(min(mean_train_scores),min(mean_train_scores+train_scores_stdev),min(mean_train_scores-train_scores_stdev),
                      min(mean_test_scores),min(mean_test_scores+test_scores_stdev),min(mean_test_scores-test_scores_stdev)))
-    divisor_y = get_divisor(max_y, min_y)
-    divisor_x = get_divisor(max_x, min_x)
-    max_tick_y = round_up(max_y, divisor_y)
-    min_tick_y = round_down(min_y, divisor_y)
-    max_tick_x = round_up(max_x, divisor_x)
-    min_tick_x = round_down(min_x, divisor_x)
-    tickvals_y = np.linspace(min_tick_y, max_tick_y, num=5)
-    tickvals_y = [float(val) for val in tickvals_y]
-    tickvals_x = np.linspace(min_tick_x, max_tick_x, num=5)
-    tickvals_x = [int(val) for val in tickvals_x]
-    ax.set_xticks(ticks=tickvals_x)
-    ax.set_yticks(ticks=tickvals_y)
-    ticklabels_y = [str(tick) for tick in tickvals_y]
-    ticklabels_x = [str(tick) for tick in tickvals_x]
-    ax.set_xticklabels(labels=ticklabels_x, fontsize=14)
-    ax.set_yticklabels(labels=ticklabels_y, fontsize=14)
+    _set_tick_labels_different_2(ax, max_x, min_x, max_y, min_y)
 
+
+    # plot and collect handles h1 and h2 for making legend
     h1 = ax.plot(train_sizes, mean_train_scores, '-o', color='blue', markersize=10, alpha=0.7)[0]
     ax.fill_between(train_sizes, mean_train_scores-train_scores_stdev, mean_train_scores+train_scores_stdev,
                      alpha=0.1, color='blue')
@@ -578,7 +470,7 @@ def plot_sample_learning_curve(model, X, y, scoring, savepath='data_learning_cur
     for s in scoring_name.split('_'):
         scoring_name_nice += s + ' '
     ax.set_ylabel(scoring_name_nice, fontsize=16)
-    fig.savefig(savepath, dpi=250, bbox_to_inches='tight')
+    fig.savefig(savepath, dpi=250)
 
 def plot_feature_learning_curve(model, X, y, scoring=None, savepath='feature_learning_curve.png'):
     X = np.array(X)
@@ -670,6 +562,8 @@ def get_histogram_bins(y_df):
     bin_list = list()
     try:
         for divider in bin_dividers:
+            if divider == 0:
+                continue
             bins = int((y_df.shape[0])/divider)
             if bins < y_df.shape[0]/2:
                 bin_list.append(bins)
@@ -714,7 +608,7 @@ def plot_stats(fig, stats, x_align=0.65, y_align=0.90, font_dict=dict(), fontsiz
     fig.text(x_align, y_align, stat_str,
              verticalalignment='top', wrap=True, fontdict=font_dict, fontproperties=FontProperties(size=fontsize))
 
-def make_fig_ax(aspect_ratio=0.5):
+def make_fig_ax(aspect_ratio=0.5, x_align=0.65):
     """
     Using Object Oriented interface from
     https://matplotlib.org/gallery/api/agg_oo_sgskip.html
@@ -724,11 +618,17 @@ def make_fig_ax(aspect_ratio=0.5):
     fig = Figure(figsize=(w,h))
     FigureCanvas(fig)
 
-    # these two lines are where the magic happens, trapping the figure on the
-    # left side so we can make print text beside it
-    gs = plt.GridSpec(1, 3)
-    #ax = fig.add_subplot(gs[0:, 0:3], aspect=aspect)
-    ax = fig.add_subplot(gs[0:, 0:2])
+    # Set custom positioning, see this guide for more details:
+    # https://python4astronomers.github.io/plotting/advanced.html
+    left   = 0.10
+    bottom = 0.15
+    right  = 0.01
+    top    = 0.05
+    width = x_align - left - right
+    height = 1 - bottom - top
+    ax = fig.add_axes((left, bottom, width, height), frameon=True)
+    fig.set_tight_layout(False)
+    
     return fig, ax
 
 def make_fig_ax_square(aspect='equal', aspect_ratio=1):
@@ -792,3 +692,69 @@ def get_divisor(high, low):
                 else:
                     divisor = 0.001
     return divisor
+
+
+# Credit: https://www.linkedin.com/pulse/ask-recursion-during-coding-interviews-identify-good-talent-veteanu/
+# not used yet, should be used to refactor some of the min and max bits
+def recursive_max(array):
+    return max(
+        max_number(e) if isinstance(e, Iterable) else e
+        for e in array
+    )
+
+def recursive_min(array):
+    return min(
+        max_number(e) if isinstance(e, Iterable) else e
+        for e in array
+    )
+
+def _set_tick_labels(ax, maxx, minn):
+    divisor = get_divisor(maxx, minn)
+    max_tick = round_up(maxx, divisor)
+    min_tick = round_down(minn, divisor)
+    tickvals = np.linspace(min_tick, max_tick, num=5)
+    tickvals = [int(val) for val in tickvals]
+    ax.set_xticks(ticks=tickvals)
+    ax.set_yticks(ticks=tickvals)
+    ticklabels = [str(tick) for tick in tickvals]
+    ax.set_xticklabels(labels=ticklabels, fontsize=14)
+    ax.set_yticklabels(labels=ticklabels, fontsize=14)
+
+
+def _set_tick_labels_different(ax, max_tick_x, min_tick_x, max_tick_y, min_tick_y):
+    " Use this when X and y are over completely diffent ranges. "
+    tickvals_x = np.linspace(min_tick_x, max_tick_x, num=5)
+    tickvals_x = [round(float(val),1) for val in tickvals_x]
+
+    tickvals_y = np.linspace(min_tick_y, max_tick_y, num=5)
+    tickvals_y = [round(float(val),1) for val in tickvals_y]
+
+    ax.set_xticks(ticks=tickvals_x)
+    ax.set_yticks(ticks=tickvals_y)
+
+    ticklabels_x = [str(tick) for tick in tickvals_x]
+    ticklabels_y = [str(tick) for tick in tickvals_y]
+
+    ax.set_xticklabels(labels=ticklabels_x, fontsize=14)
+    ax.set_yticklabels(labels=ticklabels_y, fontsize=14)
+
+# TODO combine with the above. They should be the same thing
+# but someone let them diverge because they didn't want to refactor
+def _set_tick_labels_different_2(ax, max_x, min_x, max_y, min_y):
+    " not suyre how this is different from the above"
+    divisor_y = get_divisor(max_y, min_y)
+    divisor_x = get_divisor(max_x, min_x)
+    max_tick_y = round_up(max_y, divisor_y)
+    min_tick_y = round_down(min_y, divisor_y)
+    max_tick_x = round_up(max_x, divisor_x)
+    min_tick_x = round_down(min_x, divisor_x)
+    tickvals_y = np.linspace(min_tick_y, max_tick_y, num=5)
+    tickvals_y = [float(val) for val in tickvals_y]
+    tickvals_x = np.linspace(min_tick_x, max_tick_x, num=5)
+    tickvals_x = [int(val) for val in tickvals_x]
+    ax.set_xticks(ticks=tickvals_x)
+    ax.set_yticks(ticks=tickvals_y)
+    ticklabels_y = [str(tick) for tick in tickvals_y]
+    ticklabels_x = [str(tick) for tick in tickvals_x]
+    ax.set_xticklabels(labels=ticklabels_x, fontsize=14)
+    ax.set_yticklabels(labels=ticklabels_y, fontsize=14)
