@@ -264,8 +264,8 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y', label='tar
     min_tick_x = min(x)
 
     divisor_y = get_divisor(max(y), min(y))
-    max_tick_y = round_up(max(y), divisor_y)
-    min_tick_y = round_down(min(y), divisor_y)
+    max_tick_y = max(y)
+    min_tick_y = min(y)
     _set_tick_labels_different(ax, max_tick_x, min_tick_x, max_tick_y, min_tick_y)
 
     if groups is None:
@@ -289,7 +289,7 @@ def plot_best_worst_split(y_true, best_run, worst_run, savepath,
     x_align = 0.64
     fig, ax = make_fig_ax(x_align=x_align)
 
-    maxx = max(y_true) # TODO is round the right thing here?
+    maxx = max(y_true)
     minn = min(y_true)
     ax.plot([minn, maxx], [minn, maxx], 'k--', lw=2, zorder=1)
 
@@ -355,11 +355,8 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
     ax.set_ylabel('Predicted '+label, fontsize=16)
 
     # set tick labels
-    maxx = max((max(bests), max(worsts), max(new_y_true)))
-    minn = min((min(bests), min(worsts), min(new_y_true)))
+    maxx, minn = recursive_max_and_min([bests, worsts, new_y_true])
     _set_tick_labels(ax, maxx, minn)
-
-    make_axis_same(ax, max1, min1)
 
     ax.scatter(new_y_true, bests,  c='red',  alpha=0.7, label='best',
                edgecolor='darkred',  zorder=2, s=100)
@@ -397,8 +394,7 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
     ax.set_ylabel('Predicted '+label, fontsize=16)
 
     # set tick labels
-    maxx = max((max(means), max(y_true)))
-    minn = min((min(means), min(y_true)))
+    maxx, minn = recursive_max_and_min([means, y_true])
     _set_tick_labels(ax, maxx, minn)
 
     ax.errorbar(y_true, means, yerr=standard_errors, fmt='o', markerfacecolor='blue', markeredgecolor='black', markersize=10,
@@ -475,11 +471,16 @@ def plot_sample_learning_curve(model, X, y, scoring, savepath='data_learning_cur
     # set tick labels
     max_x = max(train_sizes)
     min_x = min(train_sizes)
-    # TODO there's a better way
-    max_y = max(max(mean_train_scores),max(mean_train_scores+train_scores_stdev),max(mean_train_scores-train_scores_stdev),
-                     max(mean_test_scores),max(mean_test_scores+test_scores_stdev),max(mean_test_scores-test_scores_stdev))
-    min_y = min(min(mean_train_scores),min(mean_train_scores+train_scores_stdev),min(mean_train_scores-train_scores_stdev),
-                     min(mean_test_scores),min(mean_test_scores+test_scores_stdev),min(mean_test_scores-test_scores_stdev))
+
+    max_y, min_y = recursive_max_and_min([
+        mean_train_scores,
+        mean_train_scores + train_scores_stdev,
+        mean_train_scores - train_scores_stdev,
+        mean_test_scores,
+        mean_test_scores + test_scores_stdev,
+        mean_test_scores - test_scores_stdev,
+        ])
+
     _set_tick_labels_different(ax, max_x, min_x, max_y, min_y)
 
 
@@ -560,10 +561,15 @@ def plot_feature_learning_curve(model, X, y, scoring=None, savepath='feature_lea
 
     max_x = max(feature_list)
     min_x = min(feature_list)
-    max_y = round(max(max(train_means),max(np.array(train_means)-np.array(train_stds)),max(np.array(train_means)+np.array(train_stds)),
-                     max(test_means),max(np.array(test_means)-np.array(test_stds)),max(np.array(test_means)+np.array(test_stds))))
-    min_y = round(min(min(train_means),min(np.array(train_means)-np.array(train_stds)),min(np.array(train_means)+np.array(train_stds)),
-                      min(test_means),min(np.array(test_means)-np.array(test_stds)),min(np.array(test_means)+np.array(test_stds))))
+    max_y, min_y = recursive_max_and_min([
+        train_means,
+        np.array(train_means) - np.array(train_stds),
+        np.array(train_means) + np.array(train_stds),
+        test_means,
+        np.array(test_means)-np.array(test_stds),
+        np.array(test_means)+np.array(test_stds),
+        ])
+
     _set_tick_labels_different(ax, max_x, min_x, max_y, min_y)
     ax.set_xlabel('Number of features selected', fontsize=16)
     scoring_name = scoring._score_func.__name__
@@ -680,15 +686,6 @@ def make_fig_ax_square(aspect='equal', aspect_ratio=1):
 
     return fig, ax
 
-def make_axis_same(ax, max1, min1):
-    # fix up dem axis
-    if max1 - min1 > 5:
-        step = (int(max1) - int(min1)) // 3
-        ticks = range(int(min1), int(max1)+step, step)
-    else:
-        ticks = np.linspace(min1, max1, 5)
-    ax.set_xticks(ticks)
-    ax.set_yticks(ticks)
 
 def nice_mean(ls):
     " Returns NaN for empty list "
@@ -734,15 +731,18 @@ def get_divisor(high, low):
 # not used yet, should be used to refactor some of the min and max bits
 def recursive_max(array):
     return max(
-        max_number(e) if isinstance(e, Iterable) else e
+        recursive_max(e) if isinstance(e, Iterable) else e
         for e in array
     )
 
 def recursive_min(array):
     return min(
-        max_number(e) if isinstance(e, Iterable) else e
+        recursive_min(e) if isinstance(e, Iterable) else e
         for e in array
     )
+
+def recursive_max_and_min(array):
+    return recursive_max(array), recursive_min(array)
 
 def _set_tick_labels(ax, maxx, minn):
     " sets x and y to the same range "
