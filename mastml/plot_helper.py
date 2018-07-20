@@ -232,12 +232,12 @@ def plot_predicted_vs_true(train_quad, test_quad, outdir, label):
             ax.scatter(y_true, y_pred, color='blue', edgecolors='black', s=100, zorder=2, alpha=0.7)
         else:
             unique_groups = np.unique(np.concatenate((train_groups, test_groups), axis=0))
-            log.debug('unique groups: ', list(unique_groups))
+            log.debug('unique groups: ' +str(list(unique_groups)))
             for groupcount, group in enumerate(unique_groups):
                 colors = ['blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow']
                 shapes = []
                 mask = groups == group
-                print(y_true[mask], y_pred[mask], sep='\n\n')
+                log.debug(f'{group} group_percent = {np.count_nonzero(mask) / len(groups)}')
                 ax.scatter(y_true[mask], y_pred[mask], label=group, color=colors[groupcount], s=100, alpha=0.7)
 
         # set axis labels
