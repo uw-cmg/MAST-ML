@@ -266,8 +266,8 @@ def plot_best_worst_split(y_true, best_run, worst_run, savepath,
     x_align = 0.64
     fig, ax = make_fig_ax(x_align=x_align)
 
-    maxx = round(max(y_true)) # TODO is round the right thing here?
-    minn = round(min(y_true))
+    maxx = max(y_true) # TODO is round the right thing here?
+    minn = min(y_true)
     ax.plot([minn, maxx], [minn, maxx], 'k--', lw=2, zorder=1)
 
     # set tick labels
@@ -332,8 +332,8 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
     ax.set_ylabel('Predicted '+label, fontsize=16)
 
     # set tick labels
-    maxx = round(max((max(bests), max(worsts), max(new_y_true))))
-    minn = round(min((min(bests), min(worsts), min(new_y_true))))
+    maxx = max((max(bests), max(worsts), max(new_y_true)))
+    minn = min((min(bests), min(worsts), min(new_y_true)))
     _set_tick_labels(ax, maxx, minn)
 
     make_axis_same(ax, max1, min1)
@@ -449,10 +449,10 @@ def plot_sample_learning_curve(model, X, y, scoring, savepath='data_learning_cur
     max_x = max(train_sizes)
     min_x = min(train_sizes)
     # TODO there's a better way
-    max_y = round(max(max(mean_train_scores),max(mean_train_scores+train_scores_stdev),max(mean_train_scores-train_scores_stdev),
-                     max(mean_test_scores),max(mean_test_scores+test_scores_stdev),max(mean_test_scores-test_scores_stdev)))
-    min_y = round(min(min(mean_train_scores),min(mean_train_scores+train_scores_stdev),min(mean_train_scores-train_scores_stdev),
-                     min(mean_test_scores),min(mean_test_scores+test_scores_stdev),min(mean_test_scores-test_scores_stdev)))
+    max_y = max(max(mean_train_scores),max(mean_train_scores+train_scores_stdev),max(mean_train_scores-train_scores_stdev),
+                     max(mean_test_scores),max(mean_test_scores+test_scores_stdev),max(mean_test_scores-test_scores_stdev))
+    min_y = min(min(mean_train_scores),min(mean_train_scores+train_scores_stdev),min(mean_train_scores-train_scores_stdev),
+                     min(mean_test_scores),min(mean_test_scores+test_scores_stdev),min(mean_test_scores-test_scores_stdev))
     _set_tick_labels_different_2(ax, max_x, min_x, max_y, min_y)
 
 
@@ -553,12 +553,12 @@ def plot_feature_learning_curve(model, X, y, scoring=None, savepath='feature_lea
     ax.legend([h1, h2], ['train score', 'test score'], loc='lower right', fontsize=12)
 
     #ax.legend([h1], ['test score'], loc='upper right', fontsize=12)
-    fig.savefig(savepath, dpi=250, bbox_to_inches='tight')
+    fig.savefig(savepath, dpi=DPI, bbox_to_inches='tight')
 
 ### Helpers:
 
 def get_histogram_bins(y_df):
-    bin_dividers = np.linspace(y_df.shape[0], round(0.05*y_df.shape[0]), y_df.shape[0])
+    bin_dividers = np.linspace(y_df.shape[0], 0.05*y_df.shape[0], y_df.shape[0])
     bin_list = list()
     try:
         for divider in bin_dividers:
