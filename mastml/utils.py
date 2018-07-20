@@ -204,14 +204,14 @@ def verbosalize_logger(log, verbosity):
     if verbosity <= 0:
         return
 
-    if verbosity >= 7:
+    if verbosity >= 8:
         while True:
-            log.critical('MSATML'*random.randint(3,2**(verbosity-5)))
+            log.critical('MSATML'*random.randint(3,2**(verbosity-4)))
 
     old_log = log._log
 
     def new_log(level, msg, *args, **kwargs):
-        old_log(level, [None, to_upper, to_full_width, to_leet, deep_fry, deep_fry_2, emojify][verbosity](msg), *args, **kwargs)
+        old_log(level, [None, None, to_upper, to_full_width, to_leet, deep_fry, deep_fry_2, emojify][verbosity](msg), *args, **kwargs)
 
     log._log = new_log
 
