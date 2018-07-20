@@ -36,6 +36,7 @@ from matplotlib.animation import FuncAnimation
 from matplotlib.font_manager import FontProperties
 
 from .utils import RFECV_train_test
+from .utils import nice_range # TODO include this in ipynb_helper
 
 matplotlib.rc('font', size=18, family='sans-serif') # set all font to bigger
 matplotlib.rc('figure', autolayout=True) # turn on autolayout
@@ -479,7 +480,7 @@ def plot_sample_learning_curve(model, X, y, scoring, savepath='data_learning_cur
                      max(mean_test_scores),max(mean_test_scores+test_scores_stdev),max(mean_test_scores-test_scores_stdev))
     min_y = min(min(mean_train_scores),min(mean_train_scores+train_scores_stdev),min(mean_train_scores-train_scores_stdev),
                      min(mean_test_scores),min(mean_test_scores+test_scores_stdev),min(mean_test_scores-test_scores_stdev))
-    _set_tick_labels_different_2(ax, max_x, min_x, max_y, min_y)
+    _set_tick_labels_different(ax, max_x, min_x, max_y, min_y)
 
 
     # plot and collect handles h1 and h2 for making legend
@@ -563,7 +564,7 @@ def plot_feature_learning_curve(model, X, y, scoring=None, savepath='feature_lea
                      max(test_means),max(np.array(test_means)-np.array(test_stds)),max(np.array(test_means)+np.array(test_stds))))
     min_y = round(min(min(train_means),min(np.array(train_means)-np.array(train_stds)),min(np.array(train_means)+np.array(train_stds)),
                       min(test_means),min(np.array(test_means)-np.array(test_stds)),min(np.array(test_means)+np.array(test_stds))))
-    _set_tick_labels_different_2(ax, max_x, min_x, max_y, min_y)
+    _set_tick_labels_different(ax, max_x, min_x, max_y, min_y)
     ax.set_xlabel('Number of features selected', fontsize=16)
     scoring_name = scoring._score_func.__name__
     scoring_name_nice = ''
@@ -744,25 +745,14 @@ def recursive_min(array):
     )
 
 def _set_tick_labels(ax, maxx, minn):
-    divisor = get_divisor(maxx, minn)
-    max_tick = round_up(maxx, divisor)
-    min_tick = round_down(minn, divisor)
-    tickvals = np.linspace(min_tick, max_tick, num=5)
-    tickvals = [int(val) for val in tickvals]
-    ax.set_xticks(ticks=tickvals)
-    ax.set_yticks(ticks=tickvals)
-    ticklabels = [str(tick) for tick in tickvals]
-    ax.set_xticklabels(labels=ticklabels, fontsize=14)
-    ax.set_yticklabels(labels=ticklabels, fontsize=14)
-
+    " sets x and y to the same range "
+    _set_tick_labels_different(ax, maxx, minn, maxx, minn) # I love it when this happens
 
 def _set_tick_labels_different(ax, max_tick_x, min_tick_x, max_tick_y, min_tick_y):
     " Use this when X and y are over completely diffent ranges. "
-    tickvals_x = np.linspace(min_tick_x, max_tick_x, num=5)
-    tickvals_x = [round(float(val),1) for val in tickvals_x]
 
-    tickvals_y = np.linspace(min_tick_y, max_tick_y, num=5)
-    tickvals_y = [round(float(val),1) for val in tickvals_y]
+    tickvals_x = nice_range(min_tick_x, max_tick_x)
+    tickvals_y = nice_range(min_tick_y, max_tick_y)
 
     ax.set_xticks(ticks=tickvals_x)
     ax.set_yticks(ticks=tickvals_y)
@@ -773,23 +763,3 @@ def _set_tick_labels_different(ax, max_tick_x, min_tick_x, max_tick_y, min_tick_
     ax.set_xticklabels(labels=ticklabels_x, fontsize=14)
     ax.set_yticklabels(labels=ticklabels_y, fontsize=14)
 
-# TODO combine with the above. They should be the same thing
-# but someone let them diverge because they didn't want to refactor
-def _set_tick_labels_different_2(ax, max_x, min_x, max_y, min_y):
-    " not suyre how this is different from the above"
-    divisor_y = get_divisor(max_y, min_y)
-    divisor_x = get_divisor(max_x, min_x)
-    max_tick_y = round_up(max_y, divisor_y)
-    min_tick_y = round_down(min_y, divisor_y)
-    max_tick_x = round_up(max_x, divisor_x)
-    min_tick_x = round_down(min_x, divisor_x)
-    tickvals_y = np.linspace(min_tick_y, max_tick_y, num=5)
-    tickvals_y = [float(val) for val in tickvals_y]
-    tickvals_x = np.linspace(min_tick_x, max_tick_x, num=5)
-    tickvals_x = [int(val) for val in tickvals_x]
-    ax.set_xticks(ticks=tickvals_x)
-    ax.set_yticks(ticks=tickvals_y)
-    ticklabels_y = [str(tick) for tick in tickvals_y]
-    ticklabels_x = [str(tick) for tick in tickvals_x]
-    ax.set_xticklabels(labels=ticklabels_x, fontsize=14)
-    ax.set_yticklabels(labels=ticklabels_y, fontsize=14)

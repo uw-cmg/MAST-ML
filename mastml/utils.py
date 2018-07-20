@@ -140,6 +140,104 @@ class FileNotFoundError(MastError): # sorry for re-using builtin name
 class InvalidValue(MastError):
     pass
 
+
+## Magic math stuff for plot_helper to make ranges
+
+from math import log, floor, ceil
+
+def nice_range(lower, upper):
+    """ Pass in two numbers, and get back a list of numbers,
+    including both endpoints. Uses nice looking steps,
+    ie 0.1 or 0.5 or sometimes 2.
+    """
+    flipped = 1 # set to -1 for inverted
+    if upper < lower:
+        upper, lower = lower, upper
+        flipped = -1
+    return [_int_if_int(x) for x in _nice_range_helper(lower, upper)][::flipped]
+
+def _nice_range_helper(lower, upper):
+    steps = 8
+    diff = abs(lower - upper)
+
+    # the exact step needed
+    step = diff / steps
+
+    # a rough estimate of best step
+    step = _nearest_pow_ten(step) # whole decimal increments
+
+    # tune in one the best step size
+    factors = [0.1, 0.2, 0.5, 1, 2, 5, 10]
+
+    # use this to minimize how far we are from ideal step size
+    def best_one(steps_factor):
+        steps_count, factor = steps_factor
+        return abs(steps_count - steps)
+    n_steps, best_factor = min([(diff / (step * f), f) for f in factors], key = best_one)
+
+    #print('should see n steps', ceil(n_steps + 2))
+    # multiply in the optimal factor for getting as close to ten steps as we can
+    step = step * best_factor
+
+    # make the bounds look nice
+    lower = _three_sigfigs(lower)
+    upper = _three_sigfigs(upper)
+
+    start = _round_up(lower, step)
+
+    # prepare for iteration
+    x = start # pointless init
+    i = 0
+
+    # itereate until we reach upper
+    while x < upper - step:
+        x = start + i * step
+        yield _three_sigfigs(x) # using sigfigs because of floating point error
+        i += 1
+
+    # finish off with ending bound
+    yield upper
+
+def _three_sigfigs(x):
+    return _n_sigfigs(x, 3)
+
+def _n_sigfigs(x, n):
+    sign = 1
+    if x == 0:
+        return 0
+    if x < 0: # case for negatives
+        x = -x
+        sign = -1
+    if x < 1:
+        base = n - round(log(x, 10))
+    else:
+        base = (n-1) - round(log(x, 10))
+    return sign * round(x, base)
+
+def _nearest_pow_ten(x):
+    sign = 1
+    if x == 0:
+        return 0
+    if x < 0: # case for negatives
+        x = -x
+        sign = -1
+    return sign*10**ceil(log(x, 10))
+
+def _int_if_int(x):
+    if int(x) == x:
+        return int(x)
+    return x
+
+def _round_up(x, inc):
+    sign = 1
+    if x < 0: # case for negative
+        x = -x
+        sign = -1
+
+    return sign * inc * ceil(x / inc)
+
+
+
 ## Joke functions:
 
 ### String formatting funcs for inserting into log._log when in verbose mode
