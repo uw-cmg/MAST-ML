@@ -219,9 +219,8 @@ def plot_predicted_vs_true(train_quad, test_quad, outdir, label):
         x_align=0.64
         fig, ax = make_fig_ax(x_align=x_align)
 
-
         # set tick labels
-        # notice that we use the same max and min for all three. Don't 
+        # notice that we use the same max and min for all three. Don't
         # calculate those inside the loop, because all the should be on the same scale and axis
         _set_tick_labels(ax, max1, min1)
 
@@ -259,7 +258,7 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y', label='tar
 
     # set tick labels
     max_tick_x = max(x)
-    max_tick_y = min(x)
+    min_tick_x = min(x)
 
     divisor_y = get_divisor(max(y), min(y))
     max_tick_y = round_up(max(y), divisor_y)
@@ -367,6 +366,7 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
     plot_stats(fig, avg_stats, x_align=x_align, y_align=0.51, fontsize=10)
     plot_stats(fig, worst_stats, x_align=x_align, y_align=0.73, fontsize=10)
     plot_stats(fig, best_stats, x_align=x_align, y_align=0.95, fontsize=10)
+
     fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
 
 @ipynb_maker
@@ -402,24 +402,27 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
                 alpha=0.7, capsize=3)
 
     plot_stats(fig, avg_stats, x_align=x_align, y_align=0.90)
+
     fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
 
 def plot_1d_heatmap(xs, heats, savepath, xlabel='x', heatlabel='heats'):
-    fig, ax = make_fig_ax(aspect='auto')
+    fig, ax = make_fig_ax()
     ax.bar(xs, heats)
     ax.set_xlabel(xlabel)
     ax.set_ylabel(heatlabel)
+
     fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
 
 
 def plot_2d_heatmap(xs, ys, heats, savepath,
                     xlabel='x', ylabel='y', heatlabel='heat'):
-    fig, ax = make_fig_ax(aspect='auto')
+    fig, ax = make_fig_ax()
     scat = ax.scatter(xs, ys, c=heats) # marker='o', lw=0, s=20, cmap=cm.plasma
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     cb = fig.colorbar(scat)
     cb.set_label(heatlabel)
+
     fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
 
 def plot_3d_heatmap(xs, ys, zs, heats, savepath,
@@ -491,6 +494,7 @@ def plot_sample_learning_curve(model, X, y, scoring, savepath='data_learning_cur
     for s in scoring_name.split('_'):
         scoring_name_nice += s + ' '
     ax.set_ylabel(scoring_name_nice, fontsize=16)
+
     fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
 
 def plot_feature_learning_curve(model, X, y, scoring=None, savepath='feature_learning_curve.png'):
@@ -551,6 +555,13 @@ def plot_feature_learning_curve(model, X, y, scoring=None, savepath='feature_lea
     gs = plt.GridSpec(1, 1)
     ax = fig.add_subplot(gs[0:, 0:])
 
+    max_x = max(feature_list)
+    min_x = min(feature_list)
+    max_y = round(max(max(train_means),max(np.array(train_means)-np.array(train_stds)),max(np.array(train_means)+np.array(train_stds)),
+                     max(test_means),max(np.array(test_means)-np.array(test_stds)),max(np.array(test_means)+np.array(test_stds))))
+    min_y = round(min(min(train_means),min(np.array(train_means)-np.array(train_stds)),min(np.array(train_means)+np.array(train_stds)),
+                      min(test_means),min(np.array(test_means)-np.array(test_stds)),min(np.array(test_means)+np.array(test_stds))))
+    _set_tick_labels_different_2(ax, max_x, min_x, max_y, min_y)
     ax.set_xlabel('Number of features selected', fontsize=16)
     scoring_name = scoring._score_func.__name__
     scoring_name_nice = ''
@@ -574,6 +585,7 @@ def plot_feature_learning_curve(model, X, y, scoring=None, savepath='feature_lea
     ax.legend([h1, h2], ['train score', 'test score'], loc='lower right', fontsize=12)
 
     #ax.legend([h1], ['test score'], loc='upper right', fontsize=12)
+
     fig.savefig(savepath, dpi=DPI, bbox_to_inches='tight')
 
 ### Helpers:
