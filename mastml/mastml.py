@@ -63,7 +63,7 @@ def mastml_run(conf_path, data_path, outdir):
     # The df is used by feature generators, clusterers, and grouping_column to 
     # create more features for x.
     # X is model input, y is target feature for model
-    df, X, y = data_loader.load_data(data_path,
+    df, X, X_noinput, y = data_loader.load_data(data_path,
                                      conf['GeneralSetup']['input_features'],
                                      conf['GeneralSetup']['target_feature'],
                                      conf['GeneralSetup']['not_input_features'])
@@ -147,7 +147,7 @@ def mastml_run(conf_path, data_path, outdir):
             log.info("Saving generated data to csv...")
             log.debug(f'generated cols: {dataframe.columns}')
             filename = join(outdir, "generated_features.csv")
-            pd.concat([dataframe, y], 1).to_csv(filename, index=False)
+            pd.concat([dataframe, X_noinput, y], 1).to_csv(filename, index=False)
             return dataframe
         generated_df = generate_features()
 
@@ -155,7 +155,7 @@ def mastml_run(conf_path, data_path, outdir):
             dataframe = _remove_constant_features(generated_df)
             log.info("Saving generated data without constant columns to csv...")
             filename = join(outdir, "generated_features_no_constant_columns.csv")
-            pd.concat([dataframe, y], 1).to_csv(filename, index=False)
+            pd.concat([dataframe, X_noinput, y], 1).to_csv(filename, index=False)
             return dataframe
         generated_df = remove_constants()
 
@@ -198,7 +198,7 @@ def mastml_run(conf_path, data_path, outdir):
             make_feature_vs_target_plots()
 
         log.info("Saving clustered data to csv...")
-        pd.concat([clustered_df, y], 1).to_csv(join(outdir, "clusters.csv"), index=False)
+        pd.concat([clustered_df, X_noinput, y], 1).to_csv(join(outdir, "clusters.csv"), index=False)
 
         def make_normalizer_selector_dataframe_triples():
             triples = []
@@ -208,7 +208,7 @@ def mastml_run(conf_path, data_path, outdir):
                 log.info("Saving normalized data to csv...")
                 dirname = join(outdir, normalizer_name)
                 os.mkdir(dirname)
-                pd.concat([X_normalized, y], 1).to_csv(join(dirname, "normalized.csv"), index=False)
+                pd.concat([X_normalized, X_noinput, y], 1).to_csv(join(dirname, "normalized.csv"), index=False)
                 log.info("Running selectors...")
                 for selector_name, selector_instance in selectors:
                     log.info(f"    Running selector {selector_name} ...")
@@ -218,7 +218,7 @@ def mastml_run(conf_path, data_path, outdir):
                     log.info("    Saving selected features to csv...")
                     dirname = join(outdir, normalizer_name, selector_name)
                     os.mkdir(dirname)
-                    pd.concat([X_selected, y], 1).to_csv(join(dirname, "selected.csv"), index=False)
+                    pd.concat([X_selected, X_noinput, y], 1).to_csv(join(dirname, "selected.csv"), index=False)
                     triples.append((normalizer_name, selector_name, X_selected))
             return triples
         normalizer_selector_dataframe_triples = make_normalizer_selector_dataframe_triples()
@@ -359,6 +359,7 @@ def mastml_run(conf_path, data_path, outdir):
 
                 # save them as 'predicitons.csv'
                 validation_predictions_series = pd.Series(validation_predictions, name='clean_predictions', index=validation_X.index)
+                #validation_noinput_series = pd.Series(X_noinput.index, index=validation_X.index)
                 pd.concat([validation_X,  validation_y,  validation_predictions_series],  1)\
                         .to_csv(join(path, 'predictions.csv'),  index=False)
             else:
@@ -368,10 +369,12 @@ def mastml_run(conf_path, data_path, outdir):
             # Save train and test data and results to csv:
             log.info("             Saving train/test data and predictions to csv...")
             train_pred_series = pd.DataFrame(train_pred, columns=['train_pred'], index=train_indices)
-            pd.concat([train_X, train_y, train_pred_series], 1)\
+            train_noinput_series = pd.DataFrame(X_noinput, index=train_indices)
+            pd.concat([train_X, train_y, train_pred_series, train_noinput_series], 1)\
                     .to_csv(join(path, 'train.csv'), index=False)
             test_pred_series = pd.DataFrame(test_pred,   columns=['test_pred'],  index=test_indices)
-            pd.concat([test_X,  test_y,  test_pred_series],  1)\
+            test_noinput_series = pd.DataFrame(X_noinput, index=test_indices)
+            pd.concat([test_X,  test_y,  test_pred_series, test_noinput_series],  1)\
                     .to_csv(join(path, 'test.csv'),  index=False)
 
 

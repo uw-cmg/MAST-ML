@@ -40,8 +40,12 @@ def load_data(file_path, input_features=None, target_feature=None, feature_black
     log.info('blacklisted features, either from "not_input_features" or a "grouping_column":' +
                  str(feature_blacklist))
     # take blacklisted features out of X:
+    X_noinput_dict = dict()
     for feature in set(feature_blacklist):
+        X_noinput_dict[feature] = X[feature]
         X = X.drop(feature, axis=1)
+
+    X_noinput = pd.DataFrame(X_noinput_dict)
 
     df = df.drop(target_feature, axis=1)
 
@@ -49,4 +53,4 @@ def load_data(file_path, input_features=None, target_feature=None, feature_black
     df = df.dropna(axis=1, how='any')
     X = X.dropna(axis=1, how='any')
 
-    return df, X, y
+    return df, X, X_noinput, y
