@@ -151,6 +151,13 @@ def nice_range(lower, upper):
     ie 0.1 or 0.5 or sometimes 2.
     """
     flipped = 1 # set to -1 for inverted
+
+    # Case for validation where nan is passed in
+    if np.isnan(lower):
+        lower = 0
+    if np.isnan(upper):
+        upper = 0.1
+
     if upper < lower:
         upper, lower = lower, upper
         flipped = -1
