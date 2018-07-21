@@ -320,9 +320,10 @@ def plot_best_worst_split(y_true, best_run, worst_run, savepath,
 
     # do the actual plotting
     ax.scatter(best_run['y_test_true'],  best_run['y_test_pred'],  c='red',
-               alpha=0.7, label='best',  edgecolor='darkred',  zorder=2, s=100)
+               alpha=0.7, label='best test',  edgecolor='darkred',  zorder=2, s=100)
     ax.scatter(worst_run['y_test_true'], worst_run['y_test_pred'], c='blue',
-               alpha=0.7, label='worst', edgecolor='darkblue', zorder=3, s=80)
+               alpha=0.7, label='worst test', edgecolor='darkblue', zorder=3, s=60)
+    ax.legend(loc='lower right', fontsize=12)
 
     # set axis labels
     ax.set_xlabel('True '+label, fontsize=16)
@@ -386,10 +387,11 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
     minn = round(float(minn), rounder(maxx-minn))
     _set_tick_labels(ax, maxx, minn)
 
-    ax.scatter(new_y_true, bests,  c='red',  alpha=0.7, label='best',
+    ax.scatter(new_y_true, bests,  c='red',  alpha=0.7, label='best test',
                edgecolor='darkred',  zorder=2, s=100)
-    ax.scatter(new_y_true, worsts, c='blue', alpha=0.7, label='worst',
-               edgecolor='darkblue', zorder=3, s=80)
+    ax.scatter(new_y_true, worsts, c='blue', alpha=0.7, label='worst test',
+               edgecolor='darkblue', zorder=3, s=60)
+    ax.legend(loc='lower right', fontsize=12)
 
     plot_stats(fig, avg_stats, x_align=x_align, y_align=0.51, fontsize=10)
     plot_stats(fig, worst_stats, x_align=x_align, y_align=0.73, fontsize=10)
