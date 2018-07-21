@@ -366,7 +366,7 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
     fig, ax = make_fig_ax(x_align=x_align)
 
     # gather max and min
-    all_vals = [val for val in worsts+bests if val is not None]
+    #all_vals = [val for val in worsts+bests if val is not None]
     max1 = max(y_true)
     min1 = min(y_true)
 
@@ -380,11 +380,9 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
     # set tick labels
     #maxx = max((max(bests), max(worsts), max(new_y_true)))
     #minn = min((min(bests), min(worsts), min(new_y_true)))
-    #maxx = round(max(new_y_true))
-    #minn = round(min(new_y_true))
-    maxx, minn = recursive_max_and_min([bests, worsts, new_y_true])
-    maxx = round(float(maxx), rounder(maxx-minn))
-    minn = round(float(minn), rounder(maxx-minn))
+    #maxx, minn = recursive_max_and_min([bests, worsts, new_y_true])
+    maxx = round(float(max1), rounder(max1-min1))
+    minn = round(float(min1), rounder(max1-min1))
     _set_tick_labels(ax, maxx, minn)
 
     ax.scatter(new_y_true, bests,  c='red',  alpha=0.7, label='best test',
