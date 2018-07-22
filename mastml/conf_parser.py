@@ -135,7 +135,7 @@ def parse_conf_file(filepath):
     def set_default_metrics():
         if 'metrics' not in GS or GS['metrics'] == 'Auto':
             if is_classification:
-                GS['metrics'] = ['accuracy', 'precision_weighted', 'recall_weighted']
+                GS['metrics'] = ['accuracy', 'precision_binary', 'recall_binary', 'f1_binary']
             else:
                 GS['metrics'] = ['R2', 'root_mean_squared_error',
                                  'mean_absolute_error', 'rmse_over_stdev']

@@ -101,9 +101,10 @@ def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False,
     #classes = sorted(list(set(y_true).intersection(set(y_pred))))
     classes = sorted(list(set(y_true).union(set(y_pred))))
 
-    fig, ax = make_fig_ax()
+    x_align = 0.64
+    fig, ax = make_fig_ax(x_align=x_align)
 
-    ax.set_title(title)
+    #ax.set_title(title)
 
     # create the colorbar, not really needed but everyones got 'em
     mappable = ax.imshow(cm, interpolation='nearest', cmap=cmap)
@@ -112,10 +113,10 @@ def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False,
     # set x and y ticks to labels
     tick_marks = range(len(classes))
     ax.set_xticks(tick_marks)
-    ax.set_xticklabels(classes, rotation='vertical', fontsize=18)
+    ax.set_xticklabels(classes, rotation='horizontal', fontsize=18)
 
     ax.set_yticks(tick_marks)
-    ax.set_yticklabels(classes, rotation='vertical', fontsize=18)
+    ax.set_yticklabels(classes, rotation='horizontal', fontsize=18)
 
     # draw number in the boxes
     fmt = '.2f' if normalize else 'd'
@@ -126,7 +127,7 @@ def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False,
                 color="white" if cm[i, j] > thresh else "black")
 
     # plots the stats
-    plot_stats(fig, stats)
+    plot_stats(fig, stats, x_align=0.60, y_align=0.90)
 
     ax.set_ylabel('True label')
     ax.set_xlabel('Predicted label')

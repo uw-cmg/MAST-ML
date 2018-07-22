@@ -77,19 +77,19 @@ regression_score_funcs = {
 
 nice_names = {
     # classification:
-    'accuracy': 'accuracy',
-    'f1_binary': 'f1',
+    'accuracy': 'Accuracy',
+    'f1_binary': '$F_1$',
     'f1_macro': 'f1_macro',
     'f1_micro': 'f1_micro',
     'f1_samples': 'f1_samples',
     'f1_weighted': 'f1_weighted',
     'log_loss': 'log_loss',
-    'precision_binary': 'precision',
+    'precision_binary': 'Precision',
     'precision_macro': 'prec_macro',
     'precision_micro': 'prec_micro',
     'precision_samples': 'prec_samples',
     'precision_weighted': 'prec_weighted',
-    'recall_binary': 'rcl',
+    'recall_binary': 'Recall',
     'recall_macro': 'rcl_macro',
     'recall_micro': 'rcl_micro',
     'recall_samples': 'rcl_samples',
