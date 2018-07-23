@@ -347,8 +347,25 @@ def mastml_run(conf_path, data_path, outdir):
             log.info("             Fitting model and making predictions...")
             model.fit(train_X, train_y)
             #joblib.dump(model, join(path, "trained_model.pkl"))
-            train_pred = model.predict(train_X)
-            test_pred  = model.predict(test_X)
+            if is_classification:
+                # For classification, need probabilty of prediction to make accurate ROC curve (and other predictions??).
+                #TODO:Consider using only predict_proba and not predict() method for classif problems. Have exit escape if probability set to False here.
+                # See stackoverflow post:
+                #https: // stats.stackexchange.com / questions / 329857 / what - is -the - difference - between - decision
+                # - function - predict - proba - and -predict - fun
+                params = model.get_params()
+                if params['probability'] == True:
+                    train_pred_proba = model.predict_proba(train_X)
+                    test_pred_proba = model.predict_proba(test_X)
+                else:
+                    log.error('You need to perform classification with model param probability=True enabled for accurate'
+                                ' predictions. Please reset this parameter and re-run MASTML')
+                    exit()
+                train_pred = model.predict(train_X)
+                test_pred = model.predict(test_X)
+            else:
+                train_pred = model.predict(train_X)
+                test_pred  = model.predict(test_X)
 
             # here is where we need to collect validation stats
             if is_validation:
@@ -420,6 +437,10 @@ def mastml_run(conf_path, data_path, outdir):
                 split_result['prediction_metrics'] = prediction_metrics
             else:
                 split_result['prediction_metrics'] = None
+
+            if is_classification:
+                split_result['y_train_pred_proba'] = train_pred_proba
+                split_result['y_test_pred_proba'] = test_pred_proba
 
             log.info("             Making plots...")
             if PlotSettings['train_test_plots']:
