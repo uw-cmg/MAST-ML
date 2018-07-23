@@ -112,7 +112,7 @@ def parse_conf_file(filepath):
 
     return conf
 
-def load_data(data_path, input_features, target_feature, istest_feature):
+def load_data(data_path, input_features, target_feature, istest_feature, not_input_features):
     df = pd.read_csv(data_path)
     if len(df.columns) != len(set(df.columns)):
         raise Exception("Repeated column name in input data")
@@ -120,15 +120,27 @@ def load_data(data_path, input_features, target_feature, istest_feature):
         raise Exception("Input data must have at least three columns")
 
     if input_features is None: # if user omits it or uses 'Auto'
-        input_features = [col for col in df.columns if col!=target_feature and col!=istest_feature]
+        input_features = [col for col in df.columns if col!=target_feature and col!=istest_feature and col not in not_input_features]
 
-    return df, input_features, target_feature, istest_feature
+    return df, input_features, target_feature, istest_feature, not_input_features
 
 def do_run(conf_path, data_path, outdir):
     conf = parse_conf_file(conf_path)
-    df, input_features, target_feature, istest_feature = \
+    df, input_features, target_feature, istest_feature, not_input_features = \
             load_data(data_path, **conf['GeneralSetup'])
 
+    #TODO: have better way like in main MASTML. This is just temporary to strip out not_input_features
+    # take blacklisted features out of X:
+    #print(df.shape)
+    X_noinput_dict = dict()
+    for feature in df.columns.values:
+        #print(feature)
+        if feature not in not_input_features:
+            X_noinput_dict[feature] = df[feature]
+            #X = X.drop(feature, axis=1)
+
+    df = pd.DataFrame(X_noinput_dict)
+    #print(df.shape)
     def run_grid_search():
         dh = DataHandler(df, input_features=input_features, target_feature=target_feature)
         model = conf['GridSearch'].pop('model')
