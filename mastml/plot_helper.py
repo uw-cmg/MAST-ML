@@ -23,7 +23,7 @@ warnings.filterwarnings(action="ignore", module="scipy",
                         message="^internal gelsd")
 
 import numpy as np
-from sklearn.metrics import confusion_matrix, roc_curve, auc
+from sklearn.metrics import confusion_matrix, roc_curve, auc, precision_recall_curve
 from sklearn.model_selection import learning_curve
 from sklearn.feature_selection import RFECV # for feature learning curve
 
@@ -74,13 +74,13 @@ def make_train_test_plots(run, path, is_classification, label, groups=None):
                               join(path, title+'.png'), test_metrics,
                               title=title)
         title = 'train_roc_curve'
-        plot_roc_curve(y_train_true, y_train_pred_proba,
-                       join(path, title+'png'), test_metrics,
-                            title=title)
+        plot_roc_curve(y_train_true, y_train_pred_proba, join(path, title+'png'))
         title = 'test_roc_curve'
-        plot_roc_curve(y_test_true, y_test_pred_proba,
-                       join(path, title+'png'), test_metrics,
-                            title=title)
+        plot_roc_curve(y_test_true, y_test_pred_proba, join(path, title+'png'))
+        title = 'train_precision_recall_curve'
+        plot_precision_recall_curve(y_train_true, y_train_pred_proba, join(path, title+'png'))
+        title = 'test_precision_recall_curve'
+        plot_precision_recall_curve(y_test_true, y_test_pred_proba, join(path, title + 'png'))
     else: # is_regression
         plot_predicted_vs_true((y_train_true, y_train_pred, train_metrics, train_groups),
                           (y_test_true,  y_test_pred,  test_metrics, test_groups), 
@@ -144,7 +144,8 @@ def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False,
     ax.set_xlabel('Predicted label')
     fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
 
-def plot_roc_curve(y_true, y_pred, savepath, stats, title):
+@ipynb_maker
+def plot_roc_curve(y_true, y_pred, savepath):
     #TODO: have work when probability=False in model params. Suggest user set probability=True!!
     #classes = sorted(list(set(y_true).union(set(y_pred))))
     #n_classes = y_pred.shape[1]
@@ -174,6 +175,35 @@ def plot_roc_curve(y_true, y_pred, savepath, stats, title):
     ax.legend(loc="lower right", fontsize=12)
     #plot_stats(fig, stats, x_align=0.60, y_align=0.90)
     fig.savefig(savepath, dpi=DPI, bbox_to_inches='tight')
+
+@ipynb_maker
+def plot_precision_recall_curve(y_true, y_pred, savepath):
+    # Note this only works with probability predictions of the classifier labels.
+    classes = list(np.unique(y_true))
+
+    precision = dict()
+    recall = dict()
+    #roc_auc = dict()
+
+    for i in range(len(classes)):
+        precision[i], recall[i], _ = precision_recall_curve(y_true, y_pred[:, i])
+
+    x_align = 0.95
+    fig, ax = make_fig_ax(aspect_ratio=0.66, x_align=x_align, left=0.15)
+    colors = ['blue', 'red']
+    #for i in range(len(classes)):
+    #    ax.plot(fpr[i], tpr[i], color=colors[i], lw=2, label='ROC curve class '+str(i)+' (area = %0.2f)' % roc_auc[i])
+    ax.step(recall[1], precision[1], color=colors[0], lw=2, label='Precision-recall curve')
+    #ax.fill_between(recall[1], precision[1], alpha=0.4, color=colors[0])
+    ax.set_xticks(np.linspace(0, 1, 5))
+    ax.set_yticks(np.linspace(0, 1, 5))
+    _set_tick_labels(ax, maxx=1, minn=0)
+    ax.set_xlabel('Recall', fontsize='16')
+    ax.set_ylabel('Precision', fontsize='16')
+    ax.legend(loc="upper right", fontsize=12)
+    #plot_stats(fig, stats, x_align=0.60, y_align=0.90)
+    fig.savefig(savepath, dpi=DPI, bbox_to_inches='tight')
+    return
 
 @ipynb_maker
 def plot_residuals_histogram(y_true, y_pred, savepath,
