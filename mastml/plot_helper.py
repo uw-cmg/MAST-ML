@@ -508,44 +508,59 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
     fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
 
 def plot_1d_heatmap(xs, heats, savepath, xlabel='x', heatlabel='heats'):
-    fig, ax = make_fig_ax()
-    ax.bar(xs, heats)
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(heatlabel)
+    # Escape from error of passing tuples when optimzing neural net
+    #TODO have more general solution
+    try:
+        fig, ax = make_fig_ax()
+        ax.bar(xs, heats)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(heatlabel)
 
-    fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
+        fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
+    except TypeError:
+        pass
 
 
 def plot_2d_heatmap(xs, ys, heats, savepath,
                     xlabel='x', ylabel='y', heatlabel='heat'):
-    fig, ax = make_fig_ax()
-    scat = ax.scatter(xs, ys, c=heats) # marker='o', lw=0, s=20, cmap=cm.plasma
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
-    cb = fig.colorbar(scat)
-    cb.set_label(heatlabel)
+    # Escape from error of passing tuples when optimzing neural net
+    #TODO have more general solution
+    try:
+        fig, ax = make_fig_ax()
+        scat = ax.scatter(xs, ys, c=heats) # marker='o', lw=0, s=20, cmap=cm.plasma
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        cb = fig.colorbar(scat)
+        cb.set_label(heatlabel)
 
-    fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
+        fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
+    except TypeError:
+        pass
 
 def plot_3d_heatmap(xs, ys, zs, heats, savepath,
                     xlabel='x', ylabel='y', zlabel='z', heatlabel='heat'):
-    # this import has side effects, needed for 3d plots:
-    from mpl_toolkits.mplot3d import Axes3D
-    # Set image aspect ratio:
-    # (eeds to be wide enough or plot will shrink really skinny)
-    w, h = figaspect(0.6)
-    fig = Figure(figsize=(w,h))
-    FigureCanvas(fig) # modifies fig in place
-    ax = fig.add_subplot(111, projection='3d')
+    # Escape from error of passing tuples when optimzing neural net
+    # TODO have more general solution
+    try:
+        # this import has side effects, needed for 3d plots:
+        from mpl_toolkits.mplot3d import Axes3D
+        # Set image aspect ratio:
+        # (eeds to be wide enough or plot will shrink really skinny)
+        w, h = figaspect(0.6)
+        fig = Figure(figsize=(w,h))
+        FigureCanvas(fig) # modifies fig in place
+        ax = fig.add_subplot(111, projection='3d')
 
-    scat = ax.scatter(xs, ys, zs, c=heats)
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
-    ax.set_zlabel(zlabel)
-    cb = fig.colorbar(scat)
-    cb.set_label(heatlabel)
+        scat = ax.scatter(xs, ys, zs, c=heats)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        ax.set_zlabel(zlabel)
+        cb = fig.colorbar(scat)
+        cb.set_label(heatlabel)
 
-    fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
+        fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
+    except TypeError:
+        pass
 
     def animate(i):
         ax.view_init(elev=10., azim=i)
