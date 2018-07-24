@@ -11,6 +11,7 @@ import copy
 import logging
 import sys
 import time
+import itertools
 from sklearn.externals import joblib
 import sklearn.model_selection
 
@@ -538,14 +539,19 @@ class GridSearch:
         self.opt_param_list=list()
         self.nonopt_param_list=list()
         pop_size = None
+
+        #print(self.param_strings)
+
         for paramct, paramstr in enumerate(self.param_strings):
+            #print(paramct, paramstr)
+
             logger.debug(paramstr)
             paramsplit = paramstr.strip().split(";")
             location = paramsplit[0].strip()
             paramname = paramsplit[1].strip()
             paramtype = paramsplit[2].strip().lower()
-            if not(paramtype in ['int','float','bool','str']):
-                raise ValueError("Parameter type %s must be one of int, float, bool, or str. Exiting." % paramtype)
+            if not(paramtype in ['int','float','bool','str','tuple']):
+                raise ValueError("Parameter type %s must be one of int, float, bool, str, or tuple. Exiting." % paramtype)
             rangetype = paramsplit[3].strip().lower()
             if not(rangetype in ['discrete','continuous','continuous-log']):
                 raise ValueError("Range type %s must be 'discrete' or 'continuous' or 'continuous-log'. Exiting." % rangetype)
@@ -556,12 +562,46 @@ class GridSearch:
             combined_name = "%s.%s" % (location, paramname)
             if combined_name in self.opt_dict.keys():
                 raise KeyError("Parameter %s for optimization of %s appears to be listed twice. Exiting." % (paramname, location))
+            #print(gridinfo)
+            #print(paramtype)
             gridsplit = gridinfo.split(":") #split colon-delimited
-            gridsplit = np.array(gridsplit, paramtype)
+            #print(gridsplit)
+            if paramtype == 'tuple':
+                gridsplit = [int(i) for i in gridsplit]
+                gridsplit = np.array(gridsplit)
+            else:
+                gridsplit = np.array(gridsplit, paramtype)
+            #print(gridsplit)
+            #print(gridsplit.shape, type(gridsplit))
             if rangetype == 'discrete':
                 gridvals = gridsplit
+                #print(gridvals)
             elif rangetype == 'continuous':
-                gridvals = np.linspace(start=gridsplit[0],
+                if paramtype == 'tuple':
+                    meshes = list()
+                    if gridsplit.shape[0]%3 != 0:
+                        raise ValueError("Tuple designation should appear in groups of 3 as start:end:spacing for each value in the tuple."
+                                         "For example, to denote a tuple of hidden layer sizes ranging from (20, 2) to (200, 10) with spacings of 5,"
+                                         "use 20:200:5:2:10;5")
+                    num_tuple = int(gridsplit.shape[0]/3)
+                    for i in range(num_tuple):
+                        meshes.append((list(np.linspace(gridsplit[i+i*(num_tuple-1)],gridsplit[i+1+i*(num_tuple-1)],gridsplit[i+2+i*(num_tuple-1)], dtype='int'))))
+                    #print('meshes')
+                    #print(meshes)
+                    gridvals = list()
+                    for mesh in meshes:
+                        other_meshes = meshes
+                        other_meshes.remove(mesh)
+                        tup = list(itertools.product(mesh, *other_meshes))
+                        gridvals.append(tup)
+                    gridvals = gridvals[0]
+                    for tup in gridvals:
+                        #print(tup, len(tup))
+                        if len(tup) != num_tuple:
+                            gridvals.remove(tup)
+                    #print(gridvals)
+                else:
+                    gridvals = np.linspace(start=gridsplit[0],
                                         stop=gridsplit[1],
                                         num=gridsplit[2],
                                         endpoint=True,
@@ -572,6 +612,7 @@ class GridSearch:
                                         num=gridsplit[2],
                                         endpoint=True,
                                         dtype=paramtype)
+            #print(gridvals)
             numvals = len(gridvals)
             if numvals < 1:
                 raise ValueError("Parameter %s does not evaluate to having any values." % paramstr)
