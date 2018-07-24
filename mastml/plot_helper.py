@@ -358,6 +358,7 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y', label='tar
     #divisor_y = get_divisor(max(y), min(y))
     #max_tick_y = round_up(max(y), divisor_y)
     #min_tick_y = round_down(min(y), divisor_y)
+
     _set_tick_labels_different(ax, max_tick_x, min_tick_x, max_tick_y, min_tick_y)
 
     if groups is None:
@@ -495,9 +496,12 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
     ax.set_ylabel('Predicted '+label, fontsize=16)
 
     # set tick labels
-    maxx, minn = recursive_max_and_min([means, y_true])
+    #maxx, minn = recursive_max_and_min([means, y_true])
+    maxx = max(y_true)
+    minn = min(y_true)
     maxx = round(float(maxx), rounder(maxx-minn))
     minn = round(float(minn), rounder(maxx-minn))
+    #print(maxx, minn, rounder(maxx - minn))
     _set_tick_labels(ax, maxx, minn)
 
     ax.errorbar(y_true, means, yerr=standard_errors, fmt='o', markerfacecolor='blue', markeredgecolor='black', markersize=10,
@@ -900,6 +904,9 @@ def _set_tick_labels_different(ax, max_tick_x, min_tick_x, max_tick_y, min_tick_
     tickvals_x = nice_range(min_tick_x, max_tick_x)
     tickvals_y = nice_range(min_tick_y, max_tick_y)
 
+    tickvals_x = _clean_tick_labels(tickvals=tickvals_x, delta=max_tick_x-min_tick_x)
+    tickvals_y = _clean_tick_labels(tickvals=tickvals_y, delta=max_tick_y - min_tick_y)
+
     ax.set_xticks(ticks=tickvals_x)
     ax.set_yticks(ticks=tickvals_y)
 
@@ -909,3 +916,13 @@ def _set_tick_labels_different(ax, max_tick_x, min_tick_x, max_tick_y, min_tick_
     ax.set_xticklabels(labels=ticklabels_x, fontsize=14)
     ax.set_yticklabels(labels=ticklabels_y, fontsize=14)
 
+def _clean_tick_labels(tickvals, delta):
+    tickvals_clean = list()
+    if delta >= 100:
+        for i, val in enumerate(tickvals):
+            if i <= len(tickvals)-1:
+                if tickvals[i]-tickvals[i-1] >= 100:
+                    tickvals_clean.append(val)
+    else:
+        tickvals_clean = tickvals
+    return tickvals_clean
