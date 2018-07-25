@@ -760,6 +760,12 @@ class GridSearch:
                 for param in params[loc].keys():
                     colname = "%s.%s" % (loc, param)
                     val = params[loc][param]
+                    #Need to make tuples into single element to insert in df
+                    if type(val) is tuple:
+                        val_cat = ''
+                        for v in val:
+                            val_cat += str(v)+','
+                        val = val_cat
                     flat_results.loc[pct, colname] = val
             flat_results.loc[pct, 'rmse'] = rmse
             flat_results.loc[pct, 'key'] = pkey
