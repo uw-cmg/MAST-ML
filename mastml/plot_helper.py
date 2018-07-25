@@ -365,11 +365,21 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y', label='tar
         ax.scatter(x, y, c='b', edgecolor='darkblue', zorder=2, s=100, alpha=0.7)
     else:
         for groupcount, group in enumerate(np.unique(groups)):
-            colors = ['blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow']
-            shapes = []
+            colors = ['blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow',
+                      'blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow',
+                      'blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow',
+                      'blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow',
+                      'blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow',
+                      'blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow']
+            markers = ['o', 'o', 'o', 'o', 'o', 'o', 'o',
+                       'v', 'v', 'v', 'v', 'v', 'v', 'v',
+                       '^', '^', '^', '^', '^', '^', '^',
+                       's', 's', 's', 's', 's', 's', 's',
+                       'p', 'p', 'p', 'p', 'p', 'p', 'p',
+                       'h', 'h', 'h', 'h', 'h', 'h', 'h']
             mask = groups == group
-            ax.scatter(x[mask], y[mask], label=group, color=colors[groupcount], s=100, alpha=0.7)
-            ax.legend(bbox_to_handle=(1.1, 0))
+            ax.scatter(x[mask], y[mask], label=group, color=colors[groupcount], marker=markers[groupcount], s=100, alpha=0.7)
+            ax.legend(loc='lower right', fontsize=12)
 
     ax.set_xlabel(xlabel, fontsize=16)
     ax.set_ylabel('Value of '+label, fontsize=16)

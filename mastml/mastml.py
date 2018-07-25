@@ -198,7 +198,10 @@ def mastml_run(conf_path, data_path, outdir):
             make_feature_vs_target_plots()
 
         log.info("Saving clustered data to csv...")
-        pd.concat([clustered_df, X_noinput, y], 1).to_csv(join(outdir, "clusters.csv"), index=False)
+        # Add new cluster info to X df
+        if not clustered_df.empty:
+            X = pd.concat([X, clustered_df], axis=1)
+        pd.concat([X, y], 1).to_csv(join(outdir, "clusters.csv"), index=False)
 
         def make_normalizer_selector_dataframe_triples():
             triples = []

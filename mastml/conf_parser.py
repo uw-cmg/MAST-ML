@@ -101,8 +101,10 @@ def parse_conf_file(filepath):
                 if 'grouping_column' in SS.keys():
                     logging.debug('found grouping_feature: ' + SS['grouping_column'])
                     yield SS['grouping_column']
-    feature_blacklist = list(collect_grouping_features())
-
+    # Issue here where if clusters are automatically generated, new column is made but isn't in intitial df, even though
+    # listed as grouping_feature. Here, just have to remember to put grouping_feature names in not_input_features
+    #feature_blacklist = list(collect_grouping_features())
+    feature_blacklist = list()
     # default not_input_features to a list
     if 'not_input_features' not in GS:
         GS['not_input_features'] = list()
