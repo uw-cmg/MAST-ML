@@ -220,7 +220,7 @@ def plot_residuals_histogram(y_true, y_pred, savepath,
 
     #Output residuals data and stats to spreadsheet
     path = os.path.dirname(savepath)
-    pd.DataFrame(residuals).describe().to_csv(path+'/'+'residual_statistics.csv')
+    pd.DataFrame(residuals).describe().to_csv(os.path.join(path,'residual_statistics.csv'))
     pd.DataFrame(residuals).to_csv(path+'/'+'residuals.csv')
 
     #Get num_bins using smarter method
