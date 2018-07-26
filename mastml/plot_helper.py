@@ -8,6 +8,7 @@ A plot can also take an "outdir" instead of a savepath. If this is the case,
 it must return a list of filenames where it saved the figures.
 """
 import math
+import os
 import pandas as pd
 import itertools
 import warnings
@@ -218,15 +219,9 @@ def plot_residuals_histogram(y_true, y_pred, savepath,
     residuals = y_true - y_pred
 
     #Output residuals data and stats to spreadsheet
-    split = savepath.split('/')
-    pathlist = split[0:len(split)-1]
-    path = ''
-    for p in pathlist:
-        if p != '':
-            path += '/'+str(p)
-    savepath_parse = savepath.split('/')[-1].split('.png')[0]
-    pd.DataFrame(residuals).describe().to_csv(path+'/'+savepath_parse+'_'+'residual_statistics.csv')
-    pd.DataFrame(residuals).to_csv(path+'/'+savepath_parse+'_'+'residuals.csv')
+    path = os.path.dirname(savepath)
+    pd.DataFrame(residuals).describe().to_csv(path+'/'+'residual_statistics.csv')
+    pd.DataFrame(residuals).to_csv(path+'/'+'residuals.csv')
 
     #Get num_bins using smarter method
     num_bins = get_histogram_bins(y_df=residuals)
