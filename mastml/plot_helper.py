@@ -705,6 +705,7 @@ def plot_feature_learning_curve(model, X, y, scoring=None, savepath='feature_lea
     max_y = round(float(max_y), rounder(max_y-min_y))
     min_y = round(float(min_y), rounder(max_y-min_y))
     _set_tick_labels_different(ax, max_x, min_x, max_y, min_y)
+
     ax.set_xlabel('Number of features selected', fontsize=16)
     scoring_name = scoring._score_func.__name__
     scoring_name_nice = ''
@@ -909,8 +910,12 @@ def _set_tick_labels_different(ax, max_tick_x, min_tick_x, max_tick_y, min_tick_
     tickvals_x = nice_range(min_tick_x, max_tick_x)
     tickvals_y = nice_range(min_tick_y, max_tick_y)
 
-    tickvals_x = _clean_tick_labels(tickvals=tickvals_x, delta=max_tick_x-min_tick_x)
-    tickvals_y = _clean_tick_labels(tickvals=tickvals_y, delta=max_tick_y - min_tick_y)
+    if tickvals_x[-1]-tickvals_x[len(tickvals_x)-2] < tickvals_x[len(tickvals_x)-3]-tickvals_x[len(tickvals_x)-4]:
+        tickvals_x = tickvals_x[:-1]
+    if tickvals_y[-1]-tickvals_y[len(tickvals_y)-2] < tickvals_y[len(tickvals_y)-3]-tickvals_y[len(tickvals_y)-4]:
+        tickvals_y = tickvals_y[:-1]
+    #tickvals_x = _clean_tick_labels(tickvals=tickvals_x, delta=max_tick_x-min_tick_x)
+    #tickvals_y = _clean_tick_labels(tickvals=tickvals_y, delta=max_tick_y - min_tick_y)
 
     ax.set_xticks(ticks=tickvals_x)
     ax.set_yticks(ticks=tickvals_y)
