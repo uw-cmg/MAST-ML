@@ -23,6 +23,7 @@ from citrination_client import CitrinationClient, PifQuery, SystemQuery, Chemica
 # locate path to directory containing AtomicNumber.table, AtomicRadii.table AtomicVolume.table, etc
 # (needs to do it the hard way becuase python -m sets cwd to wherever python is ran from)
 import mastml
+from mastml import utils
 log = logging.getLogger('mastml')
 print('mastml dir: ', mastml.__path__)
 MAGPIE_DATA_PATH = os.path.join(mastml.__path__[0], '../magpie/')
