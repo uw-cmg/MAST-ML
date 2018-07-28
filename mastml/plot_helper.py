@@ -516,6 +516,28 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
 
     fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
 
+def plot_metric_vs_group(metric, groups, stats, avg_stats, savepath):
+    # make fig and ax, use x_align when placing text so things don't overlap
+    x_align = 0.64
+    fig, ax = make_fig_ax(x_align=x_align)
+
+    # do the actual plotting
+    ax.scatter(groups,  stats,  c='blue', alpha=0.7, edgecolor='darkblue',  zorder=2, s=100)
+
+    # set axis labels
+    ax.set_xlabel('Group', fontsize=16)
+    ax.set_ylabel(metric, fontsize=16)
+    ax.set_xticklabels(labels=groups, fontsize=14)
+    plot_stats(fig, avg_stats, x_align=x_align, y_align=0.90)
+
+    # Save data stats to csv
+    savepath_parse = savepath.split(str(metric)+'_vs_group.png')[0]
+    pd.DataFrame(groups, stats).to_csv(os.path.join(savepath_parse, str(metric)+'_vs_group.csv'))
+
+    fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
+    return
+
+
 def plot_1d_heatmap(xs, heats, savepath, xlabel='x', heatlabel='heats'):
     # Escape from error of passing tuples when optimzing neural net
     #TODO have more general solution

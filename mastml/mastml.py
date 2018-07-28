@@ -470,9 +470,14 @@ def mastml_run(conf_path, data_path, outdir):
                 test_values  = [split_result['test_metrics'][name]  for split_result in split_results]
                 train_stats[name] = (np.mean(train_values), np.std(train_values))
                 test_stats[name]  = (np.mean(test_values), np.std(test_values))
+                test_stats_single = dict()
+                test_stats_single[name] = (np.mean(test_values), np.std(test_values))
+                if grouping_data is not None:
+                    unique_groups = np.union1d(split_results[0]['test_groups'], split_results[0]['train_groups'])
+                    plot_helper.plot_metric_vs_group(metric=name, groups=unique_groups, stats=test_values,
+                                                     avg_stats = test_stats_single, savepath=join(main_path, str(name)+'_vs_group.png'))
             return train_stats, test_stats
         avg_train_stats, avg_test_stats = make_train_test_average_and_std_stats()
-
         log.info("    Making best/worst plots...")
         def get_best_worst_median_runs():
             # sort splits by the test score of first metric:
