@@ -144,6 +144,12 @@ def parse_conf_file(filepath):
     set_default_metrics()
 
     # Turn names of metrics into actual metrics:
+    # If only one metric, map string to list for parsing
+    if type(GS['metrics']) is str:
+        el = GS['metrics']
+        GS['metrics'] = list()
+        GS['metrics'].append(el)
+
     GS['metrics'] = metrics.check_and_fetch_names(GS['metrics'], is_classification)
 
     def change_score_func_strings_into_actual_score_funcs():
