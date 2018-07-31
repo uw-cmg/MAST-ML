@@ -264,13 +264,14 @@ def mastml_run(conf_path, data_path, outdir):
                     for df_ in [clustered_df, X_, df]:
                         if col in df_.columns:
                             # FOund it!
-
                             # Get groups for plotting first
                             splitter_to_group_column[name] = df_[col].values
-
-                            if is_validation: 
-                                # exclude for df_ so that rows match up in splitter
-                                df_ = _exclude_validation(df, validation_column)
+                            if is_validation:
+                                if df_ is not clustered_df:
+                                    # exclude for df_ so that rows match up in splitter
+                                    df_ = _exclude_validation(df, validation_column)
+                                elif df_ is clustered_df:
+                                    df_ = _exclude_validation(df_, validation_column)
 
                             # and use the no-validation one for the split
                             grouping_data = df_[col].values
@@ -281,6 +282,7 @@ def mastml_run(conf_path, data_path, outdir):
                     else:
                         raise utils.MissingColumnError(f'DataSplit {name} needs column {col}, which '
                                                        f'was neither generated nor given by input')
+
                 # If we don't need grouping column
                 else: 
                     splitter_to_group_column[name] = None
