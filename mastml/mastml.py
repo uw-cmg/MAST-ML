@@ -358,13 +358,16 @@ def mastml_run(conf_path, data_path, outdir):
                 # See stackoverflow post:
                 #https: // stats.stackexchange.com / questions / 329857 / what - is -the - difference - between - decision
                 # - function - predict - proba - and -predict - fun
-                params = model.get_params()
-                if params['probability'] == True:
+
+                #params = model.get_params()
+                #if params['probability'] == True:
+                try:
                     train_pred_proba = model.predict_proba(train_X)
                     test_pred_proba = model.predict_proba(test_X)
-                else:
+                except:
                     log.error('You need to perform classification with model param probability=True enabled for accurate'
-                                ' predictions. Please reset this parameter and re-run MASTML')
+                                ' predictions, if your model has the probability param (e.g. RandomForestClassifier does not. '
+                              'Please reset this parameter as applicable and re-run MASTML')
                     exit()
                 train_pred = model.predict(train_X)
                 test_pred = model.predict(test_X)
