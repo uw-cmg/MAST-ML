@@ -63,9 +63,10 @@ def mastml_run(conf_path, data_path, outdir):
     # The df is used by feature generators, clusterers, and grouping_column to 
     # create more features for x.
     # X is model input, y is target feature for model
-    df, X, X_noinput, y = data_loader.load_data(data_path,
+    df, X, X_noinput, X_grouped, y = data_loader.load_data(data_path,
                                      conf['GeneralSetup']['input_features'],
                                      conf['GeneralSetup']['target_feature'],
+                                     conf['GeneralSetup']['grouping_feature'],
                                      conf['GeneralSetup']['not_input_features'])
 
     # randomly shuffly y values if randomizer is on
@@ -99,7 +100,13 @@ def mastml_run(conf_path, data_path, outdir):
                           model_finder.name_to_constructor,
                           'model')
     models = OrderedDict(models) # for easier modification
+    print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+    print(conf['FeatureSelection'])
+    print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
     _snatch_models(models, conf['FeatureSelection'])
+    print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+    print(conf['FeatureSelection'])
+    print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
 
     def snatch_model_for_learning_curve():
         PS = conf['PlotSettings']
@@ -122,12 +129,20 @@ def mastml_run(conf_path, data_path, outdir):
     normalizers = _instantiate(conf['FeatureNormalization'],
                                feature_normalizers.name_to_constructor,
                                'featurenormalizer')
+    splitters   = _instantiate(conf['DataSplits'],
+                               data_splitters.name_to_constructor,
+                               'datasplit', X_grouped=X_grouped)
+
+    splitters = OrderedDict(splitters)  # for easier modification
+    _snatch_splitters(splitters, conf['FeatureSelection'], X_grouped=X_grouped)
+    print('AFTER SPLITTERS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+    print(conf['FeatureSelection'])
+    print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+
     selectors   = _instantiate(conf['FeatureSelection'],
                                feature_selectors.name_to_constructor,
                                'featureselector')
-    splitters   = _instantiate(conf['DataSplits'],
-                               data_splitters.name_to_constructor,
-                               'datasplit')
+    #exit()
 
     log.debug(f'generators: \n{generators}')
     log.debug(f'clusterers: \n{clusterers}')
@@ -522,7 +537,7 @@ def mastml_run(conf_path, data_path, outdir):
     log.info("Making html file of all runs stats...")
     _save_all_runs(runs, outdir)
 
-def _instantiate(kwargs_dict, name_to_constructor, category):
+def _instantiate(kwargs_dict, name_to_constructor, category, X_grouped=None):
     """
     Uses name_to_constructor to instantiate every item in kwargs_dict and return
     the list of instantiations
@@ -532,7 +547,24 @@ def _instantiate(kwargs_dict, name_to_constructor, category):
     for long_name, (name, kwargs) in kwargs_dict.items():
         log.debug(f'instantiation: {long_name}, {name}({kwargs})')
         try:
+            if name == 'LeaveOneGroupOut':
+                if 'groups' in kwargs.keys():
+                    # Need to map group names to groups field
+                    X_grouped_asnumber = _grouping_column_to_group_number(X_grouped=X_grouped)
+                    #print(X_grouped_asnumber)
+                    #print(X_grouped_asnumber.shape)
+                    kwargs['groups'] = X_grouped_asnumber
+                    name_to_constructor[name][kwargs] = kwargs
+                    #print(type(kwargs['groups']))
+                    #print(kwargs)
+            print('!!!!!!!!!!!!!KWARGS!!!!!!!!!!!!!!!!')
+            print(long_name, name, kwargs)
+            print('!!!!!!!!!!!!!!!!!!!!!!!!')
+            print(name_to_constructor[name])
+            print(inspect.signature(name_to_constructor[name]))
+
             instantiations.append((long_name, name_to_constructor[name](**kwargs)))
+
         except TypeError:
             log.info(f"ARGUMENTS FOR '{name}': {inspect.signature(name_to_constructor[name])}")
             raise utils.InvalidConfParameters(
@@ -542,7 +574,20 @@ def _instantiate(kwargs_dict, name_to_constructor, category):
             raise utils.InvalidConfSubSection(
                 f"There is no {category} called '{name}'."
                 f"All valid {category}: {list(name_to_constructor.keys())}")
+
     return instantiations
+
+def _grouping_column_to_group_number(X_grouped):
+    group_list = X_grouped.values.reshape((1, -1))
+    unique_groups = np.unique(group_list).tolist()
+    group_dict = dict()
+    group_list_asnumber = list()
+    for i, group in enumerate(unique_groups):
+        group_dict[group] = i+1
+    for i, group in enumerate(group_list.tolist()[0]):
+        group_list_asnumber.append(group_dict[group])
+    X_grouped_asnumber = np.asarray(group_list_asnumber)
+    return X_grouped_asnumber
 
 def _snatch_models(models, conf_feature_selection):
     log.debug(f'models, pre-snatching: \n{models}')
@@ -556,6 +601,20 @@ def _snatch_models(models, conf_feature_selection):
                 raise utils.MastError(f"The selector {selector_name} specified model {model_name},"
                                       f"which was not found in the [Models] section")
     log.debug(f'models, post-snatching: \n{models}')
+
+def _snatch_splitters(splitters, conf_feature_selection):
+    log.debug(f'cv, pre-snatching: \n{splitters}')
+    for selector_name, (_, args_dict) in conf_feature_selection.items():
+        # Here: add snatch to cv object for feature selection with RFECV
+        if 'cv' in args_dict:
+            cv_name = args_dict['cv']
+            try:
+                args_dict['cv'] = splitters[cv_name]
+                del splitters[cv_name]
+            except KeyError:
+                raise utils.MastError(f"The selector {selector_name} specified cv splitter {cv_name},"
+                                      f"which was not found in the [DataSplits] section")
+    log.debug(f'cv, post-snatching: \n{splitters}')
 
 def _extract_grouping_column_names(splitter_to_kwargs):
     splitter_to_group_names = dict()

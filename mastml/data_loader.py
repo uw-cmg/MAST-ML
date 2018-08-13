@@ -6,7 +6,7 @@ import pandas as pd
 import logging
 log = logging.getLogger('mastml')
 
-def load_data(file_path, input_features=None, target_feature=None, feature_blacklist=list()):
+def load_data(file_path, input_features=None, target_feature=None, grouping_feature = None, feature_blacklist=list()):
     " Loads in csv from filename and ensures required columns are present. Returns dataframe. "
 
     # Load data
@@ -47,10 +47,15 @@ def load_data(file_path, input_features=None, target_feature=None, feature_black
 
     X_noinput = pd.DataFrame(X_noinput_dict)
 
+    if grouping_feature:
+        X_grouped = pd.DataFrame(df[grouping_feature])
+    else:
+        X_grouped = None
+
     df = df.drop(target_feature, axis=1)
 
     # Clean data here to remove NaN. Replace later with good cleaning routines
     df = df.dropna(axis=1, how='any')
     X = X.dropna(axis=1, how='any')
 
-    return df, X, X_noinput, y
+    return df, X, X_noinput, X_grouped, y
