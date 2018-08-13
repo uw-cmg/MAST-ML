@@ -58,8 +58,11 @@ def root_mean_squared_error(y_true, y_pred):
     return sm.mean_squared_error(y_true, y_pred)**0.5
 regression_metrics['root_mean_squared_error'] = (False, root_mean_squared_error)
 
-def rmse_over_stdev(y_true, y_pred):
-    stdev = np.std(y_true)
+def rmse_over_stdev(y_true, y_pred, train_y=None):
+    if train_y is not None:
+        stdev = np.std(train_y)
+    else:
+        stdev = np.std(y_true)
     rmse = root_mean_squared_error(y_true, y_pred)
     return rmse / stdev
 regression_metrics['rmse_over_stdev'] = (False, rmse_over_stdev)

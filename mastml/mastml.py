@@ -133,8 +133,8 @@ def mastml_run(conf_path, data_path, outdir):
                                data_splitters.name_to_constructor,
                                'datasplit', X_grouped=X_grouped)
 
-    splitters = OrderedDict(splitters)  # for easier modification
-    _snatch_splitters(splitters, conf['FeatureSelection'], X_grouped=X_grouped)
+    #splitters = OrderedDict(splitters)  # for easier modification
+    #_snatch_splitters(splitters, conf['FeatureSelection'])
     print('AFTER SPLITTERS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
     print(conf['FeatureSelection'])
     print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
@@ -432,9 +432,15 @@ def mastml_run(conf_path, data_path, outdir):
                                             for name, (_, function) in metrics_dict.items())
                 test_metrics = OrderedDict((name, function(test_y, test_pred))
                                            for name, (_, function) in metrics_dict.items())
+                # Need to pass y_train data to get rmse/sigma for test rmse and sigma of train y
+                if 'rmse_over_stdev' in metrics_dict.keys():
+                    test_metrics['rmse_over_stdev'] = metrics_dict['rmse_over_stdev'][1](test_y, test_pred, train_y)
+
                 if is_validation:
                     prediction_metrics = OrderedDict((name, function(validation_y, validation_predictions))
                                            for name, (_, function) in metrics_dict.items())
+                    if 'rmse_over_stdev' in prediction_metrics.keys():
+                        prediction_metrics['rmse_over_stdev'] = metrics_dict['rmse_over_stdev'][1](test_y, test_pred, train_y)
 
             split_result = OrderedDict(
                 normalizer = split_path[-4],
