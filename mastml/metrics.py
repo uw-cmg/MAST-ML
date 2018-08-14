@@ -67,6 +67,20 @@ def rmse_over_stdev(y_true, y_pred, train_y=None):
     return rmse / stdev
 regression_metrics['rmse_over_stdev'] = (False, rmse_over_stdev)
 
+def adjusted_r2_score(y_true, y_pred, n_features=None):
+    r2 = r2_score(y_true, y_pred)
+    # n is sample size
+    n = len(y_true)
+    # p is number of features
+    p = n_features
+    try:
+        r2_score_adj = 1 - (((1-r2)*(n-1))/(n-p-1))
+    except:
+        # No n_features given, just output NaN
+        r2_score_adj = 'NaN'
+    return r2_score_adj
+regression_metrics['R2_adjusted'] = (False, adjusted_r2_score)
+
 classification_score_funcs = {
     'chi2': fs.chi2, # Compute chi-squared stats between each non-negative feature and class.
     'f_classif': fs.f_classif, # Compute the ANOVA F-value for the provided sample.
@@ -107,7 +121,8 @@ nice_names = {
     'root_mean_squared_error': 'RMSE',
     'rmse_over_stdev': r'RMSE/$\sigma_y$',
     'R2': '$R^2$',
-    'R2_noint': '$R^2$_noint',
+    'R2_noint': '$R^2_{noint}$',
+    'R2_adjusted': '$R^2_{adjusted}$'
 }
 
 def check_and_fetch_names(metric_names, is_classification):

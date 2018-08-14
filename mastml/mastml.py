@@ -464,6 +464,9 @@ def mastml_run(conf_path, data_path, outdir):
                 # Need to pass y_train data to get rmse/sigma for test rmse and sigma of train y
                 if 'rmse_over_stdev' in metrics_dict.keys():
                     test_metrics['rmse_over_stdev'] = metrics_dict['rmse_over_stdev'][1](test_y, test_pred, train_y)
+                if 'R2_adjusted' in metrics_dict.keys():
+                    test_metrics['R2_adjusted'] = metrics_dict['R2_adjusted'][1](test_y, test_pred, test_X.shape[1])
+                    train_metrics['R2_adjusted'] = metrics_dict['R2_adjusted'][1](train_y, train_pred, train_X.shape[1])
 
                 split_result = OrderedDict(
                     normalizer=split_path[-4],
