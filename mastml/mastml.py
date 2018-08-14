@@ -11,6 +11,7 @@ import warnings
 from datetime import datetime
 from collections import OrderedDict
 from os.path import join # We use join tons
+from functools import reduce
 
 import numpy as np
 import pandas as pd
@@ -76,10 +77,17 @@ def mastml_run(conf_path, data_path, outdir):
         y = y.sample(frac=1).reset_index(drop=True)
 
     # get parameters out for 'validation_column'
-    is_validation = 'validation_column' in conf['GeneralSetup']
+    is_validation = 'validation_columns' in conf['GeneralSetup']
     if is_validation:
-        validation_column_name = conf['GeneralSetup']['validation_column']
-        validation_column = df[validation_column_name]
+        if type(conf['GeneralSetup']['validation_columns']) is list:
+            validation_column_names = list(conf['GeneralSetup']['validation_columns'])
+        elif type(conf['GeneralSetup']['validation_columns']) is str:
+            validation_column_names = list()
+            validation_column_names.append(conf['GeneralSetup']['validation_columns'][:])
+        validation_columns = dict()
+        for validation_column_name in validation_column_names:
+            validation_columns[validation_column_name] = df[validation_column_name]
+        validation_columns = pd.DataFrame(validation_columns)
 
 
     if conf['PlotSettings']['target_histogram']:
@@ -245,11 +253,21 @@ def mastml_run(conf_path, data_path, outdir):
         ## Collect grouping columns, splitter_to_group_names is a dict of splitter name to grouping col
         log.debug("Finding splitter-required columns in data...")
         def make_splittername_splitlist_pairs():
-            n = 5
-
             # exclude the testing_only rows from use in splits
             if is_validation:
-                X_, y_ = _exclude_validation(X, validation_column), _exclude_validation(y, validation_column)
+                validation_X = list()
+                validation_y = list()
+                for validation_column_name in validation_column_names:
+                    #X_, y_ = _exclude_validation(X, validation_columns[validation_column_name]), _exclude_validation(y, validation_columns[validation_column_name])
+                    validation_X.append(pd.DataFrame(_exclude_validation(X, validation_columns[validation_column_name])))
+                    validation_y.append(pd.DataFrame(_exclude_validation(y, validation_columns[validation_column_name])))
+                idxy_list = list()
+                for i, _ in enumerate(validation_y):
+                    idxy_list.append(validation_y[i].index)
+                # Get intersection of indices between all prediction columns
+                intersection = reduce(np.intersect1d, (i for i in idxy_list))
+                X_ = X.iloc[intersection]
+                y_ = y.iloc[intersection]
             else:
                 X_, y_ = X, y
 
@@ -282,11 +300,26 @@ def mastml_run(conf_path, data_path, outdir):
                             # Get groups for plotting first
                             splitter_to_group_column[name] = df_[col].values
                             if is_validation:
+                                _df_list = list()
                                 if df_ is not clustered_df:
                                     # exclude for df_ so that rows match up in splitter
-                                    df_ = _exclude_validation(df, validation_column)
+                                    for validation_column_name in validation_column_names:
+                                        df_ = _exclude_validation(df, validation_columns[validation_column_name])
+                                        _df_list.append(df_)
                                 elif df_ is clustered_df:
-                                    df_ = _exclude_validation(df_, validation_column)
+                                    # merge the cluster data df_ to full df
+                                    df[col] = df_
+                                    for validation_column_name in validation_column_names:
+                                        df_ = _exclude_validation(df_, validation_columns[validation_column_name])
+                                        _df_list.append(df_)
+
+                                # Get df_ based on index intersection between all df's in _df_list
+                                idxy_list = list()
+                                for i, _ in enumerate(_df_list):
+                                    idxy_list.append(_df_list[i].index)
+                                # Get intersection of indices between all prediction columns
+                                intersection = reduce(np.intersect1d, (i for i in idxy_list))
+                                df_ = df.iloc[intersection]
 
                             # and use the no-validation one for the split
                             grouping_data = df_[col].values
@@ -392,16 +425,21 @@ def mastml_run(conf_path, data_path, outdir):
 
             # here is where we need to collect validation stats
             if is_validation:
-                validation_X = _only_validation(X, validation_column)
-                validation_y = _only_validation(y, validation_column)
-                log.info("             Making predictions on prediction_only data...")
-                validation_predictions = model.predict(validation_X)
+                validation_predictions_list = list()
+                validation_y_forpred_list = list()
+                for validation_column_name in validation_column_names:
+                    validation_X_forpred = _only_validation(X, validation_columns[validation_column_name])
+                    validation_y_forpred = _only_validation(y, validation_columns[validation_column_name])
+                    log.info("             Making predictions on prediction_only data...")
+                    validation_predictions = model.predict(validation_X_forpred)
+                    validation_predictions_list.append(validation_predictions)
+                    validation_y_forpred_list.append(validation_y_forpred)
 
-                # save them as 'predicitons.csv'
-                validation_predictions_series = pd.Series(validation_predictions, name='clean_predictions', index=validation_X.index)
-                #validation_noinput_series = pd.Series(X_noinput.index, index=validation_X.index)
-                pd.concat([validation_X,  validation_y,  validation_predictions_series],  1)\
-                        .to_csv(join(path, 'predictions.csv'),  index=False)
+                    # save them as 'predicitons.csv'
+                    validation_predictions_series = pd.Series(validation_predictions, name='clean_predictions', index=validation_X_forpred.index)
+                    #validation_noinput_series = pd.Series(X_noinput.index, index=validation_X.index)
+                    pd.concat([validation_X_forpred,  validation_y_forpred,  validation_predictions_series],  1)\
+                            .to_csv(join(path, 'predictions_'+str(validation_column_name)+'.csv'), index=False)
             else:
                 validation_y = None
             
@@ -436,36 +474,38 @@ def mastml_run(conf_path, data_path, outdir):
                 if 'rmse_over_stdev' in metrics_dict.keys():
                     test_metrics['rmse_over_stdev'] = metrics_dict['rmse_over_stdev'][1](test_y, test_pred, train_y)
 
+                split_result = OrderedDict(
+                    normalizer=split_path[-4],
+                    selector=split_path[-3],
+                    model=split_path[-2],
+                    splitter=split_path[-1],
+                    split_num=split_num,
+                    y_train_true=train_y.values,
+                    y_train_pred=train_pred,
+                    y_test_true=test_y.values,
+                    y_test_pred=test_pred,
+                    train_metrics=train_metrics,
+                    test_metrics=test_metrics,
+                    train_indices=train_indices,
+                    test_indices=test_indices,
+                    train_groups=train_groups,
+                    test_groups=test_groups,
+                )
+
                 if is_validation:
-                    prediction_metrics = OrderedDict((name, function(validation_y, validation_predictions))
+                    prediction_metrics_list = list()
+                    for validation_column_name, validation_y, validation_predictions in zip(validation_column_names, validation_y_forpred_list, validation_predictions_list):
+                        prediction_metrics = OrderedDict((name, function(validation_y, validation_predictions))
                                            for name, (_, function) in metrics_dict.items())
-                    if 'rmse_over_stdev' in prediction_metrics.keys():
-                        prediction_metrics['rmse_over_stdev'] = metrics_dict['rmse_over_stdev'][1](test_y, test_pred, train_y)
-
-            split_result = OrderedDict(
-                normalizer = split_path[-4],
-                selector = split_path[-3],
-                model = split_path[-2],
-                splitter = split_path[-1],
-                split_num = split_num,
-                y_train_true = train_y.values,
-                y_train_pred = train_pred,
-                y_test_true  = test_y.values,
-                y_test_pred  = test_pred,
-                train_metrics = train_metrics,
-                test_metrics  = test_metrics,
-                train_indices = train_indices,
-                test_indices = test_indices,
-                train_groups = train_groups,
-                test_groups = test_groups,
-            )
-
-            if is_validation:
-                split_result['y_validation_true'] = validation_y.values
-                split_result['y_validation_pred'] = validation_predictions
-                split_result['prediction_metrics'] = prediction_metrics
-            else:
-                split_result['prediction_metrics'] = None
+                        if 'rmse_over_stdev' in prediction_metrics.keys():
+                            # Correct series passed?
+                            prediction_metrics['rmse_over_stdev'] = metrics_dict['rmse_over_stdev'][1](validation_y, validation_predictions, train_y)
+                        prediction_metrics_list.append(prediction_metrics)
+                        split_result['y_validation_true'+'_'+str(validation_column_name)] = validation_y.values
+                        split_result['y_validation_pred'+'_'+str(validation_column_name)] = validation_predictions
+                    split_result['prediction_metrics'] = prediction_metrics_list
+                else:
+                    split_result['prediction_metrics'] = None
 
             if is_classification:
                 split_result['y_train_pred_proba'] = train_pred_proba
@@ -479,6 +519,7 @@ def mastml_run(conf_path, data_path, outdir):
             _write_stats(split_result['train_metrics'],
                          split_result['test_metrics'],
                          split_result['prediction_metrics'],
+                         validation_column_names,
                          main_path)
 
             return split_result
@@ -661,7 +702,7 @@ def _save_all_runs(runs, outdir):
         table.append(od)
     pd.DataFrame(table).to_html(join(outdir, 'all_runs_table.html'))
 
-def _write_stats(train_metrics, test_metrics, prediction_metrics, outdir):
+def _write_stats(train_metrics, test_metrics, prediction_metrics, prediction_names, outdir):
     with open(join(outdir, 'stats.txt'), 'w') as f:
         f.write("TRAIN:\n")
         for name,score in train_metrics.items():
@@ -670,9 +711,11 @@ def _write_stats(train_metrics, test_metrics, prediction_metrics, outdir):
         for name,score in test_metrics.items():
                 f.write(f"{name}: {'%.3f'%float(score)}\n")
         if prediction_metrics:
-            f.write("PREDICTION:\n")
-            for name, score in prediction_metrics.items():
-                f.write(f"{name}: {'%.3f'%float(score)}\n")
+            #prediction metrics now list of dicts for predicting multiple values
+            for prediction_metric, prediction_name in zip(prediction_metrics, prediction_names):
+                f.write("PREDICTION for "+str(prediction_name)+":\n")
+                for name, score in prediction_metric.items():
+                    f.write(f"{name}: {'%.3f'%float(score)}\n")
 
 def _exclude_validation(df, validation_column):
     return df.loc[validation_column != 1]
