@@ -108,13 +108,8 @@ def mastml_run(conf_path, data_path, outdir):
                           model_finder.name_to_constructor,
                           'model')
     models = OrderedDict(models) # for easier modification
-    print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
-    print(conf['FeatureSelection'])
-    print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+
     _snatch_models(models, conf['FeatureSelection'])
-    print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
-    print(conf['FeatureSelection'])
-    print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
 
     def snatch_model_for_learning_curve():
         PS = conf['PlotSettings']
@@ -143,14 +138,10 @@ def mastml_run(conf_path, data_path, outdir):
 
     #splitters = OrderedDict(splitters)  # for easier modification
     #_snatch_splitters(splitters, conf['FeatureSelection'])
-    print('AFTER SPLITTERS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
-    print(conf['FeatureSelection'])
-    print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
 
     selectors   = _instantiate(conf['FeatureSelection'],
                                feature_selectors.name_to_constructor,
                                'featureselector')
-    #exit()
 
     log.debug(f'generators: \n{generators}')
     log.debug(f'clusterers: \n{clusterers}')
@@ -594,22 +585,13 @@ def _instantiate(kwargs_dict, name_to_constructor, category, X_grouped=None):
     for long_name, (name, kwargs) in kwargs_dict.items():
         log.debug(f'instantiation: {long_name}, {name}({kwargs})')
         try:
+            # TODO revisit this as it doesn't work for CV model snatching
             if name == 'LeaveOneGroupOut':
                 if 'groups' in kwargs.keys():
                     # Need to map group names to groups field
                     X_grouped_asnumber = _grouping_column_to_group_number(X_grouped=X_grouped)
-                    #print(X_grouped_asnumber)
-                    #print(X_grouped_asnumber.shape)
                     kwargs['groups'] = X_grouped_asnumber
                     name_to_constructor[name][kwargs] = kwargs
-                    #print(type(kwargs['groups']))
-                    #print(kwargs)
-            print('!!!!!!!!!!!!!KWARGS!!!!!!!!!!!!!!!!')
-            print(long_name, name, kwargs)
-            print('!!!!!!!!!!!!!!!!!!!!!!!!')
-            print(name_to_constructor[name])
-            print(inspect.signature(name_to_constructor[name]))
-
             instantiations.append((long_name, name_to_constructor[name](**kwargs)))
 
         except TypeError:
