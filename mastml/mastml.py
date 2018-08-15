@@ -513,11 +513,17 @@ def mastml_run(conf_path, data_path, outdir):
                 plot_helper.make_train_test_plots(
                         split_result, path, is_classification, 
                         label=y.name, groups=grouping_data)
-            _write_stats(split_result['train_metrics'],
+
+            if is_validation:
+                _write_stats(split_result['train_metrics'],
                          split_result['test_metrics'],
+                         main_path,
                          split_result['prediction_metrics'],
-                         validation_column_names,
-                         main_path)
+                         validation_column_names,)
+            else:
+                _write_stats(split_result['train_metrics'],
+                             split_result['test_metrics'],
+                             main_path)
 
             return split_result
 
@@ -694,7 +700,7 @@ def _save_all_runs(runs, outdir):
         table.append(od)
     pd.DataFrame(table).to_html(join(outdir, 'all_runs_table.html'))
 
-def _write_stats(train_metrics, test_metrics, prediction_metrics, prediction_names, outdir):
+def _write_stats(train_metrics, test_metrics, outdir, prediction_metrics=None, prediction_names=None):
     with open(join(outdir, 'stats.txt'), 'w') as f:
         f.write("TRAIN:\n")
         for name,score in train_metrics.items():
