@@ -17,6 +17,7 @@ import numpy as np
 import pandas as pd
 from sklearn.externals import joblib
 from sklearn.exceptions import UndefinedMetricWarning
+from sklearn.model_selection import LeaveOneGroupOut
 
 from . import conf_parser, data_loader, html_helper, plot_helper, utils
 from .legos import (data_splitters, feature_generators, feature_normalizers,
@@ -134,14 +135,16 @@ def mastml_run(conf_path, data_path, outdir):
                                'featurenormalizer')
     splitters   = _instantiate(conf['DataSplits'],
                                data_splitters.name_to_constructor,
-                               'datasplit', X_grouped=X_grouped)
+                               'datasplit')
 
-    #splitters = OrderedDict(splitters)  # for easier modification
-    #_snatch_splitters(splitters, conf['FeatureSelection'])
+    # Snatch splitter for use in feature selection, particularly RFECV
+    splitters = OrderedDict(splitters)  # for easier modification
+    _snatch_splitters(splitters, conf['FeatureSelection'])
+    splitters = list(splitters.items())
 
     selectors   = _instantiate(conf['FeatureSelection'],
                                feature_selectors.name_to_constructor,
-                               'featureselector')
+                               'featureselector', X_grouped=np.array(X_grouped).reshape(-1, ), X_indices=np.array(X.index.tolist()).reshape(-1, 1))
 
     log.debug(f'generators: \n{generators}')
     log.debug(f'clusterers: \n{clusterers}')
@@ -578,23 +581,27 @@ def mastml_run(conf_path, data_path, outdir):
     log.info("Making html file of all runs stats...")
     _save_all_runs(runs, outdir)
 
-def _instantiate(kwargs_dict, name_to_constructor, category, X_grouped=None):
+def _instantiate(kwargs_dict, name_to_constructor, category, X_grouped=None, X_indices=None):
     """
     Uses name_to_constructor to instantiate every item in kwargs_dict and return
     the list of instantiations
     """
-
     instantiations = []
     for long_name, (name, kwargs) in kwargs_dict.items():
         log.debug(f'instantiation: {long_name}, {name}({kwargs})')
         try:
-            # TODO revisit this as it doesn't work for CV model snatching
-            if name == 'LeaveOneGroupOut':
-                if 'groups' in kwargs.keys():
-                    # Need to map group names to groups field
-                    X_grouped_asnumber = _grouping_column_to_group_number(X_grouped=X_grouped)
-                    kwargs['groups'] = X_grouped_asnumber
-                    name_to_constructor[name][kwargs] = kwargs
+            # Need to construct cv object when have special case of RFECV and LeaveOneGroupOut cross-validation!
+            if name == 'RFECV':
+                if 'cv' in kwargs.keys():
+                    if X_grouped is not None:
+                        if kwargs['cv'].__class__.__name__ == 'LeaveOneGroupOut':
+                            trains = list()
+                            tests = list()
+                            for train_idx, test_idx in LeaveOneGroupOut().split(X=X_indices, y=None, groups=X_grouped):
+                                trains.append(train_idx)
+                                tests.append(test_idx)
+                            custom_cv = zip(trains, tests)
+                            kwargs['cv'] = custom_cv
             instantiations.append((long_name, name_to_constructor[name](**kwargs)))
 
         except TypeError:
