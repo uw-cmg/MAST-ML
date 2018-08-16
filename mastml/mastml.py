@@ -234,7 +234,10 @@ def mastml_run(conf_path, data_path, outdir):
                     log.info(f"    Running selector {selector_name} ...")
                     # NOTE: Changed from .fit_transform to .fit.transform
                     # because PCA.fit_transform doesn't call PCA.transform
-                    X_selected = selector_instance.fit(X_normalized, y).transform(X_normalized)
+                    if selector_instance.__class__.__name__ == 'MASTMLFeatureSelector':
+                        X_selected = selector_instance.fit(X_normalized, y, X_grouped).transform(X_normalized)
+                    else:
+                        X_selected = selector_instance.fit(X_normalized, y).transform(X_normalized)
                     log.info("    Saving selected features to csv...")
                     dirname = join(outdir, normalizer_name, selector_name)
                     os.mkdir(dirname)
