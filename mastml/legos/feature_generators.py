@@ -49,18 +49,23 @@ class ContainsElement(BaseEstimator, TransformerMixin):
     element in it. The new column's name is saved in self.new_column_name, which you'll need.
     """
 
-    def __init__(self, composition_feature, element, new_name):
+    def __init__(self, composition_feature, element, new_name, all_elements=False):
         self.composition_feature = composition_feature
         self.element = element
         self.new_column_name = new_name #f'has_{self.element}'
+        self.all_elements = all_elements
 
     def fit(self, df, y=None):
         return self
 
     def transform(self, df, y=None):
         compositions = df[self.composition_feature]
-        has_element = compositions.apply(self._contains_element)
-        return has_element.to_frame(name=self.new_column_name)
+        if self.all_elements == False:
+            has_element = compositions.apply(self._contains_element)
+            df_trans = has_element.to_frame(name=self.new_column_name)
+        elif self.all_elements == True:
+            df_trans = self._contains_all_elements(compositions=compositions)
+        return df_trans
 
     def _contains_element(self, comp):
         """
@@ -72,6 +77,21 @@ class ContainsElement(BaseEstimator, TransformerMixin):
         comp = pymatgen.Composition(comp)
         count = comp[self.element]
         return int(count != 0)
+
+    def _contains_all_elements(self, compositions):
+        elements = list()
+        df_trans = pd.DataFrame()
+        for comp in compositions.values:
+            comp = pymatgen.Composition(comp)
+            for element in comp.elements:
+                if element not in elements:
+                    elements.append(element)
+        for element in elements:
+            self.element = element
+            self.new_column_name = "has_"+str(self.element)
+            has_element = compositions.apply(self._contains_element)
+            df_trans[self.new_column_name] = has_element
+        return df_trans
 
 class Magpie(BaseEstimator, TransformerMixin):
     " Wraps MagpieFeatureGeneration "
