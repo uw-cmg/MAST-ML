@@ -160,7 +160,6 @@ def mastml_run(conf_path, data_path, outdir):
             log.info("Doing feature generation...")
             dataframes = [instance.fit_transform(df, y) for _, instance in generators]
             dataframe = pd.concat(dataframes, 1)
-
             log.info("Saving generated data to csv...")
             log.debug(f'generated cols: {dataframe.columns}')
             filename = join(outdir, "generated_features.csv")
@@ -177,8 +176,9 @@ def mastml_run(conf_path, data_path, outdir):
         generated_df = remove_constants()
 
         # add in generated features
-        # TODO this adds in some of the grouping features, can the model cheat on these?
         X = pd.concat([X, generated_df], axis=1)
+        # add in generated features to full dataframe
+        df = pd.concat([df, generated_df], axis=1)
 
         # remove repeat columns (keep the first one)
         def remove_repeats(X):
@@ -288,7 +288,7 @@ def mastml_run(conf_path, data_path, outdir):
                     col = splitter_to_group_names[name]
                     log.debug(f"    Finding {col} for {name}...")
                     # Locate the grouping column among all dataframes
-                    for df_ in [clustered_df, X_, df]:
+                    for df_ in [clustered_df, df, X_]:
                         if col in df_.columns:
                             # FOund it!
                             # Get groups for plotting first
@@ -298,13 +298,13 @@ def mastml_run(conf_path, data_path, outdir):
                                 if df_ is not clustered_df:
                                     # exclude for df_ so that rows match up in splitter
                                     for validation_column_name in validation_column_names:
-                                        df_ = _exclude_validation(df, validation_columns[validation_column_name])
+                                        df_ = _exclude_validation(df_, validation_columns[validation_column_name])
                                         _df_list.append(df_)
                                 elif df_ is clustered_df:
                                     # merge the cluster data df_ to full df
                                     df[col] = df_
                                     for validation_column_name in validation_column_names:
-                                        df_ = _exclude_validation(df_, validation_columns[validation_column_name])
+                                        df_ = _exclude_validation(df, validation_columns[validation_column_name])
                                         _df_list.append(df_)
 
                                 # Get df_ based on index intersection between all df's in _df_list
@@ -367,7 +367,6 @@ def mastml_run(conf_path, data_path, outdir):
                         subsubdir = join(outdir, subdir)
                         os.makedirs(subsubdir)
                         # NOTE: do_one_splitter is a big old function, does lots
-
                         runs = do_one_splitter(X, y, model_instance, subsubdir, trains_tests, grouping_data)
                         all_results.extend(runs)
             return all_results
