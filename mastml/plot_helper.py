@@ -490,7 +490,6 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
     standard_error_means = [nice_std(y_pred)/np.sqrt(len(y_pred))
                             for y_pred in y_pred_list]
     standard_errors = [nice_std(y_pred) for y_pred in y_pred_list]
-    
     # make fig and ax, use x_align when placing text so things don't overlap
     x_align = 0.64
     fig, ax = make_fig_ax(x_align=x_align)
@@ -545,11 +544,14 @@ def plot_metric_vs_group(metric, groups, stats, avg_stats, savepath):
 
 def plot_normalized_error(y_true, y_pred, savepath, avg_stats=None):
     if avg_stats:
-        y_pred_ = [nice_mean(y_p) for y_p in y_pred]
+        y_pred_ = np.array([nice_mean(y_p) for y_p in y_pred])
         y_true_ = y_true
     else:
         y_pred_ = y_pred
         y_true_ = y_true
+    #Need to remove NaN's before plotting. These will be present when doing validation runs. Note NaN's only show up in y_pred_
+    y_true_ = y_true_[~np.isnan(y_pred_)]
+    y_pred_ = y_pred_[~np.isnan(y_pred_)]
 
     x_align = 0.64
     fig, ax = make_fig_ax(x_align=x_align)
