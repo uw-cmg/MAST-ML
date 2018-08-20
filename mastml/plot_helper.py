@@ -35,6 +35,8 @@ from matplotlib.figure import Figure, figaspect
 from matplotlib.ticker import MaxNLocator # TODO: used?
 from matplotlib.animation import FuncAnimation
 from matplotlib.font_manager import FontProperties
+import matplotlib.mlab as mlab
+from scipy.stats import gaussian_kde
 
 from .utils import RFECV_train_test
 from .utils import nice_range # TODO include this in ipynb_helper
@@ -87,7 +89,11 @@ def make_train_test_plots(run, path, is_classification, label, groups=None):
                           (y_test_true,  y_test_pred,  test_metrics, test_groups), 
                           path, label=label)
 
-        #plot_metric_per_group
+        title = 'train_normalized_error'
+        plot_normalized_error(y_train_true, y_train_pred, join(path, title+'.png'))
+
+        title = 'test_normalized_error'
+        plot_normalized_error(y_test_true, y_test_pred, join(path, title+'.png'))
 
         title = 'train_residuals_histogram'
         plot_residuals_histogram(y_train_true, y_train_pred,
@@ -537,6 +543,35 @@ def plot_metric_vs_group(metric, groups, stats, avg_stats, savepath):
     fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
     return
 
+def plot_normalized_error(y_true, y_pred, savepath, avg_stats=None):
+    if avg_stats:
+        y_pred_ = [nice_mean(y_p) for y_p in y_pred]
+        y_true_ = y_true
+    else:
+        y_pred_ = y_pred
+        y_true_ = y_true
+
+    x_align = 0.64
+    fig, ax = make_fig_ax(x_align=x_align)
+    #mu = float(np.mean(y_true))
+    #sigma = float(np.std(y_true))
+    mu = 0
+    sigma = 1
+    fraction = (y_true_-y_pred_)/np.std(y_true_-y_pred_)
+    density = gaussian_kde(fraction)
+    x = np.linspace(mu - 5 * sigma, mu + 5 * sigma, y_true_.shape[0])
+    ax.plot(x, mlab.normpdf(x, mu, sigma), linewidth=4, color='blue', label="Analytical Gaussian")
+    ax.plot(x, density(x), linewidth=4, color='green', label="Model Errors")
+    ax.legend(loc=0, fontsize=12, frameon=False)
+    ax.set_xlabel(r"$\mathrm{x}/\mathit{\sigma}$", fontsize=20)
+    ax.set_ylabel("Fraction", fontsize=20)
+    maxx = 5
+    minn = -5
+    maxy = max(max(density(x)), max(mlab.normpdf(x, mu, sigma)))
+    miny = min(min(density(x)), min(mlab.normpdf(x, mu, sigma)))
+    _set_tick_labels_different(ax, maxx, minn, maxy, miny)
+    fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
+    return
 
 def plot_1d_heatmap(xs, heats, savepath, xlabel='x', heatlabel='heats'):
     # Escape from error of passing tuples when optimzing neural net

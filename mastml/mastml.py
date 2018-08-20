@@ -575,6 +575,10 @@ def mastml_run(conf_path, data_path, outdir):
                 plot_helper.plot_best_worst_per_point(y.values, predictions,
                                                       join(main_path, 'best_worst_per_point.png'),
                                                       metrics_dict, avg_test_stats, label=y.name)
+            if PlotSettings['average_normalized_errors']:
+                plot_helper.plot_normalized_error(y.values, predictions,
+                                                  join(main_path, 'average_normalized_errors.png'),
+                                                  avg_test_stats)
 
         if not is_classification:
             make_pred_vs_true_plots()
