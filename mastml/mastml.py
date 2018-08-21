@@ -579,6 +579,10 @@ def mastml_run(conf_path, data_path, outdir):
                 plot_helper.plot_normalized_error(y.values, predictions,
                                                   join(main_path, 'average_normalized_errors.png'),
                                                   avg_test_stats)
+            if PlotSettings['average_cumulative_normalized_errors']:
+                plot_helper.plot_cumulative_normalized_error(y.values, predictions,
+                                                  join(main_path, 'average_cumulative_normalized_errors.png'),
+                                                  avg_test_stats)
 
         if not is_classification:
             make_pred_vs_true_plots()

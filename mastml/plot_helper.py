@@ -37,6 +37,8 @@ from matplotlib.animation import FuncAnimation
 from matplotlib.font_manager import FontProperties
 import matplotlib.mlab as mlab
 from scipy.stats import gaussian_kde
+from mpl_toolkits.axes_grid1.inset_locator import mark_inset
+from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
 
 from .utils import RFECV_train_test
 from .utils import nice_range # TODO include this in ipynb_helper
@@ -94,6 +96,12 @@ def make_train_test_plots(run, path, is_classification, label, groups=None):
 
         title = 'test_normalized_error'
         plot_normalized_error(y_test_true, y_test_pred, join(path, title+'.png'))
+
+        title = 'train_cumulative_normalized_error'
+        plot_cumulative_normalized_error(y_train_true, y_train_pred, join(path, title+'.png'))
+
+        title = 'test_cumulative_normalized_error'
+        plot_cumulative_normalized_error(y_test_true, y_test_pred, join(path, title+'.png'))
 
         title = 'train_residuals_histogram'
         plot_residuals_histogram(y_train_true, y_train_pred,
@@ -565,13 +573,65 @@ def plot_normalized_error(y_true, y_pred, savepath, avg_stats=None):
     ax.plot(x, mlab.normpdf(x, mu, sigma), linewidth=4, color='blue', label="Analytical Gaussian")
     ax.plot(x, density(x), linewidth=4, color='green', label="Model Errors")
     ax.legend(loc=0, fontsize=12, frameon=False)
-    ax.set_xlabel(r"$\mathrm{x}/\mathit{\sigma}$", fontsize=20)
-    ax.set_ylabel("Fraction", fontsize=20)
+    ax.set_xlabel(r"$\mathrm{x}/\mathit{\sigma}$", fontsize=18)
+    ax.set_ylabel("Fraction", fontsize=18)
+    #ax.set_xlim(-5, 5)
+    #ax.set_ylim(0, 0.6)
     maxx = 5
     minn = -5
     maxy = max(max(density(x)), max(mlab.normpdf(x, mu, sigma)))
     miny = min(min(density(x)), min(mlab.normpdf(x, mu, sigma)))
     _set_tick_labels_different(ax, maxx, minn, maxy, miny)
+    fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
+    return
+
+def plot_cumulative_normalized_error(y_true, y_pred, savepath, avg_stats=None):
+    if avg_stats:
+        y_pred_ = np.array([nice_mean(y_p) for y_p in y_pred])
+        y_true_ = y_true
+    else:
+        y_pred_ = y_pred
+        y_true_ = y_true
+
+    #Need to remove NaN's before plotting. These will be present when doing validation runs. Note NaN's only show up in y_pred_
+    y_true_ = y_true_[~np.isnan(y_pred_)]
+    y_pred_ = y_pred_[~np.isnan(y_pred_)]
+
+    x_align = 0.64
+    fig, ax = make_fig_ax(x_align=x_align)
+
+    analytic_gau = np.random.normal(0, 1, 10000)
+    analytic_gau = abs(analytic_gau)
+    n1 = np.arange(1, len(analytic_gau) + 1) / np.float(len(analytic_gau))
+    Xs1 = np.sort(analytic_gau)
+    fraction = abs((y_true_-y_pred_)/np.std(y_true_-y_pred_))
+    n = np.arange(1, len(fraction) + 1) / np.float(len(fraction))
+    Xs = np.sort(fraction) #r"$\mathrm{Predicted \/ Value}, \mathit{eV}$"
+    ax.set_xlabel(r"$\mathrm{x}/\mathit{\sigma}$", fontsize=18)
+    ax.set_ylabel("Fraction", fontsize=18)
+    ax.step(Xs, n, linewidth=3, color='green', label="Model Cumulative Errors")
+    ax.step(Xs1, n1, linewidth=3, color='blue', label="Analytical Gaussian")
+    #ax.set_xlim(0,5)
+    #ax.set_ylim(0,1)
+
+    ax.legend(loc=0, fontsize=14, frameon=False)
+    xlabels = np.linspace(2, 3, 3)
+    ylabels = np.linspace(0.9, 1, 2)
+    axin = zoomed_inset_axes(ax, 2.5, loc=7)
+    axin.step(Xs, n, linewidth=3, color='green', label="Model Cumulative Errors")
+    axin.step(Xs1, n1, linewidth=3, color='blue', label="Analytical Gaussian")
+    axin.set_xticklabels(xlabels, fontsize=8)
+    axin.set_yticklabels(ylabels, fontsize=8)
+    axin.set_xlim(2, 3)
+    axin.set_ylim(0.9, 1)
+
+    maxx = 5
+    minn = 0
+    maxy = 1
+    miny = 0
+    _set_tick_labels_different(ax, maxx, minn, maxy, miny)
+
+    mark_inset(ax, axin, loc1=1, loc2=2)
     fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
     return
 
