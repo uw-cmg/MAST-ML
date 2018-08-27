@@ -19,7 +19,7 @@ from sklearn.externals import joblib
 from sklearn.exceptions import UndefinedMetricWarning
 from sklearn.model_selection import LeaveOneGroupOut
 
-from . import conf_parser, data_loader, html_helper, plot_helper, utils
+from . import conf_parser, data_loader, html_helper, plot_helper, utils, learning_curve
 from .legos import (data_splitters, feature_generators, feature_normalizers,
                     feature_selectors, model_finder, util_legos)
 from .legos import clusterers as legos_clusterers
@@ -89,7 +89,26 @@ def mastml_run(conf_path, data_path, outdir):
         for validation_column_name in validation_column_names:
             validation_columns[validation_column_name] = df[validation_column_name]
         validation_columns = pd.DataFrame(validation_columns)
+        validation_X = list()
+        validation_y = list()
 
+        # TODO make this block its own function
+        for validation_column_name in validation_column_names:
+            # X_, y_ = _exclude_validation(X, validation_columns[validation_column_name]), _exclude_validation(y, validation_columns[validation_column_name])
+            validation_X.append(pd.DataFrame(_exclude_validation(X, validation_columns[validation_column_name])))
+            validation_y.append(pd.DataFrame(_exclude_validation(y, validation_columns[validation_column_name])))
+        idxy_list = list()
+        for i, _ in enumerate(validation_y):
+            idxy_list.append(validation_y[i].index)
+        # Get intersection of indices between all prediction columns
+        intersection = reduce(np.intersect1d, (i for i in idxy_list))
+        X_novalidation = X.iloc[intersection]
+        y_novalidation = y.iloc[intersection]
+        X_grouped_novalidation = X_grouped.iloc[intersection]
+    else:
+        X_novalidation = X
+        y_novalidation = y
+        X_grouped_novalidation = X_grouped
 
     if conf['PlotSettings']['target_histogram']:
         # First, save input data stats to csv
@@ -112,17 +131,6 @@ def mastml_run(conf_path, data_path, outdir):
 
     _snatch_models(models, conf['FeatureSelection'])
 
-    def snatch_model_for_learning_curve():
-        PS = conf['PlotSettings']
-        GS = conf['GeneralSetup']
-        if PS['data_learning_curve'] or PS['feature_learning_curve']:
-            name = GS['learning_curve_model']
-            GS['learning_curve_model'] = models[name]
-            del models[name]
-    snatch_model_for_learning_curve()
-
-    models = list(models.items())
-
     # Instantiate all the sections of the conf file:
     generators  = _instantiate(conf['FeatureGeneration'],
                                feature_generators.name_to_constructor,
@@ -136,6 +144,27 @@ def mastml_run(conf_path, data_path, outdir):
     splitters   = _instantiate(conf['DataSplits'],
                                data_splitters.name_to_constructor,
                                'datasplit')
+
+    def snatch_model_cv_and_scoring_for_learning_curve():
+        if conf['LearningCurve']:
+            # Get model
+            name = conf['LearningCurve']['estimator']
+            conf['LearningCurve']['estimator'] = models[name]
+            del models[name]
+            # Get cv
+            name = conf['LearningCurve']['cv']
+            splitter_count = 0
+            for splitter in splitters:
+                if name in splitter:
+                    conf['LearningCurve']['cv'] = splitter[1]
+                    break
+                else:
+                    splitter_count += 1
+            del splitters[splitter_count]
+
+    snatch_model_cv_and_scoring_for_learning_curve()
+
+    models = list(models.items())
 
     # Snatch splitter for use in feature selection, particularly RFECV
     splitters = OrderedDict(splitters)  # for easier modification
@@ -343,17 +372,32 @@ def mastml_run(conf_path, data_path, outdir):
             all_results = []
             for normalizer_name, selector_name, X in normalizer_selector_dataframe_triples:
                 subdir = join(outdir, normalizer_name, selector_name)
-                if conf['PlotSettings']['data_learning_curve']:
-                    learning_curve_model = conf['GeneralSetup']['learning_curve_model']
-                    learning_curve_score = conf['GeneralSetup']['learning_curve_score']
-                    plot_helper.plot_sample_learning_curve(
-                            learning_curve_model, X, y, learning_curve_score, join(subdir, f'data_learning_curve.png'))
+                if conf['LearningCurve']:
+                    learning_curve_estimator = conf['LearningCurve']['estimator']
+                    learning_curve_scoring = conf['LearningCurve']['scoring']
+                    n_features_to_select = int(conf['LearningCurve']['n_features_to_select'])
+                    learning_curve_cv = conf['LearningCurve']['cv']
 
-                if conf['PlotSettings']['feature_learning_curve']:
-                    learning_curve_model = conf['GeneralSetup']['learning_curve_model']
-                    learning_curve_score = conf['GeneralSetup']['learning_curve_score']
-                    plot_helper.plot_feature_learning_curve(
-                            learning_curve_model, X, y, learning_curve_score, join(subdir, f'feature_learning_curve.png'))
+                    # Get score name from scoring object
+                    scoring_name = learning_curve_scoring._score_func.__name__
+                    scoring_name_nice = ''
+                    for s in scoring_name.split('_'):
+                        scoring_name_nice += s + ' '
+                    # Do sample learning curve
+                    train_sizes, train_mean, test_mean, train_stdev, test_stdev = learning_curve.sample_learning_curve(X=X_novalidation, y=y_novalidation,
+                                                            estimator=learning_curve_estimator, cv=learning_curve_cv,
+                                                            scoring=learning_curve_scoring, Xgroups=X_grouped_novalidation)
+                    plot_helper.plot_learning_curve(train_sizes, train_mean, test_mean, train_stdev, test_stdev,
+                                                    scoring_name_nice, 'sample_learning_curve',
+                                                    join(subdir, f'data_learning_curve.png'))
+                    # Do feature learning curve
+                    train_sizes, train_mean, test_mean, train_stdev, test_stdev = learning_curve.feature_learning_curve(X=X_novalidation, y=y_novalidation,
+                                                            estimator=learning_curve_estimator, cv=learning_curve_cv,
+                                                            scoring=learning_curve_scoring, n_features_to_select=n_features_to_select,
+                                                            Xgroups=X_grouped_novalidation)
+                    plot_helper.plot_learning_curve(train_sizes, train_mean, test_mean, train_stdev, test_stdev,
+                                                    scoring_name_nice, 'feature_learning_curve',
+                                                    join(subdir, f'feature_learning_curve.png'))
 
                 if PlotSettings['feature_vs_target']:
                     #if selector_name == 'DoNothing': continue
@@ -727,6 +771,7 @@ def _write_stats(train_metrics, test_metrics, outdir, prediction_metrics=None, p
 
 def _exclude_validation(df, validation_column):
     return df.loc[validation_column != 1]
+
 def _only_validation(df, validation_column):
     return df.loc[validation_column == 1]
 

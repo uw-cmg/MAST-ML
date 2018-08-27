@@ -17,7 +17,7 @@ def parse_conf_file(filepath):
 
     conf = ConfigObj(filepath)
 
-    main_sections = ['GeneralSetup', 'DataSplits', 'Models']
+    main_sections = ['GeneralSetup', 'DataSplits', 'Models', 'LearningCurve']
     feature_sections = ['FeatureGeneration', 'Clustering',
                         'FeatureNormalization', 'FeatureSelection']
     feature_section_dicts = [conf[name] for name in feature_sections if name in conf]
@@ -80,8 +80,7 @@ def parse_conf_file(filepath):
 
     def check_general_setup_settings_are_valid():
         all_settings =  ['input_features', 'target_feature', 'metrics',
-                         'learning_curve_model', 'learning_curve_score', 'randomizer', 
-                         'validation_columns', 'not_input_features', 'grouping_feature']
+                         'randomizer', 'validation_columns', 'not_input_features', 'grouping_feature']
         for name in GS:
             if name not in all_settings:
                 raise utils.InvalidConfParameters(
@@ -182,8 +181,8 @@ def parse_conf_file(filepath):
     make_long_name_short_name_pairs()
 
     def check_and_boolify_plot_settings():
-        default_false = ['feature_vs_target', 'data_learning_curve', 'feature_learning_curve']
-        default_true  = ['target_histogram', 'train_test_plots', 'predicted_vs_true',
+        default_false = ['feature_vs_target']
+        default_true = ['target_histogram', 'train_test_plots', 'predicted_vs_true',
                          'predicted_vs_true_bars', 'best_worst_per_point', 'average_normalized_errors',
                          'average_cumulative_normalized_errors']
         all_settings = default_false + default_true
@@ -213,13 +212,11 @@ def parse_conf_file(filepath):
         if 'learning_curve_score' not in GS:
             raise utils.InvalidConfParameters("You enabled data_learning_curve plots but you did"
                                               "not specify learning_curve_score in [GeneralSetup]")
-    PS = conf['PlotSettings']
-    if PS['data_learning_curve'] is True or PS['feature_learning_curve'] is True:
-        check_learning_curve_settings()
-        score_name = GS['learning_curve_score']
+    if conf['LearningCurve']:
+        score_name = conf['LearningCurve']['scoring']
         d = metrics.check_and_fetch_names([score_name], is_classification)
         greater_is_better, score_func = d[score_name]
-        GS['learning_curve_score'] = make_scorer(score_func, greater_is_better=True)
+        conf['LearningCurve']['scoring'] = make_scorer(score_func, greater_is_better=True)
 
     return conf
 
