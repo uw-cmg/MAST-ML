@@ -17,7 +17,7 @@ def parse_conf_file(filepath):
 
     conf = ConfigObj(filepath)
 
-    main_sections = ['GeneralSetup', 'DataSplits', 'Models', 'LearningCurve']
+    main_sections = ['GeneralSetup', 'DataSplits', 'Models', 'LearningCurve', 'DataCleaning']
     feature_sections = ['FeatureGeneration', 'Clustering',
                         'FeatureNormalization', 'FeatureSelection']
     feature_section_dicts = [conf[name] for name in feature_sections if name in conf]
@@ -80,7 +80,7 @@ def parse_conf_file(filepath):
 
     def check_general_setup_settings_are_valid():
         all_settings =  ['input_features', 'target_feature', 'metrics',
-                         'randomizer', 'validation_columns', 'not_input_features', 'grouping_feature', 'data_cleaning']
+                         'randomizer', 'validation_columns', 'not_input_features', 'grouping_feature']
         for name in GS:
             if name not in all_settings:
                 raise utils.InvalidConfParameters(
@@ -205,6 +205,7 @@ def parse_conf_file(filepath):
                 PS[name] = True
     check_and_boolify_plot_settings()
 
+    # TODO: remove?
     def check_learning_curve_settings():
         if 'learning_curve_model' not in GS:
             raise utils.InvalidConfParameters("You enabled data_learning_curve plots but you did"
@@ -212,6 +213,7 @@ def parse_conf_file(filepath):
         if 'learning_curve_score' not in GS:
             raise utils.InvalidConfParameters("You enabled data_learning_curve plots but you did"
                                               "not specify learning_curve_score in [GeneralSetup]")
+
     if conf['LearningCurve']:
         score_name = conf['LearningCurve']['scoring']
         d = metrics.check_and_fetch_names([score_name], is_classification)

@@ -73,13 +73,14 @@ def mastml_run(conf_path, data_path, outdir):
 
     # Perform data cleaning here
     try:
-        dc = conf['GeneralSetup']['data_cleaning']
+        dc = conf['DataCleaning']
     except KeyError:
+        dc = dict()
         log.warning("You have chosen not to specify a method of data_cleaning in the input file. By default, any feature entries "
                     "containing NaN will result in removal of the feature and any target data entries containing NaN will "
                     "result in removal of that target data point.")
-        dc = 'remove'
-    if dc == 'remove':
+        dc['cleaning_method'] = 'remove'
+    if dc['cleaning_method'] == 'remove':
         df = data_cleaner.remove(df, axis=1)
         X = data_cleaner.remove(X, axis=1)
         X_noinput = data_cleaner.remove(X_noinput, axis=1)
