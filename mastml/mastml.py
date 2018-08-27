@@ -83,25 +83,25 @@ def mastml_run(conf_path, data_path, outdir):
         X = data_cleaner.remove(X, axis=1)
         X_noinput = data_cleaner.remove(X_noinput, axis=1)
         X_grouped = data_cleaner.remove(X_grouped, axis=1)
-        y = data_cleaner.remove(y, axis=0)
+        # TODO: have method to first remove rows of missing target data, then do columns for features
+        #y = data_cleaner.remove(y, axis=0)
     elif dc['cleaning_method'] == 'imputation':
+        log.warning("You have selected data cleaning with Imputation. Note that imputation will not resolve missing target data. "
+                    "It is recommended to remove missing target data")
         if 'imputation_strategy' not in dc.keys():
             log.warning("You have chosen to perform data imputation but have not selected an imputation strategy. By default, "
                         "the mean will be used as the imputation strategy")
             dc['imputation_strategy'] = 'mean'
-        # TODO: need to add some catch for string entries, currently fails on them
-        # df = data_cleaner.imputation(df, dc['imputation_strategy'])
+        df = data_cleaner.imputation(df, dc['imputation_strategy'], X_noinput.columns)
         X = data_cleaner.imputation(X, dc['imputation_strategy'])
-        X_noinput = data_cleaner.imputation(X_noinput, dc['imputation_strategy'])
-        X_grouped = data_cleaner.imputation(X_grouped, dc['imputation_strategy'])
-        y = data_cleaner.imputation(y, dc['imputation_strategy'])
     elif dc['cleaning_method'] == 'ppca':
-        # TODO: need to add some catch for string entries, currently fails on them
-        # df = data_cleaner.ppca(df)
+        log.warning("You have selected data cleaning with PPCA. Note that PPCA will not work to estimate missing target values, "
+                    "at least a 2D matrix is needed. It is recommended you remove missing target data")
+        df = data_cleaner.ppca(df, X_noinput.columns)
         X = data_cleaner.ppca(X)
-        X_noinput = data_cleaner.ppca(X_noinput)
-        X_grouped = data_cleaner.ppca(X_grouped)
-        y = data_cleaner.ppca(y)
+    else:
+        log.error("You have specified an invalid data cleaning method. Choose from: remove, imputation, or ppca")
+        exit()
 
     # randomly shuffles y values if randomizer is on
     if conf['GeneralSetup']['randomizer'] is True:

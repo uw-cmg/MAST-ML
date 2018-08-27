@@ -6,7 +6,6 @@ import pandas as pd
 import numpy as np
 import logging
 from sklearn.preprocessing import Imputer
-from sklearn.linear_model import LinearRegression
 
 import os
 from scipy.linalg import orth
@@ -22,24 +21,38 @@ def remove(df, axis):
     df = df.dropna(axis=axis, how='any')
     return df
 
-def imputation(df, strategy='mean'):
+def imputation(df, strategy, cols_to_leave_out=None):
     # Impute values to the missing places based on the median, mean, etc. of the data in the column
-    df = pd.DataFrame(Imputer(missing_values='NaN', strategy=strategy, axis=0).fit_transform(df))
+    if cols_to_leave_out is None:
+        df_imputed = pd.DataFrame(Imputer(missing_values='NaN', strategy=strategy, axis=0).fit_transform(df))
+    else:
+        df_imputed = pd.DataFrame(Imputer(missing_values='NaN', strategy=strategy, axis=0).fit_transform(df.drop(cols_to_leave_out, axis=1)))
+    # Need to join the imputed dataframe with the columns containing strings that were held out
+    if cols_to_leave_out is None:
+        df = df_imputed
+    else:
+        df = pd.concat([df_imputed, df[cols_to_leave_out]], axis=1)
     return df
 
-def ppca(df):
+def ppca(df, cols_to_leave_out=None):
     # Perform a recursive PCA routine to use PCA of known columns to fill in missing values in particular column
     pca_magic = PPCA()
-    pca_magic.fit(np.array(df))
+    if cols_to_leave_out is None:
+        pca_magic.fit(np.array(df))
+    else:
+        pca_magic.fit(np.array(df.drop(cols_to_leave_out, axis=1)))
     # Need to un-standardize the pca-transformed data
-    df = pd.DataFrame(pca_magic.data*pca_magic.stds+pca_magic.means)
+    df_ppca = pd.DataFrame(pca_magic.data*pca_magic.stds+pca_magic.means)
+    if cols_to_leave_out is None:
+        df = df_ppca
+    else:
+        df = pd.concat([df_ppca, df[cols_to_leave_out]], axis=1)
     return df
 
-def linear(df, y):
-    # Use linear fit of data in matrix containing missing values and interpolate to find missing data
-    log.error("Error: using a linear fit to fill in data currently not in use")
-    exit()
-    return df
+def columns_with_strings(df):
+    str_summary = pd.DataFrame(df.applymap(type).eq(str).any())
+    str_columns = str_summary.index[str_summary[0] == True].tolist()
+    return str_columns
 
 # This class PPCA was taken directly from https://github.com/allentran/pca-magic. Due to import errors, for ease of use
 # we have elected to copy the module here. This github repo was last accessed on 8/27/18. The code comprising the PPCA
