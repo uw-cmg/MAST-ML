@@ -88,6 +88,9 @@ def parse_conf_file(filepath):
                         f"Valid GeneralSetup options are: {all_settings}")
     check_general_setup_settings_are_valid()
 
+    if 'grouping_feature' not in GS:
+        GS['grouping_feature'] = None
+
     # Find grouping features and 'not_input_features' to blacklist out of X (see data loader)
     def collect_grouping_features():
         for section in conf:
