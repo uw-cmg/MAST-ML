@@ -258,6 +258,42 @@ def mastml_run(conf_path, data_path, outdir):
                 dirname = join(outdir, normalizer_name)
                 os.mkdir(dirname)
                 pd.concat([X_normalized, X_noinput, y], 1).to_csv(join(dirname, "normalized.csv"), index=False)
+
+                # Put learning curve here??
+                if conf['LearningCurve']:
+                    learning_curve_estimator = conf['LearningCurve']['estimator']
+                    learning_curve_scoring = conf['LearningCurve']['scoring']
+                    n_features_to_select = int(conf['LearningCurve']['n_features_to_select'])
+                    learning_curve_cv = conf['LearningCurve']['cv']
+                    try:
+                        selector_name = conf['LearningCurve']['selector_name']
+                    except KeyError:
+                        selector_name = None
+
+                    # Get score name from scoring object
+                    scoring_name = learning_curve_scoring._score_func.__name__
+                    scoring_name_nice = ''
+                    for s in scoring_name.split('_'):
+                        scoring_name_nice += s + ' '
+                    # Do sample learning curve
+                    train_sizes, train_mean, test_mean, train_stdev, test_stdev = learning_curve.sample_learning_curve(X=X_novalidation, y=y_novalidation,
+                                                            estimator=learning_curve_estimator, cv=learning_curve_cv,
+                                                            scoring=learning_curve_scoring, Xgroups=X_grouped_novalidation)
+                    plot_helper.plot_learning_curve(train_sizes, train_mean, test_mean, train_stdev, test_stdev,
+                                                    scoring_name_nice, 'sample_learning_curve',
+                                                    join(dirname, f'data_learning_curve.png'))
+                    # Do feature learning curve
+                    train_sizes, train_mean, test_mean, train_stdev, test_stdev = learning_curve.feature_learning_curve(X=X_novalidation, y=y_novalidation,
+                                                            estimator=learning_curve_estimator, cv=learning_curve_cv,
+                                                            scoring=learning_curve_scoring, selector_name=selector_name,
+                                                            n_features_to_select=n_features_to_select,
+                                                            Xgroups=X_grouped_novalidation)
+                    plot_helper.plot_learning_curve(train_sizes, train_mean, test_mean, train_stdev, test_stdev,
+                                                    scoring_name_nice, 'feature_learning_curve',
+                                                    join(dirname, f'feature_learning_curve.png'))
+
+
+
                 log.info("Running selectors...")
                 for selector_name, selector_instance in selectors:
                     log.info(f"    Running selector {selector_name} ...")
@@ -372,32 +408,6 @@ def mastml_run(conf_path, data_path, outdir):
             all_results = []
             for normalizer_name, selector_name, X in normalizer_selector_dataframe_triples:
                 subdir = join(outdir, normalizer_name, selector_name)
-                if conf['LearningCurve']:
-                    learning_curve_estimator = conf['LearningCurve']['estimator']
-                    learning_curve_scoring = conf['LearningCurve']['scoring']
-                    n_features_to_select = int(conf['LearningCurve']['n_features_to_select'])
-                    learning_curve_cv = conf['LearningCurve']['cv']
-
-                    # Get score name from scoring object
-                    scoring_name = learning_curve_scoring._score_func.__name__
-                    scoring_name_nice = ''
-                    for s in scoring_name.split('_'):
-                        scoring_name_nice += s + ' '
-                    # Do sample learning curve
-                    train_sizes, train_mean, test_mean, train_stdev, test_stdev = learning_curve.sample_learning_curve(X=X_novalidation, y=y_novalidation,
-                                                            estimator=learning_curve_estimator, cv=learning_curve_cv,
-                                                            scoring=learning_curve_scoring, Xgroups=X_grouped_novalidation)
-                    plot_helper.plot_learning_curve(train_sizes, train_mean, test_mean, train_stdev, test_stdev,
-                                                    scoring_name_nice, 'sample_learning_curve',
-                                                    join(subdir, f'data_learning_curve.png'))
-                    # Do feature learning curve
-                    train_sizes, train_mean, test_mean, train_stdev, test_stdev = learning_curve.feature_learning_curve(X=X_novalidation, y=y_novalidation,
-                                                            estimator=learning_curve_estimator, cv=learning_curve_cv,
-                                                            scoring=learning_curve_scoring, n_features_to_select=n_features_to_select,
-                                                            Xgroups=X_grouped_novalidation)
-                    plot_helper.plot_learning_curve(train_sizes, train_mean, test_mean, train_stdev, test_stdev,
-                                                    scoring_name_nice, 'feature_learning_curve',
-                                                    join(subdir, f'feature_learning_curve.png'))
 
                 if PlotSettings['feature_vs_target']:
                     #if selector_name == 'DoNothing': continue
