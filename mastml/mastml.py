@@ -72,10 +72,8 @@ def mastml_run(conf_path, data_path, outdir):
                                      conf['GeneralSetup']['not_input_features'])
 
     # Perform data cleaning here
-    try:
-        dc = conf['DataCleaning']
-    except KeyError:
-        dc = dict()
+    dc = conf['DataCleaning']
+    if 'cleaning_method' not in dc.keys():
         log.warning("You have chosen not to specify a method of data_cleaning in the input file. By default, any feature entries "
                     "containing NaN will result in removal of the feature and any target data entries containing NaN will "
                     "result in removal of that target data point.")
@@ -86,8 +84,26 @@ def mastml_run(conf_path, data_path, outdir):
         X_noinput = data_cleaner.remove(X_noinput, axis=1)
         X_grouped = data_cleaner.remove(X_grouped, axis=1)
         y = data_cleaner.remove(y, axis=0)
+    elif dc['cleaning_method'] == 'imputation':
+        if 'imputation_strategy' not in dc.keys():
+            log.warning("You have chosen to perform data imputation but have not selected an imputation strategy. By default, "
+                        "the mean will be used as the imputation strategy")
+            dc['imputation_strategy'] = 'mean'
+        # TODO: need to add some catch for string entries, currently fails on them
+        # df = data_cleaner.imputation(df, dc['imputation_strategy'])
+        X = data_cleaner.imputation(X, dc['imputation_strategy'])
+        X_noinput = data_cleaner.imputation(X_noinput, dc['imputation_strategy'])
+        X_grouped = data_cleaner.imputation(X_grouped, dc['imputation_strategy'])
+        y = data_cleaner.imputation(y, dc['imputation_strategy'])
+    elif dc['cleaning_method'] == 'ppca':
+        # TODO: need to add some catch for string entries, currently fails on them
+        # df = data_cleaner.ppca(df)
+        X = data_cleaner.ppca(X)
+        X_noinput = data_cleaner.ppca(X_noinput)
+        X_grouped = data_cleaner.ppca(X_grouped)
+        y = data_cleaner.ppca(y)
 
-    # randomly shuffly y values if randomizer is on
+    # randomly shuffles y values if randomizer is on
     if conf['GeneralSetup']['randomizer'] is True:
         log.warning("Randomizer is enabled, so target feature will be shuffled,"
                  " and results should be null for a given model")
