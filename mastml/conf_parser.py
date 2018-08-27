@@ -80,7 +80,7 @@ def parse_conf_file(filepath):
 
     def check_general_setup_settings_are_valid():
         all_settings =  ['input_features', 'target_feature', 'metrics',
-                         'randomizer', 'validation_columns', 'not_input_features', 'grouping_feature']
+                         'randomizer', 'validation_columns', 'not_input_features', 'grouping_feature', 'data_cleaning']
         for name in GS:
             if name not in all_settings:
                 raise utils.InvalidConfParameters(

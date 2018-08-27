@@ -19,7 +19,7 @@ from sklearn.externals import joblib
 from sklearn.exceptions import UndefinedMetricWarning
 from sklearn.model_selection import LeaveOneGroupOut
 
-from . import conf_parser, data_loader, html_helper, plot_helper, utils, learning_curve
+from . import conf_parser, data_loader, html_helper, plot_helper, utils, learning_curve, data_cleaner
 from .legos import (data_splitters, feature_generators, feature_normalizers,
                     feature_selectors, model_finder, util_legos)
 from .legos import clusterers as legos_clusterers
@@ -70,6 +70,21 @@ def mastml_run(conf_path, data_path, outdir):
                                      conf['GeneralSetup']['target_feature'],
                                      conf['GeneralSetup']['grouping_feature'],
                                      conf['GeneralSetup']['not_input_features'])
+
+    # Perform data cleaning here
+    try:
+        dc = conf['GeneralSetup']['data_cleaning']
+    except KeyError:
+        log.warning("You have chosen not to specify a method of data_cleaning in the input file. By default, any feature entries "
+                    "containing NaN will result in removal of the feature and any target data entries containing NaN will "
+                    "result in removal of that target data point.")
+        dc = 'remove'
+    if dc == 'remove':
+        df = data_cleaner.remove(df, axis=1)
+        X = data_cleaner.remove(X, axis=1)
+        X_noinput = data_cleaner.remove(X_noinput, axis=1)
+        X_grouped = data_cleaner.remove(X_grouped, axis=1)
+        y = data_cleaner.remove(y, axis=0)
 
     # randomly shuffly y values if randomizer is on
     if conf['GeneralSetup']['randomizer'] is True:

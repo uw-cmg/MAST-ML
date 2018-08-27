@@ -54,8 +54,4 @@ def load_data(file_path, input_features=None, target_feature=None, grouping_feat
 
     df = df.drop(target_feature, axis=1)
 
-    # Clean data here to remove NaN. Replace later with good cleaning routines
-    df = df.dropna(axis=1, how='any')
-    X = X.dropna(axis=1, how='any')
-
     return df, X, X_noinput, X_grouped, y
