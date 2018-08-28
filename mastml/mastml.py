@@ -313,7 +313,7 @@ def mastml_run(conf_path, data_path, outdir):
                                                             scoring=learning_curve_scoring, Xgroups=X_grouped_novalidation)
                     plot_helper.plot_learning_curve(train_sizes, train_mean, test_mean, train_stdev, test_stdev,
                                                     scoring_name_nice, 'sample_learning_curve',
-                                                    join(dirname, f'data_learning_curve.png'))
+                                                    join(dirname, f'data_learning_curve'))
                     # Do feature learning curve
                     train_sizes, train_mean, test_mean, train_stdev, test_stdev = learning_curve.feature_learning_curve(X=X_novalidation, y=y_novalidation,
                                                             estimator=learning_curve_estimator, cv=learning_curve_cv,
@@ -322,7 +322,7 @@ def mastml_run(conf_path, data_path, outdir):
                                                             Xgroups=X_grouped_novalidation)
                     plot_helper.plot_learning_curve(train_sizes, train_mean, test_mean, train_stdev, test_stdev,
                                                     scoring_name_nice, 'feature_learning_curve',
-                                                    join(dirname, f'feature_learning_curve.png'))
+                                                    join(dirname, f'feature_learning_curve'))
 
 
 

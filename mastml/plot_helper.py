@@ -697,7 +697,7 @@ def plot_3d_heatmap(xs, ys, zs, heats, savepath,
     #anim.save(savepath+'.mp4', fps=5, extra_args=['-vcodec', 'libx264'])
     anim.save(savepath+'.gif', fps=5, dpi=80, writer='imagemagick')
 
-def plot_learning_curve(train_sizes, train_mean, test_mean, train_stdev, test_stdev, score_name, learning_curve_type, savepath='data_learning_curve.png'):
+def plot_learning_curve(train_sizes, train_mean, test_mean, train_stdev, test_stdev, score_name, learning_curve_type, savepath='data_learning_curve'):
 
     # Set image aspect ratio (do custom for learning curve):
     w, h = figaspect(0.75)
@@ -739,7 +739,14 @@ def plot_learning_curve(train_sizes, train_mean, test_mean, train_stdev, test_st
     else:
         raise ValueError('The param "learning_curve_type" must be either "sample_learning_curve" or "feature_learning_curve"')
     ax.set_ylabel(score_name, fontsize=16)
-    fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
+    fig.savefig(savepath+'.png', dpi=DPI, bbox_inches='tight')
+
+    # Save output data to spreadsheet
+    df_concat = pd.concat([pd.DataFrame(train_sizes), pd.DataFrame(train_mean), pd.DataFrame(train_stdev),
+                           pd.DataFrame(test_mean), pd.DataFrame(test_stdev)], 1)
+    df_concat.columns = ['train_sizes', 'train_mean', 'train_stdev', 'test_mean', 'test_stdev']
+    df_concat.to_csv(savepath+'.csv')
+
 
 ### Helpers:
 
