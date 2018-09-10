@@ -16,8 +16,6 @@ import logging
 from collections import Iterable
 from os.path import join
 from collections import OrderedDict
-from sklearn.model_selection import RepeatedKFold
-from sklearn.feature_selection import RFECV, RFE
 
 # Ignore the harmless warning about the gelsd driver on mac.
 warnings.filterwarnings(action="ignore", module="scipy",
@@ -746,7 +744,65 @@ def plot_learning_curve(train_sizes, train_mean, test_mean, train_stdev, test_st
                            pd.DataFrame(test_mean), pd.DataFrame(test_stdev)], 1)
     df_concat.columns = ['train_sizes', 'train_mean', 'train_stdev', 'test_mean', 'test_stdev']
     df_concat.to_csv(savepath+'.csv')
+    plot_learning_curve_convergence(train_sizes, test_mean, score_name, learning_curve_type, savepath)
 
+def plot_learning_curve_convergence(train_sizes, test_mean, score_name, learning_curve_type, savepath):
+    # Function to examine the minimization of error in learning curve CV scores as function of amount of data or number
+    # of features used.
+    steps = [x for x in range(len(train_sizes))]
+    test_mean = test_mean.tolist()
+    slopes = list()
+    for step, val in zip(range(len(steps)), range(len(test_mean))):
+        if step+1 < len(steps):
+            slopes.append((test_mean[val + 1] - test_mean[val]) / (steps[step + 1] - steps[step]))
+
+    # Remove first entry to steps for plotting
+    del steps[0]
+
+    # Get moving average of slopes to generate smoother curve
+    window_size = round(len(test_mean)/3)
+    steps_moving_average = pd.DataFrame(steps).rolling(window=window_size).mean()
+    slopes_moving_average = pd.DataFrame(slopes).rolling(window=window_size).mean()
+
+    #### Plotting
+    # Set image aspect ratio (do custom for learning curve):
+    w, h = figaspect(0.75)
+    fig = Figure(figsize=(w,h))
+    FigureCanvas(fig)
+    gs = plt.GridSpec(1, 1)
+    ax = fig.add_subplot(gs[0:, 0:])
+
+    max_x = max(steps)
+    min_x = min(steps)
+    max_y = max(slopes)
+    min_y = min(slopes)
+    _set_tick_labels_different(ax, max_x, min_x, max_y, min_y)
+
+    ax.plot(steps, slopes, '-o', color='blue', markersize=10, alpha=0.7)
+    ax.plot(steps_moving_average, slopes_moving_average, '-o', color='green', markersize=10, alpha=0.7)
+    ax.legend(['score slope', 'smoothed score slope'], loc='lower right', fontsize=12)
+    ax.set_xlabel('Learning curve step', fontsize=16)
+    ax.set_ylabel('Change in '+score_name, fontsize=16)
+    fig.savefig(savepath+'_convergence'+'.png', dpi=DPI, bbox_inches='tight')
+
+    if learning_curve_type == 'feature_learning_curve':
+        # First, set number optimal features to all features in case stopping criteria not met
+        n_features_optimal = len(test_mean)
+        # Determine what the optimal number of features are to use
+        stopping_criteria = 0.03
+        slopes_moving_average_list = slopes_moving_average.values.reshape(-1,).tolist()
+        for i, slope in enumerate(slopes_moving_average_list):
+            try:
+                delta = abs(-1*(slopes_moving_average_list[i+1] - slopes_moving_average_list[i])/slopes_moving_average_list[i])
+                if delta < stopping_criteria:
+                    n_features_optimal = steps[i]
+            except IndexError:
+                break
+
+        # Write optimal number of features to text file
+        f = open(savepath+'_optimalfeaturenumber.txt', 'w')
+        f.write(str(n_features_optimal)+'\n')
+        f.close()
 
 ### Helpers:
 
