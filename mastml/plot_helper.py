@@ -923,6 +923,7 @@ def plot_learning_curve_convergence(train_sizes, test_mean, score_name, learning
 ### Helpers:
 
 def trim_array(df_list):
+    # TODO: a better way to handle arrays with very different shapes? Otherwise average only uses # of points of smallest array
     # Need to make arrays all same shapes if they aren't
     sizes = [df.shape[0] for df in df_list]
     size_min = min(sizes)
