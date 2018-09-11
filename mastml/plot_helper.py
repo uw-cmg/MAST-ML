@@ -25,23 +25,18 @@ warnings.filterwarnings(action="ignore")
 
 import numpy as np
 from sklearn.metrics import confusion_matrix, roc_curve, auc, precision_recall_curve
-from sklearn.model_selection import learning_curve
-from sklearn.feature_selection import RFECV # for feature learning curve
 
 import matplotlib
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure, figaspect
-from matplotlib.ticker import MaxNLocator # TODO: used?
 from matplotlib.animation import FuncAnimation
 from matplotlib.font_manager import FontProperties
 import matplotlib.mlab as mlab
 from scipy.stats import gaussian_kde
-from scipy.integrate import cumtrapz
 from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
 
-from .utils import RFECV_train_test
 from .utils import nice_range # TODO include this in ipynb_helper
 
 matplotlib.rc('font', size=18, family='sans-serif') # set all font to bigger
@@ -576,6 +571,7 @@ def prediction_intervals(model, X, percentile=68):
     return err_down, err_up
 
 def plot_normalized_error(y_true, y_pred, savepath, model, X=None, avg_stats=None):
+    path = os.path.dirname(savepath)
     # Here: if model is random forest or Gaussian process, get real error bars. Else, just residuals
     model_name = model.__class__.__name__
     # TODO: also add support for Gradient Boosted Regressor
@@ -583,7 +579,6 @@ def plot_normalized_error(y_true, y_pred, savepath, model, X=None, avg_stats=Non
     has_model_errors = False
     if model_name in models_with_error_predictions:
         has_model_errors = True
-        # TODO: have working for averaged runs too
         if not avg_stats:
             err_down, err_up = prediction_intervals(model, X, percentile=68)
 
@@ -611,7 +606,6 @@ def plot_normalized_error(y_true, y_pred, savepath, model, X=None, avg_stats=Non
     minn = -5
     maxy = max(max(density_residuals(x)), max(mlab.normpdf(x, mu, sigma)))
     miny = min(min(density_residuals(x)), min(mlab.normpdf(x, mu, sigma)))
-    # TODO: have working for averaged runs too
     if not avg_stats:
         if has_model_errors:
             err_avg = [(abs(e1)+abs(e2))/2 for e1, e2 in zip(err_up, err_down)]
@@ -620,6 +614,30 @@ def plot_normalized_error(y_true, y_pred, savepath, model, X=None, avg_stats=Non
             ax.plot(x, density_errors(x), linewidth=4, color='purple', label="Model Errors")
             maxy = max(max(density_residuals(x)), max(mlab.normpdf(x, mu, sigma)), max(density_errors(x)))
             miny = min(min(density_residuals(x)), min(mlab.normpdf(x, mu, sigma)), min(density_errors(x)))
+            # Save data to csv file
+            data_dict = {"x values": x, "analytical gaussian": mlab.normpdf(x, mu, sigma),
+                         "model residuals": density_residuals(x), "model errors": density_errors(x)}
+            pd.DataFrame(data_dict).to_csv(savepath.split('.png')[0]+'.csv')
+        else:
+            # Save data to csv file
+            data_dict = {"x values": x, "analytical gaussian": mlab.normpdf(x, mu, sigma),
+                         "model residuals": density_residuals(x)}
+            pd.DataFrame(data_dict).to_csv(savepath.split('.png')[0]+'.csv')
+    if avg_stats:
+        if has_model_errors:
+            # Need to loop over all splits in directory and import saved model errors from csv files
+            dirs = [d[0] for d in os.walk(path)]
+            # Remove base directory from list
+            del dirs[0]
+            # Should only use average errors of test data since predictions are made using test data
+            test_err_dfs = list()
+            for dir in dirs:
+                test_err_dfs.append(np.array(pd.read_csv(dir+'/'+'test_normalized_error.csv').loc[:, 'model errors']))
+            test_err_dfs = trim_array(test_err_dfs)
+            avg_test_model_errors = np.mean(test_err_dfs, axis=0)
+            x_reduced = np.linspace(mu - 5 * sigma, mu + 5 * sigma, avg_test_model_errors.shape[0])
+            ax.plot(x_reduced, avg_test_model_errors, linewidth=4, color='purple', label="Model Errors")
+
     ax.legend(loc=0, fontsize=12, frameon=False)
     ax.set_xlabel(r"$\mathrm{x}/\mathit{\sigma}$", fontsize=18)
     ax.set_ylabel("Probability density", fontsize=18)
@@ -628,6 +646,7 @@ def plot_normalized_error(y_true, y_pred, savepath, model, X=None, avg_stats=Non
     return
 
 def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, X=None, avg_stats=None):
+    path = os.path.dirname(savepath)
     # Here: if model is random forest or Gaussian process, get real error bars. Else, just residuals
     model_name = model.__class__.__name__
     # TODO: also add support for Gradient Boosted Regressor
@@ -635,7 +654,6 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, X=None, av
     has_model_errors = False
     if model_name in models_with_error_predictions:
         has_model_errors = True
-        # TODO: have working for averaged runs too
         if not avg_stats:
             err_down, err_up = prediction_intervals(model, X, percentile=68)
 
@@ -665,7 +683,6 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, X=None, av
     ax.step(X_residuals, n_residuals, linewidth=3, color='green', label="Model Residuals")
     ax.step(X_analytic, n_analytic, linewidth=3, color='blue', label="Analytical Gaussian")
 
-    # TODO: have working for averaged runs too
     if not avg_stats:
         if has_model_errors:
             err_avg = [(abs(e1)+abs(e2))/2 for e1, e2 in zip(err_up, err_down)]
@@ -673,6 +690,38 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, X=None, av
             n_errors = np.arange(1, len(model_errors) + 1) / np.float(len(model_errors))
             X_errors = np.sort(model_errors)
             ax.step(X_errors, n_errors, linewidth=3, color='purple', label="Model Errors")
+            # Save data to csv file
+            data_dict = {"x analytical": X_analytic, "analytical gaussian": n_analytic, "x residuals": X_residuals,
+                         "model residuals": n_residuals, "x errors": X_errors, "model errors": n_errors}
+            # Save this way to avoid issue with different array sizes in data_dict
+            df = pd.DataFrame.from_dict(data_dict, orient='index')
+            df = df.transpose()
+            df.to_csv(savepath.split('.png')[0]+'.csv', index=False)
+        else:
+            # Save data to csv file
+            data_dict = {"x analytical": X_analytic, "analytical gaussian": n_analytic, "x residuals": X_residuals,
+                         "model residuals": n_residuals}
+            # Save this way to avoid issue with different array sizes in data_dict
+            df = pd.DataFrame.from_dict(data_dict, orient='index')
+            df = df.transpose()
+            df.to_csv(savepath.split('.png')[0]+'.csv', index=False)
+    if avg_stats:
+        if has_model_errors:
+            # Need to loop over all splits in directory and import saved model errors from csv files
+            dirs = [d[0] for d in os.walk(path)]
+            # Remove base directory from list
+            del dirs[0]
+            # Should only use average errors of test data since predictions are made using test data
+            test_err_dfs = list()
+            X_errors_dfs = list()
+            for dir in dirs:
+                test_err_dfs.append(np.array(pd.read_csv(dir + '/' + 'test_cumulative_normalized_error.csv').loc[:, 'model errors']))
+                X_errors_dfs.append(np.array(pd.read_csv(dir + '/' + 'test_cumulative_normalized_error.csv').loc[:, 'x errors']))
+            test_err_dfs = trim_array(test_err_dfs)
+            X_errors_dfs = trim_array(X_errors_dfs)
+            avg_test_model_errors = np.mean(test_err_dfs, axis=0)
+            avg_X_errors = np.mean(X_errors_dfs, axis=0)
+            ax.step(avg_X_errors, avg_test_model_errors, linewidth=4, color='purple', label="Model Errors")
 
     ax.legend(loc=0, fontsize=14, frameon=False)
     xlabels = np.linspace(2, 3, 3)
@@ -680,9 +729,11 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, X=None, av
     axin = zoomed_inset_axes(ax, 2.5, loc=7)
     axin.step(X_residuals, n_residuals, linewidth=3, color='green', label="Model Residuals")
     axin.step(X_analytic, n_analytic, linewidth=3, color='blue', label="Analytical Gaussian")
-    if not avg_stats:
-        if has_model_errors:
+    if has_model_errors:
+        if not avg_stats:
             axin.step(X_errors, n_errors, linewidth=3, color='purple', label="Model Errors")
+        if avg_stats:
+            axin.step(avg_X_errors, avg_test_model_errors, linewidth=3, color='purple', label="Model Errors")
     axin.set_xticklabels(xlabels, fontsize=8)
     axin.set_yticklabels(ylabels, fontsize=8)
     axin.set_xlim(2, 3)
@@ -870,6 +921,19 @@ def plot_learning_curve_convergence(train_sizes, test_mean, score_name, learning
         f.close()
 
 ### Helpers:
+
+def trim_array(df_list):
+    # Need to make arrays all same shapes if they aren't
+    sizes = [df.shape[0] for df in df_list]
+    size_min = min(sizes)
+    df_list_ = list()
+    for i, df in enumerate(df_list):
+        if df.shape[0] > size_min:
+            while df.shape[0] > size_min:
+                df = np.delete(df, -1)
+        df_list_.append(df)
+    df_list = df_list_
+    return df_list
 
 def rounder(delta):
     if 0.001 <= delta < 0.01:
