@@ -600,7 +600,7 @@ def mastml_run(conf_path, data_path, outdir):
             if PlotSettings['train_test_plots']:
                 plot_helper.make_train_test_plots(
                         split_result, path, is_classification, 
-                        label=y.name, groups=grouping_data)
+                        label=y.name, model=model, train_X=train_X, test_X=test_X, groups=grouping_data)
 
             if is_validation:
                 _write_stats(split_result['train_metrics'],
@@ -645,7 +645,7 @@ def mastml_run(conf_path, data_path, outdir):
             return s[0], s[len(split_results)//2], s[-1]
         worst, median, best = get_best_worst_median_runs()
 
-        def make_pred_vs_true_plots():
+        def make_pred_vs_true_plots(model):
             if PlotSettings['predicted_vs_true']:
                 plot_helper.plot_best_worst_split(y.values, best, worst,
                                                   join(main_path, 'best_worst_split.png'), label=y.name)
@@ -663,15 +663,15 @@ def mastml_run(conf_path, data_path, outdir):
                                                       metrics_dict, avg_test_stats, label=y.name)
             if PlotSettings['average_normalized_errors']:
                 plot_helper.plot_normalized_error(y.values, predictions,
-                                                  join(main_path, 'average_normalized_errors.png'),
-                                                  avg_test_stats)
+                                                  join(main_path, 'average_normalized_errors.png'), model, X=None,
+                                                  avg_stats=avg_test_stats)
             if PlotSettings['average_cumulative_normalized_errors']:
                 plot_helper.plot_cumulative_normalized_error(y.values, predictions,
-                                                  join(main_path, 'average_cumulative_normalized_errors.png'),
-                                                  avg_test_stats)
+                                                  join(main_path, 'average_cumulative_normalized_errors.png'), model, X=None,
+                                                  avg_stats=avg_test_stats)
 
         if not is_classification:
-            make_pred_vs_true_plots()
+            make_pred_vs_true_plots(model=model)
 
         return split_results
 

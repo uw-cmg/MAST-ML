@@ -20,6 +20,8 @@ from collections import OrderedDict
 # Ignore the harmless warning about the gelsd driver on mac.
 warnings.filterwarnings(action="ignore", module="scipy",
                         message="^internal gelsd")
+# Ignore matplotlib deprecation warning (set as all warnings for now)
+warnings.filterwarnings(action="ignore")
 
 import numpy as np
 from sklearn.metrics import confusion_matrix, roc_curve, auc, precision_recall_curve
@@ -35,6 +37,7 @@ from matplotlib.animation import FuncAnimation
 from matplotlib.font_manager import FontProperties
 import matplotlib.mlab as mlab
 from scipy.stats import gaussian_kde
+from scipy.integrate import cumtrapz
 from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
 
@@ -56,7 +59,7 @@ log = logging.getLogger('mastml') # the real logger
 from .ipynb_maker import ipynb_maker # TODO: fix cyclic import
 from .metrics import nice_names
 
-def make_train_test_plots(run, path, is_classification, label, groups=None):
+def make_train_test_plots(run, path, is_classification, label, model, train_X, test_X, groups=None):
     y_train_true, y_train_pred, y_test_true = \
         run['y_train_true'], run['y_train_pred'], run['y_test_true']
     y_test_pred, train_metrics, test_metrics = \
@@ -90,16 +93,16 @@ def make_train_test_plots(run, path, is_classification, label, groups=None):
                           path, label=label)
 
         title = 'train_normalized_error'
-        plot_normalized_error(y_train_true, y_train_pred, join(path, title+'.png'))
+        plot_normalized_error(y_train_true, y_train_pred, join(path, title+'.png'), model, train_X)
 
         title = 'test_normalized_error'
-        plot_normalized_error(y_test_true, y_test_pred, join(path, title+'.png'))
+        plot_normalized_error(y_test_true, y_test_pred, join(path, title+'.png'), model, test_X)
 
         title = 'train_cumulative_normalized_error'
-        plot_cumulative_normalized_error(y_train_true, y_train_pred, join(path, title+'.png'))
+        plot_cumulative_normalized_error(y_train_true, y_train_pred, join(path, title+'.png'), model, train_X)
 
         title = 'test_cumulative_normalized_error'
-        plot_cumulative_normalized_error(y_test_true, y_test_pred, join(path, title+'.png'))
+        plot_cumulative_normalized_error(y_test_true, y_test_pred, join(path, title+'.png'), model, test_X)
 
         title = 'train_residuals_histogram'
         plot_residuals_histogram(y_train_true, y_train_pred,
@@ -548,42 +551,94 @@ def plot_metric_vs_group(metric, groups, stats, avg_stats, savepath):
     fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
     return
 
-def plot_normalized_error(y_true, y_pred, savepath, avg_stats=None):
+# Prediction intervals adapted from https://blog.datadive.net/prediction-intervals-for-random-forests/
+def prediction_intervals(model, X, percentile=68):
+    err_down = list()
+    err_up = list()
+    X_aslist = X.values.tolist()
+    for x in range(len(X_aslist)):
+        preds = list()
+        if model.__class__.__name__=='RandomForestRegressor':
+            for pred in model.estimators_:
+                preds.append(pred.predict(np.array(X_aslist[x]).reshape(1,-1))[0])
+
+        elif model.__class__.__name__=='GaussianProcessRegressor':
+            preds = model.predict(X, return_std=True)
+
+        e_down = np.percentile(preds, (100 - percentile) / 2. )
+        e_up = np.percentile(preds, 100 - (100 - percentile) / 2.)
+        if e_up == 0.0:
+            e_up = 10**10
+        if e_down == 0.0:
+            e_down = 10**10
+        err_down.append(e_down)
+        err_up.append(e_up)
+    return err_down, err_up
+
+def plot_normalized_error(y_true, y_pred, savepath, model, X=None, avg_stats=None):
+    # Here: if model is random forest or Gaussian process, get real error bars. Else, just residuals
+    model_name = model.__class__.__name__
+    # TODO: also add support for Gradient Boosted Regressor
+    models_with_error_predictions = ['RandomForestRegressor', 'GaussianProcessRegressor']
+    has_model_errors = False
+    if model_name in models_with_error_predictions:
+        has_model_errors = True
+        # TODO: have working for averaged runs too
+        if not avg_stats:
+            err_down, err_up = prediction_intervals(model, X, percentile=68)
+
     if avg_stats:
         y_pred_ = np.array([nice_mean(y_p) for y_p in y_pred])
         y_true_ = y_true
     else:
         y_pred_ = y_pred
         y_true_ = y_true
+
     #Need to remove NaN's before plotting. These will be present when doing validation runs. Note NaN's only show up in y_pred_
     y_true_ = y_true_[~np.isnan(y_pred_)]
     y_pred_ = y_pred_[~np.isnan(y_pred_)]
 
     x_align = 0.64
     fig, ax = make_fig_ax(x_align=x_align)
-    #mu = float(np.mean(y_true))
-    #sigma = float(np.std(y_true))
     mu = 0
     sigma = 1
-    fraction = (y_true_-y_pred_)/np.std(y_true_-y_pred_)
-    density = gaussian_kde(fraction)
+    residuals = (y_true_-y_pred_)/np.std(y_true_-y_pred_)
+    density_residuals = gaussian_kde(residuals)
     x = np.linspace(mu - 5 * sigma, mu + 5 * sigma, y_true_.shape[0])
     ax.plot(x, mlab.normpdf(x, mu, sigma), linewidth=4, color='blue', label="Analytical Gaussian")
-    ax.plot(x, density(x), linewidth=4, color='green', label="Model Errors")
-    ax.legend(loc=0, fontsize=12, frameon=False)
-    ax.set_xlabel(r"$\mathrm{x}/\mathit{\sigma}$", fontsize=18)
-    ax.set_ylabel("Fraction", fontsize=18)
-    #ax.set_xlim(-5, 5)
-    #ax.set_ylim(0, 0.6)
+    ax.plot(x, density_residuals(x), linewidth=4, color='green', label="Model Residuals")
     maxx = 5
     minn = -5
-    maxy = max(max(density(x)), max(mlab.normpdf(x, mu, sigma)))
-    miny = min(min(density(x)), min(mlab.normpdf(x, mu, sigma)))
+    maxy = max(max(density_residuals(x)), max(mlab.normpdf(x, mu, sigma)))
+    miny = min(min(density_residuals(x)), min(mlab.normpdf(x, mu, sigma)))
+    # TODO: have working for averaged runs too
+    if not avg_stats:
+        if has_model_errors:
+            err_avg = [(abs(e1)+abs(e2))/2 for e1, e2 in zip(err_up, err_down)]
+            model_errors = (y_true_-y_pred_)/err_avg
+            density_errors = gaussian_kde(model_errors)
+            ax.plot(x, density_errors(x), linewidth=4, color='purple', label="Model Errors")
+            maxy = max(max(density_residuals(x)), max(mlab.normpdf(x, mu, sigma)), max(density_errors(x)))
+            miny = min(min(density_residuals(x)), min(mlab.normpdf(x, mu, sigma)), min(density_errors(x)))
+    ax.legend(loc=0, fontsize=12, frameon=False)
+    ax.set_xlabel(r"$\mathrm{x}/\mathit{\sigma}$", fontsize=18)
+    ax.set_ylabel("Probability density", fontsize=18)
     _set_tick_labels_different(ax, maxx, minn, maxy, miny)
     fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
     return
 
-def plot_cumulative_normalized_error(y_true, y_pred, savepath, avg_stats=None):
+def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, X=None, avg_stats=None):
+    # Here: if model is random forest or Gaussian process, get real error bars. Else, just residuals
+    model_name = model.__class__.__name__
+    # TODO: also add support for Gradient Boosted Regressor
+    models_with_error_predictions = ['RandomForestRegressor', 'GaussianProcessRegressor']
+    has_model_errors = False
+    if model_name in models_with_error_predictions:
+        has_model_errors = True
+        # TODO: have working for averaged runs too
+        if not avg_stats:
+            err_down, err_up = prediction_intervals(model, X, percentile=68)
+
     if avg_stats:
         y_pred_ = np.array([nice_mean(y_p) for y_p in y_pred])
         y_true_ = y_true
@@ -600,24 +655,34 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, avg_stats=None):
 
     analytic_gau = np.random.normal(0, 1, 10000)
     analytic_gau = abs(analytic_gau)
-    n1 = np.arange(1, len(analytic_gau) + 1) / np.float(len(analytic_gau))
-    Xs1 = np.sort(analytic_gau)
-    fraction = abs((y_true_-y_pred_)/np.std(y_true_-y_pred_))
-    n = np.arange(1, len(fraction) + 1) / np.float(len(fraction))
-    Xs = np.sort(fraction) #r"$\mathrm{Predicted \/ Value}, \mathit{eV}$"
+    n_analytic = np.arange(1, len(analytic_gau) + 1) / np.float(len(analytic_gau))
+    X_analytic = np.sort(analytic_gau)
+    residuals = abs((y_true_-y_pred_)/np.std(y_true_-y_pred_))
+    n_residuals = np.arange(1, len(residuals) + 1) / np.float(len(residuals))
+    X_residuals = np.sort(residuals) #r"$\mathrm{Predicted \/ Value}, \mathit{eV}$"
     ax.set_xlabel(r"$\mathrm{x}/\mathit{\sigma}$", fontsize=18)
     ax.set_ylabel("Fraction", fontsize=18)
-    ax.step(Xs, n, linewidth=3, color='green', label="Model Cumulative Errors")
-    ax.step(Xs1, n1, linewidth=3, color='blue', label="Analytical Gaussian")
-    #ax.set_xlim(0,5)
-    #ax.set_ylim(0,1)
+    ax.step(X_residuals, n_residuals, linewidth=3, color='green', label="Model Residuals")
+    ax.step(X_analytic, n_analytic, linewidth=3, color='blue', label="Analytical Gaussian")
+
+    # TODO: have working for averaged runs too
+    if not avg_stats:
+        if has_model_errors:
+            err_avg = [(abs(e1)+abs(e2))/2 for e1, e2 in zip(err_up, err_down)]
+            model_errors = abs((y_true_-y_pred_)/err_avg)
+            n_errors = np.arange(1, len(model_errors) + 1) / np.float(len(model_errors))
+            X_errors = np.sort(model_errors)
+            ax.step(X_errors, n_errors, linewidth=3, color='purple', label="Model Errors")
 
     ax.legend(loc=0, fontsize=14, frameon=False)
     xlabels = np.linspace(2, 3, 3)
     ylabels = np.linspace(0.9, 1, 2)
     axin = zoomed_inset_axes(ax, 2.5, loc=7)
-    axin.step(Xs, n, linewidth=3, color='green', label="Model Cumulative Errors")
-    axin.step(Xs1, n1, linewidth=3, color='blue', label="Analytical Gaussian")
+    axin.step(X_residuals, n_residuals, linewidth=3, color='green', label="Model Residuals")
+    axin.step(X_analytic, n_analytic, linewidth=3, color='blue', label="Analytical Gaussian")
+    if not avg_stats:
+        if has_model_errors:
+            axin.step(X_errors, n_errors, linewidth=3, color='purple', label="Model Errors")
     axin.set_xticklabels(xlabels, fontsize=8)
     axin.set_yticklabels(ylabels, fontsize=8)
     axin.set_xlim(2, 3)
