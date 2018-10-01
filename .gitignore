@@ -1,2 +1,7 @@
 *.pyc
-*.ipynb_checkpoints*
+*__pycache__
+results/
+.ipynb_checkpoints/
+build/
+dist/
+mastml.egg-info/
