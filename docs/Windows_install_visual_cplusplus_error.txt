@@ -1,0 +1,14 @@
+The solution I found for the visual c++ 14.0 error was just to install that specific version of visual c++ build tools. The problem that is really annoying about doing this is that often times you won't be able to install 14.0 unless you uninstall all of the newer versions that may be installed on your computer. 3-4 difference versions of visual c++ installed.
+
+Here is a link to a thread with download links for the 2015 version (14.0)
+https://social.msdn.microsoft.com/Forums/sqlserver/en-US/72da6400-7a22-4bcc-b8d3-6423086289f0/visual-c-2015-redistributable-setup-failed-0x80070666-x64-amp-x86?forum=vssetup
+
+Alternatively if you follow the advice in the following threads it also seems to work for some people by installing visual studio 2017 and then enabling some developer options which enables the backwards compatibility.
+here is a download link for visual studio 2017: https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2017
+
+and the threads that i've found useful:
+https://developercommunity.visualstudio.com/content/problem/14701/visual-c-redistributable-for-visual-studio-2015-ca.html
+
+https://stackoverflow.com/questions/29846087/microsoft-visual-c-14-0-is-required-unable-to-find-vcvarsall-bat
+
+Another solution, which is also pointed out in those threads is to try installing using pip, which can avoid the problem.
