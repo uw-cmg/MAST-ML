@@ -315,25 +315,18 @@ def plot_predicted_vs_true(train_quad, test_quad, outdir, label):
             handles = dict()
             unique_groups = np.unique(np.concatenate((train_groups, test_groups), axis=0))
             log.debug(' '*12 + 'unique groups: ' +str(list(unique_groups)))
-            #TODO: make set larger
-            colors = ['blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow',
-                      'blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow',
-                      'blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow',
-                      'blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow',
-                      'blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow',
-                      'blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow']
-            markers = ['o', 'o', 'o', 'o', 'o', 'o', 'o',
-                       'v', 'v', 'v', 'v', 'v', 'v', 'v',
-                       '^', '^', '^', '^', '^', '^', '^',
-                       's', 's', 's', 's', 's', 's', 's',
-                       'p', 'p', 'p', 'p', 'p', 'p', 'p',
-                       'h', 'h', 'h', 'h', 'h', 'h', 'h']
+            colors = ['blue', 'red', 'green', 'purple', 'orange', 'black']
+            markers = ['o', 'v', '^', 's', 'p', 'h', 'D', '*', 'X', '<', '>', 'P']
+            colorcount = markercount = 0
             for groupcount, group in enumerate(unique_groups):
-                markercount = groupcount*len(colors)-groupcount
                 mask = groups == group
                 log.debug(' '*12 + f'{group} group_percent = {np.count_nonzero(mask) / len(groups)}')
-                handles[group] = ax.scatter(y_true[mask], y_pred[mask], label=group, color=colors[groupcount],
-                                            marker=markers[groupcount], s=100, alpha=0.7)
+                handles[group] = ax.scatter(y_true[mask], y_pred[mask], label=group, color=colors[colorcount],
+                                            marker=markers[markercount], s=100, alpha=0.7)
+                colorcount += 1
+                if colorcount % len(colors) == 0:
+                    markercount += 1
+                    colorcount = 0
             ax.legend(handles.values(), handles.keys(), loc='lower right', fontsize=12)
 
         # set axis labels
@@ -370,22 +363,17 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y', label='tar
     if groups is None:
         ax.scatter(x, y, c='b', edgecolor='darkblue', zorder=2, s=100, alpha=0.7)
     else:
+        colors = ['blue', 'red', 'green', 'purple', 'orange', 'black']
+        markers = ['o', 'v', '^', 's', 'p', 'h', 'D', '*', 'X', '<', '>', 'P']
+        colorcount = markercount = 0
         for groupcount, group in enumerate(np.unique(groups)):
-            colors = ['blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow',
-                      'blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow',
-                      'blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow',
-                      'blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow',
-                      'blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow',
-                      'blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow']
-            markers = ['o', 'o', 'o', 'o', 'o', 'o', 'o',
-                       'v', 'v', 'v', 'v', 'v', 'v', 'v',
-                       '^', '^', '^', '^', '^', '^', '^',
-                       's', 's', 's', 's', 's', 's', 's',
-                       'p', 'p', 'p', 'p', 'p', 'p', 'p',
-                       'h', 'h', 'h', 'h', 'h', 'h', 'h']
             mask = groups == group
-            ax.scatter(x[mask], y[mask], label=group, color=colors[groupcount], marker=markers[groupcount], s=100, alpha=0.7)
+            ax.scatter(x[mask], y[mask], label=group, color=colors[colorcount], marker=markers[markercount], s=100, alpha=0.7)
             ax.legend(loc='lower right', fontsize=12)
+            colorcount += 1
+            if colorcount % len(colors) == 0:
+                markercount += 1
+                colorcount = 0
 
     ax.set_xlabel(xlabel, fontsize=16)
     ax.set_ylabel('Value of '+label, fontsize=16)
