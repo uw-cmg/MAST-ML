@@ -71,6 +71,7 @@ def mastml_run(conf_path, data_path, outdir):
                                      conf['GeneralSetup']['grouping_feature'],
                                      conf['GeneralSetup']['not_input_features'])
 
+
     # Perform data cleaning here
     dc = conf['DataCleaning']
     if 'cleaning_method' not in dc.keys():
@@ -196,7 +197,16 @@ def mastml_run(conf_path, data_path, outdir):
 
     snatch_model_cv_and_scoring_for_learning_curve()
 
+
     models = list(models.items())
+    #for model in models:
+    #    if model[0] == 'GaussianProcessRegressor':
+    #        from sklearn.gaussian_process import GaussianProcessRegressor
+    #        from sklearn.gaussian_process.kernels import WhiteKernel
+    #        gpr = GaussianProcessRegressor(kernel=WhiteKernel())
+    #        m = ('GaussianProcessRegressor', gpr)
+    #models.append(m)
+    #del models[0]
 
     # Snatch splitter for use in feature selection, particularly RFECV
     splitters = OrderedDict(splitters)  # for easier modification
