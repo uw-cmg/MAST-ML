@@ -351,7 +351,10 @@ class MagpieFeatureGeneration(object):
                     if line + 1 == v:
                         if "Missing" not in feature_value and "NA" not in feature_value:
                             if feature_name != "OxidationStates":
-                                atomic_values[feature_name] = float(feature_value.strip())
+                                try:
+                                    atomic_values[feature_name] = float(feature_value.strip())
+                                except ValueError:
+                                    atomic_values[feature_name] = 'NaN'
                         if "Missing" in feature_value:
                             atomic_values[feature_name] = 'NaN'
                         if "NA" in feature_value:
