@@ -19,10 +19,10 @@ from sklearn.externals import joblib
 from sklearn.exceptions import UndefinedMetricWarning
 from sklearn.model_selection import LeaveOneGroupOut
 
-from . import conf_parser, data_loader, html_helper, plot_helper, utils, learning_curve, data_cleaner
-from .legos import (data_splitters, feature_generators, feature_normalizers,
+from mastml import conf_parser, data_loader, html_helper, plot_helper, utils, learning_curve, data_cleaner
+from mastml.legos import (data_splitters, feature_generators, feature_normalizers,
                     feature_selectors, model_finder, util_legos)
-from .legos import clusterers as legos_clusterers
+from mastml.legos import clusterers as legos_clusterers
 
 log = logging.getLogger('mastml')
 
