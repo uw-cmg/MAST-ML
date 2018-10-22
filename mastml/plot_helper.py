@@ -315,6 +315,7 @@ def plot_predicted_vs_true(train_quad, test_quad, outdir, label):
             handles = dict()
             unique_groups = np.unique(np.concatenate((train_groups, test_groups), axis=0))
             log.debug(' '*12 + 'unique groups: ' +str(list(unique_groups)))
+            #TODO: make set larger
             colors = ['blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow',
                       'blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow',
                       'blue', 'red', 'green', 'purple', 'orange', 'black', 'yellow',
@@ -632,11 +633,64 @@ def plot_normalized_error(y_true, y_pred, savepath, model, X=None, avg_stats=Non
             # Should only use average errors of test data since predictions are made using test data
             test_err_dfs = list()
             for dir in dirs:
-                test_err_dfs.append(np.array(pd.read_csv(dir+'/'+'test_normalized_error.csv').loc[:, 'model errors']))
-            test_err_dfs = trim_array(test_err_dfs)
-            avg_test_model_errors = np.mean(test_err_dfs, axis=0)
+                test_err_dfs.append(np.array(pd.read_csv(os.path.join(dir, 'test_normalized_error.csv')).loc[:, 'model errors']))
+
+            ###############################
+            # Resize arrays here
+            #TODO: revisit this to make work and clean up
+
+            max_length = 0
+            for df in test_err_dfs:
+                print(df.shape[0])
+                if df.shape[0] > max_length:
+                    max_length = df.shape[0]
+            #print('Max length')
+            test_err_dfs_ = list()
+            for df in test_err_dfs:
+                if df.shape[0] < max_length:
+                    df_ = np.append(df, np.repeat(np.nan, max_length-df.shape[0]))
+                    test_err_dfs_.append(df_)
+                else:
+                    test_err_dfs_.append(df)
+            test_err_dfs = test_err_dfs_
+            #for df in test_err_dfs:
+                #print(df.shape[0])
+            ###############################
+            #test_err_dfs = trim_array(test_err_dfs)
+
+            # Need to do per-row averaging due to arrays of different lengths (and NaN values)
+            """
+            def apply_mean(arr):
+                mean_list = list()
+                print('DOING APPLY MEAN')
+                length = 0
+                print('array list size')
+                print(arr.shape)
+                print(arr[0])
+                for row in arr:
+                    print(row)
+                    if ~np.isnan(row):
+                        length += 1
+                    print('counting length')
+                    print(length)
+                    mean_list.append(sum(row)/length)
+                return np.array(mean_list)
+            """
+
+            #for df in test_err_dfs:
+            #mean_arr = apply_mean(test_err_dfs)
+            #print('MEAN ARRAY')
+            #print(mean_arr)
+            #print(mean_arr.shape)
+            #print(test_err_dfs)
+            avg_test_model_errors = np.nanmean(test_err_dfs, axis=0)
+            #print(avg_test_model_errors.shape)
+            #exit()
             x_reduced = np.linspace(mu - 5 * sigma, mu + 5 * sigma, avg_test_model_errors.shape[0])
+            #density_errors_average = gaussian_kde(avg_test_model_errors)
             ax.plot(x_reduced, avg_test_model_errors, linewidth=4, color='purple', label="Model Errors")
+            #print(x_reduced)
+            #print(avg_test_model_errors)
 
     ax.legend(loc=0, fontsize=12, frameon=False)
     ax.set_xlabel(r"$\mathrm{x}/\mathit{\sigma}$", fontsize=18)
@@ -692,7 +746,7 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, X=None, av
             ax.step(X_errors, n_errors, linewidth=3, color='purple', label="Model Errors")
             # Save data to csv file
             data_dict = {"x analytical": X_analytic, "analytical gaussian": n_analytic, "x residuals": X_residuals,
-                         "model residuals": n_residuals, "x errors": X_errors, "model errors": n_errors}
+                         "model residuals": n_residuals, "x errors": X_errors, "model errors": model_errors}
             # Save this way to avoid issue with different array sizes in data_dict
             df = pd.DataFrame.from_dict(data_dict, orient='index')
             df = df.transpose()
@@ -715,13 +769,56 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, X=None, av
             test_err_dfs = list()
             X_errors_dfs = list()
             for dir in dirs:
-                test_err_dfs.append(np.array(pd.read_csv(dir + '/' + 'test_cumulative_normalized_error.csv').loc[:, 'model errors']))
-                X_errors_dfs.append(np.array(pd.read_csv(dir + '/' + 'test_cumulative_normalized_error.csv').loc[:, 'x errors']))
-            test_err_dfs = trim_array(test_err_dfs)
-            X_errors_dfs = trim_array(X_errors_dfs)
-            avg_test_model_errors = np.mean(test_err_dfs, axis=0)
-            avg_X_errors = np.mean(X_errors_dfs, axis=0)
-            ax.step(avg_X_errors, avg_test_model_errors, linewidth=4, color='purple', label="Model Errors")
+                test_err_dfs.append(np.array(pd.read_csv(os.path.join(dir,'test_cumulative_normalized_error.csv')).loc[:, 'model errors']))
+                X_errors_dfs.append(np.array(pd.read_csv(os.path.join(dir,'test_cumulative_normalized_error.csv')).loc[:, 'x errors']))
+
+            ###############################
+            # Resize arrays here
+            # TODO: revisit this to make work and clean up
+            max_length = 0
+            for df in test_err_dfs:
+                print(df.shape[0])
+                if df.shape[0] > max_length:
+                    max_length = df.shape[0]
+            #print('Max length')
+            test_err_dfs_ = list()
+            for df in test_err_dfs:
+                if df.shape[0] < max_length:
+                    df_ = np.append(df, np.repeat(np.nan, max_length - df.shape[0]))
+                    test_err_dfs_.append(df_)
+                else:
+                    test_err_dfs_.append(df)
+            test_err_dfs = test_err_dfs_
+            #for df in test_err_dfs:
+                #print(df.shape[0])
+            ###############################
+            ###############################
+            # Resize arrays here
+
+            #max_length = 0
+            #for df in X_errors_dfs:
+            #    print(df.shape[0])
+            #    if df.shape[0] > max_length:
+            #        max_length = df.shape[0]
+            #print('Max length')
+            #X_errors_dfs_ = list()
+            #for df in X_errors_dfs:
+            #    if df.shape[0] < max_length:
+            #        df_ = np.append(df, np.repeat(np.nan, max_length - df.shape[0]))
+            #        X_errors_dfs_.append(df_)
+            #    else:
+            #        X_errors_dfs_.append(df)
+            #X_errors_dfs = X_errors_dfs_
+            #for df in X_errors_dfs:
+            #    print(df.shape[0])
+            ###############################
+            #test_err_dfs = trim_array(test_err_dfs)
+            #X_errors_dfs = trim_array(X_errors_dfs)
+            avg_test_model_errors = np.nanmean(test_err_dfs, axis=0)
+            n_errors_avg = np.arange(1, len(avg_test_model_errors) + 1) / np.float(len(avg_test_model_errors))
+            #avg_X_errors = np.nanmean(X_errors_dfs, axis=0)
+            avg_X_errors = np.sort(avg_test_model_errors)
+            ax.step(avg_X_errors, n_errors_avg, linewidth=4, color='purple', label="Model Errors")
 
     ax.legend(loc=0, fontsize=14, frameon=False)
     xlabels = np.linspace(2, 3, 3)
@@ -905,7 +1002,8 @@ def plot_learning_curve_convergence(train_sizes, test_mean, score_name, learning
         # First, set number optimal features to all features in case stopping criteria not met
         n_features_optimal = len(test_mean)
         # Determine what the optimal number of features are to use
-        stopping_criteria = 0.03
+        # TODO: have user set stopping criteria. Have default by 0.005 (0.5%)
+        stopping_criteria = 0.005
         slopes_moving_average_list = slopes_moving_average.values.reshape(-1,).tolist()
         for i, slope in enumerate(slopes_moving_average_list):
             try:
