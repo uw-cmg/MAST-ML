@@ -70,7 +70,8 @@ def mastml_run(conf_path, data_path, outdir):
                                      conf['GeneralSetup']['target_feature'],
                                      conf['GeneralSetup']['grouping_feature'],
                                      conf['GeneralSetup']['not_input_features'])
-
+    if not conf['GeneralSetup']['grouping_feature']:
+        X_grouped = pd.DataFrame()
 
     # Perform data cleaning here
     dc = conf['DataCleaning']
