@@ -13,7 +13,7 @@ from scipy.linalg import orth
 log = logging.getLogger('mastml')
 
 def remove(df, axis):
-    # Simply remove the full column or row of values if one of them contains NaN or is blank
+    """Simply remove the full column or row of values if one of them contains NaN or is blank"""
     # TODO: add cleaning for y data (remove rows, and need to remove rows from other df's as well
     #df_nan = df[pd.isnull(df)]
     #nan_indices = df_nan.index
