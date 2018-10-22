@@ -6,14 +6,23 @@ from sklearn.metrics import make_scorer
 from configobj import ConfigObj
 import logging
 
-from . import metrics, utils
-from .legos.model_finder import check_models_mixed
-from .legos import feature_selectors, model_finder
+from mastml import metrics, utils
+from mastml.legos.model_finder import check_models_mixed
+from mastml.legos import feature_selectors, model_finder
 
 log = logging.getLogger('mastml')
 
 def parse_conf_file(filepath):
-    "Accepts the filepath of a conf file and returns its parsed dictionary"
+    """
+    Method that accepts the filepath of an input configuration file and returns its parsed dictionary
+
+    Args:
+        filepath: (str), path to config file
+
+    Returns:
+        conf: (dict): dictionary parsed from config file
+
+    """
 
     conf = ConfigObj(filepath)
 
