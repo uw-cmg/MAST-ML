@@ -1,5 +1,5 @@
 """
-Module for cleaning dataframes (e.g. removing NaN, imputation, etc.)
+The data_cleaner module is used to clean missing or NaN values from pandas dataframes (e.g. removing NaN, imputation, etc.)
 """
 
 import pandas as pd
@@ -13,7 +13,17 @@ from scipy.linalg import orth
 log = logging.getLogger('mastml')
 
 def remove(df, axis):
-    """Simply remove the full column or row of values if one of them contains NaN or is blank"""
+    """
+    Method that removes a full column or row of data values if one column or row contains NaN or is blank
+
+    Args:
+        df: (dataframe), pandas dataframe containing data
+        axis: (int), whether to remove rows (axis=0) or columns (axis=1)
+
+    Returns:
+        df: (dataframe): dataframe with NaN or missing values removed
+
+    """
     # TODO: add cleaning for y data (remove rows, and need to remove rows from other df's as well
     #df_nan = df[pd.isnull(df)]
     #nan_indices = df_nan.index
@@ -22,7 +32,18 @@ def remove(df, axis):
     return df
 
 def imputation(df, strategy, cols_to_leave_out=None):
-    # Impute values to the missing places based on the median, mean, etc. of the data in the column
+    """
+    Method that imputes values to the missing places based on the median, mean, etc. of the data in the column
+
+    Args:
+        df: (dataframe), pandas dataframe containing data
+        strategy: (str), method of imputation, e.g. median, mean, etc.
+        cols_to_leave_out: (list), list of column indices to not include in imputation
+
+    Returns:
+        df: (dataframe): dataframe with NaN or missing values resolved via imputation
+
+    """
     if cols_to_leave_out is None:
         df_imputed = pd.DataFrame(Imputer(missing_values='NaN', strategy=strategy, axis=0).fit_transform(df))
     else:
@@ -35,7 +56,17 @@ def imputation(df, strategy, cols_to_leave_out=None):
     return df
 
 def ppca(df, cols_to_leave_out=None):
-    # Perform a recursive PCA routine to use PCA of known columns to fill in missing values in particular column
+    """
+    Method that performs a recursive PCA routine to use PCA of known columns to fill in missing values in particular column
+
+    Args:
+        df: (dataframe), pandas dataframe containing data
+        cols_to_leave_out: (list), list of column indices to not include in imputation
+
+    Returns:
+        df: (dataframe): dataframe with NaN or missing values resolved via imputation
+
+    """
     pca_magic = PPCA()
     if cols_to_leave_out is None:
         pca_magic.fit(np.array(df))
@@ -50,15 +81,29 @@ def ppca(df, cols_to_leave_out=None):
     return df
 
 def columns_with_strings(df):
+    """
+    Method that ascertains which columns in data contain string entries
+
+    Args:
+        df: (dataframe), pandas dataframe containing data
+
+    Returns:
+        str_columns: (list), list containing indices of columns containing strings
+
+    """
     str_summary = pd.DataFrame(df.applymap(type).eq(str).any())
     str_columns = str_summary.index[str_summary[0] == True].tolist()
     return str_columns
 
-# This class PPCA was taken directly from https://github.com/allentran/pca-magic. Due to import errors, for ease of use
-# we have elected to copy the module here. This github repo was last accessed on 8/27/18. The code comprising the PPCA
-# class below was not developed by UW-Madison.
 class PPCA():
+    """
+    Class to perform probabilistic principal component analysis (PPCA) to fill in missing data.
 
+    This PPCA routine was taken directly from https://github.com/allentran/pca-magic. Due to import errors, for ease of use
+    we have elected to copy the module here. This github repo was last accessed on 8/27/18. The code comprising the PPCA
+    class below was not developed by and is not owned by the University of Wisconsin-Madison MAST-ML development team.
+
+    """
     def __init__(self):
 
         self.raw = None
