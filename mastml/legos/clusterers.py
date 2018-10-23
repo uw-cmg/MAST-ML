@@ -1,3 +1,8 @@
+"""
+The clusterers module is used for instantiating cluster algorithm objects from scikit-learn
+More information is available at http://scikit-learn.org/stable/modules/classes.html#module-sklearn.cluster
+"""
+
 import sklearn.cluster as sc
 
 name_to_constructor = {
