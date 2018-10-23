@@ -1,5 +1,5 @@
 """
-Module for loading checking the input data file
+The data_loader module is used for importing data from user-specified csv or xlsx file to MAST-ML
 """
 
 import pandas as pd
@@ -7,7 +7,24 @@ import logging
 log = logging.getLogger('mastml')
 
 def load_data(file_path, input_features=None, target_feature=None, grouping_feature = None, feature_blacklist=list()):
-    " Loads in csv from filename and ensures required columns are present. Returns dataframe. "
+    """
+    Method that accepts the filepath of an input data file and returns a full dataframe and parsed X and y dataframes
+
+    Args:
+        file_path: (str), path to data file
+        input_features: (str), column names to be used as input features (X data). If 'Auto', then takes all columns that are not
+        listed in target_feature or feature_blacklist fields.
+        target_feature: (str), column name for data to be fit to (y data).
+        grouping_feature: (str), column names used to group data in user-defined grouping scheme
+
+    Returns:
+        df: (dataframe), full dataframe of the input X data (y data is removed)
+        X: (dataframe), dataframe containing only the X data from the data file
+        X_noinput: (dataframe), dataframe containing the columns of the original X data that are not used as input features
+        X_grouped: (dataframe), dataframe containing the columns of hte original X data that correspond to a data grouping scheme
+        y: (dataframe), dataframe containing only the y data from the data file
+
+    """
 
     # Load data
     try:
