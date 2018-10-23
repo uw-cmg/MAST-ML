@@ -32,8 +32,6 @@ Follow the following instructions for either a Windows install or a Terminal ins
     0_1_terminal_installation
     0_2_windows_installation
 
-Note that in some situations such as running on a computer without a local display, you may also need to change the matplotlib backend in order for plotting to work
-(see :ref:`Matplotlib backend <matplotlib-backend>`).
 
 *******************
 Startup
@@ -62,19 +60,21 @@ For Windows, assuming setup has been followed
 as above, go to the Anaconda Navigator, Environments, select the environment,
 click the green arrow button, and Open terminal.
 
+When you execute the above command, you'll know it's working if you begin to see output on your screen.
+
 ================
 Check output
 ================
 
 ``index.html`` should be created, linking to certain representative plots for each test
 
-Output will be located in subfolders in the test folder given by save_path in the :ref:`General Setup <general-setup>` section of the input file.
+For this example, output will be located in subfolders in the results/example_results folder.
 
 Check the following to see if the run completed successfully::
 
-    A .log file is generated and the last line contains the phrase "Your MASTML runs have completed successfully!"
-    A .png and .csv file that start with "input_data_". These files give information about the data.
+    A log.log file is generated and the last line contains the phrase "Making html file of all run stats..."
     An index.html file that gives some summary plots from all the tests that were run
-    A /SingleFit_xxxx directory with the individual test results for the Single Fit specified in the input configuration file.
+    A series of subfolders with names "StandardScaler"->"DoNothing"->"KernelRidge", with the following three directories
+    within the "KernelRidge" directory: "LeaveOneGroupOut_host", "NoSplit", and "RepeatedKFold"
 
 You can compare all of these files with those given in the /example_results directory which should match.
