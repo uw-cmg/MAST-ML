@@ -19,6 +19,8 @@ Welcome to MAterials Simulation Toolkit for Machine Learning (MAST-ML)'s documen
 
    2_mastml_tutorial.rst
 
+   3_metrics.rst
+
    4_conf_parser.rst
 
    5_data_cleaner.rst
