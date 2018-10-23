@@ -1,3 +1,9 @@
+"""
+This module contains methods to construct learning curves, which evaluate some cross-validation performance metric (e.g. RMSE)
+as a function of amount of training data (i.e. a sample learning curve) or as a function of the number of features used
+in the fitting (i.e. a feature learning curve).
+"""
+
 import numpy as np
 import pandas as pd
 import warnings
@@ -15,6 +21,36 @@ warnings.filterwarnings(action="ignore", module="scipy",
 log = logging.getLogger('mastml')
 
 def sample_learning_curve(X, y, estimator, cv, scoring, Xgroups=None):
+    """
+    Method that calculates data used to plot a sample learning curve, e.g. the RMSE of a cross-validation routine using a
+    specified model and a given fraction of the total training data
+
+    Args:
+        X: (numpy array), array of X data values
+
+        y: (numpy array), array of y data values
+
+        estimator: (scikit-learn model object), a scikit-learn model used for fitting
+
+        cv: (scikit-learn cross validation object), a scikit-learn cross validation object to construct train/test splits
+
+        scoring: (scikit-learn metric object), a scikit-learn metric to use as a scorer
+
+        Xgroups: (list), list of row indices corresponding to each group
+
+    Returns:
+        train_sizes: (numpy array), array of fractions of training data used in learning curve
+
+        train_mean: (numpy array), array of means of training data scores for each training data fraction
+
+        test_mean: (numpy array), array of means of testing data scores for each training data fraction
+
+        train_stdev: (numpy array), array of standard deviations of training data scores for each training data fraction
+
+        test_stdev: (numpy array), array of standard deviations of testing data scores for each training data fraction
+
+    """
+
     if Xgroups is not None:
         Xgroups = np.array(Xgroups).reshape(-1, )
     train_sizes = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1])
@@ -28,6 +64,39 @@ def sample_learning_curve(X, y, estimator, cv, scoring, Xgroups=None):
     return train_sizes, train_mean, test_mean, train_stdev, test_stdev
 
 def feature_learning_curve(X, y, estimator, cv, scoring, selector_name, n_features_to_select=None, Xgroups=None):
+    """
+    Method that calculates data used to plot a feature learning curve, e.g. the RMSE of a cross-validation routine using a
+    specified model and a given number of features
+
+    Args:
+        X: (numpy array), array of X data values
+
+        y: (numpy array), array of y data values
+
+        estimator: (scikit-learn model object), a scikit-learn model used for fitting
+
+        cv: (scikit-learn cross validation object), a scikit-learn cross validation object to construct train/test splits
+
+        scoring: (scikit-learn metric object), a scikit-learn metric to use as a scorer
+
+        selector_name: (str), name of a scikit-learn or MAST-ML feature selection routine
+
+        n_features_to_select: (int), total number of features to select, i.e. stopping criterion for number of features
+
+        Xgroups: (list), list of row indices corresponding to each group
+
+    Returns:
+        train_sizes: (numpy array), array of fractions of training data used in learning curve
+
+        train_mean: (numpy array), array of means of training data scores for each number of features
+
+        test_mean: (numpy array), array of means of testing data scores for each number of features
+
+        train_stdev: (numpy array), array of standard deviations of training data scores for each number of features
+
+        test_stdev: (numpy array), array of standard deviations of testing data scores for each number of features
+
+    """
     if Xgroups is not None:
         Xgroups = np.array(Xgroups).reshape(-1, )
     train_mean = list()
