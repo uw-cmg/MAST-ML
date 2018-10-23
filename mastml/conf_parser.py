@@ -1,5 +1,5 @@
 """
-Module for handling, parsing, and checking configuration files
+The conf_parser module is used for handling, parsing, and checking MAST-ML input configuration files
 """
 
 from sklearn.metrics import make_scorer
@@ -235,8 +235,16 @@ def parse_conf_file(filepath):
     return conf
 
 def fix_types(maybe_list):
-    "Takes user parameter string and gives python value"
+    """
+    Method that returns true datatype of values passed as string or list of strings, parsed from configuration file
 
+    Args:
+        maybe_list: (list, str), a list of strings or just a string whose datatype should be e.g. int or list of float
+
+    Returns:
+        maybe_list: (list, bool, int, float): a list of items or other data type converted from string to correct data type
+
+    """
     if isinstance(maybe_list, list):
         return [fix_types(item) for item in maybe_list]
 
@@ -252,7 +260,16 @@ def fix_types(maybe_list):
     return str(maybe_list)
 
 def mybool(string):
-    "Turn string representing bool into actual bool"
+    """
+    Method that converts a string equal to 'True' or 'False' into type bool
+
+    Args:
+        string: (str), a string as 'True' or 'False'
+
+    Returns:
+        bool: (bool): bool as True or False
+
+    """
     if string.lower() == 'true':
         return True
     if string.lower() == 'false':
