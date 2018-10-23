@@ -1,6 +1,5 @@
-Data Cleaner
+Data Loader
 ===================================
 
-.. automodule:: data_cleaner
+.. automodule:: data_loader
    :members:
-
