@@ -1,6 +1,8 @@
 """
-A collection of functions which take a y_correct vector and y_predicted vector
-and give some score of them, such as the accuracy or the root mean squared error
+This module contains constructors for different model score metrics. Most model metrics are obtained from scikit-learn,
+while others are custom variations.
+
+The full list of score functions in scikit-learn can be found at: http://scikit-learn.org/stable/modules/model_evaluation.html
 """
 
 import numpy as np
@@ -8,7 +10,6 @@ import sklearn.feature_selection as fs
 import sklearn.metrics as sm
 from sklearn.linear_model import LinearRegression # for r2_score_noint
 
-# list of score functions: http://scikit-learn.org/stable/modules/model_evaluation.html
 classification_metrics = {
     'accuracy':           (True, sm.accuracy_score),
     'f1_binary':          (True, lambda yt, yp: sm.f1_score(yt, yp, average='binary')),
@@ -39,7 +40,17 @@ regression_metrics = {
 }
 
 def r2_score_noint(y_true, y_pred):
-    " Get the R^2 coefficient without intercept "
+    """
+    Method that calculates the R^2 value without fitting the y-intercept
+
+    Args:
+        y_true: (numpy array), array of true y data values
+        y_pred: (numpy array), array of predicted y data values
+
+    Returns:
+        (float): score of R^2 with no y-intercept
+
+    """
     lr = LinearRegression(fit_intercept=False)
     y_true = np.array(y_true).reshape(-1,1) # turn it from an n-vector to nx1-matrix
     lr.fit(y_true, y_pred)
@@ -47,7 +58,17 @@ def r2_score_noint(y_true, y_pred):
 regression_metrics['R2_noint'] = (True, r2_score_noint)
 
 def r2_score(y_true, y_pred):
-    " Get the R^2 coefficient with intercept "
+    """
+    Method that calculates the R^2 value
+
+    Args:
+        y_true: (numpy array), array of true y data values
+        y_pred: (numpy array), array of predicted y data values
+
+    Returns:
+        (float): score of R^2
+
+    """
     lr = LinearRegression(fit_intercept=True)
     y_true = np.array(y_true).reshape(-1,1) # turn it from an n-vector to nx1-matrix
     lr.fit(y_true, y_pred)
@@ -55,10 +76,34 @@ def r2_score(y_true, y_pred):
 regression_metrics['R2'] = (True, r2_score)
 
 def root_mean_squared_error(y_true, y_pred):
+    """
+    Method that calculates the root mean squared error (RMSE)
+
+    Args:
+        y_true: (numpy array), array of true y data values
+        y_pred: (numpy array), array of predicted y data values
+
+    Returns:
+        (float): score of RMSE
+
+    """
     return sm.mean_squared_error(y_true, y_pred)**0.5
 regression_metrics['root_mean_squared_error'] = (False, root_mean_squared_error)
 
 def rmse_over_stdev(y_true, y_pred, train_y=None):
+    """
+    Method that calculates the root mean squared error (RMSE) of a set of data, divided by the standard deviation of
+    the training data set.
+
+    Args:
+        y_true: (numpy array), array of true y data values
+        y_pred: (numpy array), array of predicted y data values
+        train_y: (numpy array), array of training y data values
+
+    Returns:
+        (float): score of RMSE divided by standard deviation of training data
+
+    """
     if train_y is not None:
         stdev = np.std(train_y)
     else:
@@ -68,6 +113,18 @@ def rmse_over_stdev(y_true, y_pred, train_y=None):
 regression_metrics['rmse_over_stdev'] = (False, rmse_over_stdev)
 
 def adjusted_r2_score(y_true, y_pred, n_features=None):
+    """
+    Method that calculates the adjusted R^2 value
+
+    Args:
+        y_true: (numpy array), array of true y data values
+        y_pred: (numpy array), array of predicted y data values
+        n_features: (int), number of features used in the fit
+
+    Returns:
+        (float): score of adjusted R^2
+
+    """
     r2 = r2_score(y_true, y_pred)
     # n is sample size
     n = len(y_true)
@@ -126,6 +183,18 @@ nice_names = {
 }
 
 def check_and_fetch_names(metric_names, is_classification):
+    """
+    Method that checks whether chosen metrics to evaluate models are appropriate for user-specified models (e.g.
+    classification vs. regression models)
+
+    Args:
+        metric_names: (numpy array), array of true y data values
+        is_classification: (bool), whether the task is a classification task
+
+    Returns:
+        functions (dict): dict containing the appropriate metric objects (e.g. classification vs. regression metrics)
+
+    """
     " Ensures all metrics are appropriate for task "
     task = 'classification' if is_classification else 'regression'
     metrics_dict = classification_metrics if is_classification else regression_metrics
