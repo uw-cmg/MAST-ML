@@ -43,3 +43,9 @@ Data splitters documentation
 ****************************************
 .. toctree::
    9_data_splitters
+
+****************************************
+Utils documentation
+****************************************
+.. toctree::
+   10_utils

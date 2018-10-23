@@ -1,5 +1,5 @@
 """
-A collection of random little utilities and errors used throughout mastml
+The utils module contains a collection of miscellaneous methods and error handling used throughout MAST-ML
 """
 
 import sys
@@ -10,9 +10,30 @@ import os
 import random
 from os.path import join
 from collections import defaultdict
+from math import log, floor, ceil
 
 class BetweenFilter(object):
-    """ inclusive on both sides """
+    """
+    Class to aid in handling logger display levels
+
+    Args:
+
+         min_level: (int), minimum verbosity level
+
+         max_level: (int), maximum verbosity level
+
+    Methods:
+
+        filter: Method to return logging level of logging.logRecord object
+
+            Args:
+
+                logRecord: (python logging.logRecord object)
+
+            Returns:
+
+                (int) logging level of logging.logRecord object, which is between the min and max provided levels
+    """
     def __init__(self, min_level, max_level):
         self.min_level = min_level
         self.max_level = max_level
@@ -20,20 +41,41 @@ class BetweenFilter(object):
     def filter(self, logRecord):
         return self.min_level <= logRecord.levelno <= self.max_level
 
-def activate_logging(savepath, paths, logger_name='mastml', to_screen=True, to_file=True,
-        verbosity = 0):
+def activate_logging(savepath, paths, logger_name='mastml', to_screen=True, to_file=True, verbosity = 0):
     """
-    savepath is a dir for where to save log
-    paths list of 3 strings we show so the user knows what is being ran
-    verbosity: argument for what is shown on screen (does not affect files):
-        0 shows everything
-        -1 hides debug
-        -2 hides info (so no stdout except print)
-        -3 hides warning
-        -4 hides error
-        -5 hides all output
-    """
+    Method to create MAST-ML logger file
 
+    Args:
+
+        savepath: (str), string specifying the save path
+
+        paths: (list), list containing strings of path locations for config file, data file, and results folder
+
+        logger_name: (str), name of logger file
+
+        to_screen: (bool), whether or not to write the log contents to the screen during a run
+
+        to_file: (bool), whether or not to write the log contents to a file in the savepath
+
+        verbosity: (int), controls the amount of output produced in the logger. Accepted values:
+
+                0 shows everything
+
+                -1 hides debug
+
+                -2 hides info (so no stdout except print)
+
+                -3 hides warning
+
+                -4 hides error
+
+                -5 hides all output
+
+    Returns:
+
+        None
+
+    """
     #formatter = logging.Formatter("%(filename)s : %(funcName)s %(message)s")
     time_formatter = logging.Formatter("[%(levelname)s] %(asctime)s : %(message)s")
     level_formatter = logging.Formatter("[%(levelname)s] %(message)s")
@@ -83,7 +125,20 @@ def activate_logging(savepath, paths, logger_name='mastml', to_screen=True, to_f
     log_header(paths, rootLogger) # only shows up in files
 
 def log_header(paths, log):
+    """
+    Method to create header for MAST-ML logger
 
+    Args:
+
+        paths: (list), list containing strings of path locations for config file, data file, and results folder
+
+        log: (logging object), a python log
+
+    Returns:
+
+        None
+
+    """
     logo = textwrap.dedent(f"""\
            __  ___     __________    __  _____
           /  |/  /__ _/ __/_  __/___/  |/  / /
@@ -103,53 +158,84 @@ def log_header(paths, log):
 ## Custom errors for mastml:
 
 class MastError(Exception):
-    """ base class for errors that should be shown to the user """
+    """
+    Base class for MAST-ML specific errors that should be shown to the user
+    """
     pass
 
 class ConfError(MastError):
-    """ error in conf file """
+    """
+    Class representing error in input configuration file
+    """
     pass
 
 class InvalidModel(MastError):
-    """ Model does not exist """
+    """
+    Class representing error when model does not exist
+    """
     pass
 
 class MissingColumnError(MastError):
-    """ raised when your csv doesn't have the column you asked for """
+    """
+    Class representing error raised when your csv doesn't have the specified column
+    """
     pass
 
 class InvalidConfParameters(MastError):
-    """ invalid conf params """
+    """
+    Class representing error raised when you have invalid input configuration file parameters
+    """
     pass
 
 class InvalidConfSubSection(MastError):
-    """ invalid section name """
+    """
+    Class representing error raised when an invalid subsection name is present in the input configuration file
+    """
     pass
 
 class InvalidConfSection(MastError):
-    """ invalid section name """
+    """
+    Class representing error raised when an invalid section name is present in the input configuration file
+    """
     pass
 
 class FiletypeError(MastError):
-    """ for using the wrong file extentions """
+    """
+    Class representing error raised when an improper file extension is used
+    """
     pass
 
 class FileNotFoundError(MastError): # sorry for re-using builtin name
+    """
+    Class representing error raised when a needed file cannot be found
+    """
     pass
 
 class InvalidValue(MastError):
+    """
+    Class representing error raised when an invalid value has been used
+    """
     pass
 
 
-## Magic math stuff for plot_helper to make ranges
-
-from math import log, floor, ceil
+## Math utilities to aid plot_helper to make ranges
 
 def nice_range(lower, upper):
-    """ Pass in two numbers, and get back a list of numbers,
-    including both endpoints. Uses nice looking steps,
-    ie 0.1 or 0.5 or sometimes 2.
     """
+    Method to create a range of values, including the specified start and end points, with nicely spaced intervals
+
+    Args:
+
+        lower: (float or int), lower bound of range to create
+
+        upper: (float or int), upper bound of range to create
+
+    Returns:
+
+        (list), list of numerical values in established range
+
+    """
+
     flipped = 1 # set to -1 for inverted
 
     # Case for validation where nan is passed in
