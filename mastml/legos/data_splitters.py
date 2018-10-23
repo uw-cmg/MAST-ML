@@ -1,26 +1,80 @@
 """
-A collection of classes for generating (train_indices, test_indices) pairs from
+The data_splitters module contains a collection of classes for generating (train_indices, test_indices) pairs from
 a dataframe or a numpy array.
+
+For more information and a list of scikit-learn splitter classes, see:
+ http://scikit-learn.org/stable/modules/classes.html#module-sklearn.model_selection
 """
+
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 import sklearn.model_selection as ms
 
-# List of sklearn splitter classes:
-# http://scikit-learn.org/stable/modules/classes.html#module-sklearn.model_selection
-
 class SplittersUnion(BaseEstimator, TransformerMixin):
-    " Takes a list of splitters and creates a splitter which is their union "
+    """
+    Class to take the union of two separate splitting routines, so that many splitting routines can be performed at once
+
+    Args:
+        splitters: (list), a list of scikit-learn splitter objects
+
+    Methods:
+        get_n_splits: method to calculate the number of splits to perform across all splitters
+
+            Args:
+                X: (numpy array), array of X features
+                y: (numpy array), array of y data
+                groups: (numpy array), array of group labels
+
+            Returns:
+                (int), number of total splits to be conducted
+
+        split: method to perform split into train indices and test indices
+
+            Args:
+                X: (numpy array), array of X features
+                y: (numpy array), array of y data
+                groups: (numpy array), array of group labels
+
+            Returns:
+                (numpy array), array of train and test indices
+
+    """
     def __init__(self, splitters):
         self.splitters = splitters
+
     def get_n_splits(self, X, y, groups=None):
         return sum(splitter.get_n_splits(X, y, groups) for splitter in self.splitters)
+
     def split(self, X, y, groups=None):
         for splitter in self.splitters:
             yield from splitter.split(X, y, groups)
 
 class NoSplit(BaseEstimator, TransformerMixin):
-    " Just train the model on the training data and test it on that same data "
+    """
+    Class to just train the model on the training data and test it on that same data. Sometimes referred to as a "Full fit"
+    or a "Single fit", equivalent to just plotting y vs. x.
+
+    Args:
+        None (only object instance)
+
+    Methods:
+        get_n_splits: method to calculate the number of splits to perform
+
+            Args:
+                None
+
+            Returns:
+                (int), always 1 as only a single split is performed
+
+        split: method to perform split into train indices and test indices
+
+            Args:
+                X: (numpy array), array of X features
+
+            Returns:
+                (numpy array), array of train and test indices (all data used as train and test for NoSplit)
+
+    """
     def __init__(self):
         pass
 
@@ -33,10 +87,33 @@ class NoSplit(BaseEstimator, TransformerMixin):
 
 class JustEachGroup(BaseEstimator, TransformerMixin):
     """
-    Train the model on one group at a time and test it on the rest of the data
-    This class wraps "LeavePGroupsOut with P set to n-1.
-    """
+    Class to train the model on one group at a time and test it on the rest of the data
+    This class wraps scikit-learn's LeavePGroupsOut with P set to n-1. More information is available at:
+    http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.LeavePGroupsOut.html
 
+    Args:
+        None (only object instance)
+
+    Methods:
+        get_n_splits: method to calculate the number of splits to perform
+
+            Args:
+                groups: (numpy array), array of group labels
+
+            Returns:
+                (int), number of unique groups, indicating number of splits to perform
+
+        split: method to perform split into train indices and test indices
+
+            Args:
+                X: (numpy array), array of X features
+                y: (numpy array), array of y data
+                groups: (numpy array), array of group labels
+
+            Returns:
+                (numpy array), array of train and test indices
+
+    """
     def __init__(self):
         pass
 
@@ -45,13 +122,13 @@ class JustEachGroup(BaseEstimator, TransformerMixin):
 
     def split(self, X, y, groups):
         n_groups = self.get_n_splits(groups=groups)
-        print('n_groups', n_groups)
-        lpgo = LeavePGroupsOut(n_groups=n_groups-1)
+        #print('n_groups', n_groups)
+        lpgo = ms.LeavePGroupsOut(n_groups=n_groups-1)
         return lpgo.split(X, y, groups)
 
-class WithoutElement(BaseEstimator, TransformerMixin):
-    " Train the model without each element, then test on the rows with that element "
-    pass
+#class WithoutElement(BaseEstimator, TransformerMixin):
+#    " Train the model without each element, then test on the rows with that element "
+#    pass
 
 name_to_constructor = {
     # sklearn splitters:
@@ -73,5 +150,5 @@ name_to_constructor = {
     # mastml splitters
     'NoSplit': NoSplit,
     'JustEachGroup': JustEachGroup,
-    'WithoutElement': WithoutElement,
+    #'WithoutElement': WithoutElement,
 }
