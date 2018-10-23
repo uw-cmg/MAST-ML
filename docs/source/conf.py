@@ -22,6 +22,7 @@ import sys
 #sys.path.insert(0, '../../mastml')
 sys.path.insert(0, '/Users/ryanjacobs/PycharmProjects/MASTML_2018-07-18')
 sys.path.insert(0, '/Users/ryanjacobs/PycharmProjects/MASTML_2018-07-18/mastml')
+sys.path.insert(0, '/Users/ryanjacobs/PycharmProjects/MASTML_2018-07-18/mastml/legos')
 
 # -- General configuration ------------------------------------------------
 

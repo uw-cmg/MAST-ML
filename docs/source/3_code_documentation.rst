@@ -37,3 +37,9 @@ Clusterers documentation
 ****************************************
 .. toctree::
    8_clusterers
+
+****************************************
+Data splitters documentation
+****************************************
+.. toctree::
+   9_data_splitters
