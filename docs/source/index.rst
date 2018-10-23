@@ -7,10 +7,20 @@ Welcome to MAterials Simulation Toolkit for Machine Learning (MAST-ML)'s documen
 =======================================================================================
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
+
+   0_installation.rst
+
+   0_1_terminal_installation.rst
+
+   0_2_windows_installation.rst
+
+   1_mastml_tutorial.rst
 
    4_conf_parser.rst
+
    5_data_cleaner.rst
+
    6_data_loader.rst
 
 
