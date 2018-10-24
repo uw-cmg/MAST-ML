@@ -49,3 +49,9 @@ Utils documentation
 ****************************************
 .. toctree::
    10_utils
+
+****************************************
+MAST-ML Driver documentation
+****************************************
+.. toctree::
+   11_mastml_driver
