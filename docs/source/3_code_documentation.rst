@@ -55,3 +55,15 @@ MAST-ML Driver documentation
 ****************************************
 .. toctree::
    11_mastml_driver
+
+****************************************
+Plot Helper documentation
+****************************************
+.. toctree::
+   12_plot_helper
+
+****************************************
+HTML Helper documentation
+****************************************
+.. toctree::
+   13_html_helper

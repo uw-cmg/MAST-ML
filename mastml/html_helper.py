@@ -1,6 +1,7 @@
 """
-Module for generating the nice collected index.html file,
-with best/worst plots, links to statistics, and more.
+Module for generating an HTML file, called index.html, which contains an overview of the key data and plots from a
+MAST-ML run. Images of cross-validation parity plots, data histograms, data statistics, and links to the relevant files
+are all provided.
 """
 
 import os
@@ -13,7 +14,19 @@ from dominate.tags import *
 log = logging.getLogger('mastml')
 
 def make_html(outdir):
-    " Create the main index.html file " 
+    """
+    Method used to create the main index.html file
+
+    Args:
+
+        outdir: (str), user-specified output path which designates where all results of MAST-ML run are written
+
+    Returns:
+
+        None
+
+    """
+
     with document(title='MASTML') as doc:
         # title and date
         h1('MAterial Science Tools - Machine Learning')
@@ -81,7 +94,22 @@ def make_html(outdir):
     log.info('wrote ' + join(outdir, 'index.html'))
 
 def show_combo(combo_dir, outdir):
-    " Add one combo to the output html "
+    """
+    Method used to collect combinations of data analysis (e.g. parity plots of train and test data in a CV split) and
+    required file paths and display them in the output index.html file.
+
+    Args:
+
+        combo_dir: (str), path containing the relevant data to combine as output in the index.html file
+
+        outdir: (str), user-specified output path which designates where all results of MAST-ML run are written
+
+    Returns:
+
+        None
+
+    """
+
     # collect test image, train image, and other file links
     links = list()
     train_images = list()
@@ -97,7 +125,7 @@ def show_combo(combo_dir, outdir):
     # have a header for split_0 split_1 etc
     h2(combo_dir.split(os.sep)[-1])
 
-    # loop seperately so we can control order
+    # loop separately so we can control order
     for train_image, test_image in zip(sorted(train_images), sorted(test_images)):
         make_image(relpath(train_image, outdir), 'train')
         make_image(relpath(test_image, outdir), 'test')
@@ -109,6 +137,21 @@ def show_combo(combo_dir, outdir):
         span('  ')
 
 def simple_section(filepath, outdir):
+    """
+    Method used to create a section name for a particular analysis combination that will be displayed in the index.html file.
+
+    Args:
+
+        filepath: (str), path containing the relevant data to combine as output in the index.html file
+
+        outdir: (str), user-specified output path which designates where all results of MAST-ML run are written
+
+    Returns:
+
+        None
+
+    """
+
     " Create a section for a combo "
     path = os.path.normpath(relpath(filepath, outdir))
     paths = path.split(os.sep)
@@ -118,10 +161,39 @@ def simple_section(filepath, outdir):
     br()
 
 def make_link(href):
+    """
+    Method used to generate a link to a particular file created from a MAST-ML run. The link will be displayed next to the
+    appropriate data or image in the index.html file
+
+    Args:
+
+        href: (str), filename to generate link for
+
+    Returns:
+
+        (dominate.tags html_tag object), hyperlink to filename
+
+    """
+
     " Make a link where text is filename of href "
     return a(os.path.basename(href), href=href, style='padding-left: 15px;')
 
 def make_image(src, title=None):
+    """
+    Method used to generate and show an image of a fixed width. The image will be displayed in the appropriate
+    section of the index.html file
+
+    Args:
+
+        src: (str), source path of the image to be displayed
+
+        title: (str), title for the image
+
+    Returns:
+
+        None
+
+    """
     " Show an image in fixed width "
     d = div(style='display:inline-block;', _class='photo')
     if title:
@@ -130,9 +202,33 @@ def make_image(src, title=None):
     d += img(src=src, height='200')
 
 def is_train_image(path):
+    """
+    Method used to assess whether an image is for training data
+
+    Args:
+
+        path: (str), source path of the image to be displayed
+
+    Returns:
+
+        (bool), True if path is an image (.png) and is for training data (has 'train' in path)
+
+    """
     basename = os.path.basename(path)
     return os.path.splitext(basename)[1] == '.png' and 'train' in basename
 
 def is_test_image(path):
+    """
+    Method used to assess whether an image is for testing data
+
+    Args:
+
+        path: (str), source path of the image to be displayed
+
+    Returns:
+
+        (bool), True if path is an image (.png) and is for testing data (has 'test' in path)
+
+    """
     basename = os.path.basename(path)
     return os.path.splitext(basename)[1] == '.png' and 'test' in basename
