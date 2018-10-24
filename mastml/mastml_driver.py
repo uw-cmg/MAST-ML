@@ -1,5 +1,5 @@
 """
-Module for getting a mastml system call and calling all the appropriate subroutines
+Main MAST-ML module responsible for executing the workflow of a MAST-ML run
 """
 
 import argparse
@@ -27,7 +27,26 @@ from mastml.legos import clusterers as legos_clusterers
 log = logging.getLogger('mastml')
 
 def main(conf_path, data_path, outdir, verbosity=0):
-    " Sets up logger and error catching, then starts the run "
+    """
+    This method is responsible for setting up the initial stage of the MAST-ML run, such as parsing input directories to
+    designate where data will be imported and results saved to, as well as creation of the MAST-ML run log.
+
+    Args:
+
+        conf_path: (str), the path supplied by the user which contains the input configuration file
+
+        data_path: (str), the path supplied by the user which contains the input data file (as CSV or XLSX)
+
+        outdir: (str), the path supplied by the user which determines where the output results are saved to
+
+        verbosity: (int), the verbosity level of the MAST-ML log, which determines the amount of information written to the log.
+
+    Returns:
+
+        outdir: (str), the path supplied by the user which determines where the output results are saved to (needed by other calls in MAST-ML)
+
+    """
+
     conf_path, data_path, outdir = check_paths(conf_path, data_path, outdir)
 
     utils.activate_logging(outdir, (conf_path, data_path, outdir), verbosity=verbosity)
@@ -51,6 +70,24 @@ def main(conf_path, data_path, outdir, verbosity=0):
     return outdir # so a calling program can know where we actually saved it
 
 def mastml_run(conf_path, data_path, outdir):
+    """
+    This method is responsible for conducting the main MAST-ML run workflow
+
+    Args:
+
+        conf_path: (str), the path supplied by the user which contains the input configuration file
+
+        data_path: (str), the path supplied by the user which contains the input data file (as CSV or XLSX)
+
+        outdir: (str), the path supplied by the user which determines where the output results are saved to
+
+    Returns:
+
+        None
+
+    """
+
+
     " Runs operations specifed in conf_path on data_path and puts results in outdir "
 
     # Copy the original input files to the output directory for easy reference
@@ -829,6 +866,29 @@ def _only_validation(df, validation_column):
     return df.loc[validation_column == 1]
 
 def check_paths(conf_path, data_path, outdir):
+    """
+    This method is responsible for error handling of the user-specified paths for the configuration file, data file,
+    and output directory.
+
+    Args:
+
+        conf_path: (str), the path supplied by the user which contains the input configuration file
+
+        data_path: (str), the path supplied by the user which contains the input data file (as CSV or XLSX)
+
+        outdir: (str), the path supplied by the user which determines where the output results are saved to
+
+    Returns:
+
+        conf_path: (str), the path supplied by the user which contains the input configuration file
+
+        data_path: (str), the path supplied by the user which contains the input data file (as CSV or XLSX)
+
+        outdir: (str), the path supplied by the user which determines where the output results are saved to
+
+    """
+
+
     # Check conf path:
     if os.path.splitext(conf_path)[1] != '.conf':
         raise utils.FiletypeError(f"Conf file does not end in .conf: '{conf_path}'")
@@ -858,6 +918,25 @@ def check_paths(conf_path, data_path, outdir):
     return conf_path, data_path, outdir
 
 def get_commandline_args():
+    """
+    This method is responsible for parsing and checking the command-line execution of MAST-ML inputted by the user.
+
+    Args:
+
+        None
+
+    Returns:
+
+        (str), the path supplied by the user which contains the input configuration file
+
+        (str), the path supplied by the user which contains the input data file (as CSV or XLSX)
+
+        (str), the path supplied by the user which determines where the output results are saved to
+
+        verbosity: (int), the verbosity level of the MAST-ML log, which determines the amount of information writtent to the log.
+
+    """
+
     parser = argparse.ArgumentParser(description='MAterials Science Toolkit - Machine Learning')
     parser.add_argument('conf_path', type=str, help='path to mastml .conf file')
     parser.add_argument('data_path', type=str, help='path to csv or xlsx file')
