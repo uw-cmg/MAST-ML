@@ -79,3 +79,9 @@ Feature Normalizers documentation
 ****************************************
 .. toctree::
    15_feature_normalizers
+
+****************************************
+Randomizers documentation
+****************************************
+.. toctree::
+   16_randomizers

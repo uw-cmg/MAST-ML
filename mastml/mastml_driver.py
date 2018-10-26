@@ -21,7 +21,7 @@ from sklearn.model_selection import LeaveOneGroupOut
 
 from mastml import conf_parser, data_loader, html_helper, plot_helper, utils, learning_curve, data_cleaner
 from mastml.legos import (data_splitters, feature_generators, feature_normalizers,
-                    feature_selectors, model_finder, util_legos)
+                    feature_selectors, model_finder, util_legos, randomizers)
 from mastml.legos import clusterers as legos_clusterers
 
 log = logging.getLogger('mastml')
@@ -146,7 +146,7 @@ def mastml_run(conf_path, data_path, outdir):
     if conf['GeneralSetup']['randomizer'] is True:
         log.warning("Randomizer is enabled, so target feature will be shuffled,"
                  " and results should be null for a given model")
-        y = y.sample(frac=1).reset_index(drop=True)
+        y = randomizers.Randomizer().fit().transform(df=y)
 
     # get parameters out for 'validation_column'
     is_validation = 'validation_columns' in conf['GeneralSetup']
