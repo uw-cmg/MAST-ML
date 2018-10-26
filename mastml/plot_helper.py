@@ -1,12 +1,12 @@
 """
-A collection of functions which make plots (png files) using matplotlib.
-Most of these plots take in (data, other_data, ..., savepath, stats, title).
-Where the data args are numpy arrays, savepath is a string, and stats is an
-ordered dictionary which maps names to either values, or mean-stdev pairs.
+This module contains a collection of functions which make plots (saved as png files) using matplotlib, generated from
+some model fits and cross-validation evaluation within a MAST-ML run.
 
-A plot can also take an "outdir" instead of a savepath. If this is the case,
-it must return a list of filenames where it saved the figures.
+This module also contains a method to create python notebooks containing plotted data and the relevant source code from
+this module, to enable the user to make their own modifications to the created plots in a straightforward way (useful for
+tweaking plots for a presentation or publication).
 """
+
 import math
 import os
 import pandas as pd
@@ -37,7 +37,17 @@ from scipy.stats import gaussian_kde
 from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
 
-from .utils import nice_range # TODO include this in ipynb_helper
+# Needed imports for ipynb_maker
+from mastml.utils import nice_range
+from mastml.metrics import nice_names
+
+import inspect
+import textwrap
+from pandas import DataFrame, Series
+
+import nbformat
+
+from functools import wraps
 
 matplotlib.rc('font', size=18, family='sans-serif') # set all font to bigger
 matplotlib.rc('figure', autolayout=True) # turn on autolayout
@@ -51,10 +61,141 @@ log = logging.getLogger() # only used inside ipynb_maker I guess
 
 log = logging.getLogger('mastml') # the real logger
 
-from .ipynb_maker import ipynb_maker # TODO: fix cyclic import
-from .metrics import nice_names
+def ipynb_maker(plot_func):
+    """
+    This method creates Jupyter Notebooks so user can modify and regenerate the plots produced by MAST-ML.
+
+    Args:
+
+        plot_func: (plot_helper method), a plotting method contained in plot_helper.py which contains the
+
+        @ipynb_maker decorator
+
+    Returns:
+
+        (plot_helper method), the same plot_func as used as input, but after having written the Jupyter notebook with source code to create plot
+
+    """
+
+    from mastml import plot_helper # Strange self-import but it works, as had cyclic import issues with ipynb_maker as its own module
+
+    @wraps(plot_func)
+    def wrapper(*args, **kwargs):
+        # convert everything to kwargs for easier display
+        # from geniuses at https://stackoverflow.com/a/831164
+        #kwargs.update(dict(zip(plot_func.func_code.co_varnames, args)))
+        sig = inspect.signature(plot_func)
+        binding = sig.bind(*args, **kwargs)
+        all_args = binding.arguments
+
+        # if this is an outdir style function, fill in savepath and delete outdir
+        if 'savepath' in all_args:
+            ipynb_savepath = all_args['savepath']
+            knows_savepath = True
+            basename = os.path.basename(ipynb_savepath) # fix absolute path problem
+        elif 'outdir' in all_args:
+            knows_savepath = False
+            basename = plot_func.__name__
+            ipynb_savepath = os.path.join(all_args['outdir'], basename)
+        else:
+            raise Exception('you must have an "outdir" or "savepath" argument to use ipynb_maker')
+
+        readme = textwrap.dedent(f"""\
+            This notebook was automatically generated from your MAST-ML run so you can recreate the
+            plots. Some things are a bit different from the usual way of creating plots - we are
+            using the [object oriented
+            interface](https://matplotlib.org/tutorials/introductory/lifecycle.html) instead of
+            pyplot to create the `fig` and `ax` instances.
+        """)
+
+        # get source of the top of plot_helper.py
+        header = ""
+        with open(plot_helper.__file__) as f:
+            for line in f.readlines():
+                if 'HEADERENDER' in line:
+                    break
+                header += line
+
+        core_funcs = [plot_helper.stat_to_string, plot_helper.plot_stats, plot_helper.make_fig_ax]
+        func_strings = '\n\n'.join(inspect.getsource(func) for func in core_funcs)
+
+        plot_func_string = inspect.getsource(plot_func)
+        # remove first line that has this decorator on it (!!!)
+        plot_func_string = '\n'.join(plot_func_string.split('\n')[1:])
+
+        # put the arguments and their values in the code
+        arg_assignments = []
+        arg_names = []
+        for key, var in all_args.items():
+            if isinstance(var, DataFrame):
+                # this is amazing
+                arg_assignments.append(f"{key} = pd.read_csv(StringIO('''\n{var.to_csv(index=False)}'''))")
+            elif isinstance(var, Series):
+                arg_assignments.append(f"{key} = pd.Series(pd.read_csv(StringIO('''\n{var.to_csv(index=False)}''')).iloc[:,0])")
+            else:
+                arg_assignments.append(f'{key} = {repr(var)}')
+            arg_names.append(key)
+        args_block = ("from numpy import array\n" +
+                      "from collections import OrderedDict\n" +
+                      "from io import StringIO\n" +
+                      '\n'.join(arg_assignments))
+        arg_names = ', '.join(arg_names)
+
+        if knows_savepath:
+            main = textwrap.dedent(f"""\
+                import pandas as pd
+                from IPython.display import Image, display
+
+                {plot_func.__name__}({arg_names})
+                display(Image(filename='{basename}'))
+            """)
+        else:
+            main = textwrap.dedent(f"""\
+                import pandas as pd
+                from IPython.display import Image, display
+
+                plot_paths = plot_predicted_vs_true(train_triple, test_triple, outdir)
+                for plot_path in plot_paths:
+                    display(Image(filename=plot_path))
+            """)
+
+        nb = nbformat.v4.new_notebook()
+        readme_cell = nbformat.v4.new_markdown_cell(readme)
+        text_cells = [header, func_strings, plot_func_string, args_block, main]
+        cells = [readme_cell] + [nbformat.v4.new_code_cell(cell_text) for cell_text in text_cells]
+        nb['cells'] = cells
+        nbformat.write(nb, ipynb_savepath + '.ipynb')
+
+        return plot_func(*args, **kwargs)
+    return wrapper
 
 def make_train_test_plots(run, path, is_classification, label, model, train_X, test_X, groups=None):
+    """
+    General plotting method used to execute sequence of specific plots of train-test data analysis
+
+    Args:
+
+        run: (dict), a particular split_result from masml_driver
+
+        path: (str), path to save the generated plots and analysis of split_result designated in 'run'
+
+        is_classification: (bool), whether or not the analysis is a classification task
+
+        label: (str), name of the y data variable being fit
+
+        model: (scikit-learn model object), a scikit-learn model/estimator
+
+        train_X: (numpy array), array of X features used in training
+
+        test_X: (numpy array), array of X features used in testing
+
+        groups: (numpy array), array of group names
+
+    Returns:
+
+        None
+
+    """
     y_train_true, y_train_pred, y_test_true = \
         run['y_train_true'], run['y_train_pred'], run['y_test_true']
     y_test_pred, train_metrics, test_metrics = \
@@ -108,16 +249,34 @@ def make_train_test_plots(run, path, is_classification, label, model, train_X, t
                                  join(path, title+'.png'), test_metrics,
                                  title=title, label=label)
 
-### Core plotting utilities:
-
 @ipynb_maker
-def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False,
-                          title='Confusion matrix', cmap=plt.cm.Blues):
+def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False, title='Confusion matrix', cmap=plt.cm.Blues):
     """
-    This function prints and plots the confusion matrix.
-    Normalization can be applied by setting `normalize=True`.
-    http://scikit-learn.org/stable/auto_examples/model_selection/plot_confusion_matrix.html
+    Method used to generate a confusion matrix for a classification run. Additional information can be found
+    at: http://scikit-learn.org/stable/auto_examples/model_selection/plot_confusion_matrix.html
+
+    Args:
+
+        y_true: (numpy array), array containing the true y data values
+
+        y_pred: (numpy array), array containing the predicted y data values
+
+        savepath: (str), path to save the plotted confusion matrix
+
+        stats: (dict), dict of training or testing statistics for a particular run
+
+        normalize: (bool), whether or not to normalize data output as truncated float vs. double
+
+        title: (str), title of the confusion matrix plot
+
+        cmap: (matplotlib colormap), the color map to use for confusion matrix plotting
+
+    Returns:
+
+        None
+
     """
+
     # calculate confusion matrix and lables in correct order
     cm = confusion_matrix(y_true, y_pred)
     #classes = sorted(list(set(y_true).intersection(set(y_pred))))
@@ -157,6 +316,23 @@ def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False,
 
 @ipynb_maker
 def plot_roc_curve(y_true, y_pred, savepath):
+    """
+    Method to calculate and plot the receiver-operator characteristic curve for classification model results
+
+    Args:
+
+        y_true: (numpy array), array of true y data values
+
+        y_pred: (numpy array), array of predicted y data values
+
+        savepath: (str), path to save the plotted ROC curve
+
+    Returns:
+
+        None
+
+    """
+
     #TODO: have work when probability=False in model params. Suggest user set probability=True!!
     #classes = sorted(list(set(y_true).union(set(y_pred))))
     #n_classes = y_pred.shape[1]
@@ -189,6 +365,23 @@ def plot_roc_curve(y_true, y_pred, savepath):
 
 @ipynb_maker
 def plot_precision_recall_curve(y_true, y_pred, savepath):
+    """
+    Method to calculate and plot the precision-recall curve for classification model results
+
+    Args:
+
+        y_true: (numpy array), array of true y data values
+
+        y_pred: (numpy array), array of predicted y data values
+
+        savepath: (str), path to save the plotted precision-recall curve
+
+    Returns:
+
+        None
+
+    """
+
     # Note this only works with probability predictions of the classifier labels.
     classes = list(np.unique(y_true))
 
@@ -219,6 +412,28 @@ def plot_precision_recall_curve(y_true, y_pred, savepath):
 @ipynb_maker
 def plot_residuals_histogram(y_true, y_pred, savepath,
                              stats, title='residuals histogram', label='residuals'):
+    """
+    Method to calculate and plot the histogram of residuals from regression model
+
+    Args:
+
+        y_true: (numpy array), array of true y data values
+
+        y_pred: (numpy array), array of predicted y data values
+
+        savepath: (str), path to save the plotted precision-recall curve
+
+        stats: (dict), dict of training or testing statistics for a particular run
+
+        title: (str), title of residuals histogram
+
+        label: (str), label used for axis labeling
+
+    Returns:
+
+        None
+
+    """
 
     # make fig and ax, use x_align when placing text so things don't overlap
     x_align = 0.64
@@ -251,6 +466,24 @@ def plot_residuals_histogram(y_true, y_pred, savepath,
 
 @ipynb_maker
 def plot_target_histogram(y_df, savepath, title='target histogram', label='target values'):
+    """
+    Method to plot the histogram of true y values
+
+    Args:
+
+        y_df: (pandas dataframe), dataframe of true y data values
+
+        savepath: (str), path to save the plotted precision-recall curve
+
+        title: (str), title of residuals histogram
+
+        label: (str), label used for axis labeling
+
+    Returns:
+
+        None
+
+    """
 
     # make fig and ax, use x_align when placing text so things don't overlap
     x_align = 0.70
@@ -281,6 +514,28 @@ def plot_target_histogram(y_df, savepath, title='target histogram', label='targe
 
 @ipynb_maker
 def plot_predicted_vs_true(train_quad, test_quad, outdir, label):
+    """
+    Method to create a parity plot (predicted vs. true values)
+
+    Args:
+
+        train_quad: (tuple), tuple containing 4 numpy arrays: true training y data, predicted training y data,
+
+        training metric data, and groups used in training
+
+        test_quad: (tuple), tuple containing 4 numpy arrays: true test y data, predicted test y data,
+
+        testing metric data, and groups used in testing
+
+        outdir: (str), path to save plots to
+
+        label: (str), label used for axis labeling
+
+    Returns:
+
+        None
+
+    """
     filenames = list()
     y_train_true, y_train_pred, train_metrics, train_groups = train_quad
     y_test_true, y_test_pred, test_metrics, test_groups = test_quad
@@ -341,7 +596,30 @@ def plot_predicted_vs_true(train_quad, test_quad, outdir, label):
 
     return filenames
 
-def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y', label='target data'):
+def plot_scatter(x, y, savepath, groups=None, xlabel='x', label='target data'):
+    """
+    Method to create a general scatter plot
+
+    Args:
+
+        x: (numpy array), array of x data
+
+        y: (numpy array), array of y data
+
+        savepath: (str), path to save plots to
+
+        groups: (list), list of group labels
+
+        xlabel: (str), label used for x-axis labeling
+
+        label: (str), label used for y-axis labeling
+
+    Returns:
+
+        None
+
+    """
+
     # Set image aspect ratio:
     fig, ax = make_fig_ax()
 
@@ -382,7 +660,28 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', ylabel='y', label='tar
 @ipynb_maker
 def plot_best_worst_split(y_true, best_run, worst_run, savepath,
                           title='Best Worst Overlay', label='target_value'):
+    """
+    Method to create a parity plot (predicted vs. true values) of just the best scoring and worst scoring CV splits
 
+    Args:
+
+        y_true: (numpy array), array of true y data
+
+        best_run: (dict), the best scoring split_result from mastml_driver
+
+        worst_run: (dict), the worst scoring split_result from mastml_driver
+
+        savepath: (str), path to save plots to
+
+        title: (str), title of the best_worst_split plot
+
+        label: (str), label used for axis labeling
+
+    Returns:
+
+        None
+
+    """
     # make fig and ax, use x_align when placing text so things don't overlap
     x_align = 0.64
     fig, ax = make_fig_ax(x_align=x_align)
@@ -423,6 +722,33 @@ def plot_best_worst_split(y_true, best_run, worst_run, savepath,
 @ipynb_maker
 def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
                               avg_stats, title='best worst per point', label='target_value'):
+    """
+    Method to create a parity plot (predicted vs. true values) of the set of best and worst CV scores for each
+
+    individual data point.
+
+    Args:
+
+        y_true: (numpy array), array of true y data
+
+        y_pred_list: (list), list of numpy arrays containing predicted y data for each CV split
+
+        savepath: (str), path to save plots to
+
+        metrics_dict: (dict), dict of scikit-learn metric objects to calculate score of predicted vs. true values
+
+        avg_stats: (dict), dict of calculated average metrics over all CV splits
+
+        title: (str), title of the best_worst_per_point plot
+
+        label: (str), label used for axis labeling
+
+    Returns:
+
+        None
+
+    """
+
     worsts = []
     bests = []
     new_y_true = []
@@ -478,7 +804,30 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
 @ipynb_maker
 def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
                                 savepath, title='best worst with bars', label='target_value'):
-    " EVERYTHING MUST BE ARRAYS DONT GIVE ME DEM DF "
+    """
+    Method to calculate parity plot (predicted vs. true) of average predictions, averaged over all CV splits, with error
+
+    bars on each point corresponding to the standard deviation of the predicted values over all CV splits.
+
+    Args:
+
+        y_true: (numpy array), array of true y data
+
+        y_pred_list: (list), list of numpy arrays containing predicted y data for each CV split
+
+        avg_stats: (dict), dict of calculated average metrics over all CV splits
+
+        savepath: (str), path to save plots to
+
+        title: (str), title of the best_worst_per_point plot
+
+        label: (str), label used for axis labeling
+
+    Returns:
+
+        None
+
+    """
     means = [nice_mean(y_pred) for y_pred in y_pred_list]
     standard_error_means = [nice_std(y_pred)/np.sqrt(len(y_pred))
                             for y_pred in y_pred_list]
@@ -515,6 +864,27 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
     fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
 
 def plot_metric_vs_group(metric, groups, stats, avg_stats, savepath):
+    """
+    Method to plot the value of a particular calculated metric (e.g. RMSE, R^2, etc) for each data group
+
+    Args:
+
+        metric: (str), name of a calculation metric
+
+        groups: (numpy array), array of group names
+
+        stats: (dict), dict of training or testing statistics for a particular run
+
+        avg_stats: (dict), dict of calculated average metrics over all CV splits
+
+        savepath: (str), path to save plots to
+
+    Returns:
+
+        None
+
+    """
+
     # make fig and ax, use x_align when placing text so things don't overlap
     x_align = 0.64
     fig, ax = make_fig_ax(x_align=x_align)
@@ -535,8 +905,28 @@ def plot_metric_vs_group(metric, groups, stats, avg_stats, savepath):
     fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
     return
 
-# Prediction intervals adapted from https://blog.datadive.net/prediction-intervals-for-random-forests/
 def prediction_intervals(model, X, percentile=68):
+    """
+    Method to calculate prediction intervals when using Random Forest and Gaussian Process regression models.
+
+    Prediction intervals for random forest adapted from https://blog.datadive.net/prediction-intervals-for-random-forests/
+
+    Args:
+
+        model: (scikit-learn model/estimator object), a scikit-learn model object
+
+        X: (numpy array), array of X features
+
+        percentile: (int), percentile for which to form error bars
+
+    Returns:
+
+        err_up: (list), list of upper bounds of error bars for each data point
+
+        err_down: (list), list of lower bounds of error bars for each data point
+
+    """
+
     err_down = list()
     err_up = list()
     X_aslist = X.values.tolist()
@@ -560,6 +950,29 @@ def prediction_intervals(model, X, percentile=68):
     return err_down, err_up
 
 def plot_normalized_error(y_true, y_pred, savepath, model, X=None, avg_stats=None):
+    """
+    Method to plot the normalized residual errors of a model prediction
+
+    Args:
+
+        y_true: (numpy array), array containing the true y data values
+
+        y_pred: (numpy array), array containing the predicted y data values
+
+        savepath: (str), path to save the plotted normalized error plot
+
+        model: (scikit-learn model/estimator object), a scikit-learn model object
+
+        X: (numpy array), array of X features
+
+        avg_stats: (dict), dict of calculated average metrics over all CV splits
+
+    Returns:
+
+        None
+
+    """
+
     path = os.path.dirname(savepath)
     # Here: if model is random forest or Gaussian process, get real error bars. Else, just residuals
     model_name = model.__class__.__name__
@@ -688,6 +1101,29 @@ def plot_normalized_error(y_true, y_pred, savepath, model, X=None, avg_stats=Non
     return
 
 def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, X=None, avg_stats=None):
+    """
+    Method to plot the cumulative normalized residual errors of a model prediction
+
+    Args:
+
+        y_true: (numpy array), array containing the true y data values
+
+        y_pred: (numpy array), array containing the predicted y data values
+
+        savepath: (str), path to save the plotted cumulative normalized error plot
+
+        model: (scikit-learn model/estimator object), a scikit-learn model object
+
+        X: (numpy array), array of X features
+
+        avg_stats: (dict), dict of calculated average metrics over all CV splits
+
+    Returns:
+
+        None
+
+    """
+
     path = os.path.dirname(savepath)
     # Here: if model is random forest or Gaussian process, get real error bars. Else, just residuals
     model_name = model.__class__.__name__
@@ -835,7 +1271,23 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, X=None, av
     return
 
 def plot_1d_heatmap(xs, heats, savepath, xlabel='x', heatlabel='heats'):
-    # Escape from error of passing tuples when optimzing neural net
+    """
+    Method to plot a heatmap for values of a single variable; used for plotting GridSearch results in hyperparameter optimization.
+
+    Args:
+
+        xs: (numpy array), array of first variable values to plot heatmap against
+
+        heats: (numpy array), array of heat values to plot
+
+        savepath: (str), path to save the 1D heatmap to
+
+        xlabel: (str), the x-axis label
+
+        heatlabel: (str), the heat value axis label
+
+    """
+
     #TODO have more general solution
     try:
         fig, ax = make_fig_ax()
@@ -844,13 +1296,33 @@ def plot_1d_heatmap(xs, heats, savepath, xlabel='x', heatlabel='heats'):
         ax.set_ylabel(heatlabel)
 
         fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
+    # Escape from error of passing tuples when optimizing neural net
     except TypeError:
         pass
 
 
 def plot_2d_heatmap(xs, ys, heats, savepath,
                     xlabel='x', ylabel='y', heatlabel='heat'):
-    # Escape from error of passing tuples when optimzing neural net
+    """
+    Method to plot a heatmap for values of two variables; used for plotting GridSearch results in hyperparameter optimization.
+
+    Args:
+
+        xs: (numpy array), array of first variable values to plot heatmap against
+
+        ys: (numpy array), array of second variable values to plot heatmap against
+
+        heats: (numpy array), array of heat values to plot
+
+        savepath: (str), path to save the 2D heatmap to
+
+        xlabel: (str), the x-axis label
+
+        ylabel: (str), the y-axis label
+
+        heatlabel: (str), the heat value axis label
+
+    """
     #TODO have more general solution
     try:
         fig, ax = make_fig_ax()
@@ -861,11 +1333,36 @@ def plot_2d_heatmap(xs, ys, heats, savepath,
         cb.set_label(heatlabel)
 
         fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
+    # Escape from error of passing tuples when optimizing neural net
     except TypeError:
         pass
 
 def plot_3d_heatmap(xs, ys, zs, heats, savepath,
                     xlabel='x', ylabel='y', zlabel='z', heatlabel='heat'):
+    """
+    Method to plot a heatmap for values of three variables; used for plotting GridSearch results in hyperparameter optimization.
+
+    Args:
+
+        xs: (numpy array), array of first variable values to plot heatmap against
+
+        ys: (numpy array), array of second variable values to plot heatmap against
+
+        zs: (numpy array), array of third variable values to plot heatmap against
+
+        heats: (numpy array), array of heat values to plot
+
+        savepath: (str), path to save the 2D heatmap to
+
+        xlabel: (str), the x-axis label
+
+        ylabel: (str), the y-axis label
+
+        zlabel: (str), the z-axis label
+
+        heatlabel: (str), the heat value axis label
+
+    """
     # Escape from error of passing tuples when optimzing neural net
     # TODO have more general solution
     try:
@@ -897,7 +1394,32 @@ def plot_3d_heatmap(xs, ys, zs, heats, savepath,
     anim.save(savepath+'.gif', fps=5, dpi=80, writer='imagemagick')
 
 def plot_learning_curve(train_sizes, train_mean, test_mean, train_stdev, test_stdev, score_name, learning_curve_type, savepath='data_learning_curve'):
+    """
+    Method used to plot both data and feature learning curves
 
+    Args:
+
+        train_sizes: (numpy array), array of x-axis values, such as fraction of data used or number of features
+
+        train_mean: (numpy array), array of training data mean values, averaged over some type/number of CV splits
+
+        test_mean: (numpy array), array of test data mean values, averaged over some type/number of CV splits
+
+        train_stdev: (numpy array), array of training data standard deviation values, from some type/number of CV splits
+
+        test_stdev: (numpy array), array of test data standard deviation values, from some type/number of CV splits
+
+        score_name: (str), type of score metric for learning curve plotting; used in y-axis label
+
+        learning_curve_type: (str), type of learning curve employed: 'sample_learning_curve' or 'feature_learning_curve'
+
+        savepath: (str), path to save the plotted learning curve to
+
+    Returns:
+
+        None
+
+    """
     # Set image aspect ratio (do custom for learning curve):
     w, h = figaspect(0.75)
     fig = Figure(figsize=(w,h))
@@ -948,6 +1470,29 @@ def plot_learning_curve(train_sizes, train_mean, test_mean, train_stdev, test_st
     plot_learning_curve_convergence(train_sizes, test_mean, score_name, learning_curve_type, savepath)
 
 def plot_learning_curve_convergence(train_sizes, test_mean, score_name, learning_curve_type, savepath):
+    """
+    Method used to plot both the convergence of data and feature learning curves as a function of amount of data or features
+
+    used, respectively.
+
+    Args:
+
+        train_sizes: (numpy array), array of x-axis values, such as fraction of data used or number of features
+
+        test_mean: (numpy array), array of test data mean values, averaged over some type/number of CV splits
+
+        score_name: (str), type of score metric for learning curve plotting; used in y-axis label
+
+        learning_curve_type: (str), type of learning curve employed: 'sample_learning_curve' or 'feature_learning_curve'
+
+        savepath: (str), path to save the plotted convergence learning curve to
+
+    Returns:
+
+        None
+
+    """
+
     # Function to examine the minimization of error in learning curve CV scores as function of amount of data or number
     # of features used.
     steps = [x for x in range(len(train_sizes))]
@@ -1008,21 +1553,46 @@ def plot_learning_curve_convergence(train_sizes, test_mean, score_name, learning
 
 ### Helpers:
 
-def trim_array(df_list):
+def trim_array(arr_list):
+    """
+    Method used to trim a set of arrays to make all arrays the same shape
+
+    Args:
+
+        arr_list: (list), list of numpy arrays, where arrays are different sizes
+
+    Returns:
+
+        arr_list: (), list of trimmed numpy arrays, where arrays are same size
+
+    """
+
     # TODO: a better way to handle arrays with very different shapes? Otherwise average only uses # of points of smallest array
     # Need to make arrays all same shapes if they aren't
-    sizes = [df.shape[0] for df in df_list]
+    sizes = [arr.shape[0] for arr in arr_list]
     size_min = min(sizes)
-    df_list_ = list()
-    for i, df in enumerate(df_list):
-        if df.shape[0] > size_min:
-            while df.shape[0] > size_min:
-                df = np.delete(df, -1)
-        df_list_.append(df)
-    df_list = df_list_
-    return df_list
+    arr_list_ = list()
+    for i, arr in enumerate(arr_list):
+        if arr.shape[0] > size_min:
+            while arr.shape[0] > size_min:
+                arr = np.delete(arr, -1)
+        arr_list_.append(arr)
+    arr_list = arr_list_
+    return arr_list
 
 def rounder(delta):
+    """
+    Method to obtain number of decimal places to report on plots
+
+    Args:
+
+        delta: (float), a float representing the change in two y values on a plot, used to obtain the plot axis spacing size
+
+    Return:
+
+        (int), an integer denoting the number of decimal places to use
+
+    """
     if 0.001 <= delta < 0.01:
         return 3
     elif 0.01 <= delta < 0.1:
@@ -1035,6 +1605,19 @@ def rounder(delta):
         return 0
 
 def get_histogram_bins(y_df):
+    """
+    Method to obtain the number of bins to use when plotting a histogram
+
+    Args:
+
+        y_df: (pandas Series or numpy array), array of y data used to construct histogram
+
+    Returns:
+
+        num_bins: (int), the number of bins to use when plotting a histogram
+
+    """
+
     bin_dividers = np.linspace(y_df.shape[0], 0.05*y_df.shape[0], y_df.shape[0])
     bin_list = list()
     try:
@@ -1053,6 +1636,21 @@ def get_histogram_bins(y_df):
     return num_bins
 
 def stat_to_string(name, value):
+    """
+    Method that converts a metric object into a string for displaying on a plot
+
+    Args:
+
+        name: (str), long name of a stat metric or quantity
+
+        value: (float), value of the metric or quantity
+
+    Return:
+
+        (str), a string of the metric name, adjusted to look nicer for inclusion on a plot
+
+    """
+
     " Stringifies the name value pair for display within a plot "
     if name in nice_names:
         name = nice_names[name]
@@ -1075,8 +1673,26 @@ def stat_to_string(name, value):
 
 def plot_stats(fig, stats, x_align=0.65, y_align=0.90, font_dict=dict(), fontsize=14):
     """
-    Print stats onto the image
-    Goes off screen if they are too long or too many in number
+    Method that prints stats onto the plot. Goes off screen if they are too long or too many in number.
+
+    Args:
+
+        fig: (matplotlib figure object), a matplotlib figure object
+
+        stats: (dict), dict of statistics to be included with a plot
+
+        x_align: (float), float denoting x position of where to align display of stats on a plot
+
+        y_align: (float), float denoting y position of where to align display of stats on a plot
+
+        font_dict: (dict), dict of matplotlib font options to alter display of stats on plot
+
+        fontsize: (int), the fontsize of stats to display on plot
+
+    Returns:
+
+        None
+
     """
 
     stat_str = '\n'.join(stat_to_string(name, value)
@@ -1087,8 +1703,22 @@ def plot_stats(fig, stats, x_align=0.65, y_align=0.90, font_dict=dict(), fontsiz
 
 def make_fig_ax(aspect_ratio=0.5, x_align=0.65, left=0.10):
     """
-    Using Object Oriented interface from
-    https://matplotlib.org/gallery/api/agg_oo_sgskip.html
+    Method to make matplotlib figure and axes objects. Using Object Oriented interface from https://matplotlib.org/gallery/api/agg_oo_sgskip.html
+
+    Args:
+
+        aspect_ratio: (float), aspect ratio for figure and axes creation
+
+        x_align: (float), x position to draw edge of figure. Needed so can display stats alongside plot
+
+        left: (float), the leftmost position to draw edge of figure
+
+    Returns:
+
+        fig: (matplotlib fig object), a matplotlib figure object with the specified aspect ratio
+
+        ax: (matplotlib ax object), a matplotlib axes object with the specified aspect ratio
+
     """
     # Set image aspect ratio:
     w, h = figaspect(aspect_ratio)
@@ -1110,8 +1740,22 @@ def make_fig_ax(aspect_ratio=0.5, x_align=0.65, left=0.10):
 
 def make_fig_ax_square(aspect='equal', aspect_ratio=1):
     """
-    Using Object Oriented interface from
+    Method to make square shaped matplotlib figure and axes objects. Using Object Oriented interface from
+
     https://matplotlib.org/gallery/api/agg_oo_sgskip.html
+
+    Args:
+
+        aspect: (str), 'equal' denotes x and y aspect will be equal (i.e. square)
+
+        aspect_ratio: (float), aspect ratio for figure and axes creation
+
+    Returns:
+
+        fig: (matplotlib fig object), a matplotlib figure object with the specified aspect ratio
+
+        ax: (matplotlib ax object), a matplotlib axes object with the specified aspect ratio
+
     """
     # Set image aspect ratio:
     w, h = figaspect(aspect_ratio)
@@ -1122,7 +1766,22 @@ def make_fig_ax_square(aspect='equal', aspect_ratio=1):
     return fig, ax
 
 def make_axis_same(ax, max1, min1):
-    # fix up dem axis
+    """
+    Method to make the x and y ticks for each axis the same. Useful for parity plots
+
+    Args:
+
+        ax: (matplotlib axis object), a matplotlib axes object
+
+        max1: (float), the maximum value of a particular axis
+
+        min1: (float), the minimum value of a particular axis
+
+    Returns:
+
+        None
+
+    """
     if max1 - min1 > 5:
         step = (int(max1) - int(min1)) // 3
         ticks = range(int(min1), int(max1)+step, step)
@@ -1132,24 +1791,91 @@ def make_axis_same(ax, max1, min1):
     ax.set_yticks(ticks)
 
 def nice_mean(ls):
-    " Returns NaN for empty list "
+    """
+    Method to return mean of a list or equivalent array with NaN values
+
+    Args:
+
+        ls: (list), list of values
+
+    Returns:
+
+        (numpy array), array containing mean of list of values or NaN if list has no values
+
+    """
+
     if len(ls) > 0:
         return np.mean(ls)
     return np.nan
 
 def nice_std(ls):
-    " Returns NaN for empty list "
+    """
+    Method to return standard deviation of a list or equivalent array with NaN values
+
+    Args:
+
+        ls: (list), list of values
+
+    Returns:
+
+        (numpy array), array containing standard deviation of list of values or NaN if list has no values
+
+    """
     if len(ls) > 0:
         return np.std(ls)
     return np.nan
 
 def round_down(num, divisor):
+    """
+    Method to return a rounded down number
+
+    Args:
+
+        num: (float), a number to round down
+
+        divisor: (int), divisor to denote how to round down
+
+    Returns:
+
+        (float), the rounded-down number
+
+    """
+
     return num - (num%divisor)
 
 def round_up(num, divisor):
+    """
+    Method to return a rounded up number
+
+    Args:
+
+        num: (float), a number to round up
+
+        divisor: (int), divisor to denote how to round up
+
+    Returns:
+
+        (float), the rounded-up number
+
+    """
     return float(math.ceil(num / divisor)) * divisor
 
 def get_divisor(high, low):
+    """
+    Method to obtain a sensible divisor based on range of two values
+
+    Args:
+
+        high: (float), a max data value
+
+        low: (float), a min data value
+
+    Returns:
+
+        divisor: (float), a number used to make sensible axis ticks
+
+    """
+
     delta = high-low
     divisor = 10
     if delta > 1000:
@@ -1170,30 +1896,102 @@ def get_divisor(high, low):
                     divisor = 0.001
     return divisor
 
+def recursive_max(arr):
+    """
+    Method to recursively find the max value of an array of iterables.
 
-# Credit: https://www.linkedin.com/pulse/ask-recursion-during-coding-interviews-identify-good-talent-veteanu/
-# not used yet, should be used to refactor some of the min and max bits
-def recursive_max(array):
+    Credit: https://www.linkedin.com/pulse/ask-recursion-during-coding-interviews-identify-good-talent-veteanu/
+
+    Args:
+
+        arr: (numpy array), an array of values or iterables
+
+    Returns:
+
+        (float), max value in arr
+
+    """
     return max(
         recursive_max(e) if isinstance(e, Iterable) else e
-        for e in array
+        for e in arr
     )
 
-def recursive_min(array):
+def recursive_min(arr):
+    """
+    Method to recursively find the min value of an array of iterables.
+
+    Credit: https://www.linkedin.com/pulse/ask-recursion-during-coding-interviews-identify-good-talent-veteanu/
+
+    Args:
+
+        arr: (numpy array), an array of values or iterables
+
+    Returns:
+
+        (float), min value in arr
+
+    """
+
     return min(
         recursive_min(e) if isinstance(e, Iterable) else e
-        for e in array
+        for e in arr
     )
 
-def recursive_max_and_min(array):
-    return recursive_max(array), recursive_min(array)
+def recursive_max_and_min(arr):
+    """
+    Method to recursively return max and min of values or iterables in array
+
+    Args:
+
+        arr: (numpy array), an array of values or iterables
+
+    Returns:
+
+        (tuple), tuple containing max and min of arr
+
+    """
+    return recursive_max(arr), recursive_min(arr)
 
 def _set_tick_labels(ax, maxx, minn):
-    " sets x and y to the same range "
+    """
+    Method that sets the x and y ticks to be in the same range
+
+    Args:
+
+        ax: (matplotlib axes object), a matplotlib axes object
+
+        maxx: (float), a maximum value
+
+        minn: (float), a minimum value
+
+    Returns:
+
+        None
+
+    """
     _set_tick_labels_different(ax, maxx, minn, maxx, minn) # I love it when this happens
 
 def _set_tick_labels_different(ax, max_tick_x, min_tick_x, max_tick_y, min_tick_y):
-    " Use this when X and y are over completely diffent ranges. "
+    """
+    Method that sets the x and y ticks, when the axes have different ranges
+
+    Args:
+
+        ax: (matplotlib axes object), a matplotlib axes object
+
+        max_tick_x: (float), the maximum tick value for the x axis
+
+        min_tick_x: (float), the minimum tick value for the x axis
+
+        max_tick_y: (float), the maximum tick value for the y axis
+
+        min_tick_y: (float), the minimum tick value for the y axis
+
+    Returns:
+
+        None
+
+    """
 
     tickvals_x = nice_range(min_tick_x, max_tick_x)
     tickvals_y = nice_range(min_tick_y, max_tick_y)
@@ -1215,6 +2013,20 @@ def _set_tick_labels_different(ax, max_tick_x, min_tick_x, max_tick_y, min_tick_
     ax.set_yticklabels(labels=ticklabels_y, fontsize=14)
 
 def _clean_tick_labels(tickvals, delta):
+    """
+    Method to attempt to clean up axis tick values so they don't overlap from being too dense
+
+    Args:
+
+        tickvals: (list), a list containing the initial axis tick values
+
+        delta: (float), number representing the numerical difference of two ticks
+
+    Returns:
+
+        tickvals_clean: (list), a list containing the updated axis tick values
+
+    """
     tickvals_clean = list()
     if delta >= 100:
         for i, val in enumerate(tickvals):
