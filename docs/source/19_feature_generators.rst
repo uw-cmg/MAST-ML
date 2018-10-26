@@ -1,4 +1,4 @@
-Feature Generation
+Feature Generators
 ===================================
 
 .. automodule:: feature_generators
