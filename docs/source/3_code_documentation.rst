@@ -67,3 +67,9 @@ HTML Helper documentation
 ****************************************
 .. toctree::
    13_html_helper
+
+****************************************
+Feature Selectors documentation
+****************************************
+.. toctree::
+   14_feature_selectors

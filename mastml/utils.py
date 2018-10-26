@@ -1,7 +1,7 @@
 """
 The utils module contains a collection of miscellaneous methods and error handling used throughout MAST-ML
 """
-
+import numpy as np
 import sys
 import logging
 import textwrap
