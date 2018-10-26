@@ -1,0 +1,258 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>data_splitters &#8212; MAterials Simulation Toolkit for Machine Learning (MAST-ML) 2.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for data_splitters</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">The data_splitters module contains a collection of classes for generating (train_indices, test_indices) pairs from</span>
+<span class="sd">a dataframe or a numpy array.</span>
+
+<span class="sd">For more information and a list of scikit-learn splitter classes, see:</span>
+<span class="sd"> http://scikit-learn.org/stable/modules/classes.html#module-sklearn.model_selection</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="k">import</span> <span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span>
+<span class="kn">import</span> <span class="nn">sklearn.model_selection</span> <span class="k">as</span> <span class="nn">ms</span>
+
+<div class="viewcode-block" id="SplittersUnion"><a class="viewcode-back" href="../9_data_splitters.html#data_splitters.SplittersUnion">[docs]</a><span class="k">class</span> <span class="nc">SplittersUnion</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to take the union of two separate splitting routines, so that many splitting routines can be performed at once</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        splitters: (list), a list of scikit-learn splitter objects</span>
+
+<span class="sd">    Methods:</span>
+<span class="sd">        get_n_splits: method to calculate the number of splits to perform across all splitters</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                X: (numpy array), array of X features</span>
+<span class="sd">                y: (numpy array), array of y data</span>
+<span class="sd">                groups: (numpy array), array of group labels</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                (int), number of total splits to be conducted</span>
+
+<span class="sd">        split: method to perform split into train indices and test indices</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                X: (numpy array), array of X features</span>
+<span class="sd">                y: (numpy array), array of y data</span>
+<span class="sd">                groups: (numpy array), array of group labels</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                (numpy array), array of train and test indices</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">splitters</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">splitters</span> <span class="o">=</span> <span class="n">splitters</span>
+
+    <span class="k">def</span> <span class="nf">get_n_splits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">splitter</span><span class="o">.</span><span class="n">get_n_splits</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">groups</span><span class="p">)</span> <span class="k">for</span> <span class="n">splitter</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">splitters</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">split</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">splitter</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">splitters</span><span class="p">:</span>
+            <span class="k">yield from</span> <span class="n">splitter</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">groups</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NoSplit"><a class="viewcode-back" href="../9_data_splitters.html#data_splitters.NoSplit">[docs]</a><span class="k">class</span> <span class="nc">NoSplit</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to just train the model on the training data and test it on that same data. Sometimes referred to as a &quot;Full fit&quot;</span>
+<span class="sd">    or a &quot;Single fit&quot;, equivalent to just plotting y vs. x.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        None (only object instance)</span>
+
+<span class="sd">    Methods:</span>
+<span class="sd">        get_n_splits: method to calculate the number of splits to perform</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                None</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                (int), always 1 as only a single split is performed</span>
+
+<span class="sd">        split: method to perform split into train indices and test indices</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                X: (numpy array), array of X features</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                (numpy array), array of train and test indices (all data used as train and test for NoSplit)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">get_n_splits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">1</span>
+
+    <span class="k">def</span> <span class="nf">split</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="p">[[</span><span class="n">indices</span><span class="p">,</span> <span class="n">indices</span><span class="p">]]</span></div>
+
+<div class="viewcode-block" id="JustEachGroup"><a class="viewcode-back" href="../9_data_splitters.html#data_splitters.JustEachGroup">[docs]</a><span class="k">class</span> <span class="nc">JustEachGroup</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to train the model on one group at a time and test it on the rest of the data</span>
+<span class="sd">    This class wraps scikit-learn&#39;s LeavePGroupsOut with P set to n-1. More information is available at:</span>
+<span class="sd">    http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.LeavePGroupsOut.html</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        None (only object instance)</span>
+
+<span class="sd">    Methods:</span>
+<span class="sd">        get_n_splits: method to calculate the number of splits to perform</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                groups: (numpy array), array of group labels</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                (int), number of unique groups, indicating number of splits to perform</span>
+
+<span class="sd">        split: method to perform split into train indices and test indices</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                X: (numpy array), array of X features</span>
+<span class="sd">                y: (numpy array), array of y data</span>
+<span class="sd">                groups: (numpy array), array of group labels</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                (numpy array), array of train and test indices</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">get_n_splits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">groups</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">split</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">groups</span><span class="p">):</span>
+        <span class="n">n_groups</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_n_splits</span><span class="p">(</span><span class="n">groups</span><span class="o">=</span><span class="n">groups</span><span class="p">)</span>
+        <span class="c1">#print(&#39;n_groups&#39;, n_groups)</span>
+        <span class="n">lpgo</span> <span class="o">=</span> <span class="n">ms</span><span class="o">.</span><span class="n">LeavePGroupsOut</span><span class="p">(</span><span class="n">n_groups</span><span class="o">=</span><span class="n">n_groups</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">lpgo</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">groups</span><span class="p">)</span></div>
+
+<span class="c1">#class WithoutElement(BaseEstimator, TransformerMixin):</span>
+<span class="c1">#    &quot; Train the model without each element, then test on the rows with that element &quot;</span>
+<span class="c1">#    pass</span>
+
+<span class="n">name_to_constructor</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># sklearn splitters:</span>
+    <span class="s1">&#39;GroupKFold&#39;</span><span class="p">:</span> <span class="n">ms</span><span class="o">.</span><span class="n">GroupKFold</span><span class="p">,</span>
+    <span class="s1">&#39;GroupShuffleSplit&#39;</span><span class="p">:</span> <span class="n">ms</span><span class="o">.</span><span class="n">GroupShuffleSplit</span><span class="p">,</span>
+    <span class="s1">&#39;KFold&#39;</span><span class="p">:</span> <span class="n">ms</span><span class="o">.</span><span class="n">KFold</span><span class="p">,</span>
+    <span class="s1">&#39;LeaveOneGroupOut&#39;</span><span class="p">:</span> <span class="n">ms</span><span class="o">.</span><span class="n">LeaveOneGroupOut</span><span class="p">,</span>
+    <span class="s1">&#39;LeavePGroupsOut&#39;</span><span class="p">:</span> <span class="n">ms</span><span class="o">.</span><span class="n">LeavePGroupsOut</span><span class="p">,</span>
+    <span class="s1">&#39;LeaveOneOut&#39;</span><span class="p">:</span> <span class="n">ms</span><span class="o">.</span><span class="n">LeaveOneOut</span><span class="p">,</span>
+    <span class="s1">&#39;LeavePOut&#39;</span><span class="p">:</span> <span class="n">ms</span><span class="o">.</span><span class="n">LeavePOut</span><span class="p">,</span>
+    <span class="s1">&#39;PredefinedSplit&#39;</span><span class="p">:</span> <span class="n">ms</span><span class="o">.</span><span class="n">PredefinedSplit</span><span class="p">,</span>
+    <span class="s1">&#39;RepeatedKFold&#39;</span><span class="p">:</span> <span class="n">ms</span><span class="o">.</span><span class="n">RepeatedKFold</span><span class="p">,</span> <span class="c1"># NOTE: can use for repeated leave percent out / kfold</span>
+    <span class="s1">&#39;RepeatedStratifiedKFold&#39;</span><span class="p">:</span> <span class="n">ms</span><span class="o">.</span><span class="n">RepeatedStratifiedKFold</span><span class="p">,</span>
+    <span class="s1">&#39;ShuffleSplit&#39;</span><span class="p">:</span> <span class="n">ms</span><span class="o">.</span><span class="n">ShuffleSplit</span><span class="p">,</span> <span class="c1"># NOTE: like leave percent out</span>
+    <span class="s1">&#39;StratifiedKFold&#39;</span><span class="p">:</span> <span class="n">ms</span><span class="o">.</span><span class="n">StratifiedKFold</span><span class="p">,</span>
+    <span class="s1">&#39;StratifiedShuffleSplit&#39;</span><span class="p">:</span> <span class="n">ms</span><span class="o">.</span><span class="n">StratifiedShuffleSplit</span><span class="p">,</span>
+    <span class="s1">&#39;TimeSeriesSplit&#39;</span><span class="p">:</span> <span class="n">ms</span><span class="o">.</span><span class="n">TimeSeriesSplit</span><span class="p">,</span>
+
+    <span class="c1"># mastml splitters</span>
+    <span class="s1">&#39;NoSplit&#39;</span><span class="p">:</span> <span class="n">NoSplit</span><span class="p">,</span>
+    <span class="s1">&#39;JustEachGroup&#39;</span><span class="p">:</span> <span class="n">JustEachGroup</span><span class="p">,</span>
+    <span class="c1">#&#39;WithoutElement&#39;: WithoutElement,</span>
+<span class="p">}</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">MAterials Simulation Toolkit for Machine Learning (MAST-ML)</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../0_installation.html">Installing MASTML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../0_1_terminal_installation.html">Terminal installation (Linux or linux-like terminal on Mac)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../0_2_windows_installation.html">Windows installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../1_mastml_inputfile.html">MAST-ML Input File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../2_mastml_tutorial.html">MAST-ML tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../3_code_documentation.html">MAST-ML Code Documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, University of Wisconsin-Madison Computational Materials Group.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

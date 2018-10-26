@@ -1,0 +1,199 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Metrics &#8212; MAterials Simulation Toolkit for Machine Learning (MAST-ML) 2.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Configuration File Parser" href="4_conf_parser.html" />
+    <link rel="prev" title="MAST-ML tutorial" href="2_mastml_tutorial.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-metrics">
+<span id="metrics"></span><h1>Metrics<a class="headerlink" href="#module-metrics" title="Permalink to this headline">¶</a></h1>
+<p>This module contains constructors for different model score metrics. Most model metrics are obtained from scikit-learn,
+while others are custom variations.</p>
+<p>The full list of score functions in scikit-learn can be found at: <a class="reference external" href="http://scikit-learn.org/stable/modules/model_evaluation.html">http://scikit-learn.org/stable/modules/model_evaluation.html</a></p>
+<dl class="function">
+<dt id="metrics.adjusted_r2_score">
+<code class="descclassname">metrics.</code><code class="descname">adjusted_r2_score</code><span class="sig-paren">(</span><em>y_true</em>, <em>y_pred</em>, <em>n_features=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#adjusted_r2_score"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metrics.adjusted_r2_score" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method that calculates the adjusted R^2 value</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>y_true: (numpy array), array of true y data values
+y_pred: (numpy array), array of predicted y data values
+n_features: (int), number of features used in the fit</dd>
+<dt>Returns:</dt>
+<dd>(float): score of adjusted R^2</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="metrics.check_and_fetch_names">
+<code class="descclassname">metrics.</code><code class="descname">check_and_fetch_names</code><span class="sig-paren">(</span><em>metric_names</em>, <em>is_classification</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#check_and_fetch_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metrics.check_and_fetch_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method that checks whether chosen metrics to evaluate models are appropriate for user-specified models (e.g.
+classification vs. regression models)</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>metric_names: (numpy array), array of true y data values
+is_classification: (bool), whether the task is a classification task</dd>
+<dt>Returns:</dt>
+<dd>functions (dict): dict containing the appropriate metric objects (e.g. classification vs. regression metrics)</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="metrics.r2_score">
+<code class="descclassname">metrics.</code><code class="descname">r2_score</code><span class="sig-paren">(</span><em>y_true</em>, <em>y_pred</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#r2_score"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metrics.r2_score" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method that calculates the R^2 value</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>y_true: (numpy array), array of true y data values
+y_pred: (numpy array), array of predicted y data values</dd>
+<dt>Returns:</dt>
+<dd>(float): score of R^2</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="metrics.r2_score_noint">
+<code class="descclassname">metrics.</code><code class="descname">r2_score_noint</code><span class="sig-paren">(</span><em>y_true</em>, <em>y_pred</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#r2_score_noint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metrics.r2_score_noint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method that calculates the R^2 value without fitting the y-intercept</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>y_true: (numpy array), array of true y data values
+y_pred: (numpy array), array of predicted y data values</dd>
+<dt>Returns:</dt>
+<dd>(float): score of R^2 with no y-intercept</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="metrics.rmse_over_stdev">
+<code class="descclassname">metrics.</code><code class="descname">rmse_over_stdev</code><span class="sig-paren">(</span><em>y_true</em>, <em>y_pred</em>, <em>train_y=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#rmse_over_stdev"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metrics.rmse_over_stdev" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method that calculates the root mean squared error (RMSE) of a set of data, divided by the standard deviation of
+the training data set.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>y_true: (numpy array), array of true y data values
+y_pred: (numpy array), array of predicted y data values
+train_y: (numpy array), array of training y data values</dd>
+<dt>Returns:</dt>
+<dd>(float): score of RMSE divided by standard deviation of training data</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="metrics.root_mean_squared_error">
+<code class="descclassname">metrics.</code><code class="descname">root_mean_squared_error</code><span class="sig-paren">(</span><em>y_true</em>, <em>y_pred</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#root_mean_squared_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metrics.root_mean_squared_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method that calculates the root mean squared error (RMSE)</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>y_true: (numpy array), array of true y data values
+y_pred: (numpy array), array of predicted y data values</dd>
+<dt>Returns:</dt>
+<dd>(float): score of RMSE</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">MAterials Simulation Toolkit for Machine Learning (MAST-ML)</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="0_installation.html">Installing MASTML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="0_1_terminal_installation.html">Terminal installation (Linux or linux-like terminal on Mac)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="0_2_windows_installation.html">Windows installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="1_mastml_inputfile.html">MAST-ML Input File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="2_mastml_tutorial.html">MAST-ML tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="4_conf_parser.html">Configuration File Parser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="5_data_cleaner.html">Data Cleaner</a></li>
+<li class="toctree-l1"><a class="reference internal" href="6_data_loader.html">Data Loader</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="2_mastml_tutorial.html" title="previous chapter">MAST-ML tutorial</a></li>
+      <li>Next: <a href="4_conf_parser.html" title="next chapter">Configuration File Parser</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, University of Wisconsin-Madison Computational Materials Group.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/3_metrics.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

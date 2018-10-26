@@ -1,0 +1,185 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>data_loader &#8212; MAterials Simulation Toolkit for Machine Learning (MAST-ML) 2.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for data_loader</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">The data_loader module is used for importing data from user-specified csv or xlsx file to MAST-ML</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;mastml&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="load_data"><a class="viewcode-back" href="../3_code_documentation.html#data_loader.load_data">[docs]</a><span class="k">def</span> <span class="nf">load_data</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">input_features</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">target_feature</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">grouping_feature</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">feature_blacklist</span><span class="o">=</span><span class="nb">list</span><span class="p">()):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Method that accepts the filepath of an input data file and returns a full dataframe and parsed X and y dataframes</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        file_path: (str), path to data file</span>
+
+<span class="sd">        input_features: (str), column names to be used as input features (X data). If &#39;Auto&#39;, then takes all columns that are not</span>
+<span class="sd">        listed in target_feature or feature_blacklist fields.</span>
+
+<span class="sd">        target_feature: (str), column name for data to be fit to (y data).</span>
+
+<span class="sd">        grouping_feature: (str), column names used to group data in user-defined grouping scheme</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        df: (dataframe), full dataframe of the input X data (y data is removed)</span>
+
+<span class="sd">        X: (dataframe), dataframe containing only the X data from the data file</span>
+
+<span class="sd">        X_noinput: (dataframe), dataframe containing the columns of the original X data that are not used as input features</span>
+
+<span class="sd">        X_grouped: (dataframe), dataframe containing the columns of hte original X data that correspond to a data grouping scheme</span>
+
+<span class="sd">        y: (dataframe), dataframe containing only the y data from the data file</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Load data</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+
+    <span class="c1"># Assign default values to input_features and target_feature;</span>
+    <span class="k">if</span> <span class="n">input_features</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">target_feature</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="c1"># input is first n-1 and target is just n</span>
+        <span class="n">input_features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">target_feature</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">input_features</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="c1"># input is all the features except the target feature</span>
+        <span class="n">input_features</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">col</span> <span class="o">!=</span> <span class="n">target_feature</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">target_feature</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="c1"># target is the last non-input feature</span>
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">input_features</span><span class="p">:</span>
+                <span class="n">target_feature</span> <span class="o">=</span> <span class="n">col</span>
+                <span class="k">break</span>
+
+    <span class="c1"># Collect required features:</span>
+    <span class="n">required_features</span> <span class="o">=</span> <span class="n">input_features</span> <span class="o">+</span> <span class="p">[</span><span class="n">target_feature</span><span class="p">]</span>
+
+    <span class="c1"># Ensure they are all present:</span>
+    <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">required_features</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">feature</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Data file does not have column &#39;</span><span class="si">{feature}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+
+    <span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">input_features</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="n">target_feature</span><span class="p">]</span>
+
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;blacklisted features, either from &quot;not_input_features&quot; or a &quot;grouping_column&quot;:&#39;</span> <span class="o">+</span>
+                 <span class="nb">str</span><span class="p">(</span><span class="n">feature_blacklist</span><span class="p">))</span>
+    <span class="c1"># take blacklisted features out of X:</span>
+    <span class="n">X_noinput_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">feature_blacklist</span><span class="p">):</span>
+        <span class="n">X_noinput_dict</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">feature</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">X_noinput</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">X_noinput_dict</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">grouping_feature</span><span class="p">:</span>
+        <span class="n">X_grouped</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">grouping_feature</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">X_grouped</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">target_feature</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">X_noinput</span><span class="p">,</span> <span class="n">X_grouped</span><span class="p">,</span> <span class="n">y</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">MAterials Simulation Toolkit for Machine Learning (MAST-ML)</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../0_installation.html">Installing MASTML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../0_1_terminal_installation.html">Terminal installation (Linux or linux-like terminal on Mac)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../0_2_windows_installation.html">Windows installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../1_mastml_inputfile.html">MAST-ML Input File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../2_mastml_tutorial.html">MAST-ML tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../3_code_documentation.html">MAST-ML Code Documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, University of Wisconsin-Madison Computational Materials Group.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,1067 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>mastml_driver &#8212; MAterials Simulation Toolkit for Machine Learning (MAST-ML) 2.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for mastml_driver</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Main MAST-ML module responsible for executing the workflow of a MAST-ML run</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">inspect</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">join</span> <span class="c1"># We use join tons</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">reduce</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">sklearn.externals</span> <span class="k">import</span> <span class="n">joblib</span>
+<span class="kn">from</span> <span class="nn">sklearn.exceptions</span> <span class="k">import</span> <span class="n">UndefinedMetricWarning</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <span class="n">LeaveOneGroupOut</span>
+
+<span class="kn">from</span> <span class="nn">mastml</span> <span class="k">import</span> <span class="n">conf_parser</span><span class="p">,</span> <span class="n">data_loader</span><span class="p">,</span> <span class="n">html_helper</span><span class="p">,</span> <span class="n">plot_helper</span><span class="p">,</span> <span class="n">utils</span><span class="p">,</span> <span class="n">learning_curve</span><span class="p">,</span> <span class="n">data_cleaner</span>
+<span class="kn">from</span> <span class="nn">mastml.legos</span> <span class="k">import</span> <span class="p">(</span><span class="n">data_splitters</span><span class="p">,</span> <span class="n">feature_generators</span><span class="p">,</span> <span class="n">feature_normalizers</span><span class="p">,</span>
+                    <span class="n">feature_selectors</span><span class="p">,</span> <span class="n">model_finder</span><span class="p">,</span> <span class="n">util_legos</span><span class="p">,</span> <span class="n">randomizers</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">mastml.legos</span> <span class="k">import</span> <span class="n">clusterers</span> <span class="k">as</span> <span class="n">legos_clusterers</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;mastml&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../11_mastml_driver.html#mastml_driver.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">conf_path</span><span class="p">,</span> <span class="n">data_path</span><span class="p">,</span> <span class="n">outdir</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This method is responsible for setting up the initial stage of the MAST-ML run, such as parsing input directories to</span>
+<span class="sd">    designate where data will be imported and results saved to, as well as creation of the MAST-ML run log.</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        conf_path: (str), the path supplied by the user which contains the input configuration file</span>
+
+<span class="sd">        data_path: (str), the path supplied by the user which contains the input data file (as CSV or XLSX)</span>
+
+<span class="sd">        outdir: (str), the path supplied by the user which determines where the output results are saved to</span>
+
+<span class="sd">        verbosity: (int), the verbosity level of the MAST-ML log, which determines the amount of information written to the log.</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">        outdir: (str), the path supplied by the user which determines where the output results are saved to (needed by other calls in MAST-ML)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">conf_path</span><span class="p">,</span> <span class="n">data_path</span><span class="p">,</span> <span class="n">outdir</span> <span class="o">=</span> <span class="n">check_paths</span><span class="p">(</span><span class="n">conf_path</span><span class="p">,</span> <span class="n">data_path</span><span class="p">,</span> <span class="n">outdir</span><span class="p">)</span>
+
+    <span class="n">utils</span><span class="o">.</span><span class="n">activate_logging</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="p">(</span><span class="n">conf_path</span><span class="p">,</span> <span class="n">data_path</span><span class="p">,</span> <span class="n">outdir</span><span class="p">),</span> <span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">verbosity</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;error&#39;</span><span class="p">)</span> <span class="c1"># turn warnings into errors</span>
+    <span class="k">elif</span> <span class="n">verbosity</span> <span class="o">&lt;=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span> <span class="c1"># ignore warnings</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">mastml_run</span><span class="p">(</span><span class="n">conf_path</span><span class="p">,</span> <span class="n">data_path</span><span class="p">,</span> <span class="n">outdir</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">utils</span><span class="o">.</span><span class="n">MastError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="c1"># catch user errors, log and print, but don&#39;t raise and show them that nasty stack</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="c1"># catch the error, save it to file, then raise it back up</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;A runtime exception has occured, please go to &#39;</span>
+                      <span class="s1">&#39;https://github.com/uw-cmg/MAST-ML/issues and post your issue.&#39;</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">e</span>
+    <span class="k">return</span> <span class="n">outdir</span> <span class="c1"># so a calling program can know where we actually saved it</span></div>
+
+<div class="viewcode-block" id="mastml_run"><a class="viewcode-back" href="../11_mastml_driver.html#mastml_driver.mastml_run">[docs]</a><span class="k">def</span> <span class="nf">mastml_run</span><span class="p">(</span><span class="n">conf_path</span><span class="p">,</span> <span class="n">data_path</span><span class="p">,</span> <span class="n">outdir</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This method is responsible for conducting the main MAST-ML run workflow</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        conf_path: (str), the path supplied by the user which contains the input configuration file</span>
+
+<span class="sd">        data_path: (str), the path supplied by the user which contains the input data file (as CSV or XLSX)</span>
+
+<span class="sd">        outdir: (str), the path supplied by the user which determines where the output results are saved to</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">        None</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+    <span class="s2">&quot; Runs operations specifed in conf_path on data_path and puts results in outdir &quot;</span>
+
+    <span class="c1"># Copy the original input files to the output directory for easy reference</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Copying input files to output directory...&quot;</span><span class="p">)</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">conf_path</span><span class="p">,</span> <span class="n">outdir</span><span class="p">)</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="n">outdir</span><span class="p">)</span>
+
+    <span class="c1"># Load in and parse the configuration and data files:</span>
+    <span class="n">conf</span> <span class="o">=</span> <span class="n">conf_parser</span><span class="o">.</span><span class="n">parse_conf_file</span><span class="p">(</span><span class="n">conf_path</span><span class="p">)</span>
+    <span class="n">PlotSettings</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;PlotSettings&#39;</span><span class="p">]</span>
+    <span class="n">is_classification</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;is_classification&#39;</span><span class="p">]</span>
+    <span class="c1"># The df is used by feature generators, clusterers, and grouping_column to </span>
+    <span class="c1"># create more features for x.</span>
+    <span class="c1"># X is model input, y is target feature for model</span>
+    <span class="n">df</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">X_noinput</span><span class="p">,</span> <span class="n">X_grouped</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">data_loader</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">data_path</span><span class="p">,</span>
+                                     <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;GeneralSetup&#39;</span><span class="p">][</span><span class="s1">&#39;input_features&#39;</span><span class="p">],</span>
+                                     <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;GeneralSetup&#39;</span><span class="p">][</span><span class="s1">&#39;target_feature&#39;</span><span class="p">],</span>
+                                     <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;GeneralSetup&#39;</span><span class="p">][</span><span class="s1">&#39;grouping_feature&#39;</span><span class="p">],</span>
+                                     <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;GeneralSetup&#39;</span><span class="p">][</span><span class="s1">&#39;not_input_features&#39;</span><span class="p">])</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;GeneralSetup&#39;</span><span class="p">][</span><span class="s1">&#39;grouping_feature&#39;</span><span class="p">]:</span>
+        <span class="n">X_grouped</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+
+    <span class="c1"># Perform data cleaning here</span>
+    <span class="n">dc</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;DataCleaning&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="s1">&#39;cleaning_method&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dc</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;You have chosen not to specify a method of data_cleaning in the input file. By default, any feature entries &quot;</span>
+                    <span class="s2">&quot;containing NaN will result in removal of the feature and any target data entries containing NaN will &quot;</span>
+                    <span class="s2">&quot;result in removal of that target data point.&quot;</span><span class="p">)</span>
+        <span class="n">dc</span><span class="p">[</span><span class="s1">&#39;cleaning_method&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;remove&#39;</span>
+    <span class="k">if</span> <span class="n">dc</span><span class="p">[</span><span class="s1">&#39;cleaning_method&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;remove&#39;</span><span class="p">:</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">data_cleaner</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">data_cleaner</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">X_noinput</span> <span class="o">=</span> <span class="n">data_cleaner</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">X_noinput</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">X_grouped</span> <span class="o">=</span> <span class="n">data_cleaner</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">X_grouped</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># TODO: have method to first remove rows of missing target data, then do columns for features</span>
+        <span class="c1">#y = data_cleaner.remove(y, axis=0)</span>
+    <span class="k">elif</span> <span class="n">dc</span><span class="p">[</span><span class="s1">&#39;cleaning_method&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;imputation&#39;</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;You have selected data cleaning with Imputation. Note that imputation will not resolve missing target data. &quot;</span>
+                    <span class="s2">&quot;It is recommended to remove missing target data&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;imputation_strategy&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dc</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;You have chosen to perform data imputation but have not selected an imputation strategy. By default, &quot;</span>
+                        <span class="s2">&quot;the mean will be used as the imputation strategy&quot;</span><span class="p">)</span>
+            <span class="n">dc</span><span class="p">[</span><span class="s1">&#39;imputation_strategy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;mean&#39;</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">data_cleaner</span><span class="o">.</span><span class="n">imputation</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">dc</span><span class="p">[</span><span class="s1">&#39;imputation_strategy&#39;</span><span class="p">],</span> <span class="n">X_noinput</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">data_cleaner</span><span class="o">.</span><span class="n">imputation</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">dc</span><span class="p">[</span><span class="s1">&#39;imputation_strategy&#39;</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="n">dc</span><span class="p">[</span><span class="s1">&#39;cleaning_method&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;ppca&#39;</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;You have selected data cleaning with PPCA. Note that PPCA will not work to estimate missing target values, &quot;</span>
+                    <span class="s2">&quot;at least a 2D matrix is needed. It is recommended you remove missing target data&quot;</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">data_cleaner</span><span class="o">.</span><span class="n">ppca</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">X_noinput</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">data_cleaner</span><span class="o">.</span><span class="n">ppca</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;You have specified an invalid data cleaning method. Choose from: remove, imputation, or ppca&quot;</span><span class="p">)</span>
+        <span class="n">exit</span><span class="p">()</span>
+
+    <span class="c1"># randomly shuffles y values if randomizer is on</span>
+    <span class="k">if</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;GeneralSetup&#39;</span><span class="p">][</span><span class="s1">&#39;randomizer&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Randomizer is enabled, so target feature will be shuffled,&quot;</span>
+                 <span class="s2">&quot; and results should be null for a given model&quot;</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">randomizers</span><span class="o">.</span><span class="n">Randomizer</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">y</span><span class="p">)</span>
+
+    <span class="c1"># get parameters out for &#39;validation_column&#39;</span>
+    <span class="n">is_validation</span> <span class="o">=</span> <span class="s1">&#39;validation_columns&#39;</span> <span class="ow">in</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;GeneralSetup&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">is_validation</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;GeneralSetup&#39;</span><span class="p">][</span><span class="s1">&#39;validation_columns&#39;</span><span class="p">])</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
+            <span class="n">validation_column_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;GeneralSetup&#39;</span><span class="p">][</span><span class="s1">&#39;validation_columns&#39;</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;GeneralSetup&#39;</span><span class="p">][</span><span class="s1">&#39;validation_columns&#39;</span><span class="p">])</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="n">validation_column_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="n">validation_column_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;GeneralSetup&#39;</span><span class="p">][</span><span class="s1">&#39;validation_columns&#39;</span><span class="p">][:])</span>
+        <span class="n">validation_columns</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">validation_column_name</span> <span class="ow">in</span> <span class="n">validation_column_names</span><span class="p">:</span>
+            <span class="n">validation_columns</span><span class="p">[</span><span class="n">validation_column_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">validation_column_name</span><span class="p">]</span>
+        <span class="n">validation_columns</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">validation_columns</span><span class="p">)</span>
+        <span class="n">validation_X</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">validation_y</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+        <span class="c1"># TODO make this block its own function</span>
+        <span class="k">for</span> <span class="n">validation_column_name</span> <span class="ow">in</span> <span class="n">validation_column_names</span><span class="p">:</span>
+            <span class="c1"># X_, y_ = _exclude_validation(X, validation_columns[validation_column_name]), _exclude_validation(y, validation_columns[validation_column_name])</span>
+            <span class="n">validation_X</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">_exclude_validation</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">validation_columns</span><span class="p">[</span><span class="n">validation_column_name</span><span class="p">])))</span>
+            <span class="n">validation_y</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">_exclude_validation</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">validation_columns</span><span class="p">[</span><span class="n">validation_column_name</span><span class="p">])))</span>
+        <span class="n">idxy_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">validation_y</span><span class="p">):</span>
+            <span class="n">idxy_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">validation_y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+        <span class="c1"># Get intersection of indices between all prediction columns</span>
+        <span class="n">intersection</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">intersect1d</span><span class="p">,</span> <span class="p">(</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">idxy_list</span><span class="p">))</span>
+        <span class="n">X_novalidation</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">intersection</span><span class="p">]</span>
+        <span class="n">y_novalidation</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">intersection</span><span class="p">]</span>
+        <span class="n">X_grouped_novalidation</span> <span class="o">=</span> <span class="n">X_grouped</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">intersection</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">X_novalidation</span> <span class="o">=</span> <span class="n">X</span>
+        <span class="n">y_novalidation</span> <span class="o">=</span> <span class="n">y</span>
+        <span class="n">X_grouped_novalidation</span> <span class="o">=</span> <span class="n">X_grouped</span>
+
+    <span class="k">if</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;PlotSettings&#39;</span><span class="p">][</span><span class="s1">&#39;target_histogram&#39;</span><span class="p">]:</span>
+        <span class="c1"># First, save input data stats to csv</span>
+        <span class="n">y</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="s1">&#39;input_data_statistics.csv&#39;</span><span class="p">))</span>
+        <span class="n">plot_helper</span><span class="o">.</span><span class="n">plot_target_histogram</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="s1">&#39;target_histogram.png&#39;</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="n">y</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="c1"># Get the appropriate collection of metrics:</span>
+    <span class="n">metrics_dict</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;GeneralSetup&#39;</span><span class="p">][</span><span class="s1">&#39;metrics&#39;</span><span class="p">]</span>
+
+    <span class="c1"># Extract columns that some splitter need to do grouped splitting using &#39;grouping_column&#39;</span>
+    <span class="c1"># special argument</span>
+    <span class="n">splitter_to_group_names</span> <span class="o">=</span> <span class="n">_extract_grouping_column_names</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;DataSplits&#39;</span><span class="p">])</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;splitter_to_group_names:</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">splitter_to_group_names</span><span class="p">))</span>
+
+    <span class="c1"># Instantiate models first so we can snatch them and pass them into feature selectors</span>
+    <span class="n">models</span> <span class="o">=</span> <span class="n">_instantiate</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;Models&#39;</span><span class="p">],</span>
+                          <span class="n">model_finder</span><span class="o">.</span><span class="n">name_to_constructor</span><span class="p">,</span>
+                          <span class="s1">&#39;model&#39;</span><span class="p">)</span>
+    <span class="n">models</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">(</span><span class="n">models</span><span class="p">)</span> <span class="c1"># for easier modification</span>
+
+    <span class="n">_snatch_models</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;FeatureSelection&#39;</span><span class="p">])</span>
+
+    <span class="c1"># Instantiate all the sections of the conf file:</span>
+    <span class="n">generators</span>  <span class="o">=</span> <span class="n">_instantiate</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;FeatureGeneration&#39;</span><span class="p">],</span>
+                               <span class="n">feature_generators</span><span class="o">.</span><span class="n">name_to_constructor</span><span class="p">,</span>
+                               <span class="s1">&#39;featuregenerator&#39;</span><span class="p">)</span>
+    <span class="n">clusterers</span>  <span class="o">=</span> <span class="n">_instantiate</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;Clustering&#39;</span><span class="p">],</span>
+                               <span class="n">legos_clusterers</span><span class="o">.</span><span class="n">name_to_constructor</span><span class="p">,</span>
+                               <span class="s1">&#39;clusterer&#39;</span><span class="p">)</span>
+    <span class="n">normalizers</span> <span class="o">=</span> <span class="n">_instantiate</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;FeatureNormalization&#39;</span><span class="p">],</span>
+                               <span class="n">feature_normalizers</span><span class="o">.</span><span class="n">name_to_constructor</span><span class="p">,</span>
+                               <span class="s1">&#39;featurenormalizer&#39;</span><span class="p">)</span>
+    <span class="n">splitters</span>   <span class="o">=</span> <span class="n">_instantiate</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;DataSplits&#39;</span><span class="p">],</span>
+                               <span class="n">data_splitters</span><span class="o">.</span><span class="n">name_to_constructor</span><span class="p">,</span>
+                               <span class="s1">&#39;datasplit&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">snatch_model_cv_and_scoring_for_learning_curve</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;LearningCurve&#39;</span><span class="p">]:</span>
+            <span class="c1"># Get model</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;LearningCurve&#39;</span><span class="p">][</span><span class="s1">&#39;estimator&#39;</span><span class="p">]</span>
+            <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;LearningCurve&#39;</span><span class="p">][</span><span class="s1">&#39;estimator&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">models</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">models</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+            <span class="c1"># Get cv</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;LearningCurve&#39;</span><span class="p">][</span><span class="s1">&#39;cv&#39;</span><span class="p">]</span>
+            <span class="n">splitter_count</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">splitter</span> <span class="ow">in</span> <span class="n">splitters</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">splitter</span><span class="p">:</span>
+                    <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;LearningCurve&#39;</span><span class="p">][</span><span class="s1">&#39;cv&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">splitter</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="k">break</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">splitter_count</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">del</span> <span class="n">splitters</span><span class="p">[</span><span class="n">splitter_count</span><span class="p">]</span>
+
+    <span class="n">snatch_model_cv_and_scoring_for_learning_curve</span><span class="p">()</span>
+
+
+    <span class="n">models</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+    <span class="c1">#for model in models:</span>
+    <span class="c1">#    if model[0] == &#39;GaussianProcessRegressor&#39;:</span>
+    <span class="c1">#        from sklearn.gaussian_process import GaussianProcessRegressor</span>
+    <span class="c1">#        from sklearn.gaussian_process.kernels import WhiteKernel</span>
+    <span class="c1">#        gpr = GaussianProcessRegressor(kernel=WhiteKernel())</span>
+    <span class="c1">#        m = (&#39;GaussianProcessRegressor&#39;, gpr)</span>
+    <span class="c1">#models.append(m)</span>
+    <span class="c1">#del models[0]</span>
+
+    <span class="c1"># Snatch splitter for use in feature selection, particularly RFECV</span>
+    <span class="n">splitters</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">(</span><span class="n">splitters</span><span class="p">)</span>  <span class="c1"># for easier modification</span>
+    <span class="n">_snatch_splitters</span><span class="p">(</span><span class="n">splitters</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;FeatureSelection&#39;</span><span class="p">])</span>
+    <span class="n">splitters</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">splitters</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+
+    <span class="n">selectors</span>   <span class="o">=</span> <span class="n">_instantiate</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;FeatureSelection&#39;</span><span class="p">],</span>
+                               <span class="n">feature_selectors</span><span class="o">.</span><span class="n">name_to_constructor</span><span class="p">,</span>
+                               <span class="s1">&#39;featureselector&#39;</span><span class="p">,</span> <span class="n">X_grouped</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X_grouped</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">),</span> <span class="n">X_indices</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;generators: </span><span class="se">\n</span><span class="si">{generators}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;clusterers: </span><span class="se">\n</span><span class="si">{clusterers}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;normalizers: </span><span class="se">\n</span><span class="si">{normalizers}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;selectors: </span><span class="se">\n</span><span class="si">{selectors}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;splitters: </span><span class="se">\n</span><span class="si">{splitters}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">do_all_combos</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;There are {len(normalizers)} feature normalizers, {len(selectors)} feature&quot;</span>
+                 <span class="n">f</span><span class="s2">&quot;selectors {len(models)} models, and {len(splitters)} splitters.&quot;</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">generate_features</span><span class="p">():</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Doing feature generation...&quot;</span><span class="p">)</span>
+            <span class="n">dataframes</span> <span class="o">=</span> <span class="p">[</span><span class="n">instance</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">instance</span> <span class="ow">in</span> <span class="n">generators</span><span class="p">]</span>
+            <span class="n">dataframe</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">dataframes</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Saving generated data to csv...&quot;</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;generated cols: </span><span class="si">{dataframe.columns}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="s2">&quot;generated_features.csv&quot;</span><span class="p">)</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">dataframe</span><span class="p">,</span> <span class="n">X_noinput</span><span class="p">,</span> <span class="n">y</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">dataframe</span>
+        <span class="n">generated_df</span> <span class="o">=</span> <span class="n">generate_features</span><span class="p">()</span>
+
+        <span class="k">def</span> <span class="nf">remove_constants</span><span class="p">():</span>
+            <span class="n">dataframe</span> <span class="o">=</span> <span class="n">_remove_constant_features</span><span class="p">(</span><span class="n">generated_df</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Saving generated data without constant columns to csv...&quot;</span><span class="p">)</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="s2">&quot;generated_features_no_constant_columns.csv&quot;</span><span class="p">)</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">dataframe</span><span class="p">,</span> <span class="n">X_noinput</span><span class="p">,</span> <span class="n">y</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">dataframe</span>
+        <span class="n">generated_df</span> <span class="o">=</span> <span class="n">remove_constants</span><span class="p">()</span>
+
+        <span class="c1"># add in generated features</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">X</span><span class="p">,</span> <span class="n">generated_df</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># add in generated features to full dataframe</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df</span><span class="p">,</span> <span class="n">generated_df</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># remove repeat columns (keep the first one)</span>
+        <span class="k">def</span> <span class="nf">remove_repeats</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+            <span class="n">repeated_columns</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">X</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">duplicated</span><span class="p">()]</span><span class="o">.</span><span class="n">columns</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">repeated_columns</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Throwing away {len(repeated_columns)} because they are repeats.&quot;</span><span class="p">)</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Throwing away columns because they are repeats: </span><span class="si">{repeated_columns}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="o">~</span><span class="n">X</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">duplicated</span><span class="p">()]</span>
+            <span class="k">return</span> <span class="n">X</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">remove_repeats</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">make_clustered_df</span><span class="p">():</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Doing clustering...&quot;</span><span class="p">)</span>
+            <span class="n">clustered_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">instance</span> <span class="ow">in</span> <span class="n">clusterers</span><span class="p">:</span>
+                <span class="n">clustered_df</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">instance</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">clustered_df</span>
+        <span class="n">clustered_df</span> <span class="o">=</span> <span class="n">make_clustered_df</span><span class="p">()</span> <span class="c1"># Each column is a clustering algorithm</span>
+
+        <span class="k">def</span> <span class="nf">make_feature_vs_target_plots</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">clustered_df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">X</span><span class="p">:</span> <span class="c1"># plot y against each x column</span>
+                    <span class="n">filename</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{column}</span><span class="s1">_vs_target_scatter.png&#39;</span>
+                    <span class="n">plot_helper</span><span class="o">.</span><span class="n">plot_scatter</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">column</span><span class="p">],</span> <span class="n">y</span><span class="p">,</span> <span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="n">filename</span><span class="p">),</span>
+                                             <span class="n">xlabel</span><span class="o">=</span><span class="n">column</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;target_feature&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">y</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">clustered_df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span> <span class="c1"># for each cluster, plot y against each x column</span>
+                    <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">X</span><span class="p">:</span>
+                        <span class="n">filename</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{column}</span><span class="s1">_vs_target_by_</span><span class="si">{name}</span><span class="s1">_scatter.png&#39;</span>
+                        <span class="n">plot_helper</span><span class="o">.</span><span class="n">plot_scatter</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">column</span><span class="p">],</span> <span class="n">y</span><span class="p">,</span> <span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="n">filename</span><span class="p">),</span>
+                                                <span class="n">clustered_df</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">xlabel</span><span class="o">=</span><span class="n">column</span><span class="p">,</span>
+                                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;target_feature&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">y</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">PlotSettings</span><span class="p">[</span><span class="s1">&#39;feature_vs_target&#39;</span><span class="p">]:</span>
+            <span class="n">make_feature_vs_target_plots</span><span class="p">()</span>
+
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Saving clustered data to csv...&quot;</span><span class="p">)</span>
+        <span class="c1"># Add new cluster info to X df</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">clustered_df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">X</span><span class="p">,</span> <span class="n">clustered_df</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="s2">&quot;clusters.csv&quot;</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">make_normalizer_selector_dataframe_triples</span><span class="p">():</span>
+            <span class="n">triples</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">normalizer_name</span><span class="p">,</span> <span class="n">normalizer_instance</span> <span class="ow">in</span> <span class="n">normalizers</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Running normalizer </span><span class="si">{normalizer_name}</span><span class="s2"> ...&quot;</span><span class="p">)</span>
+                <span class="n">X_normalized</span> <span class="o">=</span> <span class="n">normalizer_instance</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Saving normalized data to csv...&quot;</span><span class="p">)</span>
+                <span class="n">dirname</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="n">normalizer_name</span><span class="p">)</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">dirname</span><span class="p">)</span>
+                <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">X_normalized</span><span class="p">,</span> <span class="n">X_noinput</span><span class="p">,</span> <span class="n">y</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="s2">&quot;normalized.csv&quot;</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+                <span class="c1"># Put learning curve here??</span>
+                <span class="k">if</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;LearningCurve&#39;</span><span class="p">]:</span>
+                    <span class="n">learning_curve_estimator</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;LearningCurve&#39;</span><span class="p">][</span><span class="s1">&#39;estimator&#39;</span><span class="p">]</span>
+                    <span class="n">learning_curve_scoring</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;LearningCurve&#39;</span><span class="p">][</span><span class="s1">&#39;scoring&#39;</span><span class="p">]</span>
+                    <span class="n">n_features_to_select</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;LearningCurve&#39;</span><span class="p">][</span><span class="s1">&#39;n_features_to_select&#39;</span><span class="p">])</span>
+                    <span class="n">learning_curve_cv</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;LearningCurve&#39;</span><span class="p">][</span><span class="s1">&#39;cv&#39;</span><span class="p">]</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">selector_name</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;LearningCurve&#39;</span><span class="p">][</span><span class="s1">&#39;selector_name&#39;</span><span class="p">]</span>
+                    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                        <span class="n">selector_name</span> <span class="o">=</span> <span class="kc">None</span>
+
+                    <span class="c1"># Get score name from scoring object</span>
+                    <span class="n">scoring_name</span> <span class="o">=</span> <span class="n">learning_curve_scoring</span><span class="o">.</span><span class="n">_score_func</span><span class="o">.</span><span class="vm">__name__</span>
+                    <span class="n">scoring_name_nice</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+                    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">scoring_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">):</span>
+                        <span class="n">scoring_name_nice</span> <span class="o">+=</span> <span class="n">s</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span>
+                    <span class="c1"># Do sample learning curve</span>
+                    <span class="n">train_sizes</span><span class="p">,</span> <span class="n">train_mean</span><span class="p">,</span> <span class="n">test_mean</span><span class="p">,</span> <span class="n">train_stdev</span><span class="p">,</span> <span class="n">test_stdev</span> <span class="o">=</span> <span class="n">learning_curve</span><span class="o">.</span><span class="n">sample_learning_curve</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X_novalidation</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y_novalidation</span><span class="p">,</span>
+                                                            <span class="n">estimator</span><span class="o">=</span><span class="n">learning_curve_estimator</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">learning_curve_cv</span><span class="p">,</span>
+                                                            <span class="n">scoring</span><span class="o">=</span><span class="n">learning_curve_scoring</span><span class="p">,</span> <span class="n">Xgroups</span><span class="o">=</span><span class="n">X_grouped_novalidation</span><span class="p">)</span>
+                    <span class="n">plot_helper</span><span class="o">.</span><span class="n">plot_learning_curve</span><span class="p">(</span><span class="n">train_sizes</span><span class="p">,</span> <span class="n">train_mean</span><span class="p">,</span> <span class="n">test_mean</span><span class="p">,</span> <span class="n">train_stdev</span><span class="p">,</span> <span class="n">test_stdev</span><span class="p">,</span>
+                                                    <span class="n">scoring_name_nice</span><span class="p">,</span> <span class="s1">&#39;sample_learning_curve&#39;</span><span class="p">,</span>
+                                                    <span class="n">join</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">f</span><span class="s1">&#39;data_learning_curve&#39;</span><span class="p">))</span>
+                    <span class="c1"># Do feature learning curve</span>
+                    <span class="n">train_sizes</span><span class="p">,</span> <span class="n">train_mean</span><span class="p">,</span> <span class="n">test_mean</span><span class="p">,</span> <span class="n">train_stdev</span><span class="p">,</span> <span class="n">test_stdev</span> <span class="o">=</span> <span class="n">learning_curve</span><span class="o">.</span><span class="n">feature_learning_curve</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X_novalidation</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y_novalidation</span><span class="p">,</span>
+                                                            <span class="n">estimator</span><span class="o">=</span><span class="n">learning_curve_estimator</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">learning_curve_cv</span><span class="p">,</span>
+                                                            <span class="n">scoring</span><span class="o">=</span><span class="n">learning_curve_scoring</span><span class="p">,</span> <span class="n">selector_name</span><span class="o">=</span><span class="n">selector_name</span><span class="p">,</span>
+                                                            <span class="n">n_features_to_select</span><span class="o">=</span><span class="n">n_features_to_select</span><span class="p">,</span>
+                                                            <span class="n">Xgroups</span><span class="o">=</span><span class="n">X_grouped_novalidation</span><span class="p">)</span>
+                    <span class="n">plot_helper</span><span class="o">.</span><span class="n">plot_learning_curve</span><span class="p">(</span><span class="n">train_sizes</span><span class="p">,</span> <span class="n">train_mean</span><span class="p">,</span> <span class="n">test_mean</span><span class="p">,</span> <span class="n">train_stdev</span><span class="p">,</span> <span class="n">test_stdev</span><span class="p">,</span>
+                                                    <span class="n">scoring_name_nice</span><span class="p">,</span> <span class="s1">&#39;feature_learning_curve&#39;</span><span class="p">,</span>
+                                                    <span class="n">join</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">f</span><span class="s1">&#39;feature_learning_curve&#39;</span><span class="p">))</span>
+
+
+
+                <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Running selectors...&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">selector_name</span><span class="p">,</span> <span class="n">selector_instance</span> <span class="ow">in</span> <span class="n">selectors</span><span class="p">:</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;    Running selector </span><span class="si">{selector_name}</span><span class="s2"> ...&quot;</span><span class="p">)</span>
+                    <span class="c1"># NOTE: Changed from .fit_transform to .fit.transform</span>
+                    <span class="c1"># because PCA.fit_transform doesn&#39;t call PCA.transform</span>
+                    <span class="k">if</span> <span class="n">selector_instance</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;MASTMLFeatureSelector&#39;</span><span class="p">:</span>
+                        <span class="n">X_selected</span> <span class="o">=</span> <span class="n">selector_instance</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_normalized</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">X_grouped</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X_normalized</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">X_selected</span> <span class="o">=</span> <span class="n">selector_instance</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_normalized</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X_normalized</span><span class="p">)</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;    Saving selected features to csv...&quot;</span><span class="p">)</span>
+                    <span class="n">dirname</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="n">normalizer_name</span><span class="p">,</span> <span class="n">selector_name</span><span class="p">)</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">dirname</span><span class="p">)</span>
+                    <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">X_selected</span><span class="p">,</span> <span class="n">X_noinput</span><span class="p">,</span> <span class="n">y</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="s2">&quot;selected.csv&quot;</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                    <span class="n">triples</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">normalizer_name</span><span class="p">,</span> <span class="n">selector_name</span><span class="p">,</span> <span class="n">X_selected</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">triples</span>
+        <span class="n">normalizer_selector_dataframe_triples</span> <span class="o">=</span> <span class="n">make_normalizer_selector_dataframe_triples</span><span class="p">()</span>
+
+        <span class="c1">## DataSplits (cross-product)</span>
+        <span class="c1">## Collect grouping columns, splitter_to_group_names is a dict of splitter name to grouping col</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Finding splitter-required columns in data...&quot;</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">make_splittername_splitlist_pairs</span><span class="p">():</span>
+            <span class="c1"># exclude the testing_only rows from use in splits</span>
+            <span class="k">if</span> <span class="n">is_validation</span><span class="p">:</span>
+                <span class="n">validation_X</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+                <span class="n">validation_y</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">validation_column_name</span> <span class="ow">in</span> <span class="n">validation_column_names</span><span class="p">:</span>
+                    <span class="c1">#X_, y_ = _exclude_validation(X, validation_columns[validation_column_name]), _exclude_validation(y, validation_columns[validation_column_name])</span>
+                    <span class="n">validation_X</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">_exclude_validation</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">validation_columns</span><span class="p">[</span><span class="n">validation_column_name</span><span class="p">])))</span>
+                    <span class="n">validation_y</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">_exclude_validation</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">validation_columns</span><span class="p">[</span><span class="n">validation_column_name</span><span class="p">])))</span>
+                <span class="n">idxy_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">validation_y</span><span class="p">):</span>
+                    <span class="n">idxy_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">validation_y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+                <span class="c1"># Get intersection of indices between all prediction columns</span>
+                <span class="n">intersection</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">intersect1d</span><span class="p">,</span> <span class="p">(</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">idxy_list</span><span class="p">))</span>
+                <span class="n">X_</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">intersection</span><span class="p">]</span>
+                <span class="n">y_</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">intersection</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">X_</span><span class="p">,</span> <span class="n">y_</span> <span class="o">=</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span>
+
+            <span class="n">pairs</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">def</span> <span class="nf">fix_index</span><span class="p">(</span><span class="n">array</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">X_</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">array</span><span class="p">]</span> 
+
+            <span class="k">def</span> <span class="nf">proper_index</span><span class="p">(</span><span class="n">splits</span><span class="p">):</span>
+                <span class="sd">&quot;&quot;&quot; For example, if X&#39;s indexs are [1,4,6] and you split </span>
+<span class="sd">                [ [[0],[1,2]], [[1],[0,2]] ] then we would get </span>
+<span class="sd">                [ [[1],[4,6]], [[4],[1,6]] ] </span>
+<span class="sd">                Needed only for valdation row stuff.</span>
+<span class="sd">                &quot;&quot;&quot;</span>
+                <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">fix_index</span><span class="p">(</span><span class="n">part</span><span class="p">)</span> <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">split</span><span class="p">)</span> <span class="k">for</span> <span class="n">split</span> <span class="ow">in</span> <span class="n">splits</span><span class="p">)</span>
+
+
+            <span class="c1"># Collect all the grouping columns, `None` if not needed</span>
+            <span class="n">splitter_to_group_column</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="n">splitter_to_group_column_no_validation</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">instance</span> <span class="ow">in</span> <span class="n">splitters</span><span class="p">:</span>
+                <span class="c1"># if this splitter depends on grouping</span>
+                <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">splitter_to_group_names</span><span class="p">:</span> 
+                    <span class="n">col</span> <span class="o">=</span> <span class="n">splitter_to_group_names</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;    Finding </span><span class="si">{col}</span><span class="s2"> for </span><span class="si">{name}</span><span class="s2">...&quot;</span><span class="p">)</span>
+                    <span class="c1"># Locate the grouping column among all dataframes</span>
+                    <span class="k">for</span> <span class="n">df_</span> <span class="ow">in</span> <span class="p">[</span><span class="n">clustered_df</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">X_</span><span class="p">]:</span>
+                        <span class="k">if</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">df_</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                            <span class="c1"># FOund it!</span>
+                            <span class="c1"># Get groups for plotting first</span>
+                            <span class="n">splitter_to_group_column</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+                            <span class="k">if</span> <span class="n">is_validation</span><span class="p">:</span>
+                                <span class="n">_df_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+                                <span class="k">if</span> <span class="n">df_</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">clustered_df</span><span class="p">:</span>
+                                    <span class="c1"># exclude for df_ so that rows match up in splitter</span>
+                                    <span class="k">for</span> <span class="n">validation_column_name</span> <span class="ow">in</span> <span class="n">validation_column_names</span><span class="p">:</span>
+                                        <span class="n">df_</span> <span class="o">=</span> <span class="n">_exclude_validation</span><span class="p">(</span><span class="n">df_</span><span class="p">,</span> <span class="n">validation_columns</span><span class="p">[</span><span class="n">validation_column_name</span><span class="p">])</span>
+                                        <span class="n">_df_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df_</span><span class="p">)</span>
+                                <span class="k">elif</span> <span class="n">df_</span> <span class="ow">is</span> <span class="n">clustered_df</span><span class="p">:</span>
+                                    <span class="c1"># merge the cluster data df_ to full df</span>
+                                    <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_</span>
+                                    <span class="k">for</span> <span class="n">validation_column_name</span> <span class="ow">in</span> <span class="n">validation_column_names</span><span class="p">:</span>
+                                        <span class="n">df_</span> <span class="o">=</span> <span class="n">_exclude_validation</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">validation_columns</span><span class="p">[</span><span class="n">validation_column_name</span><span class="p">])</span>
+                                        <span class="n">_df_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df_</span><span class="p">)</span>
+
+                                <span class="c1"># Get df_ based on index intersection between all df&#39;s in _df_list</span>
+                                <span class="n">idxy_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+                                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">_df_list</span><span class="p">):</span>
+                                    <span class="n">idxy_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_df_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+                                <span class="c1"># Get intersection of indices between all prediction columns</span>
+                                <span class="n">intersection</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">intersect1d</span><span class="p">,</span> <span class="p">(</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">idxy_list</span><span class="p">))</span>
+                                <span class="n">df_</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">intersection</span><span class="p">]</span>
+
+                            <span class="c1"># and use the no-validation one for the split</span>
+                            <span class="n">grouping_data</span> <span class="o">=</span> <span class="n">df_</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+                            <span class="n">split</span> <span class="o">=</span> <span class="n">proper_index</span><span class="p">(</span><span class="n">instance</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X_</span><span class="p">,</span> <span class="n">y_</span><span class="p">,</span> <span class="n">grouping_data</span><span class="p">))</span>
+                            <span class="n">pairs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">name</span><span class="p">,</span> <span class="n">split</span><span class="p">))</span>
+                            <span class="k">break</span>
+                    <span class="c1"># If we didn&#39;t find that column anywhere, raise</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">MissingColumnError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;DataSplit </span><span class="si">{name}</span><span class="s1"> needs column </span><span class="si">{col}</span><span class="s1">, which &#39;</span>
+                                                       <span class="n">f</span><span class="s1">&#39;was neither generated nor given by input&#39;</span><span class="p">)</span>
+
+                <span class="c1"># If we don&#39;t need grouping column</span>
+                <span class="k">else</span><span class="p">:</span> 
+                    <span class="n">splitter_to_group_column</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="n">split</span> <span class="o">=</span> <span class="n">proper_index</span><span class="p">(</span><span class="n">instance</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X_</span><span class="p">,</span> <span class="n">y_</span><span class="p">))</span>
+                    <span class="n">pairs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">name</span><span class="p">,</span> <span class="n">split</span><span class="p">))</span>
+
+            <span class="k">return</span> <span class="n">pairs</span><span class="p">,</span> <span class="n">splitter_to_group_column</span>
+        <span class="n">splittername_splitlist_pairs</span><span class="p">,</span> <span class="n">splitter_to_group_column</span> <span class="o">=</span> <span class="n">make_splittername_splitlist_pairs</span><span class="p">()</span>
+
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Fitting models to splits...&quot;</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">do_models_splits</span><span class="p">():</span>
+            <span class="n">all_results</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">normalizer_name</span><span class="p">,</span> <span class="n">selector_name</span><span class="p">,</span> <span class="n">X</span> <span class="ow">in</span> <span class="n">normalizer_selector_dataframe_triples</span><span class="p">:</span>
+                <span class="n">subdir</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="n">normalizer_name</span><span class="p">,</span> <span class="n">selector_name</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">PlotSettings</span><span class="p">[</span><span class="s1">&#39;feature_vs_target&#39;</span><span class="p">]:</span>
+                    <span class="c1">#if selector_name == &#39;DoNothing&#39;: continue</span>
+                    <span class="c1"># for each selector/normalizer, plot y against each x column</span>
+                    <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">X</span><span class="p">:</span>
+                        <span class="n">filename</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{column}</span><span class="s1">_vs_target.png&#39;</span>
+                        <span class="n">plot_helper</span><span class="o">.</span><span class="n">plot_scatter</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">column</span><span class="p">],</span> <span class="n">y</span><span class="p">,</span> <span class="n">join</span><span class="p">(</span><span class="n">subdir</span><span class="p">,</span> <span class="n">filename</span><span class="p">),</span>
+                                                 <span class="n">xlabel</span><span class="o">=</span><span class="n">column</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;target_feature&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">y</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">model_instance</span> <span class="ow">in</span> <span class="n">models</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">splitter_name</span><span class="p">,</span> <span class="n">trains_tests</span> <span class="ow">in</span> <span class="n">splittername_splitlist_pairs</span><span class="p">:</span>
+                        <span class="n">grouping_data</span> <span class="o">=</span> <span class="n">splitter_to_group_column</span><span class="p">[</span><span class="n">splitter_name</span><span class="p">]</span>
+                        <span class="n">subdir</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">normalizer_name</span><span class="p">,</span> <span class="n">selector_name</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">splitter_name</span><span class="p">)</span>
+                        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;    Running splits for </span><span class="si">{subdir}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="n">subsubdir</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="n">subdir</span><span class="p">)</span>
+                        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">subsubdir</span><span class="p">)</span>
+                        <span class="c1"># NOTE: do_one_splitter is a big old function, does lots</span>
+                        <span class="n">runs</span> <span class="o">=</span> <span class="n">do_one_splitter</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">model_instance</span><span class="p">,</span> <span class="n">subsubdir</span><span class="p">,</span> <span class="n">trains_tests</span><span class="p">,</span> <span class="n">grouping_data</span><span class="p">)</span>
+                        <span class="n">all_results</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">runs</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">all_results</span>
+
+        <span class="k">return</span> <span class="n">do_models_splits</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">do_one_splitter</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">main_path</span><span class="p">,</span> <span class="n">trains_tests</span><span class="p">,</span> <span class="n">grouping_data</span><span class="p">):</span>
+
+        <span class="k">def</span> <span class="nf">one_fit</span><span class="p">(</span><span class="n">split_num</span><span class="p">,</span> <span class="n">train_indices</span><span class="p">,</span> <span class="n">test_indices</span><span class="p">):</span>
+
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;        Doing split number </span><span class="si">{split_num}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">train_X</span><span class="p">,</span> <span class="n">train_y</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">train_indices</span><span class="p">],</span> <span class="n">y</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">train_indices</span><span class="p">]</span>
+            <span class="n">test_X</span><span class="p">,</span>  <span class="n">test_y</span>  <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">test_indices</span><span class="p">],</span>  <span class="n">y</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">test_indices</span><span class="p">]</span>
+
+            <span class="c1"># split up groups into train and test as well</span>
+            <span class="k">if</span> <span class="n">grouping_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">train_groups</span><span class="p">,</span> <span class="n">test_groups</span> <span class="o">=</span> <span class="n">grouping_data</span><span class="p">[</span><span class="n">train_indices</span><span class="p">],</span> <span class="n">grouping_data</span><span class="p">[</span><span class="n">test_indices</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">train_groups</span><span class="p">,</span> <span class="n">test_groups</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+            <span class="n">path</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">main_path</span><span class="p">,</span> <span class="n">f</span><span class="s2">&quot;split_</span><span class="si">{split_num}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;             Fitting model and making predictions...&quot;</span><span class="p">)</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_X</span><span class="p">,</span> <span class="n">train_y</span><span class="p">)</span>
+            <span class="c1">#joblib.dump(model, join(path, &quot;trained_model.pkl&quot;))</span>
+            <span class="k">if</span> <span class="n">is_classification</span><span class="p">:</span>
+                <span class="c1"># For classification, need probabilty of prediction to make accurate ROC curve (and other predictions??).</span>
+                <span class="c1">#TODO:Consider using only predict_proba and not predict() method for classif problems. Have exit escape if probability set to False here.</span>
+                <span class="c1"># See stackoverflow post:</span>
+                <span class="c1">#https: // stats.stackexchange.com / questions / 329857 / what - is -the - difference - between - decision</span>
+                <span class="c1"># - function - predict - proba - and -predict - fun</span>
+
+                <span class="c1">#params = model.get_params()</span>
+                <span class="c1">#if params[&#39;probability&#39;] == True:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">train_pred_proba</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">train_X</span><span class="p">)</span>
+                    <span class="n">test_pred_proba</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">test_X</span><span class="p">)</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;You need to perform classification with model param probability=True enabled for accurate&#39;</span>
+                                <span class="s1">&#39; predictions, if your model has the probability param (e.g. RandomForestClassifier does not. &#39;</span>
+                              <span class="s1">&#39;Please reset this parameter as applicable and re-run MASTML&#39;</span><span class="p">)</span>
+                    <span class="n">exit</span><span class="p">()</span>
+                <span class="n">train_pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">train_X</span><span class="p">)</span>
+                <span class="n">test_pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test_X</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">train_pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">train_X</span><span class="p">)</span>
+                <span class="n">test_pred</span>  <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test_X</span><span class="p">)</span>
+
+            <span class="c1"># here is where we need to collect validation stats</span>
+            <span class="k">if</span> <span class="n">is_validation</span><span class="p">:</span>
+                <span class="n">validation_predictions_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+                <span class="n">validation_y_forpred_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">validation_column_name</span> <span class="ow">in</span> <span class="n">validation_column_names</span><span class="p">:</span>
+                    <span class="n">validation_X_forpred</span> <span class="o">=</span> <span class="n">_only_validation</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">validation_columns</span><span class="p">[</span><span class="n">validation_column_name</span><span class="p">])</span>
+                    <span class="n">validation_y_forpred</span> <span class="o">=</span> <span class="n">_only_validation</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">validation_columns</span><span class="p">[</span><span class="n">validation_column_name</span><span class="p">])</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;             Making predictions on prediction_only data...&quot;</span><span class="p">)</span>
+                    <span class="n">validation_predictions</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">validation_X_forpred</span><span class="p">)</span>
+                    <span class="n">validation_predictions_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">validation_predictions</span><span class="p">)</span>
+                    <span class="n">validation_y_forpred_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">validation_y_forpred</span><span class="p">)</span>
+
+                    <span class="c1"># save them as &#39;predicitons.csv&#39;</span>
+                    <span class="n">validation_predictions_series</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">validation_predictions</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;clean_predictions&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">validation_X_forpred</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+                    <span class="c1">#validation_noinput_series = pd.Series(X_noinput.index, index=validation_X.index)</span>
+                    <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">validation_X_forpred</span><span class="p">,</span>  <span class="n">validation_y_forpred</span><span class="p">,</span>  <span class="n">validation_predictions_series</span><span class="p">],</span>  <span class="mi">1</span><span class="p">)</span>\
+                            <span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;predictions_&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">validation_column_name</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;.csv&#39;</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">validation_y</span> <span class="o">=</span> <span class="kc">None</span>
+            
+
+            <span class="c1"># Save train and test data and results to csv:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;             Saving train/test data and predictions to csv...&quot;</span><span class="p">)</span>
+            <span class="n">train_pred_series</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">train_pred</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;train_pred&#39;</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="n">train_indices</span><span class="p">)</span>
+            <span class="n">train_noinput_series</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">X_noinput</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">train_indices</span><span class="p">)</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">train_X</span><span class="p">,</span> <span class="n">train_y</span><span class="p">,</span> <span class="n">train_pred_series</span><span class="p">,</span> <span class="n">train_noinput_series</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>\
+                    <span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;train.csv&#39;</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">test_pred_series</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">test_pred</span><span class="p">,</span>   <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;test_pred&#39;</span><span class="p">],</span>  <span class="n">index</span><span class="o">=</span><span class="n">test_indices</span><span class="p">)</span>
+            <span class="n">test_noinput_series</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">X_noinput</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">test_indices</span><span class="p">)</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">test_X</span><span class="p">,</span>  <span class="n">test_y</span><span class="p">,</span>  <span class="n">test_pred_series</span><span class="p">,</span> <span class="n">test_noinput_series</span><span class="p">],</span>  <span class="mi">1</span><span class="p">)</span>\
+                    <span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;test.csv&#39;</span><span class="p">),</span>  <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;             Calculating score metrics...&quot;</span><span class="p">)</span>
+            <span class="n">split_path</span> <span class="o">=</span> <span class="n">main_path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span>
+
+            <span class="c1"># collect metrics inside a warning catching block for some things we know we should ignore</span>
+            <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+                <span class="c1"># NOTE I tried making this more specific use warnings&#39;s regex filter but it would never</span>
+                <span class="c1"># catch it for some indeterminiable reason.</span>
+                <span class="c1"># This warning is raised when you ask for Recall on something from y_true that never</span>
+                <span class="c1"># occors in y_pred. sklearn assumes 0.0, and we want it to do so (silently).</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">UndefinedMetricWarning</span><span class="p">)</span>
+                <span class="n">train_metrics</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">((</span><span class="n">name</span><span class="p">,</span> <span class="n">function</span><span class="p">(</span><span class="n">train_y</span><span class="p">,</span> <span class="n">train_pred</span><span class="p">))</span>
+                                            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">function</span><span class="p">)</span> <span class="ow">in</span> <span class="n">metrics_dict</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+                <span class="n">test_metrics</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">((</span><span class="n">name</span><span class="p">,</span> <span class="n">function</span><span class="p">(</span><span class="n">test_y</span><span class="p">,</span> <span class="n">test_pred</span><span class="p">))</span>
+                                           <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">function</span><span class="p">)</span> <span class="ow">in</span> <span class="n">metrics_dict</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+                <span class="c1"># Need to pass y_train data to get rmse/sigma for test rmse and sigma of train y</span>
+                <span class="k">if</span> <span class="s1">&#39;rmse_over_stdev&#39;</span> <span class="ow">in</span> <span class="n">metrics_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">test_metrics</span><span class="p">[</span><span class="s1">&#39;rmse_over_stdev&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">metrics_dict</span><span class="p">[</span><span class="s1">&#39;rmse_over_stdev&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">](</span><span class="n">test_y</span><span class="p">,</span> <span class="n">test_pred</span><span class="p">,</span> <span class="n">train_y</span><span class="p">)</span>
+                <span class="k">if</span> <span class="s1">&#39;R2_adjusted&#39;</span> <span class="ow">in</span> <span class="n">metrics_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">test_metrics</span><span class="p">[</span><span class="s1">&#39;R2_adjusted&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">metrics_dict</span><span class="p">[</span><span class="s1">&#39;R2_adjusted&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">](</span><span class="n">test_y</span><span class="p">,</span> <span class="n">test_pred</span><span class="p">,</span> <span class="n">test_X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                    <span class="n">train_metrics</span><span class="p">[</span><span class="s1">&#39;R2_adjusted&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">metrics_dict</span><span class="p">[</span><span class="s1">&#39;R2_adjusted&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">](</span><span class="n">train_y</span><span class="p">,</span> <span class="n">train_pred</span><span class="p">,</span> <span class="n">train_X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+                <span class="n">split_result</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">(</span>
+                    <span class="n">normalizer</span><span class="o">=</span><span class="n">split_path</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">],</span>
+                    <span class="n">selector</span><span class="o">=</span><span class="n">split_path</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">],</span>
+                    <span class="n">model</span><span class="o">=</span><span class="n">split_path</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span>
+                    <span class="n">splitter</span><span class="o">=</span><span class="n">split_path</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                    <span class="n">split_num</span><span class="o">=</span><span class="n">split_num</span><span class="p">,</span>
+                    <span class="n">y_train_true</span><span class="o">=</span><span class="n">train_y</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                    <span class="n">y_train_pred</span><span class="o">=</span><span class="n">train_pred</span><span class="p">,</span>
+                    <span class="n">y_test_true</span><span class="o">=</span><span class="n">test_y</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                    <span class="n">y_test_pred</span><span class="o">=</span><span class="n">test_pred</span><span class="p">,</span>
+                    <span class="n">train_metrics</span><span class="o">=</span><span class="n">train_metrics</span><span class="p">,</span>
+                    <span class="n">test_metrics</span><span class="o">=</span><span class="n">test_metrics</span><span class="p">,</span>
+                    <span class="n">train_indices</span><span class="o">=</span><span class="n">train_indices</span><span class="p">,</span>
+                    <span class="n">test_indices</span><span class="o">=</span><span class="n">test_indices</span><span class="p">,</span>
+                    <span class="n">train_groups</span><span class="o">=</span><span class="n">train_groups</span><span class="p">,</span>
+                    <span class="n">test_groups</span><span class="o">=</span><span class="n">test_groups</span><span class="p">,</span>
+                <span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">is_validation</span><span class="p">:</span>
+                    <span class="n">prediction_metrics_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+                    <span class="k">for</span> <span class="n">validation_column_name</span><span class="p">,</span> <span class="n">validation_y</span><span class="p">,</span> <span class="n">validation_predictions</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">validation_column_names</span><span class="p">,</span> <span class="n">validation_y_forpred_list</span><span class="p">,</span> <span class="n">validation_predictions_list</span><span class="p">):</span>
+                        <span class="n">prediction_metrics</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">((</span><span class="n">name</span><span class="p">,</span> <span class="n">function</span><span class="p">(</span><span class="n">validation_y</span><span class="p">,</span> <span class="n">validation_predictions</span><span class="p">))</span>
+                                           <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">function</span><span class="p">)</span> <span class="ow">in</span> <span class="n">metrics_dict</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+                        <span class="k">if</span> <span class="s1">&#39;rmse_over_stdev&#39;</span> <span class="ow">in</span> <span class="n">prediction_metrics</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                            <span class="c1"># Correct series passed?</span>
+                            <span class="n">prediction_metrics</span><span class="p">[</span><span class="s1">&#39;rmse_over_stdev&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">metrics_dict</span><span class="p">[</span><span class="s1">&#39;rmse_over_stdev&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">](</span><span class="n">validation_y</span><span class="p">,</span> <span class="n">validation_predictions</span><span class="p">,</span> <span class="n">train_y</span><span class="p">)</span>
+                        <span class="n">prediction_metrics_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prediction_metrics</span><span class="p">)</span>
+                        <span class="n">split_result</span><span class="p">[</span><span class="s1">&#39;y_validation_true&#39;</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">validation_column_name</span><span class="p">)]</span> <span class="o">=</span> <span class="n">validation_y</span><span class="o">.</span><span class="n">values</span>
+                        <span class="n">split_result</span><span class="p">[</span><span class="s1">&#39;y_validation_pred&#39;</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">validation_column_name</span><span class="p">)]</span> <span class="o">=</span> <span class="n">validation_predictions</span>
+                    <span class="n">split_result</span><span class="p">[</span><span class="s1">&#39;prediction_metrics&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prediction_metrics_list</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">split_result</span><span class="p">[</span><span class="s1">&#39;prediction_metrics&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="k">if</span> <span class="n">is_classification</span><span class="p">:</span>
+                <span class="n">split_result</span><span class="p">[</span><span class="s1">&#39;y_train_pred_proba&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">train_pred_proba</span>
+                <span class="n">split_result</span><span class="p">[</span><span class="s1">&#39;y_test_pred_proba&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">test_pred_proba</span>
+
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;             Making plots...&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">PlotSettings</span><span class="p">[</span><span class="s1">&#39;train_test_plots&#39;</span><span class="p">]:</span>
+                <span class="n">plot_helper</span><span class="o">.</span><span class="n">make_train_test_plots</span><span class="p">(</span>
+                        <span class="n">split_result</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">is_classification</span><span class="p">,</span> 
+                        <span class="n">label</span><span class="o">=</span><span class="n">y</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">train_X</span><span class="o">=</span><span class="n">train_X</span><span class="p">,</span> <span class="n">test_X</span><span class="o">=</span><span class="n">test_X</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">grouping_data</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">is_validation</span><span class="p">:</span>
+                <span class="n">_write_stats</span><span class="p">(</span><span class="n">split_result</span><span class="p">[</span><span class="s1">&#39;train_metrics&#39;</span><span class="p">],</span>
+                         <span class="n">split_result</span><span class="p">[</span><span class="s1">&#39;test_metrics&#39;</span><span class="p">],</span>
+                         <span class="n">main_path</span><span class="p">,</span>
+                         <span class="n">split_result</span><span class="p">[</span><span class="s1">&#39;prediction_metrics&#39;</span><span class="p">],</span>
+                         <span class="n">validation_column_names</span><span class="p">,)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">_write_stats</span><span class="p">(</span><span class="n">split_result</span><span class="p">[</span><span class="s1">&#39;train_metrics&#39;</span><span class="p">],</span>
+                             <span class="n">split_result</span><span class="p">[</span><span class="s1">&#39;test_metrics&#39;</span><span class="p">],</span>
+                             <span class="n">main_path</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">split_result</span>
+
+        <span class="n">split_results</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">split_num</span><span class="p">,</span> <span class="p">(</span><span class="n">train_indices</span><span class="p">,</span> <span class="n">test_indices</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">trains_tests</span><span class="p">):</span>
+            <span class="n">split_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">one_fit</span><span class="p">(</span><span class="n">split_num</span><span class="p">,</span> <span class="n">train_indices</span><span class="p">,</span> <span class="n">test_indices</span><span class="p">))</span>
+
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;    Calculating mean and stdev of scores...&quot;</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">make_train_test_average_and_std_stats</span><span class="p">():</span>
+            <span class="n">train_stats</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">([(</span><span class="s1">&#39;Average Train&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)])</span>
+            <span class="n">test_stats</span>  <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">([(</span><span class="s1">&#39;Average Test&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)])</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">metrics_dict</span><span class="p">:</span>
+                <span class="n">train_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">split_result</span><span class="p">[</span><span class="s1">&#39;train_metrics&#39;</span><span class="p">][</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">split_result</span> <span class="ow">in</span> <span class="n">split_results</span><span class="p">]</span>
+                <span class="n">test_values</span>  <span class="o">=</span> <span class="p">[</span><span class="n">split_result</span><span class="p">[</span><span class="s1">&#39;test_metrics&#39;</span><span class="p">][</span><span class="n">name</span><span class="p">]</span>  <span class="k">for</span> <span class="n">split_result</span> <span class="ow">in</span> <span class="n">split_results</span><span class="p">]</span>
+                <span class="n">train_stats</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">train_values</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">train_values</span><span class="p">))</span>
+                <span class="n">test_stats</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>  <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">test_values</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">test_values</span><span class="p">))</span>
+                <span class="n">test_stats_single</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+                <span class="n">test_stats_single</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">test_values</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">test_values</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">grouping_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">unique_groups</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">union1d</span><span class="p">(</span><span class="n">split_results</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;test_groups&#39;</span><span class="p">],</span> <span class="n">split_results</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;train_groups&#39;</span><span class="p">])</span>
+                    <span class="n">plot_helper</span><span class="o">.</span><span class="n">plot_metric_vs_group</span><span class="p">(</span><span class="n">metric</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">unique_groups</span><span class="p">,</span> <span class="n">stats</span><span class="o">=</span><span class="n">test_values</span><span class="p">,</span>
+                                                     <span class="n">avg_stats</span> <span class="o">=</span> <span class="n">test_stats_single</span><span class="p">,</span> <span class="n">savepath</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="n">main_path</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;_vs_group.png&#39;</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">train_stats</span><span class="p">,</span> <span class="n">test_stats</span>
+        <span class="n">avg_train_stats</span><span class="p">,</span> <span class="n">avg_test_stats</span> <span class="o">=</span> <span class="n">make_train_test_average_and_std_stats</span><span class="p">()</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;    Making best/worst plots...&quot;</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">get_best_worst_median_runs</span><span class="p">():</span>
+            <span class="c1"># sort splits by the test score of first metric:</span>
+            <span class="n">greater_is_better</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">metrics_dict</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span> <span class="c1"># get first value pair</span>
+            <span class="n">scalar</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">greater_is_better</span> <span class="k">else</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">split_results</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">run</span><span class="p">:</span> <span class="n">scalar</span><span class="o">*</span><span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">run</span><span class="p">[</span><span class="s1">&#39;test_metrics&#39;</span><span class="p">])))</span>
+            <span class="k">return</span> <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">s</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">split_results</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span><span class="p">],</span> <span class="n">s</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">worst</span><span class="p">,</span> <span class="n">median</span><span class="p">,</span> <span class="n">best</span> <span class="o">=</span> <span class="n">get_best_worst_median_runs</span><span class="p">()</span>
+
+        <span class="k">def</span> <span class="nf">make_pred_vs_true_plots</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">PlotSettings</span><span class="p">[</span><span class="s1">&#39;predicted_vs_true&#39;</span><span class="p">]:</span>
+                <span class="n">plot_helper</span><span class="o">.</span><span class="n">plot_best_worst_split</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">best</span><span class="p">,</span> <span class="n">worst</span><span class="p">,</span>
+                                                  <span class="n">join</span><span class="p">(</span><span class="n">main_path</span><span class="p">,</span> <span class="s1">&#39;best_worst_split.png&#39;</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="n">y</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">predictions</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
+            <span class="k">for</span> <span class="n">split_num</span><span class="p">,</span> <span class="p">(</span><span class="n">train_indices</span><span class="p">,</span> <span class="n">test_indices</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">trains_tests</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">pred</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">test_indices</span><span class="p">,</span> <span class="n">split_results</span><span class="p">[</span><span class="n">split_num</span><span class="p">][</span><span class="s1">&#39;y_test_pred&#39;</span><span class="p">]):</span>
+                    <span class="n">predictions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pred</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">PlotSettings</span><span class="p">[</span><span class="s1">&#39;predicted_vs_true_bars&#39;</span><span class="p">]:</span>
+                <span class="n">plot_helper</span><span class="o">.</span><span class="n">plot_predicted_vs_true_bars</span><span class="p">(</span>
+                        <span class="n">y</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">predictions</span><span class="p">,</span> <span class="n">avg_test_stats</span><span class="p">,</span>
+                        <span class="n">join</span><span class="p">(</span><span class="n">main_path</span><span class="p">,</span> <span class="s1">&#39;average_points_with_bars.png&#39;</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="n">y</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">PlotSettings</span><span class="p">[</span><span class="s1">&#39;best_worst_per_point&#39;</span><span class="p">]:</span>
+                <span class="n">plot_helper</span><span class="o">.</span><span class="n">plot_best_worst_per_point</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">predictions</span><span class="p">,</span>
+                                                      <span class="n">join</span><span class="p">(</span><span class="n">main_path</span><span class="p">,</span> <span class="s1">&#39;best_worst_per_point.png&#39;</span><span class="p">),</span>
+                                                      <span class="n">metrics_dict</span><span class="p">,</span> <span class="n">avg_test_stats</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">y</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">PlotSettings</span><span class="p">[</span><span class="s1">&#39;average_normalized_errors&#39;</span><span class="p">]:</span>
+                <span class="n">plot_helper</span><span class="o">.</span><span class="n">plot_normalized_error</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">predictions</span><span class="p">,</span>
+                                                  <span class="n">join</span><span class="p">(</span><span class="n">main_path</span><span class="p">,</span> <span class="s1">&#39;average_test_normalized_errors.png&#39;</span><span class="p">),</span> <span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                                  <span class="n">avg_stats</span><span class="o">=</span><span class="n">avg_test_stats</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">PlotSettings</span><span class="p">[</span><span class="s1">&#39;average_cumulative_normalized_errors&#39;</span><span class="p">]:</span>
+                <span class="n">plot_helper</span><span class="o">.</span><span class="n">plot_cumulative_normalized_error</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">predictions</span><span class="p">,</span>
+                                                  <span class="n">join</span><span class="p">(</span><span class="n">main_path</span><span class="p">,</span> <span class="s1">&#39;average_test_cumulative_normalized_errors.png&#39;</span><span class="p">),</span> <span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                                  <span class="n">avg_stats</span><span class="o">=</span><span class="n">avg_test_stats</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_classification</span><span class="p">:</span>
+            <span class="n">make_pred_vs_true_plots</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">split_results</span>
+
+    <span class="n">runs</span> <span class="o">=</span> <span class="n">do_all_combos</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">df</span><span class="p">)</span> <span class="c1"># calls do_one_splitter internally</span>
+
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Making image html file...&quot;</span><span class="p">)</span>
+    <span class="n">html_helper</span><span class="o">.</span><span class="n">make_html</span><span class="p">(</span><span class="n">outdir</span><span class="p">)</span>
+
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Making html file of all runs stats...&quot;</span><span class="p">)</span>
+    <span class="n">_save_all_runs</span><span class="p">(</span><span class="n">runs</span><span class="p">,</span> <span class="n">outdir</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="_instantiate"><a class="viewcode-back" href="../11_mastml_driver.html#mastml_driver._instantiate">[docs]</a><span class="k">def</span> <span class="nf">_instantiate</span><span class="p">(</span><span class="n">kwargs_dict</span><span class="p">,</span> <span class="n">name_to_constructor</span><span class="p">,</span> <span class="n">category</span><span class="p">,</span> <span class="n">X_grouped</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">X_indices</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Uses name_to_constructor to instantiate every item in kwargs_dict and return</span>
+<span class="sd">    the list of instantiations</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">instantiations</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">long_name</span><span class="p">,</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span> <span class="ow">in</span> <span class="n">kwargs_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;instantiation: </span><span class="si">{long_name}</span><span class="s1">, </span><span class="si">{name}</span><span class="s1">(</span><span class="si">{kwargs}</span><span class="s1">)&#39;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Need to construct cv object when have special case of RFECV and LeaveOneGroupOut cross-validation!</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;RFECV&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s1">&#39;cv&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">X_grouped</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;cv&#39;</span><span class="p">]</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;LeaveOneGroupOut&#39;</span><span class="p">:</span>
+                            <span class="n">trains</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+                            <span class="n">tests</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+                            <span class="k">for</span> <span class="n">train_idx</span><span class="p">,</span> <span class="n">test_idx</span> <span class="ow">in</span> <span class="n">LeaveOneGroupOut</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X_indices</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">X_grouped</span><span class="p">):</span>
+                                <span class="n">trains</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">train_idx</span><span class="p">)</span>
+                                <span class="n">tests</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">test_idx</span><span class="p">)</span>
+                            <span class="n">custom_cv</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="n">trains</span><span class="p">,</span> <span class="n">tests</span><span class="p">)</span>
+                            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;cv&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">custom_cv</span>
+            <span class="n">instantiations</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">long_name</span><span class="p">,</span> <span class="n">name_to_constructor</span><span class="p">[</span><span class="n">name</span><span class="p">](</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)))</span>
+
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;ARGUMENTS FOR &#39;</span><span class="si">{name}</span><span class="s2">&#39;: {inspect.signature(name_to_constructor[name])}&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">InvalidConfParameters</span><span class="p">(</span>
+                <span class="n">f</span><span class="s2">&quot;The </span><span class="si">{category}</span><span class="s2"> &#39;</span><span class="si">{name}</span><span class="s2">&#39; has invalid parameters: </span><span class="si">{kwargs}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="n">f</span><span class="s2">&quot;Signature for &#39;</span><span class="si">{name}</span><span class="s2">&#39;: {inspect.signature(name_to_constructor[name])}&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">InvalidConfSubSection</span><span class="p">(</span>
+                <span class="n">f</span><span class="s2">&quot;There is no </span><span class="si">{category}</span><span class="s2"> called &#39;</span><span class="si">{name}</span><span class="s2">&#39;.&quot;</span>
+                <span class="n">f</span><span class="s2">&quot;All valid </span><span class="si">{category}</span><span class="s2">: {list(name_to_constructor.keys())}&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">instantiations</span></div>
+
+<span class="k">def</span> <span class="nf">_grouping_column_to_group_number</span><span class="p">(</span><span class="n">X_grouped</span><span class="p">):</span>
+    <span class="n">group_list</span> <span class="o">=</span> <span class="n">X_grouped</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">unique_groups</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">group_list</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">group_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="n">group_list_asnumber</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">unique_groups</span><span class="p">):</span>
+        <span class="n">group_dict</span><span class="p">[</span><span class="n">group</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">group_list</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="n">group_list_asnumber</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">group_dict</span><span class="p">[</span><span class="n">group</span><span class="p">])</span>
+    <span class="n">X_grouped_asnumber</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">group_list_asnumber</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">X_grouped_asnumber</span>
+
+<span class="k">def</span> <span class="nf">_snatch_models</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="n">conf_feature_selection</span><span class="p">):</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;models, pre-snatching: </span><span class="se">\n</span><span class="si">{models}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">selector_name</span><span class="p">,</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">args_dict</span><span class="p">)</span> <span class="ow">in</span> <span class="n">conf_feature_selection</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="s1">&#39;estimator&#39;</span> <span class="ow">in</span> <span class="n">args_dict</span><span class="p">:</span>
+            <span class="n">model_name</span> <span class="o">=</span> <span class="n">args_dict</span><span class="p">[</span><span class="s1">&#39;estimator&#39;</span><span class="p">]</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">args_dict</span><span class="p">[</span><span class="s1">&#39;estimator&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">models</span><span class="p">[</span><span class="n">model_name</span><span class="p">]</span>
+                <span class="k">del</span> <span class="n">models</span><span class="p">[</span><span class="n">model_name</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">MastError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;The selector </span><span class="si">{selector_name}</span><span class="s2"> specified model </span><span class="si">{model_name}</span><span class="s2">,&quot;</span>
+                                      <span class="n">f</span><span class="s2">&quot;which was not found in the [Models] section&quot;</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;models, post-snatching: </span><span class="se">\n</span><span class="si">{models}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_snatch_splitters</span><span class="p">(</span><span class="n">splitters</span><span class="p">,</span> <span class="n">conf_feature_selection</span><span class="p">):</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;cv, pre-snatching: </span><span class="se">\n</span><span class="si">{splitters}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">selector_name</span><span class="p">,</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">args_dict</span><span class="p">)</span> <span class="ow">in</span> <span class="n">conf_feature_selection</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="c1"># Here: add snatch to cv object for feature selection with RFECV</span>
+        <span class="k">if</span> <span class="s1">&#39;cv&#39;</span> <span class="ow">in</span> <span class="n">args_dict</span><span class="p">:</span>
+            <span class="n">cv_name</span> <span class="o">=</span> <span class="n">args_dict</span><span class="p">[</span><span class="s1">&#39;cv&#39;</span><span class="p">]</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">args_dict</span><span class="p">[</span><span class="s1">&#39;cv&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">splitters</span><span class="p">[</span><span class="n">cv_name</span><span class="p">]</span>
+                <span class="k">del</span> <span class="n">splitters</span><span class="p">[</span><span class="n">cv_name</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">MastError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;The selector </span><span class="si">{selector_name}</span><span class="s2"> specified cv splitter </span><span class="si">{cv_name}</span><span class="s2">,&quot;</span>
+                                      <span class="n">f</span><span class="s2">&quot;which was not found in the [DataSplits] section&quot;</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;cv, post-snatching: </span><span class="se">\n</span><span class="si">{splitters}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_extract_grouping_column_names</span><span class="p">(</span><span class="n">splitter_to_kwargs</span><span class="p">):</span>
+    <span class="n">splitter_to_group_names</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">splitter_name</span><span class="p">,</span> <span class="n">name_and_kwargs</span> <span class="ow">in</span> <span class="n">splitter_to_kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">kwargs</span> <span class="o">=</span> <span class="n">name_and_kwargs</span>
+        <span class="k">if</span> <span class="s1">&#39;grouping_column&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">column_name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;grouping_column&#39;</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;grouping_column&#39;</span><span class="p">]</span> <span class="c1"># because the splitter doesn&#39;t actually take this</span>
+            <span class="n">splitter_to_group_names</span><span class="p">[</span><span class="n">splitter_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">column_name</span>
+    <span class="k">return</span> <span class="n">splitter_to_group_names</span>
+
+<span class="k">def</span> <span class="nf">_remove_constant_features</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Removing constant features, regardless of feature selectors.&quot;</span><span class="p">)</span>
+    <span class="n">before</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">(</span><span class="n">df</span> <span class="o">!=</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">any</span><span class="p">()]</span>
+    <span class="n">removed</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">before</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">removed</span> <span class="o">!=</span> <span class="p">[]:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Removed {len(removed)}/{len(before)} constant columns.&#39;</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Removed the following constant columns: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">removed</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">df</span>
+
+<div class="viewcode-block" id="_save_all_runs"><a class="viewcode-back" href="../11_mastml_driver.html#mastml_driver._save_all_runs">[docs]</a><span class="k">def</span> <span class="nf">_save_all_runs</span><span class="p">(</span><span class="n">runs</span><span class="p">,</span> <span class="n">outdir</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Produces a giant html table of all stats for all runs</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">run</span> <span class="ow">in</span> <span class="n">runs</span><span class="p">:</span>
+        <span class="n">od</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">run</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;train_metrics&#39;</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">run</span><span class="p">[</span><span class="s1">&#39;train_metrics&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">od</span><span class="p">[</span><span class="s1">&#39;train_&#39;</span><span class="o">+</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;test_metrics&#39;</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">run</span><span class="p">[</span><span class="s1">&#39;test_metrics&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">od</span><span class="p">[</span><span class="s1">&#39;test_&#39;</span><span class="o">+</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">od</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="n">table</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">od</span><span class="p">)</span>
+    <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">table</span><span class="p">)</span><span class="o">.</span><span class="n">to_html</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="s1">&#39;all_runs_table.html&#39;</span><span class="p">))</span></div>
+
+<span class="k">def</span> <span class="nf">_write_stats</span><span class="p">(</span><span class="n">train_metrics</span><span class="p">,</span> <span class="n">test_metrics</span><span class="p">,</span> <span class="n">outdir</span><span class="p">,</span> <span class="n">prediction_metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prediction_names</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="s1">&#39;stats.txt&#39;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;TRAIN:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span><span class="n">score</span> <span class="ow">in</span> <span class="n">train_metrics</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{name}</span><span class="s2">: {&#39;</span><span class="si">%.3f</span><span class="s2">&#39;</span><span class="si">%f</span><span class="s2">loat(score)}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;TEST:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span><span class="n">score</span> <span class="ow">in</span> <span class="n">test_metrics</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{name}</span><span class="s2">: {&#39;</span><span class="si">%.3f</span><span class="s2">&#39;</span><span class="si">%f</span><span class="s2">loat(score)}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">prediction_metrics</span><span class="p">:</span>
+            <span class="c1">#prediction metrics now list of dicts for predicting multiple values</span>
+            <span class="k">for</span> <span class="n">prediction_metric</span><span class="p">,</span> <span class="n">prediction_name</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">prediction_metrics</span><span class="p">,</span> <span class="n">prediction_names</span><span class="p">):</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;PREDICTION for &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">prediction_name</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="n">prediction_metric</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{name}</span><span class="s2">: {&#39;</span><span class="si">%.3f</span><span class="s2">&#39;</span><span class="si">%f</span><span class="s2">loat(score)}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_exclude_validation</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">validation_column</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">validation_column</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">_only_validation</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">validation_column</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">validation_column</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span>
+
+<div class="viewcode-block" id="check_paths"><a class="viewcode-back" href="../11_mastml_driver.html#mastml_driver.check_paths">[docs]</a><span class="k">def</span> <span class="nf">check_paths</span><span class="p">(</span><span class="n">conf_path</span><span class="p">,</span> <span class="n">data_path</span><span class="p">,</span> <span class="n">outdir</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This method is responsible for error handling of the user-specified paths for the configuration file, data file,</span>
+<span class="sd">    and output directory.</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        conf_path: (str), the path supplied by the user which contains the input configuration file</span>
+
+<span class="sd">        data_path: (str), the path supplied by the user which contains the input data file (as CSV or XLSX)</span>
+
+<span class="sd">        outdir: (str), the path supplied by the user which determines where the output results are saved to</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">        conf_path: (str), the path supplied by the user which contains the input configuration file</span>
+
+<span class="sd">        data_path: (str), the path supplied by the user which contains the input data file (as CSV or XLSX)</span>
+
+<span class="sd">        outdir: (str), the path supplied by the user which determines where the output results are saved to</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+    <span class="c1"># Check conf path:</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">conf_path</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;.conf&#39;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">FiletypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Conf file does not end in .conf: &#39;</span><span class="si">{conf_path}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">conf_path</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">FileNotFoundError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;No such file: </span><span class="si">{conf_path}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Check data path:</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">data_path</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;.csv&#39;</span><span class="p">,</span> <span class="s1">&#39;.xlsx&#39;</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">FiletypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Data file does not end in .csv or .xlsx: &#39;</span><span class="si">{data_path}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">data_path</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">FileNotFoundError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;No such file: </span><span class="si">{data_path}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Check output directory:</span>
+
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">outdir</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">rmdir</span><span class="p">(</span><span class="n">outdir</span><span class="p">)</span> <span class="c1"># succeeds if empty</span>
+        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span> <span class="c1"># directory not empty</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{outdir}</span><span class="s2"> not empty. Renaming...&quot;</span><span class="p">)</span>
+            <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+            <span class="n">outdir</span> <span class="o">=</span> <span class="n">outdir</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span> <span class="c1"># remove trailing slash</span>
+            <span class="n">outdir</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{outdir}</span><span class="s2">_</span><span class="si">{now.month:02d}</span><span class="s2">_</span><span class="si">{now.day:02d}</span><span class="s2">&quot;</span> \
+                     <span class="n">f</span><span class="s2">&quot;_</span><span class="si">{now.hour:02d}</span><span class="s2">_</span><span class="si">{now.minute:02d}</span><span class="s2">_</span><span class="si">{now.second:02d}</span><span class="s2">&quot;</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">outdir</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Saving to directory &#39;</span><span class="si">{outdir}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">conf_path</span><span class="p">,</span> <span class="n">data_path</span><span class="p">,</span> <span class="n">outdir</span></div>
+
+<div class="viewcode-block" id="get_commandline_args"><a class="viewcode-back" href="../11_mastml_driver.html#mastml_driver.get_commandline_args">[docs]</a><span class="k">def</span> <span class="nf">get_commandline_args</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This method is responsible for parsing and checking the command-line execution of MAST-ML inputted by the user.</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        None</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">        (str), the path supplied by the user which contains the input configuration file</span>
+
+<span class="sd">        (str), the path supplied by the user which contains the input data file (as CSV or XLSX)</span>
+
+<span class="sd">        (str), the path supplied by the user which determines where the output results are saved to</span>
+
+<span class="sd">        verbosity: (int), the verbosity level of the MAST-ML log, which determines the amount of information writtent to the log.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s1">&#39;MAterials Science Toolkit - Machine Learning&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;conf_path&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;path to mastml .conf file&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;data_path&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;path to csv or xlsx file&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-o&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;outdir&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;results&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Folder path to save output files to. Defaults to results/&#39;</span><span class="p">)</span>
+    <span class="c1"># from https://stackoverflow.com/a/14763540</span>
+    <span class="c1"># we only use them to set a bool but it would be nice to have multiple levels in the future</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-v&#39;</span><span class="p">,</span> <span class="s1">&#39;--verbosity&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;count&quot;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;include this flag for more verbose output&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-q&#39;</span><span class="p">,</span> <span class="s1">&#39;--quietness&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;count&quot;</span><span class="p">,</span>
+                       <span class="n">help</span><span class="o">=</span><span class="s2">&quot;include this flag to hide [DEBUG] printouts, or twice to hide [INFO]&quot;</span><span class="p">)</span>
+
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+    <span class="n">verbosity</span> <span class="o">=</span> <span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">verbosity</span> <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">verbosity</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>\
+            <span class="o">-</span> <span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">quietness</span> <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">quietness</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="c1"># verbosity -= 1 ## uncomment this for distribution</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">conf_path</span><span class="p">),</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">data_path</span><span class="p">),</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">outdir</span><span class="p">),</span>
+            <span class="n">verbosity</span><span class="p">)</span></div>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">conf_path</span><span class="p">,</span> <span class="n">data_path</span><span class="p">,</span> <span class="n">outdir</span><span class="p">,</span> <span class="n">verbosity</span> <span class="o">=</span> <span class="n">get_commandline_args</span><span class="p">()</span>
+    <span class="n">main</span><span class="p">(</span><span class="n">conf_path</span><span class="p">,</span> <span class="n">data_path</span><span class="p">,</span> <span class="n">outdir</span><span class="p">,</span> <span class="n">verbosity</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">MAterials Simulation Toolkit for Machine Learning (MAST-ML)</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../0_installation.html">Installing MASTML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../0_1_terminal_installation.html">Terminal installation (Linux or linux-like terminal on Mac)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../0_2_windows_installation.html">Windows installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../1_mastml_inputfile.html">MAST-ML Input File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../2_mastml_tutorial.html">MAST-ML tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../3_code_documentation.html">MAST-ML Code Documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, University of Wisconsin-Madison Computational Materials Group.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

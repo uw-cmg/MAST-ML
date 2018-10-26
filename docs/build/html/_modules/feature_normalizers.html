@@ -1,0 +1,222 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>feature_normalizers &#8212; MAterials Simulation Toolkit for Machine Learning (MAST-ML) 2.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for feature_normalizers</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module contains a collection of classes and methods for normalizing features. Also included is connection with</span>
+<span class="sd">scikit-learn methods. See http://scikit-learn.org/stable/modules/classes.html#module-sklearn.preprocessing for more info.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">wraps</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="k">import</span> <span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="k">import</span> <span class="n">MinMaxScaler</span><span class="p">,</span> <span class="n">Binarizer</span><span class="p">,</span> <span class="n">StandardScaler</span>
+
+<span class="kn">from</span> <span class="nn">mastml.legos</span> <span class="k">import</span> <span class="n">util_legos</span>
+
+<span class="c1"># TODO: add all sklearn preprocessors</span>
+<span class="c1"># http://scikit-learn.org/stable/modules/classes.html#module-sklearn.preprocessing</span>
+
+<div class="viewcode-block" id="dataframify"><a class="viewcode-back" href="../15_feature_normalizers.html#feature_normalizers.dataframify">[docs]</a><span class="k">def</span> <span class="nf">dataframify</span><span class="p">(</span><span class="n">transform</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Method which is a decorator transforms output of scikit-learn feature normalizers from array to dataframe.</span>
+<span class="sd">    Enables preservation of column names.</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        transform: (function), a scikit-learn feature selector that has a transform method</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">        new_transform: (function), an amended version of the transform method that returns a dataframe</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">transform</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">new_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+        <span class="n">arr</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">new_transform</span></div>
+
+<div class="viewcode-block" id="MeanStdevScaler"><a class="viewcode-back" href="../15_feature_normalizers.html#feature_normalizers.MeanStdevScaler">[docs]</a><span class="k">class</span> <span class="nc">MeanStdevScaler</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class designed to normalize input data to a specified mean and standard deviation</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        mean: (int/float), specified normalized mean of the data</span>
+
+<span class="sd">        stdev: (int/float), specified normalized standard deviation of the data</span>
+
+<span class="sd">    Methods:</span>
+
+<span class="sd">        fit: Obtains initial mean and stdev of data</span>
+
+<span class="sd">            Args:</span>
+
+<span class="sd">                df: (dataframe), dataframe of values to be normalized</span>
+
+<span class="sd">            Returns:</span>
+
+<span class="sd">                (self, the object instance)</span>
+
+<span class="sd">        transform: Normalizes the data to new mean and stdev values</span>
+
+<span class="sd">            Args:</span>
+
+<span class="sd">                df: (dataframe), dataframe of values to be normalized</span>
+
+<span class="sd">            Returns:</span>
+
+<span class="sd">                (dataframe), dataframe containing re-normalized data and any data that wasn&#39;t normalized</span>
+
+<span class="sd">        inverse_transform: Un-normalizes the data to the old mean and stdev values</span>
+
+<span class="sd">            Args:</span>
+
+<span class="sd">                df: (dataframe), dataframe of values to be un-normalized</span>
+
+<span class="sd">            Returns:</span>
+
+<span class="sd">                (dataframe), dataframe containing un-normalized data and any data that wasn&#39;t normalized</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">features</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">stdev</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">features</span> <span class="o">=</span> <span class="n">features</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean</span> <span class="o">=</span> <span class="n">mean</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stdev</span> <span class="o">=</span> <span class="n">stdev</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">features</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">features</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">old_mean</span>  <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">old_stdev</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="p">((</span><span class="n">array</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">old_mean</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">old_stdev</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">stdev</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean</span>
+        <span class="n">same</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">)</span>
+        <span class="n">changed</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span> <span class="c1"># don&#39;t forget index!!</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">same</span><span class="p">,</span> <span class="n">changed</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">inverse_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="p">((</span><span class="n">array</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">stdev</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">old_stdev</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">old_mean</span>
+        <span class="n">same</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">)</span>
+        <span class="n">changed</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">same</span><span class="p">,</span> <span class="n">changed</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+
+<span class="n">MinMaxScaler</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="n">dataframify</span><span class="p">(</span><span class="n">MinMaxScaler</span><span class="o">.</span><span class="n">transform</span><span class="p">)</span>
+<span class="n">Binarizer</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="n">dataframify</span><span class="p">(</span><span class="n">Binarizer</span><span class="o">.</span><span class="n">transform</span><span class="p">)</span>
+<span class="n">StandardScaler</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="n">dataframify</span><span class="p">(</span><span class="n">StandardScaler</span><span class="o">.</span><span class="n">transform</span><span class="p">)</span>
+
+<span class="n">name_to_constructor</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;Binarizer&#39;</span><span class="p">:</span> <span class="n">Binarizer</span><span class="p">,</span>
+    <span class="s1">&#39;MeanStdevScaler&#39;</span><span class="p">:</span> <span class="n">MeanStdevScaler</span><span class="p">,</span>
+    <span class="s1">&#39;MinMaxScaler&#39;</span><span class="p">:</span> <span class="n">MinMaxScaler</span><span class="p">,</span>
+    <span class="s1">&#39;DoNothing&#39;</span><span class="p">:</span> <span class="n">util_legos</span><span class="o">.</span><span class="n">DoNothing</span><span class="p">,</span>
+    <span class="s1">&#39;StandardScaler&#39;</span><span class="p">:</span> <span class="n">StandardScaler</span>
+<span class="p">}</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">MAterials Simulation Toolkit for Machine Learning (MAST-ML)</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../0_installation.html">Installing MASTML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../0_1_terminal_installation.html">Terminal installation (Linux or linux-like terminal on Mac)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../0_2_windows_installation.html">Windows installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../1_mastml_inputfile.html">MAST-ML Input File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../2_mastml_tutorial.html">MAST-ML tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../3_code_documentation.html">MAST-ML Code Documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, University of Wisconsin-Madison Computational Materials Group.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

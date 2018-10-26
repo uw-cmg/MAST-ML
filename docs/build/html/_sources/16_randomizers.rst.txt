@@ -1,0 +1,5 @@
+Randomizers
+===================================
+
+.. automodule:: randomizers
+   :members:

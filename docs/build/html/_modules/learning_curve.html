@@ -1,0 +1,260 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>learning_curve &#8212; MAterials Simulation Toolkit for Machine Learning (MAST-ML) 2.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for learning_curve</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module contains methods to construct learning curves, which evaluate some cross-validation performance metric (e.g. RMSE)</span>
+<span class="sd">as a function of amount of training data (i.e. a sample learning curve) or as a function of the number of features used</span>
+<span class="sd">in the fitting (i.e. a feature learning curve).</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <span class="n">learning_curve</span>
+<span class="kn">from</span> <span class="nn">sklearn.feature_selection</span> <span class="k">import</span> <span class="n">f_regression</span>
+
+<span class="kn">from</span> <span class="nn">mastml.legos</span> <span class="k">import</span> <span class="n">feature_selectors</span> <span class="k">as</span> <span class="n">fs</span>
+
+<span class="c1"># Ignore the harmless warning about the gelsd driver on mac.</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s2">&quot;scipy&quot;</span><span class="p">,</span>
+                        <span class="n">message</span><span class="o">=</span><span class="s2">&quot;^internal gelsd&quot;</span><span class="p">)</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;mastml&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="sample_learning_curve"><a class="viewcode-back" href="../3_code_documentation.html#learning_curve.sample_learning_curve">[docs]</a><span class="k">def</span> <span class="nf">sample_learning_curve</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">estimator</span><span class="p">,</span> <span class="n">cv</span><span class="p">,</span> <span class="n">scoring</span><span class="p">,</span> <span class="n">Xgroups</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Method that calculates data used to plot a sample learning curve, e.g. the RMSE of a cross-validation routine using a</span>
+<span class="sd">    specified model and a given fraction of the total training data</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        X: (numpy array), array of X data values</span>
+
+<span class="sd">        y: (numpy array), array of y data values</span>
+
+<span class="sd">        estimator: (scikit-learn model object), a scikit-learn model used for fitting</span>
+
+<span class="sd">        cv: (scikit-learn cross validation object), a scikit-learn cross validation object to construct train/test splits</span>
+
+<span class="sd">        scoring: (scikit-learn metric object), a scikit-learn metric to use as a scorer</span>
+
+<span class="sd">        Xgroups: (list), list of row indices corresponding to each group</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        train_sizes: (numpy array), array of fractions of training data used in learning curve</span>
+
+<span class="sd">        train_mean: (numpy array), array of means of training data scores for each training data fraction</span>
+
+<span class="sd">        test_mean: (numpy array), array of means of testing data scores for each training data fraction</span>
+
+<span class="sd">        train_stdev: (numpy array), array of standard deviations of training data scores for each training data fraction</span>
+
+<span class="sd">        test_stdev: (numpy array), array of standard deviations of testing data scores for each training data fraction</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">Xgroups</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">Xgroups</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Xgroups</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">)</span>
+    <span class="n">train_sizes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">train_sizes</span><span class="p">,</span> <span class="n">train_scores</span><span class="p">,</span> <span class="n">valid_scores</span> <span class="o">=</span> <span class="n">learning_curve</span><span class="p">(</span><span class="n">estimator</span><span class="o">=</span><span class="n">estimator</span><span class="p">,</span> <span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">train_sizes</span><span class="o">=</span><span class="n">train_sizes</span><span class="p">,</span>
+                                                             <span class="n">scoring</span><span class="o">=</span><span class="n">scoring</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">Xgroups</span><span class="p">)</span>
+    <span class="n">train_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">train_scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">test_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">valid_scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">train_stdev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">train_scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">test_stdev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">valid_scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">train_sizes</span><span class="p">,</span> <span class="n">train_mean</span><span class="p">,</span> <span class="n">test_mean</span><span class="p">,</span> <span class="n">train_stdev</span><span class="p">,</span> <span class="n">test_stdev</span></div>
+
+<div class="viewcode-block" id="feature_learning_curve"><a class="viewcode-back" href="../3_code_documentation.html#learning_curve.feature_learning_curve">[docs]</a><span class="k">def</span> <span class="nf">feature_learning_curve</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">estimator</span><span class="p">,</span> <span class="n">cv</span><span class="p">,</span> <span class="n">scoring</span><span class="p">,</span> <span class="n">selector_name</span><span class="p">,</span> <span class="n">n_features_to_select</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Xgroups</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Method that calculates data used to plot a feature learning curve, e.g. the RMSE of a cross-validation routine using a</span>
+<span class="sd">    specified model and a given number of features</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        X: (numpy array), array of X data values</span>
+
+<span class="sd">        y: (numpy array), array of y data values</span>
+
+<span class="sd">        estimator: (scikit-learn model object), a scikit-learn model used for fitting</span>
+
+<span class="sd">        cv: (scikit-learn cross validation object), a scikit-learn cross validation object to construct train/test splits</span>
+
+<span class="sd">        scoring: (scikit-learn metric object), a scikit-learn metric to use as a scorer</span>
+
+<span class="sd">        selector_name: (str), name of a scikit-learn or MAST-ML feature selection routine</span>
+
+<span class="sd">        n_features_to_select: (int), total number of features to select, i.e. stopping criterion for number of features</span>
+
+<span class="sd">        Xgroups: (list), list of row indices corresponding to each group</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        train_sizes: (numpy array), array of fractions of training data used in learning curve</span>
+
+<span class="sd">        train_mean: (numpy array), array of means of training data scores for each number of features</span>
+
+<span class="sd">        test_mean: (numpy array), array of means of testing data scores for each number of features</span>
+
+<span class="sd">        train_stdev: (numpy array), array of standard deviations of training data scores for each number of features</span>
+
+<span class="sd">        test_stdev: (numpy array), array of standard deviations of testing data scores for each number of features</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">Xgroups</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">Xgroups</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Xgroups</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">)</span>
+    <span class="n">train_mean</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="n">train_stdev</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="n">test_mean</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="n">test_stdev</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">n_features_to_select</span><span class="p">:</span>
+        <span class="n">n_features_to_select</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">train_sizes</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_features_to_select</span><span class="p">)</span>
+    <span class="n">train_sizes</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="o">+</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">train_sizes</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">train_sizes</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">selector_name</span> <span class="o">==</span> <span class="s1">&#39;RFE&#39;</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Using RFE as feature selector does not support a custom CV or grouping scheme. Your learning&quot;</span>
+                        <span class="s2">&quot;curve will be generated properly, but will not use the custom CV or grouping scheme&quot;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">Xnew</span> <span class="o">=</span> <span class="n">fs</span><span class="o">.</span><span class="n">name_to_constructor</span><span class="p">[</span><span class="n">selector_name</span><span class="p">](</span><span class="n">estimator</span><span class="p">,</span> <span class="n">feature</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;You have specified an estimator for RFE that does not have a coef_ or feature_importances_ attribute. &quot;</span>
+                          <span class="s2">&quot;Acceptable models to use with RFE include: LinearRegression, Lasso, SVR, DecisionTreeRegressor, &quot;</span>
+                          <span class="s2">&quot;RandomForestRegressor, ExtraTreesRegressor, AdaBoostRegressor, etc.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">selector_name</span> <span class="o">==</span> <span class="s1">&#39;SelectKBest&#39;</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Using SelectKBest as feature selector does not support a custom estimator model, CV or grouping scheme. &quot;</span>
+                        <span class="s2">&quot;Your learning curve will be generated properly, but will not use the custom model, CV or grouping scheme&quot;</span><span class="p">)</span>
+            <span class="n">Xnew</span> <span class="o">=</span> <span class="n">fs</span><span class="o">.</span><span class="n">name_to_constructor</span><span class="p">[</span><span class="n">selector_name</span><span class="p">](</span><span class="n">f_regression</span><span class="p">,</span> <span class="n">feature</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">selector_name</span> <span class="o">==</span> <span class="s1">&#39;MASTMLFeatureSelector&#39;</span><span class="p">:</span>
+            <span class="n">Xnew</span> <span class="o">=</span> <span class="n">fs</span><span class="o">.</span><span class="n">name_to_constructor</span><span class="p">[</span><span class="n">selector_name</span><span class="p">](</span><span class="n">estimator</span><span class="p">,</span> <span class="n">feature</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">cv</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">Xgroups</span><span class="p">))</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">selector_name</span> <span class="o">==</span> <span class="s1">&#39;SequentialFeatureSelector&#39;</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Using SequentialFeatureSelector as feature selector does not support a custom CV or grouping scheme. &quot;</span>
+                        <span class="s2">&quot;Your learning curve will be generated properly, but will not use the custom CV or grouping scheme&quot;</span><span class="p">)</span>
+            <span class="n">Xnew</span> <span class="o">=</span> <span class="n">fs</span><span class="o">.</span><span class="n">name_to_constructor</span><span class="p">[</span><span class="n">selector_name</span><span class="p">](</span><span class="n">estimator</span><span class="p">,</span> <span class="n">feature</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">y</span><span class="p">))</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">selector_name</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;A selector name for learning curve calculation was not found. Defaulting to using the &quot;</span>
+                        <span class="s2">&quot;MASTMLFeatureSelector for learning curve&quot;</span><span class="p">)</span>
+            <span class="n">Xnew</span> <span class="o">=</span> <span class="n">fs</span><span class="o">.</span><span class="n">name_to_constructor</span><span class="p">[</span><span class="s2">&quot;MASTMLFeatureSelector&quot;</span><span class="p">](</span><span class="n">estimator</span><span class="p">,</span> <span class="n">feature</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">cv</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">Xgroups</span><span class="p">))</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;You have specified an invalid selector_name for learning curve. Either leave blank to use the default&quot;</span>
+                      <span class="s2">&quot; MASTMLFeatureSelector or use one of SelectKBest, RFE, SequentialFeatureSelector, MASTMLFeatureSelector&quot;</span><span class="p">)</span>
+            <span class="n">exit</span><span class="p">()</span>
+        <span class="c1"># Need to use arrays to avoid indexing issues when leaving out validation data</span>
+        <span class="n">Xnew</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Xnew</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="n">Xgroups</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Xgroups</span><span class="p">)</span>
+        <span class="n">cv_number</span><span class="o">=</span><span class="mi">1</span>
+        <span class="n">train_scores</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">test_scores</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">trains</span><span class="p">,</span> <span class="n">tests</span> <span class="ow">in</span> <span class="n">cv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">Xnew</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">Xgroups</span><span class="p">):</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xnew</span><span class="p">[</span><span class="n">trains</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">trains</span><span class="p">])</span>
+            <span class="n">train_vals</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">Xnew</span><span class="p">[</span><span class="n">trains</span><span class="p">])</span>
+            <span class="n">test_vals</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">Xnew</span><span class="p">[</span><span class="n">tests</span><span class="p">])</span>
+            <span class="n">train_scores</span><span class="p">[</span><span class="n">cv_number</span><span class="p">]</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">_score_func</span><span class="p">(</span><span class="n">train_vals</span><span class="p">,</span> <span class="n">y</span><span class="p">[</span><span class="n">trains</span><span class="p">])</span>
+            <span class="n">test_scores</span><span class="p">[</span><span class="n">cv_number</span><span class="p">]</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">_score_func</span><span class="p">(</span><span class="n">test_vals</span><span class="p">,</span> <span class="n">y</span><span class="p">[</span><span class="n">tests</span><span class="p">])</span>
+            <span class="n">cv_number</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">train_mean</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">train_scores</span><span class="o">.</span><span class="n">values</span><span class="p">())))</span>
+        <span class="n">train_stdev</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">train_scores</span><span class="o">.</span><span class="n">values</span><span class="p">())))</span>
+        <span class="n">test_mean</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">test_scores</span><span class="o">.</span><span class="n">values</span><span class="p">())))</span>
+        <span class="n">test_stdev</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">test_scores</span><span class="o">.</span><span class="n">values</span><span class="p">())))</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">train_sizes</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">train_mean</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">test_mean</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">train_stdev</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">test_stdev</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">MAterials Simulation Toolkit for Machine Learning (MAST-ML)</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../0_installation.html">Installing MASTML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../0_1_terminal_installation.html">Terminal installation (Linux or linux-like terminal on Mac)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../0_2_windows_installation.html">Windows installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../1_mastml_inputfile.html">MAST-ML Input File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../2_mastml_tutorial.html">MAST-ML tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../3_code_documentation.html">MAST-ML Code Documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, University of Wisconsin-Madison Computational Materials Group.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

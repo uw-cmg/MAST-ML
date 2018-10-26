@@ -1,0 +1,311 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>metrics &#8212; MAterials Simulation Toolkit for Machine Learning (MAST-ML) 2.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for metrics</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module contains constructors for different model score metrics. Most model metrics are obtained from scikit-learn,</span>
+<span class="sd">while others are custom variations.</span>
+
+<span class="sd">The full list of score functions in scikit-learn can be found at: http://scikit-learn.org/stable/modules/model_evaluation.html</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">sklearn.feature_selection</span> <span class="k">as</span> <span class="nn">fs</span>
+<span class="kn">import</span> <span class="nn">sklearn.metrics</span> <span class="k">as</span> <span class="nn">sm</span>
+<span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="k">import</span> <span class="n">LinearRegression</span> <span class="c1"># for r2_score_noint</span>
+
+<span class="n">classification_metrics</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;accuracy&#39;</span><span class="p">:</span>           <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">sm</span><span class="o">.</span><span class="n">accuracy_score</span><span class="p">),</span>
+    <span class="s1">&#39;f1_binary&#39;</span><span class="p">:</span>          <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">yt</span><span class="p">,</span> <span class="n">yp</span><span class="p">:</span> <span class="n">sm</span><span class="o">.</span><span class="n">f1_score</span><span class="p">(</span><span class="n">yt</span><span class="p">,</span> <span class="n">yp</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;binary&#39;</span><span class="p">)),</span>
+    <span class="s1">&#39;f1_macro&#39;</span><span class="p">:</span>           <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">yt</span><span class="p">,</span> <span class="n">yp</span><span class="p">:</span> <span class="n">sm</span><span class="o">.</span><span class="n">f1_score</span><span class="p">(</span><span class="n">yt</span><span class="p">,</span> <span class="n">yp</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;macro&#39;</span><span class="p">)),</span>
+    <span class="s1">&#39;f1_micro&#39;</span><span class="p">:</span>           <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">yt</span><span class="p">,</span> <span class="n">yp</span><span class="p">:</span> <span class="n">sm</span><span class="o">.</span><span class="n">f1_score</span><span class="p">(</span><span class="n">yt</span><span class="p">,</span> <span class="n">yp</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;micro&#39;</span><span class="p">)),</span>
+    <span class="s1">&#39;f1_samples&#39;</span><span class="p">:</span>         <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">yt</span><span class="p">,</span> <span class="n">yp</span><span class="p">:</span> <span class="n">sm</span><span class="o">.</span><span class="n">f1_score</span><span class="p">(</span><span class="n">yt</span><span class="p">,</span> <span class="n">yp</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;samples&#39;</span><span class="p">)),</span>
+    <span class="s1">&#39;f1_weighted&#39;</span><span class="p">:</span>        <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">yt</span><span class="p">,</span> <span class="n">yp</span><span class="p">:</span> <span class="n">sm</span><span class="o">.</span><span class="n">f1_score</span><span class="p">(</span><span class="n">yt</span><span class="p">,</span> <span class="n">yp</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;weighted&#39;</span><span class="p">)),</span>
+    <span class="s1">&#39;log_loss&#39;</span><span class="p">:</span>           <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">sm</span><span class="o">.</span><span class="n">log_loss</span><span class="p">),</span>
+    <span class="s1">&#39;precision_binary&#39;</span><span class="p">:</span>   <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">yt</span><span class="p">,</span> <span class="n">yp</span><span class="p">:</span> <span class="n">sm</span><span class="o">.</span><span class="n">precision_score</span><span class="p">(</span><span class="n">yt</span><span class="p">,</span> <span class="n">yp</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;binary&#39;</span><span class="p">)),</span>
+    <span class="s1">&#39;precision_macro&#39;</span><span class="p">:</span>    <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">yt</span><span class="p">,</span> <span class="n">yp</span><span class="p">:</span> <span class="n">sm</span><span class="o">.</span><span class="n">precision_score</span><span class="p">(</span><span class="n">yt</span><span class="p">,</span> <span class="n">yp</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;macro&#39;</span><span class="p">)),</span>
+    <span class="s1">&#39;precision_micro&#39;</span><span class="p">:</span>    <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">yt</span><span class="p">,</span> <span class="n">yp</span><span class="p">:</span> <span class="n">sm</span><span class="o">.</span><span class="n">precision_score</span><span class="p">(</span><span class="n">yt</span><span class="p">,</span> <span class="n">yp</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;micro&#39;</span><span class="p">)),</span>
+    <span class="s1">&#39;precision_samples&#39;</span><span class="p">:</span>  <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">yt</span><span class="p">,</span> <span class="n">yp</span><span class="p">:</span> <span class="n">sm</span><span class="o">.</span><span class="n">precision_score</span><span class="p">(</span><span class="n">yt</span><span class="p">,</span> <span class="n">yp</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;samples&#39;</span><span class="p">)),</span>
+    <span class="s1">&#39;precision_weighted&#39;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">yt</span><span class="p">,</span> <span class="n">yp</span><span class="p">:</span> <span class="n">sm</span><span class="o">.</span><span class="n">precision_score</span><span class="p">(</span><span class="n">yt</span><span class="p">,</span> <span class="n">yp</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;weighted&#39;</span><span class="p">)),</span>
+    <span class="s1">&#39;recall_binary&#39;</span><span class="p">:</span>      <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">yt</span><span class="p">,</span> <span class="n">yp</span><span class="p">:</span> <span class="n">sm</span><span class="o">.</span><span class="n">recall_score</span><span class="p">(</span><span class="n">yt</span><span class="p">,</span> <span class="n">yp</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;binary&#39;</span><span class="p">)),</span>
+    <span class="s1">&#39;recall_macro&#39;</span><span class="p">:</span>       <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">yt</span><span class="p">,</span> <span class="n">yp</span><span class="p">:</span> <span class="n">sm</span><span class="o">.</span><span class="n">recall_score</span><span class="p">(</span><span class="n">yt</span><span class="p">,</span> <span class="n">yp</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;macro&#39;</span><span class="p">)),</span>
+    <span class="s1">&#39;recall_micro&#39;</span><span class="p">:</span>       <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">yt</span><span class="p">,</span> <span class="n">yp</span><span class="p">:</span> <span class="n">sm</span><span class="o">.</span><span class="n">recall_score</span><span class="p">(</span><span class="n">yt</span><span class="p">,</span> <span class="n">yp</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;micro&#39;</span><span class="p">)),</span>
+    <span class="s1">&#39;recall_samples&#39;</span><span class="p">:</span>     <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">yt</span><span class="p">,</span> <span class="n">yp</span><span class="p">:</span> <span class="n">sm</span><span class="o">.</span><span class="n">recall_score</span><span class="p">(</span><span class="n">yt</span><span class="p">,</span> <span class="n">yp</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;samples&#39;</span><span class="p">)),</span>
+    <span class="s1">&#39;recall_weighted&#39;</span><span class="p">:</span>    <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">yt</span><span class="p">,</span> <span class="n">yp</span><span class="p">:</span> <span class="n">sm</span><span class="o">.</span><span class="n">recall_score</span><span class="p">(</span><span class="n">yt</span><span class="p">,</span> <span class="n">yp</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;weighted&#39;</span><span class="p">)),</span>
+    <span class="s1">&#39;roc_auc&#39;</span><span class="p">:</span>            <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">sm</span><span class="o">.</span><span class="n">roc_auc_score</span><span class="p">),</span>
+<span class="p">}</span>
+
+<span class="n">regression_metrics</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;explained_variance&#39;</span><span class="p">:</span>     <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">sm</span><span class="o">.</span><span class="n">explained_variance_score</span><span class="p">),</span>
+    <span class="s1">&#39;mean_absolute_error&#39;</span><span class="p">:</span>    <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">sm</span><span class="o">.</span><span class="n">mean_absolute_error</span><span class="p">),</span>
+    <span class="s1">&#39;mean_squared_error&#39;</span><span class="p">:</span>     <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">sm</span><span class="o">.</span><span class="n">mean_squared_error</span><span class="p">),</span>
+    <span class="s1">&#39;mean_squared_log_error&#39;</span><span class="p">:</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">sm</span><span class="o">.</span><span class="n">mean_squared_log_error</span><span class="p">),</span>
+    <span class="s1">&#39;median_absolute_error&#39;</span><span class="p">:</span>  <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">sm</span><span class="o">.</span><span class="n">median_absolute_error</span><span class="p">),</span>
+<span class="p">}</span>
+
+<div class="viewcode-block" id="r2_score_noint"><a class="viewcode-back" href="../3_code_documentation.html#metrics.r2_score_noint">[docs]</a><span class="k">def</span> <span class="nf">r2_score_noint</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Method that calculates the R^2 value without fitting the y-intercept</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        y_true: (numpy array), array of true y data values</span>
+<span class="sd">        y_pred: (numpy array), array of predicted y data values</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (float): score of R^2 with no y-intercept</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lr</span> <span class="o">=</span> <span class="n">LinearRegression</span><span class="p">(</span><span class="n">fit_intercept</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">y_true</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># turn it from an n-vector to nx1-matrix</span>
+    <span class="n">lr</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">lr</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span></div>
+<span class="n">regression_metrics</span><span class="p">[</span><span class="s1">&#39;R2_noint&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">r2_score_noint</span><span class="p">)</span>
+
+<div class="viewcode-block" id="r2_score"><a class="viewcode-back" href="../3_code_documentation.html#metrics.r2_score">[docs]</a><span class="k">def</span> <span class="nf">r2_score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Method that calculates the R^2 value</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        y_true: (numpy array), array of true y data values</span>
+<span class="sd">        y_pred: (numpy array), array of predicted y data values</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (float): score of R^2</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lr</span> <span class="o">=</span> <span class="n">LinearRegression</span><span class="p">(</span><span class="n">fit_intercept</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">y_true</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># turn it from an n-vector to nx1-matrix</span>
+    <span class="n">lr</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">lr</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span></div>
+<span class="n">regression_metrics</span><span class="p">[</span><span class="s1">&#39;R2&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">r2_score</span><span class="p">)</span>
+
+<div class="viewcode-block" id="root_mean_squared_error"><a class="viewcode-back" href="../3_code_documentation.html#metrics.root_mean_squared_error">[docs]</a><span class="k">def</span> <span class="nf">root_mean_squared_error</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Method that calculates the root mean squared error (RMSE)</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        y_true: (numpy array), array of true y data values</span>
+<span class="sd">        y_pred: (numpy array), array of predicted y data values</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (float): score of RMSE</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">sm</span><span class="o">.</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span></div>
+<span class="n">regression_metrics</span><span class="p">[</span><span class="s1">&#39;root_mean_squared_error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">root_mean_squared_error</span><span class="p">)</span>
+
+<div class="viewcode-block" id="rmse_over_stdev"><a class="viewcode-back" href="../3_code_documentation.html#metrics.rmse_over_stdev">[docs]</a><span class="k">def</span> <span class="nf">rmse_over_stdev</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">train_y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Method that calculates the root mean squared error (RMSE) of a set of data, divided by the standard deviation of</span>
+<span class="sd">    the training data set.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        y_true: (numpy array), array of true y data values</span>
+<span class="sd">        y_pred: (numpy array), array of predicted y data values</span>
+<span class="sd">        train_y: (numpy array), array of training y data values</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (float): score of RMSE divided by standard deviation of training data</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">train_y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">stdev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">train_y</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">stdev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span>
+    <span class="n">rmse</span> <span class="o">=</span> <span class="n">root_mean_squared_error</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">rmse</span> <span class="o">/</span> <span class="n">stdev</span></div>
+<span class="n">regression_metrics</span><span class="p">[</span><span class="s1">&#39;rmse_over_stdev&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">rmse_over_stdev</span><span class="p">)</span>
+
+<div class="viewcode-block" id="adjusted_r2_score"><a class="viewcode-back" href="../3_code_documentation.html#metrics.adjusted_r2_score">[docs]</a><span class="k">def</span> <span class="nf">adjusted_r2_score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">n_features</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Method that calculates the adjusted R^2 value</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        y_true: (numpy array), array of true y data values</span>
+<span class="sd">        y_pred: (numpy array), array of predicted y data values</span>
+<span class="sd">        n_features: (int), number of features used in the fit</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (float): score of adjusted R^2</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">r2</span> <span class="o">=</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+    <span class="c1"># n is sample size</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span>
+    <span class="c1"># p is number of features</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">n_features</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">r2_score_adj</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">(((</span><span class="mi">1</span><span class="o">-</span><span class="n">r2</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span><span class="o">/</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="n">p</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="c1"># No n_features given, just output NaN</span>
+        <span class="n">r2_score_adj</span> <span class="o">=</span> <span class="s1">&#39;NaN&#39;</span>
+    <span class="k">return</span> <span class="n">r2_score_adj</span></div>
+<span class="n">regression_metrics</span><span class="p">[</span><span class="s1">&#39;R2_adjusted&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">adjusted_r2_score</span><span class="p">)</span>
+
+<span class="n">classification_score_funcs</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;chi2&#39;</span><span class="p">:</span> <span class="n">fs</span><span class="o">.</span><span class="n">chi2</span><span class="p">,</span> <span class="c1"># Compute chi-squared stats between each non-negative feature and class.</span>
+    <span class="s1">&#39;f_classif&#39;</span><span class="p">:</span> <span class="n">fs</span><span class="o">.</span><span class="n">f_classif</span><span class="p">,</span> <span class="c1"># Compute the ANOVA F-value for the provided sample.</span>
+    <span class="s1">&#39;mutual_info_classif&#39;</span><span class="p">:</span> <span class="n">fs</span><span class="o">.</span><span class="n">mutual_info_classif</span><span class="p">,</span> <span class="c1"># Estimate mutual information for a discrete target variable.</span>
+<span class="p">}</span>
+
+<span class="n">regression_score_funcs</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;f_regression&#39;</span><span class="p">:</span> <span class="n">fs</span><span class="o">.</span><span class="n">f_regression</span><span class="p">,</span> <span class="c1"># Univariate linear regression tests.</span>
+    <span class="s1">&#39;mutual_info_regression&#39;</span><span class="p">:</span> <span class="n">fs</span><span class="o">.</span><span class="n">mutual_info_regression</span><span class="p">,</span> <span class="c1"># Estimate mutual information for a continuous target variable.</span>
+<span class="p">}</span>
+
+<span class="n">nice_names</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># classification:</span>
+    <span class="s1">&#39;accuracy&#39;</span><span class="p">:</span> <span class="s1">&#39;Accuracy&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;f1_binary&#39;</span><span class="p">:</span> <span class="s1">&#39;$F_1$&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;f1_macro&#39;</span><span class="p">:</span> <span class="s1">&#39;f1_macro&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;f1_micro&#39;</span><span class="p">:</span> <span class="s1">&#39;f1_micro&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;f1_samples&#39;</span><span class="p">:</span> <span class="s1">&#39;f1_samples&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;f1_weighted&#39;</span><span class="p">:</span> <span class="s1">&#39;f1_weighted&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;log_loss&#39;</span><span class="p">:</span> <span class="s1">&#39;log_loss&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;precision_binary&#39;</span><span class="p">:</span> <span class="s1">&#39;Precision&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;precision_macro&#39;</span><span class="p">:</span> <span class="s1">&#39;prec_macro&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;precision_micro&#39;</span><span class="p">:</span> <span class="s1">&#39;prec_micro&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;precision_samples&#39;</span><span class="p">:</span> <span class="s1">&#39;prec_samples&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;precision_weighted&#39;</span><span class="p">:</span> <span class="s1">&#39;prec_weighted&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;recall_binary&#39;</span><span class="p">:</span> <span class="s1">&#39;Recall&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;recall_macro&#39;</span><span class="p">:</span> <span class="s1">&#39;rcl_macro&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;recall_micro&#39;</span><span class="p">:</span> <span class="s1">&#39;rcl_micro&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;recall_samples&#39;</span><span class="p">:</span> <span class="s1">&#39;rcl_samples&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;recall_weighted&#39;</span><span class="p">:</span> <span class="s1">&#39;rcl_weighted&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;roc_auc&#39;</span><span class="p">:</span> <span class="s1">&#39;ROC_AUC&#39;</span><span class="p">,</span>
+    <span class="c1"># regression:</span>
+    <span class="s1">&#39;explained_variance&#39;</span><span class="p">:</span> <span class="s1">&#39;expl_var&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;mean_absolute_error&#39;</span><span class="p">:</span> <span class="s1">&#39;MAE&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;mean_squared_error&#39;</span><span class="p">:</span> <span class="s1">&#39;MSE&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;mean_squared_log_error&#39;</span><span class="p">:</span> <span class="s1">&#39;MSLE&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;median_absolute_error&#39;</span><span class="p">:</span> <span class="s1">&#39;MedAE&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;root_mean_squared_error&#39;</span><span class="p">:</span> <span class="s1">&#39;RMSE&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;rmse_over_stdev&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s1">&#39;RMSE/$\sigma_y$&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;R2&#39;</span><span class="p">:</span> <span class="s1">&#39;$R^2$&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;R2_noint&#39;</span><span class="p">:</span> <span class="s1">&#39;$R^2_</span><span class="si">{noint}</span><span class="s1">$&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;R2_adjusted&#39;</span><span class="p">:</span> <span class="s1">&#39;$R^2_</span><span class="si">{adjusted}</span><span class="s1">$&#39;</span>
+<span class="p">}</span>
+
+<div class="viewcode-block" id="check_and_fetch_names"><a class="viewcode-back" href="../3_code_documentation.html#metrics.check_and_fetch_names">[docs]</a><span class="k">def</span> <span class="nf">check_and_fetch_names</span><span class="p">(</span><span class="n">metric_names</span><span class="p">,</span> <span class="n">is_classification</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Method that checks whether chosen metrics to evaluate models are appropriate for user-specified models (e.g.</span>
+<span class="sd">    classification vs. regression models)</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        metric_names: (numpy array), array of true y data values</span>
+<span class="sd">        is_classification: (bool), whether the task is a classification task</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        functions (dict): dict containing the appropriate metric objects (e.g. classification vs. regression metrics)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="s2">&quot; Ensures all metrics are appropriate for task &quot;</span>
+    <span class="n">task</span> <span class="o">=</span> <span class="s1">&#39;classification&#39;</span> <span class="k">if</span> <span class="n">is_classification</span> <span class="k">else</span> <span class="s1">&#39;regression&#39;</span>
+    <span class="n">metrics_dict</span> <span class="o">=</span> <span class="n">classification_metrics</span> <span class="k">if</span> <span class="n">is_classification</span> <span class="k">else</span> <span class="n">regression_metrics</span>
+    <span class="n">functions</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">metric_names</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">metrics_dict</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Metric &#39;</span><span class="si">{name}</span><span class="s2">&#39; is not supported for </span><span class="si">{task}</span><span class="s2">.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                            <span class="n">f</span><span class="s2">&quot;Valid metrics for </span><span class="si">{task}</span><span class="s2">: {list(metrics_dict.keys())}&quot;</span><span class="p">)</span>
+        <span class="n">functions</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">metrics_dict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">functions</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">MAterials Simulation Toolkit for Machine Learning (MAST-ML)</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../0_installation.html">Installing MASTML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../0_1_terminal_installation.html">Terminal installation (Linux or linux-like terminal on Mac)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../0_2_windows_installation.html">Windows installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../1_mastml_inputfile.html">MAST-ML Input File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../2_mastml_tutorial.html">MAST-ML tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../3_code_documentation.html">MAST-ML Code Documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, University of Wisconsin-Madison Computational Materials Group.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
