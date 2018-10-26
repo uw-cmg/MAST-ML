@@ -73,3 +73,9 @@ Feature Selectors documentation
 ****************************************
 .. toctree::
    14_feature_selectors
+
+****************************************
+Feature Normalizers documentation
+****************************************
+.. toctree::
+   15_feature_normalizers
