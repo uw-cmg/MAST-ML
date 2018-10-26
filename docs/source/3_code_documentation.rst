@@ -91,3 +91,9 @@ Model Finder documentation
 ****************************************
 .. toctree::
    17_model_finder
+
+****************************************
+Utility Legos
+****************************************
+.. toctree::
+   18_util_legos
