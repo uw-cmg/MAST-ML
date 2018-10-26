@@ -1,0 +1,198 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Installing MASTML &#8212; MAterials Simulation Toolkit for Machine Learning (MAST-ML) 2.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Terminal installation (Linux or linux-like terminal on Mac)" href="0_1_terminal_installation.html" />
+    <link rel="prev" title="Welcome to MAterials Simulation Toolkit for Machine Learning (MAST-ML)’s documentation!" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="installing-mastml">
+<h1>Installing MASTML<a class="headerlink" href="#installing-mastml" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="hardware">
+<h3>Hardware<a class="headerlink" href="#hardware" title="Permalink to this headline">¶</a></h3>
+<p>Computer capable of running python 3.</p>
+</div>
+<div class="section" id="data">
+<h3>Data<a class="headerlink" href="#data" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Numeric data in a CSV or XLSX file. There must be at least some target feature data, so that models can be fit.</li>
+<li>First row of each column should have a text name (as string) which is how columns will be referenced later in the input file.</li>
+<li>(Advanced: Data in a database with an associated python class that can extract the data to a CSV file.)</li>
+</ul>
+</div>
+</div>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>Follow the following instructions for either a Windows install or a Terminal install.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="0_1_terminal_installation.html">Terminal installation (Linux or linux-like terminal on Mac)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="0_1_terminal_installation.html#install-python3">Install Python3</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="0_1_terminal_installation.html#create-a-conda-environment">Create a conda environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="0_1_terminal_installation.html#set-up-juptyer-notebooks">Set up Juptyer notebooks</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="0_1_terminal_installation.html#install-the-mast-ml-private-package">Install the MAST-ml-private package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="0_1_terminal_installation.html#imports-that-dont-work">imports that don’t work</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="0_2_windows_installation.html">Windows installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="0_2_windows_installation.html#install-python3">Install Python3</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="0_2_windows_installation.html#create-a-conda-environment">Create a conda environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="0_2_windows_installation.html#set-up-the-spyder-ide-and-jupyter-notebooks">Set up the Spyder IDE and Jupyter notebooks</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="0_2_windows_installation.html#install-the-mast-ml-private-package">Install the MAST-ml-private package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="0_2_windows_installation.html#imports-that-dont-work">imports that don’t work</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="startup">
+<h2>Startup<a class="headerlink" href="#startup" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="locate-the-examples-folder">
+<h3>Locate the examples folder<a class="headerlink" href="#locate-the-examples-folder" title="Permalink to this headline">¶</a></h3>
+<p>In the installed MASTML directory, navigate to the <code class="docutils literal"><span class="pre">tests</span></code> folder.</p>
+<p>Under tests/conf, The file <code class="docutils literal"><span class="pre">example_input.conf</span></code> will use the <code class="docutils literal"><span class="pre">example_data.csv</span></code> data file located in tests/csv to run an example.</p>
+</div>
+<div class="section" id="run-the-mastml-command">
+<h3>Run the MASTML command<a class="headerlink" href="#run-the-mastml-command" title="Permalink to this headline">¶</a></h3>
+<p>The format is <code class="docutils literal"><span class="pre">python3</span> <span class="pre">-m</span> <span class="pre">mastml.mastml_driver</span> <span class="pre">&lt;path</span> <span class="pre">to</span> <span class="pre">config</span> <span class="pre">file&gt;</span> <span class="pre">&lt;path</span> <span class="pre">to</span> <span class="pre">data</span> <span class="pre">CSV</span> <span class="pre">file&gt;</span> <span class="pre">-o</span> <span class="pre">&lt;path</span> <span class="pre">to</span> <span class="pre">results</span> <span class="pre">folder&gt;</span></code></p>
+<p>For example, to conduct the test run above, while in the MASTML install directory:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">mastml</span><span class="o">.</span><span class="n">mastml_driver</span> <span class="n">tests</span><span class="o">/</span><span class="n">conf</span><span class="o">/</span><span class="n">example_input</span><span class="o">.</span><span class="n">conf</span> <span class="n">tests</span><span class="o">/</span><span class="n">csv</span><span class="o">/</span><span class="n">example_data</span><span class="o">.</span><span class="n">csv</span> <span class="o">-</span><span class="n">o</span> <span class="n">results</span><span class="o">/</span><span class="n">example_results</span>
+</pre></div>
+</div>
+<p>This is a terminal command.
+For Windows, assuming setup has been followed
+as above, go to the Anaconda Navigator, Environments, select the environment,
+click the green arrow button, and Open terminal.</p>
+<p>When you execute the above command, you’ll know it’s working if you begin to see output on your screen.</p>
+</div>
+<div class="section" id="check-output">
+<h3>Check output<a class="headerlink" href="#check-output" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal"><span class="pre">index.html</span></code> should be created, linking to certain representative plots for each test</p>
+<p>For this example, output will be located in subfolders in the results/example_results folder.</p>
+<p>Check the following to see if the run completed successfully:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">A</span> <span class="n">log</span><span class="o">.</span><span class="n">log</span> <span class="n">file</span> <span class="ow">is</span> <span class="n">generated</span> <span class="ow">and</span> <span class="n">the</span> <span class="n">last</span> <span class="n">line</span> <span class="n">contains</span> <span class="n">the</span> <span class="n">phrase</span> <span class="s2">&quot;Making html file of all run stats...&quot;</span>
+<span class="n">An</span> <span class="n">index</span><span class="o">.</span><span class="n">html</span> <span class="n">file</span> <span class="n">that</span> <span class="n">gives</span> <span class="n">some</span> <span class="n">summary</span> <span class="n">plots</span> <span class="kn">from</span> <span class="nn">all</span> <span class="n">the</span> <span class="n">tests</span> <span class="n">that</span> <span class="n">were</span> <span class="n">run</span>
+<span class="n">A</span> <span class="n">series</span> <span class="n">of</span> <span class="n">subfolders</span> <span class="k">with</span> <span class="n">names</span> <span class="s2">&quot;StandardScaler&quot;</span><span class="o">-&gt;</span><span class="s2">&quot;DoNothing&quot;</span><span class="o">-&gt;</span><span class="s2">&quot;KernelRidge&quot;</span><span class="p">,</span> <span class="k">with</span> <span class="n">the</span> <span class="n">following</span> <span class="n">three</span> <span class="n">directories</span>
+<span class="n">within</span> <span class="n">the</span> <span class="s2">&quot;KernelRidge&quot;</span> <span class="n">directory</span><span class="p">:</span> <span class="s2">&quot;LeaveOneGroupOut_host&quot;</span><span class="p">,</span> <span class="s2">&quot;NoSplit&quot;</span><span class="p">,</span> <span class="ow">and</span> <span class="s2">&quot;RepeatedKFold&quot;</span>
+</pre></div>
+</div>
+<p>You can compare all of these files with those given in the /example_results directory which should match.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">MAterials Simulation Toolkit for Machine Learning (MAST-ML)</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installing MASTML</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#startup">Startup</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="0_1_terminal_installation.html">Terminal installation (Linux or linux-like terminal on Mac)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="0_2_windows_installation.html">Windows installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="1_mastml_tutorial.html">MAST-ML tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="4_conf_parser.html">Configuration File Parser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="5_data_cleaner.html">Data Cleaner</a></li>
+<li class="toctree-l1"><a class="reference internal" href="6_data_loader.html">Data Loader</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Welcome to MAterials Simulation Toolkit for Machine Learning (MAST-ML)’s documentation!</a></li>
+      <li>Next: <a href="0_1_terminal_installation.html" title="next chapter">Terminal installation (Linux or linux-like terminal on Mac)</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, University of Wisconsin-Madison Computational Materials Group.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/0_installation.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
