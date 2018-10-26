@@ -97,3 +97,9 @@ Utility Legos
 ****************************************
 .. toctree::
    18_util_legos
+
+****************************************
+Feature Generators
+****************************************
+.. toctree::
+   19_feature_generators
