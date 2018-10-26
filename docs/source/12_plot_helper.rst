@@ -1,6 +1,7 @@
-MAST-ML Driver
+Plot Helper
 ===================================
 
-.. automodule:: mastml_driver
+.. automodule:: plot_helper
    :members:
    :private-members:
+
