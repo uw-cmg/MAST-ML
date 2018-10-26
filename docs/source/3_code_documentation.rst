@@ -85,3 +85,9 @@ Randomizers documentation
 ****************************************
 .. toctree::
    16_randomizers
+
+****************************************
+Model Finder documentation
+****************************************
+.. toctree::
+   17_model_finder
