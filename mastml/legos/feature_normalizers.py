@@ -7,7 +7,9 @@ from functools import wraps
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.preprocessing import MinMaxScaler, Binarizer, StandardScaler
+from sklearn.preprocessing import MinMaxScaler, Binarizer, StandardScaler, MaxAbsScaler, Normalizer, \
+QuantileTransformer, RobustScaler, OneHotEncoder
+
 
 from mastml.legos import util_legos
 
@@ -108,11 +110,21 @@ class MeanStdevScaler(BaseEstimator, TransformerMixin):
 MinMaxScaler.transform = dataframify(MinMaxScaler.transform)
 Binarizer.transform = dataframify(Binarizer.transform)
 StandardScaler.transform = dataframify(StandardScaler.transform)
+MaxAbsScaler.transform = dataframify(MaxAbsScaler.transform)
+Normalizer.transform = dataframify(Normalizer.transform)
+QuantileTransformer.transform = dataframify(QuantileTransformer.transform)
+RobustScaler.transform = dataframify(RobustScaler.transform)
+OneHotEncoder.transform = dataframify(OneHotEncoder.transform)
 
 name_to_constructor = {
     'Binarizer': Binarizer,
     'MeanStdevScaler': MeanStdevScaler,
     'MinMaxScaler': MinMaxScaler,
+    'MaxAbsScaler': MaxAbsScaler,
+    'Normalizer': Normalizer,
+    'QuantileTransformer': QuantileTransformer,
+    'RobustScaler': RobustScaler,
+    'OneHotEncoder': OneHotEncoder,
     'DoNothing': util_legos.DoNothing,
     'StandardScaler': StandardScaler
 }
