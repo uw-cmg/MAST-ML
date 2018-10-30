@@ -4,7 +4,7 @@ MAST-ML Input File
 
 This document provides an overview of the various sections and fields of the MAST-ML input file.
 
-A full template input file can be downloaded here: :download:`MASTML_InputFile <MASTML_InputFile.conf>`
+A full template input file can be downloaded here: :download:`MASTML_InputFile <MASTML_fullinputfile.conf>`
 
 *******************
 Input file sections
