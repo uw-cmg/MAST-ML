@@ -1,3 +1,5 @@
+.. _mastml_input_file:
+
 #####################
 MAST-ML Input File
 #####################
