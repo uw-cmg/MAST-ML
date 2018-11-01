@@ -1,181 +1,56 @@
 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-<!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
-<head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>Feature Selectors &mdash; MAterials Simulation Toolkit for Machine Learning (MAST-ML) 2.0 documentation</title>
-  
-
-  
-  
-  
-  
-
-  
-
-  
-  
-    
-
-  
-
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Feature Selectors &#8212; MAterials Simulation Toolkit for Machine Learning (MAST-ML) 2.0 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Feature Normalizers" href="15_feature_normalizers.html" />
     <link rel="prev" title="HTML Helper" href="13_html_helper.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="15_feature_normalizers.html" title="Feature Normalizers"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="13_html_helper.html" title="HTML Helper"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">MAterials Simulation Toolkit for Machine Learning (MAST-ML) 2.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="3_code_documentation.html" accesskey="U">MAST-ML Code Documentation</a> &#187;</li> 
+      </ul>
+    </div>  
 
-  
-  <script src="_static/js/modernizr.min.js"></script>
-
-</head>
-
-<body class="wy-body-for-nav">
-
-   
-  <div class="wy-grid-for-nav">
-
-    
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
-          
-
-          
-            <a href="index.html" class="icon icon-home"> MAterials Simulation Toolkit for Machine Learning (MAST-ML)
-          
-
-          
-          </a>
-
-          
-            
-            
-              <div class="version">
-                2.0
-              </div>
-            
-          
-
-          
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
-
-          
-        </div>
-
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
-              <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="0_installation.html">Installing MASTML</a></li>
-<li class="toctree-l1"><a class="reference internal" href="0_1_terminal_installation.html">Terminal installation (Linux or linux-like terminal on Mac)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="0_2_windows_installation.html">Windows installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="1_mastml_inputfile.html">MAST-ML Input File</a></li>
-<li class="toctree-l1"><a class="reference internal" href="2_mastml_tutorial.html">MAST-ML tutorial</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="3_code_documentation.html">MAST-ML Code Documentation</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="3_code_documentation.html#metrics-documentation">Metrics documentation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="3_code_documentation.html#configuration-file-parser-documentation">Configuration file parser documentation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="3_code_documentation.html#data-cleaner-documentation">Data cleaner documentation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="3_code_documentation.html#data-loader-documentation">Data loader documentation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="3_code_documentation.html#learning-curve-documentation">Learning curve documentation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="3_code_documentation.html#clusterers-documentation">Clusterers documentation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="3_code_documentation.html#data-splitters-documentation">Data splitters documentation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="3_code_documentation.html#utils-documentation">Utils documentation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="3_code_documentation.html#mast-ml-driver-documentation">MAST-ML Driver documentation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="3_code_documentation.html#plot-helper-documentation">Plot Helper documentation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="3_code_documentation.html#html-helper-documentation">HTML Helper documentation</a></li>
-<li class="toctree-l2 current"><a class="reference internal" href="3_code_documentation.html#feature-selectors-documentation">Feature Selectors documentation</a><ul class="current">
-<li class="toctree-l3 current"><a class="current reference internal" href="#">Feature Selectors</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="3_code_documentation.html#feature-normalizers-documentation">Feature Normalizers documentation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="3_code_documentation.html#randomizers-documentation">Randomizers documentation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="3_code_documentation.html#model-finder-documentation">Model Finder documentation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="3_code_documentation.html#utility-legos">Utility Legos</a></li>
-<li class="toctree-l2"><a class="reference internal" href="3_code_documentation.html#feature-generators">Feature Generators</a></li>
-</ul>
-</li>
-</ul>
-
-            
-          
-        </div>
-      </div>
-    </nav>
-
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">MAterials Simulation Toolkit for Machine Learning (MAST-ML)</a>
-        
-      </nav>
-
-
-      <div class="wy-nav-content">
-        
-        <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
-  <ul class="wy-breadcrumbs">
-    
-      <li><a href="index.html">Docs</a> &raquo;</li>
-        
-          <li><a href="3_code_documentation.html">MAST-ML Code Documentation</a> &raquo;</li>
-        
-      <li>Feature Selectors</li>
-    
-    
-      <li class="wy-breadcrumbs-aside">
-        
-            
-            <a href="_sources/14_feature_selectors.rst.txt" rel="nofollow"> View page source</a>
-          
-        
-      </li>
-    
-  </ul>
-
-  
-  <hr/>
-</div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
             
   <div class="section" id="module-feature_selectors">
 <span id="feature-selectors"></span><h1>Feature Selectors<a class="headerlink" href="#module-feature_selectors" title="Permalink to this headline">¶</a></h1>
@@ -259,71 +134,47 @@ selectors. More information on scikit-learn feature selectors is available at:</
 </div>
 
 
-           </div>
-           
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="15_feature_normalizers.html" class="btn btn-neutral float-right" title="Feature Normalizers" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="13_html_helper.html" class="btn btn-neutral" title="HTML Helper" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
-    </div>
-  
-
-  <hr/>
-
-  <div role="contentinfo">
-    <p>
-        &copy; Copyright 2018, University of Wisconsin-Madison Computational Materials Group
-
-    </p>
-  </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
-
-</footer>
-
         </div>
       </div>
-
-    </section>
-
-  </div>
-  
-
-
-  
-
-    
-    
-      <script type="text/javascript">
-          var DOCUMENTATION_OPTIONS = {
-              URL_ROOT:'./',
-              VERSION:'2.0',
-              LANGUAGE:'None',
-              COLLAPSE_INDEX:false,
-              FILE_SUFFIX:'.html',
-              HAS_SOURCE:  true,
-              SOURCELINK_SUFFIX: '.txt'
-          };
-      </script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-    
-
-  
-
-  <script type="text/javascript" src="_static/js/theme.js"></script>
-
-  <script type="text/javascript">
-      jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
-      });
-  </script> 
-
-</body>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="15_feature_normalizers.html" title="Feature Normalizers"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="13_html_helper.html" title="HTML Helper"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">MAterials Simulation Toolkit for Machine Learning (MAST-ML) 2.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="3_code_documentation.html" >MAST-ML Code Documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, University of Wisconsin-Madison Computational Materials Group.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+    </div>
+  </body>
 </html>
