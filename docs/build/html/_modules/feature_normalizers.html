@@ -48,7 +48,9 @@
 
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="k">import</span> <span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span>
-<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="k">import</span> <span class="n">MinMaxScaler</span><span class="p">,</span> <span class="n">Binarizer</span><span class="p">,</span> <span class="n">StandardScaler</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="k">import</span> <span class="n">MinMaxScaler</span><span class="p">,</span> <span class="n">Binarizer</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">,</span> <span class="n">MaxAbsScaler</span><span class="p">,</span> <span class="n">Normalizer</span><span class="p">,</span> \
+<span class="n">QuantileTransformer</span><span class="p">,</span> <span class="n">RobustScaler</span><span class="p">,</span> <span class="n">OneHotEncoder</span>
+
 
 <span class="kn">from</span> <span class="nn">mastml.legos</span> <span class="k">import</span> <span class="n">util_legos</span>
 
@@ -149,11 +151,21 @@
 <span class="n">MinMaxScaler</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="n">dataframify</span><span class="p">(</span><span class="n">MinMaxScaler</span><span class="o">.</span><span class="n">transform</span><span class="p">)</span>
 <span class="n">Binarizer</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="n">dataframify</span><span class="p">(</span><span class="n">Binarizer</span><span class="o">.</span><span class="n">transform</span><span class="p">)</span>
 <span class="n">StandardScaler</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="n">dataframify</span><span class="p">(</span><span class="n">StandardScaler</span><span class="o">.</span><span class="n">transform</span><span class="p">)</span>
+<span class="n">MaxAbsScaler</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="n">dataframify</span><span class="p">(</span><span class="n">MaxAbsScaler</span><span class="o">.</span><span class="n">transform</span><span class="p">)</span>
+<span class="n">Normalizer</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="n">dataframify</span><span class="p">(</span><span class="n">Normalizer</span><span class="o">.</span><span class="n">transform</span><span class="p">)</span>
+<span class="n">QuantileTransformer</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="n">dataframify</span><span class="p">(</span><span class="n">QuantileTransformer</span><span class="o">.</span><span class="n">transform</span><span class="p">)</span>
+<span class="n">RobustScaler</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="n">dataframify</span><span class="p">(</span><span class="n">RobustScaler</span><span class="o">.</span><span class="n">transform</span><span class="p">)</span>
+<span class="n">OneHotEncoder</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="n">dataframify</span><span class="p">(</span><span class="n">OneHotEncoder</span><span class="o">.</span><span class="n">transform</span><span class="p">)</span>
 
 <span class="n">name_to_constructor</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;Binarizer&#39;</span><span class="p">:</span> <span class="n">Binarizer</span><span class="p">,</span>
     <span class="s1">&#39;MeanStdevScaler&#39;</span><span class="p">:</span> <span class="n">MeanStdevScaler</span><span class="p">,</span>
     <span class="s1">&#39;MinMaxScaler&#39;</span><span class="p">:</span> <span class="n">MinMaxScaler</span><span class="p">,</span>
+    <span class="s1">&#39;MaxAbsScaler&#39;</span><span class="p">:</span> <span class="n">MaxAbsScaler</span><span class="p">,</span>
+    <span class="s1">&#39;Normalizer&#39;</span><span class="p">:</span> <span class="n">Normalizer</span><span class="p">,</span>
+    <span class="s1">&#39;QuantileTransformer&#39;</span><span class="p">:</span> <span class="n">QuantileTransformer</span><span class="p">,</span>
+    <span class="s1">&#39;RobustScaler&#39;</span><span class="p">:</span> <span class="n">RobustScaler</span><span class="p">,</span>
+    <span class="s1">&#39;OneHotEncoder&#39;</span><span class="p">:</span> <span class="n">OneHotEncoder</span><span class="p">,</span>
     <span class="s1">&#39;DoNothing&#39;</span><span class="p">:</span> <span class="n">util_legos</span><span class="o">.</span><span class="n">DoNothing</span><span class="p">,</span>
     <span class="s1">&#39;StandardScaler&#39;</span><span class="p">:</span> <span class="n">StandardScaler</span>
 <span class="p">}</span>
