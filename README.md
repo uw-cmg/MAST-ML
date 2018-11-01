@@ -14,5 +14,9 @@ University of Kentucky contributors:
 * Robert Max Williams
 
 MAST-ML documentation
-* Look in `docs/` for an overview of code documentation and tutorials for getting started with MAST-ML
+* An overview of code documentation and tutorials for getting started with MAST-ML can be found here:
+
+```
+https://htmlpreview.github.io/?https://github.com/uw-cmg/MAST-ML/blob/dev_Ryan_2018-10-29/docs/build/html/index.html
+```
 
