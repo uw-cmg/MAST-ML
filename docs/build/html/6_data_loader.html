@@ -1,89 +1,88 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Data Loader &#8212; MAterials Simulation Toolkit for Machine Learning (MAST-ML) 2.0 documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '2.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Data Loader &mdash; MAterials Simulation Toolkit for Machine Learning (MAST-ML) 2.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Learning Curve" href="7_learning_curve.html" />
-    <link rel="prev" title="Data Cleaner" href="5_data_cleaner.html" />
+    <link rel="prev" title="Data Cleaner" href="5_data_cleaner.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
    
-  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
-  
-  
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  <div class="wy-grid-for-nav">
 
-  </head>
-  <body>
-  
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
+          
+            <a href="index.html" class="icon icon-home"> MAterials Simulation Toolkit for Machine Learning (MAST-ML)
+          
+
+          
+          </a>
+
+          
             
-  <div class="section" id="module-data_loader">
-<span id="data-loader"></span><h1>Data Loader<a class="headerlink" href="#module-data_loader" title="Permalink to this headline">¶</a></h1>
-<p>The data_loader module is used for importing data from user-specified csv or xlsx file to MAST-ML</p>
-<dl class="function">
-<dt id="data_loader.load_data">
-<code class="descclassname">data_loader.</code><code class="descname">load_data</code><span class="sig-paren">(</span><em>file_path</em>, <em>input_features=None</em>, <em>target_feature=None</em>, <em>grouping_feature=None</em>, <em>feature_blacklist=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_loader.html#load_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data_loader.load_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Method that accepts the filepath of an input data file and returns a full dataframe and parsed X and y dataframes</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><p class="first">file_path: (str), path to data file</p>
-<p>input_features: (str), column names to be used as input features (X data). If ‘Auto’, then takes all columns that are not
-listed in target_feature or feature_blacklist fields.</p>
-<p>target_feature: (str), column name for data to be fit to (y data).</p>
-<p class="last">grouping_feature: (str), column names used to group data in user-defined grouping scheme</p>
-</dd>
-<dt>Returns:</dt>
-<dd><p class="first">df: (dataframe), full dataframe of the input X data (y data is removed)</p>
-<p>X: (dataframe), dataframe containing only the X data from the data file</p>
-<p>X_noinput: (dataframe), dataframe containing the columns of the original X data that are not used as input features</p>
-<p>X_grouped: (dataframe), dataframe containing the columns of hte original X data that correspond to a data grouping scheme</p>
-<p class="last">y: (dataframe), dataframe containing only the y data from the data file</p>
-</dd>
-</dl>
-</dd></dl>
+            
+              <div class="version">
+                2.0
+              </div>
+            
+          
 
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
 </div>
 
-
-          </div>
+          
         </div>
-      </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="index.html">MAterials Simulation Toolkit for Machine Learning (MAST-ML)</a></h1>
 
-
-
-
-
-
-
-
-<h3>Navigation</h3>
-<ul class="current">
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="0_installation.html">Installing MASTML</a></li>
 <li class="toctree-l1"><a class="reference internal" href="0_1_terminal_installation.html">Terminal installation (Linux or linux-like terminal on Mac)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="0_2_windows_installation.html">Windows installation</a></li>
@@ -114,45 +113,163 @@ listed in target_feature or feature_blacklist fields.</p>
 </li>
 </ul>
 
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="index.html">Documentation overview</a><ul>
-  <li><a href="3_code_documentation.html">MAST-ML Code Documentation</a><ul>
-      <li>Previous: <a href="5_data_cleaner.html" title="previous chapter">Data Cleaner</a></li>
-      <li>Next: <a href="7_learning_curve.html" title="next chapter">Learning Curve</a></li>
-  </ul></li>
-  </ul></li>
-</ul>
-</div>
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+            
+          
         </div>
       </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="footer">
-      &copy;2018, University of Wisconsin-Madison Computational Materials Group.
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
       
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">MAterials Simulation Toolkit for Machine Learning (MAST-ML)</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="3_code_documentation.html">MAST-ML Code Documentation</a> &raquo;</li>
+        
+      <li>Data Loader</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/6_data_loader.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-data_loader">
+<span id="data-loader"></span><h1>Data Loader<a class="headerlink" href="#module-data_loader" title="Permalink to this headline">¶</a></h1>
+<p>The data_loader module is used for importing data from user-specified csv or xlsx file to MAST-ML</p>
+<dl class="function">
+<dt id="data_loader.load_data">
+<code class="descclassname">data_loader.</code><code class="descname">load_data</code><span class="sig-paren">(</span><em>file_path</em>, <em>input_features=None</em>, <em>target_feature=None</em>, <em>grouping_feature=None</em>, <em>feature_blacklist=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_loader.html#load_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data_loader.load_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method that accepts the filepath of an input data file and returns a full dataframe and parsed X and y dataframes</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><p class="first">file_path: (str), path to data file</p>
+<p>input_features: (str), column names to be used as input features (X data). If ‘Auto’, then takes all columns that are not
+listed in target_feature or feature_blacklist fields.</p>
+<p>target_feature: (str), column name for data to be fit to (y data).</p>
+<p class="last">grouping_feature: (str), column names used to group data in user-defined grouping scheme</p>
+</dd>
+<dt>Returns:</dt>
+<dd><p class="first">df: (dataframe), full dataframe of the input X data (y data is removed)</p>
+<p>X: (dataframe), dataframe containing only the X data from the data file</p>
+<p>X_noinput: (dataframe), dataframe containing the columns of the original X data that are not used as input features</p>
+<p>X_grouped: (dataframe), dataframe containing the columns of hte original X data that correspond to a data grouping scheme</p>
+<p class="last">y: (dataframe), dataframe containing only the y data from the data file</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-      |
-      <a href="_sources/6_data_loader.rst.txt"
-          rel="nofollow">Page source</a>
+        <a href="7_learning_curve.html" class="btn btn-neutral float-right" title="Learning Curve" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="5_data_cleaner.html" class="btn btn-neutral" title="Data Cleaner" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
     </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, University of Wisconsin-Madison Computational Materials Group
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
 
     
-
     
-  </body>
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'./',
+              VERSION:'2.0',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
 </html>
