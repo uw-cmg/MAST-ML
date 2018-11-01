@@ -28,15 +28,14 @@ this channel is used to install pymatgen)
 
 Search for and select the following packages::
 
-    numpy
-    scipy
-    matplotlib
-    nbformat
-    pandas
-    configobj
-    pymongo
-    scikit-learn
-    pymatgen
+    numpy==1.15.0rc2
+    scipy==1.1.0
+    matplotlib==2.2.2
+    nbformat==4.4.0
+    pandas==0.23.3
+    configobj==5.0.6
+    scikit-learn==0.19.1
+    pymatgen==2018.6.27
 
 Click on "Apply" at the bottom to install all of the packages.
 
@@ -44,12 +43,37 @@ To get a terminal, from the Anaconda Navigator, go to
 Environments, make sure the environment is selected, press the green arrow
 button, and select Open terminal.
 
-From the terminal::
+From the terminal, pip install the remaining dependencies::
 
-    pip install citrination-client==2.1.0
-    pip install PeakUtils
-    pip install mlxtend
-    pip install validator
+    certifi==2018.4.16
+    chardet==3.0.
+    citrination-client==2.1.0
+    cycler==0.10.0
+    decorator==4.3.0
+    dominate==2.3.1
+    idna==2.7
+    ipython-genutils==0.2.0
+    jsonschema==2.6.0
+    jupyter-core==4.4.0
+    kiwisolver==1.0.1
+    mlxtend==0.12.0
+    monty==1.0.3
+    mpmath==1.0.0
+    nose==1.3.7
+    palettable==3.1.1
+    PyDispatcher==2.0.5
+    pyparsing==2.2.0
+    pypif==2.1.0
+    python-dateutil==2.7.3
+    pytz==2018.5
+    requests==2.19.1
+    ruamel.yaml==0.15.42
+    six==1.11.0
+    spglib==1.10.3.65
+    sympy==1.2
+    tabulate==0.8.2
+    traitlets==4.3.2
+    urllib3==1.23
 
 -------------------------------------------------
 Set up the Spyder IDE and Jupyter notebooks
@@ -65,22 +89,23 @@ Environments, make sure the environment is selected, press the green arrow
 button, and select Open jupyter notebook.
 
 =====================================
-Install the MAST-ml-private package
+Install the MAST-ML package
 =====================================
 
-Install github (for example, the Github Desktop from desktop.github.com)
+Git clone the repository, for example::
 
-Clone the repository at /uw-cmg/MAST-ml-private
-Clone from “master” or "dev"
+    git clone ssh://git@github.com/uw-cmg/MAST-ML
+    OR
+    git clone ssh://git@github.com/uw-cmg/MAST-ML --branch master
+
+Clone from “master” unless instructed specifically to use another branch.
 Ask for access if you cannot find this code.
 
 Check status.github.com for issues if you believe github may be malfunctioning
 
 -------------------------
-imports that don’t work
+Imports that don’t work
 -------------------------
 First try anaconda install, and if that gives errors try pip install
 Example: conda install numpy , or pip install numpy
-Put MAST-ml-private’s folder in your PYTHONPATH if it isn’t already
-Adding to PYTHONPATH and getting it to stay there
-If you get a missing import error, go ahead and install any other missing packages and submit a github ticket.
+Put the path to the installed MAST-ML folder in your PYTHONPATH if it isn’t already
