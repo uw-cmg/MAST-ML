@@ -1,15 +1,18 @@
+Materials Simulation Toolkit for Machine Learning (MAST-ML)
 
-install from pip (python3 only):
+MAST-ML is an open-source Python package designed to broaden and accelerate the use of machine learning in materials science research
 
-```
-pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple mastml
-```
+University of Wisconsin-Madison Computational Materials Group:
+* Prof. Dane Morgan
+* Dr. Ryan Jacobs
+* Dr. Tam Mayeshiba
+* Ben Afflerbach
+* Dr. Henry Wu
 
-build to wheel for pip:
-```
-python setup.py sdist bdist_wheel
-twine upload --repository-url https://test.pypi.org/legacy/ dist/*
-```
-Username: `max`
-password: `maxiswax`
+University of Kentucky contributors:
+* Luke Harold Miles
+* Robert Max Williams
+
+MAST-ML documentation
+* Look in `docs/` for an overview of code documentation and tutorials for getting started with MAST-ML
 
