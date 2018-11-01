@@ -23,6 +23,8 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Windows installation" href="0_2_windows_installation.html" />
+    <link rel="prev" title="Installing MASTML" href="0_installation.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -66,12 +68,12 @@ navigate to a directory housing the notebook and type:</p>
 <p>and a browser window with the notebook should appear.</p>
 </div>
 </div>
-<div class="section" id="install-the-mast-ml-private-package">
-<h2>Install the MAST-ml-private package<a class="headerlink" href="#install-the-mast-ml-private-package" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="install-the-mast-ml-package">
+<h2>Install the MAST-ML package<a class="headerlink" href="#install-the-mast-ml-package" title="Permalink to this headline">¶</a></h2>
 <p>Git clone the repository, for example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">ssh</span><span class="p">:</span><span class="o">//</span><span class="n">git</span><span class="nd">@github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">uw</span><span class="o">-</span><span class="n">cmg</span><span class="o">/</span><span class="n">MAST</span><span class="o">-</span><span class="n">ml</span><span class="o">-</span><span class="n">private</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">ssh</span><span class="p">:</span><span class="o">//</span><span class="n">git</span><span class="nd">@github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">uw</span><span class="o">-</span><span class="n">cmg</span><span class="o">/</span><span class="n">MAST</span><span class="o">-</span><span class="n">ML</span>
 <span class="n">OR</span>
-<span class="n">git</span> <span class="n">clone</span> <span class="n">ssh</span><span class="p">:</span><span class="o">//</span><span class="n">git</span><span class="nd">@github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">uw</span><span class="o">-</span><span class="n">cmg</span><span class="o">/</span><span class="n">MAST</span><span class="o">-</span><span class="n">ml</span><span class="o">-</span><span class="n">private</span> <span class="o">--</span><span class="n">branch</span> <span class="n">dev</span>
+<span class="n">git</span> <span class="n">clone</span> <span class="n">ssh</span><span class="p">:</span><span class="o">//</span><span class="n">git</span><span class="nd">@github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">uw</span><span class="o">-</span><span class="n">cmg</span><span class="o">/</span><span class="n">MAST</span><span class="o">-</span><span class="n">ML</span> <span class="o">--</span><span class="n">branch</span> <span class="n">master</span>
 </pre></div>
 </div>
 <p>Clone from “master” unless instructed specifically to use another branch.
@@ -81,31 +83,52 @@ Ask for access if you cannot find this code.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
 </pre></div>
 </div>
-<p>(inside the MAST-ml-private folder) (might not work)
-If “SyntaxError: Invalid syntax” occurs at lines 16, 17, or 34 try wrapping prints in () for windows [e.g. print (“Python Version %d.%d.%d found” % (sys.version_info[0], sys.version_info[1], sys.version_info[2])) ]</p>
-<p>If setup.py didn’t work, dependencies you need are:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">numpy</span><span class="o">&gt;=</span><span class="mf">1.11</span><span class="o">.</span><span class="mi">2</span>
-<span class="n">scipy</span><span class="o">&gt;=</span><span class="mf">0.18</span><span class="o">.</span><span class="mi">1</span>
-<span class="n">pandas</span><span class="o">&gt;=</span><span class="mf">0.19</span><span class="o">.</span><span class="mi">2</span>
-<span class="n">matplotlib</span><span class="o">&gt;=</span><span class="mf">1.5</span><span class="o">.</span><span class="mi">3</span>
-<span class="n">configobj</span><span class="o">&gt;=</span><span class="mf">5.0</span><span class="o">.</span><span class="mi">6</span>
-<span class="n">validator</span>
-<span class="n">scikit</span><span class="o">-</span><span class="n">learn</span><span class="o">&gt;=</span><span class="mf">0.18</span><span class="o">.</span><span class="mi">1</span>
-<span class="n">pymongo</span><span class="o">&gt;=</span><span class="mf">3.4</span><span class="o">.</span><span class="mi">0</span>
-<span class="n">pymatgen</span><span class="o">&gt;=</span><span class="mf">4.6</span><span class="o">.</span><span class="mi">0</span>
-<span class="n">PeakUtils</span><span class="o">&gt;=</span><span class="mf">1.0</span><span class="o">.</span><span class="mi">3</span>
-<span class="n">mlxtend</span>
-<span class="n">nbformat</span>
-<span class="n">citrination_client</span><span class="o">==</span><span class="mf">2.1</span><span class="o">.</span><span class="mi">0</span>
+<p>If setup.py didn’t work, manually pip install the following dependencies:
+Dependencies:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">certifi</span><span class="o">==</span><span class="mf">2018.4</span><span class="o">.</span><span class="mi">16</span><span class="p">,</span>
+<span class="n">chardet</span><span class="o">==</span><span class="mf">3.0</span><span class="o">.</span><span class="p">,</span>
+<span class="n">citrination</span><span class="o">-</span><span class="n">client</span><span class="o">==</span><span class="mf">2.1</span><span class="o">.</span><span class="mi">0</span><span class="p">,</span>
+<span class="n">configobj</span><span class="o">==</span><span class="mf">5.0</span><span class="o">.</span><span class="mi">6</span><span class="p">,</span>
+<span class="n">cycler</span><span class="o">==</span><span class="mf">0.10</span><span class="o">.</span><span class="mi">0</span><span class="p">,</span>
+<span class="n">decorator</span><span class="o">==</span><span class="mf">4.3</span><span class="o">.</span><span class="mi">0</span><span class="p">,</span>
+<span class="n">dominate</span><span class="o">==</span><span class="mf">2.3</span><span class="o">.</span><span class="mi">1</span><span class="p">,</span>
+<span class="n">idna</span><span class="o">==</span><span class="mf">2.7</span><span class="p">,</span>
+<span class="n">ipython</span><span class="o">-</span><span class="n">genutils</span><span class="o">==</span><span class="mf">0.2</span><span class="o">.</span><span class="mi">0</span><span class="p">,</span>
+<span class="n">jsonschema</span><span class="o">==</span><span class="mf">2.6</span><span class="o">.</span><span class="mi">0</span><span class="p">,</span>
+<span class="n">jupyter</span><span class="o">-</span><span class="n">core</span><span class="o">==</span><span class="mf">4.4</span><span class="o">.</span><span class="mi">0</span><span class="p">,</span>
+<span class="n">kiwisolver</span><span class="o">==</span><span class="mf">1.0</span><span class="o">.</span><span class="mi">1</span><span class="p">,</span>
+<span class="n">matplotlib</span><span class="o">==</span><span class="mf">2.2</span><span class="o">.</span><span class="mi">2</span><span class="p">,</span>
+<span class="n">mlxtend</span><span class="o">==</span><span class="mf">0.12</span><span class="o">.</span><span class="mi">0</span><span class="p">,</span>
+<span class="n">monty</span><span class="o">==</span><span class="mf">1.0</span><span class="o">.</span><span class="mi">3</span><span class="p">,</span>
+<span class="n">mpmath</span><span class="o">==</span><span class="mf">1.0</span><span class="o">.</span><span class="mi">0</span><span class="p">,</span>
+<span class="n">nbformat</span><span class="o">==</span><span class="mf">4.4</span><span class="o">.</span><span class="mi">0</span><span class="p">,</span>
+<span class="n">nose</span><span class="o">==</span><span class="mf">1.3</span><span class="o">.</span><span class="mi">7</span><span class="p">,</span>
+<span class="n">numpy</span><span class="o">==</span><span class="mf">1.15</span><span class="o">.</span><span class="mi">0</span><span class="n">rc2</span><span class="p">,</span>
+<span class="n">palettable</span><span class="o">==</span><span class="mf">3.1</span><span class="o">.</span><span class="mi">1</span><span class="p">,</span>
+<span class="n">pandas</span><span class="o">==</span><span class="mf">0.23</span><span class="o">.</span><span class="mi">3</span><span class="p">,</span>
+<span class="n">PyDispatcher</span><span class="o">==</span><span class="mf">2.0</span><span class="o">.</span><span class="mi">5</span><span class="p">,</span>
+<span class="n">pymatgen</span><span class="o">==</span><span class="mf">2018.6</span><span class="o">.</span><span class="mi">27</span><span class="p">,</span>
+<span class="n">pyparsing</span><span class="o">==</span><span class="mf">2.2</span><span class="o">.</span><span class="mi">0</span><span class="p">,</span>
+<span class="n">pypif</span><span class="o">==</span><span class="mf">2.1</span><span class="o">.</span><span class="mi">0</span><span class="p">,</span>
+<span class="n">python</span><span class="o">-</span><span class="n">dateutil</span><span class="o">==</span><span class="mf">2.7</span><span class="o">.</span><span class="mi">3</span><span class="p">,</span>
+<span class="n">pytz</span><span class="o">==</span><span class="mf">2018.5</span><span class="p">,</span>
+<span class="n">requests</span><span class="o">==</span><span class="mf">2.19</span><span class="o">.</span><span class="mi">1</span><span class="p">,</span>
+<span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">==</span><span class="mf">0.15</span><span class="o">.</span><span class="mi">42</span><span class="p">,</span>
+<span class="n">scikit</span><span class="o">-</span><span class="n">learn</span><span class="o">==</span><span class="mf">0.19</span><span class="o">.</span><span class="mi">1</span><span class="p">,</span>
+<span class="n">scipy</span><span class="o">==</span><span class="mf">1.1</span><span class="o">.</span><span class="mi">0</span><span class="p">,</span>
+<span class="n">six</span><span class="o">==</span><span class="mf">1.11</span><span class="o">.</span><span class="mi">0</span><span class="p">,</span>
+<span class="n">spglib</span><span class="o">==</span><span class="mf">1.10</span><span class="o">.</span><span class="mf">3.65</span><span class="p">,</span>
+<span class="n">sympy</span><span class="o">==</span><span class="mf">1.2</span><span class="p">,</span>
+<span class="n">tabulate</span><span class="o">==</span><span class="mf">0.8</span><span class="o">.</span><span class="mi">2</span><span class="p">,</span>
+<span class="n">traitlets</span><span class="o">==</span><span class="mf">4.3</span><span class="o">.</span><span class="mi">2</span><span class="p">,</span>
+<span class="n">urllib3</span><span class="o">==</span><span class="mf">1.23</span><span class="p">,</span>
 </pre></div>
 </div>
 <div class="section" id="imports-that-dont-work">
-<h3>imports that don’t work<a class="headerlink" href="#imports-that-dont-work" title="Permalink to this headline">¶</a></h3>
+<h3>Imports that don’t work<a class="headerlink" href="#imports-that-dont-work" title="Permalink to this headline">¶</a></h3>
 <p>First try anaconda install, and if that gives errors try pip install
 Example: conda install numpy , or pip install numpy
-Put MAST-ml-private’s folder in your PYTHONPATH if it isn’t already
-Adding to PYTHONPATH and getting it to stay there
-If you get a missing import error, go ahead and install any other missing packages and submit a github ticket.</p>
+Put the path to the installed MAST-ML folder in your PYTHONPATH if it isn’t already</p>
 </div>
 </div>
 </div>
@@ -126,11 +149,34 @@ If you get a missing import error, go ahead and install any other missing packag
 
 
 <h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="0_installation.html">Installing MASTML</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Terminal installation (Linux or linux-like terminal on Mac)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#install-python3">Install Python3</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#create-a-conda-environment">Create a conda environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#set-up-juptyer-notebooks">Set up Juptyer notebooks</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#install-the-mast-ml-package">Install the MAST-ML package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#imports-that-dont-work">Imports that don’t work</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="0_2_windows_installation.html">Windows installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="1_mastml_inputfile.html">MAST-ML Input File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="2_mastml_tutorial.html">MAST-ML tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="3_code_documentation.html">MAST-ML Code Documentation</a></li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="0_installation.html">Installing MASTML</a><ul>
+      <li>Previous: <a href="0_installation.html" title="previous chapter">Installing MASTML</a></li>
+      <li>Next: <a href="0_2_windows_installation.html" title="next chapter">Windows installation</a></li>
+  </ul></li>
   </ul></li>
 </ul>
 </div>
