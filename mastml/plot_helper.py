@@ -905,6 +905,57 @@ def plot_metric_vs_group(metric, groups, stats, avg_stats, savepath):
     fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
     return
 
+def plot_metric_vs_group_size(metric, groups, stats, avg_stats, savepath):
+    """
+    Method to plot the value of a particular calculated metric (e.g. RMSE, R^2, etc) as a function of the size of each group.
+
+    Args:
+
+        metric: (str), name of a calculation metric
+
+        groups: (numpy array), array of group names
+
+        stats: (dict), dict of training or testing statistics for a particular run
+
+        avg_stats: (dict), dict of calculated average metrics over all CV splits
+
+        savepath: (str), path to save plots to
+
+    Returns:
+
+        None
+
+    """
+
+    # make fig and ax, use x_align when placing text so things don't overlap
+    x_align = 0.64
+    fig, ax = make_fig_ax(x_align=x_align)
+
+    # Get unique groups from full group array
+    unique_groups = np.unique(groups)
+
+    # Get the size of each group
+    group_lengths = list()
+    for group in unique_groups:
+        group_lengths.append(len(np.concatenate(np.where(groups==group)).tolist()))
+
+    # do the actual plotting
+    ax.scatter(group_lengths,  stats,  c='blue', alpha=0.7, edgecolor='darkblue',  zorder=2, s=100)
+
+    # set axis labels
+    ax.set_xlabel('Group size', fontsize=16)
+    ax.set_ylabel(metric, fontsize=16)
+    #ax.set_xticklabels(labels=group_lengths, fontsize=14)
+    plot_stats(fig, avg_stats, x_align=x_align, y_align=0.90)
+
+    # Save data stats to csv
+    savepath_parse = savepath.split(str(metric)+'_vs_group_size.png')[0]
+    pd.DataFrame(group_lengths, stats).to_csv(os.path.join(savepath_parse, str(metric)+'_vs_group_size.csv'))
+
+    fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
+    return
+
+
 def prediction_intervals(model, X, percentile=68):
     """
     Method to calculate prediction intervals when using Random Forest and Gaussian Process regression models.
