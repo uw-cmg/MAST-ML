@@ -11,10 +11,6 @@ Welcome to MAterials Simulation Toolkit for Machine Learning (MAST-ML)'s documen
 
    0_installation.rst
 
-   0_1_terminal_installation.rst
-
-   0_2_windows_installation.rst
-
    1_mastml_inputfile.rst
 
    2_mastml_tutorial.rst

@@ -84,8 +84,6 @@
             
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="0_installation.html">Installing MASTML</a></li>
-<li class="toctree-l1"><a class="reference internal" href="0_1_terminal_installation.html">Terminal installation (Linux or linux-like terminal on Mac)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="0_2_windows_installation.html">Windows installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="1_mastml_inputfile.html">MAST-ML Input File</a></li>
 <li class="toctree-l1"><a class="reference internal" href="2_mastml_tutorial.html">MAST-ML tutorial</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="3_code_documentation.html">MAST-ML Code Documentation</a><ul class="current">
@@ -529,6 +527,23 @@ at: <a class="reference external" href="http://scikit-learn.org/stable/auto_exam
 <dt id="plot_helper.plot_metric_vs_group">
 <code class="descclassname">plot_helper.</code><code class="descname">plot_metric_vs_group</code><span class="sig-paren">(</span><em>metric</em>, <em>groups</em>, <em>stats</em>, <em>avg_stats</em>, <em>savepath</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#plot_metric_vs_group"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.plot_metric_vs_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to plot the value of a particular calculated metric (e.g. RMSE, R^2, etc) for each data group</p>
+<p>Args:</p>
+<blockquote>
+<div><p>metric: (str), name of a calculation metric</p>
+<p>groups: (numpy array), array of group names</p>
+<p>stats: (dict), dict of training or testing statistics for a particular run</p>
+<p>avg_stats: (dict), dict of calculated average metrics over all CV splits</p>
+<p>savepath: (str), path to save plots to</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>None</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="plot_helper.plot_metric_vs_group_size">
+<code class="descclassname">plot_helper.</code><code class="descname">plot_metric_vs_group_size</code><span class="sig-paren">(</span><em>metric</em>, <em>groups</em>, <em>stats</em>, <em>avg_stats</em>, <em>savepath</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#plot_metric_vs_group_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.plot_metric_vs_group_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to plot the value of a particular calculated metric (e.g. RMSE, R^2, etc) as a function of the size of each group.</p>
 <p>Args:</p>
 <blockquote>
 <div><p>metric: (str), name of a calculation metric</p>

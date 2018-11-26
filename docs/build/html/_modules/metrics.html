@@ -82,8 +82,6 @@
             
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="../0_installation.html">Installing MASTML</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../0_1_terminal_installation.html">Terminal installation (Linux or linux-like terminal on Mac)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../0_2_windows_installation.html">Windows installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../1_mastml_inputfile.html">MAST-ML Input File</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../2_mastml_tutorial.html">MAST-ML tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../3_code_documentation.html">MAST-ML Code Documentation</a></li>
@@ -242,6 +240,7 @@
     <span class="k">return</span> <span class="n">sm</span><span class="o">.</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span></div>
 <span class="n">regression_metrics</span><span class="p">[</span><span class="s1">&#39;root_mean_squared_error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">root_mean_squared_error</span><span class="p">)</span>
 
+<span class="c1"># TODO: consider two rmse/stdev metrics: one that uses stdev of full data set, and one that uses stdev of data per split</span>
 <div class="viewcode-block" id="rmse_over_stdev"><a class="viewcode-back" href="../3_metrics.html#metrics.rmse_over_stdev">[docs]</a><span class="k">def</span> <span class="nf">rmse_over_stdev</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">train_y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Method that calculates the root mean squared error (RMSE) of a set of data, divided by the standard deviation of</span>
