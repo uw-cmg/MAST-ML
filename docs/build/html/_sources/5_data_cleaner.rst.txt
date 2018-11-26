@@ -1,5 +1,6 @@
-Data Cleaner
-===================================
+**************************
+Data cleaner
+**************************
 
 .. automodule:: data_cleaner
    :members:

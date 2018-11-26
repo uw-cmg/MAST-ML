@@ -18,7 +18,6 @@ Welcome to MAterials Simulation Toolkit for Machine Learning (MAST-ML)'s documen
    3_code_documentation.rst
 
 
-
 Indices and tables
 ==================
 

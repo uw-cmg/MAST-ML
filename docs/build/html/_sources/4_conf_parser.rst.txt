@@ -1,5 +1,6 @@
-Configuration File Parser
-===================================
+***************************************************
+Configuration file parser
+***************************************************
 
 .. automodule:: conf_parser
    :members:
