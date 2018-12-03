@@ -8,7 +8,10 @@ For more information and a list of scikit-learn splitter classes, see:
 
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.neighbors import NearestNeighbors
 import sklearn.model_selection as ms
+from matminer.featurizers.composition import ElementFraction
+from pymatgen import Composition
 
 class SplittersUnion(BaseEstimator, TransformerMixin):
     """
@@ -130,6 +133,59 @@ class JustEachGroup(BaseEstimator, TransformerMixin):
 #    " Train the model without each element, then test on the rows with that element "
 #    pass
 
+
+class LeaveCloseCompositionsOut(ms.BaseCrossValidator):
+    """Leave-P-out where you exclude materials with compositions close to those the test set
+
+    Computes the distance between the element fraction vectors. For example, the :math:`L_2`
+    distance between Al and Cu is :math:`\sqrt{2}` and the :math:`L_1` distance between Al
+    and Al0.9Cu0.1 is 0.2.
+
+    Consequently, this splitter requires a list of compositions as the input to `split` rather
+    than the features.
+
+    Args:
+        dist_threshold (float): Entries must be farther than this distance to be included in the
+            training set
+        nn_kwargs (dict): Keyword arguments for the scikit-learn NearestNeighbor class used
+            to find nearest points
+    """
+
+    def __init__(self, dist_threshold=0.1, nn_kwargs=None):
+        super(LeaveCloseCompositionsOut, self).__init__()
+        if nn_kwargs is None:
+            nn_kwargs = {}
+        self.dist_threshold = dist_threshold
+        self.nn_kwargs = nn_kwargs
+
+    def split(self, X, y=None, groups=None):
+
+        # Generate the composition vectors
+        frac_computer = ElementFraction()
+        elem_fracs = frac_computer.featurize_many(list(map(Composition, X)), pbar=False)
+
+        # Generate the nearest-neighbor lookup tool
+        neigh = NearestNeighbors(**self.nn_kwargs)
+        neigh.fit(elem_fracs)
+
+        # Generate a list of all entries
+        all_inds = np.arange(0, len(X), 1)
+
+        # Loop through each entry in X
+        for i, x in enumerate(elem_fracs):
+
+            # Get all the entries within the threshold distance of the test point
+            too_close, = neigh.radius_neighbors([x], self.dist_threshold, return_distance=False)
+
+            # Get the training set as "not these points"
+            train_inds = np.setdiff1d(all_inds, too_close)
+
+            yield train_inds, [i]
+
+    def get_n_splits(self, X=None, y=None, groups=None):
+        return len(X)
+
+
 name_to_constructor = {
     # sklearn splitters:
     'GroupKFold': ms.GroupKFold,
@@ -150,5 +206,6 @@ name_to_constructor = {
     # mastml splitters
     'NoSplit': NoSplit,
     'JustEachGroup': JustEachGroup,
+    'LeaveCloseCompositionsOut': LeaveCloseCompositionsOut,
     #'WithoutElement': WithoutElement,
 }
