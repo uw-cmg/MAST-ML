@@ -235,16 +235,10 @@ def mastml_run(conf_path, data_path, outdir):
 
     snatch_model_cv_and_scoring_for_learning_curve()
 
-
     models = list(models.items())
-    #for model in models:
-    #    if model[0] == 'GaussianProcessRegressor':
-    #        from sklearn.gaussian_process import GaussianProcessRegressor
-    #        from sklearn.gaussian_process.kernels import WhiteKernel
-    #        gpr = GaussianProcessRegressor(kernel=WhiteKernel())
-    #        m = ('GaussianProcessRegressor', gpr)
-    #models.append(m)
-    #del models[0]
+
+    # Need to specially snatch the GPR model if it is in models list because it contains special kernel object
+    models = _snatch_gpr_model(models, conf['Models'])
 
     # Snatch splitter for use in feature selection, particularly RFECV
     splitters = OrderedDict(splitters)  # for easier modification
@@ -312,14 +306,13 @@ def mastml_run(conf_path, data_path, outdir):
                 for column in X: # plot y against each x column
                     filename = f'{column}_vs_target_scatter.png'
                     plot_helper.plot_scatter(X[column], y, join(outdir, filename),
-                                             xlabel=column, groups=None, ylabel='target_feature', label=y.name)
+                                             xlabel=column, groups=None, label=y.name)
             else:
                 for name in clustered_df.columns: # for each cluster, plot y against each x column
                     for column in X:
                         filename = f'{column}_vs_target_by_{name}_scatter.png'
                         plot_helper.plot_scatter(X[column], y, join(outdir, filename),
-                                                clustered_df[name], xlabel=column,
-                                                ylabel='target_feature', label=y.name)
+                                                clustered_df[name], xlabel=column, label=y.name)
         if PlotSettings['feature_vs_target']:
             make_feature_vs_target_plots()
 
@@ -495,7 +488,7 @@ def mastml_run(conf_path, data_path, outdir):
                     for column in X:
                         filename = f'{column}_vs_target.png'
                         plot_helper.plot_scatter(X[column], y, join(subdir, filename),
-                                                 xlabel=column, ylabel='target_feature', label=y.name)
+                                                 xlabel=column, label=y.name)
                 for model_name, model_instance in models:
                     for splitter_name, trains_tests in splittername_splitlist_pairs:
                         grouping_data = splitter_to_group_column[splitter_name]
@@ -793,6 +786,26 @@ def _snatch_models(models, conf_feature_selection):
                 raise utils.MastError(f"The selector {selector_name} specified model {model_name},"
                                       f"which was not found in the [Models] section")
     log.debug(f'models, post-snatching: \n{models}')
+
+def _snatch_gpr_model(models, conf_models):
+    for model in models:
+        if model[0] == 'GaussianProcessRegressor':
+            import sklearn.gaussian_process
+            from sklearn.gaussian_process import GaussianProcessRegressor
+            kernel_list = ['WhiteKernel', 'RBF', 'ConstantKernel', 'Matern', 'RationalQuadratic', 'ExpSineSquared', 'DotProduct']
+            params = conf_models['GaussianProcessRegressor']
+            kernel = params[1]['kernel']
+            if kernel in kernel_list:
+                kernel_ = getattr(sklearn.gaussian_process.kernels, kernel)
+                kernel = kernel_()
+            else:
+                raise utils.MastError(f"The kernel {kernel} could not be found in sklearn!")
+            gpr = GaussianProcessRegressor(kernel=kernel)
+            m = ('GaussianProcessRegressor', gpr)
+            del models[0]
+            models.append(m)
+            break
+    return models
 
 def _snatch_splitters(splitters, conf_feature_selection):
     log.debug(f'cv, pre-snatching: \n{splitters}')

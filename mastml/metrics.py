@@ -90,6 +90,7 @@ def root_mean_squared_error(y_true, y_pred):
     return sm.mean_squared_error(y_true, y_pred)**0.5
 regression_metrics['root_mean_squared_error'] = (False, root_mean_squared_error)
 
+# TODO: consider two rmse/stdev metrics: one that uses stdev of full data set, and one that uses stdev of data per split
 def rmse_over_stdev(y_true, y_pred, train_y=None):
     """
     Method that calculates the root mean squared error (RMSE) of a set of data, divided by the standard deviation of

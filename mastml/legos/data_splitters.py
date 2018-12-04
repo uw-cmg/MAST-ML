@@ -133,7 +133,6 @@ class JustEachGroup(BaseEstimator, TransformerMixin):
 #    " Train the model without each element, then test on the rows with that element "
 #    pass
 
-
 class LeaveCloseCompositionsOut(ms.BaseCrossValidator):
     """Leave-P-out where you exclude materials with compositions close to those the test set
 
@@ -185,6 +184,49 @@ class LeaveCloseCompositionsOut(ms.BaseCrossValidator):
     def get_n_splits(self, X=None, y=None, groups=None):
         return len(X)
 
+class LeaveOutPercent(BaseEstimator, TransformerMixin):
+    """
+    Class to train the model using a certain percentage of data as training data
+
+    Args:
+        percent_leave_out (float): fraction of data to use in training (must be > 0 and < 1)
+
+        n_repeats (int): number of repeated splits to perform (must be >= 1)
+
+    Methods:
+        get_n_splits: method to return the number of splits to perform
+
+            Args:
+                groups: (numpy array), array of group labels
+
+            Returns:
+                (int), number of unique groups, indicating number of splits to perform
+
+        split: method to perform split into train indices and test indices
+
+            Args:
+                X: (numpy array), array of X features
+                y: (numpy array), array of y data
+                groups: (numpy array), array of group labels
+
+            Returns:
+                (numpy array), array of train and test indices
+
+    """
+    def __init__(self, percent_leave_out=0.2, n_repeats=5):
+        self.percent_leave_out = percent_leave_out
+        self.n_repeats = n_repeats
+
+    def get_n_splits(self, X=None, y=None, groups=None):
+        return self.n_repeats
+
+    def split(self, X, y, groups=None):
+        indices = range(X.shape[0])
+        split = list()
+        for i in range(self.n_repeats):
+            trains, tests = ms.train_test_split(indices, test_size=self.percent_leave_out, random_state=np.random.randint(1, 1000), shuffle=True)
+            split.append((trains, tests))
+        return split
 
 name_to_constructor = {
     # sklearn splitters:
@@ -207,5 +249,6 @@ name_to_constructor = {
     'NoSplit': NoSplit,
     'JustEachGroup': JustEachGroup,
     'LeaveCloseCompositionsOut': LeaveCloseCompositionsOut,
+    'LeaveOutPercent': LeaveOutPercent,
     #'WithoutElement': WithoutElement,
 }

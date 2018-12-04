@@ -955,7 +955,6 @@ def plot_metric_vs_group_size(metric, groups, stats, avg_stats, savepath):
     fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
     return
 
-
 def prediction_intervals(model, X, percentile=68):
     """
     Method to calculate prediction intervals when using Random Forest and Gaussian Process regression models.
@@ -981,23 +980,26 @@ def prediction_intervals(model, X, percentile=68):
     err_down = list()
     err_up = list()
     X_aslist = X.values.tolist()
-    for x in range(len(X_aslist)):
-        preds = list()
-        if model.__class__.__name__=='RandomForestRegressor':
+    if model.__class__.__name__=='RandomForestRegressor':
+        for x in range(len(X_aslist)):
+            preds = list()
             for pred in model.estimators_:
                 preds.append(pred.predict(np.array(X_aslist[x]).reshape(1,-1))[0])
-
-        elif model.__class__.__name__=='GaussianProcessRegressor':
-            preds = model.predict(X, return_std=True)
-
-        e_down = np.percentile(preds, (100 - percentile) / 2. )
+        e_down = np.percentile(preds, (100 - percentile) / 2.)
         e_up = np.percentile(preds, 100 - (100 - percentile) / 2.)
+
         if e_up == 0.0:
-            e_up = 10**10
+            e_up = 10 ** 10
         if e_down == 0.0:
-            e_down = 10**10
+            e_down = 10 ** 10
         err_down.append(e_down)
         err_up.append(e_up)
+
+    elif model.__class__.__name__=='GaussianProcessRegressor':
+        preds = model.predict(X, return_std=True)[1] # Get the stdev model error from the predictions of GPR
+        err_up = preds
+        err_down = preds
+
     return err_down, err_up
 
 def plot_normalized_error(y_true, y_pred, savepath, model, X=None, avg_stats=None):
@@ -1216,12 +1218,22 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, X=None, av
         if has_model_errors:
             err_avg = [(abs(e1)+abs(e2))/2 for e1, e2 in zip(err_up, err_down)]
             model_errors = abs((y_true_-y_pred_)/err_avg)
+            #print('TRUE')
+            #print(y_true_)
+            #print('PRED')
+            #print(y_pred_)
+            #print('RESIDUAL')
+            #print(y_pred_-y_true_)
+            #print('ERRORS FROM MODEL')
+            #print(err_avg)
+            #print('ERROR TO PLOT')
+            #print(model_errors)
             n_errors = np.arange(1, len(model_errors) + 1) / np.float(len(model_errors))
             X_errors = np.sort(model_errors)
             ax.step(X_errors, n_errors, linewidth=3, color='purple', label="Model Errors")
             # Save data to csv file
             data_dict = {"x analytical": X_analytic, "analytical gaussian": n_analytic, "x residuals": X_residuals,
-                         "model residuals": n_residuals, "x errors": X_errors, "model errors": model_errors}
+                         "model residuals": n_residuals, "x errors": X_errors, "model errors": err_avg}
             # Save this way to avoid issue with different array sizes in data_dict
             df = pd.DataFrame.from_dict(data_dict, orient='index')
             df = df.transpose()
@@ -1252,7 +1264,7 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, X=None, av
             # TODO: revisit this to make work and clean up
             max_length = 0
             for df in test_err_dfs:
-                print(df.shape[0])
+                #print(df.shape[0])
                 if df.shape[0] > max_length:
                     max_length = df.shape[0]
             #print('Max length')
