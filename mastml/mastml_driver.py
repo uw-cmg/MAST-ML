@@ -522,7 +522,10 @@ def mastml_run(conf_path, data_path, outdir):
 
             log.info("             Fitting model and making predictions...")
             model.fit(train_X, train_y)
-            #joblib.dump(model, join(path, "trained_model.pkl"))
+
+            # Save off the trained model as .pkl for future import
+            joblib.dump(model, join(path, str(model.__class__.__name__)+"_split_"+str(split_num)+".pkl"))
+
             if is_classification:
                 # For classification, need probabilty of prediction to make accurate ROC curve (and other predictions??).
                 #TODO:Consider using only predict_proba and not predict() method for classif problems. Have exit escape if probability set to False here.
