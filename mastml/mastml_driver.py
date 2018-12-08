@@ -18,10 +18,11 @@ import pandas as pd
 from sklearn.externals import joblib
 from sklearn.exceptions import UndefinedMetricWarning
 from sklearn.model_selection import LeaveOneGroupOut
+from sklearn.metrics import make_scorer
 
-from mastml import conf_parser, data_loader, html_helper, plot_helper, utils, learning_curve, data_cleaner
+from mastml import conf_parser, data_loader, html_helper, plot_helper, utils, learning_curve, data_cleaner, metrics
 from mastml.legos import (data_splitters, feature_generators, feature_normalizers,
-                    feature_selectors, model_finder, util_legos, randomizers)
+                    feature_selectors, model_finder, util_legos, randomizers, hyper_opt)
 from mastml.legos import clusterers as legos_clusterers
 
 log = logging.getLogger('mastml')
@@ -198,7 +199,8 @@ def mastml_run(conf_path, data_path, outdir):
     models = _instantiate(conf['Models'],
                           model_finder.name_to_constructor,
                           'model')
-    models = OrderedDict(models) # for easier modification
+
+    #models = OrderedDict(models) # for easier modification
 
     _snatch_models(models, conf['FeatureSelection'])
 
@@ -235,10 +237,20 @@ def mastml_run(conf_path, data_path, outdir):
 
     snatch_model_cv_and_scoring_for_learning_curve()
 
-    models = list(models.items())
+    #models = list(models.items())
 
     # Need to specially snatch the GPR model if it is in models list because it contains special kernel object
     models = _snatch_gpr_model(models, conf['Models'])
+
+    # Need to snatch models and CV objects for Hyperparam Opt
+    hyperopt_params = _snatch_models_cv_for_hyperopt(conf, models, splitters)
+
+    hyperopts = _instantiate(hyperopt_params,
+                             hyper_opt.name_to_constructor,
+                             'hyperopt')
+
+    hyperopts = OrderedDict(hyperopts)
+    hyperopts = list(hyperopts.items())
 
     # Snatch splitter for use in feature selection, particularly RFECV
     splitters = OrderedDict(splitters)  # for easier modification
@@ -252,12 +264,13 @@ def mastml_run(conf_path, data_path, outdir):
     log.debug(f'generators: \n{generators}')
     log.debug(f'clusterers: \n{clusterers}')
     log.debug(f'normalizers: \n{normalizers}')
+    log.debug(f'hyperopts: \n{hyperopts}')
     log.debug(f'selectors: \n{selectors}')
     log.debug(f'splitters: \n{splitters}')
 
     def do_all_combos(X, y, df):
-        log.info(f"There are {len(normalizers)} feature normalizers, {len(selectors)} feature"
-                 f"selectors {len(models)} models, and {len(splitters)} splitters.")
+        log.info(f"There are {len(normalizers)} feature normalizers, {len(hyperopts)} hyperparameter optimziers, "
+                 f"{len(selectors)} feature selectors, {len(models)} models, and {len(splitters)} splitters.")
 
         def generate_features():
             log.info("Doing feature generation...")
@@ -325,6 +338,8 @@ def mastml_run(conf_path, data_path, outdir):
         def make_normalizer_selector_dataframe_triples():
             triples = []
             for normalizer_name, normalizer_instance in normalizers:
+
+                # Run feature normalization
                 log.info(f"Running normalizer {normalizer_name} ...")
                 X_normalized = normalizer_instance.fit_transform(X, y)
                 log.info("Saving normalized data to csv...")
@@ -368,6 +383,8 @@ def mastml_run(conf_path, data_path, outdir):
 
 
                 log.info("Running selectors...")
+
+                # Run feature selection
                 for selector_name, selector_instance in selectors:
                     log.info(f"    Running selector {selector_name} ...")
                     # NOTE: Changed from .fit_transform to .fit.transform
@@ -381,6 +398,27 @@ def mastml_run(conf_path, data_path, outdir):
                     os.mkdir(dirname)
                     pd.concat([X_selected, X_noinput, y], 1).to_csv(join(dirname, "selected.csv"), index=False)
                     triples.append((normalizer_name, selector_name, X_selected))
+
+                    # Run Hyperparam optimization, update model list with optimized model(s)
+                    for hyperopt_name, hyperopt_instance in hyperopts:
+                        try:
+                            log.info(f"    Running hyperopt {hyperopt_name} ...")
+                            log.info(f"    Saving optimized hyperparams and data to csv...")
+                            dirname = join(outdir, normalizer_name, selector_name, hyperopt_name)
+                            os.mkdir(dirname)
+                            estimator_name = hyperopt_instance._estimator_name
+                            best_estimator = hyperopt_instance.fit(X_selected, y, savepath=os.path.join(dirname, str(estimator_name)+'.csv'))
+
+                            # Update models list with new hyperparams
+                            for model in models:
+                                # model[0] is name, model[1] is instance
+                                # Check that this particular model long_name had its hyperparams optimized
+                                for name in hyperopt_params.keys():
+                                    if model[0] in name[:]:
+                                        model[1] = best_estimator
+                        except:
+                            raise utils.InvalidValue
+
             return triples
         normalizer_selector_dataframe_triples = make_normalizer_selector_dataframe_triples()
 
@@ -751,7 +789,7 @@ def _instantiate(kwargs_dict, name_to_constructor, category, X_grouped=None, X_i
                                 tests.append(test_idx)
                             custom_cv = zip(trains, tests)
                             kwargs['cv'] = custom_cv
-            instantiations.append((long_name, name_to_constructor[name](**kwargs)))
+            instantiations.append([long_name, name_to_constructor[name](**kwargs)])
 
         except TypeError:
             log.info(f"ARGUMENTS FOR '{name}': {inspect.signature(name_to_constructor[name])}")
@@ -779,7 +817,7 @@ def _grouping_column_to_group_number(X_grouped):
 
 def _snatch_models(models, conf_feature_selection):
     log.debug(f'models, pre-snatching: \n{models}')
-    for selector_name, (_, args_dict) in conf_feature_selection.items():
+    for selector_name, [_, args_dict] in conf_feature_selection.items():
         if 'estimator' in args_dict:
             model_name = args_dict['estimator']
             try:
@@ -804,11 +842,50 @@ def _snatch_gpr_model(models, conf_models):
             else:
                 raise utils.MastError(f"The kernel {kernel} could not be found in sklearn!")
             gpr = GaussianProcessRegressor(kernel=kernel)
-            m = ('GaussianProcessRegressor', gpr)
+            m = ['GaussianProcessRegressor', gpr]
             del models[0]
             models.append(m)
             break
     return models
+
+def _snatch_models_cv_for_hyperopt(conf, models, splitters):
+        if conf['HyperOpt']:
+            for searchtype, searchparams in conf['HyperOpt'].items():
+                for paramtype, paramvalue in searchparams[1].items():
+                    if paramtype == 'estimator':
+                        # Need to grab model and params from Model section of conf file
+                        found_model = False
+                        for model in models:
+                            if model[0] == paramvalue:
+                                conf['HyperOpt'][searchtype][1]['estimator'] = model[1]
+                                found_model = True
+                                break
+                        if found_model == False:
+                            raise utils.MastError(f"The estimator {paramvalue} could not be found in the input file!")
+                    if paramtype == 'cv':
+                        # Need to grab cv and params from DataSplits section of conf file
+                        found_cv = False
+                        for splitter in splitters:
+                            if splitter[0] == paramvalue:
+                                conf['HyperOpt'][searchtype][1]['cv'] = splitter[1]
+                                found_cv = True
+                                break
+                            if found_cv == False:
+                                raise utils.MastError(f"The cv object {paramvalue} could not be found in the input file!")
+                    if paramtype == 'scoring':
+                        # Need to grab correct scoring object
+                        found_scorer = False
+                        metrics_dict = metrics.regression_metrics
+                        if paramvalue in metrics_dict.keys():
+                            conf['HyperOpt'][searchtype][1]['scoring'] = make_scorer(metrics_dict[paramvalue][1],
+                                                                                     greater_is_better=metrics_dict[paramvalue][0])
+                            found_scorer = True
+                            break
+                        if found_scorer == False:
+                            raise utils.MastError(
+                                f"The scoring object {paramvalue} could not be found in the input file!")
+
+        return conf['HyperOpt']
 
 def _snatch_splitters(splitters, conf_feature_selection):
     log.debug(f'cv, pre-snatching: \n{splitters}')

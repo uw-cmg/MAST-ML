@@ -26,7 +26,7 @@ def parse_conf_file(filepath):
 
     conf = ConfigObj(filepath)
 
-    main_sections = ['GeneralSetup', 'DataSplits', 'Models', 'LearningCurve', 'DataCleaning', 'ModelImport']
+    main_sections = ['GeneralSetup', 'DataSplits', 'Models', 'LearningCurve', 'DataCleaning', 'HyperOpt']
     feature_sections = ['FeatureGeneration', 'Clustering',
                         'FeatureNormalization', 'FeatureSelection']
     feature_section_dicts = [conf[name] for name in feature_sections if name in conf]
@@ -185,11 +185,12 @@ def parse_conf_file(filepath):
     change_score_func_strings_into_actual_score_funcs()
 
     def make_long_name_short_name_pairs():
-        dictionaries = ([conf['DataSplits'], conf['Models']]
+        dictionaries = ([conf['DataSplits'], conf['Models'], conf['HyperOpt']]
                         + [conf[name] for name in feature_sections])
         for dictionary in dictionaries:
             for name, settings in dictionary.items():
-                dictionary[name] = (name.split('_')[0], settings)
+                #dictionary[name] = (name.split('_')[0], settings)
+                dictionary[name] = [name.split('_')[0], settings]
     make_long_name_short_name_pairs()
 
     def check_and_boolify_plot_settings():
@@ -226,6 +227,7 @@ def parse_conf_file(filepath):
             raise utils.InvalidConfParameters("You enabled data_learning_curve plots but you did"
                                               "not specify learning_curve_score in [GeneralSetup]")
 
+    # Need to make scoring function for learning curve string to scorer object
     if conf['LearningCurve']:
         score_name = conf['LearningCurve']['scoring']
         d = metrics.check_and_fetch_names([score_name], is_classification)
