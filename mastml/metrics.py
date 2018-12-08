@@ -137,7 +137,7 @@ def adjusted_r2_score(y_true, y_pred, n_features=None):
         # No n_features given, just output NaN
         r2_score_adj = 'NaN'
     return r2_score_adj
-regression_metrics['R2_adjusted'] = (False, adjusted_r2_score)
+regression_metrics['R2_adjusted'] = (True, adjusted_r2_score)
 
 classification_score_funcs = {
     'chi2': fs.chi2, # Compute chi-squared stats between each non-negative feature and class.
