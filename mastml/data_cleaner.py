@@ -44,6 +44,7 @@ def imputation(df, strategy, cols_to_leave_out=None):
         df: (dataframe): dataframe with NaN or missing values resolved via imputation
 
     """
+    col_names = df.columns.tolist()
     if cols_to_leave_out is None:
         df_imputed = pd.DataFrame(Imputer(missing_values='NaN', strategy=strategy, axis=0).fit_transform(df))
     else:
@@ -53,6 +54,7 @@ def imputation(df, strategy, cols_to_leave_out=None):
         df = df_imputed
     else:
         df = pd.concat([df_imputed, df[cols_to_leave_out]], axis=1)
+    df.columns = col_names
     return df
 
 def ppca(df, cols_to_leave_out=None):
@@ -67,6 +69,7 @@ def ppca(df, cols_to_leave_out=None):
         df: (dataframe): dataframe with NaN or missing values resolved via imputation
 
     """
+    col_names = df.columns.tolist()
     pca_magic = PPCA()
     if cols_to_leave_out is None:
         pca_magic.fit(np.array(df))
@@ -78,6 +81,7 @@ def ppca(df, cols_to_leave_out=None):
         df = df_ppca
     else:
         df = pd.concat([df_ppca, df[cols_to_leave_out]], axis=1)
+    df.columns = col_names
     return df
 
 def columns_with_strings(df):
