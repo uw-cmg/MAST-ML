@@ -1,0 +1,249 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>MAST-ML overview slides &mdash; MAterials Simulation Toolkit for Machine Learning (MAST-ML) 2.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="MAST-ML Code Documentation" href="3_code_documentation.html" />
+    <link rel="prev" title="MAST-ML Input File" href="1_mastml_inputfile.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> MAterials Simulation Toolkit for Machine Learning (MAST-ML)
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="0_installation.html">Installing MASTML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="1_mastml_inputfile.html">MAST-ML Input File</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">MAST-ML overview slides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="3_code_documentation.html">MAST-ML Code Documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">MAterials Simulation Toolkit for Machine Learning (MAST-ML)</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>MAST-ML overview slides</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/2_mastml_overview.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="mast-ml-overview-slides">
+<h1>MAST-ML overview slides<a class="headerlink" href="#mast-ml-overview-slides" title="Permalink to this headline">¶</a></h1>
+<p>The information for this MAST-ML overview shown on this page is available for download here:</p>
+<p><a class="reference download internal" href="_downloads/MASTMLtutorial.pdf" download=""><code class="xref download docutils literal"><span class="pre">MASTMLoverview</span></code></a></p>
+<p>Let’s begin with an overview of what MAST-ML is and what it can do:</p>
+<img alt="_images/WhatisMASTML.png" src="_images/WhatisMASTML.png" />
+<p>Here is currently what MAST-ML can do as well as how to acquire it:</p>
+<img alt="_images/MASTMLscope.png" src="_images/MASTMLscope.png" />
+<p>An overview of the general machine learning workflow that MAST-ML executes. Continuing development will focus on making the workflows more flexible and general</p>
+<img alt="_images/MASTMLworkflow.png" src="_images/MASTMLworkflow.png" />
+<p>MAST-ML uses a text-based input file (.conf extension) which consists of different sections (corresponding to each part of the workflow) and specific subsections (e.g. different machine learning models to test, different feature selection algorithms, etc.). The input file is discussed in much greater detail here:</p>
+<p><a class="reference internal" href="1_mastml_inputfile.html#mastml-input-file"><span class="std std-ref">MAST-ML Input File</span></a></p>
+<p>and an input file with the full range of capabilities can be downloaded here:</p>
+<p><a class="reference download internal" href="_downloads/MASTML_fullinputfile.conf" download=""><code class="xref download docutils literal"><span class="pre">MASTMLinputfile</span></code></a></p>
+<img alt="_images/MASTMLsampleinput.png" src="_images/MASTMLsampleinput.png" />
+<p>Running MAST-ML is easily done with a single-line command in a Terminal/command line, your favorite IDE, or within a Jupyter notebook</p>
+<img alt="_images/RunningMASTML.png" src="_images/RunningMASTML.png" />
+<p>MAST-ML output takes the form of a full directory tree of results, with each level of the tree corresponding to a different portion of the machine learning workflow</p>
+<img alt="_images/MASTMLhighleveloutput.png" src="_images/MASTMLhighleveloutput.png" />
+<p>The last three figures demonstrate some example output of a few machine learning analysis features MAST-ML offers. Here, the ability to generate and select features is shown.</p>
+<img alt="_images/MASTMLfeaturegenerationselection.png" src="_images/MASTMLfeaturegenerationselection.png" />
+<p>A core feature of MAST-ML is the many pieces of statistical analysis regarding model assessment, which forms the basis of interpreting the quality and extensibility of a machine learning model.</p>
+<img alt="_images/MASTMLmodelassessment.png" src="_images/MASTMLmodelassessment.png" />
+<p>Finally, MAST-ML offers the ability to easily optimize the model hyperparameters used in your analysis</p>
+<img alt="_images/MASTMLhyperparameter.png" src="_images/MASTMLhyperparameter.png" />
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="3_code_documentation.html" class="btn btn-neutral float-right" title="MAST-ML Code Documentation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="1_mastml_inputfile.html" class="btn btn-neutral" title="MAST-ML Input File" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, University of Wisconsin-Madison Computational Materials Group
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'./',
+              VERSION:'2.0',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
