@@ -85,7 +85,7 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="0_installation.html">Installing MASTML</a></li>
 <li class="toctree-l1"><a class="reference internal" href="1_mastml_inputfile.html">MAST-ML Input File</a></li>
-<li class="toctree-l1"><a class="reference internal" href="2_mastml_tutorial.html">MAST-ML tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="2_mastml_overview.html">MAST-ML overview slides</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="3_code_documentation.html">MAST-ML Code Documentation</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="3_metrics.html">Metrics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="4_conf_parser.html">Configuration file parser</a></li>
@@ -191,6 +191,61 @@ This class wraps scikit-learn’s LeavePGroupsOut with P set to n-1. More inform
 <dd>None (only object instance)</dd>
 <dt>Methods:</dt>
 <dd><p class="first">get_n_splits: method to calculate the number of splits to perform</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>Args:</dt>
+<dd>groups: (numpy array), array of group labels</dd>
+<dt>Returns:</dt>
+<dd>(int), number of unique groups, indicating number of splits to perform</dd>
+</dl>
+</div></blockquote>
+<p>split: method to perform split into train indices and test indices</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>Args:</dt>
+<dd>X: (numpy array), array of X features
+y: (numpy array), array of y data
+groups: (numpy array), array of group labels</dd>
+<dt>Returns:</dt>
+<dd>(numpy array), array of train and test indices</dd>
+</dl>
+</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="data_splitters.LeaveCloseCompositionsOut">
+<em class="property">class </em><code class="descclassname">data_splitters.</code><code class="descname">LeaveCloseCompositionsOut</code><span class="sig-paren">(</span><em>dist_threshold=0.1</em>, <em>nn_kwargs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_splitters.html#LeaveCloseCompositionsOut"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data_splitters.LeaveCloseCompositionsOut" title="Permalink to this definition">¶</a></dt>
+<dd><p>Leave-P-out where you exclude materials with compositions close to those the test set</p>
+<p>Computes the distance between the element fraction vectors. For example, the 
+distance between Al and Cu is  and the  distance between Al
+and Al0.9Cu0.1 is 0.2.</p>
+<p>Consequently, this splitter requires a list of compositions as the input to <cite>split</cite> rather
+than the features.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt>dist_threshold (float): Entries must be farther than this distance to be included in the</dt>
+<dd>training set</dd>
+<dt>nn_kwargs (dict): Keyword arguments for the scikit-learn NearestNeighbor class used</dt>
+<dd>to find nearest points</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="data_splitters.LeaveOutPercent">
+<em class="property">class </em><code class="descclassname">data_splitters.</code><code class="descname">LeaveOutPercent</code><span class="sig-paren">(</span><em>percent_leave_out=0.2</em>, <em>n_repeats=5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_splitters.html#LeaveOutPercent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data_splitters.LeaveOutPercent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to train the model using a certain percentage of data as training data</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><p class="first">percent_leave_out (float): fraction of data to use in training (must be &gt; 0 and &lt; 1)</p>
+<p class="last">n_repeats (int): number of repeated splits to perform (must be &gt;= 1)</p>
+</dd>
+<dt>Methods:</dt>
+<dd><p class="first">get_n_splits: method to return the number of splits to perform</p>
 <blockquote>
 <div><dl class="docutils">
 <dt>Args:</dt>

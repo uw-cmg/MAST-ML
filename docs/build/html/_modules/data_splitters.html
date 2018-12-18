@@ -81,8 +81,9 @@
             
             
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="../0_installation.html">Installing MASTML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../0_installation.html">Installing MAST-ML</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../1_mastml_inputfile.html">MAST-ML Input File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../2_mastml_overview.html">MAST-ML overview slides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../2_mastml_tutorial.html">MAST-ML tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../3_code_documentation.html">MAST-ML Code Documentation</a></li>
 </ul>
@@ -158,7 +159,10 @@
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="k">import</span> <span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span>
+<span class="kn">from</span> <span class="nn">sklearn.neighbors</span> <span class="k">import</span> <span class="n">NearestNeighbors</span>
 <span class="kn">import</span> <span class="nn">sklearn.model_selection</span> <span class="k">as</span> <span class="nn">ms</span>
+<span class="kn">from</span> <span class="nn">matminer.featurizers.composition</span> <span class="k">import</span> <span class="n">ElementFraction</span>
+<span class="kn">from</span> <span class="nn">pymatgen</span> <span class="k">import</span> <span class="n">Composition</span>
 
 <div class="viewcode-block" id="SplittersUnion"><a class="viewcode-back" href="../9_data_splitters.html#data_splitters.SplittersUnion">[docs]</a><span class="k">class</span> <span class="nc">SplittersUnion</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -280,6 +284,101 @@
 <span class="c1">#    &quot; Train the model without each element, then test on the rows with that element &quot;</span>
 <span class="c1">#    pass</span>
 
+<div class="viewcode-block" id="LeaveCloseCompositionsOut"><a class="viewcode-back" href="../9_data_splitters.html#data_splitters.LeaveCloseCompositionsOut">[docs]</a><span class="k">class</span> <span class="nc">LeaveCloseCompositionsOut</span><span class="p">(</span><span class="n">ms</span><span class="o">.</span><span class="n">BaseCrossValidator</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Leave-P-out where you exclude materials with compositions close to those the test set</span>
+
+<span class="sd">    Computes the distance between the element fraction vectors. For example, the :math:`L_2`</span>
+<span class="sd">    distance between Al and Cu is :math:`\sqrt{2}` and the :math:`L_1` distance between Al</span>
+<span class="sd">    and Al0.9Cu0.1 is 0.2.</span>
+
+<span class="sd">    Consequently, this splitter requires a list of compositions as the input to `split` rather</span>
+<span class="sd">    than the features.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dist_threshold (float): Entries must be farther than this distance to be included in the</span>
+<span class="sd">            training set</span>
+<span class="sd">        nn_kwargs (dict): Keyword arguments for the scikit-learn NearestNeighbor class used</span>
+<span class="sd">            to find nearest points</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dist_threshold</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">nn_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">LeaveCloseCompositionsOut</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">nn_kwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nn_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dist_threshold</span> <span class="o">=</span> <span class="n">dist_threshold</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nn_kwargs</span> <span class="o">=</span> <span class="n">nn_kwargs</span>
+
+    <span class="k">def</span> <span class="nf">split</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+        <span class="c1"># Generate the composition vectors</span>
+        <span class="n">frac_computer</span> <span class="o">=</span> <span class="n">ElementFraction</span><span class="p">()</span>
+        <span class="n">elem_fracs</span> <span class="o">=</span> <span class="n">frac_computer</span><span class="o">.</span><span class="n">featurize_many</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">Composition</span><span class="p">,</span> <span class="n">X</span><span class="p">)),</span> <span class="n">pbar</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># Generate the nearest-neighbor lookup tool</span>
+        <span class="n">neigh</span> <span class="o">=</span> <span class="n">NearestNeighbors</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">nn_kwargs</span><span class="p">)</span>
+        <span class="n">neigh</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">elem_fracs</span><span class="p">)</span>
+
+        <span class="c1"># Generate a list of all entries</span>
+        <span class="n">all_inds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Loop through each entry in X</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">elem_fracs</span><span class="p">):</span>
+
+            <span class="c1"># Get all the entries within the threshold distance of the test point</span>
+            <span class="n">too_close</span><span class="p">,</span> <span class="o">=</span> <span class="n">neigh</span><span class="o">.</span><span class="n">radius_neighbors</span><span class="p">([</span><span class="n">x</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist_threshold</span><span class="p">,</span> <span class="n">return_distance</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+            <span class="c1"># Get the training set as &quot;not these points&quot;</span>
+            <span class="n">train_inds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">setdiff1d</span><span class="p">(</span><span class="n">all_inds</span><span class="p">,</span> <span class="n">too_close</span><span class="p">)</span>
+
+            <span class="k">yield</span> <span class="n">train_inds</span><span class="p">,</span> <span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">get_n_splits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LeaveOutPercent"><a class="viewcode-back" href="../9_data_splitters.html#data_splitters.LeaveOutPercent">[docs]</a><span class="k">class</span> <span class="nc">LeaveOutPercent</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to train the model using a certain percentage of data as training data</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        percent_leave_out (float): fraction of data to use in training (must be &gt; 0 and &lt; 1)</span>
+
+<span class="sd">        n_repeats (int): number of repeated splits to perform (must be &gt;= 1)</span>
+
+<span class="sd">    Methods:</span>
+<span class="sd">        get_n_splits: method to return the number of splits to perform</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                groups: (numpy array), array of group labels</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                (int), number of unique groups, indicating number of splits to perform</span>
+
+<span class="sd">        split: method to perform split into train indices and test indices</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                X: (numpy array), array of X features</span>
+<span class="sd">                y: (numpy array), array of y data</span>
+<span class="sd">                groups: (numpy array), array of group labels</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                (numpy array), array of train and test indices</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">percent_leave_out</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">n_repeats</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">percent_leave_out</span> <span class="o">=</span> <span class="n">percent_leave_out</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_repeats</span> <span class="o">=</span> <span class="n">n_repeats</span>
+
+    <span class="k">def</span> <span class="nf">get_n_splits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_repeats</span>
+
+    <span class="k">def</span> <span class="nf">split</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">split</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_repeats</span><span class="p">):</span>
+            <span class="n">trains</span><span class="p">,</span> <span class="n">tests</span> <span class="o">=</span> <span class="n">ms</span><span class="o">.</span><span class="n">train_test_split</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">percent_leave_out</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1000</span><span class="p">),</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">split</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">trains</span><span class="p">,</span> <span class="n">tests</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">split</span></div>
+
 <span class="n">name_to_constructor</span> <span class="o">=</span> <span class="p">{</span>
     <span class="c1"># sklearn splitters:</span>
     <span class="s1">&#39;GroupKFold&#39;</span><span class="p">:</span> <span class="n">ms</span><span class="o">.</span><span class="n">GroupKFold</span><span class="p">,</span>
@@ -300,6 +399,8 @@
     <span class="c1"># mastml splitters</span>
     <span class="s1">&#39;NoSplit&#39;</span><span class="p">:</span> <span class="n">NoSplit</span><span class="p">,</span>
     <span class="s1">&#39;JustEachGroup&#39;</span><span class="p">:</span> <span class="n">JustEachGroup</span><span class="p">,</span>
+    <span class="s1">&#39;LeaveCloseCompositionsOut&#39;</span><span class="p">:</span> <span class="n">LeaveCloseCompositionsOut</span><span class="p">,</span>
+    <span class="s1">&#39;LeaveOutPercent&#39;</span><span class="p">:</span> <span class="n">LeaveOutPercent</span><span class="p">,</span>
     <span class="c1">#&#39;WithoutElement&#39;: WithoutElement,</span>
 <span class="p">}</span>
 </pre></div>

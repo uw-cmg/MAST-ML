@@ -13,6 +13,8 @@ Welcome to MAterials Simulation Toolkit for Machine Learning (MAST-ML)'s documen
 
    1_mastml_inputfile.rst
 
+   2_mastml_overview.rst
+
    2_mastml_tutorial.rst
 
    3_code_documentation.rst

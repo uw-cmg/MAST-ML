@@ -29,7 +29,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="MAST-ML Code Documentation" href="3_code_documentation.html" />
-    <link rel="prev" title="MAST-ML Input File" href="1_mastml_inputfile.html" /> 
+    <link rel="prev" title="MAST-ML overview slides" href="2_mastml_overview.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -83,11 +83,13 @@
             
             
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="0_installation.html">Installing MASTML</a></li>
-<li class="toctree-l1"><a class="reference internal" href="0_1_terminal_installation.html">Terminal installation (Linux or linux-like terminal on Mac)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="0_2_windows_installation.html">Windows installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="0_installation.html">Installing MAST-ML</a></li>
 <li class="toctree-l1"><a class="reference internal" href="1_mastml_inputfile.html">MAST-ML Input File</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">MAST-ML tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="2_mastml_overview.html">MAST-ML overview slides</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">MAST-ML tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="3_code_documentation.html">MAST-ML Code Documentation</a></li>
 </ul>
 
@@ -155,29 +157,21 @@
             
   <div class="section" id="mast-ml-tutorial">
 <h1>MAST-ML tutorial<a class="headerlink" href="#mast-ml-tutorial" title="Permalink to this headline">¶</a></h1>
-<p>The tutorial information for MAST-ML shown on this page is available for download here:</p>
-<p><a class="reference download internal" href="_downloads/MASTMLtutorial.pdf" download=""><code class="xref download docutils literal"><span class="pre">MASTMLtutorial</span></code></a></p>
-<p>Let’s begin with an overview of what MAST-ML is and what it can do:</p>
-<img alt="_images/WhatisMASTML.png" src="_images/WhatisMASTML.png" />
-<p>Here is currently what MAST-ML can do as well as how to acquire it:</p>
-<img alt="_images/MASTMLscope.png" src="_images/MASTMLscope.png" />
-<p>An overview of the general machine learning workflow that MAST-ML executes. Continuing development will focus on making the workflows more flexible and general</p>
-<img alt="_images/MASTMLworkflow.png" src="_images/MASTMLworkflow.png" />
-<p>MAST-ML uses a text-based input file (.conf extension) which consists of different sections (corresponding to each part of the workflow) and specific subsections (e.g. different machine learning models to test, different feature selection algorithms, etc.). The input file is discussed in much greater detail here:</p>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>This document provides step-by-step tutorials of conducting and analyzing different MAST-ML runs. For this tutorial,
+we will be using the dataset example_data.csv in the tests/csv/ folder and input file example_input.conf in tests/conf/.</p>
+<p>MAST-ML requires two files to run: The first is the text-based input file (.conf extension). This file contains all of
+the key settings for MAST-ML, for example, which models to fit and how to normalize your input feature matrix. The
+second file is the data file (.csv or .xlsx extension). This is the data file containing the input feature columns and
+values (X values) and the corresponding y data to fit models to. The data file may contain other columns that are
+dedicated to constructing groups of data for specific tests, or miscellaneous notes, which columns can be selectively
+left out so they are not used in the fitting. This will be discussed in more detail below.</p>
+<p>Throughout this tutorial, we will be modifying the input file to add and remove different sections and values. For a
+complete and more in-depth discussion of the input file and its myriad settings, the reader is directed to the dedicated
+input file section:</p>
 <p><a class="reference internal" href="1_mastml_inputfile.html#mastml-input-file"><span class="std std-ref">MAST-ML Input File</span></a></p>
-<p>and an input file with the full range of capabilities can be downloaded here:</p>
-<p><a class="reference download internal" href="_downloads/MASTML_fullinputfile.conf" download=""><code class="xref download docutils literal"><span class="pre">MASTMLinputfile</span></code></a></p>
-<img alt="_images/MASTMLsampleinput.png" src="_images/MASTMLsampleinput.png" />
-<p>Running MAST-ML is easily done with a single-line command in a Terminal/command line, your favorite IDE, or within a Jupyter notebook</p>
-<img alt="_images/RunningMASTML.png" src="_images/RunningMASTML.png" />
-<p>MAST-ML output takes the form of a full directory tree of results, with each level of the tree corresponding to a different portion of the machine learning workflow</p>
-<img alt="_images/MASTMLhighleveloutput.png" src="_images/MASTMLhighleveloutput.png" />
-<p>The last three figures demonstrate some example output of a few machine learning analysis features MAST-ML offers. Here, the ability to generate and select features is shown.</p>
-<img alt="_images/MASTMLfeaturegenerationselection.png" src="_images/MASTMLfeaturegenerationselection.png" />
-<p>A core feature of MAST-ML is the many pieces of statistical analysis regarding model assessment, which forms the basis of interpreting the quality and extensibility of a machine learning model.</p>
-<img alt="_images/MASTMLmodelassessment.png" src="_images/MASTMLmodelassessment.png" />
-<p>Finally, MAST-ML offers the ability to easily optimize the model hyperparameters used in your analysis</p>
-<img alt="_images/MASTMLhyperparameter.png" src="_images/MASTMLhyperparameter.png" />
+</div>
 </div>
 
 
@@ -191,7 +185,7 @@
         <a href="3_code_documentation.html" class="btn btn-neutral float-right" title="MAST-ML Code Documentation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="1_mastml_inputfile.html" class="btn btn-neutral" title="MAST-ML Input File" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="2_mastml_overview.html" class="btn btn-neutral" title="MAST-ML overview slides" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

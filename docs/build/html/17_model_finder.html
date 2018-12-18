@@ -85,7 +85,7 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="0_installation.html">Installing MASTML</a></li>
 <li class="toctree-l1"><a class="reference internal" href="1_mastml_inputfile.html">MAST-ML Input File</a></li>
-<li class="toctree-l1"><a class="reference internal" href="2_mastml_tutorial.html">MAST-ML tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="2_mastml_overview.html">MAST-ML overview slides</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="3_code_documentation.html">MAST-ML Code Documentation</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="3_metrics.html">Metrics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="4_conf_parser.html">Configuration file parser</a></li>
@@ -196,6 +196,42 @@ error handling functions</p>
 <div>(numpy array), prediction array where all values are equal to constant</div></blockquote>
 </div></blockquote>
 </div></blockquote>
+</dd></dl>
+
+<dl class="class">
+<dt id="model_finder.ModelImport">
+<em class="property">class </em><code class="descclassname">model_finder.</code><code class="descname">ModelImport</code><span class="sig-paren">(</span><em>model_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model_finder.html#ModelImport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model_finder.ModelImport" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class used to import pickled models from previous machine learning fits</p>
+<p>Args:</p>
+<blockquote>
+<div>model_path (str): string designating the path to load the saved .pkl model file</div></blockquote>
+<p>Methods:</p>
+<blockquote>
+<div><p>fit: Does nothing, present for compatibility purposes</p>
+<blockquote>
+<div><p>Args:</p>
+<blockquote>
+<div><p>X: Nonetype</p>
+<p>y: Nonetype</p>
+<p>groups: Nonetype</p>
+</div></blockquote>
+</div></blockquote>
+<p>predict: Provides predicted model values based on X features</p>
+<blockquote>
+<div><p>Args:</p>
+<blockquote>
+<div>X: (numpy array), array of X features</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>(numpy array), prediction array using imported model</div></blockquote>
+</div></blockquote>
+</div></blockquote>
+<dl class="method">
+<dt id="model_finder.ModelImport.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>X=None</em>, <em>y=None</em>, <em>groups=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model_finder.html#ModelImport.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model_finder.ModelImport.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Only here for compatibility</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">

@@ -84,7 +84,7 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="0_installation.html">Installing MASTML</a></li>
 <li class="toctree-l1"><a class="reference internal" href="1_mastml_inputfile.html">MAST-ML Input File</a></li>
-<li class="toctree-l1"><a class="reference internal" href="2_mastml_tutorial.html">MAST-ML tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="2_mastml_overview.html">MAST-ML overview slides</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="3_code_documentation.html">MAST-ML Code Documentation</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="3_metrics.html">Metrics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="4_conf_parser.html">Configuration file parser</a></li>
@@ -177,11 +177,11 @@
 <dl class="class">
 <dt id="feature_generators.Citrine">
 <em class="property">class </em><code class="descclassname">feature_generators.</code><code class="descname">Citrine</code><span class="sig-paren">(</span><em>composition_feature</em>, <em>api_key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/feature_generators.html#Citrine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#feature_generators.Citrine" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class that wraps CitrineFeatureGeneration, giving it scikit-learn structure</p>
+<dd><p>Class that wraps MaterialsProjectFeatureGeneration, giving it scikit-learn structure</p>
 <p>Args:</p>
 <blockquote>
 <div><p>composition_feature: (str), string denoting a chemical composition to generate elemental features from</p>
-<p>api_key: (str), string denoting your Citrine API key</p>
+<p>mapi_key: (str), string denoting your Materials Project API key</p>
 </div></blockquote>
 <p>Methods:</p>
 <blockquote>
@@ -189,7 +189,7 @@
 <p>Args:</p>
 <blockquote>
 <div>df: (dataframe), input dataframe containing X and y data</div></blockquote>
-<p>transform: generate Citrine features</p>
+<p>transform: generate Materials Project features</p>
 <p>Args:</p>
 <blockquote>
 <div>df: (dataframe), input dataframe containing X and y data</div></blockquote>

@@ -1,5 +1,5 @@
 #####################
-Installing MASTML
+Installing MAST-ML
 #####################
 
 .. toctree::

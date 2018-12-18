@@ -81,8 +81,9 @@
             
             
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="../0_installation.html">Installing MASTML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../0_installation.html">Installing MAST-ML</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../1_mastml_inputfile.html">MAST-ML Input File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../2_mastml_overview.html">MAST-ML overview slides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../2_mastml_tutorial.html">MAST-ML tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../3_code_documentation.html">MAST-ML Code Documentation</a></li>
 </ul>
@@ -1368,16 +1369,16 @@
         <span class="k">if</span> <span class="n">has_model_errors</span><span class="p">:</span>
             <span class="n">err_avg</span> <span class="o">=</span> <span class="p">[(</span><span class="nb">abs</span><span class="p">(</span><span class="n">e1</span><span class="p">)</span><span class="o">+</span><span class="nb">abs</span><span class="p">(</span><span class="n">e2</span><span class="p">))</span><span class="o">/</span><span class="mi">2</span> <span class="k">for</span> <span class="n">e1</span><span class="p">,</span> <span class="n">e2</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">err_up</span><span class="p">,</span> <span class="n">err_down</span><span class="p">)]</span>
             <span class="n">model_errors</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">((</span><span class="n">y_true_</span><span class="o">-</span><span class="n">y_pred_</span><span class="p">)</span><span class="o">/</span><span class="n">err_avg</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;TRUE&#39;</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">y_true_</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;PRED&#39;</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">y_pred_</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;RESIDUAL&#39;</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">y_pred_</span><span class="o">-</span><span class="n">y_true_</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;ERRORS FROM MODEL&#39;</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">err_avg</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;ERROR TO PLOT&#39;</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">model_errors</span><span class="p">)</span>
+            <span class="c1">#print(&#39;TRUE&#39;)</span>
+            <span class="c1">#print(y_true_)</span>
+            <span class="c1">#print(&#39;PRED&#39;)</span>
+            <span class="c1">#print(y_pred_)</span>
+            <span class="c1">#print(&#39;RESIDUAL&#39;)</span>
+            <span class="c1">#print(y_pred_-y_true_)</span>
+            <span class="c1">#print(&#39;ERRORS FROM MODEL&#39;)</span>
+            <span class="c1">#print(err_avg)</span>
+            <span class="c1">#print(&#39;ERROR TO PLOT&#39;)</span>
+            <span class="c1">#print(model_errors)</span>
             <span class="n">n_errors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">model_errors</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">model_errors</span><span class="p">))</span>
             <span class="n">X_errors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">model_errors</span><span class="p">)</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">X_errors</span><span class="p">,</span> <span class="n">n_errors</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;purple&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Model Errors&quot;</span><span class="p">)</span>
@@ -1414,7 +1415,7 @@
             <span class="c1"># TODO: revisit this to make work and clean up</span>
             <span class="n">max_length</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="k">for</span> <span class="n">df</span> <span class="ow">in</span> <span class="n">test_err_dfs</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="c1">#print(df.shape[0])</span>
                 <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">max_length</span><span class="p">:</span>
                     <span class="n">max_length</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="c1">#print(&#39;Max length&#39;)</span>

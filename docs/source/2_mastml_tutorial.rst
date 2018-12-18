@@ -2,48 +2,23 @@
 MAST-ML tutorial
 ******************************************************************
 
-The tutorial information for MAST-ML shown on this page is available for download here:
+==================
+Introduction
+==================
 
-:download:`MASTMLtutorial <MASTMLtutorial.pdf>`
+This document provides step-by-step tutorials of conducting and analyzing different MAST-ML runs. For this tutorial,
+we will be using the dataset example_data.csv in the tests/csv/ folder and input file example_input.conf in tests/conf/.
 
-Let's begin with an overview of what MAST-ML is and what it can do:
+MAST-ML requires two files to run: The first is the text-based input file (.conf extension). This file contains all of
+the key settings for MAST-ML, for example, which models to fit and how to normalize your input feature matrix. The
+second file is the data file (.csv or .xlsx extension). This is the data file containing the input feature columns and
+values (X values) and the corresponding y data to fit models to. The data file may contain other columns that are
+dedicated to constructing groups of data for specific tests, or miscellaneous notes, which columns can be selectively
+left out so they are not used in the fitting. This will be discussed in more detail below.
 
-.. image:: WhatisMASTML.png
-
-Here is currently what MAST-ML can do as well as how to acquire it:
-
-.. image:: MASTMLscope.png
-
-An overview of the general machine learning workflow that MAST-ML executes. Continuing development will focus on making the workflows more flexible and general
-
-.. image:: MASTMLworkflow.png
-
-MAST-ML uses a text-based input file (.conf extension) which consists of different sections (corresponding to each part of the workflow) and specific subsections (e.g. different machine learning models to test, different feature selection algorithms, etc.). The input file is discussed in much greater detail here:
+Throughout this tutorial, we will be modifying the input file to add and remove different sections and values. For a
+complete and more in-depth discussion of the input file and its myriad settings, the reader is directed to the dedicated
+input file section:
 
 :ref:`mastml_input_file`
 
-and an input file with the full range of capabilities can be downloaded here:
-
-:download:`MASTMLinputfile <MASTML_fullinputfile.conf>`
-
-.. image:: MASTMLsampleinput.png
-
-Running MAST-ML is easily done with a single-line command in a Terminal/command line, your favorite IDE, or within a Jupyter notebook
-
-.. image:: RunningMASTML.png
-
-MAST-ML output takes the form of a full directory tree of results, with each level of the tree corresponding to a different portion of the machine learning workflow
-
-.. image:: MASTMLhighleveloutput.png
-
-The last three figures demonstrate some example output of a few machine learning analysis features MAST-ML offers. Here, the ability to generate and select features is shown.
-
-.. image:: MASTMLfeaturegenerationselection.png
-
-A core feature of MAST-ML is the many pieces of statistical analysis regarding model assessment, which forms the basis of interpreting the quality and extensibility of a machine learning model.
-
-.. image:: MASTMLmodelassessment.png
-
-Finally, MAST-ML offers the ability to easily optimize the model hyperparameters used in your analysis
-
-.. image:: MASTMLhyperparameter.png
