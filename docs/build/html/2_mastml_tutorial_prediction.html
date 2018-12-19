@@ -1,0 +1,292 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Predicting values for new, extrapolated data &mdash; MAterials Simulation Toolkit for Machine Learning (MAST-ML) 2.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="MAST-ML Code Documentation" href="3_code_documentation.html" />
+    <link rel="prev" title="Making predictions by importing a previously fit model" href="2_mastml_tutorial_modelimport.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> MAterials Simulation Toolkit for Machine Learning (MAST-ML)
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="0_installation.html">Installing MAST-ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="1_mastml_inputfile.html">MAST-ML Input File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="2_mastml_overview.html">MAST-ML overview slides</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="2_mastml_tutorial.html">MAST-ML tutorial</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_firstrun.html">Your first MAST-ML run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_cleaning.html">Cleaning input data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_featuregen.html">Feature generation and normalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_firstmodel.html">Training and evaluating your first model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_featureselect.html">Feature selection and learning curves</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_hyperparam.html">Hyperparameter optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_logcv.html">Random leave-out versus leave-out-group cross-validation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_modelimport.html">Making predictions by importing a previously fit model</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Predicting values for new, extrapolated data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="3_code_documentation.html">MAST-ML Code Documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">MAterials Simulation Toolkit for Machine Learning (MAST-ML)</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="2_mastml_tutorial.html">MAST-ML tutorial</a> &raquo;</li>
+        
+      <li>Predicting values for new, extrapolated data</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/2_mastml_tutorial_prediction.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="predicting-values-for-new-extrapolated-data">
+<h1>Predicting values for new, extrapolated data<a class="headerlink" href="#predicting-values-for-new-extrapolated-data" title="Permalink to this headline">¶</a></h1>
+<p>As a final example, we are going to use our model to predict the migration barriers for those data points with Pt as the
+host element. Your data file already has a column with the title “predict_Pt”, with values equal to 0 in all rows except
+where Pt is the host, in which case the value is 1. In the GeneralSetup section of your input file, add the parameter
+validation_columns, and have it equal to “predict_Pt”, as shown below. This will make it so that the data with Pt as the
+host element will never be involved in the model training. This feature is a convenient way to isolate part of your data,
+or some new part of your data, to only function as a validation data set. This way, whenever a model is trained and tested
+on the remaining data, an additional prediction will also be calculated, which here is for the Pt host data.</p>
+<p>Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">GeneralSetup</span><span class="p">]</span>
+    <span class="n">input_features</span> <span class="o">=</span> <span class="n">Auto</span>
+    <span class="n">target_feature</span> <span class="o">=</span> <span class="n">Reduced</span> <span class="n">barrier</span> <span class="p">(</span><span class="n">eV</span><span class="p">)</span>
+    <span class="n">randomizer</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">metrics</span> <span class="o">=</span> <span class="n">Auto</span>
+    <span class="n">not_input_features</span> <span class="o">=</span> <span class="n">Host</span> <span class="n">element</span><span class="p">,</span> <span class="n">Solute</span> <span class="n">element</span><span class="p">,</span> <span class="n">predict_Pt</span>
+    <span class="n">grouping_feature</span> <span class="o">=</span> <span class="n">Host</span> <span class="n">element</span>
+    <span class="n">validation_columns</span> <span class="o">=</span> <span class="n">predict_Pt</span>
+</pre></div>
+</div>
+<p>For this test, let’s run both the random cross-validation and LOG test. As a reminder, we need to un-comment the random
+cross-validation test in the DataSplits section:</p>
+<p>Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">DataSplits</span><span class="p">]</span>
+    <span class="c1">#[[NoSplit]]</span>
+    <span class="p">[[</span><span class="n">RepeatedKFold</span><span class="p">]]</span>
+        <span class="n">n_splits</span> <span class="o">=</span> <span class="mi">5</span>
+        <span class="n">n_repeats</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="c1">#[[RepeatedKFold_learn]]</span>
+    <span class="c1">#    n_splits = 5</span>
+    <span class="c1">#    n_repeats = 2</span>
+    <span class="p">[[</span><span class="n">LeaveOneGroupOut</span><span class="p">]]</span>
+        <span class="n">grouping_column</span> <span class="o">=</span> <span class="n">Host</span> <span class="n">element</span>
+</pre></div>
+</div>
+<p>When running this test, you’ll notice there are fewer splits in the LOG test folder now. This is because Pt is only treated
+as a final “validation” or “extrapolation” data set, and is never involved in the training or test set in any split. For
+each split in the random and LOG CV tests, there is a “stats.txt” file which is written, which provides the average train, test
+and prediction results. The prediction results are for the Pt validation data. Below are screenshots of the stats.txt file
+for the random and LOG tests.</p>
+<p>Random cross-validation:</p>
+<img alt="_images/MASTMLtutorial_run9_1.png" src="_images/MASTMLtutorial_run9_1.png" />
+<p>LOG cross-validation:</p>
+<img alt="_images/MASTMLtutorial_run9_2.png" src="_images/MASTMLtutorial_run9_2.png" />
+<p>For the random cross-validation, the R-squared and error values are higher for the predict_Pt dataset compared to the
+average of the testing datasets. This is to be expected, as Pt is never involved in model training. Further, we can see
+that the predictions for predict_Pt are slightly worse in the case of the LOG cross-validation test compared to the
+random cross-validation test. This also makes sense, as each training split of the LOG test tends to result in worse
+predictive performance (i.e. worse model training), relative to the random cross-validation case, as discussed in the
+above test when we compared the results of the random and LOG cross-validation tests.</p>
+<p>This concludes the MAST-ML tutorial document! There are some other features of MAST-ML which were not explicitly discussed
+in this tutorial, such as forming data clusters. Consult the MAST-ML Input File section of this documentation for a more
+in-depth overview of all the possible options for different MAST-ML runs.</p>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="3_code_documentation.html" class="btn btn-neutral float-right" title="MAST-ML Code Documentation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="2_mastml_tutorial_modelimport.html" class="btn btn-neutral" title="Making predictions by importing a previously fit model" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, University of Wisconsin-Madison Computational Materials Group
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'./',
+              VERSION:'2.0',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
