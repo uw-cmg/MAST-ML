@@ -51,9 +51,12 @@ def sample_learning_curve(X, y, estimator, cv, scoring, Xgroups=None):
 
     """
 
-    if Xgroups is not None:
-        Xgroups = np.array(Xgroups).reshape(-1, )
     train_sizes = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1])
+    if Xgroups.shape[0] > 0:
+        Xgroups = np.array(Xgroups).reshape(-1, )
+    else:
+        Xgroups = np.zeros(len(y))
+
     train_sizes, train_scores, valid_scores = learning_curve(estimator=estimator, X=X, y=y, train_sizes=train_sizes,
                                                              scoring=scoring, cv=cv, groups=Xgroups)
     train_mean = np.mean(train_scores, axis=1)
@@ -97,8 +100,10 @@ def feature_learning_curve(X, y, estimator, cv, scoring, selector_name, n_featur
         test_stdev: (numpy array), array of standard deviations of testing data scores for each number of features
 
     """
-    if Xgroups is not None:
+    if Xgroups.shape[0] > 0:
         Xgroups = np.array(Xgroups).reshape(-1, )
+    else:
+        Xgroups = np.zeros(len(y))
     train_mean = list()
     train_stdev = list()
     test_mean = list()
