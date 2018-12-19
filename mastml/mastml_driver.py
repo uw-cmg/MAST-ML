@@ -149,7 +149,8 @@ def mastml_run(conf_path, data_path, outdir):
                  " and results should be null for a given model")
         y = randomizers.Randomizer().fit().transform(df=y)
 
-    # get parameters out for 'validation_column'
+    """
+        # get parameters out for 'validation_column'
     is_validation = 'validation_columns' in conf['GeneralSetup']
     if is_validation:
         if type(conf['GeneralSetup']['validation_columns']) is list:
@@ -181,6 +182,8 @@ def mastml_run(conf_path, data_path, outdir):
         X_novalidation = X
         y_novalidation = y
         X_grouped_novalidation = X_grouped
+    """
+
 
     if conf['PlotSettings']['target_histogram']:
         # First, save input data stats to csv
@@ -202,7 +205,7 @@ def mastml_run(conf_path, data_path, outdir):
 
     #models = OrderedDict(models) # for easier modification
 
-    _snatch_models(models, conf['FeatureSelection'])
+    models = _snatch_models(models, conf['FeatureSelection'])
 
     # Instantiate all the sections of the conf file:
     generators  = _instantiate(conf['FeatureGeneration'],
@@ -218,7 +221,8 @@ def mastml_run(conf_path, data_path, outdir):
                                data_splitters.name_to_constructor,
                                'datasplit')
 
-    def snatch_model_cv_and_scoring_for_learning_curve():
+    def snatch_model_cv_and_scoring_for_learning_curve(models):
+        models = OrderedDict(models)
         if conf['LearningCurve']:
             # Get model
             name = conf['LearningCurve']['estimator']
@@ -234,8 +238,9 @@ def mastml_run(conf_path, data_path, outdir):
                 else:
                     splitter_count += 1
             del splitters[splitter_count]
+        return models
 
-    snatch_model_cv_and_scoring_for_learning_curve()
+    models = snatch_model_cv_and_scoring_for_learning_curve(models=models)
 
     #models = list(models.items())
 
@@ -267,6 +272,24 @@ def mastml_run(conf_path, data_path, outdir):
     log.debug(f'hyperopts: \n{hyperopts}')
     log.debug(f'selectors: \n{selectors}')
     log.debug(f'splitters: \n{splitters}')
+
+
+
+    # TODO make this block its own function
+    # get parameters out for 'validation_column'
+    is_validation = 'validation_columns' in conf['GeneralSetup']
+    if is_validation:
+        if type(conf['GeneralSetup']['validation_columns']) is list:
+            validation_column_names = list(conf['GeneralSetup']['validation_columns'])
+        elif type(conf['GeneralSetup']['validation_columns']) is str:
+            validation_column_names = list()
+            validation_column_names.append(conf['GeneralSetup']['validation_columns'][:])
+        validation_columns = dict()
+        for validation_column_name in validation_column_names:
+            validation_columns[validation_column_name] = df[validation_column_name]
+        validation_columns = pd.DataFrame(validation_columns)
+        validation_X = list()
+        validation_y = list()
 
     def do_all_combos(X, y, df):
         log.info(f"There are {len(normalizers)} feature normalizers, {len(hyperopts)} hyperparameter optimziers, "
@@ -306,6 +329,26 @@ def mastml_run(conf_path, data_path, outdir):
             return X
         X = remove_repeats(X)
 
+        # TODO make this block its own function
+        # get parameters out for 'validation_column'
+        if is_validation:
+            for validation_column_name in validation_column_names:
+                # X_, y_ = _exclude_validation(X, validation_columns[validation_column_name]), _exclude_validation(y, validation_columns[validation_column_name])
+                validation_X.append(pd.DataFrame(_exclude_validation(X, validation_columns[validation_column_name])))
+                validation_y.append(pd.DataFrame(_exclude_validation(y, validation_columns[validation_column_name])))
+            idxy_list = list()
+            for i, _ in enumerate(validation_y):
+                idxy_list.append(validation_y[i].index)
+            # Get intersection of indices between all prediction columns
+            intersection = reduce(np.intersect1d, (i for i in idxy_list))
+            X_novalidation = X.iloc[intersection]
+            y_novalidation = y.iloc[intersection]
+            X_grouped_novalidation = X_grouped.iloc[intersection]
+        else:
+            X_novalidation = X
+            y_novalidation = y
+            X_grouped_novalidation = X_grouped
+
         def make_clustered_df():
             log.info("Doing clustering...")
             clustered_df = pd.DataFrame()
@@ -335,7 +378,7 @@ def mastml_run(conf_path, data_path, outdir):
             X = pd.concat([X, clustered_df], axis=1)
         pd.concat([X, y], 1).to_csv(join(outdir, "clusters.csv"), index=False)
 
-        def make_normalizer_selector_dataframe_triples():
+        def make_normalizer_selector_dataframe_triples(models):
             triples = []
             for normalizer_name, normalizer_instance in normalizers:
 
@@ -420,10 +463,10 @@ def mastml_run(conf_path, data_path, outdir):
                             raise utils.InvalidValue
 
             return triples
-        normalizer_selector_dataframe_triples = make_normalizer_selector_dataframe_triples()
+        normalizer_selector_dataframe_triples = make_normalizer_selector_dataframe_triples(models=models)
 
         ## DataSplits (cross-product)
-        ## Collect grouping columns, splitter_to_group_names is a dict of splitter name to grouping col
+        ## Collect grouping columns, splitter_to_groupmes is a dict of splitter name to grouping col
         log.debug("Finding splitter-required columns in data...")
         def make_splittername_splitlist_pairs():
             # exclude the testing_only rows from use in splits
@@ -515,7 +558,8 @@ def mastml_run(conf_path, data_path, outdir):
 
         log.info("Fitting models to splits...")
 
-        def do_models_splits():
+        def do_models_splits(models):
+            models = list(models.items())
             all_results = []
             for normalizer_name, selector_name, X in normalizer_selector_dataframe_triples:
                 subdir = join(outdir, normalizer_name, selector_name)
@@ -539,7 +583,7 @@ def mastml_run(conf_path, data_path, outdir):
                         all_results.extend(runs)
             return all_results
 
-        return do_models_splits()
+        return do_models_splits(models)
 
     def do_one_splitter(X, y, model, main_path, trains_tests, grouping_data):
 
@@ -684,16 +728,17 @@ def mastml_run(conf_path, data_path, outdir):
                         split_result, path, is_classification, 
                         label=y.name, model=model, train_X=train_X, test_X=test_X, groups=grouping_data)
 
+            # Write stats in each split path, not main path
             if is_validation:
                 _write_stats(split_result['train_metrics'],
                          split_result['test_metrics'],
-                         main_path,
+                         path,
                          split_result['prediction_metrics'],
-                         validation_column_names,)
+                         validation_column_names)
             else:
                 _write_stats(split_result['train_metrics'],
                              split_result['test_metrics'],
-                             main_path)
+                             path)
 
             return split_result
 
@@ -705,11 +750,20 @@ def mastml_run(conf_path, data_path, outdir):
         def make_train_test_average_and_std_stats():
             train_stats = OrderedDict([('Average Train', None)])
             test_stats  = OrderedDict([('Average Test', None)])
+            if is_validation:
+                prediction_stats = list()
+                num_predictions = len(split_results[0]['prediction_metrics'])
+                for i in range(num_predictions):
+                    prediction_stats.append(OrderedDict([('Average Prediction', None)]))
             for name in metrics_dict:
                 train_values = [split_result['train_metrics'][name] for split_result in split_results]
                 test_values  = [split_result['test_metrics'][name]  for split_result in split_results]
                 train_stats[name] = (np.mean(train_values), np.std(train_values))
                 test_stats[name]  = (np.mean(test_values), np.std(test_values))
+                if is_validation:
+                    for i in range(num_predictions):
+                        prediction_values = [split_result['prediction_metrics'][i][name] for split_result in split_results]
+                        prediction_stats[i][name] = (np.mean(prediction_values), np.std(prediction_values))
                 test_stats_single = dict()
                 test_stats_single[name] = (np.mean(test_values), np.std(test_values))
                 if grouping_data is not None:
@@ -719,8 +773,28 @@ def mastml_run(conf_path, data_path, outdir):
                                                      avg_stats = test_stats_single, savepath=join(main_path, str(name)+'_vs_group.png'))
                     plot_helper.plot_metric_vs_group_size(metric=name, groups=groups, stats=test_values,
                                                      avg_stats = test_stats_single, savepath=join(main_path, str(name)+'_vs_group_size.png'))
-            return train_stats, test_stats
-        avg_train_stats, avg_test_stats = make_train_test_average_and_std_stats()
+            del train_stats['Average Train']
+            del test_stats['Average Test']
+            if is_validation:
+                for i in range(num_predictions):
+                    del prediction_stats[i]['Average Prediction']
+                return train_stats, test_stats, prediction_stats
+            else:
+                return train_stats, test_stats
+
+        if is_validation:
+            avg_train_stats, avg_test_stats, avg_prediction_stats = make_train_test_average_and_std_stats()
+            # Here- write average stats to main folder of splitter
+            _write_stats(avg_train_stats,
+                         avg_test_stats,
+                         main_path, prediction_metrics=avg_prediction_stats, prediction_names=validation_column_names)
+        else:
+            avg_train_stats, avg_test_stats = make_train_test_average_and_std_stats()
+            # Here- write average stats to main folder of splitter
+            _write_stats(avg_train_stats,
+                         avg_test_stats,
+                         main_path)
+
         log.info("    Making best/worst plots...")
         def get_best_worst_median_runs():
             # sort splits by the test score of first metric:
@@ -816,6 +890,7 @@ def _grouping_column_to_group_number(X_grouped):
     return X_grouped_asnumber
 
 def _snatch_models(models, conf_feature_selection):
+    models = OrderedDict(models)
     log.debug(f'models, pre-snatching: \n{models}')
     for selector_name, [_, args_dict] in conf_feature_selection.items():
         if 'estimator' in args_dict:
@@ -827,6 +902,7 @@ def _snatch_models(models, conf_feature_selection):
                 raise utils.MastError(f"The selector {selector_name} specified model {model_name},"
                                       f"which was not found in the [Models] section")
     log.debug(f'models, post-snatching: \n{models}')
+    return models
 
 def _snatch_gpr_model(models, conf_models):
     for model in models:
@@ -849,43 +925,44 @@ def _snatch_gpr_model(models, conf_models):
     return models
 
 def _snatch_models_cv_for_hyperopt(conf, models, splitters):
-        if conf['HyperOpt']:
-            for searchtype, searchparams in conf['HyperOpt'].items():
-                for paramtype, paramvalue in searchparams[1].items():
-                    if paramtype == 'estimator':
-                        # Need to grab model and params from Model section of conf file
-                        found_model = False
-                        for model in models:
-                            if model[0] == paramvalue:
-                                conf['HyperOpt'][searchtype][1]['estimator'] = model[1]
-                                found_model = True
-                                break
-                        if found_model == False:
-                            raise utils.MastError(f"The estimator {paramvalue} could not be found in the input file!")
-                    if paramtype == 'cv':
-                        # Need to grab cv and params from DataSplits section of conf file
-                        found_cv = False
-                        for splitter in splitters:
-                            if splitter[0] == paramvalue:
-                                conf['HyperOpt'][searchtype][1]['cv'] = splitter[1]
-                                found_cv = True
-                                break
-                            if found_cv == False:
-                                raise utils.MastError(f"The cv object {paramvalue} could not be found in the input file!")
-                    if paramtype == 'scoring':
-                        # Need to grab correct scoring object
-                        found_scorer = False
-                        metrics_dict = metrics.regression_metrics
-                        if paramvalue in metrics_dict.keys():
-                            conf['HyperOpt'][searchtype][1]['scoring'] = make_scorer(metrics_dict[paramvalue][1],
-                                                                                     greater_is_better=metrics_dict[paramvalue][0])
-                            found_scorer = True
+    models = list(models.items())
+    if conf['HyperOpt']:
+        for searchtype, searchparams in conf['HyperOpt'].items():
+            for paramtype, paramvalue in searchparams[1].items():
+                if paramtype == 'estimator':
+                    # Need to grab model and params from Model section of conf file
+                    found_model = False
+                    for model in models:
+                        if model[0] == paramvalue:
+                            conf['HyperOpt'][searchtype][1]['estimator'] = model[1]
+                            found_model = True
                             break
-                        if found_scorer == False:
-                            raise utils.MastError(
-                                f"The scoring object {paramvalue} could not be found in the input file!")
+                    if found_model == False:
+                        raise utils.MastError(f"The estimator {paramvalue} could not be found in the input file!")
+                if paramtype == 'cv':
+                    # Need to grab cv and params from DataSplits section of conf file
+                    found_cv = False
+                    for splitter in splitters:
+                        if splitter[0] == paramvalue:
+                            conf['HyperOpt'][searchtype][1]['cv'] = splitter[1]
+                            found_cv = True
+                            break
+                    if found_cv == False:
+                        raise utils.MastError(f"The cv object {paramvalue} could not be found in the input file!")
+                if paramtype == 'scoring':
+                    # Need to grab correct scoring object
+                    found_scorer = False
+                    metrics_dict = metrics.regression_metrics
+                    if paramvalue in metrics_dict.keys():
+                        conf['HyperOpt'][searchtype][1]['scoring'] = make_scorer(metrics_dict[paramvalue][1],
+                                                                                 greater_is_better=metrics_dict[paramvalue][0])
+                        found_scorer = True
+                        break
+                    if found_scorer == False:
+                        raise utils.MastError(
+                            f"The scoring object {paramvalue} could not be found in the input file!")
 
-        return conf['HyperOpt']
+    return conf['HyperOpt']
 
 def _snatch_splitters(splitters, conf_feature_selection):
     log.debug(f'cv, pre-snatching: \n{splitters}')
@@ -944,16 +1021,25 @@ def _write_stats(train_metrics, test_metrics, outdir, prediction_metrics=None, p
     with open(join(outdir, 'stats.txt'), 'w') as f:
         f.write("TRAIN:\n")
         for name,score in train_metrics.items():
-            f.write(f"{name}: {'%.3f'%float(score)}\n")
+            if type(score) == tuple:
+                f.write(f"{name}: {'%.3f'%float(score[0])} +/- {'%.3f'%float(score[1])}\n")
+            else:
+                f.write(f"{name}: {'%.3f'%float(score)}\n")
         f.write("TEST:\n")
         for name,score in test_metrics.items():
+            if type(score) == tuple:
+                f.write(f"{name}: {'%.3f'%float(score[0])} +/- {'%.3f'%float(score[1])}\n")
+            else:
                 f.write(f"{name}: {'%.3f'%float(score)}\n")
         if prediction_metrics:
             #prediction metrics now list of dicts for predicting multiple values
             for prediction_metric, prediction_name in zip(prediction_metrics, prediction_names):
                 f.write("PREDICTION for "+str(prediction_name)+":\n")
                 for name, score in prediction_metric.items():
-                    f.write(f"{name}: {'%.3f'%float(score)}\n")
+                    if type(score) == tuple:
+                        f.write(f"{name}: {'%.3f'%float(score[0])} +/- {'%.3f'%float(score[1])}\n")
+                    else:
+                        f.write(f"{name}: {'%.3f'%float(score)}\n")
 
 def _exclude_validation(df, validation_column):
     return df.loc[validation_column != 1]
