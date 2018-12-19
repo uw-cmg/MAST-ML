@@ -300,38 +300,41 @@
                  <span class="s2">&quot; and results should be null for a given model&quot;</span><span class="p">)</span>
         <span class="n">y</span> <span class="o">=</span> <span class="n">randomizers</span><span class="o">.</span><span class="n">Randomizer</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">y</span><span class="p">)</span>
 
-    <span class="c1"># get parameters out for &#39;validation_column&#39;</span>
-    <span class="n">is_validation</span> <span class="o">=</span> <span class="s1">&#39;validation_columns&#39;</span> <span class="ow">in</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;GeneralSetup&#39;</span><span class="p">]</span>
-    <span class="k">if</span> <span class="n">is_validation</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;GeneralSetup&#39;</span><span class="p">][</span><span class="s1">&#39;validation_columns&#39;</span><span class="p">])</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
-            <span class="n">validation_column_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;GeneralSetup&#39;</span><span class="p">][</span><span class="s1">&#39;validation_columns&#39;</span><span class="p">])</span>
-        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;GeneralSetup&#39;</span><span class="p">][</span><span class="s1">&#39;validation_columns&#39;</span><span class="p">])</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
-            <span class="n">validation_column_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-            <span class="n">validation_column_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;GeneralSetup&#39;</span><span class="p">][</span><span class="s1">&#39;validation_columns&#39;</span><span class="p">][:])</span>
-        <span class="n">validation_columns</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">validation_column_name</span> <span class="ow">in</span> <span class="n">validation_column_names</span><span class="p">:</span>
-            <span class="n">validation_columns</span><span class="p">[</span><span class="n">validation_column_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">validation_column_name</span><span class="p">]</span>
-        <span class="n">validation_columns</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">validation_columns</span><span class="p">)</span>
-        <span class="n">validation_X</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="n">validation_y</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        # get parameters out for &#39;validation_column&#39;</span>
+<span class="sd">    is_validation = &#39;validation_columns&#39; in conf[&#39;GeneralSetup&#39;]</span>
+<span class="sd">    if is_validation:</span>
+<span class="sd">        if type(conf[&#39;GeneralSetup&#39;][&#39;validation_columns&#39;]) is list:</span>
+<span class="sd">            validation_column_names = list(conf[&#39;GeneralSetup&#39;][&#39;validation_columns&#39;])</span>
+<span class="sd">        elif type(conf[&#39;GeneralSetup&#39;][&#39;validation_columns&#39;]) is str:</span>
+<span class="sd">            validation_column_names = list()</span>
+<span class="sd">            validation_column_names.append(conf[&#39;GeneralSetup&#39;][&#39;validation_columns&#39;][:])</span>
+<span class="sd">        validation_columns = dict()</span>
+<span class="sd">        for validation_column_name in validation_column_names:</span>
+<span class="sd">            validation_columns[validation_column_name] = df[validation_column_name]</span>
+<span class="sd">        validation_columns = pd.DataFrame(validation_columns)</span>
+<span class="sd">        validation_X = list()</span>
+<span class="sd">        validation_y = list()</span>
 
-        <span class="c1"># TODO make this block its own function</span>
-        <span class="k">for</span> <span class="n">validation_column_name</span> <span class="ow">in</span> <span class="n">validation_column_names</span><span class="p">:</span>
-            <span class="c1"># X_, y_ = _exclude_validation(X, validation_columns[validation_column_name]), _exclude_validation(y, validation_columns[validation_column_name])</span>
-            <span class="n">validation_X</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">_exclude_validation</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">validation_columns</span><span class="p">[</span><span class="n">validation_column_name</span><span class="p">])))</span>
-            <span class="n">validation_y</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">_exclude_validation</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">validation_columns</span><span class="p">[</span><span class="n">validation_column_name</span><span class="p">])))</span>
-        <span class="n">idxy_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">validation_y</span><span class="p">):</span>
-            <span class="n">idxy_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">validation_y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
-        <span class="c1"># Get intersection of indices between all prediction columns</span>
-        <span class="n">intersection</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">intersect1d</span><span class="p">,</span> <span class="p">(</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">idxy_list</span><span class="p">))</span>
-        <span class="n">X_novalidation</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">intersection</span><span class="p">]</span>
-        <span class="n">y_novalidation</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">intersection</span><span class="p">]</span>
-        <span class="n">X_grouped_novalidation</span> <span class="o">=</span> <span class="n">X_grouped</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">intersection</span><span class="p">]</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">X_novalidation</span> <span class="o">=</span> <span class="n">X</span>
-        <span class="n">y_novalidation</span> <span class="o">=</span> <span class="n">y</span>
-        <span class="n">X_grouped_novalidation</span> <span class="o">=</span> <span class="n">X_grouped</span>
+<span class="sd">        # TODO make this block its own function</span>
+<span class="sd">        for validation_column_name in validation_column_names:</span>
+<span class="sd">            # X_, y_ = _exclude_validation(X, validation_columns[validation_column_name]), _exclude_validation(y, validation_columns[validation_column_name])</span>
+<span class="sd">            validation_X.append(pd.DataFrame(_exclude_validation(X, validation_columns[validation_column_name])))</span>
+<span class="sd">            validation_y.append(pd.DataFrame(_exclude_validation(y, validation_columns[validation_column_name])))</span>
+<span class="sd">        idxy_list = list()</span>
+<span class="sd">        for i, _ in enumerate(validation_y):</span>
+<span class="sd">            idxy_list.append(validation_y[i].index)</span>
+<span class="sd">        # Get intersection of indices between all prediction columns</span>
+<span class="sd">        intersection = reduce(np.intersect1d, (i for i in idxy_list))</span>
+<span class="sd">        X_novalidation = X.iloc[intersection]</span>
+<span class="sd">        y_novalidation = y.iloc[intersection]</span>
+<span class="sd">        X_grouped_novalidation = X_grouped.iloc[intersection]</span>
+<span class="sd">    else:</span>
+<span class="sd">        X_novalidation = X</span>
+<span class="sd">        y_novalidation = y</span>
+<span class="sd">        X_grouped_novalidation = X_grouped</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
 
     <span class="k">if</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;PlotSettings&#39;</span><span class="p">][</span><span class="s1">&#39;target_histogram&#39;</span><span class="p">]:</span>
         <span class="c1"># First, save input data stats to csv</span>
@@ -353,7 +356,7 @@
 
     <span class="c1">#models = OrderedDict(models) # for easier modification</span>
 
-    <span class="n">_snatch_models</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;FeatureSelection&#39;</span><span class="p">])</span>
+    <span class="n">models</span> <span class="o">=</span> <span class="n">_snatch_models</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;FeatureSelection&#39;</span><span class="p">])</span>
 
     <span class="c1"># Instantiate all the sections of the conf file:</span>
     <span class="n">generators</span>  <span class="o">=</span> <span class="n">_instantiate</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;FeatureGeneration&#39;</span><span class="p">],</span>
@@ -369,10 +372,8 @@
                                <span class="n">data_splitters</span><span class="o">.</span><span class="n">name_to_constructor</span><span class="p">,</span>
                                <span class="s1">&#39;datasplit&#39;</span><span class="p">)</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;FINISHED&#39;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">generators</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">snatch_model_cv_and_scoring_for_learning_curve</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">snatch_model_cv_and_scoring_for_learning_curve</span><span class="p">(</span><span class="n">models</span><span class="p">):</span>
+        <span class="n">models</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">(</span><span class="n">models</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;LearningCurve&#39;</span><span class="p">]:</span>
             <span class="c1"># Get model</span>
             <span class="n">name</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;LearningCurve&#39;</span><span class="p">][</span><span class="s1">&#39;estimator&#39;</span><span class="p">]</span>
@@ -388,8 +389,9 @@
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">splitter_count</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="k">del</span> <span class="n">splitters</span><span class="p">[</span><span class="n">splitter_count</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">models</span>
 
-    <span class="n">snatch_model_cv_and_scoring_for_learning_curve</span><span class="p">()</span>
+    <span class="n">models</span> <span class="o">=</span> <span class="n">snatch_model_cv_and_scoring_for_learning_curve</span><span class="p">(</span><span class="n">models</span><span class="o">=</span><span class="n">models</span><span class="p">)</span>
 
     <span class="c1">#models = list(models.items())</span>
 
@@ -421,6 +423,24 @@
     <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;hyperopts: </span><span class="se">\n</span><span class="si">{hyperopts}</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;selectors: </span><span class="se">\n</span><span class="si">{selectors}</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;splitters: </span><span class="se">\n</span><span class="si">{splitters}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+
+
+    <span class="c1"># TODO make this block its own function</span>
+    <span class="c1"># get parameters out for &#39;validation_column&#39;</span>
+    <span class="n">is_validation</span> <span class="o">=</span> <span class="s1">&#39;validation_columns&#39;</span> <span class="ow">in</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;GeneralSetup&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">is_validation</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;GeneralSetup&#39;</span><span class="p">][</span><span class="s1">&#39;validation_columns&#39;</span><span class="p">])</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
+            <span class="n">validation_column_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;GeneralSetup&#39;</span><span class="p">][</span><span class="s1">&#39;validation_columns&#39;</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;GeneralSetup&#39;</span><span class="p">][</span><span class="s1">&#39;validation_columns&#39;</span><span class="p">])</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="n">validation_column_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="n">validation_column_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;GeneralSetup&#39;</span><span class="p">][</span><span class="s1">&#39;validation_columns&#39;</span><span class="p">][:])</span>
+        <span class="n">validation_columns</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">validation_column_name</span> <span class="ow">in</span> <span class="n">validation_column_names</span><span class="p">:</span>
+            <span class="n">validation_columns</span><span class="p">[</span><span class="n">validation_column_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">validation_column_name</span><span class="p">]</span>
+        <span class="n">validation_columns</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">validation_columns</span><span class="p">)</span>
+        <span class="n">validation_X</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">validation_y</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">do_all_combos</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;There are {len(normalizers)} feature normalizers, {len(hyperopts)} hyperparameter optimziers, &quot;</span>
@@ -460,6 +480,26 @@
             <span class="k">return</span> <span class="n">X</span>
         <span class="n">X</span> <span class="o">=</span> <span class="n">remove_repeats</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 
+        <span class="c1"># TODO make this block its own function</span>
+        <span class="c1"># get parameters out for &#39;validation_column&#39;</span>
+        <span class="k">if</span> <span class="n">is_validation</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">validation_column_name</span> <span class="ow">in</span> <span class="n">validation_column_names</span><span class="p">:</span>
+                <span class="c1"># X_, y_ = _exclude_validation(X, validation_columns[validation_column_name]), _exclude_validation(y, validation_columns[validation_column_name])</span>
+                <span class="n">validation_X</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">_exclude_validation</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">validation_columns</span><span class="p">[</span><span class="n">validation_column_name</span><span class="p">])))</span>
+                <span class="n">validation_y</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">_exclude_validation</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">validation_columns</span><span class="p">[</span><span class="n">validation_column_name</span><span class="p">])))</span>
+            <span class="n">idxy_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">validation_y</span><span class="p">):</span>
+                <span class="n">idxy_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">validation_y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+            <span class="c1"># Get intersection of indices between all prediction columns</span>
+            <span class="n">intersection</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">intersect1d</span><span class="p">,</span> <span class="p">(</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">idxy_list</span><span class="p">))</span>
+            <span class="n">X_novalidation</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">intersection</span><span class="p">]</span>
+            <span class="n">y_novalidation</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">intersection</span><span class="p">]</span>
+            <span class="n">X_grouped_novalidation</span> <span class="o">=</span> <span class="n">X_grouped</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">intersection</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">X_novalidation</span> <span class="o">=</span> <span class="n">X</span>
+            <span class="n">y_novalidation</span> <span class="o">=</span> <span class="n">y</span>
+            <span class="n">X_grouped_novalidation</span> <span class="o">=</span> <span class="n">X_grouped</span>
+
         <span class="k">def</span> <span class="nf">make_clustered_df</span><span class="p">():</span>
             <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Doing clustering...&quot;</span><span class="p">)</span>
             <span class="n">clustered_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
@@ -489,7 +529,7 @@
             <span class="n">X</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">X</span><span class="p">,</span> <span class="n">clustered_df</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="s2">&quot;clusters.csv&quot;</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-        <span class="k">def</span> <span class="nf">make_normalizer_selector_dataframe_triples</span><span class="p">():</span>
+        <span class="k">def</span> <span class="nf">make_normalizer_selector_dataframe_triples</span><span class="p">(</span><span class="n">models</span><span class="p">):</span>
             <span class="n">triples</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">normalizer_name</span><span class="p">,</span> <span class="n">normalizer_instance</span> <span class="ow">in</span> <span class="n">normalizers</span><span class="p">:</span>
 
@@ -574,10 +614,10 @@
                             <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">InvalidValue</span>
 
             <span class="k">return</span> <span class="n">triples</span>
-        <span class="n">normalizer_selector_dataframe_triples</span> <span class="o">=</span> <span class="n">make_normalizer_selector_dataframe_triples</span><span class="p">()</span>
+        <span class="n">normalizer_selector_dataframe_triples</span> <span class="o">=</span> <span class="n">make_normalizer_selector_dataframe_triples</span><span class="p">(</span><span class="n">models</span><span class="o">=</span><span class="n">models</span><span class="p">)</span>
 
         <span class="c1">## DataSplits (cross-product)</span>
-        <span class="c1">## Collect grouping columns, splitter_to_group_names is a dict of splitter name to grouping col</span>
+        <span class="c1">## Collect grouping columns, splitter_to_groupmes is a dict of splitter name to grouping col</span>
         <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Finding splitter-required columns in data...&quot;</span><span class="p">)</span>
         <span class="k">def</span> <span class="nf">make_splittername_splitlist_pairs</span><span class="p">():</span>
             <span class="c1"># exclude the testing_only rows from use in splits</span>
@@ -669,7 +709,8 @@
 
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Fitting models to splits...&quot;</span><span class="p">)</span>
 
-        <span class="k">def</span> <span class="nf">do_models_splits</span><span class="p">():</span>
+        <span class="k">def</span> <span class="nf">do_models_splits</span><span class="p">(</span><span class="n">models</span><span class="p">):</span>
+            <span class="n">models</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
             <span class="n">all_results</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">normalizer_name</span><span class="p">,</span> <span class="n">selector_name</span><span class="p">,</span> <span class="n">X</span> <span class="ow">in</span> <span class="n">normalizer_selector_dataframe_triples</span><span class="p">:</span>
                 <span class="n">subdir</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="n">normalizer_name</span><span class="p">,</span> <span class="n">selector_name</span><span class="p">)</span>
@@ -693,7 +734,7 @@
                         <span class="n">all_results</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">runs</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">all_results</span>
 
-        <span class="k">return</span> <span class="n">do_models_splits</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">do_models_splits</span><span class="p">(</span><span class="n">models</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">do_one_splitter</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">main_path</span><span class="p">,</span> <span class="n">trains_tests</span><span class="p">,</span> <span class="n">grouping_data</span><span class="p">):</span>
 
@@ -838,16 +879,17 @@
                         <span class="n">split_result</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">is_classification</span><span class="p">,</span> 
                         <span class="n">label</span><span class="o">=</span><span class="n">y</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">train_X</span><span class="o">=</span><span class="n">train_X</span><span class="p">,</span> <span class="n">test_X</span><span class="o">=</span><span class="n">test_X</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">grouping_data</span><span class="p">)</span>
 
+            <span class="c1"># Write stats in each split path, not main path</span>
             <span class="k">if</span> <span class="n">is_validation</span><span class="p">:</span>
                 <span class="n">_write_stats</span><span class="p">(</span><span class="n">split_result</span><span class="p">[</span><span class="s1">&#39;train_metrics&#39;</span><span class="p">],</span>
                          <span class="n">split_result</span><span class="p">[</span><span class="s1">&#39;test_metrics&#39;</span><span class="p">],</span>
-                         <span class="n">main_path</span><span class="p">,</span>
+                         <span class="n">path</span><span class="p">,</span>
                          <span class="n">split_result</span><span class="p">[</span><span class="s1">&#39;prediction_metrics&#39;</span><span class="p">],</span>
-                         <span class="n">validation_column_names</span><span class="p">,)</span>
+                         <span class="n">validation_column_names</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">_write_stats</span><span class="p">(</span><span class="n">split_result</span><span class="p">[</span><span class="s1">&#39;train_metrics&#39;</span><span class="p">],</span>
                              <span class="n">split_result</span><span class="p">[</span><span class="s1">&#39;test_metrics&#39;</span><span class="p">],</span>
-                             <span class="n">main_path</span><span class="p">)</span>
+                             <span class="n">path</span><span class="p">)</span>
 
             <span class="k">return</span> <span class="n">split_result</span>
 
@@ -859,11 +901,20 @@
         <span class="k">def</span> <span class="nf">make_train_test_average_and_std_stats</span><span class="p">():</span>
             <span class="n">train_stats</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">([(</span><span class="s1">&#39;Average Train&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)])</span>
             <span class="n">test_stats</span>  <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">([(</span><span class="s1">&#39;Average Test&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)])</span>
+            <span class="k">if</span> <span class="n">is_validation</span><span class="p">:</span>
+                <span class="n">prediction_stats</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+                <span class="n">num_predictions</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">split_results</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;prediction_metrics&#39;</span><span class="p">])</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_predictions</span><span class="p">):</span>
+                    <span class="n">prediction_stats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">OrderedDict</span><span class="p">([(</span><span class="s1">&#39;Average Prediction&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)]))</span>
             <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">metrics_dict</span><span class="p">:</span>
                 <span class="n">train_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">split_result</span><span class="p">[</span><span class="s1">&#39;train_metrics&#39;</span><span class="p">][</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">split_result</span> <span class="ow">in</span> <span class="n">split_results</span><span class="p">]</span>
                 <span class="n">test_values</span>  <span class="o">=</span> <span class="p">[</span><span class="n">split_result</span><span class="p">[</span><span class="s1">&#39;test_metrics&#39;</span><span class="p">][</span><span class="n">name</span><span class="p">]</span>  <span class="k">for</span> <span class="n">split_result</span> <span class="ow">in</span> <span class="n">split_results</span><span class="p">]</span>
                 <span class="n">train_stats</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">train_values</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">train_values</span><span class="p">))</span>
                 <span class="n">test_stats</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>  <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">test_values</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">test_values</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">is_validation</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_predictions</span><span class="p">):</span>
+                        <span class="n">prediction_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">split_result</span><span class="p">[</span><span class="s1">&#39;prediction_metrics&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">split_result</span> <span class="ow">in</span> <span class="n">split_results</span><span class="p">]</span>
+                        <span class="n">prediction_stats</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">prediction_values</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">prediction_values</span><span class="p">))</span>
                 <span class="n">test_stats_single</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
                 <span class="n">test_stats_single</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">test_values</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">test_values</span><span class="p">))</span>
                 <span class="k">if</span> <span class="n">grouping_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -873,8 +924,28 @@
                                                      <span class="n">avg_stats</span> <span class="o">=</span> <span class="n">test_stats_single</span><span class="p">,</span> <span class="n">savepath</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="n">main_path</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;_vs_group.png&#39;</span><span class="p">))</span>
                     <span class="n">plot_helper</span><span class="o">.</span><span class="n">plot_metric_vs_group_size</span><span class="p">(</span><span class="n">metric</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">groups</span><span class="p">,</span> <span class="n">stats</span><span class="o">=</span><span class="n">test_values</span><span class="p">,</span>
                                                      <span class="n">avg_stats</span> <span class="o">=</span> <span class="n">test_stats_single</span><span class="p">,</span> <span class="n">savepath</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="n">main_path</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;_vs_group_size.png&#39;</span><span class="p">))</span>
-            <span class="k">return</span> <span class="n">train_stats</span><span class="p">,</span> <span class="n">test_stats</span>
-        <span class="n">avg_train_stats</span><span class="p">,</span> <span class="n">avg_test_stats</span> <span class="o">=</span> <span class="n">make_train_test_average_and_std_stats</span><span class="p">()</span>
+            <span class="k">del</span> <span class="n">train_stats</span><span class="p">[</span><span class="s1">&#39;Average Train&#39;</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">test_stats</span><span class="p">[</span><span class="s1">&#39;Average Test&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">is_validation</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_predictions</span><span class="p">):</span>
+                    <span class="k">del</span> <span class="n">prediction_stats</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;Average Prediction&#39;</span><span class="p">]</span>
+                <span class="k">return</span> <span class="n">train_stats</span><span class="p">,</span> <span class="n">test_stats</span><span class="p">,</span> <span class="n">prediction_stats</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">train_stats</span><span class="p">,</span> <span class="n">test_stats</span>
+
+        <span class="k">if</span> <span class="n">is_validation</span><span class="p">:</span>
+            <span class="n">avg_train_stats</span><span class="p">,</span> <span class="n">avg_test_stats</span><span class="p">,</span> <span class="n">avg_prediction_stats</span> <span class="o">=</span> <span class="n">make_train_test_average_and_std_stats</span><span class="p">()</span>
+            <span class="c1"># Here- write average stats to main folder of splitter</span>
+            <span class="n">_write_stats</span><span class="p">(</span><span class="n">avg_train_stats</span><span class="p">,</span>
+                         <span class="n">avg_test_stats</span><span class="p">,</span>
+                         <span class="n">main_path</span><span class="p">,</span> <span class="n">prediction_metrics</span><span class="o">=</span><span class="n">avg_prediction_stats</span><span class="p">,</span> <span class="n">prediction_names</span><span class="o">=</span><span class="n">validation_column_names</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">avg_train_stats</span><span class="p">,</span> <span class="n">avg_test_stats</span> <span class="o">=</span> <span class="n">make_train_test_average_and_std_stats</span><span class="p">()</span>
+            <span class="c1"># Here- write average stats to main folder of splitter</span>
+            <span class="n">_write_stats</span><span class="p">(</span><span class="n">avg_train_stats</span><span class="p">,</span>
+                         <span class="n">avg_test_stats</span><span class="p">,</span>
+                         <span class="n">main_path</span><span class="p">)</span>
+
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;    Making best/worst plots...&quot;</span><span class="p">)</span>
         <span class="k">def</span> <span class="nf">get_best_worst_median_runs</span><span class="p">():</span>
             <span class="c1"># sort splits by the test score of first metric:</span>
@@ -970,6 +1041,7 @@
     <span class="k">return</span> <span class="n">X_grouped_asnumber</span>
 
 <span class="k">def</span> <span class="nf">_snatch_models</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="n">conf_feature_selection</span><span class="p">):</span>
+    <span class="n">models</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">(</span><span class="n">models</span><span class="p">)</span>
     <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;models, pre-snatching: </span><span class="se">\n</span><span class="si">{models}</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">selector_name</span><span class="p">,</span> <span class="p">[</span><span class="n">_</span><span class="p">,</span> <span class="n">args_dict</span><span class="p">]</span> <span class="ow">in</span> <span class="n">conf_feature_selection</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="k">if</span> <span class="s1">&#39;estimator&#39;</span> <span class="ow">in</span> <span class="n">args_dict</span><span class="p">:</span>
@@ -981,6 +1053,7 @@
                 <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">MastError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;The selector </span><span class="si">{selector_name}</span><span class="s2"> specified model </span><span class="si">{model_name}</span><span class="s2">,&quot;</span>
                                       <span class="n">f</span><span class="s2">&quot;which was not found in the [Models] section&quot;</span><span class="p">)</span>
     <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;models, post-snatching: </span><span class="se">\n</span><span class="si">{models}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">models</span>
 
 <span class="k">def</span> <span class="nf">_snatch_gpr_model</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="n">conf_models</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="p">:</span>
@@ -1003,43 +1076,44 @@
     <span class="k">return</span> <span class="n">models</span>
 
 <span class="k">def</span> <span class="nf">_snatch_models_cv_for_hyperopt</span><span class="p">(</span><span class="n">conf</span><span class="p">,</span> <span class="n">models</span><span class="p">,</span> <span class="n">splitters</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;HyperOpt&#39;</span><span class="p">]:</span>
-            <span class="k">for</span> <span class="n">searchtype</span><span class="p">,</span> <span class="n">searchparams</span> <span class="ow">in</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;HyperOpt&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="k">for</span> <span class="n">paramtype</span><span class="p">,</span> <span class="n">paramvalue</span> <span class="ow">in</span> <span class="n">searchparams</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                    <span class="k">if</span> <span class="n">paramtype</span> <span class="o">==</span> <span class="s1">&#39;estimator&#39;</span><span class="p">:</span>
-                        <span class="c1"># Need to grab model and params from Model section of conf file</span>
-                        <span class="n">found_model</span> <span class="o">=</span> <span class="kc">False</span>
-                        <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="p">:</span>
-                            <span class="k">if</span> <span class="n">model</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">paramvalue</span><span class="p">:</span>
-                                <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;HyperOpt&#39;</span><span class="p">][</span><span class="n">searchtype</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;estimator&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-                                <span class="n">found_model</span> <span class="o">=</span> <span class="kc">True</span>
-                                <span class="k">break</span>
-                        <span class="k">if</span> <span class="n">found_model</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
-                            <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">MastError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;The estimator </span><span class="si">{paramvalue}</span><span class="s2"> could not be found in the input file!&quot;</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="n">paramtype</span> <span class="o">==</span> <span class="s1">&#39;cv&#39;</span><span class="p">:</span>
-                        <span class="c1"># Need to grab cv and params from DataSplits section of conf file</span>
-                        <span class="n">found_cv</span> <span class="o">=</span> <span class="kc">False</span>
-                        <span class="k">for</span> <span class="n">splitter</span> <span class="ow">in</span> <span class="n">splitters</span><span class="p">:</span>
-                            <span class="k">if</span> <span class="n">splitter</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">paramvalue</span><span class="p">:</span>
-                                <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;HyperOpt&#39;</span><span class="p">][</span><span class="n">searchtype</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;cv&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">splitter</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-                                <span class="n">found_cv</span> <span class="o">=</span> <span class="kc">True</span>
-                                <span class="k">break</span>
-                            <span class="k">if</span> <span class="n">found_cv</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
-                                <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">MastError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;The cv object </span><span class="si">{paramvalue}</span><span class="s2"> could not be found in the input file!&quot;</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="n">paramtype</span> <span class="o">==</span> <span class="s1">&#39;scoring&#39;</span><span class="p">:</span>
-                        <span class="c1"># Need to grab correct scoring object</span>
-                        <span class="n">found_scorer</span> <span class="o">=</span> <span class="kc">False</span>
-                        <span class="n">metrics_dict</span> <span class="o">=</span> <span class="n">metrics</span><span class="o">.</span><span class="n">regression_metrics</span>
-                        <span class="k">if</span> <span class="n">paramvalue</span> <span class="ow">in</span> <span class="n">metrics_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-                            <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;HyperOpt&#39;</span><span class="p">][</span><span class="n">searchtype</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;scoring&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">make_scorer</span><span class="p">(</span><span class="n">metrics_dict</span><span class="p">[</span><span class="n">paramvalue</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span>
-                                                                                     <span class="n">greater_is_better</span><span class="o">=</span><span class="n">metrics_dict</span><span class="p">[</span><span class="n">paramvalue</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
-                            <span class="n">found_scorer</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">models</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+    <span class="k">if</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;HyperOpt&#39;</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">searchtype</span><span class="p">,</span> <span class="n">searchparams</span> <span class="ow">in</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;HyperOpt&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">paramtype</span><span class="p">,</span> <span class="n">paramvalue</span> <span class="ow">in</span> <span class="n">searchparams</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">paramtype</span> <span class="o">==</span> <span class="s1">&#39;estimator&#39;</span><span class="p">:</span>
+                    <span class="c1"># Need to grab model and params from Model section of conf file</span>
+                    <span class="n">found_model</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">model</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">paramvalue</span><span class="p">:</span>
+                            <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;HyperOpt&#39;</span><span class="p">][</span><span class="n">searchtype</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;estimator&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                            <span class="n">found_model</span> <span class="o">=</span> <span class="kc">True</span>
                             <span class="k">break</span>
-                        <span class="k">if</span> <span class="n">found_scorer</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
-                            <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">MastError</span><span class="p">(</span>
-                                <span class="n">f</span><span class="s2">&quot;The scoring object </span><span class="si">{paramvalue}</span><span class="s2"> could not be found in the input file!&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">found_model</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">MastError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;The estimator </span><span class="si">{paramvalue}</span><span class="s2"> could not be found in the input file!&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">paramtype</span> <span class="o">==</span> <span class="s1">&#39;cv&#39;</span><span class="p">:</span>
+                    <span class="c1"># Need to grab cv and params from DataSplits section of conf file</span>
+                    <span class="n">found_cv</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="k">for</span> <span class="n">splitter</span> <span class="ow">in</span> <span class="n">splitters</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">splitter</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">paramvalue</span><span class="p">:</span>
+                            <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;HyperOpt&#39;</span><span class="p">][</span><span class="n">searchtype</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;cv&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">splitter</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                            <span class="n">found_cv</span> <span class="o">=</span> <span class="kc">True</span>
+                            <span class="k">break</span>
+                    <span class="k">if</span> <span class="n">found_cv</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">MastError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;The cv object </span><span class="si">{paramvalue}</span><span class="s2"> could not be found in the input file!&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">paramtype</span> <span class="o">==</span> <span class="s1">&#39;scoring&#39;</span><span class="p">:</span>
+                    <span class="c1"># Need to grab correct scoring object</span>
+                    <span class="n">found_scorer</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="n">metrics_dict</span> <span class="o">=</span> <span class="n">metrics</span><span class="o">.</span><span class="n">regression_metrics</span>
+                    <span class="k">if</span> <span class="n">paramvalue</span> <span class="ow">in</span> <span class="n">metrics_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                        <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;HyperOpt&#39;</span><span class="p">][</span><span class="n">searchtype</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;scoring&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">make_scorer</span><span class="p">(</span><span class="n">metrics_dict</span><span class="p">[</span><span class="n">paramvalue</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span>
+                                                                                 <span class="n">greater_is_better</span><span class="o">=</span><span class="n">metrics_dict</span><span class="p">[</span><span class="n">paramvalue</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+                        <span class="n">found_scorer</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="k">break</span>
+                    <span class="k">if</span> <span class="n">found_scorer</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">MastError</span><span class="p">(</span>
+                            <span class="n">f</span><span class="s2">&quot;The scoring object </span><span class="si">{paramvalue}</span><span class="s2"> could not be found in the input file!&quot;</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;HyperOpt&#39;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;HyperOpt&#39;</span><span class="p">]</span>
 
 <span class="k">def</span> <span class="nf">_snatch_splitters</span><span class="p">(</span><span class="n">splitters</span><span class="p">,</span> <span class="n">conf_feature_selection</span><span class="p">):</span>
     <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;cv, pre-snatching: </span><span class="se">\n</span><span class="si">{splitters}</span><span class="s1">&#39;</span><span class="p">)</span>
@@ -1098,16 +1172,25 @@
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="s1">&#39;stats.txt&#39;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;TRAIN:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span><span class="n">score</span> <span class="ow">in</span> <span class="n">train_metrics</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{name}</span><span class="s2">: {&#39;</span><span class="si">%.3f</span><span class="s2">&#39;</span><span class="si">%f</span><span class="s2">loat(score)}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">score</span><span class="p">)</span> <span class="o">==</span> <span class="nb">tuple</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{name}</span><span class="s2">: {&#39;</span><span class="si">%.3f</span><span class="s2">&#39;</span><span class="si">%f</span><span class="s2">loat(score[0])} +/- {&#39;</span><span class="si">%.3f</span><span class="s2">&#39;</span><span class="si">%f</span><span class="s2">loat(score[1])}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{name}</span><span class="s2">: {&#39;</span><span class="si">%.3f</span><span class="s2">&#39;</span><span class="si">%f</span><span class="s2">loat(score)}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;TEST:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span><span class="n">score</span> <span class="ow">in</span> <span class="n">test_metrics</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">score</span><span class="p">)</span> <span class="o">==</span> <span class="nb">tuple</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{name}</span><span class="s2">: {&#39;</span><span class="si">%.3f</span><span class="s2">&#39;</span><span class="si">%f</span><span class="s2">loat(score[0])} +/- {&#39;</span><span class="si">%.3f</span><span class="s2">&#39;</span><span class="si">%f</span><span class="s2">loat(score[1])}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
                 <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{name}</span><span class="s2">: {&#39;</span><span class="si">%.3f</span><span class="s2">&#39;</span><span class="si">%f</span><span class="s2">loat(score)}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">prediction_metrics</span><span class="p">:</span>
             <span class="c1">#prediction metrics now list of dicts for predicting multiple values</span>
             <span class="k">for</span> <span class="n">prediction_metric</span><span class="p">,</span> <span class="n">prediction_name</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">prediction_metrics</span><span class="p">,</span> <span class="n">prediction_names</span><span class="p">):</span>
                 <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;PREDICTION for &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">prediction_name</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="n">prediction_metric</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{name}</span><span class="s2">: {&#39;</span><span class="si">%.3f</span><span class="s2">&#39;</span><span class="si">%f</span><span class="s2">loat(score)}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">score</span><span class="p">)</span> <span class="o">==</span> <span class="nb">tuple</span><span class="p">:</span>
+                        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{name}</span><span class="s2">: {&#39;</span><span class="si">%.3f</span><span class="s2">&#39;</span><span class="si">%f</span><span class="s2">loat(score[0])} +/- {&#39;</span><span class="si">%.3f</span><span class="s2">&#39;</span><span class="si">%f</span><span class="s2">loat(score[1])}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{name}</span><span class="s2">: {&#39;</span><span class="si">%.3f</span><span class="s2">&#39;</span><span class="si">%f</span><span class="s2">loat(score)}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">_exclude_validation</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">validation_column</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">validation_column</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">]</span>
