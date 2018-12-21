@@ -246,6 +246,7 @@ def mastml_run(conf_path, data_path, outdir):
 
     # Need to specially snatch the GPR model if it is in models list because it contains special kernel object
     models = _snatch_gpr_model(models, conf['Models'])
+    original_models = models
 
     # Need to snatch models and CV objects for Hyperparam Opt
     hyperopt_params = _snatch_models_cv_for_hyperopt(conf, models, splitters)
@@ -452,13 +453,24 @@ def mastml_run(conf_path, data_path, outdir):
                             estimator_name = hyperopt_instance._estimator_name
                             best_estimator = hyperopt_instance.fit(X_selected, y, savepath=os.path.join(dirname, str(estimator_name)+'.csv'))
 
+                            new_name = estimator_name + '_' + str(normalizer_name) + '_' + str(selector_name) + '_' + str(hyperopt_name)
+                            new_model = best_estimator
+                            models[new_name] = new_model
+
                             # Update models list with new hyperparams
-                            for model in models:
-                                # model[0] is name, model[1] is instance
-                                # Check that this particular model long_name had its hyperparams optimized
-                                for name in hyperopt_params.keys():
-                                    if model[0] in name[:]:
-                                        model[1] = best_estimator
+                            #for model in models:
+                            #    # model[0] is name, model[1] is instance
+                            #    # Check that this particular model long_name had its hyperparams optimized
+                            #    for name in hyperopt_params.keys():
+                            #        if model[0] in name[:]:
+                            #            model[0] = model[0]+'_nonoptimized'
+                            #            #model[1] = best_estimator
+                            #            # Need to update model as new model name and instance to handle multiple
+                            #            # selector/optimization/fitting path
+                            #            new_name = model[0]+'_'+str(normalizer_name)+'_'+str(selector_name)+'_'+str(hyperopt_name)
+                            #            new_model = best_estimator
+                            #            models[new_name] = new_model
+
                         except:
                             raise utils.InvalidValue
 
@@ -558,8 +570,10 @@ def mastml_run(conf_path, data_path, outdir):
 
         log.info("Fitting models to splits...")
 
-        def do_models_splits(models):
+        def do_models_splits(models, original_models):
             models = list(models.items())
+            original_models = list(original_models.items())
+            original_model_names = [model[0] for model in original_models]
             all_results = []
             for normalizer_name, selector_name, X in normalizer_selector_dataframe_triples:
                 subdir = join(outdir, normalizer_name, selector_name)
@@ -572,18 +586,25 @@ def mastml_run(conf_path, data_path, outdir):
                         plot_helper.plot_scatter(X[column], y, join(subdir, filename),
                                                  xlabel=column, label=y.name)
                 for model_name, model_instance in models:
-                    for splitter_name, trains_tests in splittername_splitlist_pairs:
-                        grouping_data = splitter_to_group_column[splitter_name]
-                        subdir = join(normalizer_name, selector_name, model_name, splitter_name)
-                        log.info(f"    Running splits for {subdir}")
-                        subsubdir = join(outdir, subdir)
-                        os.makedirs(subsubdir)
-                        # NOTE: do_one_splitter is a big old function, does lots
-                        runs = do_one_splitter(X, y, model_instance, subsubdir, trains_tests, grouping_data)
-                        all_results.extend(runs)
+                    #Here, add logic to only run original models and respective models from hyperparam opt
+                    do_split = False
+                    if model_name in original_model_names:
+                        do_split = True
+                    elif (normalizer_name in model_name) and (selector_name in model_name):
+                        do_split = True
+                    if do_split == True:
+                        for splitter_name, trains_tests in splittername_splitlist_pairs:
+                            grouping_data = splitter_to_group_column[splitter_name]
+                            subdir = join(normalizer_name, selector_name, model_name, splitter_name)
+                            log.info(f"    Running splits for {subdir}")
+                            subsubdir = join(outdir, subdir)
+                            os.makedirs(subsubdir)
+                            # NOTE: do_one_splitter is a big old function, does lots
+                            runs = do_one_splitter(X, y, model_instance, subsubdir, trains_tests, grouping_data)
+                            all_results.extend(runs)
             return all_results
 
-        return do_models_splits(models)
+        return do_models_splits(models, original_models)
 
     def do_one_splitter(X, y, model, main_path, trains_tests, grouping_data):
 
