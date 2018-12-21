@@ -62,7 +62,6 @@ class HyperOptUtils():
     def __init__(self, param_names, param_values):
         self.param_names = param_names
         self.param_values = param_values
-        self.param_dict = dict()
 
     def _search_space_generator(self, params):
         params_ = dict()
@@ -222,22 +221,22 @@ class GridSearch(HyperOptUtils):
         self.cv = cv
         self.param_names = param_names
         self.param_values = param_values
-        self.param_dict = self._get_grid_param_dict()
         self.scoring = scoring
 
     def fit(self, X, y, savepath=None, refit=True, iid=True):
         rst = dict()
+        param_dict = self._get_grid_param_dict()
 
         if savepath is None:
             savepath = os.getcwd()
 
         estimator_name = self._estimator_name
-        self.param_dict = self._search_space_generator(self.param_dict)
+        param_dict = self._search_space_generator(param_dict)
 
         if self.cv is None:
             self.cv = ms.RepeatedKFold()
 
-        model = GridSearchCV(self.estimator, self.param_dict, scoring=self.scoring, cv=self.cv, refit=refit,
+        model = GridSearchCV(self.estimator, param_dict, scoring=self.scoring, cv=self.cv, refit=refit,
                              iid=iid)
 
         try:
@@ -299,23 +298,22 @@ class RandomizedSearch(HyperOptUtils):
         self.cv = cv
         self.param_names = param_names
         self.param_values = param_values
-        self.param_dict = self._get_randomized_param_dict()
         self.scoring = scoring
         self.n_iter = int(n_iter)
 
     def fit(self, X, y, savepath=None, refit=True):
         rst = dict()
+        param_dict = self._get_randomized_param_dict()
 
         if savepath is None:
             savepath = os.getcwd()
 
         estimator_name = self._estimator_name
-        #self.param_dict = self._search_space_generator(self.param_dict)
 
         if self.cv is None:
             self.cv = ms.RepeatedKFold()
 
-        model = RandomizedSearchCV(self.estimator, self.param_dict, n_iter=self.n_iter, scoring=self.scoring, cv=self.cv, refit=refit)
+        model = RandomizedSearchCV(self.estimator, param_dict, n_iter=self.n_iter, scoring=self.scoring, cv=self.cv, refit=refit)
 
         try:
             rst[estimator_name] = model.fit(X, y)
@@ -376,12 +374,12 @@ class BayesianSearch(HyperOptUtils):
         self.cv = cv
         self.param_names = param_names
         self.param_values = param_values
-        self.param_dict = self._get_bayesian_param_dict()
         self.scoring = scoring
         self.n_iter = int(n_iter)
 
     def fit(self, X, y, savepath=None, refit=True):
         rst = dict()
+        param_dict = self._get_bayesian_param_dict()
 
         if savepath is None:
             savepath = os.getcwd()
@@ -391,7 +389,7 @@ class BayesianSearch(HyperOptUtils):
         if self.cv is None:
             self.cv = ms.RepeatedKFold()
 
-        model = BayesSearchCV(estimator=self.estimator, search_spaces=self.param_dict, n_iter=self.n_iter,
+        model = BayesSearchCV(estimator=self.estimator, search_spaces=param_dict, n_iter=self.n_iter,
                               scoring=self.scoring, cv=self.cv, refit=refit)
 
         try:
