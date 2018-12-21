@@ -176,6 +176,10 @@ class MASTMLFeatureSelector(object):
         self.cv = cv
 
     def fit(self, X, y, Xgroups=None):
+        if Xgroups.shape[0] == 0:
+            xgroups = np.zeros(len(y))
+            Xgroups = pd.DataFrame(xgroups)
+
         self.selected_feature_names = list()
         selected_feature_avg_rmses = list()
         selected_feature_std_rmses = list()
