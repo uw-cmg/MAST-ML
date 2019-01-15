@@ -9,6 +9,7 @@ For more information and a list of scikit-learn splitter classes, see:
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.neighbors import NearestNeighbors
+from sklearn.cluster import KMeans
 import sklearn.model_selection as ms
 from matminer.featurizers.composition import ElementFraction
 from pymatgen import Composition
@@ -133,6 +134,7 @@ class JustEachGroup(BaseEstimator, TransformerMixin):
 #    " Train the model without each element, then test on the rows with that element "
 #    pass
 
+
 class LeaveCloseCompositionsOut(ms.BaseCrossValidator):
     """Leave-P-out where you exclude materials with compositions close to those the test set
 
@@ -184,6 +186,7 @@ class LeaveCloseCompositionsOut(ms.BaseCrossValidator):
     def get_n_splits(self, X=None, y=None, groups=None):
         return len(X)
 
+
 class LeaveOutPercent(BaseEstimator, TransformerMixin):
     """
     Class to train the model using a certain percentage of data as training data
@@ -227,6 +230,41 @@ class LeaveOutPercent(BaseEstimator, TransformerMixin):
             trains, tests = ms.train_test_split(indices, test_size=self.percent_leave_out, random_state=np.random.randint(1, 1000), shuffle=True)
             split.append((trains, tests))
         return split
+
+
+class LeaveOneClusterOut(ms.BaseCrossValidator):
+    """Generates train/test splits for Leave-One-Cluster-Out cross-validation
+
+    First determines clusters in the dataset and then iterates through using one of the
+    clusters as the hold-out set.
+
+    See `Meredig et al. (2018) <https://pubs.rsc.org/en/content/articlelanding/2018/me/c8me00012c>`_
+
+    Parameters
+    ----------
+
+    clusterer : ClustererMixin
+        Tool used to generate clusters"""
+
+    def __init__(self, clusterer=KMeans()):
+        super(LeaveOneClusterOut, self).__init__()
+        self.clusterer = clusterer
+
+    def _iter_test_masks(self, X=None, y=None, groups=None):
+        # Train the clusterer and generate cluster labels
+        labels = self.clusterer.fit_predict(X)
+
+        # Determine the number of clusters
+        clust_labels = np.unique(labels)
+        if len(clust_labels) < 2:
+            raise ValueError('Clusterer produced < 2 labels. Cannot use for LOCO CV')
+
+        # Loop through the clusters
+        for label in clust_labels:
+            yield labels == label
+
+    def get_n_splits(self, X=None, y=None, groups=None):
+        return len(np.unique(self.clusterer.fit_predict(X)))
 
 name_to_constructor = {
     # sklearn splitters:
