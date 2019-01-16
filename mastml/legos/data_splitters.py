@@ -288,5 +288,6 @@ name_to_constructor = {
     'JustEachGroup': JustEachGroup,
     'LeaveCloseCompositionsOut': LeaveCloseCompositionsOut,
     'LeaveOutPercent': LeaveOutPercent,
+    'LeaveOneClusterOut': LeaveOneClusterOut
     #'WithoutElement': WithoutElement,
 }
