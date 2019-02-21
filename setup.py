@@ -68,7 +68,7 @@ setup(
         "pypif==2.1.0",
         "python-dateutil==2.7.3",
         "pytz==2018.5",
-        "requests==2.19.1",
+        "requests==2.20.0",
         "ruamel.yaml==0.15.42",
         "scikit-learn==0.19.1",
         "scipy==1.1.0",

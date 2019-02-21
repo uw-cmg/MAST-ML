@@ -1,0 +1,483 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>model_finder &mdash; MAterials Simulation Toolkit for Machine Learning (MAST-ML) 2.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> MAterials Simulation Toolkit for Machine Learning (MAST-ML)
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../00_acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../0_installation.html">Installing MAST-ML</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../0_1_hardware_data_requirements.html">Hardware and Data Requirements</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../0_1_hardware_data_requirements.html#hardware">Hardware</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../0_1_hardware_data_requirements.html#data">Data</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../0_1_terminal_installation.html">Terminal installation (Linux or linux-like terminal on Mac)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../0_1_terminal_installation.html#install-python3">Install Python3</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../0_1_terminal_installation.html#create-a-conda-environment">Create a conda environment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../0_1_terminal_installation.html#set-up-juptyer-notebooks">Set up Juptyer notebooks</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../0_1_terminal_installation.html#install-the-mast-ml-package">Install the MAST-ML package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../0_1_terminal_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../0_2_windows_installation.html">Windows installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../0_2_windows_installation.html#install-python3">Install Python3</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../0_2_windows_installation.html#create-a-conda-environment">Create a conda environment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../0_2_windows_installation.html#set-up-the-spyder-ide-and-jupyter-notebooks">Set up the Spyder IDE and Jupyter notebooks</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../0_2_windows_installation.html#install-the-mast-ml-package">Install the MAST-ML package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../0_2_windows_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../0_3_startup.html">Startup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../0_3_startup.html#locate-the-examples-folder">Locate the examples folder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../0_3_startup.html#run-the-mastml-command">Run the MASTML command</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../0_3_startup.html#check-output">Check output</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../1_mastml_inputfile.html">MAST-ML Input File</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../1_mastml_inputfile.html#input-file-sections">Input file sections</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#general-setup">General Setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#data-cleaning">Data Cleaning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#clustering">Clustering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#feature-generation">Feature Generation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#feature-normalization">Feature Normalization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#learning-curve">Learning Curve</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#feature-selection">Feature Selection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#data-splits">Data Splits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#models">Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#plot-settings">Plot Settings</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../2_mastml_overview.html">MAST-ML overview slides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../2_mastml_tutorial.html">MAST-ML tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_firstrun.html">Your first MAST-ML run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_cleaning.html">Cleaning input data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_featuregen.html">Feature generation and normalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_firstmodel.html">Training and evaluating your first model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_featureselect.html">Feature selection and learning curves</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_hyperparam.html">Hyperparameter optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_logcv.html">Random leave-out versus leave-out-group cross-validation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_modelimport.html">Making predictions by importing a previously fit model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_prediction.html">Predicting values for new, extrapolated data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../3_code_documentation.html">MAST-ML Code Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../3_metrics.html">Metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../4_conf_parser.html">Configuration file parser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../5_data_cleaner.html">Data cleaner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../6_data_loader.html">Data loader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../7_learning_curve.html">Learning curve</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../8_clusterers.html">Clusterers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../9_data_splitters.html">Data splitters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_utils.html">Utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_mastml_driver.html">MAST-ML Driver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_plot_helper.html">Plot Helper</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../13_html_helper.html">HTML Helper</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../14_feature_selectors.html">Feature Selectors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../15_feature_normalizers.html">Feature Normalizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../16_randomizers.html">Randomizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../17_model_finder.html">Model Finder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../18_util_legos.html">Utility Legos</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../19_feature_generators.html">Feature Generators</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">MAterials Simulation Toolkit for Machine Learning (MAST-ML)</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>model_finder</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for model_finder</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module provides a name_to_constructor dict for all models/estimators in scikit-learn, plus a couple test models and</span>
+<span class="sd">error handling functions</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">import</span> <span class="nn">sklearn.base</span>
+<span class="kn">import</span> <span class="nn">sklearn.utils.testing</span>
+<span class="kn">from</span> <span class="nn">sklearn.externals</span> <span class="k">import</span> <span class="n">joblib</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="c1">#from . import keras_models</span>
+<span class="kn">from</span> <span class="nn">mastml</span> <span class="k">import</span> <span class="n">utils</span>
+
+<span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">DeprecationWarning</span><span class="p">)</span>
+    <span class="n">name_to_constructor</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">sklearn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">all_estimators</span><span class="p">())</span>
+
+<div class="viewcode-block" id="AlwaysFive"><a class="viewcode-back" href="../17_model_finder.html#model_finder.AlwaysFive">[docs]</a><span class="k">class</span> <span class="nc">AlwaysFive</span><span class="p">(</span><span class="n">sklearn</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">RegressorMixin</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class used as a test model that always predicts a value of 5.</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        constant: (int), the value to predict. Always 5 by default</span>
+
+<span class="sd">    Methods:</span>
+
+<span class="sd">        fit: Just passes through to maintain scikit-learn structure</span>
+
+<span class="sd">        predict: Provides predicted model values based on X features</span>
+
+<span class="sd">            Args:</span>
+
+<span class="sd">                X: (numpy array), array of X features</span>
+
+<span class="sd">            Returns:</span>
+
+<span class="sd">                (numpy array), prediction array where all values are equal to constant</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">constant</span> <span class="o">=</span> <span class="mi">5</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">five</span> <span class="o">=</span> <span class="n">constant</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">five</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">))])</span></div>
+
+<div class="viewcode-block" id="RandomGuesser"><a class="viewcode-back" href="../17_model_finder.html#model_finder.RandomGuesser">[docs]</a><span class="k">class</span> <span class="nc">RandomGuesser</span><span class="p">(</span><span class="n">sklearn</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">RegressorMixin</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class used as a test model that always predicts random values for y data.</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        None</span>
+
+<span class="sd">    Methods:</span>
+
+<span class="sd">        fit: Constructs possible predicted values based on y data</span>
+
+<span class="sd">            Args:</span>
+
+<span class="sd">                y: (numpy array), array of y data</span>
+
+<span class="sd">        predict: Provides predicted model values based on X features</span>
+
+<span class="sd">            Args:</span>
+
+<span class="sd">                X: (numpy array), array of X features</span>
+
+<span class="sd">            Returns:</span>
+
+<span class="sd">                (numpy array), prediction array where all values are random selections of y data</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">possible_answers</span> <span class="o">=</span> <span class="n">y</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">possible_answers</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="ModelImport"><a class="viewcode-back" href="../17_model_finder.html#model_finder.ModelImport">[docs]</a><span class="k">class</span> <span class="nc">ModelImport</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class used to import pickled models from previous machine learning fits</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        model_path (str): string designating the path to load the saved .pkl model file</span>
+
+<span class="sd">    Methods:</span>
+
+<span class="sd">        fit: Does nothing, present for compatibility purposes</span>
+
+<span class="sd">            Args:</span>
+
+<span class="sd">                X: Nonetype</span>
+
+<span class="sd">                y: Nonetype</span>
+
+<span class="sd">                groups: Nonetype</span>
+
+<span class="sd">        predict: Provides predicted model values based on X features</span>
+
+<span class="sd">            Args:</span>
+
+<span class="sd">                X: (numpy array), array of X features</span>
+
+<span class="sd">            Returns:</span>
+
+<span class="sd">                (numpy array), prediction array using imported model</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_path</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_path</span> <span class="o">=</span> <span class="n">model_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">joblib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_path</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ModelImport.fit"><a class="viewcode-back" href="../17_model_finder.html#model_finder.ModelImport.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Only here for compatibility &quot;&quot;&quot;</span>
+        <span class="k">return</span></div>
+
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span></div>
+
+<span class="n">custom_models</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;AlwaysFive&#39;</span><span class="p">:</span> <span class="n">AlwaysFive</span><span class="p">,</span>
+    <span class="s1">&#39;RandomGuesser&#39;</span><span class="p">:</span> <span class="n">RandomGuesser</span><span class="p">,</span>
+    <span class="s1">&#39;ModelImport&#39;</span><span class="p">:</span> <span class="n">ModelImport</span><span class="p">,</span>
+    <span class="c1">#&#39;DNNClassifier&#39;: keras_models.DNNClassifier</span>
+<span class="p">}</span>
+
+<span class="n">name_to_constructor</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">custom_models</span><span class="p">)</span>
+
+<div class="viewcode-block" id="find_model"><a class="viewcode-back" href="../17_model_finder.html#model_finder.find_model">[docs]</a><span class="k">def</span> <span class="nf">find_model</span><span class="p">(</span><span class="n">model_name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Method used to check model names conform to scikit-learn model/estimator names</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        model_name: (str), the name of a model/estimator</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">        (str), the scikit-learn model name or raises InvalidModel error</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">name_to_constructor</span><span class="p">[</span><span class="n">model_name</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">InvalidModel</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Model &#39;</span><span class="si">{model_name}</span><span class="s2">&#39; does not exist in scikit-learn.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="check_models_mixed"><a class="viewcode-back" href="../17_model_finder.html#model_finder.check_models_mixed">[docs]</a><span class="k">def</span> <span class="nf">check_models_mixed</span><span class="p">(</span><span class="n">model_names</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Method used to check whether the user has mixed regression and classification tasks</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        model_names: (list), list containing names of models/estimators</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">        (bool), whether or not a classifier was found, or raises exception if both regression and classification models present.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">found_classifier</span> <span class="o">=</span> <span class="n">found_regressor</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">model_names</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">custom_models</span><span class="p">:</span> <span class="k">continue</span>
+        <span class="n">class1</span> <span class="o">=</span> <span class="n">find_model</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">class1</span><span class="p">,</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ClassifierMixin</span><span class="p">):</span>
+            <span class="n">found_classifier</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">class1</span><span class="p">,</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">RegressorMixin</span><span class="p">):</span>
+            <span class="n">found_regressor</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Model &#39;</span><span class="si">{name}</span><span class="s2">&#39; is neither a classifier nor a regressor&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">found_classifier</span> <span class="ow">and</span> <span class="n">found_regressor</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Both classifiers and regressor models have been included&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">found_classifier</span></div>
+
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, University of Wisconsin-Madison Computational Materials Group
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'../',
+              VERSION:'2.0',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

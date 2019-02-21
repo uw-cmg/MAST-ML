@@ -1,0 +1,530 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>html_helper &mdash; MAterials Simulation Toolkit for Machine Learning (MAST-ML) 2.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> MAterials Simulation Toolkit for Machine Learning (MAST-ML)
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../00_acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../0_installation.html">Installing MAST-ML</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../0_1_hardware_data_requirements.html">Hardware and Data Requirements</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../0_1_hardware_data_requirements.html#hardware">Hardware</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../0_1_hardware_data_requirements.html#data">Data</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../0_1_terminal_installation.html">Terminal installation (Linux or linux-like terminal on Mac)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../0_1_terminal_installation.html#install-python3">Install Python3</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../0_1_terminal_installation.html#create-a-conda-environment">Create a conda environment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../0_1_terminal_installation.html#set-up-juptyer-notebooks">Set up Juptyer notebooks</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../0_1_terminal_installation.html#install-the-mast-ml-package">Install the MAST-ML package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../0_1_terminal_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../0_2_windows_installation.html">Windows installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../0_2_windows_installation.html#install-python3">Install Python3</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../0_2_windows_installation.html#create-a-conda-environment">Create a conda environment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../0_2_windows_installation.html#set-up-the-spyder-ide-and-jupyter-notebooks">Set up the Spyder IDE and Jupyter notebooks</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../0_2_windows_installation.html#install-the-mast-ml-package">Install the MAST-ML package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../0_2_windows_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../0_3_startup.html">Startup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../0_3_startup.html#locate-the-examples-folder">Locate the examples folder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../0_3_startup.html#run-the-mastml-command">Run the MASTML command</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../0_3_startup.html#check-output">Check output</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../1_mastml_inputfile.html">MAST-ML Input File</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../1_mastml_inputfile.html#input-file-sections">Input file sections</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#general-setup">General Setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#data-cleaning">Data Cleaning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#clustering">Clustering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#feature-generation">Feature Generation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#feature-normalization">Feature Normalization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#learning-curve">Learning Curve</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#feature-selection">Feature Selection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#data-splits">Data Splits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#models">Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#plot-settings">Plot Settings</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../2_mastml_overview.html">MAST-ML overview slides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../2_mastml_tutorial.html">MAST-ML tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_firstrun.html">Your first MAST-ML run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_cleaning.html">Cleaning input data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_featuregen.html">Feature generation and normalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_firstmodel.html">Training and evaluating your first model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_featureselect.html">Feature selection and learning curves</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_hyperparam.html">Hyperparameter optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_logcv.html">Random leave-out versus leave-out-group cross-validation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_modelimport.html">Making predictions by importing a previously fit model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_prediction.html">Predicting values for new, extrapolated data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../3_code_documentation.html">MAST-ML Code Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../3_metrics.html">Metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../4_conf_parser.html">Configuration file parser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../5_data_cleaner.html">Data cleaner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../6_data_loader.html">Data loader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../7_learning_curve.html">Learning curve</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../8_clusterers.html">Clusterers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../9_data_splitters.html">Data splitters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_utils.html">Utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_mastml_driver.html">MAST-ML Driver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_plot_helper.html">Plot Helper</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../13_html_helper.html">HTML Helper</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../14_feature_selectors.html">Feature Selectors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../15_feature_normalizers.html">Feature Normalizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../16_randomizers.html">Randomizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../17_model_finder.html">Model Finder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../18_util_legos.html">Utility Legos</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../19_feature_generators.html">Feature Generators</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">MAterials Simulation Toolkit for Machine Learning (MAST-ML)</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>html_helper</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for html_helper</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Module for generating an HTML file, called index.html, which contains an overview of the key data and plots from a</span>
+<span class="sd">MAST-ML run. Images of cross-validation parity plots, data histograms, data statistics, and links to the relevant files</span>
+<span class="sd">are all provided.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">join</span><span class="p">,</span> <span class="n">relpath</span> <span class="c1"># because it&#39;s used so much</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="k">import</span> <span class="n">gmtime</span><span class="p">,</span> <span class="n">strftime</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">dominate</span> <span class="k">import</span> <span class="n">document</span>
+<span class="kn">from</span> <span class="nn">dominate.tags</span> <span class="k">import</span> <span class="o">*</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;mastml&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="make_html"><a class="viewcode-back" href="../13_html_helper.html#html_helper.make_html">[docs]</a><span class="k">def</span> <span class="nf">make_html</span><span class="p">(</span><span class="n">outdir</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Method used to create the main index.html file</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        outdir: (str), user-specified output path which designates where all results of MAST-ML run are written</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">        None</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">with</span> <span class="n">document</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;MASTML&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">doc</span><span class="p">:</span>
+        <span class="c1"># title and date</span>
+        <span class="n">h1</span><span class="p">(</span><span class="s1">&#39;MAterial Science Tools - Machine Learning&#39;</span><span class="p">)</span>
+        <span class="n">h4</span><span class="p">(</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">,</span> <span class="n">gmtime</span><span class="p">()))</span>
+
+        <span class="c1"># link to error log</span>
+        <span class="c1">#if errors_present:</span>
+        <span class="c1">#    p(&#39;You have errors! check &#39;, make_link(error_log))</span>
+
+        <span class="n">combos</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">link_sections</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="c1">#favorites = dict()</span>
+
+        <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">outdir</span><span class="p">):</span>
+            <span class="c1"># find a folder that contains split_ folder.</span>
+            <span class="c1"># For example, results/StandardScaler/SelectKBest/LinearRegression/KFold</span>
+            <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dirs</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;split_0&#39;</span><span class="p">):</span>
+                    <span class="n">combos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+
+            <span class="c1"># extract links to important csvs and conf</span>
+            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+                <span class="n">csv_whitelist</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="s1">&#39;clusters.csv&#39;</span><span class="p">,</span> <span class="s1">&#39;generated_features.csv&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;generated_features_no_constant_columns.csv&#39;</span><span class="p">,</span> <span class="s1">&#39;grouped.csv&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;input_data_statistics.csv&#39;</span><span class="p">,</span> <span class="s1">&#39;normalized.csv&#39;</span><span class="p">,</span> <span class="s1">&#39;selected.csv&#39;</span><span class="p">,</span> <span class="p">]</span>
+                <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">f</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">csv_whitelist</span> <span class="ow">or</span> <span class="n">ext</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;.conf&#39;</span><span class="p">,</span> <span class="s1">&#39;.log&#39;</span><span class="p">]:</span>
+                    <span class="n">link_sections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span>
+                    <span class="c1">#simple_section(join(root, f), outdir)</span>
+
+        <span class="n">h1</span><span class="p">(</span><span class="s1">&#39;Files&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">link_sections</span><span class="p">:</span>
+            <span class="n">simple_section</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">outdir</span><span class="p">)</span>
+
+        <span class="n">h1</span><span class="p">(</span><span class="s1">&#39;Plots&#39;</span><span class="p">)</span>
+
+        <span class="c1"># show all the images</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">outdir</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.png&#39;</span><span class="p">):</span>
+                <span class="n">make_image</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">combo</span> <span class="ow">in</span> <span class="n">combos</span><span class="p">:</span>
+            <span class="c1"># come up with a good section title</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">relpath</span><span class="p">(</span><span class="n">combo</span><span class="p">,</span> <span class="n">outdir</span><span class="p">))</span>
+            <span class="n">paths</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot; - &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">paths</span><span class="p">)</span>
+            <span class="n">h2</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+
+            <span class="c1"># find the best worst overlay</span>
+            <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">combo</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">fname</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.png&#39;</span><span class="p">):</span>
+                    <span class="n">h3</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">fname</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span> <span class="c1"># probably best_worst overlay</span>
+                    <span class="n">make_image</span><span class="p">(</span><span class="n">relpath</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">combo</span><span class="p">,</span> <span class="n">fname</span><span class="p">),</span> <span class="n">outdir</span><span class="p">),</span> <span class="n">fname</span><span class="p">)</span>
+                    <span class="n">br</span><span class="p">()</span>
+
+            <span class="c1"># find the split_0 split_1 etc bs stuff</span>
+            <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">combo</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">fname</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;split_&#39;</span><span class="p">):</span>
+                    <span class="n">show_combo</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">combo</span><span class="p">,</span> <span class="n">fname</span><span class="p">),</span> <span class="n">outdir</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="s1">&#39;index.html&#39;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">render</span><span class="p">())</span>
+
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;wrote &#39;</span> <span class="o">+</span> <span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="s1">&#39;index.html&#39;</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="show_combo"><a class="viewcode-back" href="../13_html_helper.html#html_helper.show_combo">[docs]</a><span class="k">def</span> <span class="nf">show_combo</span><span class="p">(</span><span class="n">combo_dir</span><span class="p">,</span> <span class="n">outdir</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Method used to collect combinations of data analysis (e.g. parity plots of train and test data in a CV split) and</span>
+<span class="sd">    required file paths and display them in the output index.html file.</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        combo_dir: (str), path containing the relevant data to combine as output in the index.html file</span>
+
+<span class="sd">        outdir: (str), user-specified output path which designates where all results of MAST-ML run are written</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">        None</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># collect test image, train image, and other file links</span>
+    <span class="n">links</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="n">train_images</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="n">test_images</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">combo_dir</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">is_train_image</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+            <span class="n">train_images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">combo_dir</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">is_test_image</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+            <span class="n">test_images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">combo_dir</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">links</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">combo_dir</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span>
+
+    <span class="c1"># have a header for split_0 split_1 etc</span>
+    <span class="n">h2</span><span class="p">(</span><span class="n">combo_dir</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="c1"># loop separately so we can control order</span>
+    <span class="k">for</span> <span class="n">train_image</span><span class="p">,</span> <span class="n">test_image</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">train_images</span><span class="p">),</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">test_images</span><span class="p">)):</span>
+        <span class="n">make_image</span><span class="p">(</span><span class="n">relpath</span><span class="p">(</span><span class="n">train_image</span><span class="p">,</span> <span class="n">outdir</span><span class="p">),</span> <span class="s1">&#39;train&#39;</span><span class="p">)</span>
+        <span class="n">make_image</span><span class="p">(</span><span class="n">relpath</span><span class="p">(</span><span class="n">test_image</span><span class="p">,</span> <span class="n">outdir</span><span class="p">),</span> <span class="s1">&#39;test&#39;</span><span class="p">)</span>
+        <span class="n">br</span><span class="p">();</span><span class="n">br</span><span class="p">()</span>
+
+    <span class="n">h3</span><span class="p">(</span><span class="s1">&#39;links&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">links</span><span class="p">:</span>
+        <span class="n">make_link</span><span class="p">(</span><span class="n">relpath</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">outdir</span><span class="p">))</span>
+        <span class="n">span</span><span class="p">(</span><span class="s1">&#39;  &#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="simple_section"><a class="viewcode-back" href="../13_html_helper.html#html_helper.simple_section">[docs]</a><span class="k">def</span> <span class="nf">simple_section</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">outdir</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Method used to create a section name for a particular analysis combination that will be displayed in the index.html file.</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        filepath: (str), path containing the relevant data to combine as output in the index.html file</span>
+
+<span class="sd">        outdir: (str), user-specified output path which designates where all results of MAST-ML run are written</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">        None</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="s2">&quot; Create a section for a combo &quot;</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">relpath</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">outdir</span><span class="p">))</span>
+    <span class="n">paths</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot; - &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">paths</span><span class="p">)</span>
+    <span class="n">a</span><span class="p">(</span><span class="n">b</span><span class="p">(</span><span class="n">title</span><span class="p">))</span>
+    <span class="n">make_link</span><span class="p">(</span><span class="n">relpath</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">outdir</span><span class="p">))</span>
+    <span class="n">br</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="make_link"><a class="viewcode-back" href="../13_html_helper.html#html_helper.make_link">[docs]</a><span class="k">def</span> <span class="nf">make_link</span><span class="p">(</span><span class="n">href</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Method used to generate a link to a particular file created from a MAST-ML run. The link will be displayed next to the</span>
+<span class="sd">    appropriate data or image in the index.html file</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        href: (str), filename to generate link for</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">        (dominate.tags html_tag object), hyperlink to filename</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="s2">&quot; Make a link where text is filename of href &quot;</span>
+    <span class="k">return</span> <span class="n">a</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">href</span><span class="p">),</span> <span class="n">href</span><span class="o">=</span><span class="n">href</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s1">&#39;padding-left: 15px;&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="make_image"><a class="viewcode-back" href="../13_html_helper.html#html_helper.make_image">[docs]</a><span class="k">def</span> <span class="nf">make_image</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Method used to generate and show an image of a fixed width. The image will be displayed in the appropriate</span>
+<span class="sd">    section of the index.html file</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        src: (str), source path of the image to be displayed</span>
+
+<span class="sd">        title: (str), title for the image</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">        None</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="s2">&quot; Show an image in fixed width &quot;</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">div</span><span class="p">(</span><span class="n">style</span><span class="o">=</span><span class="s1">&#39;display:inline-block;&#39;</span><span class="p">,</span> <span class="n">_class</span><span class="o">=</span><span class="s1">&#39;photo&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">title</span><span class="p">:</span>
+        <span class="n">d</span> <span class="o">+=</span> <span class="n">h4</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+        <span class="c1">#d += p(a(title))</span>
+    <span class="n">d</span> <span class="o">+=</span> <span class="n">img</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="n">src</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="s1">&#39;200&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="is_train_image"><a class="viewcode-back" href="../13_html_helper.html#html_helper.is_train_image">[docs]</a><span class="k">def</span> <span class="nf">is_train_image</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Method used to assess whether an image is for training data</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        path: (str), source path of the image to be displayed</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">        (bool), True if path is an image (.png) and is for training data (has &#39;train&#39; in path)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">basename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">basename</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;.png&#39;</span> <span class="ow">and</span> <span class="s1">&#39;train&#39;</span> <span class="ow">in</span> <span class="n">basename</span></div>
+
+<div class="viewcode-block" id="is_test_image"><a class="viewcode-back" href="../13_html_helper.html#html_helper.is_test_image">[docs]</a><span class="k">def</span> <span class="nf">is_test_image</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Method used to assess whether an image is for testing data</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        path: (str), source path of the image to be displayed</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">        (bool), True if path is an image (.png) and is for testing data (has &#39;test&#39; in path)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">basename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">basename</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;.png&#39;</span> <span class="ow">and</span> <span class="s1">&#39;test&#39;</span> <span class="ow">in</span> <span class="n">basename</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, University of Wisconsin-Madison Computational Materials Group
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'../',
+              VERSION:'2.0',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

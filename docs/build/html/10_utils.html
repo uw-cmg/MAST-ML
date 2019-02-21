@@ -1,0 +1,533 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Utils &mdash; MAterials Simulation Toolkit for Machine Learning (MAST-ML) 2.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="MAST-ML Driver" href="11_mastml_driver.html" />
+    <link rel="prev" title="Data splitters" href="9_data_splitters.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> MAterials Simulation Toolkit for Machine Learning (MAST-ML)
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="00_acknowledgements.html">Acknowledgements</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="00_acknowledgements.html#contributors">Contributors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="00_acknowledgements.html#funding">Funding</a></li>
+<li class="toctree-l2"><a class="reference internal" href="00_acknowledgements.html#citing-mast-ml">Citing MAST-ML</a></li>
+<li class="toctree-l2"><a class="reference internal" href="00_acknowledgements.html#code-repository">Code Repository</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="0_installation.html">Installing MAST-ML</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="0_1_hardware_data_requirements.html">Hardware and Data Requirements</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="0_1_hardware_data_requirements.html#hardware">Hardware</a></li>
+<li class="toctree-l3"><a class="reference internal" href="0_1_hardware_data_requirements.html#data">Data</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="0_1_terminal_installation.html">Terminal installation (Linux or linux-like terminal on Mac)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="0_1_terminal_installation.html#install-python3">Install Python3</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="0_1_terminal_installation.html#create-a-conda-environment">Create a conda environment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0_1_terminal_installation.html#set-up-juptyer-notebooks">Set up Juptyer notebooks</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="0_1_terminal_installation.html#install-the-mast-ml-package">Install the MAST-ML package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="0_1_terminal_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="0_2_windows_installation.html">Windows installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="0_2_windows_installation.html#install-python3">Install Python3</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="0_2_windows_installation.html#create-a-conda-environment">Create a conda environment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0_2_windows_installation.html#set-up-the-spyder-ide-and-jupyter-notebooks">Set up the Spyder IDE and Jupyter notebooks</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="0_2_windows_installation.html#install-the-mast-ml-package">Install the MAST-ML package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="0_2_windows_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="0_3_startup.html">Startup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="0_3_startup.html#locate-the-examples-folder">Locate the examples folder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="0_3_startup.html#run-the-mastml-command">Run the MASTML command</a></li>
+<li class="toctree-l3"><a class="reference internal" href="0_3_startup.html#check-output">Check output</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="1_mastml_inputfile.html">MAST-ML Input File</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="1_mastml_inputfile.html#input-file-sections">Input file sections</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#general-setup">General Setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#data-cleaning">Data Cleaning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#clustering">Clustering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#feature-generation">Feature Generation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#feature-normalization">Feature Normalization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#learning-curve">Learning Curve</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#feature-selection">Feature Selection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#data-splits">Data Splits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#models">Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#plot-settings">Plot Settings</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="2_mastml_overview.html">MAST-ML overview slides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="2_mastml_tutorial.html">MAST-ML tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_firstrun.html">Your first MAST-ML run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_cleaning.html">Cleaning input data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_featuregen.html">Feature generation and normalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_firstmodel.html">Training and evaluating your first model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_featureselect.html">Feature selection and learning curves</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_hyperparam.html">Hyperparameter optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_logcv.html">Random leave-out versus leave-out-group cross-validation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_modelimport.html">Making predictions by importing a previously fit model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_prediction.html">Predicting values for new, extrapolated data</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="3_code_documentation.html">MAST-ML Code Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="3_metrics.html">Metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="4_conf_parser.html">Configuration file parser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="5_data_cleaner.html">Data cleaner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="6_data_loader.html">Data loader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="7_learning_curve.html">Learning curve</a></li>
+<li class="toctree-l2"><a class="reference internal" href="8_clusterers.html">Clusterers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="9_data_splitters.html">Data splitters</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="11_mastml_driver.html">MAST-ML Driver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="12_plot_helper.html">Plot Helper</a></li>
+<li class="toctree-l2"><a class="reference internal" href="13_html_helper.html">HTML Helper</a></li>
+<li class="toctree-l2"><a class="reference internal" href="14_feature_selectors.html">Feature Selectors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="15_feature_normalizers.html">Feature Normalizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="16_randomizers.html">Randomizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="17_model_finder.html">Model Finder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="18_util_legos.html">Utility Legos</a></li>
+<li class="toctree-l2"><a class="reference internal" href="19_feature_generators.html">Feature Generators</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">MAterials Simulation Toolkit for Machine Learning (MAST-ML)</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="3_code_documentation.html">MAST-ML Code Documentation</a> &raquo;</li>
+        
+      <li>Utils</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/10_utils.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-utils">
+<span id="utils"></span><h1>Utils<a class="headerlink" href="#module-utils" title="Permalink to this headline">¶</a></h1>
+<p>The utils module contains a collection of miscellaneous methods and error handling used throughout MAST-ML</p>
+<dl class="class">
+<dt id="utils.BetweenFilter">
+<em class="property">class </em><code class="descclassname">utils.</code><code class="descname">BetweenFilter</code><span class="sig-paren">(</span><em>min_level</em>, <em>max_level</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#BetweenFilter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.BetweenFilter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to aid in handling logger display levels</p>
+<p>Args:</p>
+<blockquote>
+<div><p>min_level: (int), minimum verbosity level</p>
+<p>max_level: (int), maximum verbosity level</p>
+</div></blockquote>
+<p>Methods:</p>
+<blockquote>
+<div><p>filter: Method to return logging level of logging.logRecord object</p>
+<blockquote>
+<div><p>Args:</p>
+<blockquote>
+<div>logRecord: (python logging.logRecord object)</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>(int) logging level of logging.logRecord object, which is between the min and max provided levels</div></blockquote>
+</div></blockquote>
+</div></blockquote>
+</dd></dl>
+
+<dl class="exception">
+<dt id="utils.ConfError">
+<em class="property">exception </em><code class="descclassname">utils.</code><code class="descname">ConfError</code><a class="reference internal" href="_modules/utils.html#ConfError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.ConfError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class representing error in input configuration file</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="utils.FileNotFoundError">
+<em class="property">exception </em><code class="descclassname">utils.</code><code class="descname">FileNotFoundError</code><a class="reference internal" href="_modules/utils.html#FileNotFoundError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.FileNotFoundError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class representing error raised when a needed file cannot be found</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="utils.FiletypeError">
+<em class="property">exception </em><code class="descclassname">utils.</code><code class="descname">FiletypeError</code><a class="reference internal" href="_modules/utils.html#FiletypeError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.FiletypeError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class representing error raised when an improper file extension is used</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="utils.InvalidConfParameters">
+<em class="property">exception </em><code class="descclassname">utils.</code><code class="descname">InvalidConfParameters</code><a class="reference internal" href="_modules/utils.html#InvalidConfParameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.InvalidConfParameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class representing error raised when you have invalid input configuration file parameters</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="utils.InvalidConfSection">
+<em class="property">exception </em><code class="descclassname">utils.</code><code class="descname">InvalidConfSection</code><a class="reference internal" href="_modules/utils.html#InvalidConfSection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.InvalidConfSection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class representing error raised when an invalid section name is present in the input configuration file</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="utils.InvalidConfSubSection">
+<em class="property">exception </em><code class="descclassname">utils.</code><code class="descname">InvalidConfSubSection</code><a class="reference internal" href="_modules/utils.html#InvalidConfSubSection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.InvalidConfSubSection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class representing error raised when an invalid subsection name is present in the input configuration file</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="utils.InvalidModel">
+<em class="property">exception </em><code class="descclassname">utils.</code><code class="descname">InvalidModel</code><a class="reference internal" href="_modules/utils.html#InvalidModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.InvalidModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class representing error when model does not exist</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="utils.InvalidValue">
+<em class="property">exception </em><code class="descclassname">utils.</code><code class="descname">InvalidValue</code><a class="reference internal" href="_modules/utils.html#InvalidValue"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.InvalidValue" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class representing error raised when an invalid value has been used</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="utils.MastError">
+<em class="property">exception </em><code class="descclassname">utils.</code><code class="descname">MastError</code><a class="reference internal" href="_modules/utils.html#MastError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.MastError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for MAST-ML specific errors that should be shown to the user</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="utils.MissingColumnError">
+<em class="property">exception </em><code class="descclassname">utils.</code><code class="descname">MissingColumnError</code><a class="reference internal" href="_modules/utils.html#MissingColumnError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.MissingColumnError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class representing error raised when your csv doesn’t have the specified column</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="utils._int_if_int">
+<code class="descclassname">utils.</code><code class="descname">_int_if_int</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#_int_if_int"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils._int_if_int" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to return integer mapped value of x</p>
+<p>Args:</p>
+<blockquote>
+<div>x: (float or int), a number</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>x: (float), value of x mapped as integer</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="utils._n_sigfigs">
+<code class="descclassname">utils.</code><code class="descname">_n_sigfigs</code><span class="sig-paren">(</span><em>x</em>, <em>n</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#_n_sigfigs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils._n_sigfigs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to return number of sig figs to use for axis ticks</p>
+<p>Args:</p>
+<blockquote>
+<div>x: (float), an axis tick number</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>(float), number of sig figs</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="utils._nearest_pow_ten">
+<code class="descclassname">utils.</code><code class="descname">_nearest_pow_ten</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#_nearest_pow_ten"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils._nearest_pow_ten" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to return the nearest power of ten for an axis tick value</p>
+<p>Args:</p>
+<blockquote>
+<div>x: (float), an axis tick number</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>(float), nearest power of ten of x</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="utils._nice_range_helper">
+<code class="descclassname">utils.</code><code class="descname">_nice_range_helper</code><span class="sig-paren">(</span><em>lower</em>, <em>upper</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#_nice_range_helper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils._nice_range_helper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to help make a better range of axis ticks</p>
+<p>Args:</p>
+<blockquote>
+<div><p>lower: (float), lower value of axis ticks</p>
+<p>upper: (float), upper value of axis ticks</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>upper: (float), modified upper tick value fixed based on set of axis ticks</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="utils._round_up">
+<code class="descclassname">utils.</code><code class="descname">_round_up</code><span class="sig-paren">(</span><em>x</em>, <em>inc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#_round_up"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils._round_up" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to round up the value of x</p>
+<p>Args:</p>
+<blockquote>
+<div><p>x: (float or int), a number</p>
+<p>inc: (float), an increment for axis ticks</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>(float), value of x rounded up</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="utils._three_sigfigs">
+<code class="descclassname">utils.</code><code class="descname">_three_sigfigs</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#_three_sigfigs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils._three_sigfigs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method invoking special case of _n_sigfigs to return 3 sig figs</p>
+<p>Args:</p>
+<blockquote>
+<div>x: (float), an axis tick number</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>(float), number of sig figs (always 3)</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="utils.activate_logging">
+<code class="descclassname">utils.</code><code class="descname">activate_logging</code><span class="sig-paren">(</span><em>savepath</em>, <em>paths</em>, <em>logger_name='mastml'</em>, <em>to_screen=True</em>, <em>to_file=True</em>, <em>verbosity=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#activate_logging"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.activate_logging" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to create MAST-ML logger file</p>
+<p>Args:</p>
+<blockquote>
+<div><p>savepath: (str), string specifying the save path</p>
+<p>paths: (list), list containing strings of path locations for config file, data file, and results folder</p>
+<p>logger_name: (str), name of logger file</p>
+<p>to_screen: (bool), whether or not to write the log contents to the screen during a run</p>
+<p>to_file: (bool), whether or not to write the log contents to a file in the savepath</p>
+<p>verbosity: (int), controls the amount of output produced in the logger. Accepted values:</p>
+<blockquote>
+<div><p>0 shows everything</p>
+<p>-1 hides debug</p>
+<p>-2 hides info (so no stdout except print)</p>
+<p>-3 hides warning</p>
+<p>-4 hides error</p>
+<p>-5 hides all output</p>
+</div></blockquote>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>None</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="utils.log_header">
+<code class="descclassname">utils.</code><code class="descname">log_header</code><span class="sig-paren">(</span><em>paths</em>, <em>log</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#log_header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.log_header" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to create header for MAST-ML logger</p>
+<p>Args:</p>
+<blockquote>
+<div><p>paths: (list), list containing strings of path locations for config file, data file, and results folder</p>
+<p>log: (logging object), a python log</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>None</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="utils.nice_range">
+<code class="descclassname">utils.</code><code class="descname">nice_range</code><span class="sig-paren">(</span><em>lower</em>, <em>upper</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#nice_range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.nice_range" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to create a range of values, including the specified start and end points, with nicely spaced intervals</p>
+<p>Args:</p>
+<blockquote>
+<div><p>lower: (float or int), lower bound of range to create</p>
+<p>upper: (float or int), upper bound of range to create</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>(list), list of numerical values in established range</div></blockquote>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="11_mastml_driver.html" class="btn btn-neutral float-right" title="MAST-ML Driver" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="9_data_splitters.html" class="btn btn-neutral" title="Data splitters" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, University of Wisconsin-Madison Computational Materials Group
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'./',
+              VERSION:'2.0',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

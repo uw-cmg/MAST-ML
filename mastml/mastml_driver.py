@@ -275,6 +275,7 @@ def mastml_run(conf_path, data_path, outdir):
     log.debug(f'splitters: \n{splitters}')
 
 
+
     # TODO make this block its own function
     # get parameters out for 'validation_column'
     is_validation = 'validation_columns' in conf['GeneralSetup']

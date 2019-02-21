@@ -1,7 +1,8 @@
 """
-A collection of classes for selecting features
-All classes here assume dataframe input and guarantee dataframe output.
-(So no numpy arrays.)
+This module contains a collection of classes and methods for selecting features, and interfaces with scikit-learn feature
+selectors. More information on scikit-learn feature selectors is available at:
+
+http://scikit-learn.org/stable/modules/classes.html#module-sklearn.feature_selection
 """
 
 from functools import wraps
@@ -15,13 +16,22 @@ from sklearn.decomposition import PCA
 import sklearn.feature_selection as fs
 from mlxtend.feature_selection import SequentialFeatureSelector
 
-from . import util_legos
-
-# list of sklearn feature selectors:
-# http://scikit-learn.org/stable/modules/classes.html#module-sklearn.feature_selection
+from mastml.legos import util_legos
 
 def dataframify_selector(transform):
-    " Special dataframify which preserves column names for feature selectors "
+    """
+    Method which transforms output of scikit-learn feature selectors from array to dataframe. Enables preservation of column names.
+
+    Args:
+
+        transform: (function), a scikit-learn feature selector that has a transform method
+
+    Returns:
+
+        new_transform: (function), an amended version of the transform method that returns a dataframe
+
+    """
+
     @wraps(transform)
     def new_transform(self, df):
         if isinstance(df, pd.DataFrame):
@@ -31,6 +41,21 @@ def dataframify_selector(transform):
     return new_transform
 
 def dataframify_new_column_names(transform, name):
+    """
+    Method which transforms output of scikit-learn feature selectors to dataframe, and adds column names
+
+    Args:
+
+        transform: (function), a scikit-learn feature selector that has a transform method
+
+        name: (str), name of the feature selector
+
+    Returns:
+
+        new_transform: (function), an amended version of the transform method that returns a dataframe
+
+    """
+
     def new_transform(self, df):
         arr = transform(self, df.values)
         labels = [name+str(i) for i in range(arr.shape[1])]
@@ -38,6 +63,19 @@ def dataframify_new_column_names(transform, name):
     return new_transform
 
 def fitify_just_use_values(fit):
+    """
+    Method which enables a feature selector fit method to operate on dataframes
+
+    Args:
+
+        fit: (function), a scikit-learn feature selector object with a fit method
+
+    Returns:
+
+        new_fit: (function), an amended version of the fit method that uses dataframes as input
+
+    """
+
     def new_fit(self, X_df, y_df):
         return fit(self, X_df.values, y_df.values)
     return new_fit
@@ -69,27 +107,79 @@ for constructor in name_to_constructor.values():
     constructor.old_transform = constructor.transform
     constructor.transform = dataframify_selector(constructor.transform)
 
+# TODO: Not used anymore, now uses util_legos.DoNothing
+"""
 class PassThrough(BaseEstimator, TransformerMixin):
-    " Keep specific features and pass them on to the other side "
+
+
     def __init__(self, features):
+        print(features)
+        print(type(features))
+        exit()
+
         if not isinstance(features, list):
             features = [features]
         self.features = features
+
     def fit(self, df, y=None):
         for feature in self.features:
             if feature not in df.columns:
                 raise Exception(f"Specified feature '{feature}' to PassThrough not present in data file.")
+
     def transform(self, df):
         return df[self.features]
+"""
 
 class MASTMLFeatureSelector(object):
-    """ Custom-written forward selection class to perform feature selection with flexible model and cv scheme"""
+    """
+    Class custom-written for MAST-ML to conduct forward selection of features with flexible model and cv scheme
+
+    Args:
+
+        estimator: (scikit-learn model/estimator object), a scikit-learn model/estimator
+
+        n_features_to_select: (int), the number of features to select
+
+        cv: (scikit-learn cross-validation object), a scikit-learn cross-validation object
+
+    Methods:
+
+        fit: performs feature selection
+
+            Args:
+
+                X: (dataframe), dataframe of X features
+
+                y: (dataframe), dataframe of y data
+
+                Xgroups: (dataframe), dataframe of group labels
+
+            Returns:
+
+                None
+
+        transform: performs the transform to generate output of only selected features
+
+            Args:
+
+                X: (dataframe), dataframe of X features
+
+            Returns:
+
+                dataframe: (dataframe), dataframe of selected X features
+
+    """
+
     def __init__(self, estimator, n_features_to_select, cv):
         self.estimator = estimator
         self.n_features_to_select = n_features_to_select
         self.cv = cv
 
     def fit(self, X, y, Xgroups=None):
+        if Xgroups.shape[0] == 0:
+            xgroups = np.zeros(len(y))
+            Xgroups = pd.DataFrame(xgroups)
+
         self.selected_feature_names = list()
         selected_feature_avg_rmses = list()
         selected_feature_std_rmses = list()
@@ -189,42 +279,40 @@ class MASTMLFeatureSelector(object):
         X_selected = X.loc[:, selected_feature_names]
         return X_selected
 
-    def _plot_featureselected_learningcurve(self, selected_feature_avg_rmses, selected_feature_std_rmses):
-        from matplotlib import pyplot as plt
-        plt.figure()
-        plt.title('Basic forward selection learning curve')
-        plt.grid()
-        #savedir = self.configdict['General Setup']['save_path']
-        Xdata = np.linspace(start=1, stop=self.n_features_to_select, num=5).tolist()
-        ydata = selected_feature_avg_rmses
-        yspread = selected_feature_std_rmses
-        plt.plot(Xdata, ydata, '-o', color='r', label='Avg RMSE 10 tests 5-fold CV')
-        plt.fill_between(Xdata, np.array(ydata) - np.array(yspread),
-                         np.array(ydata) + np.array(yspread), alpha=0.1,
-                         color="r")
-        plt.xlabel("Number of features")
-        plt.ylabel("RMSE")
-        plt.legend(loc="best")
-        plt.savefig(savedir + "/" + "basic_forward_selection_learning_curve_featurenumber.png", dpi=250)
-        return
+    # TODO: Not used anymore
+    #def _plot_featureselected_learningcurve(self, selected_feature_avg_rmses, selected_feature_std_rmses):
+    #    from matplotlib import pyplot as plt
+    #    plt.figure()
+    #    plt.title('Basic forward selection learning curve')
+    #    plt.grid()
+    #    #savedir = self.configdict['General Setup']['save_path']
+    #    Xdata = np.linspace(start=1, stop=self.n_features_to_select, num=5).tolist()
+    #    ydata = selected_feature_avg_rmses
+    #    yspread = selected_feature_std_rmses
+    #    plt.plot(Xdata, ydata, '-o', color='r', label='Avg RMSE 10 tests 5-fold CV')
+    #    plt.fill_between(Xdata, np.array(ydata) - np.array(yspread),
+    #                     np.array(ydata) + np.array(yspread), alpha=0.1,
+    #                     color="r")
+    #    plt.xlabel("Number of features")
+    #    plt.ylabel("RMSE")
+    #    plt.legend(loc="best")
+    #    plt.savefig(savedir + "/" + "basic_forward_selection_learning_curve_featurenumber.png", dpi=250)
+    #    return
 
-# Mess with PCA stuff:
+# Include Principal Component Analysis
 PCA.transform = dataframify_new_column_names(PCA.transform, 'pca_')
 
-# Mess with SFS stuff:
+# Include Sequential Forward Selector
 SequentialFeatureSelector.transform = dataframify_new_column_names(SequentialFeatureSelector.transform, 'sfs_')
 SequentialFeatureSelector.fit = fitify_just_use_values(SequentialFeatureSelector.fit)
 model_selectors['SequentialFeatureSelector'] = SequentialFeatureSelector
 name_to_constructor['SequentialFeatureSelector'] = SequentialFeatureSelector
 
-
 # Custom selectors don't need to be dataframified
 name_to_constructor.update({
-    'PassThrough': PassThrough,
+    #'PassThrough': PassThrough,
     'DoNothing': util_legos.DoNothing,
     'PCA': PCA,
     'SequentialFeatureSelector': SequentialFeatureSelector,
     'MASTMLFeatureSelector' : MASTMLFeatureSelector,
 })
-
-# done!

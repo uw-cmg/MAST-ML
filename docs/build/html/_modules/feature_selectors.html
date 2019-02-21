@@ -1,0 +1,614 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>feature_selectors &mdash; MAterials Simulation Toolkit for Machine Learning (MAST-ML) 2.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> MAterials Simulation Toolkit for Machine Learning (MAST-ML)
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../00_acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../0_installation.html">Installing MAST-ML</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../0_1_hardware_data_requirements.html">Hardware and Data Requirements</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../0_1_hardware_data_requirements.html#hardware">Hardware</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../0_1_hardware_data_requirements.html#data">Data</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../0_1_terminal_installation.html">Terminal installation (Linux or linux-like terminal on Mac)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../0_1_terminal_installation.html#install-python3">Install Python3</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../0_1_terminal_installation.html#create-a-conda-environment">Create a conda environment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../0_1_terminal_installation.html#set-up-juptyer-notebooks">Set up Juptyer notebooks</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../0_1_terminal_installation.html#install-the-mast-ml-package">Install the MAST-ML package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../0_1_terminal_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../0_2_windows_installation.html">Windows installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../0_2_windows_installation.html#install-python3">Install Python3</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../0_2_windows_installation.html#create-a-conda-environment">Create a conda environment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../0_2_windows_installation.html#set-up-the-spyder-ide-and-jupyter-notebooks">Set up the Spyder IDE and Jupyter notebooks</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../0_2_windows_installation.html#install-the-mast-ml-package">Install the MAST-ML package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../0_2_windows_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../0_3_startup.html">Startup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../0_3_startup.html#locate-the-examples-folder">Locate the examples folder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../0_3_startup.html#run-the-mastml-command">Run the MASTML command</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../0_3_startup.html#check-output">Check output</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../1_mastml_inputfile.html">MAST-ML Input File</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../1_mastml_inputfile.html#input-file-sections">Input file sections</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#general-setup">General Setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#data-cleaning">Data Cleaning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#clustering">Clustering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#feature-generation">Feature Generation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#feature-normalization">Feature Normalization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#learning-curve">Learning Curve</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#feature-selection">Feature Selection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#data-splits">Data Splits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#models">Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#plot-settings">Plot Settings</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../2_mastml_overview.html">MAST-ML overview slides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../2_mastml_tutorial.html">MAST-ML tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_firstrun.html">Your first MAST-ML run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_cleaning.html">Cleaning input data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_featuregen.html">Feature generation and normalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_firstmodel.html">Training and evaluating your first model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_featureselect.html">Feature selection and learning curves</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_hyperparam.html">Hyperparameter optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_logcv.html">Random leave-out versus leave-out-group cross-validation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_modelimport.html">Making predictions by importing a previously fit model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_prediction.html">Predicting values for new, extrapolated data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../3_code_documentation.html">MAST-ML Code Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../3_metrics.html">Metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../4_conf_parser.html">Configuration file parser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../5_data_cleaner.html">Data cleaner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../6_data_loader.html">Data loader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../7_learning_curve.html">Learning curve</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../8_clusterers.html">Clusterers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../9_data_splitters.html">Data splitters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_utils.html">Utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_mastml_driver.html">MAST-ML Driver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_plot_helper.html">Plot Helper</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../13_html_helper.html">HTML Helper</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../14_feature_selectors.html">Feature Selectors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../15_feature_normalizers.html">Feature Normalizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../16_randomizers.html">Randomizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../17_model_finder.html">Model Finder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../18_util_legos.html">Utility Legos</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../19_feature_generators.html">Feature Generators</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">MAterials Simulation Toolkit for Machine Learning (MAST-ML)</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>feature_selectors</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for feature_selectors</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module contains a collection of classes and methods for selecting features, and interfaces with scikit-learn feature</span>
+<span class="sd">selectors. More information on scikit-learn feature selectors is available at:</span>
+
+<span class="sd">http://scikit-learn.org/stable/modules/classes.html#module-sklearn.feature_selection</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">wraps</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">mastml.metrics</span> <span class="k">import</span> <span class="n">root_mean_squared_error</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="k">import</span> <span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span>
+<span class="kn">from</span> <span class="nn">sklearn.decomposition</span> <span class="k">import</span> <span class="n">PCA</span>
+<span class="kn">import</span> <span class="nn">sklearn.feature_selection</span> <span class="k">as</span> <span class="nn">fs</span>
+<span class="kn">from</span> <span class="nn">mlxtend.feature_selection</span> <span class="k">import</span> <span class="n">SequentialFeatureSelector</span>
+
+<span class="kn">from</span> <span class="nn">mastml.legos</span> <span class="k">import</span> <span class="n">util_legos</span>
+
+<div class="viewcode-block" id="dataframify_selector"><a class="viewcode-back" href="../14_feature_selectors.html#feature_selectors.dataframify_selector">[docs]</a><span class="k">def</span> <span class="nf">dataframify_selector</span><span class="p">(</span><span class="n">transform</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Method which transforms output of scikit-learn feature selectors from array to dataframe. Enables preservation of column names.</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        transform: (function), a scikit-learn feature selector that has a transform method</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">        new_transform: (function), an amended version of the transform method that returns a dataframe</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">transform</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">new_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">get_support</span><span class="p">(</span><span class="n">indices</span><span class="o">=</span><span class="kc">True</span><span class="p">)]]</span>
+        <span class="k">else</span><span class="p">:</span> <span class="c1"># just in case you try to use it with an array ;)</span>
+            <span class="k">return</span> <span class="n">df</span>
+    <span class="k">return</span> <span class="n">new_transform</span></div>
+
+<div class="viewcode-block" id="dataframify_new_column_names"><a class="viewcode-back" href="../14_feature_selectors.html#feature_selectors.dataframify_new_column_names">[docs]</a><span class="k">def</span> <span class="nf">dataframify_new_column_names</span><span class="p">(</span><span class="n">transform</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Method which transforms output of scikit-learn feature selectors to dataframe, and adds column names</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        transform: (function), a scikit-learn feature selector that has a transform method</span>
+
+<span class="sd">        name: (str), name of the feature selector</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">        new_transform: (function), an amended version of the transform method that returns a dataframe</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">new_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+        <span class="n">arr</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">new_transform</span></div>
+
+<div class="viewcode-block" id="fitify_just_use_values"><a class="viewcode-back" href="../14_feature_selectors.html#feature_selectors.fitify_just_use_values">[docs]</a><span class="k">def</span> <span class="nf">fitify_just_use_values</span><span class="p">(</span><span class="n">fit</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Method which enables a feature selector fit method to operate on dataframes</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        fit: (function), a scikit-learn feature selector object with a fit method</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">        new_fit: (function), an amended version of the fit method that uses dataframes as input</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">new_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X_df</span><span class="p">,</span> <span class="n">y_df</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X_df</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">y_df</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">new_fit</span></div>
+
+<span class="n">score_func_selectors</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;GenericUnivariateSelect&#39;</span><span class="p">:</span> <span class="n">fs</span><span class="o">.</span><span class="n">GenericUnivariateSelect</span><span class="p">,</span> <span class="c1"># Univariate feature selector with configurable strategy.</span>
+    <span class="s1">&#39;SelectFdr&#39;</span><span class="p">:</span> <span class="n">fs</span><span class="o">.</span><span class="n">SelectFdr</span><span class="p">,</span> <span class="c1"># Filter: Select the p-values for an estimated false discovery rate</span>
+    <span class="s1">&#39;SelectFpr&#39;</span><span class="p">:</span> <span class="n">fs</span><span class="o">.</span><span class="n">SelectFpr</span><span class="p">,</span> <span class="c1"># Filter: Select the pvalues below alpha based on a FPR test.</span>
+    <span class="s1">&#39;SelectFwe&#39;</span><span class="p">:</span> <span class="n">fs</span><span class="o">.</span><span class="n">SelectFwe</span><span class="p">,</span> <span class="c1"># Filter: Select the p-values corresponding to Family-wise error rate</span>
+    <span class="s1">&#39;SelectKBest&#39;</span><span class="p">:</span> <span class="n">fs</span><span class="o">.</span><span class="n">SelectKBest</span><span class="p">,</span> <span class="c1"># Select features according to the k highest scores.</span>
+    <span class="s1">&#39;SelectPercentile&#39;</span><span class="p">:</span> <span class="n">fs</span><span class="o">.</span><span class="n">SelectPercentile</span><span class="p">,</span> <span class="c1"># Select features according to a percentile of the highest scores.</span>
+<span class="p">}</span>
+
+<span class="n">model_selectors</span> <span class="o">=</span> <span class="p">{</span> <span class="c1"># feature selectors which take a model instance as first parameter</span>
+    <span class="s1">&#39;RFE&#39;</span><span class="p">:</span> <span class="n">fs</span><span class="o">.</span><span class="n">RFE</span><span class="p">,</span> <span class="c1"># Feature ranking with recursive feature elimination.</span>
+    <span class="s1">&#39;RFECV&#39;</span><span class="p">:</span> <span class="n">fs</span><span class="o">.</span><span class="n">RFECV</span><span class="p">,</span> <span class="c1"># Feature ranking with recursive feature elimination and cross-validated selection of the best number of features.</span>
+    <span class="s1">&#39;SelectFromModel&#39;</span><span class="p">:</span> <span class="n">fs</span><span class="o">.</span><span class="n">SelectFromModel</span><span class="p">,</span> <span class="c1"># Meta-transformer for selecting features based on importance weights.</span>
+<span class="p">}</span>
+
+<span class="n">other_selectors</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;VarianceThreshold&#39;</span><span class="p">:</span> <span class="n">fs</span><span class="o">.</span><span class="n">VarianceThreshold</span><span class="p">,</span> <span class="c1"># Feature selector that removes all low-variance features.</span>
+<span class="p">}</span>
+
+<span class="c1"># Union together the above dicts for the primary export:</span>
+<span class="n">name_to_constructor</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="o">**</span><span class="n">score_func_selectors</span><span class="p">,</span> <span class="o">**</span><span class="n">model_selectors</span><span class="p">,</span> <span class="o">**</span><span class="n">other_selectors</span><span class="p">)</span>
+
+<span class="c1"># Modify all sklearn transform methods to return dataframes:</span>
+<span class="k">for</span> <span class="n">constructor</span> <span class="ow">in</span> <span class="n">name_to_constructor</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+    <span class="n">constructor</span><span class="o">.</span><span class="n">old_transform</span> <span class="o">=</span> <span class="n">constructor</span><span class="o">.</span><span class="n">transform</span>
+    <span class="n">constructor</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="n">dataframify_selector</span><span class="p">(</span><span class="n">constructor</span><span class="o">.</span><span class="n">transform</span><span class="p">)</span>
+
+<span class="c1"># TODO: Not used anymore, now uses util_legos.DoNothing</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">class PassThrough(BaseEstimator, TransformerMixin):</span>
+
+
+<span class="sd">    def __init__(self, features):</span>
+<span class="sd">        print(features)</span>
+<span class="sd">        print(type(features))</span>
+<span class="sd">        exit()</span>
+
+<span class="sd">        if not isinstance(features, list):</span>
+<span class="sd">            features = [features]</span>
+<span class="sd">        self.features = features</span>
+
+<span class="sd">    def fit(self, df, y=None):</span>
+<span class="sd">        for feature in self.features:</span>
+<span class="sd">            if feature not in df.columns:</span>
+<span class="sd">                raise Exception(f&quot;Specified feature &#39;{feature}&#39; to PassThrough not present in data file.&quot;)</span>
+
+<span class="sd">    def transform(self, df):</span>
+<span class="sd">        return df[self.features]</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="MASTMLFeatureSelector"><a class="viewcode-back" href="../14_feature_selectors.html#feature_selectors.MASTMLFeatureSelector">[docs]</a><span class="k">class</span> <span class="nc">MASTMLFeatureSelector</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class custom-written for MAST-ML to conduct forward selection of features with flexible model and cv scheme</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        estimator: (scikit-learn model/estimator object), a scikit-learn model/estimator</span>
+
+<span class="sd">        n_features_to_select: (int), the number of features to select</span>
+
+<span class="sd">        cv: (scikit-learn cross-validation object), a scikit-learn cross-validation object</span>
+
+<span class="sd">    Methods:</span>
+
+<span class="sd">        fit: performs feature selection</span>
+
+<span class="sd">            Args:</span>
+
+<span class="sd">                X: (dataframe), dataframe of X features</span>
+
+<span class="sd">                y: (dataframe), dataframe of y data</span>
+
+<span class="sd">                Xgroups: (dataframe), dataframe of group labels</span>
+
+<span class="sd">            Returns:</span>
+
+<span class="sd">                None</span>
+
+<span class="sd">        transform: performs the transform to generate output of only selected features</span>
+
+<span class="sd">            Args:</span>
+
+<span class="sd">                X: (dataframe), dataframe of X features</span>
+
+<span class="sd">            Returns:</span>
+
+<span class="sd">                dataframe: (dataframe), dataframe of selected X features</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">estimator</span><span class="p">,</span> <span class="n">n_features_to_select</span><span class="p">,</span> <span class="n">cv</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span> <span class="o">=</span> <span class="n">estimator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_features_to_select</span> <span class="o">=</span> <span class="n">n_features_to_select</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cv</span> <span class="o">=</span> <span class="n">cv</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">Xgroups</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">Xgroups</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">xgroups</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+            <span class="n">Xgroups</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">xgroups</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">selected_feature_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">selected_feature_avg_rmses</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">selected_feature_std_rmses</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">basic_forward_selection_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">num_features_selected</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">x_features</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_features_to_select</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_features</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n_features_to_select</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_features</span><span class="p">)</span>
+        <span class="k">while</span> <span class="n">num_features_selected</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_features_to_select</span><span class="p">:</span>
+            <span class="c1"># Catch pandas warnings here</span>
+            <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+                <span class="n">ranked_features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rank_features</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">Xgroups</span><span class="p">)</span>
+                <span class="n">top_feature_name</span><span class="p">,</span> <span class="n">top_feature_avg_rmse</span><span class="p">,</span> <span class="n">top_feature_std_rmse</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_choose_top_feature</span><span class="p">(</span><span class="n">ranked_features</span><span class="o">=</span><span class="n">ranked_features</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">selected_feature_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">top_feature_name</span><span class="p">)</span>
+            <span class="n">selected_feature_avg_rmses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">top_feature_avg_rmse</span><span class="p">)</span>
+            <span class="n">selected_feature_std_rmses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">top_feature_std_rmse</span><span class="p">)</span>
+
+            <span class="n">basic_forward_selection_dict</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">num_features_selected</span><span class="p">)]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="n">basic_forward_selection_dict</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">num_features_selected</span><span class="p">)][</span>
+                <span class="s1">&#39;Number of features selected&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">num_features_selected</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">basic_forward_selection_dict</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">num_features_selected</span><span class="p">)][</span>
+                <span class="s1">&#39;Top feature added this iteration&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">top_feature_name</span>
+            <span class="n">basic_forward_selection_dict</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">num_features_selected</span><span class="p">)][</span>
+                <span class="s1">&#39;Avg RMSE using top features&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">top_feature_avg_rmse</span>
+            <span class="n">basic_forward_selection_dict</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">num_features_selected</span><span class="p">)][</span>
+                <span class="s1">&#39;Stdev RMSE using top features&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">top_feature_std_rmse</span>
+            <span class="n">num_features_selected</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">basic_forward_selection_dict</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_features_to_select</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)][</span>
+            <span class="s1">&#39;Full feature set Names&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">selected_feature_names</span>
+        <span class="n">basic_forward_selection_dict</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_features_to_select</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)][</span>
+            <span class="s1">&#39;Full feature set Avg RMSEs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">selected_feature_avg_rmses</span>
+        <span class="n">basic_forward_selection_dict</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_features_to_select</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)][</span>
+            <span class="s1">&#39;Full feature set Stdev RMSEs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">selected_feature_std_rmses</span>
+        <span class="c1">#self._plot_featureselected_learningcurve(selected_feature_avg_rmses=selected_feature_avg_rmses,</span>
+        <span class="c1">#                                         selected_feature_std_rmses=selected_feature_std_rmses)</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_featureselected_dataframe</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">,</span> <span class="n">selected_feature_names</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">selected_feature_names</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dataframe</span>
+
+    <span class="k">def</span> <span class="nf">_rank_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">groups</span><span class="p">):</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">ranked_features</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">trains_metrics</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">tests_metrics</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">groups</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">groups</span> <span class="o">=</span> <span class="n">groups</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">X</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">selected_feature_names</span><span class="p">:</span>
+                <span class="n">X_</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">selected_feature_names</span><span class="p">]</span>
+                <span class="n">X_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">X_</span><span class="p">,</span> <span class="n">X</span><span class="p">[</span><span class="n">col</span><span class="p">]],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">trains</span><span class="p">,</span> <span class="n">tests</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X_</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">groups</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_</span><span class="p">[</span><span class="n">trains</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">trains</span><span class="p">])</span>
+                    <span class="c1">#predict_trains = self.estimator.predict(X_[trains])</span>
+                    <span class="n">predict_tests</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_</span><span class="p">[</span><span class="n">tests</span><span class="p">])</span>
+                    <span class="c1">#trains_metrics.append(root_mean_squared_error(y[trains], predict_trains))</span>
+                    <span class="n">tests_metrics</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">root_mean_squared_error</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">tests</span><span class="p">],</span> <span class="n">predict_tests</span><span class="p">))</span>
+                <span class="n">avg_rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">tests_metrics</span><span class="p">)</span>
+                <span class="n">std_rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">tests_metrics</span><span class="p">)</span>
+                <span class="n">ranked_features</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;avg_rmse&quot;</span><span class="p">:</span> <span class="n">avg_rmse</span><span class="p">,</span> <span class="s2">&quot;std_rmse&quot;</span><span class="p">:</span> <span class="n">std_rmse</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">ranked_features</span>
+
+    <span class="k">def</span> <span class="nf">_choose_top_feature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ranked_features</span><span class="p">):</span>
+        <span class="n">feature_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">feature_avg_rmses</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">feature_std_rmses</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">feature_names_sorted</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">feature_std_rmses_sorted</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="c1"># Make dict of ranked features into list for sorting</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">ranked_features</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">feature_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">kk</span><span class="p">,</span> <span class="n">vv</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">kk</span> <span class="o">==</span> <span class="s1">&#39;avg_rmse&#39;</span><span class="p">:</span>
+                    <span class="n">feature_avg_rmses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vv</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">kk</span> <span class="o">==</span> <span class="s1">&#39;std_rmse&#39;</span><span class="p">:</span>
+                    <span class="n">feature_std_rmses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vv</span><span class="p">)</span>
+
+        <span class="c1"># Sort feature lists so RMSE goes from min to max</span>
+        <span class="n">feature_avg_rmses_sorted</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">feature_avg_rmses</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">feature_avg_rmse</span> <span class="ow">in</span> <span class="n">feature_avg_rmses_sorted</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">ranked_features</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="s1">&#39;avg_rmse&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">feature_avg_rmse</span><span class="p">:</span>
+                    <span class="n">feature_names_sorted</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+                    <span class="n">feature_std_rmses_sorted</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="s1">&#39;std_rmse&#39;</span><span class="p">])</span>
+
+        <span class="n">top_feature_name</span> <span class="o">=</span> <span class="n">feature_names_sorted</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">top_feature_avg_rmse</span> <span class="o">=</span> <span class="n">feature_avg_rmses_sorted</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">top_feature_std_rmse</span> <span class="o">=</span> <span class="n">feature_std_rmses_sorted</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">top_feature_name</span><span class="p">,</span> <span class="n">top_feature_avg_rmse</span><span class="p">,</span> <span class="n">top_feature_std_rmse</span>
+
+    <span class="k">def</span> <span class="nf">_get_featureselected_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">selected_feature_names</span><span class="p">):</span>
+        <span class="c1"># Return dataframe containing only selected features</span>
+        <span class="n">X_selected</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">selected_feature_names</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">X_selected</span></div>
+
+    <span class="c1"># TODO: Not used anymore</span>
+    <span class="c1">#def _plot_featureselected_learningcurve(self, selected_feature_avg_rmses, selected_feature_std_rmses):</span>
+    <span class="c1">#    from matplotlib import pyplot as plt</span>
+    <span class="c1">#    plt.figure()</span>
+    <span class="c1">#    plt.title(&#39;Basic forward selection learning curve&#39;)</span>
+    <span class="c1">#    plt.grid()</span>
+    <span class="c1">#    #savedir = self.configdict[&#39;General Setup&#39;][&#39;save_path&#39;]</span>
+    <span class="c1">#    Xdata = np.linspace(start=1, stop=self.n_features_to_select, num=5).tolist()</span>
+    <span class="c1">#    ydata = selected_feature_avg_rmses</span>
+    <span class="c1">#    yspread = selected_feature_std_rmses</span>
+    <span class="c1">#    plt.plot(Xdata, ydata, &#39;-o&#39;, color=&#39;r&#39;, label=&#39;Avg RMSE 10 tests 5-fold CV&#39;)</span>
+    <span class="c1">#    plt.fill_between(Xdata, np.array(ydata) - np.array(yspread),</span>
+    <span class="c1">#                     np.array(ydata) + np.array(yspread), alpha=0.1,</span>
+    <span class="c1">#                     color=&quot;r&quot;)</span>
+    <span class="c1">#    plt.xlabel(&quot;Number of features&quot;)</span>
+    <span class="c1">#    plt.ylabel(&quot;RMSE&quot;)</span>
+    <span class="c1">#    plt.legend(loc=&quot;best&quot;)</span>
+    <span class="c1">#    plt.savefig(savedir + &quot;/&quot; + &quot;basic_forward_selection_learning_curve_featurenumber.png&quot;, dpi=250)</span>
+    <span class="c1">#    return</span>
+
+<span class="c1"># Include Principal Component Analysis</span>
+<span class="n">PCA</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="n">dataframify_new_column_names</span><span class="p">(</span><span class="n">PCA</span><span class="o">.</span><span class="n">transform</span><span class="p">,</span> <span class="s1">&#39;pca_&#39;</span><span class="p">)</span>
+
+<span class="c1"># Include Sequential Forward Selector</span>
+<span class="n">SequentialFeatureSelector</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="n">dataframify_new_column_names</span><span class="p">(</span><span class="n">SequentialFeatureSelector</span><span class="o">.</span><span class="n">transform</span><span class="p">,</span> <span class="s1">&#39;sfs_&#39;</span><span class="p">)</span>
+<span class="n">SequentialFeatureSelector</span><span class="o">.</span><span class="n">fit</span> <span class="o">=</span> <span class="n">fitify_just_use_values</span><span class="p">(</span><span class="n">SequentialFeatureSelector</span><span class="o">.</span><span class="n">fit</span><span class="p">)</span>
+<span class="n">model_selectors</span><span class="p">[</span><span class="s1">&#39;SequentialFeatureSelector&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">SequentialFeatureSelector</span>
+<span class="n">name_to_constructor</span><span class="p">[</span><span class="s1">&#39;SequentialFeatureSelector&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">SequentialFeatureSelector</span>
+
+<span class="c1"># Custom selectors don&#39;t need to be dataframified</span>
+<span class="n">name_to_constructor</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+    <span class="c1">#&#39;PassThrough&#39;: PassThrough,</span>
+    <span class="s1">&#39;DoNothing&#39;</span><span class="p">:</span> <span class="n">util_legos</span><span class="o">.</span><span class="n">DoNothing</span><span class="p">,</span>
+    <span class="s1">&#39;PCA&#39;</span><span class="p">:</span> <span class="n">PCA</span><span class="p">,</span>
+    <span class="s1">&#39;SequentialFeatureSelector&#39;</span><span class="p">:</span> <span class="n">SequentialFeatureSelector</span><span class="p">,</span>
+    <span class="s1">&#39;MASTMLFeatureSelector&#39;</span> <span class="p">:</span> <span class="n">MASTMLFeatureSelector</span><span class="p">,</span>
+<span class="p">})</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, University of Wisconsin-Madison Computational Materials Group
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'../',
+              VERSION:'2.0',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

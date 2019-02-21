@@ -1,7 +1,7 @@
 """
-A collection of random little utilities and errors used throughout mastml
+The utils module contains a collection of miscellaneous methods and error handling used throughout MAST-ML
 """
-
+import numpy as np
 import sys
 import logging
 import textwrap
@@ -10,9 +10,30 @@ import os
 import random
 from os.path import join
 from collections import defaultdict
+from math import log, floor, ceil
 
 class BetweenFilter(object):
-    """ inclusive on both sides """
+    """
+    Class to aid in handling logger display levels
+
+    Args:
+
+         min_level: (int), minimum verbosity level
+
+         max_level: (int), maximum verbosity level
+
+    Methods:
+
+        filter: Method to return logging level of logging.logRecord object
+
+            Args:
+
+                logRecord: (python logging.logRecord object)
+
+            Returns:
+
+                (int) logging level of logging.logRecord object, which is between the min and max provided levels
+    """
     def __init__(self, min_level, max_level):
         self.min_level = min_level
         self.max_level = max_level
@@ -20,20 +41,41 @@ class BetweenFilter(object):
     def filter(self, logRecord):
         return self.min_level <= logRecord.levelno <= self.max_level
 
-def activate_logging(savepath, paths, logger_name='mastml', to_screen=True, to_file=True,
-        verbosity = 0):
+def activate_logging(savepath, paths, logger_name='mastml', to_screen=True, to_file=True, verbosity = 0):
     """
-    savepath is a dir for where to save log
-    paths list of 3 strings we show so the user knows what is being ran
-    verbosity: argument for what is shown on screen (does not affect files):
-        0 shows everything
-        -1 hides debug
-        -2 hides info (so no stdout except print)
-        -3 hides warning
-        -4 hides error
-        -5 hides all output
-    """
+    Method to create MAST-ML logger file
 
+    Args:
+
+        savepath: (str), string specifying the save path
+
+        paths: (list), list containing strings of path locations for config file, data file, and results folder
+
+        logger_name: (str), name of logger file
+
+        to_screen: (bool), whether or not to write the log contents to the screen during a run
+
+        to_file: (bool), whether or not to write the log contents to a file in the savepath
+
+        verbosity: (int), controls the amount of output produced in the logger. Accepted values:
+
+                0 shows everything
+
+                -1 hides debug
+
+                -2 hides info (so no stdout except print)
+
+                -3 hides warning
+
+                -4 hides error
+
+                -5 hides all output
+
+    Returns:
+
+        None
+
+    """
     #formatter = logging.Formatter("%(filename)s : %(funcName)s %(message)s")
     time_formatter = logging.Formatter("[%(levelname)s] %(asctime)s : %(message)s")
     level_formatter = logging.Formatter("[%(levelname)s] %(message)s")
@@ -83,7 +125,20 @@ def activate_logging(savepath, paths, logger_name='mastml', to_screen=True, to_f
     log_header(paths, rootLogger) # only shows up in files
 
 def log_header(paths, log):
+    """
+    Method to create header for MAST-ML logger
 
+    Args:
+
+        paths: (list), list containing strings of path locations for config file, data file, and results folder
+
+        log: (logging object), a python log
+
+    Returns:
+
+        None
+
+    """
     logo = textwrap.dedent(f"""\
            __  ___     __________    __  _____
           /  |/  /__ _/ __/_  __/___/  |/  / /
@@ -103,53 +158,84 @@ def log_header(paths, log):
 ## Custom errors for mastml:
 
 class MastError(Exception):
-    """ base class for errors that should be shown to the user """
+    """
+    Base class for MAST-ML specific errors that should be shown to the user
+    """
     pass
 
 class ConfError(MastError):
-    """ error in conf file """
+    """
+    Class representing error in input configuration file
+    """
     pass
 
 class InvalidModel(MastError):
-    """ Model does not exist """
+    """
+    Class representing error when model does not exist
+    """
     pass
 
 class MissingColumnError(MastError):
-    """ raised when your csv doesn't have the column you asked for """
+    """
+    Class representing error raised when your csv doesn't have the specified column
+    """
     pass
 
 class InvalidConfParameters(MastError):
-    """ invalid conf params """
+    """
+    Class representing error raised when you have invalid input configuration file parameters
+    """
     pass
 
 class InvalidConfSubSection(MastError):
-    """ invalid section name """
+    """
+    Class representing error raised when an invalid subsection name is present in the input configuration file
+    """
     pass
 
 class InvalidConfSection(MastError):
-    """ invalid section name """
+    """
+    Class representing error raised when an invalid section name is present in the input configuration file
+    """
     pass
 
 class FiletypeError(MastError):
-    """ for using the wrong file extentions """
+    """
+    Class representing error raised when an improper file extension is used
+    """
     pass
 
 class FileNotFoundError(MastError): # sorry for re-using builtin name
+    """
+    Class representing error raised when a needed file cannot be found
+    """
     pass
 
 class InvalidValue(MastError):
+    """
+    Class representing error raised when an invalid value has been used
+    """
     pass
 
 
-## Magic math stuff for plot_helper to make ranges
-
-from math import log, floor, ceil
+## Math utilities to aid plot_helper to make ranges
 
 def nice_range(lower, upper):
-    """ Pass in two numbers, and get back a list of numbers,
-    including both endpoints. Uses nice looking steps,
-    ie 0.1 or 0.5 or sometimes 2.
     """
+    Method to create a range of values, including the specified start and end points, with nicely spaced intervals
+
+    Args:
+
+        lower: (float or int), lower bound of range to create
+
+        upper: (float or int), upper bound of range to create
+
+    Returns:
+
+        (list), list of numerical values in established range
+
+    """
+
     flipped = 1 # set to -1 for inverted
 
     # Case for validation where nan is passed in
@@ -164,6 +250,20 @@ def nice_range(lower, upper):
     return [_int_if_int(x) for x in _nice_range_helper(lower, upper)][::flipped]
 
 def _nice_range_helper(lower, upper):
+    """
+    Method to help make a better range of axis ticks
+
+    Args:
+
+        lower: (float), lower value of axis ticks
+
+        upper: (float), upper value of axis ticks
+
+    Returns:
+
+        upper: (float), modified upper tick value fixed based on set of axis ticks
+
+    """
     steps = 8
     diff = abs(lower - upper)
 
@@ -210,9 +310,33 @@ def _nice_range_helper(lower, upper):
     yield upper
 
 def _three_sigfigs(x):
+    """
+    Method invoking special case of _n_sigfigs to return 3 sig figs
+
+    Args:
+
+        x: (float), an axis tick number
+
+    Returns:
+
+        (float), number of sig figs (always 3)
+
+    """
     return _n_sigfigs(x, 3)
 
 def _n_sigfigs(x, n):
+    """
+    Method to return number of sig figs to use for axis ticks
+
+    Args:
+
+        x: (float), an axis tick number
+
+    Returns:
+
+        (float), number of sig figs
+
+    """
     sign = 1
     if x == 0:
         return 0
@@ -226,6 +350,18 @@ def _n_sigfigs(x, n):
     return sign * round(x, base)
 
 def _nearest_pow_ten(x):
+    """
+    Method to return the nearest power of ten for an axis tick value
+
+    Args:
+
+        x: (float), an axis tick number
+
+    Returns:
+
+        (float), nearest power of ten of x
+
+    """
     sign = 1
     if x == 0:
         return 0
@@ -235,11 +371,37 @@ def _nearest_pow_ten(x):
     return sign*10**ceil(log(x, 10))
 
 def _int_if_int(x):
+    """
+    Method to return integer mapped value of x
+
+    Args:
+
+        x: (float or int), a number
+
+    Returns:
+
+        x: (float), value of x mapped as integer
+
+    """
     if int(x) == x:
         return int(x)
     return x
 
 def _round_up(x, inc):
+    """
+    Method to round up the value of x
+
+    Args:
+
+        x: (float or int), a number
+
+        inc: (float), an increment for axis ticks
+
+    Returns:
+
+        (float), value of x rounded up
+
+    """
     sign = 1
     if x < 0: # case for negative
         x = -x
@@ -323,123 +485,3 @@ def verbosalize_logger(log, verbosity):
         old_log(level, [None, None, to_upper, to_full_width, to_leet, deep_fry, deep_fry_2, emojify][verbosity](msg), *args, **kwargs)
 
     log._log = new_log
-
-
-
-
-### Subclassing (and outrigtht copying) from sklearn/feature_selection/rfe.py
-### so we can get train and test scores for feature selection
-def _rfe_train_test(rfe, estimator, X, y, train, test, scorer):
-    """
-    Return the score for a fit across one fold.
-    """
-    X_train, y_train = _safe_split(estimator, X, y, train)
-    X_test, y_test = _safe_split(estimator, X, y, test, train)
-
-    train_score = rfe._fit(
-        X_train, y_train, lambda estimator, features:
-        _score(estimator, X_test[:, features], y_test, scorer)).scores_
-
-    test_score = rfe._fit(
-        X_train, y_train, lambda estimator, features:
-        _score(estimator, X_train[:, features], y_train, scorer)).scores_
-
-    return train_score, test_score
-
-
-from sklearn.feature_selection import RFE, RFECV
-from sklearn.base import MetaEstimatorMixin
-
-import numpy as np
-from sklearn.utils import check_X_y
-from sklearn.base import clone
-from sklearn.base import is_classifier
-from sklearn.externals.joblib import Parallel, delayed
-from sklearn.model_selection import check_cv
-from sklearn.model_selection._validation import _safe_split, _score
-from sklearn.metrics.scorer import check_scoring
-
-class RFECV_train_test(RFECV, MetaEstimatorMixin):
-
-
-    def fit(self, X, y):
-        """Fit the RFE model and automatically tune the number of selected
-           features.
-
-        Parameters
-        ----------
-        X : {array-like, sparse matrix}, shape = [n_samples, n_features]
-            Training vector, where `n_samples` is the number of samples and
-            `n_features` is the total number of features.
-
-        y : array-like, shape = [n_samples]
-            Target values (integers for classification, real numbers for
-            regression).
-        """
-        X, y = check_X_y(X, y, "csr")
-
-        # Initialization
-        cv = check_cv(self.cv, y, is_classifier(self.estimator))
-        scorer = check_scoring(self.estimator, scoring=self.scoring)
-        n_features = X.shape[1]
-        n_features_to_select = 1
-
-        if 0.0 < self.step < 1.0:
-            step = int(max(1, self.step * n_features))
-        else:
-            step = int(self.step)
-        if step <= 0:
-            raise ValueError("Step must be >0")
-
-        rfe = RFE(estimator=self.estimator,
-                  n_features_to_select=n_features_to_select,
-                  step=self.step, verbose=self.verbose)
-
-        # Determine the number of subsets of features by fitting across
-        # the train folds and choosing the "features_to_select" parameter
-        # that gives the least averaged error across all folds.
-
-        # Note that joblib raises a non-picklable error for bound methods
-        # even if n_jobs is set to 1 with the default multiprocessing
-        # backend.
-        # This branching is done so that to
-        # make sure that user code that sets n_jobs to 1
-        # and provides bound methods as scorers is not broken with the
-        # addition of n_jobs parameter in version 0.18.
-
-        if self.n_jobs == 1:
-            parallel, func = list, _rfe_train_test
-        else:
-            parallel, func, = Parallel(n_jobs=self.n_jobs), delayed(_rfe_train_test)
-
-        train_test_scores = parallel(
-            func(rfe, self.estimator, X, y, train, test, scorer)
-            for train, test in cv.split(X, y))
-
-        train_scores = np.sum(train_test_scores[0], axis=0)
-        test_scores = np.sum(train_test_scores[1], axis=0)
-        scores = test_scores
-
-        n_features_to_select = max(
-            n_features - (np.argmax(scores) * step),
-            n_features_to_select)
-
-        # Re-execute an elimination with best_k over the whole set
-        rfe = RFE(estimator=self.estimator,
-                  n_features_to_select=n_features_to_select, step=self.step)
-
-        rfe.fit(X, y)
-
-        # Set final attributes
-        self.support_ = rfe.support_
-        self.n_features_ = rfe.n_features_
-        self.ranking_ = rfe.ranking_
-        self.estimator_ = clone(self.estimator)
-        self.estimator_.fit(self.transform(X), y)
-
-        # Fixing a normalization error, n is equal to get_n_splits(X, y) - 1
-        # here, the scores are normalized by get_n_splits(X, y)
-        self.grid_train_scores_ = train_scores[::-1] / cv.get_n_splits(X, y)
-        self.grid_scores_ = test_scores[::-1] / cv.get_n_splits(X, y)
-        return self
-    

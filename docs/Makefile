@@ -3,8 +3,7 @@
 
 # You can set these variables from the command line.
 SPHINXOPTS    =
-#SPHINXBUILD   = python -msphinx
-SPHINXBUILD   = ~/anaconda3/bin/sphinx-build
+SPHINXBUILD   = python -msphinx
 SPHINXPROJ    = MAterialsSimulationToolkitforMachineLearningMAST-ML
 SOURCEDIR     = source
 BUILDDIR      = build

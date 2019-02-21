@@ -1,0 +1,396 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Feature Selectors &mdash; MAterials Simulation Toolkit for Machine Learning (MAST-ML) 2.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Feature Normalizers" href="15_feature_normalizers.html" />
+    <link rel="prev" title="HTML Helper" href="13_html_helper.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> MAterials Simulation Toolkit for Machine Learning (MAST-ML)
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="00_acknowledgements.html">Acknowledgements</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="00_acknowledgements.html#contributors">Contributors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="00_acknowledgements.html#funding">Funding</a></li>
+<li class="toctree-l2"><a class="reference internal" href="00_acknowledgements.html#citing-mast-ml">Citing MAST-ML</a></li>
+<li class="toctree-l2"><a class="reference internal" href="00_acknowledgements.html#code-repository">Code Repository</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="0_installation.html">Installing MAST-ML</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="0_1_hardware_data_requirements.html">Hardware and Data Requirements</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="0_1_hardware_data_requirements.html#hardware">Hardware</a></li>
+<li class="toctree-l3"><a class="reference internal" href="0_1_hardware_data_requirements.html#data">Data</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="0_1_terminal_installation.html">Terminal installation (Linux or linux-like terminal on Mac)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="0_1_terminal_installation.html#install-python3">Install Python3</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="0_1_terminal_installation.html#create-a-conda-environment">Create a conda environment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0_1_terminal_installation.html#set-up-juptyer-notebooks">Set up Juptyer notebooks</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="0_1_terminal_installation.html#install-the-mast-ml-package">Install the MAST-ML package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="0_1_terminal_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="0_2_windows_installation.html">Windows installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="0_2_windows_installation.html#install-python3">Install Python3</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="0_2_windows_installation.html#create-a-conda-environment">Create a conda environment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0_2_windows_installation.html#set-up-the-spyder-ide-and-jupyter-notebooks">Set up the Spyder IDE and Jupyter notebooks</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="0_2_windows_installation.html#install-the-mast-ml-package">Install the MAST-ML package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="0_2_windows_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="0_3_startup.html">Startup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="0_3_startup.html#locate-the-examples-folder">Locate the examples folder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="0_3_startup.html#run-the-mastml-command">Run the MASTML command</a></li>
+<li class="toctree-l3"><a class="reference internal" href="0_3_startup.html#check-output">Check output</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="1_mastml_inputfile.html">MAST-ML Input File</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="1_mastml_inputfile.html#input-file-sections">Input file sections</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#general-setup">General Setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#data-cleaning">Data Cleaning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#clustering">Clustering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#feature-generation">Feature Generation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#feature-normalization">Feature Normalization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#learning-curve">Learning Curve</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#feature-selection">Feature Selection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#data-splits">Data Splits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#models">Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#plot-settings">Plot Settings</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="2_mastml_overview.html">MAST-ML overview slides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="2_mastml_tutorial.html">MAST-ML tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_firstrun.html">Your first MAST-ML run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_cleaning.html">Cleaning input data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_featuregen.html">Feature generation and normalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_firstmodel.html">Training and evaluating your first model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_featureselect.html">Feature selection and learning curves</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_hyperparam.html">Hyperparameter optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_logcv.html">Random leave-out versus leave-out-group cross-validation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_modelimport.html">Making predictions by importing a previously fit model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_prediction.html">Predicting values for new, extrapolated data</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="3_code_documentation.html">MAST-ML Code Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="3_metrics.html">Metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="4_conf_parser.html">Configuration file parser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="5_data_cleaner.html">Data cleaner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="6_data_loader.html">Data loader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="7_learning_curve.html">Learning curve</a></li>
+<li class="toctree-l2"><a class="reference internal" href="8_clusterers.html">Clusterers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="9_data_splitters.html">Data splitters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="10_utils.html">Utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="11_mastml_driver.html">MAST-ML Driver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="12_plot_helper.html">Plot Helper</a></li>
+<li class="toctree-l2"><a class="reference internal" href="13_html_helper.html">HTML Helper</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Feature Selectors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="15_feature_normalizers.html">Feature Normalizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="16_randomizers.html">Randomizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="17_model_finder.html">Model Finder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="18_util_legos.html">Utility Legos</a></li>
+<li class="toctree-l2"><a class="reference internal" href="19_feature_generators.html">Feature Generators</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">MAterials Simulation Toolkit for Machine Learning (MAST-ML)</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="3_code_documentation.html">MAST-ML Code Documentation</a> &raquo;</li>
+        
+      <li>Feature Selectors</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/14_feature_selectors.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-feature_selectors">
+<span id="feature-selectors"></span><h1>Feature Selectors<a class="headerlink" href="#module-feature_selectors" title="Permalink to this headline">¶</a></h1>
+<p>This module contains a collection of classes and methods for selecting features, and interfaces with scikit-learn feature
+selectors. More information on scikit-learn feature selectors is available at:</p>
+<p><a class="reference external" href="http://scikit-learn.org/stable/modules/classes.html#module-sklearn.feature_selection">http://scikit-learn.org/stable/modules/classes.html#module-sklearn.feature_selection</a></p>
+<dl class="class">
+<dt id="feature_selectors.MASTMLFeatureSelector">
+<em class="property">class </em><code class="descclassname">feature_selectors.</code><code class="descname">MASTMLFeatureSelector</code><span class="sig-paren">(</span><em>estimator</em>, <em>n_features_to_select</em>, <em>cv</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/feature_selectors.html#MASTMLFeatureSelector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#feature_selectors.MASTMLFeatureSelector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class custom-written for MAST-ML to conduct forward selection of features with flexible model and cv scheme</p>
+<p>Args:</p>
+<blockquote>
+<div><p>estimator: (scikit-learn model/estimator object), a scikit-learn model/estimator</p>
+<p>n_features_to_select: (int), the number of features to select</p>
+<p>cv: (scikit-learn cross-validation object), a scikit-learn cross-validation object</p>
+</div></blockquote>
+<p>Methods:</p>
+<blockquote>
+<div><p>fit: performs feature selection</p>
+<blockquote>
+<div><p>Args:</p>
+<blockquote>
+<div><p>X: (dataframe), dataframe of X features</p>
+<p>y: (dataframe), dataframe of y data</p>
+<p>Xgroups: (dataframe), dataframe of group labels</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>None</div></blockquote>
+</div></blockquote>
+<p>transform: performs the transform to generate output of only selected features</p>
+<blockquote>
+<div><p>Args:</p>
+<blockquote>
+<div>X: (dataframe), dataframe of X features</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>dataframe: (dataframe), dataframe of selected X features</div></blockquote>
+</div></blockquote>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="feature_selectors.dataframify_new_column_names">
+<code class="descclassname">feature_selectors.</code><code class="descname">dataframify_new_column_names</code><span class="sig-paren">(</span><em>transform</em>, <em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/feature_selectors.html#dataframify_new_column_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#feature_selectors.dataframify_new_column_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method which transforms output of scikit-learn feature selectors to dataframe, and adds column names</p>
+<p>Args:</p>
+<blockquote>
+<div><p>transform: (function), a scikit-learn feature selector that has a transform method</p>
+<p>name: (str), name of the feature selector</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>new_transform: (function), an amended version of the transform method that returns a dataframe</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="feature_selectors.dataframify_selector">
+<code class="descclassname">feature_selectors.</code><code class="descname">dataframify_selector</code><span class="sig-paren">(</span><em>transform</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/feature_selectors.html#dataframify_selector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#feature_selectors.dataframify_selector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method which transforms output of scikit-learn feature selectors from array to dataframe. Enables preservation of column names.</p>
+<p>Args:</p>
+<blockquote>
+<div>transform: (function), a scikit-learn feature selector that has a transform method</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>new_transform: (function), an amended version of the transform method that returns a dataframe</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="feature_selectors.fitify_just_use_values">
+<code class="descclassname">feature_selectors.</code><code class="descname">fitify_just_use_values</code><span class="sig-paren">(</span><em>fit</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/feature_selectors.html#fitify_just_use_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#feature_selectors.fitify_just_use_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method which enables a feature selector fit method to operate on dataframes</p>
+<p>Args:</p>
+<blockquote>
+<div>fit: (function), a scikit-learn feature selector object with a fit method</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>new_fit: (function), an amended version of the fit method that uses dataframes as input</div></blockquote>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="15_feature_normalizers.html" class="btn btn-neutral float-right" title="Feature Normalizers" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="13_html_helper.html" class="btn btn-neutral" title="HTML Helper" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, University of Wisconsin-Madison Computational Materials Group
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'./',
+              VERSION:'2.0',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

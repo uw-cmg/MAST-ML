@@ -1,23 +1,32 @@
 """
-Module for handling, parsing, and checking configuration files
+The conf_parser module is used for handling, parsing, and checking MAST-ML input configuration files
 """
 
 from sklearn.metrics import make_scorer
 from configobj import ConfigObj
 import logging
 
-from . import metrics, utils
-from .legos.model_finder import check_models_mixed
-from .legos import feature_selectors, model_finder
+from mastml import metrics, utils
+from mastml.legos.model_finder import check_models_mixed
+from mastml.legos import feature_selectors, model_finder
 
 log = logging.getLogger('mastml')
 
 def parse_conf_file(filepath):
-    "Accepts the filepath of a conf file and returns its parsed dictionary"
+    """
+    Method that accepts the filepath of an input configuration file and returns its parsed dictionary
+
+    Args:
+        filepath: (str), path to config file
+
+    Returns:
+        conf: (dict): dictionary parsed from config file
+
+    """
 
     conf = ConfigObj(filepath)
 
-    main_sections = ['GeneralSetup', 'DataSplits', 'Models', 'LearningCurve', 'DataCleaning']
+    main_sections = ['GeneralSetup', 'DataSplits', 'Models', 'LearningCurve', 'DataCleaning', 'HyperOpt']
     feature_sections = ['FeatureGeneration', 'Clustering',
                         'FeatureNormalization', 'FeatureSelection']
     feature_section_dicts = [conf[name] for name in feature_sections if name in conf]
@@ -176,11 +185,12 @@ def parse_conf_file(filepath):
     change_score_func_strings_into_actual_score_funcs()
 
     def make_long_name_short_name_pairs():
-        dictionaries = ([conf['DataSplits'], conf['Models']]
+        dictionaries = ([conf['DataSplits'], conf['Models'], conf['HyperOpt']]
                         + [conf[name] for name in feature_sections])
         for dictionary in dictionaries:
             for name, settings in dictionary.items():
-                dictionary[name] = (name.split('_')[0], settings)
+                #dictionary[name] = (name.split('_')[0], settings)
+                dictionary[name] = [name.split('_')[0], settings]
     make_long_name_short_name_pairs()
 
     def check_and_boolify_plot_settings():
@@ -217,6 +227,7 @@ def parse_conf_file(filepath):
             raise utils.InvalidConfParameters("You enabled data_learning_curve plots but you did"
                                               "not specify learning_curve_score in [GeneralSetup]")
 
+    # Need to make scoring function for learning curve string to scorer object
     if conf['LearningCurve']:
         score_name = conf['LearningCurve']['scoring']
         d = metrics.check_and_fetch_names([score_name], is_classification)
@@ -226,8 +237,16 @@ def parse_conf_file(filepath):
     return conf
 
 def fix_types(maybe_list):
-    "Takes user parameter string and gives python value"
+    """
+    Method that returns true datatype of values passed as string or list of strings, parsed from configuration file
 
+    Args:
+        maybe_list: (list, str), a list of strings or just a string whose datatype should be e.g. int or list of float
+
+    Returns:
+        maybe_list: (list, bool, int, float): a list of items or other data type converted from string to correct data type
+
+    """
     if isinstance(maybe_list, list):
         return [fix_types(item) for item in maybe_list]
 
@@ -243,7 +262,16 @@ def fix_types(maybe_list):
     return str(maybe_list)
 
 def mybool(string):
-    "Turn string representing bool into actual bool"
+    """
+    Method that converts a string equal to 'True' or 'False' into type bool
+
+    Args:
+        string: (str), a string as 'True' or 'False'
+
+    Returns:
+        bool: (bool): bool as True or False
+
+    """
     if string.lower() == 'true':
         return True
     if string.lower() == 'false':

@@ -1,0 +1,400 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>MAST-ML Driver &mdash; MAterials Simulation Toolkit for Machine Learning (MAST-ML) 2.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Plot Helper" href="12_plot_helper.html" />
+    <link rel="prev" title="Utils" href="10_utils.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> MAterials Simulation Toolkit for Machine Learning (MAST-ML)
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="00_acknowledgements.html">Acknowledgements</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="00_acknowledgements.html#contributors">Contributors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="00_acknowledgements.html#funding">Funding</a></li>
+<li class="toctree-l2"><a class="reference internal" href="00_acknowledgements.html#citing-mast-ml">Citing MAST-ML</a></li>
+<li class="toctree-l2"><a class="reference internal" href="00_acknowledgements.html#code-repository">Code Repository</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="0_installation.html">Installing MAST-ML</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="0_1_hardware_data_requirements.html">Hardware and Data Requirements</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="0_1_hardware_data_requirements.html#hardware">Hardware</a></li>
+<li class="toctree-l3"><a class="reference internal" href="0_1_hardware_data_requirements.html#data">Data</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="0_1_terminal_installation.html">Terminal installation (Linux or linux-like terminal on Mac)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="0_1_terminal_installation.html#install-python3">Install Python3</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="0_1_terminal_installation.html#create-a-conda-environment">Create a conda environment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0_1_terminal_installation.html#set-up-juptyer-notebooks">Set up Juptyer notebooks</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="0_1_terminal_installation.html#install-the-mast-ml-package">Install the MAST-ML package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="0_1_terminal_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="0_2_windows_installation.html">Windows installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="0_2_windows_installation.html#install-python3">Install Python3</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="0_2_windows_installation.html#create-a-conda-environment">Create a conda environment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0_2_windows_installation.html#set-up-the-spyder-ide-and-jupyter-notebooks">Set up the Spyder IDE and Jupyter notebooks</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="0_2_windows_installation.html#install-the-mast-ml-package">Install the MAST-ML package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="0_2_windows_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="0_3_startup.html">Startup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="0_3_startup.html#locate-the-examples-folder">Locate the examples folder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="0_3_startup.html#run-the-mastml-command">Run the MASTML command</a></li>
+<li class="toctree-l3"><a class="reference internal" href="0_3_startup.html#check-output">Check output</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="1_mastml_inputfile.html">MAST-ML Input File</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="1_mastml_inputfile.html#input-file-sections">Input file sections</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#general-setup">General Setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#data-cleaning">Data Cleaning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#clustering">Clustering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#feature-generation">Feature Generation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#feature-normalization">Feature Normalization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#learning-curve">Learning Curve</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#feature-selection">Feature Selection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#data-splits">Data Splits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#models">Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#plot-settings">Plot Settings</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="2_mastml_overview.html">MAST-ML overview slides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="2_mastml_tutorial.html">MAST-ML tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_firstrun.html">Your first MAST-ML run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_cleaning.html">Cleaning input data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_featuregen.html">Feature generation and normalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_firstmodel.html">Training and evaluating your first model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_featureselect.html">Feature selection and learning curves</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_hyperparam.html">Hyperparameter optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_logcv.html">Random leave-out versus leave-out-group cross-validation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_modelimport.html">Making predictions by importing a previously fit model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_prediction.html">Predicting values for new, extrapolated data</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="3_code_documentation.html">MAST-ML Code Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="3_metrics.html">Metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="4_conf_parser.html">Configuration file parser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="5_data_cleaner.html">Data cleaner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="6_data_loader.html">Data loader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="7_learning_curve.html">Learning curve</a></li>
+<li class="toctree-l2"><a class="reference internal" href="8_clusterers.html">Clusterers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="9_data_splitters.html">Data splitters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="10_utils.html">Utils</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">MAST-ML Driver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="12_plot_helper.html">Plot Helper</a></li>
+<li class="toctree-l2"><a class="reference internal" href="13_html_helper.html">HTML Helper</a></li>
+<li class="toctree-l2"><a class="reference internal" href="14_feature_selectors.html">Feature Selectors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="15_feature_normalizers.html">Feature Normalizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="16_randomizers.html">Randomizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="17_model_finder.html">Model Finder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="18_util_legos.html">Utility Legos</a></li>
+<li class="toctree-l2"><a class="reference internal" href="19_feature_generators.html">Feature Generators</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">MAterials Simulation Toolkit for Machine Learning (MAST-ML)</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="3_code_documentation.html">MAST-ML Code Documentation</a> &raquo;</li>
+        
+      <li>MAST-ML Driver</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/11_mastml_driver.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-mastml_driver">
+<span id="mast-ml-driver"></span><h1>MAST-ML Driver<a class="headerlink" href="#module-mastml_driver" title="Permalink to this headline">¶</a></h1>
+<p>Main MAST-ML module responsible for executing the workflow of a MAST-ML run</p>
+<dl class="function">
+<dt id="mastml_driver._instantiate">
+<code class="descclassname">mastml_driver.</code><code class="descname">_instantiate</code><span class="sig-paren">(</span><em>kwargs_dict</em>, <em>name_to_constructor</em>, <em>category</em>, <em>X_grouped=None</em>, <em>X_indices=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml_driver.html#_instantiate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml_driver._instantiate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uses name_to_constructor to instantiate every item in kwargs_dict and return
+the list of instantiations</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mastml_driver._save_all_runs">
+<code class="descclassname">mastml_driver.</code><code class="descname">_save_all_runs</code><span class="sig-paren">(</span><em>runs</em>, <em>outdir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml_driver.html#_save_all_runs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml_driver._save_all_runs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produces a giant html table of all stats for all runs</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mastml_driver.check_paths">
+<code class="descclassname">mastml_driver.</code><code class="descname">check_paths</code><span class="sig-paren">(</span><em>conf_path</em>, <em>data_path</em>, <em>outdir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml_driver.html#check_paths"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml_driver.check_paths" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method is responsible for error handling of the user-specified paths for the configuration file, data file,
+and output directory.</p>
+<p>Args:</p>
+<blockquote>
+<div><p>conf_path: (str), the path supplied by the user which contains the input configuration file</p>
+<p>data_path: (str), the path supplied by the user which contains the input data file (as CSV or XLSX)</p>
+<p>outdir: (str), the path supplied by the user which determines where the output results are saved to</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div><p>conf_path: (str), the path supplied by the user which contains the input configuration file</p>
+<p>data_path: (str), the path supplied by the user which contains the input data file (as CSV or XLSX)</p>
+<p>outdir: (str), the path supplied by the user which determines where the output results are saved to</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="mastml_driver.get_commandline_args">
+<code class="descclassname">mastml_driver.</code><code class="descname">get_commandline_args</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml_driver.html#get_commandline_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml_driver.get_commandline_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method is responsible for parsing and checking the command-line execution of MAST-ML inputted by the user.</p>
+<p>Args:</p>
+<blockquote>
+<div>None</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div><p>(str), the path supplied by the user which contains the input configuration file</p>
+<p>(str), the path supplied by the user which contains the input data file (as CSV or XLSX)</p>
+<p>(str), the path supplied by the user which determines where the output results are saved to</p>
+<p>verbosity: (int), the verbosity level of the MAST-ML log, which determines the amount of information writtent to the log.</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="mastml_driver.main">
+<code class="descclassname">mastml_driver.</code><code class="descname">main</code><span class="sig-paren">(</span><em>conf_path</em>, <em>data_path</em>, <em>outdir</em>, <em>verbosity=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml_driver.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml_driver.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method is responsible for setting up the initial stage of the MAST-ML run, such as parsing input directories to
+designate where data will be imported and results saved to, as well as creation of the MAST-ML run log.</p>
+<p>Args:</p>
+<blockquote>
+<div><p>conf_path: (str), the path supplied by the user which contains the input configuration file</p>
+<p>data_path: (str), the path supplied by the user which contains the input data file (as CSV or XLSX)</p>
+<p>outdir: (str), the path supplied by the user which determines where the output results are saved to</p>
+<p>verbosity: (int), the verbosity level of the MAST-ML log, which determines the amount of information written to the log.</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>outdir: (str), the path supplied by the user which determines where the output results are saved to (needed by other calls in MAST-ML)</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="mastml_driver.mastml_run">
+<code class="descclassname">mastml_driver.</code><code class="descname">mastml_run</code><span class="sig-paren">(</span><em>conf_path</em>, <em>data_path</em>, <em>outdir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml_driver.html#mastml_run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml_driver.mastml_run" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method is responsible for conducting the main MAST-ML run workflow</p>
+<p>Args:</p>
+<blockquote>
+<div><p>conf_path: (str), the path supplied by the user which contains the input configuration file</p>
+<p>data_path: (str), the path supplied by the user which contains the input data file (as CSV or XLSX)</p>
+<p>outdir: (str), the path supplied by the user which determines where the output results are saved to</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>None</div></blockquote>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="12_plot_helper.html" class="btn btn-neutral float-right" title="Plot Helper" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="10_utils.html" class="btn btn-neutral" title="Utils" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, University of Wisconsin-Madison Computational Materials Group
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'./',
+              VERSION:'2.0',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

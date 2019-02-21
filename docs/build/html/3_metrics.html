@@ -1,0 +1,404 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Metrics &mdash; MAterials Simulation Toolkit for Machine Learning (MAST-ML) 2.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Configuration file parser" href="4_conf_parser.html" />
+    <link rel="prev" title="MAST-ML Code Documentation" href="3_code_documentation.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> MAterials Simulation Toolkit for Machine Learning (MAST-ML)
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="00_acknowledgements.html">Acknowledgements</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="00_acknowledgements.html#contributors">Contributors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="00_acknowledgements.html#funding">Funding</a></li>
+<li class="toctree-l2"><a class="reference internal" href="00_acknowledgements.html#citing-mast-ml">Citing MAST-ML</a></li>
+<li class="toctree-l2"><a class="reference internal" href="00_acknowledgements.html#code-repository">Code Repository</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="0_installation.html">Installing MAST-ML</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="0_1_hardware_data_requirements.html">Hardware and Data Requirements</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="0_1_hardware_data_requirements.html#hardware">Hardware</a></li>
+<li class="toctree-l3"><a class="reference internal" href="0_1_hardware_data_requirements.html#data">Data</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="0_1_terminal_installation.html">Terminal installation (Linux or linux-like terminal on Mac)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="0_1_terminal_installation.html#install-python3">Install Python3</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="0_1_terminal_installation.html#create-a-conda-environment">Create a conda environment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0_1_terminal_installation.html#set-up-juptyer-notebooks">Set up Juptyer notebooks</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="0_1_terminal_installation.html#install-the-mast-ml-package">Install the MAST-ML package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="0_1_terminal_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="0_2_windows_installation.html">Windows installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="0_2_windows_installation.html#install-python3">Install Python3</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="0_2_windows_installation.html#create-a-conda-environment">Create a conda environment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0_2_windows_installation.html#set-up-the-spyder-ide-and-jupyter-notebooks">Set up the Spyder IDE and Jupyter notebooks</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="0_2_windows_installation.html#install-the-mast-ml-package">Install the MAST-ML package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="0_2_windows_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="0_3_startup.html">Startup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="0_3_startup.html#locate-the-examples-folder">Locate the examples folder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="0_3_startup.html#run-the-mastml-command">Run the MASTML command</a></li>
+<li class="toctree-l3"><a class="reference internal" href="0_3_startup.html#check-output">Check output</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="1_mastml_inputfile.html">MAST-ML Input File</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="1_mastml_inputfile.html#input-file-sections">Input file sections</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#general-setup">General Setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#data-cleaning">Data Cleaning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#clustering">Clustering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#feature-generation">Feature Generation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#feature-normalization">Feature Normalization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#learning-curve">Learning Curve</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#feature-selection">Feature Selection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#data-splits">Data Splits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#models">Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#plot-settings">Plot Settings</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="2_mastml_overview.html">MAST-ML overview slides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="2_mastml_tutorial.html">MAST-ML tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_firstrun.html">Your first MAST-ML run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_cleaning.html">Cleaning input data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_featuregen.html">Feature generation and normalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_firstmodel.html">Training and evaluating your first model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_featureselect.html">Feature selection and learning curves</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_hyperparam.html">Hyperparameter optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_logcv.html">Random leave-out versus leave-out-group cross-validation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_modelimport.html">Making predictions by importing a previously fit model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_prediction.html">Predicting values for new, extrapolated data</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="3_code_documentation.html">MAST-ML Code Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="4_conf_parser.html">Configuration file parser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="5_data_cleaner.html">Data cleaner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="6_data_loader.html">Data loader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="7_learning_curve.html">Learning curve</a></li>
+<li class="toctree-l2"><a class="reference internal" href="8_clusterers.html">Clusterers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="9_data_splitters.html">Data splitters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="10_utils.html">Utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="11_mastml_driver.html">MAST-ML Driver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="12_plot_helper.html">Plot Helper</a></li>
+<li class="toctree-l2"><a class="reference internal" href="13_html_helper.html">HTML Helper</a></li>
+<li class="toctree-l2"><a class="reference internal" href="14_feature_selectors.html">Feature Selectors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="15_feature_normalizers.html">Feature Normalizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="16_randomizers.html">Randomizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="17_model_finder.html">Model Finder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="18_util_legos.html">Utility Legos</a></li>
+<li class="toctree-l2"><a class="reference internal" href="19_feature_generators.html">Feature Generators</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">MAterials Simulation Toolkit for Machine Learning (MAST-ML)</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="3_code_documentation.html">MAST-ML Code Documentation</a> &raquo;</li>
+        
+      <li>Metrics</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/3_metrics.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-metrics">
+<span id="metrics"></span><h1>Metrics<a class="headerlink" href="#module-metrics" title="Permalink to this headline">¶</a></h1>
+<p>This module contains constructors for different model score metrics. Most model metrics are obtained from scikit-learn,
+while others are custom variations.</p>
+<p>The full list of score functions in scikit-learn can be found at: <a class="reference external" href="http://scikit-learn.org/stable/modules/model_evaluation.html">http://scikit-learn.org/stable/modules/model_evaluation.html</a></p>
+<dl class="function">
+<dt id="metrics.adjusted_r2_score">
+<code class="descclassname">metrics.</code><code class="descname">adjusted_r2_score</code><span class="sig-paren">(</span><em>y_true</em>, <em>y_pred</em>, <em>n_features=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#adjusted_r2_score"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metrics.adjusted_r2_score" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method that calculates the adjusted R^2 value</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>y_true: (numpy array), array of true y data values
+y_pred: (numpy array), array of predicted y data values
+n_features: (int), number of features used in the fit</dd>
+<dt>Returns:</dt>
+<dd>(float): score of adjusted R^2</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="metrics.check_and_fetch_names">
+<code class="descclassname">metrics.</code><code class="descname">check_and_fetch_names</code><span class="sig-paren">(</span><em>metric_names</em>, <em>is_classification</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#check_and_fetch_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metrics.check_and_fetch_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method that checks whether chosen metrics to evaluate models are appropriate for user-specified models (e.g.
+classification vs. regression models)</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>metric_names: (numpy array), array of true y data values
+is_classification: (bool), whether the task is a classification task</dd>
+<dt>Returns:</dt>
+<dd>functions (dict): dict containing the appropriate metric objects (e.g. classification vs. regression metrics)</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="metrics.r2_score">
+<code class="descclassname">metrics.</code><code class="descname">r2_score</code><span class="sig-paren">(</span><em>y_true</em>, <em>y_pred</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#r2_score"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metrics.r2_score" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method that calculates the R^2 value</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>y_true: (numpy array), array of true y data values
+y_pred: (numpy array), array of predicted y data values</dd>
+<dt>Returns:</dt>
+<dd>(float): score of R^2</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="metrics.r2_score_noint">
+<code class="descclassname">metrics.</code><code class="descname">r2_score_noint</code><span class="sig-paren">(</span><em>y_true</em>, <em>y_pred</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#r2_score_noint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metrics.r2_score_noint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method that calculates the R^2 value without fitting the y-intercept</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>y_true: (numpy array), array of true y data values
+y_pred: (numpy array), array of predicted y data values</dd>
+<dt>Returns:</dt>
+<dd>(float): score of R^2 with no y-intercept</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="metrics.rmse_over_stdev">
+<code class="descclassname">metrics.</code><code class="descname">rmse_over_stdev</code><span class="sig-paren">(</span><em>y_true</em>, <em>y_pred</em>, <em>train_y=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#rmse_over_stdev"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metrics.rmse_over_stdev" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method that calculates the root mean squared error (RMSE) of a set of data, divided by the standard deviation of
+the training data set.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>y_true: (numpy array), array of true y data values
+y_pred: (numpy array), array of predicted y data values
+train_y: (numpy array), array of training y data values</dd>
+<dt>Returns:</dt>
+<dd>(float): score of RMSE divided by standard deviation of training data</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="metrics.root_mean_squared_error">
+<code class="descclassname">metrics.</code><code class="descname">root_mean_squared_error</code><span class="sig-paren">(</span><em>y_true</em>, <em>y_pred</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#root_mean_squared_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metrics.root_mean_squared_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method that calculates the root mean squared error (RMSE)</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>y_true: (numpy array), array of true y data values
+y_pred: (numpy array), array of predicted y data values</dd>
+<dt>Returns:</dt>
+<dd>(float): score of RMSE</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="4_conf_parser.html" class="btn btn-neutral float-right" title="Configuration file parser" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="3_code_documentation.html" class="btn btn-neutral" title="MAST-ML Code Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, University of Wisconsin-Madison Computational Materials Group
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'./',
+              VERSION:'2.0',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

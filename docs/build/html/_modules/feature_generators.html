@@ -1,0 +1,1481 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>feature_generators &mdash; MAterials Simulation Toolkit for Machine Learning (MAST-ML) 2.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> MAterials Simulation Toolkit for Machine Learning (MAST-ML)
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../00_acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../0_installation.html">Installing MAST-ML</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../0_1_hardware_data_requirements.html">Hardware and Data Requirements</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../0_1_hardware_data_requirements.html#hardware">Hardware</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../0_1_hardware_data_requirements.html#data">Data</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../0_1_terminal_installation.html">Terminal installation (Linux or linux-like terminal on Mac)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../0_1_terminal_installation.html#install-python3">Install Python3</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../0_1_terminal_installation.html#create-a-conda-environment">Create a conda environment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../0_1_terminal_installation.html#set-up-juptyer-notebooks">Set up Juptyer notebooks</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../0_1_terminal_installation.html#install-the-mast-ml-package">Install the MAST-ML package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../0_1_terminal_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../0_2_windows_installation.html">Windows installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../0_2_windows_installation.html#install-python3">Install Python3</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../0_2_windows_installation.html#create-a-conda-environment">Create a conda environment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../0_2_windows_installation.html#set-up-the-spyder-ide-and-jupyter-notebooks">Set up the Spyder IDE and Jupyter notebooks</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../0_2_windows_installation.html#install-the-mast-ml-package">Install the MAST-ML package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../0_2_windows_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../0_3_startup.html">Startup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../0_3_startup.html#locate-the-examples-folder">Locate the examples folder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../0_3_startup.html#run-the-mastml-command">Run the MASTML command</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../0_3_startup.html#check-output">Check output</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../1_mastml_inputfile.html">MAST-ML Input File</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../1_mastml_inputfile.html#input-file-sections">Input file sections</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#general-setup">General Setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#data-cleaning">Data Cleaning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#clustering">Clustering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#feature-generation">Feature Generation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#feature-normalization">Feature Normalization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#learning-curve">Learning Curve</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#feature-selection">Feature Selection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#data-splits">Data Splits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#models">Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#plot-settings">Plot Settings</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../2_mastml_overview.html">MAST-ML overview slides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../2_mastml_tutorial.html">MAST-ML tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_firstrun.html">Your first MAST-ML run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_cleaning.html">Cleaning input data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_featuregen.html">Feature generation and normalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_firstmodel.html">Training and evaluating your first model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_featureselect.html">Feature selection and learning curves</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_hyperparam.html">Hyperparameter optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_logcv.html">Random leave-out versus leave-out-group cross-validation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_modelimport.html">Making predictions by importing a previously fit model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_prediction.html">Predicting values for new, extrapolated data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../3_code_documentation.html">MAST-ML Code Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../3_metrics.html">Metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../4_conf_parser.html">Configuration file parser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../5_data_cleaner.html">Data cleaner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../6_data_loader.html">Data loader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../7_learning_curve.html">Learning curve</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../8_clusterers.html">Clusterers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../9_data_splitters.html">Data splitters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../10_utils.html">Utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../11_mastml_driver.html">MAST-ML Driver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../12_plot_helper.html">Plot Helper</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../13_html_helper.html">HTML Helper</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../14_feature_selectors.html">Feature Selectors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../15_feature_normalizers.html">Feature Normalizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../16_randomizers.html">Randomizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../17_model_finder.html">Model Finder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../18_util_legos.html">Utility Legos</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../19_feature_generators.html">Feature Generators</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">MAterials Simulation Toolkit for Machine Learning (MAST-ML)</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>feature_generators</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for feature_generators</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module contains a collection of classes for generating input features to fit machine learning models to.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">multiprocessing</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="k">import</span> <span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="k">import</span> <span class="n">PolynomialFeatures</span> <span class="k">as</span> <span class="n">SklearnPolynomialFeatures</span>
+
+<span class="kn">import</span> <span class="nn">pymatgen</span>
+<span class="kn">from</span> <span class="nn">pymatgen</span> <span class="k">import</span> <span class="n">Element</span><span class="p">,</span> <span class="n">Composition</span>
+<span class="kn">from</span> <span class="nn">pymatgen.ext.matproj</span> <span class="k">import</span> <span class="n">MPRester</span>
+<span class="c1">#from citrination_client import CitrinationClient, PifQuery, SystemQuery, ChemicalFieldQuery, ChemicalFilter</span>
+<span class="c1"># trouble? try: `pip install citrination_client==&quot;2.1.0&quot;`</span>
+
+<span class="c1"># locate path to directory containing AtomicNumber.table, AtomicRadii.table AtomicVolume.table, etc</span>
+<span class="c1"># (needs to do it the hard way becuase python -m sets cwd to wherever python is ran from)</span>
+<span class="kn">import</span> <span class="nn">mastml</span>
+<span class="kn">from</span> <span class="nn">mastml</span> <span class="k">import</span> <span class="n">utils</span>
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;mastml&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;mastml dir: &#39;</span><span class="p">,</span> <span class="n">mastml</span><span class="o">.</span><span class="n">__path__</span><span class="p">)</span>
+<span class="n">MAGPIE_DATA_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mastml</span><span class="o">.</span><span class="n">__path__</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;../magpie/&#39;</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">matminer.data_retrieval.retrieve_Citrine</span> <span class="k">import</span> <span class="n">CitrineDataRetrieval</span>
+<span class="kn">from</span> <span class="nn">matminer.data_retrieval.retrieve_MP</span> <span class="k">import</span> <span class="n">MPDataRetrieval</span>
+
+<div class="viewcode-block" id="PolynomialFeatures"><a class="viewcode-back" href="../19_feature_generators.html#feature_generators.PolynomialFeatures">[docs]</a><span class="k">class</span> <span class="nc">PolynomialFeatures</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to generate polynomial features using scikit-learn&#39;s polynomial features method</span>
+<span class="sd">    More info at: http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        degree: (int), degree of polynomial features</span>
+
+<span class="sd">        interaction_only: (bool), If true, only interaction features are produced: features that are products of at</span>
+<span class="sd">        most degree distinct input features (so not x[1] ** 2, x[0] * x[2] ** 3, etc.).</span>
+
+<span class="sd">        include_bias: (bool),If True (default), then include a bias column, the feature in which all polynomial powers</span>
+<span class="sd">        are zero (i.e. a column of ones - acts as an intercept term in a linear model).</span>
+
+<span class="sd">    Methods:</span>
+
+<span class="sd">        fit: conducts fit method of polynomial feature generation</span>
+
+<span class="sd">        Args:</span>
+
+<span class="sd">            df: (dataframe), dataframe of input X and y data</span>
+
+<span class="sd">        transform: generates dataframe containing polynomial features</span>
+
+<span class="sd">        Args:</span>
+
+<span class="sd">            df: (dataframe), dataframe of input X and y data</span>
+
+<span class="sd">        Returns:</span>
+
+<span class="sd">            (dataframe), dataframe containing new polynomial features, plus original features present</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">features</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">degree</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">interaction_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">include_bias</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">features</span> <span class="o">=</span> <span class="n">features</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SPF</span> <span class="o">=</span> <span class="n">SklearnPolynomialFeatures</span><span class="p">(</span><span class="n">degree</span><span class="p">,</span> <span class="n">interaction_only</span><span class="p">,</span> <span class="n">include_bias</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">features</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">features</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SPF</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">new_features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">SPF</span><span class="o">.</span><span class="n">get_feature_names</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">SPF</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">array</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="n">new_features</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ContainsElement"><a class="viewcode-back" href="../19_feature_generators.html#feature_generators.ContainsElement">[docs]</a><span class="k">class</span> <span class="nc">ContainsElement</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to generate new categorical features (i.e. values of 1 or 0) based on whether an input composition contains a</span>
+<span class="sd">    certain designated element</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        composition_feature: (str), string denoting a chemical composition to generate elemental features from</span>
+
+<span class="sd">        element: (str), string representing the name of an element</span>
+
+<span class="sd">        new_name: (str), the name of the new feature column to be generated</span>
+
+<span class="sd">        all_elments: (bool), whether to generate new features for all elements present from all compositions in the dataset.</span>
+
+<span class="sd">    Methods:</span>
+
+<span class="sd">        fit: pass through, needed to maintain scikit-learn class structure</span>
+
+<span class="sd">        Args:</span>
+
+<span class="sd">            df: (dataframe), dataframe of input X and y data</span>
+
+<span class="sd">        transform: generate new element-specific features</span>
+
+<span class="sd">        Args:</span>
+
+<span class="sd">            df: (dataframe), dataframe of input X and y data</span>
+
+<span class="sd">        Returns:</span>
+
+<span class="sd">            df_trans: (dataframe), dataframe with generated element-specific features</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">composition_feature</span><span class="p">,</span> <span class="n">element</span><span class="p">,</span> <span class="n">new_name</span><span class="p">,</span> <span class="n">all_elements</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">composition_feature</span> <span class="o">=</span> <span class="n">composition_feature</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">element</span> <span class="o">=</span> <span class="n">element</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_column_name</span> <span class="o">=</span> <span class="n">new_name</span> <span class="c1">#f&#39;has_{self.element}&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_elements</span> <span class="o">=</span> <span class="n">all_elements</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">compositions</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">composition_feature</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_elements</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="n">has_element</span> <span class="o">=</span> <span class="n">compositions</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_contains_element</span><span class="p">)</span>
+            <span class="n">df_trans</span> <span class="o">=</span> <span class="n">has_element</span><span class="o">.</span><span class="n">to_frame</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">new_column_name</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_elements</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">df_trans</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_contains_all_elements</span><span class="p">(</span><span class="n">compositions</span><span class="o">=</span><span class="n">compositions</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">df_trans</span>
+
+    <span class="k">def</span> <span class="nf">_contains_element</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">comp</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns 1 if comp contains that element, and 0 if not.</span>
+<span class="sd">        Uses ints because sklearn and numpy like number classes better than bools. Could even be</span>
+<span class="sd">        something crazy like &quot;contains {element}&quot; and &quot;does not contain {element}&quot; if you really</span>
+<span class="sd">        wanted.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">comp</span> <span class="o">=</span> <span class="n">pymatgen</span><span class="o">.</span><span class="n">Composition</span><span class="p">(</span><span class="n">comp</span><span class="p">)</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="n">comp</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="p">]</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">count</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_contains_all_elements</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">compositions</span><span class="p">):</span>
+        <span class="n">elements</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">df_trans</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="n">compositions</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+            <span class="n">comp</span> <span class="o">=</span> <span class="n">pymatgen</span><span class="o">.</span><span class="n">Composition</span><span class="p">(</span><span class="n">comp</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">comp</span><span class="o">.</span><span class="n">elements</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">element</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">elements</span><span class="p">:</span>
+                    <span class="n">elements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">element</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">elements</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">element</span> <span class="o">=</span> <span class="n">element</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">new_column_name</span> <span class="o">=</span> <span class="s2">&quot;has_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="p">)</span>
+            <span class="n">has_element</span> <span class="o">=</span> <span class="n">compositions</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_contains_element</span><span class="p">)</span>
+            <span class="n">df_trans</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">new_column_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">has_element</span>
+        <span class="k">return</span> <span class="n">df_trans</span></div>
+
+<div class="viewcode-block" id="Magpie"><a class="viewcode-back" href="../19_feature_generators.html#feature_generators.Magpie">[docs]</a><span class="k">class</span> <span class="nc">Magpie</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class that wraps MagpieFeatureGeneration, giving it scikit-learn structure</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        composition_feature: (str), string denoting a chemical composition to generate elemental features from</span>
+
+<span class="sd">    Methods:</span>
+
+<span class="sd">        fit: pass through, copies input columns as pre-generated features</span>
+
+<span class="sd">        Args:</span>
+
+<span class="sd">            df: (dataframe), input dataframe containing X and y data</span>
+
+<span class="sd">        transform: generate Magpie features</span>
+
+<span class="sd">        Args:</span>
+
+<span class="sd">            df: (dataframe), input dataframe containing X and y data</span>
+
+<span class="sd">        Returns:</span>
+
+<span class="sd">            df: (dataframe), output dataframe containing generated features, original features and y data</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">composition_feature</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">composition_feature</span> <span class="o">=</span> <span class="n">composition_feature</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">original_features</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+        <span class="n">mfg</span> <span class="o">=</span> <span class="n">MagpieFeatureGeneration</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">composition_feature</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">mfg</span><span class="o">.</span><span class="n">generate_magpie_features</span><span class="p">()</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">original_features</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># delete missing values, generation makes a lot of garbage.</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">clean_dataframe</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">([</span><span class="s1">&#39;number&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">composition_feature</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span>
+        <span class="k">return</span> <span class="n">df</span></div>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">class MaterialsProject(BaseEstimator, TransformerMixin):</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class that wraps MaterialsProjectFeatureGeneration, giving it scikit-learn structure</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        composition_feature: (str), string denoting a chemical composition to generate elemental features from</span>
+
+<span class="sd">        mapi_key: (str), string denoting your Materials Project API key</span>
+
+<span class="sd">    Methods:</span>
+
+<span class="sd">        fit: pass through, copies input columns as pre-generated features</span>
+
+<span class="sd">        Args:</span>
+
+<span class="sd">            df: (dataframe), input dataframe containing X and y data</span>
+
+<span class="sd">        transform: generate Materials Project features</span>
+
+<span class="sd">        Args:</span>
+
+<span class="sd">            df: (dataframe), input dataframe containing X and y data</span>
+
+<span class="sd">        Returns:</span>
+
+<span class="sd">            df: (dataframe), output dataframe containing generated features, original features and y data</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    def __init__(self, composition_feature, api_key):</span>
+<span class="sd">        self.composition_feature = composition_feature</span>
+<span class="sd">        self.api_key = api_key</span>
+
+<span class="sd">    def fit(self, df, y=None):</span>
+<span class="sd">        self.original_features = df.columns</span>
+<span class="sd">        return self</span>
+
+<span class="sd">    def transform(self, df):</span>
+<span class="sd">        # make materials project api call (uses internet)</span>
+<span class="sd">        mpg = MaterialsProjectFeatureGeneration(df.copy(), self.api_key, self.composition_feature)</span>
+<span class="sd">        df = mpg.generate_materialsproject_features()</span>
+
+<span class="sd">        df = df.drop(self.original_features, axis=1)</span>
+<span class="sd">        # delete missing values, generation makes a lot of garbage.</span>
+<span class="sd">        df = clean_dataframe(df)</span>
+<span class="sd">        assert self.composition_feature not in df.columns</span>
+<span class="sd">        return df</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="MaterialsProject"><a class="viewcode-back" href="../19_feature_generators.html#feature_generators.MaterialsProject">[docs]</a><span class="k">class</span> <span class="nc">MaterialsProject</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span><span class="p">,</span> <span class="n">MPDataRetrieval</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class that wraps MaterialsProjectFeatureGeneration, giving it scikit-learn structure</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        composition_feature: (str), string denoting a chemical composition to generate elemental features from</span>
+
+<span class="sd">        mapi_key: (str), string denoting your Materials Project API key</span>
+
+<span class="sd">    Methods:</span>
+
+<span class="sd">        fit: pass through, copies input columns as pre-generated features</span>
+
+<span class="sd">        Args:</span>
+
+<span class="sd">            df: (dataframe), input dataframe containing X and y data</span>
+
+<span class="sd">        transform: generate Materials Project features</span>
+
+<span class="sd">        Args:</span>
+
+<span class="sd">            df: (dataframe), input dataframe containing X and y data</span>
+
+<span class="sd">        Returns:</span>
+
+<span class="sd">            df: (dataframe), output dataframe containing generated features, original features and y data</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">composition_feature</span><span class="p">,</span> <span class="n">api_key</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MaterialsProject</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">composition_feature</span> <span class="o">=</span> <span class="n">composition_feature</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">api_key</span> <span class="o">=</span> <span class="n">api_key</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">original_features</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">original_features</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># make materials project api call (uses internet)</span>
+        <span class="c1">#mpg = MaterialsProjectFeatureGeneration(df.copy(), self.api_key, self.composition_feature)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;HERE&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">composition_feature</span><span class="p">])</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">composition_feature</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+        <span class="n">materials_asstr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list2str</span><span class="p">(</span><span class="n">lst</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">composition_feature</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">materials_asstr</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_dataframe</span><span class="p">(</span><span class="n">criteria</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">composition_feature</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span> <span class="n">properties</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;formation_energy_per_atom&quot;</span><span class="p">])</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+        <span class="c1">#df = self.get_dataframe(criteria=materials_asstr, properties=[&quot;formation_energy_per_atom&quot;])</span>
+        <span class="c1">#df = mpg.generate_materialsproject_features()</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">original_features</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># delete missing values, generation makes a lot of garbage.</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">clean_dataframe</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">composition_feature</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span>
+        <span class="k">return</span> <span class="n">df</span>
+
+    <span class="k">def</span> <span class="nf">_list2str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lst</span><span class="p">):</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">lst</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="n">l</span><span class="o">+</span><span class="s1">&#39; &#39;</span>
+        <span class="k">return</span> <span class="n">s</span></div>
+
+<div class="viewcode-block" id="Citrine"><a class="viewcode-back" href="../19_feature_generators.html#feature_generators.Citrine">[docs]</a><span class="k">class</span> <span class="nc">Citrine</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span><span class="p">,</span> <span class="n">CitrineDataRetrieval</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class that wraps MaterialsProjectFeatureGeneration, giving it scikit-learn structure</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        composition_feature: (str), string denoting a chemical composition to generate elemental features from</span>
+
+<span class="sd">        mapi_key: (str), string denoting your Materials Project API key</span>
+
+<span class="sd">    Methods:</span>
+
+<span class="sd">        fit: pass through, copies input columns as pre-generated features</span>
+
+<span class="sd">        Args:</span>
+
+<span class="sd">            df: (dataframe), input dataframe containing X and y data</span>
+
+<span class="sd">        transform: generate Materials Project features</span>
+
+<span class="sd">        Args:</span>
+
+<span class="sd">            df: (dataframe), input dataframe containing X and y data</span>
+
+<span class="sd">        Returns:</span>
+
+<span class="sd">            df: (dataframe), output dataframe containing generated features, original features and y data</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">composition_feature</span><span class="p">,</span> <span class="n">api_key</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Citrine</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">composition_feature</span> <span class="o">=</span> <span class="n">composition_feature</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">api_key</span> <span class="o">=</span> <span class="n">api_key</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">original_features</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">original_features</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># make materials project api call (uses internet)</span>
+        <span class="c1">#mpg = MaterialsProjectFeatureGeneration(df.copy(), self.api_key, self.composition_feature)</span>
+        <span class="n">materials_asstr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list2str</span><span class="p">(</span><span class="n">lst</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">composition_feature</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+        <span class="n">df_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">props</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_citrine_property_list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">material</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">composition_feature</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_dataframe</span><span class="p">(</span><span class="n">criteria</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;formula&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">material</span><span class="p">)},</span> <span class="n">properties</span><span class="o">=</span><span class="n">props</span><span class="p">)</span>
+                <span class="n">df_count</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span> <span class="k">if</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">props</span><span class="p">]</span>
+                <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">cols</span><span class="p">]</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;FINAL DF&#39;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;MAST-ML encountered a problem generating features from Citrine for&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">material</span><span class="p">),</span> <span class="s1">&#39;continuing...&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;COMPLETED&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">df_count</span><span class="p">)</span>
+        <span class="n">exit</span><span class="p">()</span>
+        <span class="c1">#df = self.get_dataframe(criteria=materials_asstr, properties=[&quot;formation_energy_per_atom&quot;])</span>
+        <span class="c1">#df = mpg.generate_materialsproject_features()</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">original_features</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># delete missing values, generation makes a lot of garbage.</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">clean_dataframe</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">composition_feature</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span>
+        <span class="k">return</span> <span class="n">df</span>
+
+    <span class="k">def</span> <span class="nf">_list2str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lst</span><span class="p">):</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">lst</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="n">l</span><span class="o">+</span><span class="s1">&#39; &#39;</span>
+        <span class="k">return</span> <span class="n">s</span>
+
+    <span class="k">def</span> <span class="nf">_citrine_property_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">props</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Energy Above Convex Hull&#39;</span><span class="p">,</span> <span class="s1">&#39;Unit Cell Volume&#39;</span><span class="p">,</span> <span class="s1">&#39;VASP Energy for Structure&#39;</span><span class="p">,</span> <span class="s1">&#39;FirstIonizationEnergy_stoich_avg&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;HeatFusion_min&#39;</span><span class="p">,</span> <span class="s1">&#39;GSbandgap_min&#39;</span><span class="p">,</span> <span class="s1">&#39;Enthalpy of Formation&#39;</span><span class="p">,</span><span class="s1">&#39;Covalent Radius_Max&#39;</span><span class="p">,</span> <span class="s1">&#39;MeltingT_min&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;HeatCapacityMolar_min&#39;</span><span class="p">,</span> <span class="s1">&#39;Bulk Modulus, Voigt&#39;</span><span class="p">,</span> <span class="s1">&#39;HeatCapacityMolar_max&#39;</span><span class="p">,</span> <span class="s1">&#39;Density_Min&#39;</span><span class="p">,</span> <span class="s1">&#39;Bulk Modulus, Reuss&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;Atomic Weight_Min&#39;</span><span class="p">,</span> <span class="s1">&#39;Density_Max&#39;</span><span class="p">,</span> <span class="s1">&#39;Density&#39;</span><span class="p">,</span> <span class="s1">&#39;HeatFusion_stoich_avg&#39;</span><span class="p">,</span> <span class="s1">&#39;MeltingT_max&#39;</span><span class="p">,</span> <span class="s1">&#39;Molecular mass&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;HeatCapacityMolar_stoich_avg&#39;</span><span class="p">,</span> <span class="s1">&#39;Number of Elements&#39;</span><span class="p">,</span> <span class="s1">&#39;Boiling Temp_Stoich Avg&#39;</span><span class="p">,</span> <span class="s1">&#39;GSbandgap_stoich_avg&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;LUMO energy&#39;</span><span class="p">,</span> <span class="s1">&#39;Shear Modulus, Voigt&#39;</span><span class="p">,</span> <span class="s1">&#39;Solubility&#39;</span><span class="p">,</span> <span class="s1">&#39;Electronegativity_Max&#39;</span><span class="p">,</span> <span class="s1">&#39;Bulk Modulus, Voigt-Reuss-Hill&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;FirstIonizationEnergy_min&#39;</span><span class="p">,</span> <span class="s1">&#39;HOMO energy&#39;</span><span class="p">,</span> <span class="s1">&#39;Atomic Weight_Max&#39;</span><span class="p">,</span> <span class="s1">&#39;Boiling Temp_Max&#39;</span><span class="p">,</span> <span class="s1">&#39;Density_Stoich Avg&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;Electronegativity_Stoich Avg&#39;</span><span class="p">,</span> <span class="s1">&#39;Molar Mass&#39;</span><span class="p">,</span> <span class="s1">&#39;Boiling Temp_Min&#39;</span><span class="p">,</span> <span class="s1">&#39;Electronegativity_Min&#39;</span><span class="p">,</span> <span class="s1">&#39;Shear Modulus, Reuss&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;HeatFusion_max&#39;</span><span class="p">,</span> <span class="s1">&#39;Shear Modulus, Voigt-Reuss-Hill&#39;</span><span class="p">,</span> <span class="s1">&#39;Dipole moment&#39;</span><span class="p">,</span> <span class="s1">&#39;Heat of formation&#39;</span><span class="p">,</span> <span class="s1">&#39;Melting Point&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;Total Magnetization&#39;</span><span class="p">,</span> <span class="s1">&#39;MeltingT_stoich_avg&#39;</span><span class="p">,</span> <span class="s1">&#39;GSbandgap_max&#39;</span><span class="p">,</span> <span class="s2">&quot;Poisson&#39;s Ratio&quot;</span><span class="p">,</span> <span class="s1">&#39;Volume&#39;</span><span class="p">,</span> <span class="s1">&#39;Atomic Volume_min&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;Atomic Volume_max&#39;</span><span class="p">,</span> <span class="s1">&#39;Covalent Radius_Min&#39;</span><span class="p">,</span> <span class="s1">&#39;FirstIonizationEnergy_max&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">props</span></div>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">class Citrine(BaseEstimator, TransformerMixin):</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class that wraps CitrineFeatureGeneration, giving it scikit-learn structure</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        composition_feature: (str), string denoting a chemical composition to generate elemental features from</span>
+
+<span class="sd">        api_key: (str), string denoting your Citrine API key</span>
+
+<span class="sd">    Methods:</span>
+
+<span class="sd">        fit: pass through, copies input columns as pre-generated features</span>
+
+<span class="sd">        Args:</span>
+
+<span class="sd">            df: (dataframe), input dataframe containing X and y data</span>
+
+<span class="sd">        transform: generate Citrine features</span>
+
+<span class="sd">        Args:</span>
+
+<span class="sd">            df: (dataframe), input dataframe containing X and y data</span>
+
+<span class="sd">        Returns:</span>
+
+<span class="sd">            df: (dataframe), output dataframe containing generated features, original features and y data</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    def __init__(self, composition_feature, api_key):</span>
+<span class="sd">        self.composition_feature = composition_feature</span>
+<span class="sd">        self.api_key = api_key</span>
+
+<span class="sd">    def fit(self, df, y=None):</span>
+<span class="sd">        self.original_features = df.columns</span>
+<span class="sd">        return self</span>
+
+<span class="sd">    def transform(self, df):</span>
+<span class="sd">        # make citrine api call (uses internet)</span>
+<span class="sd">        cfg = CitrineFeatureGeneration(df.copy(), self.api_key, self.composition_feature)</span>
+<span class="sd">        df = cfg.generate_citrine_features()</span>
+
+<span class="sd">        df = df.drop(self.original_features, axis=1)</span>
+<span class="sd">        # delete missing values, generation makes a lot of garbage.</span>
+<span class="sd">        df = clean_dataframe(df)</span>
+<span class="sd">        assert self.composition_feature not in df.columns</span>
+<span class="sd">        return df</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="NoGenerate"><a class="viewcode-back" href="../19_feature_generators.html#feature_generators.NoGenerate">[docs]</a><span class="k">class</span> <span class="nc">NoGenerate</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for having a &quot;null&quot; transform where the output is the same as the input. Needed by MAST-ML as a placeholder if</span>
+<span class="sd">    certain workflow aspects are not performed.</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        None</span>
+
+<span class="sd">    Methods:</span>
+
+<span class="sd">        fit: does nothing, just returns object instance. Needed to maintain same structure as scikit-learn classes</span>
+
+<span class="sd">        Args:</span>
+
+<span class="sd">            X: (dataframe), dataframe of X features</span>
+
+<span class="sd">        transform: passes the input back out, in this case the array of X features</span>
+
+<span class="sd">        Args:</span>
+
+<span class="sd">            X: (dataframe), dataframe of X features</span>
+
+<span class="sd">        Returns:</span>
+
+<span class="sd">            (dataframe), dataframe of X features</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">X</span><span class="o">.</span><span class="n">index</span><span class="p">)</span></div>
+
+<span class="n">name_to_constructor</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;DoNothing&#39;</span><span class="p">:</span> <span class="n">NoGenerate</span><span class="p">,</span>
+    <span class="s1">&#39;PolynomialFeatures&#39;</span><span class="p">:</span> <span class="n">PolynomialFeatures</span><span class="p">,</span>
+    <span class="s1">&#39;Magpie&#39;</span><span class="p">:</span> <span class="n">Magpie</span><span class="p">,</span>
+    <span class="s1">&#39;Citrine&#39;</span><span class="p">:</span> <span class="n">Citrine</span><span class="p">,</span>
+    <span class="s1">&#39;MaterialsProject&#39;</span><span class="p">:</span> <span class="n">MaterialsProject</span><span class="p">,</span>
+    <span class="c1"># including these here for now. May get their own section eventually</span>
+    <span class="s1">&#39;ContainsElement&#39;</span><span class="p">:</span> <span class="n">ContainsElement</span><span class="p">,</span>
+<span class="p">}</span>
+
+<div class="viewcode-block" id="clean_dataframe"><a class="viewcode-back" href="../19_feature_generators.html#feature_generators.clean_dataframe">[docs]</a><span class="k">def</span> <span class="nf">clean_dataframe</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Method to clean dataframes after feature generation has occurred, to remove columns that have a single missing or</span>
+<span class="sd">    NaN value, or remove a row that is fully empty</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        df: (dataframe), a post feature generation dataframe that needs cleaning</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">        df: (dataframe), the cleaned dataframe</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;coerce&#39;</span><span class="p">)</span> <span class="c1"># convert non-number to NaN</span>
+
+    <span class="c1"># warn on empty rows</span>
+    <span class="n">before_count</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">)</span>
+    <span class="n">lost_count</span> <span class="o">=</span> <span class="n">before_count</span> <span class="o">-</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">lost_count</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Dropping </span><span class="si">{lost_count}</span><span class="s1">/</span><span class="si">{before_count}</span><span class="s1"> rows for being totally empty&#39;</span><span class="p">)</span>
+
+    <span class="c1"># drop columns with any empty cells</span>
+    <span class="n">before_count</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">([</span><span class="s1">&#39;number&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">lost_count</span> <span class="o">=</span> <span class="n">before_count</span> <span class="o">-</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">lost_count</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Dropping </span><span class="si">{lost_count}</span><span class="s1">/</span><span class="si">{before_count}</span><span class="s1"> generated columns due to missing values&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span></div>
+
+<div class="viewcode-block" id="MagpieFeatureGeneration"><a class="viewcode-back" href="../19_feature_generators.html#feature_generators.MagpieFeatureGeneration">[docs]</a><span class="k">class</span> <span class="nc">MagpieFeatureGeneration</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to generate new features using Magpie data and dataframe containing material compositions</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        dataframe: (pandas dataframe), dataframe containing x and y data and feature names</span>
+
+<span class="sd">        composition_feature: (str), string denoting a chemical composition to generate elemental features from</span>
+
+<span class="sd">    Methods:</span>
+
+<span class="sd">        generate_magpie_features : generates magpie feature set based on compositions in dataframe</span>
+
+<span class="sd">            Args:</span>
+
+<span class="sd">                None</span>
+
+<span class="sd">            Returns:</span>
+
+<span class="sd">                dataframe: (dataframe) : dataframe containing magpie feature set</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataframe</span><span class="p">,</span> <span class="n">composition_feature</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span> <span class="o">=</span> <span class="n">dataframe</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">composition_feature</span> <span class="o">=</span> <span class="n">composition_feature</span>
+
+    <span class="k">def</span> <span class="nf">generate_magpie_features</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">compositions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">composition_components</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Replace empty composition fields with empty string instead of NaN</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">composition_feature</span> <span class="ow">in</span> <span class="n">column</span><span class="p">:</span>
+                <span class="n">composition_components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">composition_components</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">MissingColumnError</span><span class="p">(</span><span class="s1">&#39;Error! No column named &quot;Material compositions&quot; found in your input data file. To use this feature generation routine, you must supply a material composition for each data point&#39;</span><span class="p">)</span>
+
+        <span class="n">row</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="n">row</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">composition_components</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">composition</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="k">for</span> <span class="n">composition_component</span> <span class="ow">in</span> <span class="n">composition_components</span><span class="p">:</span>
+                <span class="n">composition</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="n">composition_component</span><span class="p">[</span><span class="n">row</span><span class="p">])</span>
+            <span class="n">compositions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">composition</span><span class="p">)</span>
+            <span class="n">row</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="c1"># Add the column of combined material compositions into the dataframe</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">composition_feature</span><span class="p">]</span> <span class="o">=</span> <span class="n">compositions</span>
+
+        <span class="c1"># Assign each magpiedata feature set to appropriate composition name</span>
+        <span class="n">magpiedata_dict_composition_average</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">magpiedata_dict_arithmetic_average</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">magpiedata_dict_max</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">magpiedata_dict_min</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">magpiedata_dict_difference</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">magpiedata_dict_atomic_bysite</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">composition</span> <span class="ow">in</span> <span class="n">compositions</span><span class="p">:</span>
+            <span class="n">magpiedata_composition_average</span><span class="p">,</span> <span class="n">magpiedata_arithmetic_average</span><span class="p">,</span> <span class="n">magpiedata_max</span><span class="p">,</span> <span class="n">magpiedata_min</span><span class="p">,</span> <span class="n">magpiedata_difference</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_computed_magpie_features</span><span class="p">(</span><span class="n">composition</span><span class="o">=</span><span class="n">composition</span><span class="p">,</span> <span class="n">data_path</span><span class="o">=</span><span class="n">MAGPIE_DATA_PATH</span><span class="p">)</span>
+            <span class="n">magpiedata_atomic_notparsed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_atomic_magpie_features</span><span class="p">(</span><span class="n">composition</span><span class="o">=</span><span class="n">composition</span><span class="p">,</span> <span class="n">data_path</span><span class="o">=</span><span class="n">MAGPIE_DATA_PATH</span><span class="p">)</span>
+
+            <span class="n">magpiedata_dict_composition_average</span><span class="p">[</span><span class="n">composition</span><span class="p">]</span> <span class="o">=</span> <span class="n">magpiedata_composition_average</span>
+            <span class="n">magpiedata_dict_arithmetic_average</span><span class="p">[</span><span class="n">composition</span><span class="p">]</span> <span class="o">=</span> <span class="n">magpiedata_arithmetic_average</span>
+            <span class="n">magpiedata_dict_max</span><span class="p">[</span><span class="n">composition</span><span class="p">]</span> <span class="o">=</span> <span class="n">magpiedata_max</span>
+            <span class="n">magpiedata_dict_min</span><span class="p">[</span><span class="n">composition</span><span class="p">]</span> <span class="o">=</span> <span class="n">magpiedata_min</span>
+            <span class="n">magpiedata_dict_difference</span><span class="p">[</span><span class="n">composition</span><span class="p">]</span> <span class="o">=</span> <span class="n">magpiedata_difference</span>
+
+            <span class="c1"># Add site-specific elemental features</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">magpiedata_atomic_bysite</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">magpiedata_atomic_notparsed</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">magpiefeature</span><span class="p">,</span> <span class="n">featurevalue</span> <span class="ow">in</span> <span class="n">magpiedata_atomic_notparsed</span><span class="p">[</span><span class="n">entry</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">magpiedata_atomic_bysite</span><span class="p">[</span><span class="s2">&quot;Site&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">count</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">magpiefeature</span><span class="p">)]</span> <span class="o">=</span> <span class="n">featurevalue</span>
+                <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="n">magpiedata_dict_atomic_bysite</span><span class="p">[</span><span class="n">composition</span><span class="p">]</span> <span class="o">=</span> <span class="n">magpiedata_atomic_bysite</span>
+
+        <span class="n">magpiedata_dict_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">magpiedata_dict_composition_average</span><span class="p">,</span> <span class="n">magpiedata_dict_arithmetic_average</span><span class="p">,</span>
+                                <span class="n">magpiedata_dict_max</span><span class="p">,</span> <span class="n">magpiedata_dict_min</span><span class="p">,</span> <span class="n">magpiedata_dict_difference</span><span class="p">,</span> <span class="n">magpiedata_dict_atomic_bysite</span><span class="p">]</span>
+
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span>
+        <span class="k">for</span> <span class="n">magpiedata_dict</span> <span class="ow">in</span> <span class="n">magpiedata_dict_list</span><span class="p">:</span>
+            <span class="n">dataframe_magpie</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">magpiedata_dict</span><span class="p">,</span> <span class="n">orient</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">)</span>
+            <span class="c1"># Need to reorder compositions in new dataframe to match input dataframe</span>
+            <span class="n">dataframe_magpie</span> <span class="o">=</span> <span class="n">dataframe_magpie</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">composition_feature</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+            <span class="c1"># Need to make compositions the first column, instead of the row names</span>
+            <span class="n">dataframe_magpie</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">composition_feature</span>
+            <span class="n">dataframe_magpie</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="c1"># Need to delete duplicate column before merging dataframes</span>
+            <span class="k">del</span> <span class="n">dataframe_magpie</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">composition_feature</span><span class="p">]</span>
+            <span class="c1"># Merge magpie feature dataframe with originally supplied dataframe</span>
+            <span class="n">dataframe</span> <span class="o">=</span> <span class="n">DataframeUtilities</span><span class="p">()</span><span class="o">.</span><span class="n">merge_dataframe_columns</span><span class="p">(</span><span class="n">dataframe1</span><span class="o">=</span><span class="n">dataframe</span><span class="p">,</span> <span class="n">dataframe2</span><span class="o">=</span><span class="n">dataframe_magpie</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">dataframe</span>
+
+    <span class="k">def</span> <span class="nf">_get_computed_magpie_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">composition</span><span class="p">,</span> <span class="n">data_path</span><span class="p">):</span>
+        <span class="n">magpiedata_composition_average</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">magpiedata_arithmetic_average</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">magpiedata_max</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">magpiedata_min</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">magpiedata_difference</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">magpiedata_atomic</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_atomic_magpie_features</span><span class="p">(</span><span class="n">composition</span><span class="o">=</span><span class="n">composition</span><span class="p">,</span> <span class="n">data_path</span><span class="o">=</span><span class="n">data_path</span><span class="p">)</span>
+        <span class="n">composition</span> <span class="o">=</span> <span class="n">Composition</span><span class="p">(</span><span class="n">composition</span><span class="p">)</span>
+        <span class="n">element_list</span><span class="p">,</span> <span class="n">atoms_per_formula_unit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_element_list</span><span class="p">(</span><span class="n">composition</span><span class="o">=</span><span class="n">composition</span><span class="p">)</span>
+
+        <span class="c1"># Initialize feature values to all be 0, because need to dynamically update them with weighted values in next loop.</span>
+        <span class="k">for</span> <span class="n">magpie_feature</span> <span class="ow">in</span> <span class="n">magpiedata_atomic</span><span class="p">[</span><span class="n">element_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]]:</span>
+            <span class="n">magpiedata_composition_average</span><span class="p">[</span><span class="n">magpie_feature</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">magpiedata_arithmetic_average</span><span class="p">[</span><span class="n">magpie_feature</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">magpiedata_max</span><span class="p">[</span><span class="n">magpie_feature</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">magpiedata_min</span><span class="p">[</span><span class="n">magpie_feature</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">magpiedata_difference</span><span class="p">[</span><span class="n">magpie_feature</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">magpiedata_atomic</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">magpie_feature</span><span class="p">,</span> <span class="n">feature_value</span> <span class="ow">in</span> <span class="n">magpiedata_atomic</span><span class="p">[</span><span class="n">element</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">feature_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="s1">&#39;NaN&#39;</span><span class="p">:</span>
+                    <span class="c1"># Composition average features</span>
+                    <span class="n">magpiedata_composition_average</span><span class="p">[</span><span class="n">magpie_feature</span><span class="p">]</span> <span class="o">+=</span> <span class="n">feature_value</span><span class="o">*</span><span class="nb">float</span><span class="p">(</span><span class="n">composition</span><span class="p">[</span><span class="n">element</span><span class="p">])</span><span class="o">/</span><span class="n">atoms_per_formula_unit</span>
+                    <span class="c1"># Arithmetic average features</span>
+                    <span class="n">magpiedata_arithmetic_average</span><span class="p">[</span><span class="n">magpie_feature</span><span class="p">]</span> <span class="o">+=</span> <span class="n">feature_value</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">element_list</span><span class="p">)</span>
+                    <span class="c1"># Max features</span>
+                    <span class="k">if</span> <span class="n">magpiedata_max</span><span class="p">[</span><span class="n">magpie_feature</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">feature_value</span> <span class="o">&gt;</span> <span class="n">magpiedata_max</span><span class="p">[</span><span class="n">magpie_feature</span><span class="p">]:</span>
+                            <span class="n">magpiedata_max</span><span class="p">[</span><span class="n">magpie_feature</span><span class="p">]</span> <span class="o">=</span> <span class="n">feature_value</span>
+                    <span class="k">elif</span> <span class="n">magpiedata_max</span><span class="p">[</span><span class="n">magpie_feature</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">magpiedata_max</span><span class="p">[</span><span class="n">magpie_feature</span><span class="p">]</span> <span class="o">=</span> <span class="n">feature_value</span>
+                    <span class="c1"># Min features</span>
+                    <span class="k">if</span> <span class="n">magpiedata_min</span><span class="p">[</span><span class="n">magpie_feature</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">feature_value</span> <span class="o">&lt;</span> <span class="n">magpiedata_min</span><span class="p">[</span><span class="n">magpie_feature</span><span class="p">]:</span>
+                            <span class="n">magpiedata_min</span><span class="p">[</span><span class="n">magpie_feature</span><span class="p">]</span> <span class="o">=</span> <span class="n">feature_value</span>
+                    <span class="k">elif</span> <span class="n">magpiedata_min</span><span class="p">[</span><span class="n">magpie_feature</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">magpiedata_min</span><span class="p">[</span><span class="n">magpie_feature</span><span class="p">]</span> <span class="o">=</span> <span class="n">feature_value</span>
+                    <span class="c1"># Difference features (max - min)</span>
+                    <span class="n">magpiedata_difference</span><span class="p">[</span><span class="n">magpie_feature</span><span class="p">]</span> <span class="o">=</span> <span class="n">magpiedata_max</span><span class="p">[</span><span class="n">magpie_feature</span><span class="p">]</span> <span class="o">-</span> <span class="n">magpiedata_min</span><span class="p">[</span><span class="n">magpie_feature</span><span class="p">]</span>
+
+        <span class="c1"># Change names of features to reflect each computed type of magpie feature (max, min, etc.)</span>
+        <span class="n">magpiedata_composition_average_renamed</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">magpiedata_arithmetic_average_renamed</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">magpiedata_max_renamed</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">magpiedata_min_renamed</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">magpiedata_difference_renamed</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">magpiedata_composition_average</span><span class="p">:</span>
+            <span class="n">magpiedata_composition_average_renamed</span><span class="p">[</span><span class="n">key</span><span class="o">+</span><span class="s2">&quot;_composition_average&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">magpiedata_composition_average</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">magpiedata_arithmetic_average</span><span class="p">:</span>
+            <span class="n">magpiedata_arithmetic_average_renamed</span><span class="p">[</span><span class="n">key</span><span class="o">+</span><span class="s2">&quot;_arithmetic_average&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">magpiedata_arithmetic_average</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">magpiedata_max</span><span class="p">:</span>
+            <span class="n">magpiedata_max_renamed</span><span class="p">[</span><span class="n">key</span><span class="o">+</span><span class="s2">&quot;_max_value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">magpiedata_max</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">magpiedata_min</span><span class="p">:</span>
+            <span class="n">magpiedata_min_renamed</span><span class="p">[</span><span class="n">key</span><span class="o">+</span><span class="s2">&quot;_min_value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">magpiedata_min</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">magpiedata_difference</span><span class="p">:</span>
+            <span class="n">magpiedata_difference_renamed</span><span class="p">[</span><span class="n">key</span><span class="o">+</span><span class="s2">&quot;_difference&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">magpiedata_difference</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">magpiedata_composition_average_renamed</span><span class="p">,</span> <span class="n">magpiedata_arithmetic_average_renamed</span><span class="p">,</span> <span class="n">magpiedata_max_renamed</span><span class="p">,</span> <span class="n">magpiedata_min_renamed</span><span class="p">,</span> <span class="n">magpiedata_difference_renamed</span>
+
+    <span class="k">def</span> <span class="nf">_get_atomic_magpie_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">composition</span><span class="p">,</span> <span class="n">data_path</span><span class="p">):</span>
+        <span class="c1"># Get .table files containing feature values for each element, assign file names as feature names</span>
+        <span class="n">magpie_feature_names</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">data_path</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s1">&#39;.table&#39;</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">magpie_feature_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="p">[:</span><span class="o">-</span><span class="mi">6</span><span class="p">])</span>
+
+        <span class="n">composition</span> <span class="o">=</span> <span class="n">Composition</span><span class="p">(</span><span class="n">composition</span><span class="p">)</span>
+        <span class="n">element_list</span><span class="p">,</span> <span class="n">atoms_per_formula_unit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_element_list</span><span class="p">(</span><span class="n">composition</span><span class="o">=</span><span class="n">composition</span><span class="p">)</span>
+
+        <span class="n">element_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">element_list</span><span class="p">:</span>
+            <span class="n">element_dict</span><span class="p">[</span><span class="n">element</span><span class="p">]</span> <span class="o">=</span> <span class="n">Element</span><span class="p">(</span><span class="n">element</span><span class="p">)</span><span class="o">.</span><span class="n">Z</span>
+
+        <span class="n">magpiedata_atomic</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">element_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">atomic_values</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">feature_name</span> <span class="ow">in</span> <span class="n">magpie_feature_names</span><span class="p">:</span>
+                <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">data_path</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">feature_name</span> <span class="o">+</span> <span class="s1">&#39;.table&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+                <span class="c1"># Get Magpie data of relevant atomic numbers for this composition</span>
+                <span class="k">for</span> <span class="n">line</span><span class="p">,</span> <span class="n">feature_value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()):</span>
+                    <span class="k">if</span> <span class="n">line</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">==</span> <span class="n">v</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="s2">&quot;Missing&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">feature_value</span> <span class="ow">and</span> <span class="s2">&quot;NA&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">feature_value</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">feature_name</span> <span class="o">!=</span> <span class="s2">&quot;OxidationStates&quot;</span><span class="p">:</span>
+                                <span class="k">try</span><span class="p">:</span>
+                                    <span class="n">atomic_values</span><span class="p">[</span><span class="n">feature_name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">feature_value</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+                                <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                                    <span class="n">atomic_values</span><span class="p">[</span><span class="n">feature_name</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;NaN&#39;</span>
+                        <span class="k">if</span> <span class="s2">&quot;Missing&quot;</span> <span class="ow">in</span> <span class="n">feature_value</span><span class="p">:</span>
+                            <span class="n">atomic_values</span><span class="p">[</span><span class="n">feature_name</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;NaN&#39;</span>
+                        <span class="k">if</span> <span class="s2">&quot;NA&quot;</span> <span class="ow">in</span> <span class="n">feature_value</span><span class="p">:</span>
+                            <span class="n">atomic_values</span><span class="p">[</span><span class="n">feature_name</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;NaN&#39;</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">magpiedata_atomic</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">atomic_values</span>
+
+        <span class="k">return</span> <span class="n">magpiedata_atomic</span>
+
+    <span class="k">def</span> <span class="nf">_get_element_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">composition</span><span class="p">):</span>
+        <span class="n">element_amounts</span> <span class="o">=</span> <span class="n">composition</span><span class="o">.</span><span class="n">get_el_amt_dict</span><span class="p">()</span>
+        <span class="n">atoms_per_formula_unit</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">element_amounts</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">atoms_per_formula_unit</span> <span class="o">+=</span> <span class="n">v</span>
+
+        <span class="c1"># Get list of unique elements present</span>
+        <span class="n">element_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">element_amounts</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">element_list</span><span class="p">:</span>
+                <span class="n">element_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">element_list</span><span class="p">,</span> <span class="n">atoms_per_formula_unit</span></div>
+
+<div class="viewcode-block" id="MaterialsProjectFeatureGeneration"><a class="viewcode-back" href="../19_feature_generators.html#feature_generators.MaterialsProjectFeatureGeneration">[docs]</a><span class="k">class</span> <span class="nc">MaterialsProjectFeatureGeneration</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to generate new features using Materials Project data and dataframe containing material compositions</span>
+<span class="sd">    Datarame must have a column named &quot;Material compositions&quot;.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dataframe: (dataframe), dataframe containing x and y data and feature names</span>
+
+<span class="sd">        mapi_key: (str), string denoting your Materials Project API key</span>
+
+<span class="sd">        composition_feature: (str), string denoting a chemical composition to generate elemental features from</span>
+
+<span class="sd">    Methods:</span>
+
+<span class="sd">        generate_materialsproject_features : generates materials project feature set based on compositions in dataframe</span>
+
+<span class="sd">            Args:</span>
+
+<span class="sd">                None</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                dataframe: (dataframe), dataframe containing materials project feature set</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataframe</span><span class="p">,</span> <span class="n">mapi_key</span><span class="p">,</span> <span class="n">composition_feature</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span> <span class="o">=</span> <span class="n">dataframe</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mapi_key</span> <span class="o">=</span> <span class="n">mapi_key</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">composition_feature</span> <span class="o">=</span> <span class="n">composition_feature</span>
+
+    <span class="k">def</span> <span class="nf">generate_materialsproject_features</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">compositions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">composition_feature</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">MissingColumnError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;No column named </span><span class="si">{self.composition_feature}</span><span class="s1"> in csv file&#39;</span><span class="p">)</span>
+
+        <span class="n">mpdata_dict_composition</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># before: 11 hits for a total of ~6 seconds</span>
+        <span class="c1">#for composition in compositions:</span>
+        <span class="c1">#    composition_data_mp = self._get_data_from_materials_project(composition=composition)</span>
+        <span class="c1">#    mpdata_dict_composition[composition] = composition_data_mp</span>
+        <span class="c1"># after: 2.5 seconds!!!</span>
+        <span class="n">pool</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">processes</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+        <span class="c1">#comp_data_mp = pool.map(self._get_data_from_materials_project, compositions)</span>
+        <span class="n">comp_data_mp</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_data_from_materials_project</span><span class="p">,</span> <span class="n">compositions</span><span class="p">)</span>
+
+        <span class="n">mpdata_dict_composition</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">compositions</span><span class="p">,</span> <span class="n">comp_data_mp</span><span class="p">)))</span>
+
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span>
+        <span class="n">dataframe_mp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">mpdata_dict_composition</span><span class="p">,</span> <span class="n">orient</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">)</span>
+        <span class="c1"># Need to reorder compositions in new dataframe to match input dataframe</span>
+        <span class="n">dataframe_mp</span> <span class="o">=</span> <span class="n">dataframe_mp</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">composition_feature</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+        <span class="c1"># Need to make compositions the first column, instead of the row names</span>
+        <span class="n">dataframe_mp</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">composition_feature</span>
+        <span class="n">dataframe_mp</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># Need to delete duplicate column before merging dataframes</span>
+        <span class="k">del</span> <span class="n">dataframe_mp</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">composition_feature</span><span class="p">]</span>
+        <span class="c1"># Merge magpie feature dataframe with originally supplied dataframe</span>
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="n">DataframeUtilities</span><span class="p">()</span><span class="o">.</span><span class="n">merge_dataframe_columns</span><span class="p">(</span><span class="n">dataframe1</span><span class="o">=</span><span class="n">dataframe</span><span class="p">,</span> <span class="n">dataframe2</span><span class="o">=</span><span class="n">dataframe_mp</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">dataframe</span>
+
+    <span class="k">def</span> <span class="nf">_get_data_from_materials_project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">composition</span><span class="p">):</span>
+        <span class="n">mprester</span> <span class="o">=</span> <span class="n">MPRester</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapi_key</span><span class="p">)</span>
+        <span class="n">structure_data_list</span> <span class="o">=</span> <span class="n">mprester</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">chemsys_formula_id</span><span class="o">=</span><span class="n">composition</span><span class="p">)</span>
+
+        <span class="c1"># Sort structures by stability (i.e. E above hull), and only return most stable compound data</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">structure_data_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">structure_data_list</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">structure_data_list</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">e_above</span><span class="p">:</span> <span class="n">e_above</span><span class="p">[</span><span class="s1">&#39;e_above_hull&#39;</span><span class="p">])</span>
+            <span class="n">structure_data_most_stable</span> <span class="o">=</span> <span class="n">structure_data_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">structure_data_most_stable</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># Trim down the full Materials Project data dict to include only quantities relevant to make features</span>
+        <span class="n">structure_data_dict_condensed</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">property_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;G_Voigt_Reuss_Hill&quot;</span><span class="p">,</span> <span class="s2">&quot;G_Reuss&quot;</span><span class="p">,</span> <span class="s2">&quot;K_Voigt_Reuss_Hill&quot;</span><span class="p">,</span> <span class="s2">&quot;K_Reuss&quot;</span><span class="p">,</span> <span class="s2">&quot;K_Voigt&quot;</span><span class="p">,</span> <span class="s2">&quot;G_Voigt&quot;</span><span class="p">,</span> <span class="s2">&quot;G_VRH&quot;</span><span class="p">,</span>
+                         <span class="s2">&quot;homogeneous_poisson&quot;</span><span class="p">,</span> <span class="s2">&quot;poisson_ratio&quot;</span><span class="p">,</span> <span class="s2">&quot;universal_anisotropy&quot;</span><span class="p">,</span> <span class="s2">&quot;K_VRH&quot;</span><span class="p">,</span> <span class="s2">&quot;elastic_anisotropy&quot;</span><span class="p">,</span>
+                         <span class="s2">&quot;band_gap&quot;</span><span class="p">,</span> <span class="s2">&quot;e_above_hull&quot;</span><span class="p">,</span> <span class="s2">&quot;formation_energy_per_atom&quot;</span><span class="p">,</span> <span class="s2">&quot;nelements&quot;</span><span class="p">,</span> <span class="s2">&quot;energy_per_atom&quot;</span><span class="p">,</span> <span class="s2">&quot;volume&quot;</span><span class="p">,</span>
+                         <span class="s2">&quot;density&quot;</span><span class="p">,</span> <span class="s2">&quot;total_magnetization&quot;</span><span class="p">,</span> <span class="s2">&quot;number&quot;</span><span class="p">]</span>
+        <span class="n">elastic_property_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;G_Voigt_Reuss_Hill&quot;</span><span class="p">,</span> <span class="s2">&quot;G_Reuss&quot;</span><span class="p">,</span> <span class="s2">&quot;K_Voigt_Reuss_Hill&quot;</span><span class="p">,</span> <span class="s2">&quot;K_Reuss&quot;</span><span class="p">,</span> <span class="s2">&quot;K_Voigt&quot;</span><span class="p">,</span> <span class="s2">&quot;G_Voigt&quot;</span><span class="p">,</span>
+                                 <span class="s2">&quot;G_VRH&quot;</span><span class="p">,</span> <span class="s2">&quot;homogeneous_poisson&quot;</span><span class="p">,</span> <span class="s2">&quot;poisson_ratio&quot;</span><span class="p">,</span> <span class="s2">&quot;universal_anisotropy&quot;</span><span class="p">,</span> <span class="s2">&quot;K_VRH&quot;</span><span class="p">,</span> <span class="s2">&quot;elastic_anisotropy&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">structure_data_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">property_list</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">elastic_property_list</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">structure_data_dict_condensed</span><span class="p">[</span><span class="n">prop</span><span class="p">]</span> <span class="o">=</span> <span class="n">structure_data_most_stable</span><span class="p">[</span><span class="s2">&quot;elasticity&quot;</span><span class="p">][</span><span class="n">prop</span><span class="p">]</span>
+                    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                        <span class="n">structure_data_dict_condensed</span><span class="p">[</span><span class="n">prop</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+                <span class="k">elif</span> <span class="n">prop</span> <span class="o">==</span> <span class="s2">&quot;number&quot;</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">structure_data_dict_condensed</span><span class="p">[</span><span class="s2">&quot;Spacegroup_&quot;</span><span class="o">+</span><span class="n">prop</span><span class="p">]</span> <span class="o">=</span> <span class="n">structure_data_most_stable</span><span class="p">[</span><span class="s2">&quot;spacegroup&quot;</span><span class="p">][</span><span class="n">prop</span><span class="p">]</span>
+                    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                        <span class="n">structure_data_dict_condensed</span><span class="p">[</span><span class="n">prop</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">structure_data_dict_condensed</span><span class="p">[</span><span class="n">prop</span><span class="p">]</span> <span class="o">=</span> <span class="n">structure_data_most_stable</span><span class="p">[</span><span class="n">prop</span><span class="p">]</span>
+                    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                        <span class="n">structure_data_dict_condensed</span><span class="p">[</span><span class="n">prop</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">property_list</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">prop</span> <span class="o">==</span> <span class="s2">&quot;number&quot;</span><span class="p">:</span>
+                    <span class="n">structure_data_dict_condensed</span><span class="p">[</span><span class="s2">&quot;Spacegroup_&quot;</span><span class="o">+</span><span class="n">prop</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">structure_data_dict_condensed</span><span class="p">[</span><span class="n">prop</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">val</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">structure_data_dict_condensed</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;No data found for composition &quot;</span><span class="si">{composition}</span><span class="s1">&quot; using materials project&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;MAterials Project Feature Generation </span><span class="si">{composition}</span><span class="s1"> </span><span class="si">{structure_data_dict_condensed}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">structure_data_dict_condensed</span></div>
+
+<div class="viewcode-block" id="CitrineFeatureGeneration"><a class="viewcode-back" href="../19_feature_generators.html#feature_generators.CitrineFeatureGeneration">[docs]</a><span class="k">class</span> <span class="nc">CitrineFeatureGeneration</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to generate new features using Citrine data and dataframe containing material compositions</span>
+<span class="sd">    Datarame must have a column named &quot;Material compositions&quot;.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dataframe: (dataframe), dataframe containing x and y data and feature names</span>
+
+<span class="sd">        api_key: (str), your Citrination API key</span>
+
+<span class="sd">        composition_feature: (str), string denoting a chemical composition to generate elemental features from</span>
+
+<span class="sd">    Methods:</span>
+
+<span class="sd">        generate_citrine_features : generates Citrine feature set based on compositions in dataframe</span>
+
+<span class="sd">            Args:</span>
+
+<span class="sd">                None</span>
+
+<span class="sd">            Returns:</span>
+
+<span class="sd">                dataframe: (dataframe), dataframe containing citrine generated feature set</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataframe</span><span class="p">,</span> <span class="n">api_key</span><span class="p">,</span> <span class="n">composition_feature</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span> <span class="o">=</span> <span class="n">dataframe</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">api_key</span> <span class="o">=</span> <span class="n">api_key</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">CitrinationClient</span><span class="p">(</span><span class="n">api_key</span><span class="p">,</span> <span class="s1">&#39;https://citrination.com&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">composition_feature</span> <span class="o">=</span> <span class="n">composition_feature</span>
+
+    <span class="k">def</span> <span class="nf">generate_citrine_features</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;WARNING: You have specified generation of features from Citrine. Based on which&#39;</span>
+              <span class="s1">&#39; materials you are interested in, there may be many records to parse through, thus&#39;</span>
+              <span class="s1">&#39; this routine may take a long time to complete!&#39;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">compositions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">composition_feature</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;original python error: {str(e)}&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">MissingColumnError</span><span class="p">(</span><span class="s1">&#39;Error! No column named </span><span class="si">{self.composition_feature}</span><span class="s1"> found in your input data file. &#39;</span>
+                    <span class="s1">&#39;To use this feature generation routine, you must supply a material composition for each data point&#39;</span><span class="p">)</span>
+        <span class="n">citrine_dict_property_min</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">citrine_dict_property_max</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">citrine_dict_property_avg</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="c1"># before: ~11 seconds</span>
+        <span class="c1"># made into a func so we can do requests in parallel</span>
+
+        <span class="c1"># now like 1.8 secs!</span>
+        <span class="n">pool</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">processes</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+        <span class="c1">#result_tuples = pool.map(self._load_composition, compositions)</span>
+        <span class="n">result_tuples</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_load_composition</span><span class="p">,</span> <span class="n">compositions</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">comp</span><span class="p">,</span> <span class="p">(</span><span class="n">prop_min</span><span class="p">,</span> <span class="n">prop_max</span><span class="p">,</span> <span class="n">prop_avg</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">compositions</span><span class="p">,</span> <span class="n">result_tuples</span><span class="p">):</span>
+            <span class="n">citrine_dict_property_min</span><span class="p">[</span><span class="n">comp</span><span class="p">]</span> <span class="o">=</span> <span class="n">prop_min</span>
+            <span class="n">citrine_dict_property_max</span><span class="p">[</span><span class="n">comp</span><span class="p">]</span> <span class="o">=</span> <span class="n">prop_max</span>
+            <span class="n">citrine_dict_property_avg</span><span class="p">[</span><span class="n">comp</span><span class="p">]</span> <span class="o">=</span> <span class="n">prop_avg</span>
+
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span>
+        <span class="n">citrine_dict_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">citrine_dict_property_min</span><span class="p">,</span> <span class="n">citrine_dict_property_max</span><span class="p">,</span> <span class="n">citrine_dict_property_avg</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">citrine_dict</span> <span class="ow">in</span> <span class="n">citrine_dict_list</span><span class="p">:</span>
+            <span class="n">dataframe_citrine</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">citrine_dict</span><span class="p">,</span> <span class="n">orient</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">)</span>
+            <span class="c1"># Need to reorder compositions in new dataframe to match input dataframe</span>
+            <span class="n">dataframe_citrine</span> <span class="o">=</span> <span class="n">dataframe_citrine</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dataframe</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">composition_feature</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+            <span class="c1"># Need to make compositions the first column, instead of the row names</span>
+            <span class="n">dataframe_citrine</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">composition_feature</span>
+            <span class="n">dataframe_citrine</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="c1"># Need to delete duplicate column before merging dataframes</span>
+            <span class="k">del</span> <span class="n">dataframe_citrine</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">composition_feature</span><span class="p">]</span>
+            <span class="c1"># Merge magpie feature dataframe with originally supplied dataframe</span>
+            <span class="n">dataframe</span> <span class="o">=</span> <span class="n">DataframeUtilities</span><span class="p">()</span><span class="o">.</span><span class="n">merge_dataframe_columns</span><span class="p">(</span><span class="n">dataframe1</span><span class="o">=</span><span class="n">dataframe</span><span class="p">,</span> <span class="n">dataframe2</span><span class="o">=</span><span class="n">dataframe_citrine</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">dataframe</span>
+
+    <span class="k">def</span> <span class="nf">_load_composition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">composition</span><span class="p">):</span>
+        <span class="n">pifquery</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_pifquery</span><span class="p">(</span><span class="n">composition</span><span class="o">=</span><span class="n">composition</span><span class="p">)</span>
+        <span class="n">property_name_list</span><span class="p">,</span> <span class="n">property_value_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_pifquery_property_list</span><span class="p">(</span><span class="n">pifquery</span><span class="o">=</span><span class="n">pifquery</span><span class="p">)</span>
+        <span class="c1">#print(&quot;Citrine Feature Generation: &quot;, composition, property_name_list, property_value_list)</span>
+        <span class="n">property_names_unique</span><span class="p">,</span> <span class="n">parsed_property_min</span><span class="p">,</span> <span class="n">parsed_property_max</span><span class="p">,</span> <span class="n">parsed_property_avg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_pifquery_property_list</span><span class="p">(</span><span class="n">property_name_list</span><span class="o">=</span><span class="n">property_name_list</span><span class="p">,</span> <span class="n">property_value_list</span><span class="o">=</span><span class="n">property_value_list</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">parsed_property_min</span><span class="p">,</span> <span class="n">parsed_property_max</span><span class="p">,</span> <span class="n">parsed_property_avg</span>
+
+    <span class="k">def</span> <span class="nf">_get_pifquery</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">composition</span><span class="p">):</span>
+        <span class="c1"># TODO: does this stop csv generation on first invalid composition?</span>
+        <span class="c1"># TODO: Is there a way to send many compositions in one call to citrine?</span>
+        <span class="n">pif_query</span> <span class="o">=</span> <span class="n">PifQuery</span><span class="p">(</span><span class="n">system</span><span class="o">=</span><span class="n">SystemQuery</span><span class="p">(</span><span class="n">chemical_formula</span><span class="o">=</span><span class="n">ChemicalFieldQuery</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="n">ChemicalFilter</span><span class="p">(</span><span class="n">equal</span><span class="o">=</span><span class="n">composition</span><span class="p">))))</span>
+        <span class="c1"># Check if any results found</span>
+        <span class="k">if</span> <span class="s1">&#39;hits&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pif_query</span><span class="p">)</span><span class="o">.</span><span class="n">as_dictionary</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s1">&#39;No results found!&#39;</span><span class="p">)</span>
+        <span class="n">pifquery</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pif_query</span><span class="p">)</span><span class="o">.</span><span class="n">as_dictionary</span><span class="p">()[</span><span class="s1">&#39;hits&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">pifquery</span>
+
+    <span class="k">def</span> <span class="nf">_get_pifquery_property_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pifquery</span><span class="p">):</span>
+        <span class="n">property_name_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">property_value_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">accepted_properties_list</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s1">&#39;mass&#39;</span><span class="p">,</span> <span class="s1">&#39;space group&#39;</span><span class="p">,</span> <span class="s1">&#39;band&#39;</span><span class="p">,</span> <span class="s1">&#39;Band&#39;</span><span class="p">,</span> <span class="s1">&#39;energy&#39;</span><span class="p">,</span> <span class="s1">&#39;volume&#39;</span><span class="p">,</span> <span class="s1">&#39;density&#39;</span><span class="p">,</span> <span class="s1">&#39;dielectric&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;Dielectric&#39;</span><span class="p">,</span> <span class="s1">&#39;Enthalpy&#39;</span><span class="p">,</span> <span class="s1">&#39;Convex&#39;</span><span class="p">,</span> <span class="s1">&#39;Magnetization&#39;</span><span class="p">,</span> <span class="s1">&#39;Elements&#39;</span><span class="p">,</span> <span class="s1">&#39;Modulus&#39;</span><span class="p">,</span> <span class="s1">&#39;Shear&#39;</span><span class="p">,</span>
+            <span class="s2">&quot;Poisson&#39;s&quot;</span><span class="p">,</span> <span class="s1">&#39;Elastic&#39;</span><span class="p">,</span> <span class="s1">&#39;Energy&#39;</span>
+        <span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">result_number</span><span class="p">,</span> <span class="n">results</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pifquery</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">dictionary</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;system&#39;</span><span class="p">][</span><span class="s1">&#39;properties&#39;</span><span class="p">]):</span>
+                <span class="k">if</span> <span class="s1">&#39;name&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dictionary</span> <span class="ow">or</span> <span class="n">dictionary</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;CIF File&quot;</span><span class="p">:</span> <span class="k">continue</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">dictionary</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">accepted_properties_list</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">entry</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span> <span class="k">continue</span>
+                    <span class="n">property_name_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">property_value_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="nb">float</span><span class="p">(</span><span class="n">dictionary</span><span class="p">[</span><span class="s1">&#39;scalars&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;value&#39;</span><span class="p">]))</span>
+                    <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">):</span>
+                        <span class="n">property_name_list</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                        <span class="k">continue</span>
+
+        <span class="c1">#for result_number, results in enumerate(pifquery):</span>
+        <span class="c1">#    property_value = results[&#39;system&#39;][&#39;properties&#39;]</span>
+        <span class="c1">#    for list_index, list_element in enumerate(property_value):</span>
+        <span class="c1">#        for name, value in property_value[list_index].items():</span>
+        <span class="c1">#            if name == &#39;name&#39; and value != &quot;CIF File&quot;:</span>
+        <span class="c1">#                for entry in accepted_properties_list:</span>
+        <span class="c1">#                    if entry in value:</span>
+        <span class="c1">#                        property_name_list.append(value)</span>
+        <span class="c1">#                        try:</span>
+        <span class="c1">#                            property_value_list.append(</span>
+        <span class="c1">#                                float(property_value[list_index][&#39;scalars&#39;][0][&#39;value&#39;]))</span>
+        <span class="c1">#                        except (ValueError, KeyError):</span>
+        <span class="c1">#                            # print(&#39;found something to remove&#39;, property_value[list_index][&#39;scalars&#39;][0][&#39;value&#39;])</span>
+        <span class="c1">#                            property_name_list.pop(-1)</span>
+        <span class="c1">#                            continue</span>
+
+        <span class="k">return</span> <span class="n">property_name_list</span><span class="p">,</span> <span class="n">property_value_list</span>
+
+    <span class="k">def</span> <span class="nf">_parse_pifquery_property_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_name_list</span><span class="p">,</span> <span class="n">property_value_list</span><span class="p">):</span>
+        <span class="n">parsed_property_max</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">parsed_property_min</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">parsed_property_avg</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">property_names_unique</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">property_name_list</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">property_value_list</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Error! Length of property name and property value lists are not the same. There must be a bug in the _get_pifquerey_property_list method&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s2">&quot;property_name_list and property_value_list are not the same size.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Get unique property names</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">property_name_list</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">property_names_unique</span><span class="p">:</span>
+                    <span class="n">property_names_unique</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">unique_name</span> <span class="ow">in</span> <span class="n">property_names_unique</span><span class="p">:</span>
+                <span class="n">unique_property</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+                <span class="n">unique_property_avg</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">property_name_list</span><span class="p">):</span>
+                    <span class="c1"># Only include property values whose name are same as those in unique_name list</span>
+                    <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="n">unique_name</span><span class="p">:</span>
+                        <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span> <span class="c1"># count how many instances of the same property occur</span>
+                        <span class="n">unique_property_avg</span> <span class="o">+=</span> <span class="n">property_value_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                        <span class="n">unique_property</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">property_value_list</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="n">unique_property_min</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">entry</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">unique_property</span><span class="p">)</span>
+                <span class="n">unique_property_max</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">entry</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">unique_property</span><span class="p">)</span>
+                <span class="n">unique_property_avg</span> <span class="o">=</span> <span class="n">unique_property_avg</span><span class="o">/</span><span class="n">count</span>
+                <span class="n">parsed_property_min</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">unique_name</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;_min&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">unique_property_min</span>
+                <span class="n">parsed_property_max</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">unique_name</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_max&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">unique_property_max</span>
+                <span class="n">parsed_property_avg</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">unique_name</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_avg&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">unique_property_avg</span>
+
+        <span class="k">return</span> <span class="n">property_names_unique</span><span class="p">,</span> <span class="n">parsed_property_min</span><span class="p">,</span> <span class="n">parsed_property_max</span><span class="p">,</span> <span class="n">parsed_property_avg</span></div>
+
+<div class="viewcode-block" id="DataframeUtilities"><a class="viewcode-back" href="../19_feature_generators.html#feature_generators.DataframeUtilities">[docs]</a><span class="k">class</span> <span class="nc">DataframeUtilities</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class of basic utilities for dataframe manipulation, and exchanging between dataframes and numpy arrays</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        None</span>
+
+<span class="sd">    Methods:</span>
+
+<span class="sd">        merge_dataframe_columns : merge two dataframes by concatenating the column names (duplicate columns omitted)</span>
+
+<span class="sd">            Args:</span>
+
+<span class="sd">                dataframe1: (dataframe), a pandas dataframe object</span>
+
+<span class="sd">                dataframe2: (dataframe), a pandas dataframe object</span>
+
+<span class="sd">            Returns:</span>
+
+<span class="sd">                dataframe: (dataframe), merged dataframe</span>
+
+<span class="sd">        merge_dataframe_rows : merge two dataframes by concatenating the row contents (duplicate rows omitted)</span>
+
+<span class="sd">            Args:</span>
+
+<span class="sd">                dataframe1: (dataframe), a pandas dataframe object</span>
+
+<span class="sd">                dataframe2: (dataframe), a pandas dataframe object</span>
+
+<span class="sd">            Returns:</span>
+
+<span class="sd">                dataframe: (dataframe), merged dataframe</span>
+
+<span class="sd">        get_dataframe_statistics : obtain basic statistics about data contained in the dataframe</span>
+
+<span class="sd">            Args:</span>
+
+<span class="sd">                dataframe: (dataframe), a pandas dataframe object</span>
+
+<span class="sd">            Returns:</span>
+
+<span class="sd">                dataframe_stats: (dataframe), dataframe containing input dataframe statistics</span>
+
+<span class="sd">        dataframe_to_array : transform a pandas dataframe to a numpy array</span>
+
+<span class="sd">            Args:</span>
+
+<span class="sd">                dataframe: (dataframe), a pandas dataframe object</span>
+
+<span class="sd">            Returns:</span>
+
+<span class="sd">                array: (numpy array), a numpy array representation of the inputted dataframe</span>
+
+<span class="sd">        array_to_dataframe : transform a numpy array to a pandas dataframe</span>
+
+<span class="sd">            Args:</span>
+
+<span class="sd">                array: (numpy array), a numpy array</span>
+
+<span class="sd">            Returns:</span>
+
+<span class="sd">                dataframe: (dataframe), a pandas dataframe representation of the inputted numpy array</span>
+
+<span class="sd">        concatenate_arrays : merge two numpy arrays by concatenating along the columns</span>
+
+<span class="sd">            Args:</span>
+
+<span class="sd">                Xarray: (numpy array), a numpy array object</span>
+
+<span class="sd">                yarray: (numpy array), a numpy array object</span>
+
+<span class="sd">            Returns:</span>
+
+<span class="sd">                array: (numpy array), a numpy array merging the two input arrays</span>
+
+<span class="sd">        assign_columns_as_features : adds column names to dataframe based on the x and y feature names</span>
+
+<span class="sd">            Args:</span>
+
+<span class="sd">                dataframe: (dataframe), a pandas dataframe object</span>
+
+<span class="sd">                x_features: (list), list containing x feature names</span>
+
+<span class="sd">                y_feature: (str), target feature name</span>
+
+<span class="sd">            Returns:</span>
+
+<span class="sd">                dataframe: (dataframe), dataframe containing same data as input, with columns labeled with features</span>
+
+<span class="sd">        save_all_dataframe_statistics : obtain dataframe statistics and save it to a csv file</span>
+
+<span class="sd">            Args:</span>
+
+<span class="sd">                dataframe: (dataframe), a pandas dataframe object</span>
+
+<span class="sd">                data_path: (str), file path to save dataframe statistics to</span>
+
+<span class="sd">            Returns:</span>
+
+<span class="sd">                fname: (str), name of file dataframe stats saved to</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">merge_dataframe_columns</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">dataframe1</span><span class="p">,</span> <span class="n">dataframe2</span><span class="p">):</span>
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">dataframe1</span><span class="p">,</span> <span class="n">dataframe2</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">join</span><span class="o">=</span><span class="s1">&#39;outer&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dataframe</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">merge_dataframe_rows</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">dataframe1</span><span class="p">,</span> <span class="n">dataframe2</span><span class="p">):</span>
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="n">dataframe1</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="n">dataframe2</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;outer&#39;</span><span class="p">)</span>
+        <span class="c1">#dataframe = pd.concat([dataframe1, dataframe2], axis=1, join=&#39;outer&#39;)</span>
+        <span class="k">return</span> <span class="n">dataframe</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_dataframe_statistics</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">dataframe</span><span class="p">):</span>
+        <span class="n">dataframe_stats</span> <span class="o">=</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">describe</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dataframe_stats</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">dataframe_to_array</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">dataframe</span><span class="p">):</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dataframe</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">array</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">array_to_dataframe</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">array</span><span class="p">):</span>
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">array</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">dataframe</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">concatenate_arrays</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">X_array</span><span class="p">,</span> <span class="n">y_array</span><span class="p">):</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">X_array</span><span class="p">,</span> <span class="n">y_array</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">array</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">assign_columns_as_features</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">dataframe</span><span class="p">,</span> <span class="n">x_features</span><span class="p">,</span> <span class="n">y_feature</span><span class="p">,</span> <span class="n">remove_first_row</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">column_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">x_and_y_features</span> <span class="o">=</span> <span class="p">[</span><span class="n">feature</span> <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">x_features</span><span class="p">]</span>
+        <span class="n">x_and_y_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y_feature</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">feature</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">x_and_y_features</span><span class="p">):</span>
+            <span class="n">column_dict</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">feature</span>
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">column_dict</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">remove_first_row</span> <span class="o">==</span> <span class="nb">bool</span><span class="p">(</span><span class="kc">True</span><span class="p">):</span>
+            <span class="n">dataframe</span> <span class="o">=</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># Need to remove feature names from first row so can obtain data</span>
+        <span class="k">return</span> <span class="n">dataframe</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">save_all_dataframe_statistics</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">dataframe</span><span class="p">,</span> <span class="n">configdict</span><span class="p">):</span>
+        <span class="n">dataframe_stats</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">get_dataframe_statistics</span><span class="p">(</span><span class="n">dataframe</span><span class="o">=</span><span class="n">dataframe</span><span class="p">)</span>
+        <span class="c1"># Need configdict to get save path</span>
+        <span class="c1">#if not configfile_path:</span>
+        <span class="c1">#    configdict = ConfigFileParser(configfile=sys.argv[1]).get_config_dict(path_to_file=os.getcwd())</span>
+            <span class="c1">#data_path_name = data_path.split(&#39;./&#39;)[1]</span>
+            <span class="c1">#data_path_name = data_path_name.split(&#39;.csv&#39;)[0]</span>
+        <span class="c1">#    data_path_name = configdict[&#39;General Setup&#39;][&#39;target_feature&#39;]</span>
+        <span class="c1">#else:</span>
+        <span class="c1">#    configdict = ConfigFileParser(configfile=configfile_name).get_config_dict(path_to_file=configfile_path)</span>
+        <span class="n">data_path_name</span> <span class="o">=</span> <span class="n">configdict</span><span class="p">[</span><span class="s1">&#39;General Setup&#39;</span><span class="p">][</span><span class="s1">&#39;target_feature&#39;</span><span class="p">]</span> <span class="c1"># TODO</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">configdict</span><span class="p">[</span><span class="s1">&#39;General Setup&#39;</span><span class="p">][</span><span class="s1">&#39;save_path&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="s1">&#39;input_data_statistics_&#39;</span><span class="o">+</span><span class="n">data_path_name</span><span class="o">+</span><span class="s1">&#39;.csv&#39;</span>
+        <span class="n">dataframe_stats</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">fname</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, University of Wisconsin-Madison Computational Materials Group
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'../',
+              VERSION:'2.0',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,817 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>MAST-ML Input File &mdash; MAterials Simulation Toolkit for Machine Learning (MAST-ML) 2.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="MAST-ML overview slides" href="2_mastml_overview.html" />
+    <link rel="prev" title="Startup" href="0_3_startup.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> MAterials Simulation Toolkit for Machine Learning (MAST-ML)
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="00_acknowledgements.html">Acknowledgements</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="00_acknowledgements.html#contributors">Contributors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="00_acknowledgements.html#funding">Funding</a></li>
+<li class="toctree-l2"><a class="reference internal" href="00_acknowledgements.html#citing-mast-ml">Citing MAST-ML</a></li>
+<li class="toctree-l2"><a class="reference internal" href="00_acknowledgements.html#code-repository">Code Repository</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="0_installation.html">Installing MAST-ML</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="0_1_hardware_data_requirements.html">Hardware and Data Requirements</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="0_1_hardware_data_requirements.html#hardware">Hardware</a></li>
+<li class="toctree-l3"><a class="reference internal" href="0_1_hardware_data_requirements.html#data">Data</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="0_1_terminal_installation.html">Terminal installation (Linux or linux-like terminal on Mac)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="0_1_terminal_installation.html#install-python3">Install Python3</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="0_1_terminal_installation.html#create-a-conda-environment">Create a conda environment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0_1_terminal_installation.html#set-up-juptyer-notebooks">Set up Juptyer notebooks</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="0_1_terminal_installation.html#install-the-mast-ml-package">Install the MAST-ML package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="0_1_terminal_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="0_2_windows_installation.html">Windows installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="0_2_windows_installation.html#install-python3">Install Python3</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="0_2_windows_installation.html#create-a-conda-environment">Create a conda environment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0_2_windows_installation.html#set-up-the-spyder-ide-and-jupyter-notebooks">Set up the Spyder IDE and Jupyter notebooks</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="0_2_windows_installation.html#install-the-mast-ml-package">Install the MAST-ML package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="0_2_windows_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="0_3_startup.html">Startup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="0_3_startup.html#locate-the-examples-folder">Locate the examples folder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="0_3_startup.html#run-the-mastml-command">Run the MASTML command</a></li>
+<li class="toctree-l3"><a class="reference internal" href="0_3_startup.html#check-output">Check output</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">MAST-ML Input File</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#input-file-sections">Input file sections</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#general-setup">General Setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#data-cleaning">Data Cleaning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#clustering">Clustering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#feature-generation">Feature Generation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#feature-normalization">Feature Normalization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#learning-curve">Learning Curve</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#feature-selection">Feature Selection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#data-splits">Data Splits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#models">Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#plot-settings">Plot Settings</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="2_mastml_overview.html">MAST-ML overview slides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="2_mastml_tutorial.html">MAST-ML tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_firstrun.html">Your first MAST-ML run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_cleaning.html">Cleaning input data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_featuregen.html">Feature generation and normalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_firstmodel.html">Training and evaluating your first model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_featureselect.html">Feature selection and learning curves</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_hyperparam.html">Hyperparameter optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_logcv.html">Random leave-out versus leave-out-group cross-validation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_modelimport.html">Making predictions by importing a previously fit model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_prediction.html">Predicting values for new, extrapolated data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="3_code_documentation.html">MAST-ML Code Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="3_metrics.html">Metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="4_conf_parser.html">Configuration file parser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="5_data_cleaner.html">Data cleaner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="6_data_loader.html">Data loader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="7_learning_curve.html">Learning curve</a></li>
+<li class="toctree-l2"><a class="reference internal" href="8_clusterers.html">Clusterers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="9_data_splitters.html">Data splitters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="10_utils.html">Utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="11_mastml_driver.html">MAST-ML Driver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="12_plot_helper.html">Plot Helper</a></li>
+<li class="toctree-l2"><a class="reference internal" href="13_html_helper.html">HTML Helper</a></li>
+<li class="toctree-l2"><a class="reference internal" href="14_feature_selectors.html">Feature Selectors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="15_feature_normalizers.html">Feature Normalizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="16_randomizers.html">Randomizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="17_model_finder.html">Model Finder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="18_util_legos.html">Utility Legos</a></li>
+<li class="toctree-l2"><a class="reference internal" href="19_feature_generators.html">Feature Generators</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">MAterials Simulation Toolkit for Machine Learning (MAST-ML)</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>MAST-ML Input File</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/1_mastml_inputfile.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="mast-ml-input-file">
+<span id="mastml-input-file"></span><h1>MAST-ML Input File<a class="headerlink" href="#mast-ml-input-file" title="Permalink to this headline">¶</a></h1>
+<p>This document provides an overview of the various sections and fields of the MAST-ML input file.</p>
+<p>A full template input file can be downloaded here: <a class="reference download internal" href="_downloads/MASTML_fullinputfile.conf" download=""><code class="xref download docutils literal"><span class="pre">MASTML_InputFile</span></code></a></p>
+<div class="section" id="input-file-sections">
+<h2>Input file sections<a class="headerlink" href="#input-file-sections" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="general-setup">
+<h3>General Setup<a class="headerlink" href="#general-setup" title="Permalink to this headline">¶</a></h3>
+<p>The “GeneralSetup” section of the input file allows the user to specify an assortment of basic MAST-ML parameters, ranging
+from which column names in the CSV file to use as features for fitting (i.e. X data) or to fit to (i.e. y data), as well
+as which metrics to employ in fitting a model, among other things.</p>
+<p>Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">GeneralSetup</span><span class="p">]</span>
+    <span class="n">input_features</span> <span class="o">=</span> <span class="n">feature_1</span><span class="p">,</span> <span class="n">feature_2</span><span class="p">,</span> <span class="n">etc</span><span class="o">.</span> <span class="ow">or</span> <span class="s2">&quot;Auto&quot;</span>
+    <span class="n">target_feature</span> <span class="o">=</span> <span class="n">target_feature</span>
+    <span class="n">randomizer</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">metrics</span> <span class="o">=</span> <span class="n">root_mean_squared_error</span><span class="p">,</span> <span class="n">mean_absolute_error</span><span class="p">,</span> <span class="n">etc</span><span class="o">.</span> <span class="ow">or</span> <span class="s2">&quot;Auto&quot;</span>
+    <span class="n">not_input_features</span> <span class="o">=</span> <span class="n">additional_feature_1</span><span class="p">,</span> <span class="n">additional_feature_2</span>
+    <span class="n">grouping_feature</span> <span class="o">=</span> <span class="n">grouping_feature_1</span>
+    <span class="n">validation_columns</span> <span class="o">=</span> <span class="n">validation_feature_1</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><strong>input_features</strong> List of input X features</li>
+<li><strong>target_feature</strong> Target y feature</li>
+<li><strong>randomizer</strong> Whether or not to randomize y feature data</li>
+<li><strong>metrics</strong> Which metrics to evaluate model fits</li>
+<li><strong>not_input_features</strong> Additional features that are not to be fitted on (i.e. not X features)</li>
+<li><strong>grouping_feature</strong> Feature names that provide information on data grouping</li>
+<li><strong>validation_columns</strong> Feature name that designates whether data will be used for validation (set rows as 1 or 0 in csv file)</li>
+</ul>
+</div>
+<div class="section" id="data-cleaning">
+<h3>Data Cleaning<a class="headerlink" href="#data-cleaning" title="Permalink to this headline">¶</a></h3>
+<p>The “DataCleaning” section of the input file allows the user to clean their data to remove rows or columns that contain
+empty or NaN fields, or fill in these fields using imputation or principal component analysis methods.</p>
+<p>Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">DataCleaning</span><span class="p">]</span>
+    <span class="n">cleaning_method</span> <span class="o">=</span> <span class="n">remove</span><span class="p">,</span> <span class="n">imputation</span><span class="p">,</span> <span class="n">ppca</span>
+    <span class="n">imputation_strategy</span> <span class="o">=</span> <span class="n">mean</span><span class="p">,</span> <span class="n">median</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><strong>cleaning_method</strong>  Method of data cleaning. “remove” simply removes columns with missing data. “imputation” uses basic operation to fill in missing values. “ppca” uses principal component analysis to fill in missing values.</li>
+<li><strong>imputation_strategy</strong> Only valid field if doing imputation, selects method to impute missing data by using mean, median, etc. of the column</li>
+</ul>
+</div>
+<div class="section" id="clustering">
+<h3>Clustering<a class="headerlink" href="#clustering" title="Permalink to this headline">¶</a></h3>
+<p>Optional section to perform clustering of data using well-known clustering algorithms available in scikit-learn.
+Note that the subsection names must match the corresponding name of the routine in scikit-learn. More information on
+clustering routines and the parameters to set for each routine can be found here:
+<a class="reference external" href="http://scikit-learn.org/stable/modules/classes.html#module-sklearn.cluster">http://scikit-learn.org/stable/modules/classes.html#module-sklearn.cluster</a>
+For the purpose of this full input file, we use the scikit-learn default parameter values. Note that not all parameters are listed.</p>
+<p>Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Clustering</span><span class="p">]</span>
+    <span class="p">[[</span><span class="n">AffinityPropagation</span><span class="p">]]</span>
+        <span class="n">damping</span> <span class="o">=</span> <span class="mf">0.5</span>
+        <span class="n">max_iter</span> <span class="o">=</span> <span class="mi">200</span>
+        <span class="n">convergence_iter</span> <span class="o">=</span> <span class="mi">15</span>
+        <span class="n">affinity</span> <span class="o">=</span> <span class="n">euclidean</span>
+    <span class="p">[[</span><span class="n">AgglomerativeClustering</span><span class="p">]]</span>
+        <span class="n">n_clusters</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="n">affinity</span> <span class="o">=</span> <span class="n">euclidean</span>
+        <span class="n">compute_full_tree</span> <span class="o">=</span> <span class="n">auto</span>
+        <span class="n">linkage</span> <span class="o">=</span> <span class="n">ward</span>
+    <span class="p">[[</span><span class="n">Birch</span><span class="p">]]</span>
+        <span class="n">threshold</span> <span class="o">=</span> <span class="mf">0.5</span>
+        <span class="n">branching_factor</span> <span class="o">=</span> <span class="mi">50</span>
+        <span class="n">n_clusters</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="p">[[</span><span class="n">DBSCAN</span><span class="p">]]</span>
+        <span class="n">eps</span> <span class="o">=</span> <span class="mf">0.5</span>
+        <span class="n">min_samples</span> <span class="o">=</span> <span class="mi">5</span>
+        <span class="n">metric</span> <span class="o">=</span> <span class="n">euclidean</span>
+        <span class="n">algorithm</span> <span class="o">=</span> <span class="n">auto</span>
+        <span class="n">leaf_size</span> <span class="o">=</span> <span class="mi">30</span>
+    <span class="p">[[</span><span class="n">KMeans</span><span class="p">]]</span>
+        <span class="n">n_clusters</span> <span class="o">=</span> <span class="mi">8</span>
+        <span class="n">n_init</span> <span class="o">=</span> <span class="mi">10</span>
+        <span class="n">max_iter</span> <span class="o">=</span> <span class="mi">300</span>
+        <span class="n">tol</span> <span class="o">=</span> <span class="mf">0.0001</span>
+    <span class="p">[[</span><span class="n">MiniBatchKMeans</span><span class="p">]]</span>
+        <span class="n">n_clusters</span> <span class="o">=</span> <span class="mi">8</span>
+        <span class="n">max_iter</span> <span class="o">=</span> <span class="mi">100</span>
+        <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="p">[[</span><span class="n">MeanShift</span><span class="p">]]</span>
+    <span class="p">[[</span><span class="n">SpectralClustering</span><span class="p">]]</span>
+        <span class="n">n_clusters</span> <span class="o">=</span> <span class="mi">8</span>
+        <span class="n">n_init</span> <span class="o">=</span> <span class="mi">10</span>
+        <span class="n">gamma</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="n">affinity</span> <span class="o">=</span> <span class="n">rbf</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="feature-generation">
+<h3>Feature Generation<a class="headerlink" href="#feature-generation" title="Permalink to this headline">¶</a></h3>
+<p>Optional section to perform feature generation based on properties of the constituent elements. These routines were
+custom written for MAST-ML, except for PolynomialFeatures. For more information on the MAST-ML custom routines, consult
+the MAST-ML online documentation. For more information on PolynomialFeatures, see:
+<a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html">http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html</a></p>
+<p>Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">FeatureGeneration</span><span class="p">]</span>
+    <span class="p">[[</span><span class="n">Magpie</span><span class="p">]]</span>
+        <span class="n">composition_feature</span> <span class="o">=</span> <span class="n">Material</span> <span class="n">Compositions</span>
+    <span class="p">[[</span><span class="n">MaterialsProject</span><span class="p">]]</span>
+        <span class="n">composition_feature</span> <span class="o">=</span> <span class="n">Material</span> <span class="n">Compositions</span>
+        <span class="n">api_key</span> <span class="o">=</span> <span class="n">my_api_key</span>
+    <span class="p">[[</span><span class="n">Citrine</span><span class="p">]]</span>
+        <span class="n">composition_feature</span> <span class="o">=</span> <span class="n">Material</span> <span class="n">Compositions</span>
+        <span class="n">api_key</span> <span class="o">=</span> <span class="n">my_api_key</span>
+    <span class="p">[[</span><span class="n">ContainsElement</span><span class="p">]]</span>
+        <span class="n">composition_feature</span> <span class="o">=</span> <span class="n">Host</span> <span class="n">element</span>
+        <span class="n">all_elements</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">element</span> <span class="o">=</span> <span class="n">Al</span>
+        <span class="n">new_name</span> <span class="o">=</span> <span class="n">has_Al</span>
+    <span class="p">[[</span><span class="n">PolynomialFeatures</span><span class="p">]]</span>
+        <span class="n">degree</span><span class="o">=</span><span class="mi">2</span>
+        <span class="n">interaction_only</span><span class="o">=</span><span class="kc">False</span>
+        <span class="n">include_bias</span><span class="o">=</span><span class="kc">True</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><strong>composition_feature</strong> Name of column in csv file containing material compositions</li>
+<li><strong>api_key</strong> Your API key to access the Materials Project or Citrine. Register for your account at Materials Project: <a class="reference external" href="https://materialsproject.org">https://materialsproject.org</a> or at Citrine: <a class="reference external" href="https://citrination.com">https://citrination.com</a></li>
+<li><strong>all_elements</strong> For ContainsElement, whether or not to scan all data rows to assess all elements present in data set</li>
+<li><strong>element</strong> For ContainsElement, name of element of interest. Ignored if all_elements = True</li>
+<li><strong>new_name</strong> For ContainsElement, name of new feature column to generate. Ignored if all_elements = True</li>
+</ul>
+</div>
+<div class="section" id="feature-normalization">
+<h3>Feature Normalization<a class="headerlink" href="#feature-normalization" title="Permalink to this headline">¶</a></h3>
+<p>Optional section to perform feature normalization of the input or generated features using well-known
+feature normalization algorithms available in scikit-learn. Note that the subsection names must match the corresponding
+name of the routine in scikit-learn. More information on normalization routines and the parameters to set for each
+routine can be found here: <a class="reference external" href="http://scikit-learn.org/stable/modules/classes.html#module-sklearn.preprocessing">http://scikit-learn.org/stable/modules/classes.html#module-sklearn.preprocessing</a> .
+For the purpose of this full input file, we use the scikit-learn default parameter values. Note that not all parameters are listed,
+and only the currently listed normalization routines are supported. In addition, MeanStdevScaler is a custom written normalization
+routine for MAST-ML. Additional information on MeanStdevScaler can be found in the online MAST-ML documentation.</p>
+<p>Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">FeatureNormalization</span><span class="p">]</span>
+    <span class="p">[[</span><span class="n">Binarizer</span><span class="p">]]</span>
+        <span class="n">threshold</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="p">[[</span><span class="n">MaxAbsScaler</span><span class="p">]]</span>
+    <span class="p">[[</span><span class="n">MinMaxScaler</span><span class="p">]]</span>
+    <span class="p">[[</span><span class="n">Normalizer</span><span class="p">]]</span>
+        <span class="n">norm</span> <span class="o">=</span> <span class="n">l2</span>
+    <span class="p">[[</span><span class="n">QuantileTransformer</span><span class="p">]]</span>
+        <span class="n">n_quantiles</span> <span class="o">=</span> <span class="mi">1000</span>
+        <span class="n">output_distribution</span> <span class="o">=</span> <span class="n">uniform</span>
+    <span class="p">[[</span><span class="n">RobustScaler</span><span class="p">]]</span>
+        <span class="n">with_centering</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">with_scaling</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="p">[[</span><span class="n">StandardScaler</span><span class="p">]]</span>
+    <span class="p">[[</span><span class="n">MeanStdevScaler</span><span class="p">]]</span>
+        <span class="n">mean</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">stdev</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="learning-curve">
+<h3>Learning Curve<a class="headerlink" href="#learning-curve" title="Permalink to this headline">¶</a></h3>
+<p>Optional section to perform learning curve analysis on a dataset. Two types of learning curves will be generated: a
+data learning curve (score vs. amount of training data) and a feature learning curve (score vs. number of features).</p>
+<p>Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">LearningCurve</span><span class="p">]</span>
+    <span class="n">estimator</span> <span class="o">=</span> <span class="n">KernelRidge_learn</span>
+    <span class="n">cv</span> <span class="o">=</span> <span class="n">RepeatedKFold_learn</span>
+    <span class="n">scoring</span> <span class="o">=</span> <span class="n">root_mean_squared_error</span>
+    <span class="n">n_features_to_select</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">selector_name</span> <span class="o">=</span> <span class="n">MASTMLFeatureSelector</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><strong>estimator</strong> A scikit-learn model/estimator. The name needs to match an entry in the [Models] section. Note this model will be removed from the [Models] list after the learning curve is generated.</li>
+<li><strong>cv</strong> A scikit-learn cross validation generator. The name needs to match an entry in the [DataSplits] section. Note this method will be removed from the [DataSplits] list after the learning curve is generated.</li>
+<li><strong>scoring</strong> A scikit-learn scoring method compatible with MAST-ML. See the MAST-ML online documentation at <a class="reference external" href="https://htmlpreview.github.io/?https://raw.githubusercontent.com/uw-cmg/MAST-ML/dev_Ryan_2018-10-29/docs/build/html/3_metrics.html">https://htmlpreview.github.io/?https://raw.githubusercontent.com/uw-cmg/MAST-ML/dev_Ryan_2018-10-29/docs/build/html/3_metrics.html</a> for more information.</li>
+<li><strong>n_features_to_select</strong> The max number of features to use for the feature learning curve.</li>
+<li><strong>selector_name</strong> Method to conduct feature selection for the feature learning curve. The name needs to match an entry in the [FeatureSelection] section. Note this method will be removed from the [FeatureSelection] section after the learning curve is generated.</li>
+</ul>
+</div>
+<div class="section" id="feature-selection">
+<h3>Feature Selection<a class="headerlink" href="#feature-selection" title="Permalink to this headline">¶</a></h3>
+<p>Optional section to perform feature selection using routines in scikit-learn, mlxtend and custom-written for MAST-ML.
+Note that the subsection names must match the corresponding name of the routine in scikit-learn. More information on
+selection routines and the parameters to set for each routine can be found here:
+<a class="reference external" href="http://scikit-learn.org/stable/modules/classes.html#module-sklearn.feature_selection">http://scikit-learn.org/stable/modules/classes.html#module-sklearn.feature_selection</a> . For the purpose of this full
+input file, we use the scikit-learn default parameter values. Note that not all parameters are listed, and only the
+currently listed selection routines are supported. In addition, MASTMLFeatureSelector is a custom written selection
+routine for MAST-ML. Additional information on MASTMLFeatureSelector can be found in the online MAST-ML documentation.
+Finally, SequentialFeatureSelector is a routine available from the mlxtend package, which documention can be found
+here: <a class="reference external" href="http://rasbt.github.io/mlxtend/">http://rasbt.github.io/mlxtend/</a></p>
+<p>Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">FeatureSelection</span><span class="p">]</span>
+    <span class="p">[[</span><span class="n">GenericUnivariateSelect</span><span class="p">]]</span>
+    <span class="p">[[</span><span class="n">SelectPercentile</span><span class="p">]]</span>
+    <span class="p">[[</span><span class="n">SelectKBest</span><span class="p">]]</span>
+    <span class="p">[[</span><span class="n">SelectFpr</span><span class="p">]]</span>
+    <span class="p">[[</span><span class="n">SelectFdr</span><span class="p">]]</span>
+    <span class="p">[[</span><span class="n">SelectFwe</span><span class="p">]]</span>
+    <span class="p">[[</span><span class="n">RFE</span><span class="p">]]</span>
+        <span class="n">estimator</span> <span class="o">=</span> <span class="n">RandomForestRegressor_selectRFE</span>
+        <span class="n">n_features_to_select</span> <span class="o">=</span> <span class="mi">5</span>
+        <span class="n">step</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="p">[[</span><span class="n">SequentialFeatureSelector</span><span class="p">]]</span>
+        <span class="n">estimator</span> <span class="o">=</span> <span class="n">RandomForestRegressor_selectSFS</span>
+        <span class="n">k_features</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="p">[[</span><span class="n">RFECV</span><span class="p">]]</span>
+        <span class="n">estimator</span> <span class="o">=</span> <span class="n">RandomForestRegressor_selectRFECV</span>
+        <span class="n">step</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">cv</span> <span class="o">=</span> <span class="n">LeaveOneGroupOut_selectRFECV</span>
+        <span class="n">min_features_to_select</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="p">[[</span><span class="n">SelectFromModel</span><span class="p">]]</span>
+        <span class="n">estimator</span> <span class="o">=</span> <span class="n">KernelRidge_selectfrommodel</span>
+        <span class="n">max_features</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="p">[[</span><span class="n">VarianceThreshold</span><span class="p">]]</span>
+        <span class="n">threshold</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="p">[[</span><span class="n">PCA</span><span class="p">]]</span>
+        <span class="n">n_components</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="p">[[</span><span class="n">MASTMLFeatureSelector</span><span class="p">]]</span>
+        <span class="n">estimator</span> <span class="o">=</span> <span class="n">KernelRidge_selectMASTML</span>
+        <span class="n">n_features_to_select</span> <span class="o">=</span> <span class="mi">5</span>
+        <span class="n">cv</span> <span class="o">=</span> <span class="n">LeaveOneGroupOut_selectMASTML</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><strong>estimator</strong>  A scikit-learn model/estimator. The name needs to match an entry in the [Models] section. Note this model will be removed from the [Models] list after the learning curve is generated.</li>
+<li><strong>n_features_to_select</strong> The max number of features to select</li>
+<li><strong>step</strong> For RFE and RFECV, the number of features to remove in each step</li>
+<li><strong>k_features</strong> For SequentialFeatureSelector, the max number of features to select.</li>
+<li><strong>cv</strong> A scikit-learn cross validation generator. The name needs to match an entry in the [DataSplits] section. Note this method will be removed from the [DataSplits] list after the learning curve is generated.</li>
+</ul>
+</div>
+<div class="section" id="data-splits">
+<h3>Data Splits<a class="headerlink" href="#data-splits" title="Permalink to this headline">¶</a></h3>
+<p>Optional section to perform data splits using cross validation routines in scikit-learn, and custom-written for MAST-ML.
+Note that the subsection names must match the corresponding name of the routine in scikit-learn. More information on
+selection routines and the parameters to set for each routine can be found here:
+<a class="reference external" href="http://scikit-learn.org/stable/modules/classes.html#module-sklearn.model_selection">http://scikit-learn.org/stable/modules/classes.html#module-sklearn.model_selection</a> . For the purpose of this full
+input file, we use the scikit-learn default parameter values. Note that not all parameters are listed, and only the
+currently listed data split routines are supported. In addition, NoSplit is a custom written selection routine for
+MAST-ML, which simply produces a full data fit with no cross validation. Additional information on NoSplit can be found
+in the online MAST-ML documentation.</p>
+<p>Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">DataSplits</span><span class="p">]</span>
+    <span class="p">[[</span><span class="n">NoSplit</span><span class="p">]]</span>
+    <span class="p">[[</span><span class="n">KFold</span><span class="p">]]</span>
+        <span class="n">shuffle</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">n_splits</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="p">[[</span><span class="n">RepeatedKFold</span><span class="p">]]</span>
+        <span class="n">n_splits</span> <span class="o">=</span> <span class="mi">5</span>
+        <span class="n">n_repeats</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="c1"># Here, an example of another instance of RepeatedKFold, this one being used in the [LearningCurve] section above.</span>
+    <span class="p">[[</span><span class="n">RepeatedKFold_learn</span><span class="p">]]</span>
+        <span class="n">n_splits</span> <span class="o">=</span> <span class="mi">5</span>
+        <span class="n">n_repeats</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="p">[[</span><span class="n">GroupKFold</span><span class="p">]]</span>
+        <span class="n">n_splits</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="p">[[</span><span class="n">LeaveOneOut</span><span class="p">]]</span>
+    <span class="p">[[</span><span class="n">LeavePOut</span><span class="p">]]</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="p">[[</span><span class="n">RepeatedStratifiedKFold</span><span class="p">]]</span>
+        <span class="n">n_splits</span> <span class="o">=</span> <span class="mi">5</span>
+        <span class="n">n_repeats</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="p">[[</span><span class="n">StratifiedKFold</span><span class="p">]]</span>
+        <span class="n">n_splits</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="p">[[</span><span class="n">ShuffleSplit</span><span class="p">]]</span>
+        <span class="n">n_splits</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="p">[[</span><span class="n">StratifiedShuffleSplit</span><span class="p">]]</span>
+        <span class="n">n_splits</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="p">[[</span><span class="n">LeaveOneGroupOut</span><span class="p">]]</span>
+        <span class="c1"># The column name in the input csv file containing the group labels</span>
+        <span class="n">grouping_column</span> <span class="o">=</span> <span class="n">Host</span> <span class="n">element</span>
+    <span class="c1"># Here, an example of another instance of LeaveOneGroupOut, this one being used in the [FeatureSelection] section above.</span>
+    <span class="p">[[</span><span class="n">LeaveOneGroupOut_selectMASTML</span><span class="p">]]</span>
+        <span class="c1"># The column name in the input csv file containing the group labels</span>
+        <span class="n">grouping_column</span> <span class="o">=</span> <span class="n">Host</span> <span class="n">element</span>
+    <span class="c1"># Here, an example of another instance of LeaveOneGroupOut, this one being used based on the creation of the &quot;has_Al&quot;</span>
+    <span class="c1"># group from the [[ContainsElement]] routine present in the [FeatureGeneration] section.</span>
+    <span class="p">[[</span><span class="n">LeaveOneGroupOut_Al</span><span class="p">]]</span>
+        <span class="n">grouping_column</span> <span class="o">=</span> <span class="n">has_Al</span>
+    <span class="c1"># Here, an example of another instance of LeaveOneGroupOut, this one being used based on the creation of clusters</span>
+    <span class="c1"># from the [[KMeans]] routine present in the [Clustering] section.</span>
+    <span class="p">[[</span><span class="n">LeaveOneGroupOut_kmeans</span><span class="p">]]</span>
+        <span class="n">grouping_column</span> <span class="o">=</span> <span class="n">KMeans</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="models">
+<h3>Models<a class="headerlink" href="#models" title="Permalink to this headline">¶</a></h3>
+<p>Optional section to denote different models/estimators for model fitting from scikit-learn. Note that the subsection
+names must match the corresponding name of the routine in scikit-learn. More information on different model routines
+and the parameters to set for each routine can be found here for ensemble methods:
+<a class="reference external" href="http://scikit-learn.org/stable/modules/classes.html#module-sklearn.ensemble">http://scikit-learn.org/stable/modules/classes.html#module-sklearn.ensemble</a> and here for kernel ridge and linear methods:
+<a class="reference external" href="http://scikit-learn.org/stable/modules/classes.html#module-sklearn.kernel_ridge">http://scikit-learn.org/stable/modules/classes.html#module-sklearn.kernel_ridge</a> and here for neural network methods:
+<a class="reference external" href="http://scikit-learn.org/stable/modules/classes.html#module-sklearn.neural_network">http://scikit-learn.org/stable/modules/classes.html#module-sklearn.neural_network</a> and here for support vector machine
+and decision tree methods: <a class="reference external" href="http://scikit-learn.org/stable/modules/classes.html#module-sklearn.svm">http://scikit-learn.org/stable/modules/classes.html#module-sklearn.svm</a> . For the purpose of
+this full input file, we use the scikit-learn default parameter values. Note that not all parameters are listed, and only
+the currently listed data split routines are supported.</p>
+<p>Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Models</span><span class="p">]</span>
+    <span class="c1"># Ensemble methods</span>
+
+    <span class="p">[[</span><span class="n">AdaBoostClassifier</span><span class="p">]]</span>
+        <span class="n">n_estimators</span> <span class="o">=</span> <span class="mi">50</span>
+        <span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="p">[[</span><span class="n">AdaBoostRegressor</span><span class="p">]]</span>
+        <span class="n">n_estimators</span> <span class="o">=</span> <span class="mi">50</span>
+        <span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="p">[[</span><span class="n">BaggingClassifier</span><span class="p">]]</span>
+        <span class="n">n_estimators</span> <span class="o">=</span> <span class="mi">50</span>
+        <span class="n">max_samples</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="n">max_features</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="p">[[</span><span class="n">BaggingRegressor</span><span class="p">]]</span>
+        <span class="n">n_estimators</span> <span class="o">=</span> <span class="mi">50</span>
+        <span class="n">max_samples</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="n">max_features</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="p">[[</span><span class="n">ExtraTreesClassifier</span><span class="p">]]</span>
+        <span class="n">n_estimators</span> <span class="o">=</span> <span class="mi">10</span>
+        <span class="n">criterion</span> <span class="o">=</span> <span class="n">gini</span>
+        <span class="n">min_samples_split</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="n">min_samples_leaf</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="p">[[</span><span class="n">ExtraTreesRegressor</span><span class="p">]]</span>
+        <span class="n">n_estimators</span> <span class="o">=</span> <span class="mi">10</span>
+        <span class="n">criterion</span> <span class="o">=</span> <span class="n">mse</span>
+        <span class="n">min_samples_split</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="n">min_samples_leaf</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="p">[[</span><span class="n">GradientBoostingClassifier</span><span class="p">]]</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">deviance</span>
+        <span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="n">n_estimators</span> <span class="o">=</span> <span class="mi">100</span>
+        <span class="n">subsample</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="n">criterion</span> <span class="o">=</span> <span class="n">friedman_mse</span>
+        <span class="n">min_samples_split</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="n">min_samples_leaf</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="p">[[</span><span class="n">GradientBoostingRegressor</span><span class="p">]]</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">ls</span>
+        <span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">0.1</span>
+        <span class="n">n_estimators</span> <span class="o">=</span> <span class="mi">100</span>
+        <span class="n">subsample</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="n">criterion</span> <span class="o">=</span> <span class="n">friedman_mse</span>
+        <span class="n">min_samples_split</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="n">min_samples_leaf</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="p">[[</span><span class="n">RandomForestClassifier</span><span class="p">]]</span>
+        <span class="n">n_estimators</span> <span class="o">=</span> <span class="mi">10</span>
+        <span class="n">criterion</span> <span class="o">=</span> <span class="n">gini</span>
+        <span class="n">min_samples_leaf</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">min_samples_split</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="p">[[</span><span class="n">RandomForestRegressor</span><span class="p">]]</span>
+        <span class="n">n_estimators</span> <span class="o">=</span> <span class="mi">10</span>
+        <span class="n">criterion</span> <span class="o">=</span> <span class="n">mse</span>
+        <span class="n">min_samples_leaf</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">min_samples_split</span> <span class="o">=</span> <span class="mi">2</span>
+
+    <span class="c1"># Kernel ridge and linear methods</span>
+
+    <span class="p">[[</span><span class="n">KernelRidge</span><span class="p">]]</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">kernel</span> <span class="o">=</span> <span class="n">linear</span>
+    <span class="c1"># Here, an example of another instance of KernelRidge, this one being used based by the [[MASTMLFeatureSelector]]</span>
+    <span class="c1"># method from the [FeatureSelection] section.</span>
+    <span class="p">[[</span><span class="n">KernelRidge_selectMASTML</span><span class="p">]]</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">kernel</span> <span class="o">=</span> <span class="n">linear</span>
+    <span class="c1"># Here, an example of another instance of KernelRidge, this one being used based in the [LearningCurve] section.</span>
+    <span class="p">[[</span><span class="n">KernelRidge_learn</span><span class="p">]]</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">kernel</span> <span class="o">=</span> <span class="n">linear</span>
+
+    <span class="p">[[</span><span class="n">ARDRegression</span><span class="p">]]</span>
+        <span class="n">n_iter</span> <span class="o">=</span> <span class="mi">300</span>
+    <span class="p">[[</span><span class="n">BayesianRidge</span><span class="p">]]</span>
+        <span class="n">n_iter</span> <span class="o">=</span> <span class="mi">300</span>
+    <span class="p">[[</span><span class="n">ElasticNet</span><span class="p">]]</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="p">[[</span><span class="n">HuberRegressor</span><span class="p">]]</span>
+        <span class="n">epsilon</span> <span class="o">=</span> <span class="mf">1.35</span>
+        <span class="n">max_iter</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="p">[[</span><span class="n">Lars</span><span class="p">]]</span>
+    <span class="p">[[</span><span class="n">Lasso</span><span class="p">]]</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="p">[[</span><span class="n">LassoLars</span><span class="p">]]</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="n">max_iter</span> <span class="o">=</span> <span class="mi">500</span>
+    <span class="p">[[</span><span class="n">LassoLarsIC</span><span class="p">]]</span>
+        <span class="n">criterion</span> <span class="o">=</span> <span class="n">aic</span>
+        <span class="n">max_iter</span> <span class="o">=</span> <span class="mi">500</span>
+    <span class="p">[[</span><span class="n">LinearRegression</span><span class="p">]]</span>
+    <span class="p">[[</span><span class="n">LogisticRegression</span><span class="p">]]</span>
+        <span class="n">penalty</span> <span class="o">=</span> <span class="n">l2</span>
+        <span class="n">C</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="p">[[</span><span class="n">Perceptron</span><span class="p">]]</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.0001</span>
+    <span class="p">[[</span><span class="n">Ridge</span><span class="p">]]</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="p">[[</span><span class="n">RidgeClassifier</span><span class="p">]]</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="p">[[</span><span class="n">SGDClassifier</span><span class="p">]]</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">hinge</span>
+        <span class="n">penalty</span> <span class="o">=</span> <span class="n">l2</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.0001</span>
+    <span class="p">[[</span><span class="n">SGDRegressor</span><span class="p">]]</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">squared_loss</span>
+        <span class="n">penalty</span> <span class="o">=</span> <span class="n">l2</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.0001</span>
+
+    <span class="c1"># Neural networks</span>
+
+    <span class="p">[[</span><span class="n">MLPClassifier</span><span class="p">]]</span>
+        <span class="n">hidden_layer_sizes</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+        <span class="n">activation</span> <span class="o">=</span> <span class="n">relu</span>
+        <span class="n">solver</span> <span class="o">=</span> <span class="n">adam</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.0001</span>
+        <span class="n">batch_size</span> <span class="o">=</span> <span class="n">auto</span>
+        <span class="n">learning_rate</span> <span class="o">=</span> <span class="n">constant</span>
+    <span class="p">[[</span><span class="n">MLPRegressor</span><span class="p">]]</span>
+        <span class="n">hidden_layer_sizes</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+        <span class="n">activation</span> <span class="o">=</span> <span class="n">relu</span>
+        <span class="n">solver</span> <span class="o">=</span> <span class="n">adam</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.0001</span>
+        <span class="n">batch_size</span> <span class="o">=</span> <span class="n">auto</span>
+        <span class="n">learning_rate</span> <span class="o">=</span> <span class="n">constant</span>
+
+    <span class="c1"># Support vector machine methods</span>
+
+    <span class="p">[[</span><span class="n">LinearSVC</span><span class="p">]]</span>
+        <span class="n">penalty</span> <span class="o">=</span> <span class="n">l2</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">squared_hinge</span>
+        <span class="n">tol</span> <span class="o">=</span> <span class="mf">0.0001</span>
+        <span class="n">C</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="p">[[</span><span class="n">LinearSVR</span><span class="p">]]</span>
+        <span class="n">epsilon</span> <span class="o">=</span> <span class="mf">0.1</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">epsilon_insensitive</span>
+        <span class="n">tol</span> <span class="o">=</span> <span class="mf">0.0001</span>
+        <span class="n">C</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="p">[[</span><span class="n">NuSVC</span><span class="p">]]</span>
+        <span class="n">nu</span> <span class="o">=</span> <span class="mf">0.5</span>
+        <span class="n">kernel</span> <span class="o">=</span> <span class="n">rbf</span>
+        <span class="n">degree</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="p">[[</span><span class="n">NuSVR</span><span class="p">]]</span>
+        <span class="n">nu</span> <span class="o">=</span> <span class="mf">0.5</span>
+        <span class="n">C</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="n">kernel</span> <span class="o">=</span> <span class="n">rbf</span>
+        <span class="n">degree</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="p">[[</span><span class="n">SVC</span><span class="p">]]</span>
+        <span class="n">C</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="n">kernel</span> <span class="o">=</span> <span class="n">rbf</span>
+        <span class="n">degree</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="p">[[</span><span class="n">SVR</span><span class="p">]]</span>
+        <span class="n">C</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="n">kernel</span> <span class="o">=</span> <span class="n">rbf</span>
+        <span class="n">degree</span> <span class="o">=</span> <span class="mi">3</span>
+
+    <span class="c1"># Decision tree methods</span>
+
+    <span class="p">[[</span><span class="n">DecisionTreeClassifier</span><span class="p">]]</span>
+        <span class="n">criterion</span> <span class="o">=</span> <span class="n">gini</span>
+        <span class="n">splitter</span> <span class="o">=</span> <span class="n">best</span>
+        <span class="n">min_samples_split</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="n">min_samples_leaf</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="p">[[</span><span class="n">DecisionTreeRegressor</span><span class="p">]]</span>
+        <span class="n">criterion</span> <span class="o">=</span> <span class="n">mse</span>
+        <span class="n">splitter</span> <span class="o">=</span> <span class="n">best</span>
+        <span class="n">min_samples_split</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="n">min_samples_leaf</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="p">[[</span><span class="n">ExtraTreeClassifier</span><span class="p">]]</span>
+        <span class="n">criterion</span> <span class="o">=</span> <span class="n">gini</span>
+        <span class="n">splitter</span> <span class="o">=</span> <span class="n">random</span>
+        <span class="n">min_samples_split</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="n">min_samples_leaf</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="p">[[</span><span class="n">ExtraTreeRegressor</span><span class="p">]]</span>
+        <span class="n">criterion</span> <span class="o">=</span> <span class="n">mse</span>
+        <span class="n">splitter</span> <span class="o">=</span> <span class="n">random</span>
+        <span class="n">min_samples_split</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="n">min_samples_leaf</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="plot-settings">
+<h3>Plot Settings<a class="headerlink" href="#plot-settings" title="Permalink to this headline">¶</a></h3>
+<p>This section controls which types of plots MAST-ML will write to the results directory.</p>
+<p>Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">PlotSettings</span><span class="p">]</span>
+    <span class="n">target_histogram</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">train_test_plots</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">predicted_vs_true</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">predicted_vs_true_bars</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">best_worst_per_point</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">feature_vs_target</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">average_normalized_errors</span> <span class="o">=</span> <span class="kc">True</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><strong>target_histogram</strong> Whether or not to output target data histograms</li>
+<li><strong>train_test_plots</strong> Whether or not to output parity plots within each CV split</li>
+<li><strong>predicted_vs_true</strong> Whether or not to output summarized parity plots</li>
+<li><strong>predicted_vs_true_bars</strong> Whether or not to output averaged parity plots</li>
+<li><strong>best_worst_per_point</strong> Whether or not to output parity plot showing best and worst split per point</li>
+<li><strong>feature_vs_target</strong> Whether or not to show plots of target feature as a function of each individual input feature</li>
+<li><strong>average_normalized_errors</strong> Whether or not to show the average plots of the normalized errors</li>
+</ul>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="2_mastml_overview.html" class="btn btn-neutral float-right" title="MAST-ML overview slides" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="0_3_startup.html" class="btn btn-neutral" title="Startup" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, University of Wisconsin-Madison Computational Materials Group
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'./',
+              VERSION:'2.0',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
