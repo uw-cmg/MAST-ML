@@ -20,7 +20,7 @@ University of Kentucky contributors:
 * An overview of code documentation and tutorials for getting started with MAST-ML can be found here:
 
 ```
-https://htmlpreview.github.io/?https://github.com/uw-cmg/MAST-ML/blob/dev_Ryan_2018-10-29/docs/build/html/index.html
+https://mastmldocs.readthedocs.io/en/latest/
 ```
 
 ## Funding
