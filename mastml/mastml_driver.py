@@ -1109,12 +1109,12 @@ def check_paths(conf_path, data_path, outdir):
     if os.path.exists(outdir):
         try:
             os.rmdir(outdir) # succeeds if empty
-        except OSError: # directory not empty
+        except OSError: # directory not empty, appending datetime accordng to ISO 8601 extended format
             log.warning(f"{outdir} not empty. Renaming...")
             now = datetime.now()
             outdir = outdir.rstrip(os.sep) # remove trailing slash
-            outdir = f"{outdir}_{now.month:02d}_{now.day:02d}" \
-                     f"_{now.hour:02d}_{now.minute:02d}_{now.second:02d}"
+            outdir = f"{outdir}_{now.year}-{now.month:02d}-{now.day:02d}" \
+                     f"T{now.hour:02d}:{now.minute:02d}:{now.second:02d}"
     os.makedirs(outdir)
     log.info(f"Saving to directory '{outdir}'")
 
