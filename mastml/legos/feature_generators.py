@@ -15,7 +15,7 @@ from sklearn.preprocessing import PolynomialFeatures as SklearnPolynomialFeature
 import pymatgen
 from pymatgen import Element, Composition
 from pymatgen.ext.matproj import MPRester
-from citrination_client import CitrinationClient, PifQuery, SystemQuery, ChemicalFieldQuery, ChemicalFilter
+#from citrination_client import CitrinationClient, PifQuery, SystemQuery, ChemicalFieldQuery, ChemicalFilter
 # trouble? try: `pip install citrination_client=="2.1.0"`
 
 # locate path to directory containing AtomicNumber.table, AtomicRadii.table AtomicVolume.table, etc
