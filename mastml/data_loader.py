@@ -50,6 +50,10 @@ def load_data(file_path, input_features=None, target_feature=None, grouping_feat
             if col not in input_features:
                 target_feature = col
                 break
+                
+    # Check if features are unambiguously selected
+    if input_features is not None and feature_blacklist:
+        raise Exception(f'Both "input_features" and "not_input_features" specified')
 
     # Collect required features:
     if not isinstance(input_features, list):
