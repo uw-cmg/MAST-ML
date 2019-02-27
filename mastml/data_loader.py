@@ -52,6 +52,8 @@ def load_data(file_path, input_features=None, target_feature=None, grouping_feat
                 break
 
     # Collect required features:
+    if not isinstance(input_features, list):
+        input_features = [input_features]
     required_features = input_features + [target_feature]
 
     # Ensure they are all present:
