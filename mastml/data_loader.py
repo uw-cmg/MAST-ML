@@ -38,6 +38,12 @@ def load_data(file_path, input_features=None, target_feature=None, grouping_feat
         df = pd.read_csv(file_path)
     except:
         df = pd.read_excel(file_path)
+                
+    # Check if features are unambiguously selected
+    if input_features is not None and feature_blacklist:
+        raise Exception(f'Both "input_features" and "not_input_features" specified')
+        #log.warning('Both "input_features" and "not_input_features" specified. I\'m using only information provided with "input_features."')
+        #feature_blacklist=list()
 
     # Assign default values to input_features and target_feature;
     if input_features is None and target_feature is None: # input is first n-1 and target is just n
@@ -50,12 +56,6 @@ def load_data(file_path, input_features=None, target_feature=None, grouping_feat
             if col not in input_features:
                 target_feature = col
                 break
-                
-    # Check if features are unambiguously selected
-    if input_features is not None and feature_blacklist:
-        raise Exception(f'Both "input_features" and "not_input_features" specified')
-        #log.warning('Both "input_features" and "not_input_features" specified. I\'m using only information provided with "input_features."')
-        #feature_blacklist=list()
 
     # Collect required features:
     if not isinstance(input_features, list):
