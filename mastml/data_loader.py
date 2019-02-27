@@ -54,6 +54,8 @@ def load_data(file_path, input_features=None, target_feature=None, grouping_feat
     # Check if features are unambiguously selected
     if input_features is not None and feature_blacklist:
         raise Exception(f'Both "input_features" and "not_input_features" specified')
+        #log.warning('Both "input_features" and "not_input_features" specified. I\'m using only information provided with "input_features."')
+        #feature_blacklist=list()
 
     # Collect required features:
     if not isinstance(input_features, list):
@@ -67,7 +69,8 @@ def load_data(file_path, input_features=None, target_feature=None, grouping_feat
 
     X, y = df[input_features], df[target_feature]
 
-    log.info('blacklisted features, either from "not_input_features" or a "grouping_column":' +
+    if feature_blacklist:
+        log.info('blacklisted features, either from "not_input_features" or a "grouping_column":' +
                  str(feature_blacklist))
     # take blacklisted features out of X:
     X_noinput_dict = dict()
