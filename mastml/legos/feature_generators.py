@@ -15,7 +15,7 @@ from sklearn.preprocessing import PolynomialFeatures as SklearnPolynomialFeature
 import pymatgen
 from pymatgen import Element, Composition
 from pymatgen.ext.matproj import MPRester
-from citrination_client import CitrinationClient, PifQuery, SystemQuery, ChemicalFieldQuery, ChemicalFilter
+#from citrination_client import CitrinationClient, PifQuery, SystemQuery, ChemicalFieldQuery, ChemicalFilter
 # trouble? try: `pip install citrination_client=="2.1.0"`
 
 # locate path to directory containing AtomicNumber.table, AtomicRadii.table AtomicVolume.table, etc
@@ -26,8 +26,8 @@ log = logging.getLogger('mastml')
 print('mastml dir: ', mastml.__path__)
 MAGPIE_DATA_PATH = os.path.join(mastml.__path__[0], '../magpie/')
 
-from matminer.data_retrieval.retrieve_Citrine import CitrineDataRetrieval
-from matminer.data_retrieval.retrieve_MP import MPDataRetrieval
+#from matminer.data_retrieval.retrieve_Citrine import CitrineDataRetrieval
+#from matminer.data_retrieval.retrieve_MP import MPDataRetrieval
 
 class PolynomialFeatures(BaseEstimator, TransformerMixin):
     """
@@ -202,7 +202,7 @@ class Magpie(BaseEstimator, TransformerMixin):
         df = clean_dataframe(df)
         df = df.select_dtypes(['number']).dropna(axis=1)
         assert self.composition_feature not in df.columns
-        return df
+
 
 
 class MaterialsProject(BaseEstimator, TransformerMixin):
