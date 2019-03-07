@@ -43,7 +43,7 @@ setup(
     install_requires=[
         "certifi==2018.4.16",
         "chardet==3.0.4",
-        "citrination-client==2.1.0",
+        "citrination-client==4.6.0",
         "configobj==5.0.6",
         "cycler==0.10.0",
         "decorator==4.3.0",
@@ -53,6 +53,7 @@ setup(
         "jsonschema==2.6.0",
         "jupyter-core==4.4.0",
         "kiwisolver==1.0.1",
+        "matminer==0.4.3",
         "matplotlib==2.2.2",
         "mlxtend==0.12.0",
         "monty==1.0.3",
