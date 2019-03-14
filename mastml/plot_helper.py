@@ -236,7 +236,7 @@ def make_train_test_plots(run, path, is_classification, label, model, train_X, t
         plot_residuals_histogram(y_test_true,  y_test_pred,
                                  join(path, title+'.png'), test_metrics,
                                  title=title, label=label)
-"""
+
 def make_error_plots(run, path, is_classification, label, model, train_X, test_X, groups=None):
 
     y_train_true, y_train_pred, y_test_true = \
@@ -260,7 +260,6 @@ def make_error_plots(run, path, is_classification, label, model, train_X, test_X
 
         title = 'test_cumulative_normalized_error'
         plot_cumulative_normalized_error(y_test_true, y_test_pred, join(path, title+'.png'), model, test_X)
-"""
 
 
 @ipynb_maker
@@ -671,6 +670,7 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', label='target data'):
 
     ax.set_xlabel(xlabel, fontsize=16)
     ax.set_ylabel('Value of '+label, fontsize=16)
+    ax.set_xticklabels(rotation=45)
     fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
 
 @ipynb_maker
@@ -1001,15 +1001,16 @@ def prediction_intervals(model, X, percentile=68):
             preds = list()
             for pred in model.estimators_:
                 preds.append(pred.predict(np.array(X_aslist[x]).reshape(1,-1))[0])
-        e_down = np.percentile(preds, (100 - percentile) / 2.)
-        e_up = np.percentile(preds, 100 - (100 - percentile) / 2.)
 
-        if e_up == 0.0:
-            e_up = 10 ** 10
-        if e_down == 0.0:
-            e_down = 10 ** 10
-        err_down.append(e_down)
-        err_up.append(e_up)
+            e_down = np.percentile(preds, (100 - percentile) / 2.)
+            e_up = np.percentile(preds, 100 - (100 - percentile) / 2.)
+
+            if e_up == 0.0:
+                e_up = 10 ** 10
+            if e_down == 0.0:
+                e_down = 10 ** 10
+            err_down.append(e_down)
+            err_up.append(e_up)
 
     elif model.__class__.__name__=='GaussianProcessRegressor':
         preds = model.predict(X, return_std=True)[1] # Get the stdev model error from the predictions of GPR
@@ -1086,8 +1087,10 @@ def plot_normalized_error(y_true, y_pred, savepath, model, X=None, avg_stats=Non
             maxy = max(max(density_residuals(x)), max(mlab.normpdf(x, mu, sigma)), max(density_errors(x)))
             miny = min(min(density_residuals(x)), min(mlab.normpdf(x, mu, sigma)), min(density_errors(x)))
             # Save data to csv file
-            data_dict = {"x values": x, "analytical gaussian": mlab.normpdf(x, mu, sigma),
-                         "model residuals": density_residuals(x), "model errors": density_errors(x)}
+            data_dict = {"Plotted x values": x, "error_bars_up": err_up, "error_bars_down": err_down, "error_avg": err_avg,
+                         "analytical gaussian (plotted y blue values)": mlab.normpdf(x, mu, sigma),
+                         "model residuals (plotted y green values)": density_residuals(x),
+                         "model errors (ytrue-ypred)/err_avg (plotted y purple values)": density_errors(x)}
             pd.DataFrame(data_dict).to_csv(savepath.split('.png')[0]+'.csv')
         else:
             # Save data to csv file
@@ -1231,27 +1234,21 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, X=None, av
     ax.set_ylabel("Fraction", fontsize=18)
     ax.step(X_residuals, n_residuals, linewidth=3, color='green', label="Model Residuals")
     ax.step(X_analytic, n_analytic, linewidth=3, color='blue', label="Analytical Gaussian")
+    ax.set_xlim([0, 5])
 
     if not avg_stats:
         if has_model_errors:
             err_avg = [(abs(e1)+abs(e2))/2 for e1, e2 in zip(err_up, err_down)]
             model_errors = abs((y_true_-y_pred_)/err_avg)
-            #print('TRUE')
-            #print(y_true_)
-            #print('PRED')
-            #print(y_pred_)
-            #print('RESIDUAL')
-            #print(y_pred_-y_true_)
-            #print('ERRORS FROM MODEL')
-            #print(err_avg)
-            #print('ERROR TO PLOT')
-            #print(model_errors)
             n_errors = np.arange(1, len(model_errors) + 1) / np.float(len(model_errors))
             X_errors = np.sort(model_errors)
             ax.step(X_errors, n_errors, linewidth=3, color='purple', label="Model Errors")
             # Save data to csv file
-            data_dict = {"x analytical": X_analytic, "analytical gaussian": n_analytic, "x residuals": X_residuals,
-                         "model residuals": n_residuals, "x errors": X_errors, "model errors": err_avg}
+            data_dict = {"Analytical Gaussian values": analytic_gau, "Analytical Gaussian (sorted, blue data)": X_analytic,
+                         "Model residuals": residuals, "Model Residuals (sorted, green data)": X_residuals,
+                         "error_bars_up": err_up, "error_bars_down": err_down,
+                         "Model error values (r value: (ytrue-ypred)/(model error avg))": model_errors,
+                         "Model errors (sorted, purple values)": X_errors}
             # Save this way to avoid issue with different array sizes in data_dict
             df = pd.DataFrame.from_dict(data_dict, orient='index')
             df = df.transpose()
@@ -1340,8 +1337,8 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, X=None, av
         #    axin.step(avg_X_errors, avg_test_model_errors, linewidth=3, color='purple', label="Model Errors")
     axin.set_xticklabels(xlabels, fontsize=8, rotation=90)
     axin.set_yticklabels(ylabels, fontsize=8)
-    axin.set_xlim(2, 3)
-    axin.set_ylim(0.9, 1)
+    axin.set_xlim([2, 3])
+    axin.set_ylim([0.9, 1])
 
     maxx = 5
     minn = 0
@@ -2092,7 +2089,12 @@ def _set_tick_labels_different(ax, max_tick_x, min_tick_x, max_tick_y, min_tick_
     ticklabels_x = [str(tick) for tick in tickvals_x]
     ticklabels_y = [str(tick) for tick in tickvals_y]
 
-    ax.set_xticklabels(labels=ticklabels_x, fontsize=14)
+    rotation = 0
+    # Look at length of x tick labels to see if may be possibly crowded. If so, rotate labels
+    tick_length = len(str(tickvals_x[1]))
+    if tick_length >= 4:
+        rotation = 45
+    ax.set_xticklabels(labels=ticklabels_x, fontsize=14, rotation=rotation)
     ax.set_yticklabels(labels=ticklabels_y, fontsize=14)
 
 def _clean_tick_labels(tickvals, delta):
