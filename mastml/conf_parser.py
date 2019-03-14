@@ -194,7 +194,7 @@ def parse_conf_file(filepath):
     make_long_name_short_name_pairs()
 
     def check_and_boolify_plot_settings():
-        default_false = ['feature_vs_target', 'average_normalized_errors', 'average_cumulative_normalized_errors']
+        default_false = ['feature_vs_target', 'error_plots', 'average_error_plots']
         default_true = ['target_histogram', 'train_test_plots', 'predicted_vs_true',
                          'predicted_vs_true_bars', 'best_worst_per_point']
         all_settings = default_false + default_true
