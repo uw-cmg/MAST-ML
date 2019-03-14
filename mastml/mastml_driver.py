@@ -930,22 +930,24 @@ def _snatch_models(models, conf_feature_selection):
     return models
 
 def _snatch_gpr_model(models, conf_models):
-    for model in models:
-        if model[0] == 'GaussianProcessRegressor':
+    for model in models.keys():
+        if model == 'GaussianProcessRegressor':
             import sklearn.gaussian_process
             from sklearn.gaussian_process import GaussianProcessRegressor
             kernel_list = ['WhiteKernel', 'RBF', 'ConstantKernel', 'Matern', 'RationalQuadratic', 'ExpSineSquared', 'DotProduct']
             params = conf_models['GaussianProcessRegressor']
             kernel = params[1]['kernel']
+            # Need to delete old kernel (as str) from params so can use other specified params in new GPR model
+            del params[1]['kernel']
             if kernel in kernel_list:
                 kernel_ = getattr(sklearn.gaussian_process.kernels, kernel)
                 kernel = kernel_()
             else:
                 raise utils.MastError(f"The kernel {kernel} could not be found in sklearn!")
-            gpr = GaussianProcessRegressor(kernel=kernel)
-            m = ['GaussianProcessRegressor', gpr]
-            del models[0]
-            models.append(m)
+            gpr = GaussianProcessRegressor(kernel=kernel, **params[1])
+            # Need to delete old GPR from model list and replace with new GPR with correct kernel and other params.
+            del models[model]
+            models[model] = gpr
             break
     return models
 
