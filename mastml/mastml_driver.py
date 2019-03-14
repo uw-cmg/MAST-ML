@@ -753,6 +753,10 @@ def mastml_run(conf_path, data_path, outdir):
                         split_result, path, is_classification, 
                         label=y.name, model=model, train_X=train_X, test_X=test_X, groups=grouping_data)
 
+            if PlotSettings['error_plots']:
+                plot_helper.make_error_plots(split_result, path, is_classification,
+                                             label=y.name, model=model, train_X=train_X, test_X=test_X, groups=grouping_data)
+
             # Write stats in each split path, not main path
             if is_validation:
                 _write_stats(split_result['train_metrics'],
@@ -845,11 +849,10 @@ def mastml_run(conf_path, data_path, outdir):
                 plot_helper.plot_best_worst_per_point(y.values, predictions,
                                                       join(main_path, 'best_worst_per_point.png'),
                                                       metrics_dict, avg_test_stats, label=y.name)
-            if PlotSettings['average_normalized_errors']:
+            if PlotSettings['average_error_plots']:
                 plot_helper.plot_normalized_error(y.values, predictions,
                                                   join(main_path, 'average_test_normalized_errors.png'), model, X=None,
                                                   avg_stats=avg_test_stats)
-            if PlotSettings['average_cumulative_normalized_errors']:
                 plot_helper.plot_cumulative_normalized_error(y.values, predictions,
                                                   join(main_path, 'average_test_cumulative_normalized_errors.png'), model, X=None,
                                                   avg_stats=avg_test_stats)
