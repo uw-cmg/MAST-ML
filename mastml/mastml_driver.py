@@ -652,6 +652,10 @@ def mastml_run(conf_path, data_path, outdir):
                 train_pred = model.predict(train_X)
                 test_pred  = model.predict(test_X)
 
+                # Here- for Random Forest output feature importances
+                if model.__class__.__name__=='RandomForestRegressor':
+                    pd.concat([pd.DataFrame(X.columns), pd.DataFrame(model.feature_importances_)],  1).to_csv(join(path, 'randomforest_featureimportances.csv'), index=False)
+
             # here is where we need to collect validation stats
             if is_validation:
                 validation_predictions_list = list()
