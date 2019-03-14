@@ -938,15 +938,65 @@ def _snatch_gpr_model(models, conf_models):
             import sklearn.gaussian_process
             from sklearn.gaussian_process import GaussianProcessRegressor
             kernel_list = ['WhiteKernel', 'RBF', 'ConstantKernel', 'Matern', 'RationalQuadratic', 'ExpSineSquared', 'DotProduct']
+            kernel_operators = ['+', '*', '-']
             params = conf_models['GaussianProcessRegressor']
-            kernel = params[1]['kernel']
+            kernel_string = params[1]['kernel']
             # Need to delete old kernel (as str) from params so can use other specified params in new GPR model
             del params[1]['kernel']
-            if kernel in kernel_list:
+            # Parse kernel_string to identify kernel types and any kernel operations to combine kernels
+            kernel_types_asstr = list()
+            kernel_types_ascls = list()
+            kernel_operators_used = list()
+
+            for s in kernel_string[:]:
+                if s in kernel_operators:
+                    kernel_operators_used.append(s)
+
+            # Do case for single kernel, no operators
+            if len(kernel_operators_used) == 0:
+                kernel_types_asstr.append(kernel_string)
+
+            # Do case for parsing operators in kernel string for multiple kernels
+            for i, operator in enumerate(kernel_operators_used):
+                kernel_string_split = kernel_string.split(operator)
+                if kernel_string_split[0] in kernel_list:
+                    kernel_types_asstr.append(kernel_string_split[0])
+                else:
+                    raise utils.MastError(f"The kernel {kernel_string_split[0]} could not be found in sklearn!")
+                kernel_string = kernel_string_split[1]
+                # If got to last operator, also append last kernel type
+                if i+1 == len(kernel_operators_used):
+                    if kernel_string_split[1] in kernel_list:
+                        kernel_types_asstr.append(kernel_string_split[1])
+                    else:
+                        raise utils.MastError(f"The kernel {kernel_string_split[1]} could not be found in sklearn!")
+
+            for kernel in kernel_types_asstr:
                 kernel_ = getattr(sklearn.gaussian_process.kernels, kernel)
-                kernel = kernel_()
-            else:
-                raise utils.MastError(f"The kernel {kernel} could not be found in sklearn!")
+                kernel_types_ascls.append(kernel_())
+
+            # Case for single kernel
+            if len(kernel_types_ascls) == 1:
+                kernel = kernel_types_ascls[0]
+
+            kernel_count = 0
+            for i, operator in enumerate(kernel_operators_used):
+                if i+1 != len(kernel_operators_used):
+                    if operator == "+":
+                        kernel = kernel_types_ascls[kernel_count] + kernel_types_ascls[kernel_count + 1]
+                    if operator == "-":
+                        kernel = kernel_types_ascls[kernel_count] - kernel_types_ascls[kernel_count + 1]
+                    if operator == "*":
+                        kernel = kernel_types_ascls[kernel_count] * kernel_types_ascls[kernel_count + 1]
+                if i+1 == len(kernel_operators_used):
+                    if operator == "+":
+                        kernel += kernel_types_ascls[kernel_count]
+                    if operator == "-":
+                        kernel -= kernel_types_ascls[kernel_count]
+                    if operator == "*":
+                        kernel *= kernel_types_ascls[kernel_count]
+                kernel_count += 2
+
             gpr = GaussianProcessRegressor(kernel=kernel, **params[1])
             # Need to delete old GPR from model list and replace with new GPR with correct kernel and other params.
             del models[model]
