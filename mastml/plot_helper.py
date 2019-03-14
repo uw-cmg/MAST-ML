@@ -228,6 +228,27 @@ def make_train_test_plots(run, path, is_classification, label, model, train_X, t
                           (y_test_true,  y_test_pred,  test_metrics, test_groups), 
                           path, label=label)
 
+        title = 'train_residuals_histogram'
+        plot_residuals_histogram(y_train_true, y_train_pred,
+                                 join(path, title+'.png'), train_metrics,
+                                 title=title, label=label)
+        title = 'test_residuals_histogram'
+        plot_residuals_histogram(y_test_true,  y_test_pred,
+                                 join(path, title+'.png'), test_metrics,
+                                 title=title, label=label)
+"""
+def make_error_plots(run, path, is_classification, label, model, train_X, test_X, groups=None):
+
+    y_train_true, y_train_pred, y_test_true = \
+        run['y_train_true'], run['y_train_pred'], run['y_test_true']
+    y_test_pred, train_metrics, test_metrics = \
+        run['y_test_pred'], run['train_metrics'], run['test_metrics']
+    train_groups, test_groups = run['train_groups'], run['test_groups']
+
+    if is_classification:
+        log.debug('There is no error distribution plotting for classification problems, just passing through...')
+    else: # is_regression
+
         title = 'train_normalized_error'
         plot_normalized_error(y_train_true, y_train_pred, join(path, title+'.png'), model, train_X)
 
@@ -239,15 +260,8 @@ def make_train_test_plots(run, path, is_classification, label, model, train_X, t
 
         title = 'test_cumulative_normalized_error'
         plot_cumulative_normalized_error(y_test_true, y_test_pred, join(path, title+'.png'), model, test_X)
+"""
 
-        title = 'train_residuals_histogram'
-        plot_residuals_histogram(y_train_true, y_train_pred,
-                                 join(path, title+'.png'), train_metrics,
-                                 title=title, label=label)
-        title = 'test_residuals_histogram'
-        plot_residuals_histogram(y_test_true,  y_test_pred,
-                                 join(path, title+'.png'), test_metrics,
-                                 title=title, label=label)
 
 @ipynb_maker
 def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False, title='Confusion matrix', cmap=plt.cm.Blues):
@@ -542,10 +556,12 @@ def plot_predicted_vs_true(train_quad, test_quad, outdir, label):
 
     # make diagonal line from absolute min to absolute max of any data point
     # using round because Ryan did - but won't that ruin small numbers??? TODO this
-    max1 = max(y_train_true.max(), y_train_pred.max(),
-               y_test_true.max(), y_test_pred.max())
-    min1 = min(y_train_true.min(), y_train_pred.min(),
-               y_test_true.min(), y_test_pred.min())
+    #max1 = max(y_train_true.max(), y_train_pred.max(),
+    #           y_test_true.max(), y_test_pred.max())
+    max1 = max(y_train_true.max(), y_test_true.max())
+    #min1 = min(y_train_true.min(), y_train_pred.min(),
+    #           y_test_true.min(), y_test_pred.min())
+    min1 = min(y_train_true.min(), y_test_true.min())
     max1 = round(float(max1), rounder(max1-min1))
     min1 = round(float(min1), rounder(max1-min1))
     for y_true, y_pred, stats, groups, title_addon in \
