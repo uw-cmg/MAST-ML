@@ -1094,7 +1094,8 @@ def plot_normalized_error(y_true, y_pred, savepath, model, X=None, avg_stats=Non
             data_dict = {"x values": x, "analytical gaussian": mlab.normpdf(x, mu, sigma),
                          "model residuals": density_residuals(x)}
             pd.DataFrame(data_dict).to_csv(savepath.split('.png')[0]+'.csv')
-    if avg_stats:
+    """
+        if avg_stats:
         if has_model_errors:
             # Need to loop over all splits in directory and import saved model errors from csv files
             dirs = [d[0] for d in os.walk(path)]
@@ -1129,7 +1130,7 @@ def plot_normalized_error(y_true, y_pred, savepath, model, X=None, avg_stats=Non
             #test_err_dfs = trim_array(test_err_dfs)
 
             # Need to do per-row averaging due to arrays of different lengths (and NaN values)
-            """
+            """"""
             def apply_mean(arr):
                 mean_list = list()
                 print('DOING APPLY MEAN')
@@ -1145,7 +1146,7 @@ def plot_normalized_error(y_true, y_pred, savepath, model, X=None, avg_stats=Non
                     print(length)
                     mean_list.append(sum(row)/length)
                 return np.array(mean_list)
-            """
+            """"""
 
             #for df in test_err_dfs:
             #mean_arr = apply_mean(test_err_dfs)
@@ -1161,6 +1162,7 @@ def plot_normalized_error(y_true, y_pred, savepath, model, X=None, avg_stats=Non
             ax.plot(x_reduced, avg_test_model_errors, linewidth=4, color='purple', label="Model Errors")
             #print(x_reduced)
             #print(avg_test_model_errors)
+    """
 
     ax.legend(loc=0, fontsize=12, frameon=False)
     ax.set_xlabel(r"$\mathrm{x}/\mathit{\sigma}$", fontsize=18)
@@ -1262,6 +1264,7 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, X=None, av
             df = pd.DataFrame.from_dict(data_dict, orient='index')
             df = df.transpose()
             df.to_csv(savepath.split('.png')[0]+'.csv', index=False)
+    """
     if avg_stats:
         if has_model_errors:
             # Need to loop over all splits in directory and import saved model errors from csv files
@@ -1321,7 +1324,8 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, X=None, av
             n_errors_avg = np.arange(1, len(avg_test_model_errors) + 1) / np.float(len(avg_test_model_errors))
             #avg_X_errors = np.nanmean(X_errors_dfs, axis=0)
             avg_X_errors = np.sort(avg_test_model_errors)
-            ax.step(avg_X_errors, n_errors_avg, linewidth=4, color='purple', label="Model Errors")
+            ax.step(avg_X_errors, n_errors_avg, linewidth=4, color='purple', label="Model Errors")    
+    """
 
     ax.legend(loc=0, fontsize=14, frameon=False)
     xlabels = np.linspace(2, 3, 3)
@@ -1332,9 +1336,9 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, X=None, av
     if has_model_errors:
         if not avg_stats:
             axin.step(X_errors, n_errors, linewidth=3, color='purple', label="Model Errors")
-        if avg_stats:
-            axin.step(avg_X_errors, avg_test_model_errors, linewidth=3, color='purple', label="Model Errors")
-    axin.set_xticklabels(xlabels, fontsize=8)
+        #if avg_stats:
+        #    axin.step(avg_X_errors, avg_test_model_errors, linewidth=3, color='purple', label="Model Errors")
+    axin.set_xticklabels(xlabels, fontsize=8, rotation=90)
     axin.set_yticklabels(ylabels, fontsize=8)
     axin.set_xlim(2, 3)
     axin.set_ylim(0.9, 1)
