@@ -66,11 +66,14 @@ class HyperOptUtils():
     def _search_space_generator(self, params):
         params_ = dict()
         for param_name, param_vals in params.items():
+            dtype = param_vals[4]
             try:
                 if param_vals[3] == "lin":
-                    params_[param_name] = np.linspace(float(param_vals[0]), float(param_vals[1]), num=int(param_vals[2]))
+                    params_[param_name] = np.linspace(float(param_vals[0]), float(param_vals[1]), num=int(param_vals[2]), dtype=dtype)
                 elif param_vals[3] == "log":
-                    params_[param_name] = np.logspace(float(param_vals[0]), float(param_vals[1]), num=int(param_vals[2]))
+                    params_[param_name] = np.logspace(float(param_vals[0]), float(param_vals[1]), num=int(param_vals[2]), dtype=dtype)
+                else:
+                    print('You must specify either lin or log scaling for GridSearch')
             except:
                 params_[param_name] = param_vals
         return params_
@@ -368,7 +371,7 @@ class BayesianSearch(HyperOptUtils):
         _estimator_name : returns string of estimator name
     """
 
-    def __init__(self, estimator, cv, param_names, param_values, scoring=None, n_iter=10):
+    def __init__(self, estimator, cv, param_names, param_values, scoring=None, n_iter=50):
         super(BayesianSearch, self).__init__(param_names=param_names, param_values=param_values)
         self.estimator = estimator
         self.cv = cv
