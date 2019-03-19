@@ -52,6 +52,8 @@ def load_data(file_path, input_features=None, target_feature=None, grouping_feat
                 break
 
     # Collect required features:
+    if type(input_features) is str:
+        input_features = [input_features]
     required_features = input_features + [target_feature]
 
     # Ensure they are all present:
@@ -66,8 +68,13 @@ def load_data(file_path, input_features=None, target_feature=None, grouping_feat
     # take blacklisted features out of X:
     X_noinput_dict = dict()
     for feature in set(feature_blacklist):
-        X_noinput_dict[feature] = X[feature]
-        X = X.drop(feature, axis=1)
+        # If input_features = Auto, all included and blacklisted features need removal; if manual may not have all features
+        if feature in X.columns:
+            print(feature)
+            X_noinput_dict[feature] = X[feature]
+            X = X.drop(feature, axis=1)
+        else:
+            log.info('Blacklisted feature ' + str(feature) + ' already not present in dataframe')
 
     X_noinput = pd.DataFrame(X_noinput_dict)
 
