@@ -70,7 +70,6 @@ def load_data(file_path, input_features=None, target_feature=None, grouping_feat
     for feature in set(feature_blacklist):
         # If input_features = Auto, all included and blacklisted features need removal; if manual may not have all features
         if feature in X.columns:
-            print(feature)
             X_noinput_dict[feature] = X[feature]
             X = X.drop(feature, axis=1)
         else:
