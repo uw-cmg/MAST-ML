@@ -196,14 +196,12 @@ class Magpie(BaseEstimator, TransformerMixin):
     def transform(self, df):
         mfg = MagpieFeatureGeneration(df, self.composition_feature)
         df = mfg.generate_magpie_features()
-
         df = df.drop(self.original_features, axis=1)
         # delete missing values, generation makes a lot of garbage.
         df = clean_dataframe(df)
         df = df.select_dtypes(['number']).dropna(axis=1)
         assert self.composition_feature not in df.columns
-
-
+        return df
 
 class MaterialsProject(BaseEstimator, TransformerMixin):
     """
