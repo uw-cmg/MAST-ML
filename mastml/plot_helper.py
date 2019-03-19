@@ -608,6 +608,8 @@ def plot_predicted_vs_true(train_quad, test_quad, outdir, label):
         filename = 'predicted_vs_true_'+ title_addon + '.png'
         filenames.append(filename)
         fig.savefig(join(outdir, filename), dpi=DPI, bbox_inches='tight')
+        df = pd.DataFrame({'y_pred': y_pred, 'y_true': y_true})
+        df.to_csv(join(outdir, 'predicted_vs_true_' + title_addon + '.csv'))
 
     return filenames
 
@@ -733,7 +735,11 @@ def plot_best_worst_split(y_true, best_run, worst_run, savepath,
     plot_stats(fig, best_stats, x_align=x_align, y_align=0.90)
     plot_stats(fig, worst_stats, x_align=x_align, y_align=0.60)
 
-    fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
+    fig.savefig(savepath + '.png', dpi=DPI, bbox_inches='tight')
+
+    df = pd.DataFrame({'best run pred': best_run['y_test_pred'], 'best run true': best_run['y_test_true'],
+                       'worst run pred': worst_run['y_test_pred'], 'worst run true': worst_run['y_test_true']})
+    df.to_csv(savepath + '.csv')
 
 @ipynb_maker
 def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
@@ -815,7 +821,12 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
     plot_stats(fig, worst_stats, x_align=x_align, y_align=0.73, fontsize=10)
     plot_stats(fig, best_stats, x_align=x_align, y_align=0.95, fontsize=10)
 
-    fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
+    fig.savefig(savepath + '.png', dpi=DPI, bbox_inches='tight')
+
+    df = pd.DataFrame({'y true': new_y_true,
+                       'best per point': bests,
+                       'worst per point': worsts})
+    df.to_csv(savepath + '.csv')
 
 @ipynb_maker
 def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
@@ -877,7 +888,12 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
 
     plot_stats(fig, avg_stats, x_align=x_align, y_align=0.90)
 
-    fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
+    fig.savefig(savepath + '.png', dpi=DPI, bbox_inches='tight')
+
+    df = pd.DataFrame({'y true': y_true,
+                       'average predicted values': means,
+                       'error bar values': standard_errors})
+    df.to_csv(savepath + '.csv')
 
 def plot_metric_vs_group(metric, groups, stats, avg_stats, savepath):
     """
