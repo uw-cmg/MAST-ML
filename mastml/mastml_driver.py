@@ -836,7 +836,7 @@ def mastml_run(conf_path, data_path, outdir):
         def make_pred_vs_true_plots(model):
             if PlotSettings['predicted_vs_true']:
                 plot_helper.plot_best_worst_split(y.values, best, worst,
-                                                  join(main_path, 'best_worst_split.png'), label=y.name)
+                                                  join(main_path, 'best_worst_split'), label=y.name)
             predictions = [[] for _ in range(X.shape[0])]
             for split_num, (train_indices, test_indices) in enumerate(trains_tests):
                 for i, pred in zip(test_indices, split_results[split_num]['y_test_pred']):
@@ -844,10 +844,10 @@ def mastml_run(conf_path, data_path, outdir):
             if PlotSettings['predicted_vs_true_bars']:
                 plot_helper.plot_predicted_vs_true_bars(
                         y.values, predictions, avg_test_stats,
-                        join(main_path, 'average_points_with_bars.png'), label=y.name)
+                        join(main_path, 'average_points_with_bars'), label=y.name)
             if PlotSettings['best_worst_per_point']:
                 plot_helper.plot_best_worst_per_point(y.values, predictions,
-                                                      join(main_path, 'best_worst_per_point.png'),
+                                                      join(main_path, 'best_worst_per_point'),
                                                       metrics_dict, avg_test_stats, label=y.name)
             if PlotSettings['average_error_plots']:
                 plot_helper.plot_normalized_error(y.values, predictions,
