@@ -737,9 +737,11 @@ def plot_best_worst_split(y_true, best_run, worst_run, savepath,
 
     fig.savefig(savepath + '.png', dpi=DPI, bbox_inches='tight')
 
-    df = pd.DataFrame({'best run pred': best_run['y_test_pred'], 'best run true': best_run['y_test_true'],
-                       'worst run pred': worst_run['y_test_pred'], 'worst run true': worst_run['y_test_true']})
-    df.to_csv(savepath + '.csv')
+    df_best = pd.DataFrame({'best run pred': best_run['y_test_pred'], 'best run true': best_run['y_test_true']})
+    df_worst = pd.DataFrame({'worst run pred': worst_run['y_test_pred'], 'worst run true': worst_run['y_test_true']})
+
+    df_best.to_csv(savepath + '_best.csv')
+    df_worst.to_csv(savepath + '_worst.csv')
 
 @ipynb_maker
 def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
