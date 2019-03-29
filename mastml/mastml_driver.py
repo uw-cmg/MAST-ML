@@ -633,8 +633,13 @@ def mastml_run(conf_path, data_path, outdir):
             os.mkdir(path)
 
             log.info("             Fitting model and making predictions...")
-            model.fit(train_X, train_y)
-
+            # Catch the ValueError associated with not being able to convert string to float
+            try:
+                model.fit(train_X, train_y)
+            except ValueError:
+                raise utils.InvalidValue('MAST-ML has detected that one of your feature vectors contains a string, and cannot be'
+                                   'used in model fitting. Please add any features that contain strings to the "not_input_features"'
+                                   'field of the input file')
             # Save off the trained model as .pkl for future import
             joblib.dump(model, join(path, str(model.__class__.__name__)+"_split_"+str(split_num)+".pkl"))
 
