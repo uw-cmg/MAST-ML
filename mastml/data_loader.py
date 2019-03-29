@@ -4,6 +4,7 @@ The data_loader module is used for importing data from user-specified csv or xls
 
 import pandas as pd
 import logging
+from mastml import utils
 log = logging.getLogger('mastml')
 
 def load_data(file_path, input_features=None, target_feature=None, grouping_feature = None, feature_blacklist=list()):
@@ -83,5 +84,11 @@ def load_data(file_path, input_features=None, target_feature=None, grouping_feat
         X_grouped = None
 
     df = df.drop(target_feature, axis=1)
+
+    #Check if features are unambiguously selected
+    for feature in X_noinput.columns:
+        if feature in X.columns:
+            raise utils.ConfError('An error has occurred wwhere the same feature in both the "input_features" and '
+                                  '"not_input_features" fields. Please correct your input file and re-run MAST-ML')
 
     return df, X, X_noinput, X_grouped, y
