@@ -324,6 +324,10 @@ def mastml_run(conf_path, data_path, outdir):
         X = pd.concat([X, generated_df], axis=1)
         # add in generated features to full dataframe
         df = pd.concat([df, generated_df], axis=1)
+        # Check size of X; if there are no feature columns then throw error
+        if X.shape[1] == 0:
+            raise utils.InvalidValue('No feature vectors were found in the dataframe. Please either use feature generation methods'
+                               'or specify input_features in the input file.')
 
         # remove repeat columns (keep the first one)
         def remove_repeats(X):
