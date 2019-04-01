@@ -24,12 +24,10 @@ def remove(df, axis):
         df: (dataframe): dataframe with NaN or missing values removed
 
     """
-    # TODO: add cleaning for y data (remove rows, and need to remove rows from other df's as well
-    #df_nan = df[pd.isnull(df)]
-    #nan_indices = df_nan.index
-    #print(nan_indices)
+    df_nan = df[pd.isnull(df)]
+    nan_indices = df_nan.index
     df = df.dropna(axis=axis, how='any')
-    return df
+    return df, nan_indices
 
 def imputation(df, strategy, cols_to_leave_out=None):
     """

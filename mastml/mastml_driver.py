@@ -124,12 +124,10 @@ def mastml_run(conf_path, data_path, outdir):
         log.warning("There are no X feature vectors imported from the data file. Therefore, data cleaning cannot be performed.")
     else:
         if dc['cleaning_method'] == 'remove':
-            df = data_cleaner.remove(df, axis=1)
-            X = data_cleaner.remove(X, axis=1)
-            X_noinput = data_cleaner.remove(X_noinput, axis=1)
-            X_grouped = data_cleaner.remove(X_grouped, axis=1)
-            # TODO: have method to first remove rows of missing target data, then do columns for features
-            #y = data_cleaner.remove(y, axis=0)
+            df, nan_indices = data_cleaner.remove(df, axis=1)
+            X, nan_indices = data_cleaner.remove(X, axis=1)
+            X_noinput, nan_indices = data_cleaner.remove(X_noinput, axis=1)
+            X_grouped, nan_indices = data_cleaner.remove(X_grouped, axis=1)
         elif dc['cleaning_method'] == 'imputation':
             log.warning("You have selected data cleaning with Imputation. Note that imputation will not resolve missing target data. "
                         "It is recommended to remove missing target data")
@@ -147,6 +145,21 @@ def mastml_run(conf_path, data_path, outdir):
         else:
             log.error("You have specified an invalid data cleaning method. Choose from: remove, imputation, or ppca")
             exit()
+
+        # Check if any y target data values are missing or NaN
+        shape_before = y.shape
+        y, nan_indices = data_cleaner.remove(y, axis=0)
+        shape_after = y.shape
+        if shape_after != shape_before:
+            log.info(
+                'Warning: some y target data rows were automatically removed because they were either empty or contained '
+                '"NaN" entries. MAST-ML will continue your run with this modified data set.')
+            # Need to modify df, X, etc. to remove same rows as were removed from y target data
+            df = df.drop(labels=nan_indices, axis=0)
+            X = X.drop(labels=nan_indices, axis=0)
+            X_noinput = X_noinput.drop(labels=nan_indices, axis=0)
+            if X_grouped.shape[0] > 0:
+                X_grouped = X_grouped.drop(labels=nan_indices, axis=0)
 
     # randomly shuffles y values if randomizer is on
     if conf['GeneralSetup']['randomizer'] is True:
