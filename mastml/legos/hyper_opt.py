@@ -7,6 +7,9 @@ import pandas as pd
 import numpy as np
 import os
 from mastml import utils
+import logging
+
+log = logging.getLogger('mastml')
 
 class HyperOptUtils():
     """
@@ -73,7 +76,8 @@ class HyperOptUtils():
                 elif param_vals[3] == "log":
                     params_[param_name] = np.logspace(float(param_vals[0]), float(param_vals[1]), num=int(param_vals[2]), dtype=dtype)
                 else:
-                    print('You must specify either lin or log scaling for GridSearch')
+                    log.error('You must specify either lin or log scaling for GridSearch')
+                    exit()
             except:
                 params_[param_name] = param_vals
         return params_
@@ -97,8 +101,10 @@ class HyperOptUtils():
             for name, value_string in zip(self.param_names.split(';'), self.param_values.split(';')):
                 param_dict[name] = value_string
         except:
-            utils.MastError('Error: An error occurred when trying to parse the hyperparam input values.'
-                            ' Please check your input file for errors.')
+            log.error('Error: An error occurred when trying to parse the hyperparam input values.'
+                            ' Please check your input file for errors. Remember values need to be delimited by semicolons')
+            exit()
+
         # Clean spaces in names and value strings
         param_dict_ = dict()
         for name, value_string in param_dict.items():
@@ -176,7 +182,10 @@ class HyperOptUtils():
             elif is_str is True:
                 param_val_ = Categorical(param_val_split)
             else:
-                raise utils.InvalidValue('Your hyperparam input values were not parsed correctly. Please check your input file')
+                log.error('Your hyperparam input values were not parsed correctly, possibly due to unreasonable value choices'
+                          '(e.g. negative values when only positive values make sense). Please check your input file and '
+                          're-run MAST-ML.')
+                exit()
 
             param_dict_[param_name] = param_val_
 
@@ -245,9 +254,10 @@ class GridSearch(HyperOptUtils):
         try:
             rst[estimator_name] = model.fit(X, y)
         except:
-            raise utils.MastError('Hyperparameter optimization failed, likely due to inappropriate domain of values to optimze'
+            log.error('Hyperparameter optimization failed, likely due to inappropriate domain of values to optimize'
                                ' one or more parameters over. Please check your input file and the sklearn docs for the mode'
                                ' you are optimizing for the domain of correct values')
+            exit()
 
         best_estimator = rst[estimator_name].best_estimator_
 
@@ -321,9 +331,10 @@ class RandomizedSearch(HyperOptUtils):
         try:
             rst[estimator_name] = model.fit(X, y)
         except:
-            raise utils.MastError('Hyperparameter optimization failed, likely due to inappropriate domain of values to optimze'
+            log.error('Hyperparameter optimization failed, likely due to inappropriate domain of values to optimize'
                                ' one or more parameters over. Please check your input file and the sklearn docs for the mode'
                                ' you are optimizing for the domain of correct values')
+            exit()
 
         best_estimator = rst[estimator_name].best_estimator_
 
@@ -398,9 +409,10 @@ class BayesianSearch(HyperOptUtils):
         try:
             rst[estimator_name] = model.fit(X, y)
         except:
-            raise utils.MastError('Hyperparameter optimization failed, likely due to inappropriate domain of values to optimze'
+            log.error('Hyperparameter optimization failed, likely due to inappropriate domain of values to optimize'
                                ' one or more parameters over. Please check your input file and the sklearn docs for the mode'
                                ' you are optimizing for the domain of correct values')
+            exit()
 
         best_estimator = rst[estimator_name].best_estimator_
 
