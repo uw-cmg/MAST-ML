@@ -23,8 +23,8 @@ from pymatgen.ext.matproj import MPRester
 import mastml
 from mastml import utils
 log = logging.getLogger('mastml')
-print('mastml dir: ', mastml.__path__)
-MAGPIE_DATA_PATH = os.path.join(mastml.__path__[0], '../magpie/')
+# print('mastml dir: ', mastml.__path__)
+MAGPIE_DATA_PATH = os.path.join(mastml.__path__[0], 'magpie')
 
 #from matminer.data_retrieval.retrieve_Citrine import CitrineDataRetrieval
 #from matminer.data_retrieval.retrieve_MP import MPDataRetrieval

@@ -37,8 +37,9 @@ except EnvironmentError:
     pass # Okay, there is no version file.
 
 setup(
-    name="mastml", # TODO  should this be MAST-ML?
-    packages=find_packages(),
+    name="mastml", 
+    packages=['mastml', 'mastml.legos', 'mastml.search', 'mastml.magpie'],
+    package_data={'mastml.magpie': ['*.table']},
     version=verstr,
     install_requires=[
         "citrination-client>=4.6.0",
