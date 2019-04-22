@@ -54,6 +54,7 @@ setup(
         "pandas>=0.23.3",
         "pymatgen>=2018.6.27",
         "scikit-learn>=0.19.1",
+        "scikit-optimize>=0.5.2",
         "scipy>=1.1.0"
         ],
     author="MAST Development Team, University of Wisconsin-Madison Computational Materials Group",
