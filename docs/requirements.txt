@@ -1,5 +1,0 @@
-mastml
-numpy >= 1.15.0rc2
-scipy >= 1.1.0
-pandas >= 0.23.3
-sklearn >=0.19.1
