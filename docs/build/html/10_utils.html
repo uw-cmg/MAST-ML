@@ -139,6 +139,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="2_mastml_overview.html">MAST-ML overview slides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="2_running_mastml_nanohub.html">Running MAST-ML on Nanohub</a></li>
 <li class="toctree-l1"><a class="reference internal" href="2_mastml_tutorial.html">MAST-ML tutorial</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_introduction.html">Introduction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_firstrun.html">Your first MAST-ML run</a></li>
@@ -240,218 +241,88 @@
             
   <div class="section" id="module-utils">
 <span id="utils"></span><h1>Utils<a class="headerlink" href="#module-utils" title="Permalink to this headline">¶</a></h1>
-<p>The utils module contains a collection of miscellaneous methods and error handling used throughout MAST-ML</p>
+<p>A collection of random little utilities and errors used throughout mastml</p>
 <dl class="class">
 <dt id="utils.BetweenFilter">
 <em class="property">class </em><code class="descclassname">utils.</code><code class="descname">BetweenFilter</code><span class="sig-paren">(</span><em>min_level</em>, <em>max_level</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#BetweenFilter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.BetweenFilter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class to aid in handling logger display levels</p>
-<p>Args:</p>
-<blockquote>
-<div><p>min_level: (int), minimum verbosity level</p>
-<p>max_level: (int), maximum verbosity level</p>
-</div></blockquote>
-<p>Methods:</p>
-<blockquote>
-<div><p>filter: Method to return logging level of logging.logRecord object</p>
-<blockquote>
-<div><p>Args:</p>
-<blockquote>
-<div>logRecord: (python logging.logRecord object)</div></blockquote>
-<p>Returns:</p>
-<blockquote>
-<div>(int) logging level of logging.logRecord object, which is between the min and max provided levels</div></blockquote>
-</div></blockquote>
-</div></blockquote>
+<dd><p>inclusive on both sides</p>
 </dd></dl>
 
 <dl class="exception">
 <dt id="utils.ConfError">
 <em class="property">exception </em><code class="descclassname">utils.</code><code class="descname">ConfError</code><a class="reference internal" href="_modules/utils.html#ConfError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.ConfError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class representing error in input configuration file</p>
-</dd></dl>
-
-<dl class="exception">
-<dt id="utils.FileNotFoundError">
-<em class="property">exception </em><code class="descclassname">utils.</code><code class="descname">FileNotFoundError</code><a class="reference internal" href="_modules/utils.html#FileNotFoundError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.FileNotFoundError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class representing error raised when a needed file cannot be found</p>
+<dd><p>error in conf file</p>
 </dd></dl>
 
 <dl class="exception">
 <dt id="utils.FiletypeError">
 <em class="property">exception </em><code class="descclassname">utils.</code><code class="descname">FiletypeError</code><a class="reference internal" href="_modules/utils.html#FiletypeError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.FiletypeError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class representing error raised when an improper file extension is used</p>
+<dd><p>for using the wrong file extentions</p>
 </dd></dl>
 
 <dl class="exception">
 <dt id="utils.InvalidConfParameters">
 <em class="property">exception </em><code class="descclassname">utils.</code><code class="descname">InvalidConfParameters</code><a class="reference internal" href="_modules/utils.html#InvalidConfParameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.InvalidConfParameters" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class representing error raised when you have invalid input configuration file parameters</p>
+<dd><p>invalid conf params</p>
 </dd></dl>
 
 <dl class="exception">
 <dt id="utils.InvalidConfSection">
 <em class="property">exception </em><code class="descclassname">utils.</code><code class="descname">InvalidConfSection</code><a class="reference internal" href="_modules/utils.html#InvalidConfSection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.InvalidConfSection" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class representing error raised when an invalid section name is present in the input configuration file</p>
+<dd><p>invalid section name</p>
 </dd></dl>
 
 <dl class="exception">
 <dt id="utils.InvalidConfSubSection">
 <em class="property">exception </em><code class="descclassname">utils.</code><code class="descname">InvalidConfSubSection</code><a class="reference internal" href="_modules/utils.html#InvalidConfSubSection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.InvalidConfSubSection" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class representing error raised when an invalid subsection name is present in the input configuration file</p>
+<dd><p>invalid section name</p>
 </dd></dl>
 
 <dl class="exception">
 <dt id="utils.InvalidModel">
 <em class="property">exception </em><code class="descclassname">utils.</code><code class="descname">InvalidModel</code><a class="reference internal" href="_modules/utils.html#InvalidModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.InvalidModel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class representing error when model does not exist</p>
-</dd></dl>
-
-<dl class="exception">
-<dt id="utils.InvalidValue">
-<em class="property">exception </em><code class="descclassname">utils.</code><code class="descname">InvalidValue</code><a class="reference internal" href="_modules/utils.html#InvalidValue"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.InvalidValue" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class representing error raised when an invalid value has been used</p>
+<dd><p>Model does not exist</p>
 </dd></dl>
 
 <dl class="exception">
 <dt id="utils.MastError">
 <em class="property">exception </em><code class="descclassname">utils.</code><code class="descname">MastError</code><a class="reference internal" href="_modules/utils.html#MastError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.MastError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Base class for MAST-ML specific errors that should be shown to the user</p>
+<dd><p>base class for errors that should be shown to the user</p>
 </dd></dl>
 
 <dl class="exception">
 <dt id="utils.MissingColumnError">
 <em class="property">exception </em><code class="descclassname">utils.</code><code class="descname">MissingColumnError</code><a class="reference internal" href="_modules/utils.html#MissingColumnError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.MissingColumnError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class representing error raised when your csv doesn’t have the specified column</p>
+<dd><p>raised when your csv doesn’t have the column you asked for</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="utils._int_if_int">
-<code class="descclassname">utils.</code><code class="descname">_int_if_int</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#_int_if_int"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils._int_if_int" title="Permalink to this definition">¶</a></dt>
-<dd><p>Method to return integer mapped value of x</p>
-<p>Args:</p>
-<blockquote>
-<div>x: (float or int), a number</div></blockquote>
-<p>Returns:</p>
-<blockquote>
-<div>x: (float), value of x mapped as integer</div></blockquote>
-</dd></dl>
-
-<dl class="function">
-<dt id="utils._n_sigfigs">
-<code class="descclassname">utils.</code><code class="descname">_n_sigfigs</code><span class="sig-paren">(</span><em>x</em>, <em>n</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#_n_sigfigs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils._n_sigfigs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Method to return number of sig figs to use for axis ticks</p>
-<p>Args:</p>
-<blockquote>
-<div>x: (float), an axis tick number</div></blockquote>
-<p>Returns:</p>
-<blockquote>
-<div>(float), number of sig figs</div></blockquote>
-</dd></dl>
-
-<dl class="function">
-<dt id="utils._nearest_pow_ten">
-<code class="descclassname">utils.</code><code class="descname">_nearest_pow_ten</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#_nearest_pow_ten"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils._nearest_pow_ten" title="Permalink to this definition">¶</a></dt>
-<dd><p>Method to return the nearest power of ten for an axis tick value</p>
-<p>Args:</p>
-<blockquote>
-<div>x: (float), an axis tick number</div></blockquote>
-<p>Returns:</p>
-<blockquote>
-<div>(float), nearest power of ten of x</div></blockquote>
-</dd></dl>
-
-<dl class="function">
-<dt id="utils._nice_range_helper">
-<code class="descclassname">utils.</code><code class="descname">_nice_range_helper</code><span class="sig-paren">(</span><em>lower</em>, <em>upper</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#_nice_range_helper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils._nice_range_helper" title="Permalink to this definition">¶</a></dt>
-<dd><p>Method to help make a better range of axis ticks</p>
-<p>Args:</p>
-<blockquote>
-<div><p>lower: (float), lower value of axis ticks</p>
-<p>upper: (float), upper value of axis ticks</p>
-</div></blockquote>
-<p>Returns:</p>
-<blockquote>
-<div>upper: (float), modified upper tick value fixed based on set of axis ticks</div></blockquote>
-</dd></dl>
-
-<dl class="function">
-<dt id="utils._round_up">
-<code class="descclassname">utils.</code><code class="descname">_round_up</code><span class="sig-paren">(</span><em>x</em>, <em>inc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#_round_up"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils._round_up" title="Permalink to this definition">¶</a></dt>
-<dd><p>Method to round up the value of x</p>
-<p>Args:</p>
-<blockquote>
-<div><p>x: (float or int), a number</p>
-<p>inc: (float), an increment for axis ticks</p>
-</div></blockquote>
-<p>Returns:</p>
-<blockquote>
-<div>(float), value of x rounded up</div></blockquote>
-</dd></dl>
-
-<dl class="function">
-<dt id="utils._three_sigfigs">
-<code class="descclassname">utils.</code><code class="descname">_three_sigfigs</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#_three_sigfigs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils._three_sigfigs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Method invoking special case of _n_sigfigs to return 3 sig figs</p>
-<p>Args:</p>
-<blockquote>
-<div>x: (float), an axis tick number</div></blockquote>
-<p>Returns:</p>
-<blockquote>
-<div>(float), number of sig figs (always 3)</div></blockquote>
+<dt id="utils._rfe_train_test">
+<code class="descclassname">utils.</code><code class="descname">_rfe_train_test</code><span class="sig-paren">(</span><em>rfe</em>, <em>estimator</em>, <em>X</em>, <em>y</em>, <em>train</em>, <em>test</em>, <em>scorer</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#_rfe_train_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils._rfe_train_test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the score for a fit across one fold.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="utils.activate_logging">
 <code class="descclassname">utils.</code><code class="descname">activate_logging</code><span class="sig-paren">(</span><em>savepath</em>, <em>paths</em>, <em>logger_name='mastml'</em>, <em>to_screen=True</em>, <em>to_file=True</em>, <em>verbosity=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#activate_logging"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.activate_logging" title="Permalink to this definition">¶</a></dt>
-<dd><p>Method to create MAST-ML logger file</p>
-<p>Args:</p>
+<dd><p>savepath is a dir for where to save log
+paths list of 3 strings we show so the user knows what is being ran
+verbosity: argument for what is shown on screen (does not affect files):</p>
 <blockquote>
-<div><p>savepath: (str), string specifying the save path</p>
-<p>paths: (list), list containing strings of path locations for config file, data file, and results folder</p>
-<p>logger_name: (str), name of logger file</p>
-<p>to_screen: (bool), whether or not to write the log contents to the screen during a run</p>
-<p>to_file: (bool), whether or not to write the log contents to a file in the savepath</p>
-<p>verbosity: (int), controls the amount of output produced in the logger. Accepted values:</p>
-<blockquote>
-<div><p>0 shows everything</p>
-<p>-1 hides debug</p>
-<p>-2 hides info (so no stdout except print)</p>
-<p>-3 hides warning</p>
-<p>-4 hides error</p>
-<p>-5 hides all output</p>
-</div></blockquote>
-</div></blockquote>
-<p>Returns:</p>
-<blockquote>
-<div>None</div></blockquote>
-</dd></dl>
-
-<dl class="function">
-<dt id="utils.log_header">
-<code class="descclassname">utils.</code><code class="descname">log_header</code><span class="sig-paren">(</span><em>paths</em>, <em>log</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#log_header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.log_header" title="Permalink to this definition">¶</a></dt>
-<dd><p>Method to create header for MAST-ML logger</p>
-<p>Args:</p>
-<blockquote>
-<div><p>paths: (list), list containing strings of path locations for config file, data file, and results folder</p>
-<p>log: (logging object), a python log</p>
-</div></blockquote>
-<p>Returns:</p>
-<blockquote>
-<div>None</div></blockquote>
+<div>0 shows everything
+-1 hides debug
+-2 hides info (so no stdout except print)
+-3 hides warning
+-4 hides error
+-5 hides all output</div></blockquote>
 </dd></dl>
 
 <dl class="function">
 <dt id="utils.nice_range">
 <code class="descclassname">utils.</code><code class="descname">nice_range</code><span class="sig-paren">(</span><em>lower</em>, <em>upper</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#nice_range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.nice_range" title="Permalink to this definition">¶</a></dt>
-<dd><p>Method to create a range of values, including the specified start and end points, with nicely spaced intervals</p>
-<p>Args:</p>
-<blockquote>
-<div><p>lower: (float or int), lower bound of range to create</p>
-<p>upper: (float or int), upper bound of range to create</p>
-</div></blockquote>
-<p>Returns:</p>
-<blockquote>
-<div>(list), list of numerical values in established range</div></blockquote>
+<dd><p>Pass in two numbers, and get back a list of numbers,
+including both endpoints. Uses nice looking steps,
+ie 0.1 or 0.5 or sometimes 2.</p>
 </dd></dl>
 
 </div>

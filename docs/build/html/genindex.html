@@ -138,6 +138,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="2_mastml_overview.html">MAST-ML overview slides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="2_running_mastml_nanohub.html">Running MAST-ML on Nanohub</a></li>
 <li class="toctree-l1"><a class="reference internal" href="2_mastml_tutorial.html">MAST-ML tutorial</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_introduction.html">Introduction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_firstrun.html">Your first MAST-ML run</a></li>
@@ -262,23 +263,17 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="12_plot_helper.html#plot_helper._clean_tick_labels">_clean_tick_labels() (in module plot_helper)</a>
 </li>
-      <li><a href="10_utils.html#utils._int_if_int">_int_if_int() (in module utils)</a>
+      <li><a href="11_mastml_driver.html#mastml_driver._instantiate">_instantiate() (in module mastml_driver)</a>
 </li>
-      <li><a href="10_utils.html#utils._n_sigfigs">_n_sigfigs() (in module utils)</a>
-</li>
-      <li><a href="10_utils.html#utils._nearest_pow_ten">_nearest_pow_ten() (in module utils)</a>
+      <li><a href="10_utils.html#utils._rfe_train_test">_rfe_train_test() (in module utils)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="10_utils.html#utils._nice_range_helper">_nice_range_helper() (in module utils)</a>
-</li>
-      <li><a href="10_utils.html#utils._round_up">_round_up() (in module utils)</a>
+      <li><a href="11_mastml_driver.html#mastml_driver._save_all_runs">_save_all_runs() (in module mastml_driver)</a>
 </li>
       <li><a href="12_plot_helper.html#plot_helper._set_tick_labels">_set_tick_labels() (in module plot_helper)</a>
 </li>
       <li><a href="12_plot_helper.html#plot_helper._set_tick_labels_different">_set_tick_labels_different() (in module plot_helper)</a>
-</li>
-      <li><a href="10_utils.html#utils._three_sigfigs">_three_sigfigs() (in module utils)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -290,8 +285,6 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="3_metrics.html#metrics.adjusted_r2_score">adjusted_r2_score() (in module metrics)</a>
-</li>
       <li><a href="17_model_finder.html#model_finder.AlwaysFive">AlwaysFive (class in model_finder)</a>
 </li>
   </ul></td>
@@ -312,15 +305,23 @@
 </li>
       <li><a href="17_model_finder.html#model_finder.check_models_mixed">check_models_mixed() (in module model_finder)</a>
 </li>
-      <li><a href="8_clusterers.html#module-clusterers">clusterers (module)</a>
+      <li><a href="11_mastml_driver.html#mastml_driver.check_paths">check_paths() (in module mastml_driver)</a>
+</li>
+      <li><a href="19_feature_generators.html#feature_generators.Citrine">Citrine (class in feature_generators)</a>
+</li>
+      <li><a href="19_feature_generators.html#feature_generators.CitrineFeatureGeneration">CitrineFeatureGeneration (class in feature_generators)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="5_data_cleaner.html#data_cleaner.columns_with_strings">columns_with_strings() (in module data_cleaner)</a>
+      <li><a href="19_feature_generators.html#feature_generators.clean_dataframe">clean_dataframe() (in module feature_generators)</a>
+</li>
+      <li><a href="8_clusterers.html#module-clusterers">clusterers (module)</a>
 </li>
       <li><a href="4_conf_parser.html#module-conf_parser">conf_parser (module)</a>
 </li>
       <li><a href="10_utils.html#utils.ConfError">ConfError</a>
+</li>
+      <li><a href="19_feature_generators.html#feature_generators.ContainsElement">ContainsElement (class in feature_generators)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -338,6 +339,8 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="19_feature_generators.html#feature_generators.DataframeUtilities">DataframeUtilities (class in feature_generators)</a>
+</li>
       <li><a href="15_feature_normalizers.html#feature_normalizers.dataframify">dataframify() (in module feature_normalizers)</a>
 </li>
       <li><a href="14_feature_selectors.html#feature_selectors.dataframify_new_column_names">dataframify_new_column_names() (in module feature_selectors)</a>
@@ -352,13 +355,13 @@
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="19_feature_generators.html#module-feature_generators">feature_generators (module)</a>
+</li>
       <li><a href="7_learning_curve.html#learning_curve.feature_learning_curve">feature_learning_curve() (in module learning_curve)</a>
 </li>
       <li><a href="15_feature_normalizers.html#module-feature_normalizers">feature_normalizers (module)</a>
 </li>
       <li><a href="14_feature_selectors.html#module-feature_selectors">feature_selectors (module)</a>
-</li>
-      <li><a href="10_utils.html#utils.FileNotFoundError">FileNotFoundError</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -378,10 +381,12 @@
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="12_plot_helper.html#plot_helper.get_divisor">get_divisor() (in module plot_helper)</a>
+      <li><a href="11_mastml_driver.html#mastml_driver.get_commandline_args">get_commandline_args() (in module mastml_driver)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="12_plot_helper.html#plot_helper.get_divisor">get_divisor() (in module plot_helper)</a>
+</li>
       <li><a href="12_plot_helper.html#plot_helper.get_histogram_bins">get_histogram_bins() (in module plot_helper)</a>
 </li>
   </ul></td>
@@ -398,25 +403,17 @@
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="5_data_cleaner.html#data_cleaner.imputation">imputation() (in module data_cleaner)</a>
-</li>
       <li><a href="10_utils.html#utils.InvalidConfParameters">InvalidConfParameters</a>
 </li>
       <li><a href="10_utils.html#utils.InvalidConfSection">InvalidConfSection</a>
 </li>
-      <li><a href="10_utils.html#utils.InvalidConfSubSection">InvalidConfSubSection</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="10_utils.html#utils.InvalidConfSubSection">InvalidConfSubSection</a>
+</li>
       <li><a href="10_utils.html#utils.InvalidModel">InvalidModel</a>
 </li>
-      <li><a href="10_utils.html#utils.InvalidValue">InvalidValue</a>
-</li>
       <li><a href="12_plot_helper.html#plot_helper.ipynb_maker">ipynb_maker() (in module plot_helper)</a>
-</li>
-      <li><a href="13_html_helper.html#html_helper.is_test_image">is_test_image() (in module html_helper)</a>
-</li>
-      <li><a href="13_html_helper.html#html_helper.is_train_image">is_train_image() (in module html_helper)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -442,14 +439,18 @@
 </li>
       <li><a href="6_data_loader.html#data_loader.load_data">load_data() (in module data_loader)</a>
 </li>
-      <li><a href="10_utils.html#utils.log_header">log_header() (in module utils)</a>
-</li>
   </ul></td>
 </tr></table>
 
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="19_feature_generators.html#feature_generators.Magpie">Magpie (class in feature_generators)</a>
+</li>
+      <li><a href="19_feature_generators.html#feature_generators.MagpieFeatureGeneration">MagpieFeatureGeneration (class in feature_generators)</a>
+</li>
+      <li><a href="11_mastml_driver.html#mastml_driver.main">main() (in module mastml_driver)</a>
+</li>
       <li><a href="12_plot_helper.html#plot_helper.make_axis_same">make_axis_same() (in module plot_helper)</a>
 </li>
       <li><a href="12_plot_helper.html#plot_helper.make_fig_ax">make_fig_ax() (in module plot_helper)</a>
@@ -464,11 +465,19 @@
 </li>
       <li><a href="12_plot_helper.html#plot_helper.make_train_test_plots">make_train_test_plots() (in module plot_helper)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="10_utils.html#utils.MastError">MastError</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="11_mastml_driver.html#module-mastml_driver">mastml_driver (module)</a>
+</li>
+      <li><a href="11_mastml_driver.html#mastml_driver.mastml_run">mastml_run() (in module mastml_driver)</a>
+</li>
       <li><a href="14_feature_selectors.html#feature_selectors.MASTMLFeatureSelector">MASTMLFeatureSelector (class in feature_selectors)</a>
+</li>
+      <li><a href="19_feature_generators.html#feature_generators.MaterialsProject">MaterialsProject (class in feature_generators)</a>
+</li>
+      <li><a href="19_feature_generators.html#feature_generators.MaterialsProjectFeatureGeneration">MaterialsProjectFeatureGeneration (class in feature_generators)</a>
 </li>
       <li><a href="15_feature_normalizers.html#feature_normalizers.MeanStdevScaler">MeanStdevScaler (class in feature_normalizers)</a>
 </li>
@@ -495,6 +504,8 @@
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="12_plot_helper.html#plot_helper.nice_std">nice_std() (in module plot_helper)</a>
+</li>
+      <li><a href="19_feature_generators.html#feature_generators.NoGenerate">NoGenerate (class in feature_generators)</a>
 </li>
       <li><a href="9_data_splitters.html#data_splitters.NoSplit">NoSplit (class in data_splitters)</a>
 </li>
@@ -550,9 +561,7 @@
 </li>
       <li><a href="12_plot_helper.html#plot_helper.plot_target_histogram">plot_target_histogram() (in module plot_helper)</a>
 </li>
-      <li><a href="5_data_cleaner.html#data_cleaner.PPCA">PPCA (class in data_cleaner)</a>
-</li>
-      <li><a href="5_data_cleaner.html#data_cleaner.ppca">ppca() (in module data_cleaner)</a>
+      <li><a href="19_feature_generators.html#feature_generators.PolynomialFeatures">PolynomialFeatures (class in feature_generators)</a>
 </li>
       <li><a href="12_plot_helper.html#plot_helper.prediction_intervals">prediction_intervals() (in module plot_helper)</a>
 </li>
@@ -572,19 +581,13 @@
 </li>
       <li><a href="16_randomizers.html#module-randomizers">randomizers (module)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="12_plot_helper.html#plot_helper.recursive_max">recursive_max() (in module plot_helper)</a>
 </li>
       <li><a href="12_plot_helper.html#plot_helper.recursive_max_and_min">recursive_max_and_min() (in module plot_helper)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="12_plot_helper.html#plot_helper.recursive_min">recursive_min() (in module plot_helper)</a>
-</li>
-      <li><a href="5_data_cleaner.html#data_cleaner.remove">remove() (in module data_cleaner)</a>
-</li>
-      <li><a href="3_metrics.html#metrics.rmse_over_stdev">rmse_over_stdev() (in module metrics)</a>
-</li>
-      <li><a href="3_metrics.html#metrics.root_mean_squared_error">root_mean_squared_error() (in module metrics)</a>
 </li>
       <li><a href="12_plot_helper.html#plot_helper.round_down">round_down() (in module plot_helper)</a>
 </li>

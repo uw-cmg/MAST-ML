@@ -137,6 +137,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../2_mastml_overview.html">MAST-ML overview slides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../2_running_mastml_nanohub.html">Running MAST-ML on Nanohub</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../2_mastml_tutorial.html">MAST-ML tutorial</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_introduction.html">Introduction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_firstrun.html">Your first MAST-ML run</a></li>
@@ -463,6 +464,27 @@
                           <span class="p">(</span><span class="n">y_test_true</span><span class="p">,</span>  <span class="n">y_test_pred</span><span class="p">,</span>  <span class="n">test_metrics</span><span class="p">,</span> <span class="n">test_groups</span><span class="p">),</span> 
                           <span class="n">path</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
 
+        <span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;train_residuals_histogram&#39;</span>
+        <span class="n">plot_residuals_histogram</span><span class="p">(</span><span class="n">y_train_true</span><span class="p">,</span> <span class="n">y_train_pred</span><span class="p">,</span>
+                                 <span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">title</span><span class="o">+</span><span class="s1">&#39;.png&#39;</span><span class="p">),</span> <span class="n">train_metrics</span><span class="p">,</span>
+                                 <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;test_residuals_histogram&#39;</span>
+        <span class="n">plot_residuals_histogram</span><span class="p">(</span><span class="n">y_test_true</span><span class="p">,</span>  <span class="n">y_test_pred</span><span class="p">,</span>
+                                 <span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">title</span><span class="o">+</span><span class="s1">&#39;.png&#39;</span><span class="p">),</span> <span class="n">test_metrics</span><span class="p">,</span>
+                                 <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span></div>
+
+<span class="k">def</span> <span class="nf">make_error_plots</span><span class="p">(</span><span class="n">run</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">is_classification</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">train_X</span><span class="p">,</span> <span class="n">test_X</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+    <span class="n">y_train_true</span><span class="p">,</span> <span class="n">y_train_pred</span><span class="p">,</span> <span class="n">y_test_true</span> <span class="o">=</span> \
+        <span class="n">run</span><span class="p">[</span><span class="s1">&#39;y_train_true&#39;</span><span class="p">],</span> <span class="n">run</span><span class="p">[</span><span class="s1">&#39;y_train_pred&#39;</span><span class="p">],</span> <span class="n">run</span><span class="p">[</span><span class="s1">&#39;y_test_true&#39;</span><span class="p">]</span>
+    <span class="n">y_test_pred</span><span class="p">,</span> <span class="n">train_metrics</span><span class="p">,</span> <span class="n">test_metrics</span> <span class="o">=</span> \
+        <span class="n">run</span><span class="p">[</span><span class="s1">&#39;y_test_pred&#39;</span><span class="p">],</span> <span class="n">run</span><span class="p">[</span><span class="s1">&#39;train_metrics&#39;</span><span class="p">],</span> <span class="n">run</span><span class="p">[</span><span class="s1">&#39;test_metrics&#39;</span><span class="p">]</span>
+    <span class="n">train_groups</span><span class="p">,</span> <span class="n">test_groups</span> <span class="o">=</span> <span class="n">run</span><span class="p">[</span><span class="s1">&#39;train_groups&#39;</span><span class="p">],</span> <span class="n">run</span><span class="p">[</span><span class="s1">&#39;test_groups&#39;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">is_classification</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;There is no error distribution plotting for classification problems, just passing through...&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span> <span class="c1"># is_regression</span>
+
         <span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;train_normalized_error&#39;</span>
         <span class="n">plot_normalized_error</span><span class="p">(</span><span class="n">y_train_true</span><span class="p">,</span> <span class="n">y_train_pred</span><span class="p">,</span> <span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">title</span><span class="o">+</span><span class="s1">&#39;.png&#39;</span><span class="p">),</span> <span class="n">model</span><span class="p">,</span> <span class="n">train_X</span><span class="p">)</span>
 
@@ -475,14 +497,6 @@
         <span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;test_cumulative_normalized_error&#39;</span>
         <span class="n">plot_cumulative_normalized_error</span><span class="p">(</span><span class="n">y_test_true</span><span class="p">,</span> <span class="n">y_test_pred</span><span class="p">,</span> <span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">title</span><span class="o">+</span><span class="s1">&#39;.png&#39;</span><span class="p">),</span> <span class="n">model</span><span class="p">,</span> <span class="n">test_X</span><span class="p">)</span>
 
-        <span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;train_residuals_histogram&#39;</span>
-        <span class="n">plot_residuals_histogram</span><span class="p">(</span><span class="n">y_train_true</span><span class="p">,</span> <span class="n">y_train_pred</span><span class="p">,</span>
-                                 <span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">title</span><span class="o">+</span><span class="s1">&#39;.png&#39;</span><span class="p">),</span> <span class="n">train_metrics</span><span class="p">,</span>
-                                 <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
-        <span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;test_residuals_histogram&#39;</span>
-        <span class="n">plot_residuals_histogram</span><span class="p">(</span><span class="n">y_test_true</span><span class="p">,</span>  <span class="n">y_test_pred</span><span class="p">,</span>
-                                 <span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">title</span><span class="o">+</span><span class="s1">&#39;.png&#39;</span><span class="p">),</span> <span class="n">test_metrics</span><span class="p">,</span>
-                                 <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="plot_confusion_matrix"><a class="viewcode-back" href="../12_plot_helper.html#plot_helper.plot_confusion_matrix">[docs]</a><span class="nd">@ipynb_maker</span>
 <span class="k">def</span> <span class="nf">plot_confusion_matrix</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">savepath</span><span class="p">,</span> <span class="n">stats</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Confusion matrix&#39;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">Blues</span><span class="p">):</span>
@@ -777,10 +791,12 @@
 
     <span class="c1"># make diagonal line from absolute min to absolute max of any data point</span>
     <span class="c1"># using round because Ryan did - but won&#39;t that ruin small numbers??? TODO this</span>
-    <span class="n">max1</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">y_train_true</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">y_train_pred</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span>
-               <span class="n">y_test_true</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">y_test_pred</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
-    <span class="n">min1</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">y_train_true</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">y_train_pred</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span>
-               <span class="n">y_test_true</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">y_test_pred</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+    <span class="c1">#max1 = max(y_train_true.max(), y_train_pred.max(),</span>
+    <span class="c1">#           y_test_true.max(), y_test_pred.max())</span>
+    <span class="n">max1</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">y_train_true</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">y_test_true</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+    <span class="c1">#min1 = min(y_train_true.min(), y_train_pred.min(),</span>
+    <span class="c1">#           y_test_true.min(), y_test_pred.min())</span>
+    <span class="n">min1</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">y_train_true</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">y_test_true</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
     <span class="n">max1</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">max1</span><span class="p">),</span> <span class="n">rounder</span><span class="p">(</span><span class="n">max1</span><span class="o">-</span><span class="n">min1</span><span class="p">))</span>
     <span class="n">min1</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">min1</span><span class="p">),</span> <span class="n">rounder</span><span class="p">(</span><span class="n">max1</span><span class="o">-</span><span class="n">min1</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">stats</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="n">title_addon</span> <span class="ow">in</span> \
@@ -828,6 +844,14 @@
         <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;predicted_vs_true_&#39;</span><span class="o">+</span> <span class="n">title_addon</span> <span class="o">+</span> <span class="s1">&#39;.png&#39;</span>
         <span class="n">filenames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
         <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="n">filename</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="n">DPI</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="n">y_pred</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">y_true</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+
+
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;y_pred&#39;</span><span class="p">:</span> <span class="n">y_pred</span><span class="p">,</span> <span class="s1">&#39;y_true&#39;</span><span class="p">:</span> <span class="n">y_true</span><span class="p">})</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="s1">&#39;predicted_vs_true_&#39;</span> <span class="o">+</span> <span class="n">title_addon</span> <span class="o">+</span> <span class="s1">&#39;.csv&#39;</span><span class="p">))</span>
 
     <span class="k">return</span> <span class="n">filenames</span></div>
 
@@ -890,6 +914,7 @@
 
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">xlabel</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Value of &#39;</span><span class="o">+</span><span class="n">label</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="mi">45</span><span class="p">)</span>
     <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">savepath</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">DPI</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="plot_best_worst_split"><a class="viewcode-back" href="../12_plot_helper.html#plot_helper.plot_best_worst_split">[docs]</a><span class="nd">@ipynb_maker</span>
@@ -952,7 +977,13 @@
     <span class="n">plot_stats</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">best_stats</span><span class="p">,</span> <span class="n">x_align</span><span class="o">=</span><span class="n">x_align</span><span class="p">,</span> <span class="n">y_align</span><span class="o">=</span><span class="mf">0.90</span><span class="p">)</span>
     <span class="n">plot_stats</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">worst_stats</span><span class="p">,</span> <span class="n">x_align</span><span class="o">=</span><span class="n">x_align</span><span class="p">,</span> <span class="n">y_align</span><span class="o">=</span><span class="mf">0.60</span><span class="p">)</span>
 
-    <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">savepath</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">DPI</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span></div>
+    <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">savepath</span> <span class="o">+</span> <span class="s1">&#39;.png&#39;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">DPI</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
+
+    <span class="n">df_best</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;best run pred&#39;</span><span class="p">:</span> <span class="n">best_run</span><span class="p">[</span><span class="s1">&#39;y_test_pred&#39;</span><span class="p">],</span> <span class="s1">&#39;best run true&#39;</span><span class="p">:</span> <span class="n">best_run</span><span class="p">[</span><span class="s1">&#39;y_test_true&#39;</span><span class="p">]})</span>
+    <span class="n">df_worst</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;worst run pred&#39;</span><span class="p">:</span> <span class="n">worst_run</span><span class="p">[</span><span class="s1">&#39;y_test_pred&#39;</span><span class="p">],</span> <span class="s1">&#39;worst run true&#39;</span><span class="p">:</span> <span class="n">worst_run</span><span class="p">[</span><span class="s1">&#39;y_test_true&#39;</span><span class="p">]})</span>
+
+    <span class="n">df_best</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">savepath</span> <span class="o">+</span> <span class="s1">&#39;_best.csv&#39;</span><span class="p">)</span>
+    <span class="n">df_worst</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">savepath</span> <span class="o">+</span> <span class="s1">&#39;_worst.csv&#39;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="plot_best_worst_per_point"><a class="viewcode-back" href="../12_plot_helper.html#plot_helper.plot_best_worst_per_point">[docs]</a><span class="nd">@ipynb_maker</span>
 <span class="k">def</span> <span class="nf">plot_best_worst_per_point</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred_list</span><span class="p">,</span> <span class="n">savepath</span><span class="p">,</span> <span class="n">metrics_dict</span><span class="p">,</span>
@@ -1034,7 +1065,12 @@
     <span class="n">plot_stats</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">worst_stats</span><span class="p">,</span> <span class="n">x_align</span><span class="o">=</span><span class="n">x_align</span><span class="p">,</span> <span class="n">y_align</span><span class="o">=</span><span class="mf">0.73</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
     <span class="n">plot_stats</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">best_stats</span><span class="p">,</span> <span class="n">x_align</span><span class="o">=</span><span class="n">x_align</span><span class="p">,</span> <span class="n">y_align</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 
-    <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">savepath</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">DPI</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span></div>
+    <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">savepath</span> <span class="o">+</span> <span class="s1">&#39;.png&#39;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">DPI</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;y true&#39;</span><span class="p">:</span> <span class="n">new_y_true</span><span class="p">,</span>
+                       <span class="s1">&#39;best per point&#39;</span><span class="p">:</span> <span class="n">bests</span><span class="p">,</span>
+                       <span class="s1">&#39;worst per point&#39;</span><span class="p">:</span> <span class="n">worsts</span><span class="p">})</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">savepath</span> <span class="o">+</span> <span class="s1">&#39;.csv&#39;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="plot_predicted_vs_true_bars"><a class="viewcode-back" href="../12_plot_helper.html#plot_helper.plot_predicted_vs_true_bars">[docs]</a><span class="nd">@ipynb_maker</span>
 <span class="k">def</span> <span class="nf">plot_predicted_vs_true_bars</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred_list</span><span class="p">,</span> <span class="n">avg_stats</span><span class="p">,</span>
@@ -1096,7 +1132,12 @@
 
     <span class="n">plot_stats</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">avg_stats</span><span class="p">,</span> <span class="n">x_align</span><span class="o">=</span><span class="n">x_align</span><span class="p">,</span> <span class="n">y_align</span><span class="o">=</span><span class="mf">0.90</span><span class="p">)</span>
 
-    <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">savepath</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">DPI</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span></div>
+    <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">savepath</span> <span class="o">+</span> <span class="s1">&#39;.png&#39;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">DPI</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;y true&#39;</span><span class="p">:</span> <span class="n">y_true</span><span class="p">,</span>
+                       <span class="s1">&#39;average predicted values&#39;</span><span class="p">:</span> <span class="n">means</span><span class="p">,</span>
+                       <span class="s1">&#39;error bar values&#39;</span><span class="p">:</span> <span class="n">standard_errors</span><span class="p">})</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">savepath</span> <span class="o">+</span> <span class="s1">&#39;.csv&#39;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="plot_metric_vs_group"><a class="viewcode-back" href="../12_plot_helper.html#plot_helper.plot_metric_vs_group">[docs]</a><span class="k">def</span> <span class="nf">plot_metric_vs_group</span><span class="p">(</span><span class="n">metric</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="n">stats</span><span class="p">,</span> <span class="n">avg_stats</span><span class="p">,</span> <span class="n">savepath</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -1220,15 +1261,16 @@
             <span class="n">preds</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
             <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">estimators_</span><span class="p">:</span>
                 <span class="n">preds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X_aslist</span><span class="p">[</span><span class="n">x</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">))[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="n">e_down</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="p">(</span><span class="mi">100</span> <span class="o">-</span> <span class="n">percentile</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.</span><span class="p">)</span>
-        <span class="n">e_up</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="mi">100</span> <span class="o">-</span> <span class="p">(</span><span class="mi">100</span> <span class="o">-</span> <span class="n">percentile</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">e_up</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="n">e_up</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="mi">10</span>
-        <span class="k">if</span> <span class="n">e_down</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="n">e_down</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="mi">10</span>
-        <span class="n">err_down</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">e_down</span><span class="p">)</span>
-        <span class="n">err_up</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">e_up</span><span class="p">)</span>
+            <span class="n">e_down</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="p">(</span><span class="mi">100</span> <span class="o">-</span> <span class="n">percentile</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.</span><span class="p">)</span>
+            <span class="n">e_up</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="mi">100</span> <span class="o">-</span> <span class="p">(</span><span class="mi">100</span> <span class="o">-</span> <span class="n">percentile</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">e_up</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+                <span class="n">e_up</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="mi">10</span>
+            <span class="k">if</span> <span class="n">e_down</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+                <span class="n">e_down</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="mi">10</span>
+            <span class="n">err_down</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">e_down</span><span class="p">)</span>
+            <span class="n">err_up</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">e_up</span><span class="p">)</span>
 
     <span class="k">elif</span> <span class="n">model</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="o">==</span><span class="s1">&#39;GaussianProcessRegressor&#39;</span><span class="p">:</span>
         <span class="n">preds</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">return_std</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="c1"># Get the stdev model error from the predictions of GPR</span>
@@ -1305,81 +1347,85 @@
             <span class="n">maxy</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">density_residuals</span><span class="p">(</span><span class="n">x</span><span class="p">)),</span> <span class="nb">max</span><span class="p">(</span><span class="n">mlab</span><span class="o">.</span><span class="n">normpdf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)),</span> <span class="nb">max</span><span class="p">(</span><span class="n">density_errors</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
             <span class="n">miny</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">density_residuals</span><span class="p">(</span><span class="n">x</span><span class="p">)),</span> <span class="nb">min</span><span class="p">(</span><span class="n">mlab</span><span class="o">.</span><span class="n">normpdf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)),</span> <span class="nb">min</span><span class="p">(</span><span class="n">density_errors</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
             <span class="c1"># Save data to csv file</span>
-            <span class="n">data_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;x values&quot;</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span> <span class="s2">&quot;analytical gaussian&quot;</span><span class="p">:</span> <span class="n">mlab</span><span class="o">.</span><span class="n">normpdf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">),</span>
-                         <span class="s2">&quot;model residuals&quot;</span><span class="p">:</span> <span class="n">density_residuals</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="s2">&quot;model errors&quot;</span><span class="p">:</span> <span class="n">density_errors</span><span class="p">(</span><span class="n">x</span><span class="p">)}</span>
+            <span class="n">data_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Plotted x values&quot;</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span> <span class="s2">&quot;error_bars_up&quot;</span><span class="p">:</span> <span class="n">err_up</span><span class="p">,</span> <span class="s2">&quot;error_bars_down&quot;</span><span class="p">:</span> <span class="n">err_down</span><span class="p">,</span> <span class="s2">&quot;error_avg&quot;</span><span class="p">:</span> <span class="n">err_avg</span><span class="p">,</span>
+                         <span class="s2">&quot;analytical gaussian (plotted y blue values)&quot;</span><span class="p">:</span> <span class="n">mlab</span><span class="o">.</span><span class="n">normpdf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">),</span>
+                         <span class="s2">&quot;model residuals (plotted y green values)&quot;</span><span class="p">:</span> <span class="n">density_residuals</span><span class="p">(</span><span class="n">x</span><span class="p">),</span>
+                         <span class="s2">&quot;model errors (ytrue-ypred)/err_avg (plotted y purple values)&quot;</span><span class="p">:</span> <span class="n">density_errors</span><span class="p">(</span><span class="n">x</span><span class="p">)}</span>
             <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data_dict</span><span class="p">)</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">savepath</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.png&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;.csv&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Save data to csv file</span>
             <span class="n">data_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;x values&quot;</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span> <span class="s2">&quot;analytical gaussian&quot;</span><span class="p">:</span> <span class="n">mlab</span><span class="o">.</span><span class="n">normpdf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">),</span>
                          <span class="s2">&quot;model residuals&quot;</span><span class="p">:</span> <span class="n">density_residuals</span><span class="p">(</span><span class="n">x</span><span class="p">)}</span>
             <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data_dict</span><span class="p">)</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">savepath</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.png&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;.csv&#39;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">avg_stats</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">has_model_errors</span><span class="p">:</span>
-            <span class="c1"># Need to loop over all splits in directory and import saved model errors from csv files</span>
-            <span class="n">dirs</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">path</span><span class="p">)]</span>
-            <span class="c1"># Remove base directory from list</span>
-            <span class="k">del</span> <span class="n">dirs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="c1"># Should only use average errors of test data since predictions are made using test data</span>
-            <span class="n">test_err_dfs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-            <span class="k">for</span> <span class="nb">dir</span> <span class="ow">in</span> <span class="n">dirs</span><span class="p">:</span>
-                <span class="n">test_err_dfs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">dir</span><span class="p">,</span> <span class="s1">&#39;test_normalized_error.csv&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;model errors&#39;</span><span class="p">]))</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        if avg_stats:</span>
+<span class="sd">        if has_model_errors:</span>
+<span class="sd">            # Need to loop over all splits in directory and import saved model errors from csv files</span>
+<span class="sd">            dirs = [d[0] for d in os.walk(path)]</span>
+<span class="sd">            # Remove base directory from list</span>
+<span class="sd">            del dirs[0]</span>
+<span class="sd">            # Should only use average errors of test data since predictions are made using test data</span>
+<span class="sd">            test_err_dfs = list()</span>
+<span class="sd">            for dir in dirs:</span>
+<span class="sd">                test_err_dfs.append(np.array(pd.read_csv(os.path.join(dir, &#39;test_normalized_error.csv&#39;)).loc[:, &#39;model errors&#39;]))</span>
 
-            <span class="c1">###############################</span>
-            <span class="c1"># Resize arrays here</span>
-            <span class="c1">#TODO: revisit this to make work and clean up</span>
+<span class="sd">            ###############################</span>
+<span class="sd">            # Resize arrays here</span>
+<span class="sd">            #TODO: revisit this to make work and clean up</span>
 
-            <span class="n">max_length</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="k">for</span> <span class="n">df</span> <span class="ow">in</span> <span class="n">test_err_dfs</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-                <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">max_length</span><span class="p">:</span>
-                    <span class="n">max_length</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="c1">#print(&#39;Max length&#39;)</span>
-            <span class="n">test_err_dfs_</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-            <span class="k">for</span> <span class="n">df</span> <span class="ow">in</span> <span class="n">test_err_dfs</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">max_length</span><span class="p">:</span>
-                    <span class="n">df_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">max_length</span><span class="o">-</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
-                    <span class="n">test_err_dfs_</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df_</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">test_err_dfs_</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
-            <span class="n">test_err_dfs</span> <span class="o">=</span> <span class="n">test_err_dfs_</span>
-            <span class="c1">#for df in test_err_dfs:</span>
-                <span class="c1">#print(df.shape[0])</span>
-            <span class="c1">###############################</span>
-            <span class="c1">#test_err_dfs = trim_array(test_err_dfs)</span>
+<span class="sd">            max_length = 0</span>
+<span class="sd">            for df in test_err_dfs:</span>
+<span class="sd">                print(df.shape[0])</span>
+<span class="sd">                if df.shape[0] &gt; max_length:</span>
+<span class="sd">                    max_length = df.shape[0]</span>
+<span class="sd">            #print(&#39;Max length&#39;)</span>
+<span class="sd">            test_err_dfs_ = list()</span>
+<span class="sd">            for df in test_err_dfs:</span>
+<span class="sd">                if df.shape[0] &lt; max_length:</span>
+<span class="sd">                    df_ = np.append(df, np.repeat(np.nan, max_length-df.shape[0]))</span>
+<span class="sd">                    test_err_dfs_.append(df_)</span>
+<span class="sd">                else:</span>
+<span class="sd">                    test_err_dfs_.append(df)</span>
+<span class="sd">            test_err_dfs = test_err_dfs_</span>
+<span class="sd">            #for df in test_err_dfs:</span>
+<span class="sd">                #print(df.shape[0])</span>
+<span class="sd">            ###############################</span>
+<span class="sd">            #test_err_dfs = trim_array(test_err_dfs)</span>
 
-            <span class="c1"># Need to do per-row averaging due to arrays of different lengths (and NaN values)</span>
-            <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">            def apply_mean(arr):</span>
-<span class="sd">                mean_list = list()</span>
-<span class="sd">                print(&#39;DOING APPLY MEAN&#39;)</span>
-<span class="sd">                length = 0</span>
-<span class="sd">                print(&#39;array list size&#39;)</span>
-<span class="sd">                print(arr.shape)</span>
-<span class="sd">                print(arr[0])</span>
-<span class="sd">                for row in arr:</span>
-<span class="sd">                    print(row)</span>
-<span class="sd">                    if ~np.isnan(row):</span>
-<span class="sd">                        length += 1</span>
-<span class="sd">                    print(&#39;counting length&#39;)</span>
-<span class="sd">                    print(length)</span>
-<span class="sd">                    mean_list.append(sum(row)/length)</span>
-<span class="sd">                return np.array(mean_list)</span>
-<span class="sd">            &quot;&quot;&quot;</span>
+<span class="sd">            # Need to do per-row averaging due to arrays of different lengths (and NaN values)</span>
+<span class="sd">            &quot;&quot;&quot;</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            def apply_mean(arr):</span>
+<span class="s2">                mean_list = list()</span>
+<span class="s2">                print(&#39;DOING APPLY MEAN&#39;)</span>
+<span class="s2">                length = 0</span>
+<span class="s2">                print(&#39;array list size&#39;)</span>
+<span class="s2">                print(arr.shape)</span>
+<span class="s2">                print(arr[0])</span>
+<span class="s2">                for row in arr:</span>
+<span class="s2">                    print(row)</span>
+<span class="s2">                    if ~np.isnan(row):</span>
+<span class="s2">                        length += 1</span>
+<span class="s2">                    print(&#39;counting length&#39;)</span>
+<span class="s2">                    print(length)</span>
+<span class="s2">                    mean_list.append(sum(row)/length)</span>
+<span class="s2">                return np.array(mean_list)</span>
+<span class="s2">            &quot;&quot;&quot;&quot;&quot;&quot;</span>
 
-            <span class="c1">#for df in test_err_dfs:</span>
-            <span class="c1">#mean_arr = apply_mean(test_err_dfs)</span>
-            <span class="c1">#print(&#39;MEAN ARRAY&#39;)</span>
-            <span class="c1">#print(mean_arr)</span>
-            <span class="c1">#print(mean_arr.shape)</span>
-            <span class="c1">#print(test_err_dfs)</span>
-            <span class="n">avg_test_model_errors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">test_err_dfs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-            <span class="c1">#print(avg_test_model_errors.shape)</span>
-            <span class="c1">#exit()</span>
-            <span class="n">x_reduced</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">mu</span> <span class="o">-</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">mu</span> <span class="o">+</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">avg_test_model_errors</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="c1">#density_errors_average = gaussian_kde(avg_test_model_errors)</span>
-            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_reduced</span><span class="p">,</span> <span class="n">avg_test_model_errors</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;purple&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Model Errors&quot;</span><span class="p">)</span>
-            <span class="c1">#print(x_reduced)</span>
-            <span class="c1">#print(avg_test_model_errors)</span>
+<span class="s2">            #for df in test_err_dfs:</span>
+<span class="s2">            #mean_arr = apply_mean(test_err_dfs)</span>
+<span class="s2">            #print(&#39;MEAN ARRAY&#39;)</span>
+<span class="s2">            #print(mean_arr)</span>
+<span class="s2">            #print(mean_arr.shape)</span>
+<span class="s2">            #print(test_err_dfs)</span>
+<span class="s2">            avg_test_model_errors = np.nanmean(test_err_dfs, axis=0)</span>
+<span class="s2">            #print(avg_test_model_errors.shape)</span>
+<span class="s2">            #exit()</span>
+<span class="s2">            x_reduced = np.linspace(mu - 5 * sigma, mu + 5 * sigma, avg_test_model_errors.shape[0])</span>
+<span class="s2">            #density_errors_average = gaussian_kde(avg_test_model_errors)</span>
+<span class="s2">            ax.plot(x_reduced, avg_test_model_errors, linewidth=4, color=&#39;purple&#39;, label=&quot;Model Errors&quot;)</span>
+<span class="s2">            #print(x_reduced)</span>
+<span class="s2">            #print(avg_test_model_errors)</span>
+<span class="s2">    &quot;&quot;&quot;</span>
 
     <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$\mathrm</span><span class="si">{x}</span><span class="s2">/\mathit{\sigma}$&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
@@ -1448,27 +1494,21 @@
     <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Fraction&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">X_residuals</span><span class="p">,</span> <span class="n">n_residuals</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Model Residuals&quot;</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">X_analytic</span><span class="p">,</span> <span class="n">n_analytic</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Analytical Gaussian&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">avg_stats</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">has_model_errors</span><span class="p">:</span>
             <span class="n">err_avg</span> <span class="o">=</span> <span class="p">[(</span><span class="nb">abs</span><span class="p">(</span><span class="n">e1</span><span class="p">)</span><span class="o">+</span><span class="nb">abs</span><span class="p">(</span><span class="n">e2</span><span class="p">))</span><span class="o">/</span><span class="mi">2</span> <span class="k">for</span> <span class="n">e1</span><span class="p">,</span> <span class="n">e2</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">err_up</span><span class="p">,</span> <span class="n">err_down</span><span class="p">)]</span>
             <span class="n">model_errors</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">((</span><span class="n">y_true_</span><span class="o">-</span><span class="n">y_pred_</span><span class="p">)</span><span class="o">/</span><span class="n">err_avg</span><span class="p">)</span>
-            <span class="c1">#print(&#39;TRUE&#39;)</span>
-            <span class="c1">#print(y_true_)</span>
-            <span class="c1">#print(&#39;PRED&#39;)</span>
-            <span class="c1">#print(y_pred_)</span>
-            <span class="c1">#print(&#39;RESIDUAL&#39;)</span>
-            <span class="c1">#print(y_pred_-y_true_)</span>
-            <span class="c1">#print(&#39;ERRORS FROM MODEL&#39;)</span>
-            <span class="c1">#print(err_avg)</span>
-            <span class="c1">#print(&#39;ERROR TO PLOT&#39;)</span>
-            <span class="c1">#print(model_errors)</span>
             <span class="n">n_errors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">model_errors</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">model_errors</span><span class="p">))</span>
             <span class="n">X_errors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">model_errors</span><span class="p">)</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">X_errors</span><span class="p">,</span> <span class="n">n_errors</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;purple&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Model Errors&quot;</span><span class="p">)</span>
             <span class="c1"># Save data to csv file</span>
-            <span class="n">data_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;x analytical&quot;</span><span class="p">:</span> <span class="n">X_analytic</span><span class="p">,</span> <span class="s2">&quot;analytical gaussian&quot;</span><span class="p">:</span> <span class="n">n_analytic</span><span class="p">,</span> <span class="s2">&quot;x residuals&quot;</span><span class="p">:</span> <span class="n">X_residuals</span><span class="p">,</span>
-                         <span class="s2">&quot;model residuals&quot;</span><span class="p">:</span> <span class="n">n_residuals</span><span class="p">,</span> <span class="s2">&quot;x errors&quot;</span><span class="p">:</span> <span class="n">X_errors</span><span class="p">,</span> <span class="s2">&quot;model errors&quot;</span><span class="p">:</span> <span class="n">err_avg</span><span class="p">}</span>
+            <span class="n">data_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Analytical Gaussian values&quot;</span><span class="p">:</span> <span class="n">analytic_gau</span><span class="p">,</span> <span class="s2">&quot;Analytical Gaussian (sorted, blue data)&quot;</span><span class="p">:</span> <span class="n">X_analytic</span><span class="p">,</span>
+                         <span class="s2">&quot;Model residuals&quot;</span><span class="p">:</span> <span class="n">residuals</span><span class="p">,</span> <span class="s2">&quot;Model Residuals (sorted, green data)&quot;</span><span class="p">:</span> <span class="n">X_residuals</span><span class="p">,</span>
+                         <span class="s2">&quot;error_bars_up&quot;</span><span class="p">:</span> <span class="n">err_up</span><span class="p">,</span> <span class="s2">&quot;error_bars_down&quot;</span><span class="p">:</span> <span class="n">err_down</span><span class="p">,</span>
+                         <span class="s2">&quot;Model error values (r value: (ytrue-ypred)/(model error avg))&quot;</span><span class="p">:</span> <span class="n">model_errors</span><span class="p">,</span>
+                         <span class="s2">&quot;Model errors (sorted, purple values)&quot;</span><span class="p">:</span> <span class="n">X_errors</span><span class="p">}</span>
             <span class="c1"># Save this way to avoid issue with different array sizes in data_dict</span>
             <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">data_dict</span><span class="p">,</span> <span class="n">orient</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">)</span>
             <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
@@ -1481,66 +1521,68 @@
             <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">data_dict</span><span class="p">,</span> <span class="n">orient</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">)</span>
             <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
             <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">savepath</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.png&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;.csv&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">avg_stats</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">has_model_errors</span><span class="p">:</span>
-            <span class="c1"># Need to loop over all splits in directory and import saved model errors from csv files</span>
-            <span class="n">dirs</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">path</span><span class="p">)]</span>
-            <span class="c1"># Remove base directory from list</span>
-            <span class="k">del</span> <span class="n">dirs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="c1"># Should only use average errors of test data since predictions are made using test data</span>
-            <span class="n">test_err_dfs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-            <span class="n">X_errors_dfs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-            <span class="k">for</span> <span class="nb">dir</span> <span class="ow">in</span> <span class="n">dirs</span><span class="p">:</span>
-                <span class="n">test_err_dfs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">dir</span><span class="p">,</span><span class="s1">&#39;test_cumulative_normalized_error.csv&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;model errors&#39;</span><span class="p">]))</span>
-                <span class="n">X_errors_dfs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">dir</span><span class="p">,</span><span class="s1">&#39;test_cumulative_normalized_error.csv&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;x errors&#39;</span><span class="p">]))</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    if avg_stats:</span>
+<span class="sd">        if has_model_errors:</span>
+<span class="sd">            # Need to loop over all splits in directory and import saved model errors from csv files</span>
+<span class="sd">            dirs = [d[0] for d in os.walk(path)]</span>
+<span class="sd">            # Remove base directory from list</span>
+<span class="sd">            del dirs[0]</span>
+<span class="sd">            # Should only use average errors of test data since predictions are made using test data</span>
+<span class="sd">            test_err_dfs = list()</span>
+<span class="sd">            X_errors_dfs = list()</span>
+<span class="sd">            for dir in dirs:</span>
+<span class="sd">                test_err_dfs.append(np.array(pd.read_csv(os.path.join(dir,&#39;test_cumulative_normalized_error.csv&#39;)).loc[:, &#39;model errors&#39;]))</span>
+<span class="sd">                X_errors_dfs.append(np.array(pd.read_csv(os.path.join(dir,&#39;test_cumulative_normalized_error.csv&#39;)).loc[:, &#39;x errors&#39;]))</span>
 
-            <span class="c1">###############################</span>
-            <span class="c1"># Resize arrays here</span>
-            <span class="c1"># TODO: revisit this to make work and clean up</span>
-            <span class="n">max_length</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="k">for</span> <span class="n">df</span> <span class="ow">in</span> <span class="n">test_err_dfs</span><span class="p">:</span>
-                <span class="c1">#print(df.shape[0])</span>
-                <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">max_length</span><span class="p">:</span>
-                    <span class="n">max_length</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="c1">#print(&#39;Max length&#39;)</span>
-            <span class="n">test_err_dfs_</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-            <span class="k">for</span> <span class="n">df</span> <span class="ow">in</span> <span class="n">test_err_dfs</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">max_length</span><span class="p">:</span>
-                    <span class="n">df_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">max_length</span> <span class="o">-</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
-                    <span class="n">test_err_dfs_</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df_</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">test_err_dfs_</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
-            <span class="n">test_err_dfs</span> <span class="o">=</span> <span class="n">test_err_dfs_</span>
-            <span class="c1">#for df in test_err_dfs:</span>
-                <span class="c1">#print(df.shape[0])</span>
-            <span class="c1">###############################</span>
-            <span class="c1">###############################</span>
-            <span class="c1"># Resize arrays here</span>
+<span class="sd">            ###############################</span>
+<span class="sd">            # Resize arrays here</span>
+<span class="sd">            # TODO: revisit this to make work and clean up</span>
+<span class="sd">            max_length = 0</span>
+<span class="sd">            for df in test_err_dfs:</span>
+<span class="sd">                #print(df.shape[0])</span>
+<span class="sd">                if df.shape[0] &gt; max_length:</span>
+<span class="sd">                    max_length = df.shape[0]</span>
+<span class="sd">            #print(&#39;Max length&#39;)</span>
+<span class="sd">            test_err_dfs_ = list()</span>
+<span class="sd">            for df in test_err_dfs:</span>
+<span class="sd">                if df.shape[0] &lt; max_length:</span>
+<span class="sd">                    df_ = np.append(df, np.repeat(np.nan, max_length - df.shape[0]))</span>
+<span class="sd">                    test_err_dfs_.append(df_)</span>
+<span class="sd">                else:</span>
+<span class="sd">                    test_err_dfs_.append(df)</span>
+<span class="sd">            test_err_dfs = test_err_dfs_</span>
+<span class="sd">            #for df in test_err_dfs:</span>
+<span class="sd">                #print(df.shape[0])</span>
+<span class="sd">            ###############################</span>
+<span class="sd">            ###############################</span>
+<span class="sd">            # Resize arrays here</span>
 
-            <span class="c1">#max_length = 0</span>
-            <span class="c1">#for df in X_errors_dfs:</span>
-            <span class="c1">#    print(df.shape[0])</span>
-            <span class="c1">#    if df.shape[0] &gt; max_length:</span>
-            <span class="c1">#        max_length = df.shape[0]</span>
-            <span class="c1">#print(&#39;Max length&#39;)</span>
-            <span class="c1">#X_errors_dfs_ = list()</span>
-            <span class="c1">#for df in X_errors_dfs:</span>
-            <span class="c1">#    if df.shape[0] &lt; max_length:</span>
-            <span class="c1">#        df_ = np.append(df, np.repeat(np.nan, max_length - df.shape[0]))</span>
-            <span class="c1">#        X_errors_dfs_.append(df_)</span>
-            <span class="c1">#    else:</span>
-            <span class="c1">#        X_errors_dfs_.append(df)</span>
-            <span class="c1">#X_errors_dfs = X_errors_dfs_</span>
-            <span class="c1">#for df in X_errors_dfs:</span>
-            <span class="c1">#    print(df.shape[0])</span>
-            <span class="c1">###############################</span>
-            <span class="c1">#test_err_dfs = trim_array(test_err_dfs)</span>
-            <span class="c1">#X_errors_dfs = trim_array(X_errors_dfs)</span>
-            <span class="n">avg_test_model_errors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">test_err_dfs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-            <span class="n">n_errors_avg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">avg_test_model_errors</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">avg_test_model_errors</span><span class="p">))</span>
-            <span class="c1">#avg_X_errors = np.nanmean(X_errors_dfs, axis=0)</span>
-            <span class="n">avg_X_errors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">avg_test_model_errors</span><span class="p">)</span>
-            <span class="n">ax</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">avg_X_errors</span><span class="p">,</span> <span class="n">n_errors_avg</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;purple&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Model Errors&quot;</span><span class="p">)</span>
+<span class="sd">            #max_length = 0</span>
+<span class="sd">            #for df in X_errors_dfs:</span>
+<span class="sd">            #    print(df.shape[0])</span>
+<span class="sd">            #    if df.shape[0] &gt; max_length:</span>
+<span class="sd">            #        max_length = df.shape[0]</span>
+<span class="sd">            #print(&#39;Max length&#39;)</span>
+<span class="sd">            #X_errors_dfs_ = list()</span>
+<span class="sd">            #for df in X_errors_dfs:</span>
+<span class="sd">            #    if df.shape[0] &lt; max_length:</span>
+<span class="sd">            #        df_ = np.append(df, np.repeat(np.nan, max_length - df.shape[0]))</span>
+<span class="sd">            #        X_errors_dfs_.append(df_)</span>
+<span class="sd">            #    else:</span>
+<span class="sd">            #        X_errors_dfs_.append(df)</span>
+<span class="sd">            #X_errors_dfs = X_errors_dfs_</span>
+<span class="sd">            #for df in X_errors_dfs:</span>
+<span class="sd">            #    print(df.shape[0])</span>
+<span class="sd">            ###############################</span>
+<span class="sd">            #test_err_dfs = trim_array(test_err_dfs)</span>
+<span class="sd">            #X_errors_dfs = trim_array(X_errors_dfs)</span>
+<span class="sd">            avg_test_model_errors = np.nanmean(test_err_dfs, axis=0)</span>
+<span class="sd">            n_errors_avg = np.arange(1, len(avg_test_model_errors) + 1) / np.float(len(avg_test_model_errors))</span>
+<span class="sd">            #avg_X_errors = np.nanmean(X_errors_dfs, axis=0)</span>
+<span class="sd">            avg_X_errors = np.sort(avg_test_model_errors)</span>
+<span class="sd">            ax.step(avg_X_errors, n_errors_avg, linewidth=4, color=&#39;purple&#39;, label=&quot;Model Errors&quot;)    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">xlabels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
@@ -1551,12 +1593,12 @@
     <span class="k">if</span> <span class="n">has_model_errors</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">avg_stats</span><span class="p">:</span>
             <span class="n">axin</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">X_errors</span><span class="p">,</span> <span class="n">n_errors</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;purple&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Model Errors&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">avg_stats</span><span class="p">:</span>
-            <span class="n">axin</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">avg_X_errors</span><span class="p">,</span> <span class="n">avg_test_model_errors</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;purple&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Model Errors&quot;</span><span class="p">)</span>
-    <span class="n">axin</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">xlabels</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+        <span class="c1">#if avg_stats:</span>
+        <span class="c1">#    axin.step(avg_X_errors, avg_test_model_errors, linewidth=3, color=&#39;purple&#39;, label=&quot;Model Errors&quot;)</span>
+    <span class="n">axin</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">xlabels</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">)</span>
     <span class="n">axin</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="n">ylabels</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
-    <span class="n">axin</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-    <span class="n">axin</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mf">0.9</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">axin</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+    <span class="n">axin</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="mf">0.9</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
 
     <span class="n">maxx</span> <span class="o">=</span> <span class="mi">5</span>
     <span class="n">minn</span> <span class="o">=</span> <span class="mi">0</span>
@@ -2307,7 +2349,12 @@
     <span class="n">ticklabels_x</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">tick</span><span class="p">)</span> <span class="k">for</span> <span class="n">tick</span> <span class="ow">in</span> <span class="n">tickvals_x</span><span class="p">]</span>
     <span class="n">ticklabels_y</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">tick</span><span class="p">)</span> <span class="k">for</span> <span class="n">tick</span> <span class="ow">in</span> <span class="n">tickvals_y</span><span class="p">]</span>
 
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="n">ticklabels_x</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+    <span class="n">rotation</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1"># Look at length of x tick labels to see if may be possibly crowded. If so, rotate labels</span>
+    <span class="n">tick_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">tickvals_x</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="k">if</span> <span class="n">tick_length</span> <span class="o">&gt;=</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="n">rotation</span> <span class="o">=</span> <span class="mi">45</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="n">ticklabels_x</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="n">rotation</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="n">ticklabels_y</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="_clean_tick_labels"><a class="viewcode-back" href="../12_plot_helper.html#plot_helper._clean_tick_labels">[docs]</a><span class="k">def</span> <span class="nf">_clean_tick_labels</span><span class="p">(</span><span class="n">tickvals</span><span class="p">,</span> <span class="n">delta</span><span class="p">):</span>

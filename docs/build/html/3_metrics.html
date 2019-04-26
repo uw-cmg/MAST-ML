@@ -139,6 +139,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="2_mastml_overview.html">MAST-ML overview slides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="2_running_mastml_nanohub.html">Running MAST-ML on Nanohub</a></li>
 <li class="toctree-l1"><a class="reference internal" href="2_mastml_tutorial.html">MAST-ML tutorial</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_introduction.html">Introduction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_firstrun.html">Your first MAST-ML run</a></li>
@@ -240,89 +241,24 @@
             
   <div class="section" id="module-metrics">
 <span id="metrics"></span><h1>Metrics<a class="headerlink" href="#module-metrics" title="Permalink to this headline">¶</a></h1>
-<p>This module contains constructors for different model score metrics. Most model metrics are obtained from scikit-learn,
-while others are custom variations.</p>
-<p>The full list of score functions in scikit-learn can be found at: <a class="reference external" href="http://scikit-learn.org/stable/modules/model_evaluation.html">http://scikit-learn.org/stable/modules/model_evaluation.html</a></p>
-<dl class="function">
-<dt id="metrics.adjusted_r2_score">
-<code class="descclassname">metrics.</code><code class="descname">adjusted_r2_score</code><span class="sig-paren">(</span><em>y_true</em>, <em>y_pred</em>, <em>n_features=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#adjusted_r2_score"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metrics.adjusted_r2_score" title="Permalink to this definition">¶</a></dt>
-<dd><p>Method that calculates the adjusted R^2 value</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>y_true: (numpy array), array of true y data values
-y_pred: (numpy array), array of predicted y data values
-n_features: (int), number of features used in the fit</dd>
-<dt>Returns:</dt>
-<dd>(float): score of adjusted R^2</dd>
-</dl>
-</dd></dl>
-
+<p>A collection of functions which take a y_correct vector and y_predicted vector
+and give some score of them, such as the accuracy or the root mean squared error</p>
 <dl class="function">
 <dt id="metrics.check_and_fetch_names">
 <code class="descclassname">metrics.</code><code class="descname">check_and_fetch_names</code><span class="sig-paren">(</span><em>metric_names</em>, <em>is_classification</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#check_and_fetch_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metrics.check_and_fetch_names" title="Permalink to this definition">¶</a></dt>
-<dd><p>Method that checks whether chosen metrics to evaluate models are appropriate for user-specified models (e.g.
-classification vs. regression models)</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>metric_names: (numpy array), array of true y data values
-is_classification: (bool), whether the task is a classification task</dd>
-<dt>Returns:</dt>
-<dd>functions (dict): dict containing the appropriate metric objects (e.g. classification vs. regression metrics)</dd>
-</dl>
+<dd><p>Ensures all metrics are appropriate for task</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="metrics.r2_score">
 <code class="descclassname">metrics.</code><code class="descname">r2_score</code><span class="sig-paren">(</span><em>y_true</em>, <em>y_pred</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#r2_score"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metrics.r2_score" title="Permalink to this definition">¶</a></dt>
-<dd><p>Method that calculates the R^2 value</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>y_true: (numpy array), array of true y data values
-y_pred: (numpy array), array of predicted y data values</dd>
-<dt>Returns:</dt>
-<dd>(float): score of R^2</dd>
-</dl>
+<dd><p>Get the R^2 coefficient with intercept</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="metrics.r2_score_noint">
 <code class="descclassname">metrics.</code><code class="descname">r2_score_noint</code><span class="sig-paren">(</span><em>y_true</em>, <em>y_pred</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#r2_score_noint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metrics.r2_score_noint" title="Permalink to this definition">¶</a></dt>
-<dd><p>Method that calculates the R^2 value without fitting the y-intercept</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>y_true: (numpy array), array of true y data values
-y_pred: (numpy array), array of predicted y data values</dd>
-<dt>Returns:</dt>
-<dd>(float): score of R^2 with no y-intercept</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="metrics.rmse_over_stdev">
-<code class="descclassname">metrics.</code><code class="descname">rmse_over_stdev</code><span class="sig-paren">(</span><em>y_true</em>, <em>y_pred</em>, <em>train_y=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#rmse_over_stdev"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metrics.rmse_over_stdev" title="Permalink to this definition">¶</a></dt>
-<dd><p>Method that calculates the root mean squared error (RMSE) of a set of data, divided by the standard deviation of
-the training data set.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>y_true: (numpy array), array of true y data values
-y_pred: (numpy array), array of predicted y data values
-train_y: (numpy array), array of training y data values</dd>
-<dt>Returns:</dt>
-<dd>(float): score of RMSE divided by standard deviation of training data</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="metrics.root_mean_squared_error">
-<code class="descclassname">metrics.</code><code class="descname">root_mean_squared_error</code><span class="sig-paren">(</span><em>y_true</em>, <em>y_pred</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#root_mean_squared_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metrics.root_mean_squared_error" title="Permalink to this definition">¶</a></dt>
-<dd><p>Method that calculates the root mean squared error (RMSE)</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>y_true: (numpy array), array of true y data values
-y_pred: (numpy array), array of predicted y data values</dd>
-<dt>Returns:</dt>
-<dd>(float): score of RMSE</dd>
-</dl>
+<dd><p>Get the R^2 coefficient without intercept</p>
 </dd></dl>
 
 </div>

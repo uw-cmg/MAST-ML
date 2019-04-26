@@ -138,6 +138,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="2_mastml_overview.html">MAST-ML overview slides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="2_running_mastml_nanohub.html">Running MAST-ML on Nanohub</a></li>
 <li class="toctree-l1"><a class="reference internal" href="2_mastml_tutorial.html">MAST-ML tutorial</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_introduction.html">Introduction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_firstrun.html">Your first MAST-ML run</a></li>
@@ -237,8 +238,347 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="feature-generators">
-<h1>Feature Generators<a class="headerlink" href="#feature-generators" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-feature_generators">
+<span id="feature-generators"></span><h1>Feature Generators<a class="headerlink" href="#module-feature_generators" title="Permalink to this headline">¶</a></h1>
+<p>This module contains a collection of classes for generating input features to fit machine learning models to.</p>
+<dl class="class">
+<dt id="feature_generators.Citrine">
+<em class="property">class </em><code class="descclassname">feature_generators.</code><code class="descname">Citrine</code><span class="sig-paren">(</span><em>composition_feature</em>, <em>api_key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/feature_generators.html#Citrine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#feature_generators.Citrine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class that wraps CitrineFeatureGeneration, giving it scikit-learn structure</p>
+<p>Args:</p>
+<blockquote>
+<div><p>composition_feature: (str), string denoting a chemical composition to generate elemental features from</p>
+<p>api_key: (str), string denoting your Citrine API key</p>
+</div></blockquote>
+<p>Methods:</p>
+<blockquote>
+<div><p>fit: pass through, copies input columns as pre-generated features</p>
+<p>Args:</p>
+<blockquote>
+<div>df: (dataframe), input dataframe containing X and y data</div></blockquote>
+<p>transform: generate Citrine features</p>
+<p>Args:</p>
+<blockquote>
+<div>df: (dataframe), input dataframe containing X and y data</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>df: (dataframe), output dataframe containing generated features, original features and y data</div></blockquote>
+</div></blockquote>
+</dd></dl>
+
+<dl class="class">
+<dt id="feature_generators.CitrineFeatureGeneration">
+<em class="property">class </em><code class="descclassname">feature_generators.</code><code class="descname">CitrineFeatureGeneration</code><span class="sig-paren">(</span><em>dataframe</em>, <em>api_key</em>, <em>composition_feature</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/feature_generators.html#CitrineFeatureGeneration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#feature_generators.CitrineFeatureGeneration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to generate new features using Citrine data and dataframe containing material compositions
+Datarame must have a column named “Material compositions”.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><p class="first">dataframe: (dataframe), dataframe containing x and y data and feature names</p>
+<p>api_key: (str), your Citrination API key</p>
+<p class="last">composition_feature: (str), string denoting a chemical composition to generate elemental features from</p>
+</dd>
+</dl>
+<p>Methods:</p>
+<blockquote>
+<div><p>generate_citrine_features : generates Citrine feature set based on compositions in dataframe</p>
+<blockquote>
+<div><p>Args:</p>
+<blockquote>
+<div>None</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>dataframe: (dataframe), dataframe containing citrine generated feature set</div></blockquote>
+</div></blockquote>
+</div></blockquote>
+</dd></dl>
+
+<dl class="class">
+<dt id="feature_generators.ContainsElement">
+<em class="property">class </em><code class="descclassname">feature_generators.</code><code class="descname">ContainsElement</code><span class="sig-paren">(</span><em>composition_feature</em>, <em>element</em>, <em>new_name</em>, <em>all_elements=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/feature_generators.html#ContainsElement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#feature_generators.ContainsElement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to generate new categorical features (i.e. values of 1 or 0) based on whether an input composition contains a
+certain designated element</p>
+<p>Args:</p>
+<blockquote>
+<div><p>composition_feature: (str), string denoting a chemical composition to generate elemental features from</p>
+<p>element: (str), string representing the name of an element</p>
+<p>new_name: (str), the name of the new feature column to be generated</p>
+<p>all_elments: (bool), whether to generate new features for all elements present from all compositions in the dataset.</p>
+</div></blockquote>
+<p>Methods:</p>
+<blockquote>
+<div><p>fit: pass through, needed to maintain scikit-learn class structure</p>
+<p>Args:</p>
+<blockquote>
+<div>df: (dataframe), dataframe of input X and y data</div></blockquote>
+<p>transform: generate new element-specific features</p>
+<p>Args:</p>
+<blockquote>
+<div>df: (dataframe), dataframe of input X and y data</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>df_trans: (dataframe), dataframe with generated element-specific features</div></blockquote>
+</div></blockquote>
+</dd></dl>
+
+<dl class="class">
+<dt id="feature_generators.DataframeUtilities">
+<em class="property">class </em><code class="descclassname">feature_generators.</code><code class="descname">DataframeUtilities</code><a class="reference internal" href="_modules/feature_generators.html#DataframeUtilities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#feature_generators.DataframeUtilities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class of basic utilities for dataframe manipulation, and exchanging between dataframes and numpy arrays</p>
+<p>Args:</p>
+<blockquote>
+<div>None</div></blockquote>
+<p>Methods:</p>
+<blockquote>
+<div><p>merge_dataframe_columns : merge two dataframes by concatenating the column names (duplicate columns omitted)</p>
+<blockquote>
+<div><p>Args:</p>
+<blockquote>
+<div><p>dataframe1: (dataframe), a pandas dataframe object</p>
+<p>dataframe2: (dataframe), a pandas dataframe object</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>dataframe: (dataframe), merged dataframe</div></blockquote>
+</div></blockquote>
+<p>merge_dataframe_rows : merge two dataframes by concatenating the row contents (duplicate rows omitted)</p>
+<blockquote>
+<div><p>Args:</p>
+<blockquote>
+<div><p>dataframe1: (dataframe), a pandas dataframe object</p>
+<p>dataframe2: (dataframe), a pandas dataframe object</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>dataframe: (dataframe), merged dataframe</div></blockquote>
+</div></blockquote>
+<p>get_dataframe_statistics : obtain basic statistics about data contained in the dataframe</p>
+<blockquote>
+<div><p>Args:</p>
+<blockquote>
+<div>dataframe: (dataframe), a pandas dataframe object</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>dataframe_stats: (dataframe), dataframe containing input dataframe statistics</div></blockquote>
+</div></blockquote>
+<p>dataframe_to_array : transform a pandas dataframe to a numpy array</p>
+<blockquote>
+<div><p>Args:</p>
+<blockquote>
+<div>dataframe: (dataframe), a pandas dataframe object</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>array: (numpy array), a numpy array representation of the inputted dataframe</div></blockquote>
+</div></blockquote>
+<p>array_to_dataframe : transform a numpy array to a pandas dataframe</p>
+<blockquote>
+<div><p>Args:</p>
+<blockquote>
+<div>array: (numpy array), a numpy array</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>dataframe: (dataframe), a pandas dataframe representation of the inputted numpy array</div></blockquote>
+</div></blockquote>
+<p>concatenate_arrays : merge two numpy arrays by concatenating along the columns</p>
+<blockquote>
+<div><p>Args:</p>
+<blockquote>
+<div><p>Xarray: (numpy array), a numpy array object</p>
+<p>yarray: (numpy array), a numpy array object</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>array: (numpy array), a numpy array merging the two input arrays</div></blockquote>
+</div></blockquote>
+<p>assign_columns_as_features : adds column names to dataframe based on the x and y feature names</p>
+<blockquote>
+<div><p>Args:</p>
+<blockquote>
+<div><p>dataframe: (dataframe), a pandas dataframe object</p>
+<p>x_features: (list), list containing x feature names</p>
+<p>y_feature: (str), target feature name</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>dataframe: (dataframe), dataframe containing same data as input, with columns labeled with features</div></blockquote>
+</div></blockquote>
+<p>save_all_dataframe_statistics : obtain dataframe statistics and save it to a csv file</p>
+<blockquote>
+<div><p>Args:</p>
+<blockquote>
+<div><p>dataframe: (dataframe), a pandas dataframe object</p>
+<p>data_path: (str), file path to save dataframe statistics to</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>fname: (str), name of file dataframe stats saved to</div></blockquote>
+</div></blockquote>
+</div></blockquote>
+</dd></dl>
+
+<dl class="class">
+<dt id="feature_generators.Magpie">
+<em class="property">class </em><code class="descclassname">feature_generators.</code><code class="descname">Magpie</code><span class="sig-paren">(</span><em>composition_feature</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/feature_generators.html#Magpie"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#feature_generators.Magpie" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class that wraps MagpieFeatureGeneration, giving it scikit-learn structure</p>
+<p>Args:</p>
+<blockquote>
+<div>composition_feature: (str), string denoting a chemical composition to generate elemental features from</div></blockquote>
+<p>Methods:</p>
+<blockquote>
+<div><p>fit: pass through, copies input columns as pre-generated features</p>
+<p>Args:</p>
+<blockquote>
+<div>df: (dataframe), input dataframe containing X and y data</div></blockquote>
+<p>transform: generate Magpie features</p>
+<p>Args:</p>
+<blockquote>
+<div>df: (dataframe), input dataframe containing X and y data</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>df: (dataframe), output dataframe containing generated features, original features and y data</div></blockquote>
+</div></blockquote>
+</dd></dl>
+
+<dl class="class">
+<dt id="feature_generators.MagpieFeatureGeneration">
+<em class="property">class </em><code class="descclassname">feature_generators.</code><code class="descname">MagpieFeatureGeneration</code><span class="sig-paren">(</span><em>dataframe</em>, <em>composition_feature</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/feature_generators.html#MagpieFeatureGeneration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#feature_generators.MagpieFeatureGeneration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to generate new features using Magpie data and dataframe containing material compositions</p>
+<p>Args:</p>
+<blockquote>
+<div><p>dataframe: (pandas dataframe), dataframe containing x and y data and feature names</p>
+<p>composition_feature: (str), string denoting a chemical composition to generate elemental features from</p>
+</div></blockquote>
+<p>Methods:</p>
+<blockquote>
+<div><p>generate_magpie_features : generates magpie feature set based on compositions in dataframe</p>
+<blockquote>
+<div><p>Args:</p>
+<blockquote>
+<div>None</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>dataframe: (dataframe) : dataframe containing magpie feature set</div></blockquote>
+</div></blockquote>
+</div></blockquote>
+</dd></dl>
+
+<dl class="class">
+<dt id="feature_generators.MaterialsProject">
+<em class="property">class </em><code class="descclassname">feature_generators.</code><code class="descname">MaterialsProject</code><span class="sig-paren">(</span><em>composition_feature</em>, <em>api_key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/feature_generators.html#MaterialsProject"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#feature_generators.MaterialsProject" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class that wraps MaterialsProjectFeatureGeneration, giving it scikit-learn structure</p>
+<p>Args:</p>
+<blockquote>
+<div><p>composition_feature: (str), string denoting a chemical composition to generate elemental features from</p>
+<p>mapi_key: (str), string denoting your Materials Project API key</p>
+</div></blockquote>
+<p>Methods:</p>
+<blockquote>
+<div><p>fit: pass through, copies input columns as pre-generated features</p>
+<p>Args:</p>
+<blockquote>
+<div>df: (dataframe), input dataframe containing X and y data</div></blockquote>
+<p>transform: generate Materials Project features</p>
+<p>Args:</p>
+<blockquote>
+<div>df: (dataframe), input dataframe containing X and y data</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>df: (dataframe), output dataframe containing generated features, original features and y data</div></blockquote>
+</div></blockquote>
+</dd></dl>
+
+<dl class="class">
+<dt id="feature_generators.MaterialsProjectFeatureGeneration">
+<em class="property">class </em><code class="descclassname">feature_generators.</code><code class="descname">MaterialsProjectFeatureGeneration</code><span class="sig-paren">(</span><em>dataframe</em>, <em>mapi_key</em>, <em>composition_feature</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/feature_generators.html#MaterialsProjectFeatureGeneration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#feature_generators.MaterialsProjectFeatureGeneration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to generate new features using Materials Project data and dataframe containing material compositions
+Datarame must have a column named “Material compositions”.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><p class="first">dataframe: (dataframe), dataframe containing x and y data and feature names</p>
+<p>mapi_key: (str), string denoting your Materials Project API key</p>
+<p class="last">composition_feature: (str), string denoting a chemical composition to generate elemental features from</p>
+</dd>
+</dl>
+<p>Methods:</p>
+<blockquote>
+<div><p>generate_materialsproject_features : generates materials project feature set based on compositions in dataframe</p>
+<blockquote>
+<div><p>Args:</p>
+<blockquote>
+<div>None</div></blockquote>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>dataframe: (dataframe), dataframe containing materials project feature set</dd>
+</dl>
+</div></blockquote>
+</div></blockquote>
+</dd></dl>
+
+<dl class="class">
+<dt id="feature_generators.NoGenerate">
+<em class="property">class </em><code class="descclassname">feature_generators.</code><code class="descname">NoGenerate</code><a class="reference internal" href="_modules/feature_generators.html#NoGenerate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#feature_generators.NoGenerate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for having a “null” transform where the output is the same as the input. Needed by MAST-ML as a placeholder if
+certain workflow aspects are not performed.</p>
+<p>Args:</p>
+<blockquote>
+<div>None</div></blockquote>
+<p>Methods:</p>
+<blockquote>
+<div><p>fit: does nothing, just returns object instance. Needed to maintain same structure as scikit-learn classes</p>
+<p>Args:</p>
+<blockquote>
+<div>X: (dataframe), dataframe of X features</div></blockquote>
+<p>transform: passes the input back out, in this case the array of X features</p>
+<p>Args:</p>
+<blockquote>
+<div>X: (dataframe), dataframe of X features</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>(dataframe), dataframe of X features</div></blockquote>
+</div></blockquote>
+</dd></dl>
+
+<dl class="class">
+<dt id="feature_generators.PolynomialFeatures">
+<em class="property">class </em><code class="descclassname">feature_generators.</code><code class="descname">PolynomialFeatures</code><span class="sig-paren">(</span><em>features=None</em>, <em>degree=2</em>, <em>interaction_only=False</em>, <em>include_bias=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/feature_generators.html#PolynomialFeatures"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#feature_generators.PolynomialFeatures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to generate polynomial features using scikit-learn’s polynomial features method
+More info at: <a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html">http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html</a></p>
+<p>Args:</p>
+<blockquote>
+<div><p>degree: (int), degree of polynomial features</p>
+<p>interaction_only: (bool), If true, only interaction features are produced: features that are products of at
+most degree distinct input features (so not x[1] ** 2, x[0] * x[2] ** 3, etc.).</p>
+<p>include_bias: (bool),If True (default), then include a bias column, the feature in which all polynomial powers
+are zero (i.e. a column of ones - acts as an intercept term in a linear model).</p>
+</div></blockquote>
+<p>Methods:</p>
+<blockquote>
+<div><p>fit: conducts fit method of polynomial feature generation</p>
+<p>Args:</p>
+<blockquote>
+<div>df: (dataframe), dataframe of input X and y data</div></blockquote>
+<p>transform: generates dataframe containing polynomial features</p>
+<p>Args:</p>
+<blockquote>
+<div>df: (dataframe), dataframe of input X and y data</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>(dataframe), dataframe containing new polynomial features, plus original features present</div></blockquote>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="feature_generators.clean_dataframe">
+<code class="descclassname">feature_generators.</code><code class="descname">clean_dataframe</code><span class="sig-paren">(</span><em>df</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/feature_generators.html#clean_dataframe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#feature_generators.clean_dataframe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to clean dataframes after feature generation has occurred, to remove columns that have a single missing or
+NaN value, or remove a row that is fully empty</p>
+<p>Args:</p>
+<blockquote>
+<div>df: (dataframe), a post feature generation dataframe that needs cleaning</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>df: (dataframe), the cleaned dataframe</div></blockquote>
+</dd></dl>
+
 </div>
 
 

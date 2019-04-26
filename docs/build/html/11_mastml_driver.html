@@ -139,6 +139,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="2_mastml_overview.html">MAST-ML overview slides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="2_running_mastml_nanohub.html">Running MAST-ML on Nanohub</a></li>
 <li class="toctree-l1"><a class="reference internal" href="2_mastml_tutorial.html">MAST-ML tutorial</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_introduction.html">Introduction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_firstrun.html">Your first MAST-ML run</a></li>
@@ -238,8 +239,89 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="mast-ml-driver">
-<h1>MAST-ML Driver<a class="headerlink" href="#mast-ml-driver" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-mastml_driver">
+<span id="mast-ml-driver"></span><h1>MAST-ML Driver<a class="headerlink" href="#module-mastml_driver" title="Permalink to this headline">¶</a></h1>
+<p>Main MAST-ML module responsible for executing the workflow of a MAST-ML run</p>
+<dl class="function">
+<dt id="mastml_driver._instantiate">
+<code class="descclassname">mastml_driver.</code><code class="descname">_instantiate</code><span class="sig-paren">(</span><em>kwargs_dict</em>, <em>name_to_constructor</em>, <em>category</em>, <em>X_grouped=None</em>, <em>X_indices=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml_driver.html#_instantiate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml_driver._instantiate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uses name_to_constructor to instantiate every item in kwargs_dict and return
+the list of instantiations</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mastml_driver._save_all_runs">
+<code class="descclassname">mastml_driver.</code><code class="descname">_save_all_runs</code><span class="sig-paren">(</span><em>runs</em>, <em>outdir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml_driver.html#_save_all_runs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml_driver._save_all_runs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produces a giant html table of all stats for all runs</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mastml_driver.check_paths">
+<code class="descclassname">mastml_driver.</code><code class="descname">check_paths</code><span class="sig-paren">(</span><em>conf_path</em>, <em>data_path</em>, <em>outdir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml_driver.html#check_paths"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml_driver.check_paths" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method is responsible for error handling of the user-specified paths for the configuration file, data file,
+and output directory.</p>
+<p>Args:</p>
+<blockquote>
+<div><p>conf_path: (str), the path supplied by the user which contains the input configuration file</p>
+<p>data_path: (str), the path supplied by the user which contains the input data file (as CSV or XLSX)</p>
+<p>outdir: (str), the path supplied by the user which determines where the output results are saved to</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div><p>conf_path: (str), the path supplied by the user which contains the input configuration file</p>
+<p>data_path: (str), the path supplied by the user which contains the input data file (as CSV or XLSX)</p>
+<p>outdir: (str), the path supplied by the user which determines where the output results are saved to</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="mastml_driver.get_commandline_args">
+<code class="descclassname">mastml_driver.</code><code class="descname">get_commandline_args</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml_driver.html#get_commandline_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml_driver.get_commandline_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method is responsible for parsing and checking the command-line execution of MAST-ML inputted by the user.</p>
+<p>Args:</p>
+<blockquote>
+<div>None</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div><p>(str), the path supplied by the user which contains the input configuration file</p>
+<p>(str), the path supplied by the user which contains the input data file (as CSV or XLSX)</p>
+<p>(str), the path supplied by the user which determines where the output results are saved to</p>
+<p>verbosity: (int), the verbosity level of the MAST-ML log, which determines the amount of information writtent to the log.</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="mastml_driver.main">
+<code class="descclassname">mastml_driver.</code><code class="descname">main</code><span class="sig-paren">(</span><em>conf_path</em>, <em>data_path</em>, <em>outdir</em>, <em>verbosity=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml_driver.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml_driver.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method is responsible for setting up the initial stage of the MAST-ML run, such as parsing input directories to
+designate where data will be imported and results saved to, as well as creation of the MAST-ML run log.</p>
+<p>Args:</p>
+<blockquote>
+<div><p>conf_path: (str), the path supplied by the user which contains the input configuration file</p>
+<p>data_path: (str), the path supplied by the user which contains the input data file (as CSV or XLSX)</p>
+<p>outdir: (str), the path supplied by the user which determines where the output results are saved to</p>
+<p>verbosity: (int), the verbosity level of the MAST-ML log, which determines the amount of information written to the log.</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>outdir: (str), the path supplied by the user which determines where the output results are saved to (needed by other calls in MAST-ML)</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="mastml_driver.mastml_run">
+<code class="descclassname">mastml_driver.</code><code class="descname">mastml_run</code><span class="sig-paren">(</span><em>conf_path</em>, <em>data_path</em>, <em>outdir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml_driver.html#mastml_run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml_driver.mastml_run" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method is responsible for conducting the main MAST-ML run workflow</p>
+<p>Args:</p>
+<blockquote>
+<div><p>conf_path: (str), the path supplied by the user which contains the input configuration file</p>
+<p>data_path: (str), the path supplied by the user which contains the input data file (as CSV or XLSX)</p>
+<p>outdir: (str), the path supplied by the user which determines where the output results are saved to</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>None</div></blockquote>
+</dd></dl>
+
 </div>
 
 

@@ -139,6 +139,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="2_mastml_overview.html">MAST-ML overview slides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="2_running_mastml_nanohub.html">Running MAST-ML on Nanohub</a></li>
 <li class="toctree-l1"><a class="reference internal" href="2_mastml_tutorial.html">MAST-ML tutorial</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_introduction.html">Introduction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_firstrun.html">Your first MAST-ML run</a></li>
@@ -240,27 +241,11 @@
             
   <div class="section" id="module-data_loader">
 <span id="data-loader"></span><h1>Data loader<a class="headerlink" href="#module-data_loader" title="Permalink to this headline">¶</a></h1>
-<p>The data_loader module is used for importing data from user-specified csv or xlsx file to MAST-ML</p>
+<p>Module for loading checking the input data file</p>
 <dl class="function">
 <dt id="data_loader.load_data">
 <code class="descclassname">data_loader.</code><code class="descname">load_data</code><span class="sig-paren">(</span><em>file_path</em>, <em>input_features=None</em>, <em>target_feature=None</em>, <em>grouping_feature=None</em>, <em>feature_blacklist=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_loader.html#load_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data_loader.load_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Method that accepts the filepath of an input data file and returns a full dataframe and parsed X and y dataframes</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><p class="first">file_path: (str), path to data file</p>
-<p>input_features: (str), column names to be used as input features (X data). If ‘Auto’, then takes all columns that are not
-listed in target_feature or feature_blacklist fields.</p>
-<p>target_feature: (str), column name for data to be fit to (y data).</p>
-<p class="last">grouping_feature: (str), column names used to group data in user-defined grouping scheme</p>
-</dd>
-<dt>Returns:</dt>
-<dd><p class="first">df: (dataframe), full dataframe of the input X data (y data is removed)</p>
-<p>X: (dataframe), dataframe containing only the X data from the data file</p>
-<p>X_noinput: (dataframe), dataframe containing the columns of the original X data that are not used as input features</p>
-<p>X_grouped: (dataframe), dataframe containing the columns of hte original X data that correspond to a data grouping scheme</p>
-<p class="last">y: (dataframe), dataframe containing only the y data from the data file</p>
-</dd>
-</dl>
+<dd><p>Loads in csv from filename and ensures required columns are present. Returns dataframe.</p>
 </dd></dl>
 
 </div>

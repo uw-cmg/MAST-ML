@@ -137,6 +137,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../2_mastml_overview.html">MAST-ML overview slides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../2_running_mastml_nanohub.html">Running MAST-ML on Nanohub</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../2_mastml_tutorial.html">MAST-ML tutorial</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_introduction.html">Introduction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_firstrun.html">Your first MAST-ML run</a></li>
@@ -429,10 +430,9 @@
     <span class="n">make_long_name_short_name_pairs</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">check_and_boolify_plot_settings</span><span class="p">():</span>
-        <span class="n">default_false</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;feature_vs_target&#39;</span><span class="p">]</span>
+        <span class="n">default_false</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;feature_vs_target&#39;</span><span class="p">,</span> <span class="s1">&#39;error_plots&#39;</span><span class="p">,</span> <span class="s1">&#39;average_error_plots&#39;</span><span class="p">]</span>
         <span class="n">default_true</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;target_histogram&#39;</span><span class="p">,</span> <span class="s1">&#39;train_test_plots&#39;</span><span class="p">,</span> <span class="s1">&#39;predicted_vs_true&#39;</span><span class="p">,</span>
-                         <span class="s1">&#39;predicted_vs_true_bars&#39;</span><span class="p">,</span> <span class="s1">&#39;best_worst_per_point&#39;</span><span class="p">,</span> <span class="s1">&#39;average_normalized_errors&#39;</span><span class="p">,</span>
-                         <span class="s1">&#39;average_cumulative_normalized_errors&#39;</span><span class="p">]</span>
+                         <span class="s1">&#39;predicted_vs_true_bars&#39;</span><span class="p">,</span> <span class="s1">&#39;best_worst_per_point&#39;</span><span class="p">]</span>
         <span class="n">all_settings</span> <span class="o">=</span> <span class="n">default_false</span> <span class="o">+</span> <span class="n">default_true</span>
         <span class="k">if</span> <span class="s1">&#39;PlotSettings&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">conf</span><span class="p">:</span>
             <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;PlotSettings&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>

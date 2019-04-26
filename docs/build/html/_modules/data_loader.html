@@ -137,6 +137,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../2_mastml_overview.html">MAST-ML overview slides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../2_running_mastml_nanohub.html">Running MAST-ML on Nanohub</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../2_mastml_tutorial.html">MAST-ML tutorial</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_introduction.html">Introduction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_firstrun.html">Your first MAST-ML run</a></li>
@@ -234,7 +235,7 @@
             
   <h1>Source code for data_loader</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">The data_loader module is used for importing data from user-specified csv or xlsx file to MAST-ML</span>
+<span class="sd">Module for loading checking the input data file</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
@@ -242,31 +243,7 @@
 <span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;mastml&#39;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="load_data"><a class="viewcode-back" href="../6_data_loader.html#data_loader.load_data">[docs]</a><span class="k">def</span> <span class="nf">load_data</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">input_features</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">target_feature</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">grouping_feature</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">feature_blacklist</span><span class="o">=</span><span class="nb">list</span><span class="p">()):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Method that accepts the filepath of an input data file and returns a full dataframe and parsed X and y dataframes</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        file_path: (str), path to data file</span>
-
-<span class="sd">        input_features: (str), column names to be used as input features (X data). If &#39;Auto&#39;, then takes all columns that are not</span>
-<span class="sd">        listed in target_feature or feature_blacklist fields.</span>
-
-<span class="sd">        target_feature: (str), column name for data to be fit to (y data).</span>
-
-<span class="sd">        grouping_feature: (str), column names used to group data in user-defined grouping scheme</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        df: (dataframe), full dataframe of the input X data (y data is removed)</span>
-
-<span class="sd">        X: (dataframe), dataframe containing only the X data from the data file</span>
-
-<span class="sd">        X_noinput: (dataframe), dataframe containing the columns of the original X data that are not used as input features</span>
-
-<span class="sd">        X_grouped: (dataframe), dataframe containing the columns of hte original X data that correspond to a data grouping scheme</span>
-
-<span class="sd">        y: (dataframe), dataframe containing only the y data from the data file</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="s2">&quot; Loads in csv from filename and ensures required columns are present. Returns dataframe. &quot;</span>
 
     <span class="c1"># Load data</span>
     <span class="k">try</span><span class="p">:</span>

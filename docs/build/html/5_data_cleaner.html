@@ -139,6 +139,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="2_mastml_overview.html">MAST-ML overview slides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="2_running_mastml_nanohub.html">Running MAST-ML on Nanohub</a></li>
 <li class="toctree-l1"><a class="reference internal" href="2_mastml_tutorial.html">MAST-ML tutorial</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_introduction.html">Introduction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_firstrun.html">Your first MAST-ML run</a></li>
@@ -240,68 +241,7 @@
             
   <div class="section" id="module-data_cleaner">
 <span id="data-cleaner"></span><h1>Data cleaner<a class="headerlink" href="#module-data_cleaner" title="Permalink to this headline">¶</a></h1>
-<p>The data_cleaner module is used to clean missing or NaN values from pandas dataframes (e.g. removing NaN, imputation, etc.)</p>
-<dl class="class">
-<dt id="data_cleaner.PPCA">
-<em class="property">class </em><code class="descclassname">data_cleaner.</code><code class="descname">PPCA</code><a class="reference internal" href="_modules/data_cleaner.html#PPCA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data_cleaner.PPCA" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class to perform probabilistic principal component analysis (PPCA) to fill in missing data.</p>
-<p>This PPCA routine was taken directly from <a class="reference external" href="https://github.com/allentran/pca-magic">https://github.com/allentran/pca-magic</a>. Due to import errors, for ease of use
-we have elected to copy the module here. This github repo was last accessed on 8/27/18. The code comprising the PPCA
-class below was not developed by and is not owned by the University of Wisconsin-Madison MAST-ML development team.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="data_cleaner.columns_with_strings">
-<code class="descclassname">data_cleaner.</code><code class="descname">columns_with_strings</code><span class="sig-paren">(</span><em>df</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_cleaner.html#columns_with_strings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data_cleaner.columns_with_strings" title="Permalink to this definition">¶</a></dt>
-<dd><p>Method that ascertains which columns in data contain string entries</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>df: (dataframe), pandas dataframe containing data</dd>
-<dt>Returns:</dt>
-<dd>str_columns: (list), list containing indices of columns containing strings</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="data_cleaner.imputation">
-<code class="descclassname">data_cleaner.</code><code class="descname">imputation</code><span class="sig-paren">(</span><em>df</em>, <em>strategy</em>, <em>cols_to_leave_out=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_cleaner.html#imputation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data_cleaner.imputation" title="Permalink to this definition">¶</a></dt>
-<dd><p>Method that imputes values to the missing places based on the median, mean, etc. of the data in the column</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>df: (dataframe), pandas dataframe containing data
-strategy: (str), method of imputation, e.g. median, mean, etc.
-cols_to_leave_out: (list), list of column indices to not include in imputation</dd>
-<dt>Returns:</dt>
-<dd>df: (dataframe): dataframe with NaN or missing values resolved via imputation</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="data_cleaner.ppca">
-<code class="descclassname">data_cleaner.</code><code class="descname">ppca</code><span class="sig-paren">(</span><em>df</em>, <em>cols_to_leave_out=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_cleaner.html#ppca"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data_cleaner.ppca" title="Permalink to this definition">¶</a></dt>
-<dd><p>Method that performs a recursive PCA routine to use PCA of known columns to fill in missing values in particular column</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>df: (dataframe), pandas dataframe containing data
-cols_to_leave_out: (list), list of column indices to not include in imputation</dd>
-<dt>Returns:</dt>
-<dd>df: (dataframe): dataframe with NaN or missing values resolved via imputation</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="data_cleaner.remove">
-<code class="descclassname">data_cleaner.</code><code class="descname">remove</code><span class="sig-paren">(</span><em>df</em>, <em>axis</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_cleaner.html#remove"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data_cleaner.remove" title="Permalink to this definition">¶</a></dt>
-<dd><p>Method that removes a full column or row of data values if one column or row contains NaN or is blank</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>df: (dataframe), pandas dataframe containing data
-axis: (int), whether to remove rows (axis=0) or columns (axis=1)</dd>
-<dt>Returns:</dt>
-<dd>df: (dataframe): dataframe with NaN or missing values removed</dd>
-</dl>
-</dd></dl>
-
+<p>Module for cleaning dataframes (e.g. removing NaN, imputation, etc.)</p>
 </div>
 
 

@@ -19,11 +19,11 @@
 #
 import os
 import sys
-#sys.path.insert(0, '../../mastml')
-sys.path.insert(0, '/Users/ryanjacobs/PycharmProjects/MASTML_2018-07-18')
-sys.path.insert(0, '/Users/ryanjacobs/PycharmProjects/MASTML_2018-07-18/mastml')
-sys.path.insert(0, '/Users/ryanjacobs/PycharmProjects/MASTML_2018-07-18/mastml/legos')
-
+sys.path.insert(0, os.path.abspath('../../'))
+sys.path.insert(0, os.path.abspath('../../mastml'))
+sys.path.insert(0, os.path.abspath('../../mastml/legos'))
+#sys.path.insert(0, '/Users/ryanjacobs/PycharmProjects/MAST-ML/mastml/')
+#sys.path.insert(0, '/Users/ryanjacobs/PycharmProjects/MAST-ML/mastml/legos')
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.

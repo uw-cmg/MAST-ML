@@ -137,6 +137,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../2_mastml_overview.html">MAST-ML overview slides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../2_running_mastml_nanohub.html">Running MAST-ML on Nanohub</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../2_mastml_tutorial.html">MAST-ML tutorial</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_introduction.html">Introduction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_firstrun.html">Your first MAST-ML run</a></li>
@@ -353,30 +354,48 @@
                     <span class="s2">&quot;containing NaN will result in removal of the feature and any target data entries containing NaN will &quot;</span>
                     <span class="s2">&quot;result in removal of that target data point.&quot;</span><span class="p">)</span>
         <span class="n">dc</span><span class="p">[</span><span class="s1">&#39;cleaning_method&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;remove&#39;</span>
-    <span class="k">if</span> <span class="n">dc</span><span class="p">[</span><span class="s1">&#39;cleaning_method&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;remove&#39;</span><span class="p">:</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="n">data_cleaner</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">X</span> <span class="o">=</span> <span class="n">data_cleaner</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">X_noinput</span> <span class="o">=</span> <span class="n">data_cleaner</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">X_noinput</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">X_grouped</span> <span class="o">=</span> <span class="n">data_cleaner</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">X_grouped</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="c1"># TODO: have method to first remove rows of missing target data, then do columns for features</span>
-        <span class="c1">#y = data_cleaner.remove(y, axis=0)</span>
-    <span class="k">elif</span> <span class="n">dc</span><span class="p">[</span><span class="s1">&#39;cleaning_method&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;imputation&#39;</span><span class="p">:</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;You have selected data cleaning with Imputation. Note that imputation will not resolve missing target data. &quot;</span>
-                    <span class="s2">&quot;It is recommended to remove missing target data&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="s1">&#39;imputation_strategy&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dc</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;You have chosen to perform data imputation but have not selected an imputation strategy. By default, &quot;</span>
-                        <span class="s2">&quot;the mean will be used as the imputation strategy&quot;</span><span class="p">)</span>
-            <span class="n">dc</span><span class="p">[</span><span class="s1">&#39;imputation_strategy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;mean&#39;</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="n">data_cleaner</span><span class="o">.</span><span class="n">imputation</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">dc</span><span class="p">[</span><span class="s1">&#39;imputation_strategy&#39;</span><span class="p">],</span> <span class="n">X_noinput</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
-        <span class="n">X</span> <span class="o">=</span> <span class="n">data_cleaner</span><span class="o">.</span><span class="n">imputation</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">dc</span><span class="p">[</span><span class="s1">&#39;imputation_strategy&#39;</span><span class="p">])</span>
-    <span class="k">elif</span> <span class="n">dc</span><span class="p">[</span><span class="s1">&#39;cleaning_method&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;ppca&#39;</span><span class="p">:</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;You have selected data cleaning with PPCA. Note that PPCA will not work to estimate missing target values, &quot;</span>
-                    <span class="s2">&quot;at least a 2D matrix is needed. It is recommended you remove missing target data&quot;</span><span class="p">)</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="n">data_cleaner</span><span class="o">.</span><span class="n">ppca</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">X_noinput</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
-        <span class="n">X</span> <span class="o">=</span> <span class="n">data_cleaner</span><span class="o">.</span><span class="n">ppca</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># There are no X feature vectors specified, so can&#39;t clean data</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;There are no X feature vectors imported from the data file. Therefore, data cleaning cannot be performed.&quot;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;You have specified an invalid data cleaning method. Choose from: remove, imputation, or ppca&quot;</span><span class="p">)</span>
-        <span class="n">exit</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">dc</span><span class="p">[</span><span class="s1">&#39;cleaning_method&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;remove&#39;</span><span class="p">:</span>
+            <span class="n">df</span><span class="p">,</span> <span class="n">nan_indices</span> <span class="o">=</span> <span class="n">data_cleaner</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">X</span><span class="p">,</span> <span class="n">nan_indices</span> <span class="o">=</span> <span class="n">data_cleaner</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">X_noinput</span><span class="p">,</span> <span class="n">nan_indices</span> <span class="o">=</span> <span class="n">data_cleaner</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">X_noinput</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">X_grouped</span><span class="p">,</span> <span class="n">nan_indices</span> <span class="o">=</span> <span class="n">data_cleaner</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">X_grouped</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">dc</span><span class="p">[</span><span class="s1">&#39;cleaning_method&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;imputation&#39;</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;You have selected data cleaning with Imputation. Note that imputation will not resolve missing target data. &quot;</span>
+                        <span class="s2">&quot;It is recommended to remove missing target data&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s1">&#39;imputation_strategy&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dc</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;You have chosen to perform data imputation but have not selected an imputation strategy. By default, &quot;</span>
+                            <span class="s2">&quot;the mean will be used as the imputation strategy&quot;</span><span class="p">)</span>
+                <span class="n">dc</span><span class="p">[</span><span class="s1">&#39;imputation_strategy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;mean&#39;</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">data_cleaner</span><span class="o">.</span><span class="n">imputation</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">dc</span><span class="p">[</span><span class="s1">&#39;imputation_strategy&#39;</span><span class="p">],</span> <span class="n">X_noinput</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">data_cleaner</span><span class="o">.</span><span class="n">imputation</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">dc</span><span class="p">[</span><span class="s1">&#39;imputation_strategy&#39;</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">dc</span><span class="p">[</span><span class="s1">&#39;cleaning_method&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;ppca&#39;</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;You have selected data cleaning with PPCA. Note that PPCA will not work to estimate missing target values, &quot;</span>
+                        <span class="s2">&quot;at least a 2D matrix is needed. It is recommended you remove missing target data&quot;</span><span class="p">)</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">data_cleaner</span><span class="o">.</span><span class="n">ppca</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">X_noinput</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">data_cleaner</span><span class="o">.</span><span class="n">ppca</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;You have specified an invalid data cleaning method. Choose from: remove, imputation, or ppca&quot;</span><span class="p">)</span>
+            <span class="n">exit</span><span class="p">()</span>
+
+        <span class="c1"># Check if any y target data values are missing or NaN</span>
+        <span class="n">shape_before</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">y</span><span class="p">,</span> <span class="n">nan_indices</span> <span class="o">=</span> <span class="n">data_cleaner</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">shape_after</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">if</span> <span class="n">shape_after</span> <span class="o">!=</span> <span class="n">shape_before</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s1">&#39;Warning: some y target data rows were automatically removed because they were either empty or contained &#39;</span>
+                <span class="s1">&#39;&quot;NaN&quot; entries. MAST-ML will continue your run with this modified data set.&#39;</span><span class="p">)</span>
+            <span class="c1"># Need to modify df, X, etc. to remove same rows as were removed from y target data</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="n">nan_indices</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="n">nan_indices</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">X_noinput</span> <span class="o">=</span> <span class="n">X_noinput</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="n">nan_indices</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">X_grouped</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">X_grouped</span> <span class="o">=</span> <span class="n">X_grouped</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="n">nan_indices</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
     <span class="c1"># randomly shuffles y values if randomizer is on</span>
     <span class="k">if</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;GeneralSetup&#39;</span><span class="p">][</span><span class="s1">&#39;randomizer&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
@@ -510,6 +529,7 @@
     <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;splitters: </span><span class="se">\n</span><span class="si">{splitters}</span><span class="s1">&#39;</span><span class="p">)</span>
 
 
+
     <span class="c1"># TODO make this block its own function</span>
     <span class="c1"># get parameters out for &#39;validation_column&#39;</span>
     <span class="n">is_validation</span> <span class="o">=</span> <span class="s1">&#39;validation_columns&#39;</span> <span class="ow">in</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;GeneralSetup&#39;</span><span class="p">]</span>
@@ -541,6 +561,10 @@
             <span class="k">return</span> <span class="n">dataframe</span>
         <span class="n">generated_df</span> <span class="o">=</span> <span class="n">generate_features</span><span class="p">()</span>
 
+        <span class="c1">#print(generated_df)</span>
+        <span class="c1">#print(&#39;FINISHED FEATURE GEN!&#39;)</span>
+        <span class="c1">#exit()</span>
+
         <span class="k">def</span> <span class="nf">remove_constants</span><span class="p">():</span>
             <span class="n">dataframe</span> <span class="o">=</span> <span class="n">_remove_constant_features</span><span class="p">(</span><span class="n">generated_df</span><span class="p">)</span>
             <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Saving generated data without constant columns to csv...&quot;</span><span class="p">)</span>
@@ -553,6 +577,10 @@
         <span class="n">X</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">X</span><span class="p">,</span> <span class="n">generated_df</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="c1"># add in generated features to full dataframe</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df</span><span class="p">,</span> <span class="n">generated_df</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># Check size of X; if there are no feature columns then throw error</span>
+        <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">InvalidValue</span><span class="p">(</span><span class="s1">&#39;No feature vectors were found in the dataframe. Please either use feature generation methods&#39;</span>
+                               <span class="s1">&#39;or specify input_features in the input file.&#39;</span><span class="p">)</span>
 
         <span class="c1"># remove repeat columns (keep the first one)</span>
         <span class="k">def</span> <span class="nf">remove_repeats</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
@@ -858,8 +886,13 @@
             <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 
             <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;             Fitting model and making predictions...&quot;</span><span class="p">)</span>
-            <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_X</span><span class="p">,</span> <span class="n">train_y</span><span class="p">)</span>
-
+            <span class="c1"># Catch the ValueError associated with not being able to convert string to float</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_X</span><span class="p">,</span> <span class="n">train_y</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">InvalidValue</span><span class="p">(</span><span class="s1">&#39;MAST-ML has detected that one of your feature vectors contains a string, and cannot be&#39;</span>
+                                   <span class="s1">&#39;used in model fitting. Please add any features that contain strings to the &quot;not_input_features&quot;&#39;</span>
+                                   <span class="s1">&#39;field of the input file&#39;</span><span class="p">)</span>
             <span class="c1"># Save off the trained model as .pkl for future import</span>
             <span class="n">joblib</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;_split_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">split_num</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;.pkl&quot;</span><span class="p">))</span>
 
@@ -885,6 +918,10 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">train_pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">train_X</span><span class="p">)</span>
                 <span class="n">test_pred</span>  <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test_X</span><span class="p">)</span>
+
+                <span class="c1"># Here- for Random Forest output feature importances</span>
+                <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="o">==</span><span class="s1">&#39;RandomForestRegressor&#39;</span><span class="p">:</span>
+                    <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">columns</span><span class="p">),</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">feature_importances_</span><span class="p">)],</span>  <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;randomforest_featureimportances.csv&#39;</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
             <span class="c1"># here is where we need to collect validation stats</span>
             <span class="k">if</span> <span class="n">is_validation</span><span class="p">:</span>
@@ -983,6 +1020,10 @@
                         <span class="n">split_result</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">is_classification</span><span class="p">,</span> 
                         <span class="n">label</span><span class="o">=</span><span class="n">y</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">train_X</span><span class="o">=</span><span class="n">train_X</span><span class="p">,</span> <span class="n">test_X</span><span class="o">=</span><span class="n">test_X</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">grouping_data</span><span class="p">)</span>
 
+            <span class="k">if</span> <span class="n">PlotSettings</span><span class="p">[</span><span class="s1">&#39;error_plots&#39;</span><span class="p">]:</span>
+                <span class="n">plot_helper</span><span class="o">.</span><span class="n">make_error_plots</span><span class="p">(</span><span class="n">split_result</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">is_classification</span><span class="p">,</span>
+                                             <span class="n">label</span><span class="o">=</span><span class="n">y</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">train_X</span><span class="o">=</span><span class="n">train_X</span><span class="p">,</span> <span class="n">test_X</span><span class="o">=</span><span class="n">test_X</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">grouping_data</span><span class="p">)</span>
+
             <span class="c1"># Write stats in each split path, not main path</span>
             <span class="k">if</span> <span class="n">is_validation</span><span class="p">:</span>
                 <span class="n">_write_stats</span><span class="p">(</span><span class="n">split_result</span><span class="p">[</span><span class="s1">&#39;train_metrics&#39;</span><span class="p">],</span>
@@ -1062,7 +1103,7 @@
         <span class="k">def</span> <span class="nf">make_pred_vs_true_plots</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">PlotSettings</span><span class="p">[</span><span class="s1">&#39;predicted_vs_true&#39;</span><span class="p">]:</span>
                 <span class="n">plot_helper</span><span class="o">.</span><span class="n">plot_best_worst_split</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">best</span><span class="p">,</span> <span class="n">worst</span><span class="p">,</span>
-                                                  <span class="n">join</span><span class="p">(</span><span class="n">main_path</span><span class="p">,</span> <span class="s1">&#39;best_worst_split.png&#39;</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="n">y</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                                                  <span class="n">join</span><span class="p">(</span><span class="n">main_path</span><span class="p">,</span> <span class="s1">&#39;best_worst_split&#39;</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="n">y</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
             <span class="n">predictions</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
             <span class="k">for</span> <span class="n">split_num</span><span class="p">,</span> <span class="p">(</span><span class="n">train_indices</span><span class="p">,</span> <span class="n">test_indices</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">trains_tests</span><span class="p">):</span>
                 <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">pred</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">test_indices</span><span class="p">,</span> <span class="n">split_results</span><span class="p">[</span><span class="n">split_num</span><span class="p">][</span><span class="s1">&#39;y_test_pred&#39;</span><span class="p">]):</span>
@@ -1070,16 +1111,15 @@
             <span class="k">if</span> <span class="n">PlotSettings</span><span class="p">[</span><span class="s1">&#39;predicted_vs_true_bars&#39;</span><span class="p">]:</span>
                 <span class="n">plot_helper</span><span class="o">.</span><span class="n">plot_predicted_vs_true_bars</span><span class="p">(</span>
                         <span class="n">y</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">predictions</span><span class="p">,</span> <span class="n">avg_test_stats</span><span class="p">,</span>
-                        <span class="n">join</span><span class="p">(</span><span class="n">main_path</span><span class="p">,</span> <span class="s1">&#39;average_points_with_bars.png&#39;</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="n">y</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                        <span class="n">join</span><span class="p">(</span><span class="n">main_path</span><span class="p">,</span> <span class="s1">&#39;average_points_with_bars&#39;</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="n">y</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">PlotSettings</span><span class="p">[</span><span class="s1">&#39;best_worst_per_point&#39;</span><span class="p">]:</span>
                 <span class="n">plot_helper</span><span class="o">.</span><span class="n">plot_best_worst_per_point</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">predictions</span><span class="p">,</span>
-                                                      <span class="n">join</span><span class="p">(</span><span class="n">main_path</span><span class="p">,</span> <span class="s1">&#39;best_worst_per_point.png&#39;</span><span class="p">),</span>
+                                                      <span class="n">join</span><span class="p">(</span><span class="n">main_path</span><span class="p">,</span> <span class="s1">&#39;best_worst_per_point&#39;</span><span class="p">),</span>
                                                       <span class="n">metrics_dict</span><span class="p">,</span> <span class="n">avg_test_stats</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">y</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">PlotSettings</span><span class="p">[</span><span class="s1">&#39;average_normalized_errors&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">PlotSettings</span><span class="p">[</span><span class="s1">&#39;average_error_plots&#39;</span><span class="p">]:</span>
                 <span class="n">plot_helper</span><span class="o">.</span><span class="n">plot_normalized_error</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">predictions</span><span class="p">,</span>
                                                   <span class="n">join</span><span class="p">(</span><span class="n">main_path</span><span class="p">,</span> <span class="s1">&#39;average_test_normalized_errors.png&#39;</span><span class="p">),</span> <span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                                                   <span class="n">avg_stats</span><span class="o">=</span><span class="n">avg_test_stats</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">PlotSettings</span><span class="p">[</span><span class="s1">&#39;average_cumulative_normalized_errors&#39;</span><span class="p">]:</span>
                 <span class="n">plot_helper</span><span class="o">.</span><span class="n">plot_cumulative_normalized_error</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">predictions</span><span class="p">,</span>
                                                   <span class="n">join</span><span class="p">(</span><span class="n">main_path</span><span class="p">,</span> <span class="s1">&#39;average_test_cumulative_normalized_errors.png&#39;</span><span class="p">),</span> <span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                                                   <span class="n">avg_stats</span><span class="o">=</span><span class="n">avg_test_stats</span><span class="p">)</span>
@@ -1160,22 +1200,74 @@
     <span class="k">return</span> <span class="n">models</span>
 
 <span class="k">def</span> <span class="nf">_snatch_gpr_model</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="n">conf_models</span><span class="p">):</span>
-    <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">model</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;GaussianProcessRegressor&#39;</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">model</span> <span class="o">==</span> <span class="s1">&#39;GaussianProcessRegressor&#39;</span><span class="p">:</span>
             <span class="kn">import</span> <span class="nn">sklearn.gaussian_process</span>
             <span class="kn">from</span> <span class="nn">sklearn.gaussian_process</span> <span class="k">import</span> <span class="n">GaussianProcessRegressor</span>
             <span class="n">kernel_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;WhiteKernel&#39;</span><span class="p">,</span> <span class="s1">&#39;RBF&#39;</span><span class="p">,</span> <span class="s1">&#39;ConstantKernel&#39;</span><span class="p">,</span> <span class="s1">&#39;Matern&#39;</span><span class="p">,</span> <span class="s1">&#39;RationalQuadratic&#39;</span><span class="p">,</span> <span class="s1">&#39;ExpSineSquared&#39;</span><span class="p">,</span> <span class="s1">&#39;DotProduct&#39;</span><span class="p">]</span>
+            <span class="n">kernel_operators</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;+&#39;</span><span class="p">,</span> <span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="s1">&#39;-&#39;</span><span class="p">]</span>
             <span class="n">params</span> <span class="o">=</span> <span class="n">conf_models</span><span class="p">[</span><span class="s1">&#39;GaussianProcessRegressor&#39;</span><span class="p">]</span>
-            <span class="n">kernel</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;kernel&#39;</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">kernel</span> <span class="ow">in</span> <span class="n">kernel_list</span><span class="p">:</span>
+            <span class="n">kernel_string</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;kernel&#39;</span><span class="p">]</span>
+            <span class="c1"># Need to delete old kernel (as str) from params so can use other specified params in new GPR model</span>
+            <span class="k">del</span> <span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;kernel&#39;</span><span class="p">]</span>
+            <span class="c1"># Parse kernel_string to identify kernel types and any kernel operations to combine kernels</span>
+            <span class="n">kernel_types_asstr</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="n">kernel_types_ascls</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="n">kernel_operators_used</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">kernel_string</span><span class="p">[:]:</span>
+                <span class="k">if</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">kernel_operators</span><span class="p">:</span>
+                    <span class="n">kernel_operators_used</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+
+            <span class="c1"># Do case for single kernel, no operators</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">kernel_operators_used</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">kernel_types_asstr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">kernel_string</span><span class="p">)</span>
+
+            <span class="c1"># Do case for parsing operators in kernel string for multiple kernels</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">operator</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">kernel_operators_used</span><span class="p">):</span>
+                <span class="n">kernel_string_split</span> <span class="o">=</span> <span class="n">kernel_string</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">operator</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">kernel_string_split</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="n">kernel_list</span><span class="p">:</span>
+                    <span class="n">kernel_types_asstr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">kernel_string_split</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">MastError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;The kernel </span><span class="si">{kernel_string_split[0]}</span><span class="s2"> could not be found in sklearn!&quot;</span><span class="p">)</span>
+                <span class="n">kernel_string</span> <span class="o">=</span> <span class="n">kernel_string_split</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="c1"># If got to last operator, also append last kernel type</span>
+                <span class="k">if</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">kernel_operators_used</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">kernel_string_split</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="n">kernel_list</span><span class="p">:</span>
+                        <span class="n">kernel_types_asstr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">kernel_string_split</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">MastError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;The kernel </span><span class="si">{kernel_string_split[1]}</span><span class="s2"> could not be found in sklearn!&quot;</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">kernel</span> <span class="ow">in</span> <span class="n">kernel_types_asstr</span><span class="p">:</span>
                 <span class="n">kernel_</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sklearn</span><span class="o">.</span><span class="n">gaussian_process</span><span class="o">.</span><span class="n">kernels</span><span class="p">,</span> <span class="n">kernel</span><span class="p">)</span>
-                <span class="n">kernel</span> <span class="o">=</span> <span class="n">kernel_</span><span class="p">()</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">MastError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;The kernel </span><span class="si">{kernel}</span><span class="s2"> could not be found in sklearn!&quot;</span><span class="p">)</span>
-            <span class="n">gpr</span> <span class="o">=</span> <span class="n">GaussianProcessRegressor</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="n">kernel</span><span class="p">)</span>
-            <span class="n">m</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;GaussianProcessRegressor&#39;</span><span class="p">,</span> <span class="n">gpr</span><span class="p">]</span>
-            <span class="k">del</span> <span class="n">models</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">models</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+                <span class="n">kernel_types_ascls</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">kernel_</span><span class="p">())</span>
+
+            <span class="c1"># Case for single kernel</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">kernel_types_ascls</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">kernel</span> <span class="o">=</span> <span class="n">kernel_types_ascls</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="n">kernel_count</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">operator</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">kernel_operators_used</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">kernel_operators_used</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">operator</span> <span class="o">==</span> <span class="s2">&quot;+&quot;</span><span class="p">:</span>
+                        <span class="n">kernel</span> <span class="o">=</span> <span class="n">kernel_types_ascls</span><span class="p">[</span><span class="n">kernel_count</span><span class="p">]</span> <span class="o">+</span> <span class="n">kernel_types_ascls</span><span class="p">[</span><span class="n">kernel_count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">operator</span> <span class="o">==</span> <span class="s2">&quot;-&quot;</span><span class="p">:</span>
+                        <span class="n">kernel</span> <span class="o">=</span> <span class="n">kernel_types_ascls</span><span class="p">[</span><span class="n">kernel_count</span><span class="p">]</span> <span class="o">-</span> <span class="n">kernel_types_ascls</span><span class="p">[</span><span class="n">kernel_count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">operator</span> <span class="o">==</span> <span class="s2">&quot;*&quot;</span><span class="p">:</span>
+                        <span class="n">kernel</span> <span class="o">=</span> <span class="n">kernel_types_ascls</span><span class="p">[</span><span class="n">kernel_count</span><span class="p">]</span> <span class="o">*</span> <span class="n">kernel_types_ascls</span><span class="p">[</span><span class="n">kernel_count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">kernel_operators_used</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">operator</span> <span class="o">==</span> <span class="s2">&quot;+&quot;</span><span class="p">:</span>
+                        <span class="n">kernel</span> <span class="o">+=</span> <span class="n">kernel_types_ascls</span><span class="p">[</span><span class="n">kernel_count</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">operator</span> <span class="o">==</span> <span class="s2">&quot;-&quot;</span><span class="p">:</span>
+                        <span class="n">kernel</span> <span class="o">-=</span> <span class="n">kernel_types_ascls</span><span class="p">[</span><span class="n">kernel_count</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">operator</span> <span class="o">==</span> <span class="s2">&quot;*&quot;</span><span class="p">:</span>
+                        <span class="n">kernel</span> <span class="o">*=</span> <span class="n">kernel_types_ascls</span><span class="p">[</span><span class="n">kernel_count</span><span class="p">]</span>
+                <span class="n">kernel_count</span> <span class="o">+=</span> <span class="mi">2</span>
+
+            <span class="n">gpr</span> <span class="o">=</span> <span class="n">GaussianProcessRegressor</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="n">kernel</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="c1"># Need to delete old GPR from model list and replace with new GPR with correct kernel and other params.</span>
+            <span class="k">del</span> <span class="n">models</span><span class="p">[</span><span class="n">model</span><span class="p">]</span>
+            <span class="n">models</span><span class="p">[</span><span class="n">model</span><span class="p">]</span> <span class="o">=</span> <span class="n">gpr</span>
             <span class="k">break</span>
     <span class="k">return</span> <span class="n">models</span>
 
