@@ -76,6 +76,11 @@ def load_data(file_path, input_features=None, target_feature=None, grouping_feat
         else:
             log.info('Blacklisted feature ' + str(feature) + ' already not present in dataframe')
 
+    # Need this block when input features not set to Auto
+    for feature in set(feature_blacklist):
+        if feature not in X_noinput_dict.keys():
+            X_noinput_dict[feature] = df[feature]
+
     X_noinput = pd.DataFrame(X_noinput_dict)
 
     if grouping_feature:
