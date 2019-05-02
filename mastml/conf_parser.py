@@ -34,7 +34,7 @@ def parse_conf_file(filepath):
     def set_required_sections_to_empty():
         for name in main_sections:
             if name not in conf:
-                conf[name] = dict()
+                conf[name] = dict() # makes section empty
     set_required_sections_to_empty()
 
     def check_unknown_sections():

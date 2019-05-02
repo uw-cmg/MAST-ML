@@ -20,11 +20,63 @@ from pymatgen.ext.matproj import MPRester
 
 # locate path to directory containing AtomicNumber.table, AtomicRadii.table AtomicVolume.table, etc
 # (needs to do it the hard way becuase python -m sets cwd to wherever python is ran from)
+
+# is this how you do it? Any other imports needed for this module then?
+import inspect # used to get a dictionary of classes in a module
+from matminer.featurizers import structure as struc
+
+from pymatgen.io.vasp.inputs import Poscar
+from pymatgen.core import Structure
+
+
 import mastml
 from mastml import utils
 log = logging.getLogger('mastml')
 print('mastml dir: ', mastml.__path__)
 MAGPIE_DATA_PATH = os.path.join(mastml.__path__[0], '../magpie/')
+
+
+class Matminer(BaseEstimator, TransformerMixin):
+    def __init__(self, structural_features, structure_col):  # _instantiate only needs this
+        # assuming dataframe is coming in with a column 'Structure' with coords.
+        # where do I need to raise errors
+        if type(structural_features) is str:
+            structural_features = [structural_features]
+
+        structural_features = structural_features  # structural feature is now cast as a list
+        self.structural_features = structural_features  # structural feature field of class
+        self.structure_col = structure_col
+
+    def fit(self, df, y=None):
+        return self
+
+    def transform(self, df, y=None):
+        for i, rows in df.iterrows():
+            f = Poscar.from_file(df.at[i, self.structure_col])
+            structure = f.structure
+            df.at[i, self.structure_col] = structure
+
+        # any possible errors i need to raise?
+        for struc_feat in range(len(self.structural_features)):  # nested for loop to iterate through structural features list
+            for feature_name in inspect.getmembers(struc, inspect.isclass):
+                # will get list of all classes in structure module
+                if feature_name[0] == self.structural_features[struc_feat]:
+                    sf = getattr(struc, self.structural_features[struc_feat])()  # instantiates the structure featurizer
+                    df = sf.fit_featurize_dataframe(df, self.structure_col)  # fit_featurize_dataframe() works for all
+                    # if for loop passed, structural_feature was not a valid structural feature
+                    break
+
+        df = df.drop(self.structure_col, axis=1)
+        df = df.drop('Material', axis=1)
+        return df  # I think it should return the updated dataframe to concatenate
+
+
+
+
+
+
+
+
 
 class PolynomialFeatures(BaseEstimator, TransformerMixin):
     """
@@ -338,6 +390,7 @@ class NoGenerate(BaseEstimator, TransformerMixin):
         return pd.DataFrame(index=X.index)
 
 name_to_constructor = {
+    'Matminer': Matminer,
     'DoNothing': NoGenerate,
     'PolynomialFeatures': PolynomialFeatures,
     'Magpie': Magpie,
