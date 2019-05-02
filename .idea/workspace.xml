@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="eb4d45b5-b103-430c-9413-5c18aaf84cdd" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/mastml/legos/feature_generators.py" beforeDir="false" afterPath="$PROJECT_DIR$/mastml/legos/feature_generators.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/conf/input_alex.conf" beforeDir="false" afterPath="$PROJECT_DIR$/tests/conf/input_alex.conf" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -42,8 +41,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/mastml/legos/feature_generators.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="90">
-              <caret line="92" column="106" selection-start-line="92" selection-start-column="106" selection-end-line="92" selection-end-column="106" />
+            <state relative-caret-position="227">
+              <caret line="97" column="24" selection-start-line="97" selection-start-column="24" selection-end-line="97" selection-end-column="24" />
               <folding>
                 <element signature="e#119#141#0" expanded="true" />
                 <element signature="e#1428#1873#0" />
@@ -177,8 +176,8 @@
     <frame x="0" y="23" width="1680" height="975" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.5335821" visible="true" weight="0.13247864" />
-      <window_info id="Structure" order="1" sideWeight="0.4664179" side_tool="true" visible="true" weight="0.13247864" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.5330396" visible="true" weight="0.13247864" />
+      <window_info id="Structure" order="1" sideWeight="0.46696034" side_tool="true" visible="true" weight="0.13247864" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.1847575" />
@@ -188,7 +187,7 @@
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Version Control" order="7" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="8" sideWeight="0.4993895" visible="true" weight="0.6964892" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="8" sideWeight="0.4993895" visible="true" weight="0.48584372" />
       <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50061053" side_tool="true" weight="0.53793883" />
       <window_info anchor="bottom" id="Python Console" order="10" weight="0.3295583" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
@@ -203,27 +202,27 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/mastml/legos/feature_generators.py</url>
-          <line>282</line>
+          <line>280</line>
           <option name="timeStamp" value="6" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/mastml/legos/feature_generators.py</url>
-          <line>331</line>
+          <line>329</line>
           <option name="timeStamp" value="7" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/mastml/legos/feature_generators.py</url>
-          <line>939</line>
+          <line>937</line>
           <option name="timeStamp" value="8" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/mastml/legos/feature_generators.py</url>
-          <line>418</line>
+          <line>416</line>
           <option name="timeStamp" value="9" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/mastml/legos/feature_generators.py</url>
-          <line>460</line>
+          <line>458</line>
           <option name="timeStamp" value="13" />
         </line-breakpoint>
       </breakpoints>
@@ -334,8 +333,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/mastml/legos/feature_generators.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="92" column="106" selection-start-line="92" selection-start-column="106" selection-end-line="92" selection-end-column="106" />
+        <state relative-caret-position="227">
+          <caret line="97" column="24" selection-start-line="97" selection-start-column="24" selection-end-line="97" selection-end-column="24" />
           <folding>
             <element signature="e#119#141#0" expanded="true" />
             <element signature="e#1428#1873#0" />
