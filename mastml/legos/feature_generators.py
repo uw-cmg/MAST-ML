@@ -48,15 +48,18 @@ class Matminer(BaseEstimator, TransformerMixin):
         fit: pass through, needed to maintain scikit-learn class structure
 
         Args:
-            df: dataframe of input x and y data
+            df: (dataframe), dataframe of input x and y data
 
         transform: main method that iterates through rows of dataframe to create pymatgen structure objects for
         matminer routines. Iterates through list of structural features from conf file and instantiates each structure;
         drops unused dataframe columns and returns the generated features dataframe
 
         Args:
-            df: dataframe containing the path of file to create pymatgen structure object which is under the structure_col
+            df: (dataframe), dataframe containing the path of file to create pymatgen structure object which is under the structure_col
             column
+
+        Returns:
+            (dataframe), the generated features dataframe
 
     """
     def __init__(self, structural_features, structure_col):  # _instantiate only needs this
