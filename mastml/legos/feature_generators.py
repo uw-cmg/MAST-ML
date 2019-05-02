@@ -90,6 +90,14 @@ class Matminer(BaseEstimator, TransformerMixin):
                 if feature_name[0] == self.structural_features[struc_feat]:
                     sf = getattr(struc, self.structural_features[struc_feat])()  # instantiates the structure featurizer
                     df = sf.fit_featurize_dataframe(df, self.structure_col)  # fit_featurize_dataframe() works for all
+                    # updates dataframe if the structural feature happens to be the GlobalSymmetryFeatures
+                    if self.structural_features[struc_feat] == "GlobalSymmetryFeatures":
+                        df = df.drop('crystal_system', axis=1)
+                        for i, rows in df.iterrows():
+                            if df.at[i, "is_centrosymmetric"] == True:
+                                df.at[i, "is_centrosymmetric"] = 1
+                            elif df.at[i, "is_centrosymmetric"] == False:
+                                df.at[i, "is_centrosymmetric"] = 0
                     break # structure feature was found for this iteration, repeat
 
         # drop unused dataframe columns for rest of application
