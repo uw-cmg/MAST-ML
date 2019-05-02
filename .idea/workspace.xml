@@ -2,10 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="eb4d45b5-b103-430c-9413-5c18aaf84cdd" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/mastml/conf_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/mastml/conf_parser.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mastml/legos/feature_generators.py" beforeDir="false" afterPath="$PROJECT_DIR$/mastml/legos/feature_generators.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mastml/mastml_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/mastml/mastml_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/conf/example_input.conf" beforeDir="false" afterPath="$PROJECT_DIR$/tests/conf/example_input.conf" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -44,10 +41,12 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/mastml/legos/feature_generators.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="581">
-              <caret line="69" column="25" selection-start-line="69" selection-start-column="25" selection-end-line="69" selection-end-column="25" />
+            <state relative-caret-position="540">
+              <caret line="96" column="47" selection-start-line="96" selection-start-column="47" selection-end-line="96" selection-end-column="47" />
               <folding>
                 <element signature="e#119#141#0" expanded="true" />
+                <element signature="e#1428#1873#0" />
+                <element signature="e#1914#1925#0" />
               </folding>
             </state>
           </provider>
@@ -99,7 +98,7 @@
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="1">
+  <component name="ProjectFrameBounds">
     <option name="y" value="23" />
     <option name="width" value="1680" />
     <option name="height" value="975" />
@@ -174,11 +173,11 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1680" height="975" extended-state="1" />
+    <frame x="0" y="23" width="1680" height="975" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.5356083" visible="true" weight="0.13125764" />
-      <window_info id="Structure" order="1" sideWeight="0.46439168" side_tool="true" visible="true" weight="0.13125764" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.5341246" visible="true" weight="0.13247864" />
+      <window_info id="Structure" order="1" sideWeight="0.46587536" side_tool="true" visible="true" weight="0.13247864" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.1847575" />
@@ -203,27 +202,27 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/mastml/legos/feature_generators.py</url>
-          <line>255</line>
+          <line>273</line>
           <option name="timeStamp" value="6" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/mastml/legos/feature_generators.py</url>
-          <line>304</line>
+          <line>322</line>
           <option name="timeStamp" value="7" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/mastml/legos/feature_generators.py</url>
-          <line>912</line>
+          <line>930</line>
           <option name="timeStamp" value="8" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/mastml/legos/feature_generators.py</url>
-          <line>391</line>
+          <line>409</line>
           <option name="timeStamp" value="9" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/mastml/legos/feature_generators.py</url>
-          <line>433</line>
+          <line>451</line>
           <option name="timeStamp" value="13" />
         </line-breakpoint>
       </breakpoints>
@@ -327,10 +326,12 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/mastml/legos/feature_generators.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="581">
-          <caret line="69" column="25" selection-start-line="69" selection-start-column="25" selection-end-line="69" selection-end-column="25" />
+        <state relative-caret-position="540">
+          <caret line="96" column="47" selection-start-line="96" selection-start-column="47" selection-end-line="96" selection-end-column="47" />
           <folding>
             <element signature="e#119#141#0" expanded="true" />
+            <element signature="e#1428#1873#0" />
+            <element signature="e#1914#1925#0" />
           </folding>
         </state>
       </provider>

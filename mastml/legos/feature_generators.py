@@ -37,6 +37,30 @@ MAGPIE_DATA_PATH = os.path.join(mastml.__path__[0], '../magpie/')
 
 
 class Matminer(BaseEstimator, TransformerMixin):
+    """
+    Class to generate structural features from matminer structure module
+
+    Args:
+        structural_features: the structure feature(s) the user wants to instantiate and generate
+
+        structure_col: the dataframe column that contains the pymatgen structure object. Matminer needs a pymatgen
+        structure object in order to instantiate the structural feature
+
+    Methods:
+        fit: pass through, needed to maintain scikit-learn class structure
+
+        Args:
+            df: dataframe of input x and y data
+
+        transform: main method that iterates through rows of dataframe to create pymatgen structure objects for
+        matminer routines. Iterates through list of structural features from conf file and instantiates each structure;
+        drops unused dataframe columns and returns the generated features dataframe
+
+        Args:
+            df: dataframe containing the path of file to create pymatgen structure object which is under the structure_col
+            column
+
+    """
     def __init__(self, structural_features, structure_col):  # _instantiate only needs this
         # assuming dataframe is coming in with a column 'Structure' with coords.
         # where do I need to raise errors
@@ -51,32 +75,26 @@ class Matminer(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, df, y=None):
+        # iterate through dataframe rows
         for i, rows in df.iterrows():
             f = Poscar.from_file(df.at[i, self.structure_col])
-            structure = f.structure
-            df.at[i, self.structure_col] = structure
+            structure = f.structure # create pymatgen structure object
+            df.at[i, self.structure_col] = structure # replace path with structure object
 
-        # any possible errors i need to raise?
-        for struc_feat in range(len(self.structural_features)):  # nested for loop to iterate through structural features list
+        # iterate through structural_features list
+        for struc_feat in range(len(self.structural_features)):
+            # nested loop to check structural_features list item against matminer structures list
             for feature_name in inspect.getmembers(struc, inspect.isclass):
-                # will get list of all classes in structure module
+                # if structural feature item is a match
                 if feature_name[0] == self.structural_features[struc_feat]:
                     sf = getattr(struc, self.structural_features[struc_feat])()  # instantiates the structure featurizer
                     df = sf.fit_featurize_dataframe(df, self.structure_col)  # fit_featurize_dataframe() works for all
-                    # if for loop passed, structural_feature was not a valid structural feature
-                    break
+                    break # structure feature was found for this iteration, repeat
 
+        # drop unused dataframe columns for rest of application
         df = df.drop(self.structure_col, axis=1)
         df = df.drop('Material', axis=1)
-        return df  # I think it should return the updated dataframe to concatenate
-
-
-
-
-
-
-
-
+        return df  # return generated dataframe
 
 class PolynomialFeatures(BaseEstimator, TransformerMixin):
     """
