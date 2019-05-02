@@ -15,22 +15,20 @@ from sklearn.preprocessing import PolynomialFeatures as SklearnPolynomialFeature
 import pymatgen
 from pymatgen import Element, Composition
 from pymatgen.ext.matproj import MPRester
+
 #from citrination_client import CitrinationClient, PifQuery, SystemQuery, ChemicalFieldQuery, ChemicalFilter
 # trouble? try: `pip install citrination_client=="2.1.0"`
 
 # locate path to directory containing AtomicNumber.table, AtomicRadii.table AtomicVolume.table, etc
 # (needs to do it the hard way becuase python -m sets cwd to wherever python is ran from)
 
-# is this how you do it? Any other imports needed for this module then?
+# matminer class imports
 import inspect # used to get a dictionary of classes in a module
 from matminer.featurizers import structure as struc
-
 from pymatgen.io.vasp.inputs import Poscar
-from pymatgen.core import Structure
-
-
 import mastml
 from mastml import utils
+
 log = logging.getLogger('mastml')
 print('mastml dir: ', mastml.__path__)
 MAGPIE_DATA_PATH = os.path.join(mastml.__path__[0], '../magpie/')
