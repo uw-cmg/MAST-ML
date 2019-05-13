@@ -584,7 +584,7 @@ class MagpieFeatureGeneration(object):
                 # Parse raw composition strings with brackets to denote compositions of different sublattices
                 site_dict_list = list()
                 for comp in compositions_raw:
-                    sites = re.findall(r"\[([A-Za-z0-9_]+)\]", comp)
+                    sites = re.findall(r"\[([A-Za-z0-9_.]+)\]", comp)
                     site_dict = dict()
                     for i, site in enumerate(sites):
                         comp_by_site = Composition(site).as_dict()
