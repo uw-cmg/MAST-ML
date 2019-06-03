@@ -366,11 +366,17 @@ def mastml_run(conf_path, data_path, outdir):
             intersection = reduce(np.intersect1d, (i for i in idxy_list))
             X_novalidation = X.iloc[intersection]
             y_novalidation = y.iloc[intersection]
-            X_grouped_novalidation = X_grouped.iloc[intersection]
+            if conf['GeneralSetup']['grouping_feature']:
+                X_grouped_novalidation = X_grouped.iloc[intersection]
+            else:
+                X_grouped_novalidation = pd.DataFrame()
         else:
             X_novalidation = X
             y_novalidation = y
-            X_grouped_novalidation = X_grouped
+            if conf['GeneralSetup']['grouping_feature']:
+                X_grouped_novalidation = X_grouped
+            else:
+                X_grouped_novalidation = pd.DataFrame()
 
         def make_clustered_df():
             log.info("Doing clustering...")
@@ -782,7 +788,9 @@ def mastml_run(conf_path, data_path, outdir):
 
             if PlotSettings['error_plots']:
                 plot_helper.make_error_plots(split_result, path, is_classification,
-                                             label=y.name, model=model, train_X=train_X, test_X=test_X, groups=grouping_data)
+                                             label=y.name, model=model, train_X=train_X, test_X=test_X,
+                                             error_method=PlotSettings['error_method'], percentile=PlotSettings['percentile'],
+                                             groups=grouping_data)
 
             # Write stats in each split path, not main path
             if is_validation:
@@ -879,10 +887,12 @@ def mastml_run(conf_path, data_path, outdir):
             if PlotSettings['average_error_plots']:
                 plot_helper.plot_normalized_error(y.values, predictions,
                                                   join(main_path, 'average_test_normalized_errors.png'), model, X=None,
-                                                  avg_stats=avg_test_stats)
+                                                  avg_stats=avg_test_stats, error_method=PlotSettings['error_method'],
+                                                  percentile=PlotSettings['percentile'])
                 plot_helper.plot_cumulative_normalized_error(y.values, predictions,
                                                   join(main_path, 'average_test_cumulative_normalized_errors.png'), model, X=None,
-                                                  avg_stats=avg_test_stats)
+                                                  avg_stats=avg_test_stats, error_method=PlotSettings['error_method'],
+                                                  percentile=PlotSettings['percentile'])
 
         if not is_classification:
             make_pred_vs_true_plots(model=model)

@@ -237,7 +237,7 @@ def make_train_test_plots(run, path, is_classification, label, model, train_X, t
                                  join(path, title+'.png'), test_metrics,
                                  title=title, label=label)
 
-def make_error_plots(run, path, is_classification, label, model, train_X, test_X, groups=None):
+def make_error_plots(run, path, is_classification, label, model, train_X, test_X, error_method, percentile, groups=None):
 
     y_train_true, y_train_pred, y_test_true = \
         run['y_train_true'], run['y_train_pred'], run['y_test_true']
@@ -250,16 +250,16 @@ def make_error_plots(run, path, is_classification, label, model, train_X, test_X
     else: # is_regression
 
         title = 'train_normalized_error'
-        plot_normalized_error(y_train_true, y_train_pred, join(path, title+'.png'), model, train_X)
+        plot_normalized_error(y_train_true, y_train_pred, join(path, title+'.png'), model, error_method, percentile, train_X)
 
         title = 'test_normalized_error'
-        plot_normalized_error(y_test_true, y_test_pred, join(path, title+'.png'), model, test_X)
+        plot_normalized_error(y_test_true, y_test_pred, join(path, title+'.png'), model, error_method, percentile, test_X)
 
         title = 'train_cumulative_normalized_error'
-        plot_cumulative_normalized_error(y_train_true, y_train_pred, join(path, title+'.png'), model, train_X)
+        plot_cumulative_normalized_error(y_train_true, y_train_pred, join(path, title+'.png'), model, error_method, percentile, train_X)
 
         title = 'test_cumulative_normalized_error'
-        plot_cumulative_normalized_error(y_test_true, y_test_pred, join(path, title+'.png'), model, test_X)
+        plot_cumulative_normalized_error(y_test_true, y_test_pred, join(path, title+'.png'), model, error_method, percentile, test_X)
 
 
 @ipynb_maker
@@ -672,7 +672,7 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', label='target data'):
 
     ax.set_xlabel(xlabel, fontsize=16)
     ax.set_ylabel('Value of '+label, fontsize=16)
-    ax.set_xticklabels(rotation=45)
+    #ax.set_xticklabels(rotation=45)
     fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
 
 @ipynb_maker
@@ -989,7 +989,7 @@ def plot_metric_vs_group_size(metric, groups, stats, avg_stats, savepath):
     fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
     return
 
-def prediction_intervals(model, X, percentile=68):
+def prediction_intervals(model, X, error_method, percentile):
     """
     Method to calculate prediction intervals when using Random Forest and Gaussian Process regression models.
 
@@ -1000,6 +1000,9 @@ def prediction_intervals(model, X, percentile=68):
         model: (scikit-learn model/estimator object), a scikit-learn model object
 
         X: (numpy array), array of X features
+
+        method: (str), type of error bar to formulate (e.g. "stdev" is standard deviation of predicted errors, "confint"
+        is error bar as confidence interval
 
         percentile: (int), percentile for which to form error bars
 
@@ -1020,8 +1023,12 @@ def prediction_intervals(model, X, percentile=68):
             for pred in model.estimators_:
                 preds.append(pred.predict(np.array(X_aslist[x]).reshape(1,-1))[0])
 
-            e_down = np.percentile(preds, (100 - percentile) / 2.)
-            e_up = np.percentile(preds, 100 - (100 - percentile) / 2.)
+            if error_method == 'confint':
+                e_down = np.percentile(preds, (100 - int(percentile)) / 2.)
+                e_up = np.percentile(preds, 100 - (100 - int(percentile)) / 2.)
+            elif error_method == 'stdev':
+                e_down = np.std(preds)
+                e_up = np.std(preds)
 
             if e_up == 0.0:
                 e_up = 10 ** 10
@@ -1037,7 +1044,7 @@ def prediction_intervals(model, X, percentile=68):
 
     return err_down, err_up
 
-def plot_normalized_error(y_true, y_pred, savepath, model, X=None, avg_stats=None):
+def plot_normalized_error(y_true, y_pred, savepath, model, error_method, percentile, X=None, avg_stats=None):
     """
     Method to plot the normalized residual errors of a model prediction
 
@@ -1070,7 +1077,7 @@ def plot_normalized_error(y_true, y_pred, savepath, model, X=None, avg_stats=Non
     if model_name in models_with_error_predictions:
         has_model_errors = True
         if not avg_stats:
-            err_down, err_up = prediction_intervals(model, X, percentile=68)
+            err_down, err_up = prediction_intervals(model, X, error_method=error_method, percentile=percentile)
 
     if avg_stats:
         y_pred_ = np.array([nice_mean(y_p) for y_p in y_pred])
@@ -1087,8 +1094,9 @@ def plot_normalized_error(y_true, y_pred, savepath, model, X=None, avg_stats=Non
     fig, ax = make_fig_ax(x_align=x_align)
     mu = 0
     sigma = 1
-    residuals = (y_true_-y_pred_)/np.std(y_true_-y_pred_)
-    density_residuals = gaussian_kde(residuals)
+    residuals = (y_true_ - y_pred_)
+    normalized_residuals = (y_true_-y_pred_)/np.std(y_true_-y_pred_)
+    density_residuals = gaussian_kde(normalized_residuals)
     x = np.linspace(mu - 5 * sigma, mu + 5 * sigma, y_true_.shape[0])
     ax.plot(x, mlab.normpdf(x, mu, sigma), linewidth=4, color='blue', label="Analytical Gaussian")
     ax.plot(x, density_residuals(x), linewidth=4, color='green', label="Model Residuals")
@@ -1105,14 +1113,15 @@ def plot_normalized_error(y_true, y_pred, savepath, model, X=None, avg_stats=Non
             maxy = max(max(density_residuals(x)), max(mlab.normpdf(x, mu, sigma)), max(density_errors(x)))
             miny = min(min(density_residuals(x)), min(mlab.normpdf(x, mu, sigma)), min(density_errors(x)))
             # Save data to csv file
-            data_dict = {"Plotted x values": x, "error_bars_up": err_up, "error_bars_down": err_down, "error_avg": err_avg,
+            data_dict = {"Y True": y_true, "Y Pred": y_pred, "Plotted x values": x, "error_bars_up": err_up, "error_bars_down": err_down, "error_avg": err_avg,
                          "analytical gaussian (plotted y blue values)": mlab.normpdf(x, mu, sigma),
-                         "model residuals (plotted y green values)": density_residuals(x),
-                         "model errors (ytrue-ypred)/err_avg (plotted y purple values)": density_errors(x)}
+                         "model residuals": residuals,
+                         "model normalized residuals (plotted y green values)": density_residuals(x),
+                         "model errors (plotted y purple values)": density_errors(x)}
             pd.DataFrame(data_dict).to_csv(savepath.split('.png')[0]+'.csv')
         else:
             # Save data to csv file
-            data_dict = {"x values": x, "analytical gaussian": mlab.normpdf(x, mu, sigma),
+            data_dict = {"Y True": y_true, "Y Pred": y_pred, "x values": x, "analytical gaussian": mlab.normpdf(x, mu, sigma),
                          "model residuals": density_residuals(x)}
             pd.DataFrame(data_dict).to_csv(savepath.split('.png')[0]+'.csv')
     """
@@ -1192,7 +1201,7 @@ def plot_normalized_error(y_true, y_pred, savepath, model, X=None, avg_stats=Non
     fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
     return
 
-def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, X=None, avg_stats=None):
+def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, error_method, percentile, X=None, avg_stats=None):
     """
     Method to plot the cumulative normalized residual errors of a model prediction
 
@@ -1225,7 +1234,7 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, X=None, av
     if model_name in models_with_error_predictions:
         has_model_errors = True
         if not avg_stats:
-            err_down, err_up = prediction_intervals(model, X, percentile=68)
+            err_down, err_up = prediction_intervals(model, X, error_method=error_method, percentile=percentile)
 
     if avg_stats:
         y_pred_ = np.array([nice_mean(y_p) for y_p in y_pred])
@@ -1245,9 +1254,10 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, X=None, av
     analytic_gau = abs(analytic_gau)
     n_analytic = np.arange(1, len(analytic_gau) + 1) / np.float(len(analytic_gau))
     X_analytic = np.sort(analytic_gau)
-    residuals = abs((y_true_-y_pred_)/np.std(y_true_-y_pred_))
-    n_residuals = np.arange(1, len(residuals) + 1) / np.float(len(residuals))
-    X_residuals = np.sort(residuals) #r"$\mathrm{Predicted \/ Value}, \mathit{eV}$"
+    residuals = y_true_-y_pred_
+    normalized_residuals = abs((y_true_-y_pred_)/np.std(y_true_-y_pred_))
+    n_residuals = np.arange(1, len(normalized_residuals) + 1) / np.float(len(normalized_residuals))
+    X_residuals = np.sort(normalized_residuals) #r"$\mathrm{Predicted \/ Value}, \mathit{eV}$"
     ax.set_xlabel(r"$\mathrm{x}/\mathit{\sigma}$", fontsize=18)
     ax.set_ylabel("Fraction", fontsize=18)
     ax.step(X_residuals, n_residuals, linewidth=3, color='green', label="Model Residuals")
@@ -1262,8 +1272,9 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, X=None, av
             X_errors = np.sort(model_errors)
             ax.step(X_errors, n_errors, linewidth=3, color='purple', label="Model Errors")
             # Save data to csv file
-            data_dict = {"Analytical Gaussian values": analytic_gau, "Analytical Gaussian (sorted, blue data)": X_analytic,
-                         "Model residuals": residuals, "Model Residuals (sorted, green data)": X_residuals,
+            data_dict = {"Y True": y_true, "Y Pred": y_pred, "Analytical Gaussian values": analytic_gau, "Analytical Gaussian (sorted, blue data)": X_analytic,
+                         "model residuals": residuals,
+                         "Model normalized residuals": normalized_residuals, "Model Residuals (sorted, green data)": X_residuals,
                          "error_bars_up": err_up, "error_bars_down": err_down,
                          "Model error values (r value: (ytrue-ypred)/(model error avg))": model_errors,
                          "Model errors (sorted, purple values)": X_errors}
@@ -1273,7 +1284,7 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, X=None, av
             df.to_csv(savepath.split('.png')[0]+'.csv', index=False)
         else:
             # Save data to csv file
-            data_dict = {"x analytical": X_analytic, "analytical gaussian": n_analytic, "x residuals": X_residuals,
+            data_dict = {"Y True": y_true, "Y Pred": y_pred, "x analytical": X_analytic, "analytical gaussian": n_analytic, "x residuals": X_residuals,
                          "model residuals": n_residuals}
             # Save this way to avoid issue with different array sizes in data_dict
             df = pd.DataFrame.from_dict(data_dict, orient='index')
@@ -1565,7 +1576,11 @@ def plot_learning_curve(train_sizes, train_mean, test_mean, train_stdev, test_st
                            pd.DataFrame(test_mean), pd.DataFrame(test_stdev)], 1)
     df_concat.columns = ['train_sizes', 'train_mean', 'train_stdev', 'test_mean', 'test_stdev']
     df_concat.to_csv(savepath+'.csv')
-    plot_learning_curve_convergence(train_sizes, test_mean, score_name, learning_curve_type, savepath)
+    try:
+        plot_learning_curve_convergence(train_sizes, test_mean, score_name, learning_curve_type, savepath)
+    except IndexError:
+        log.error('MASTML encountered an error while trying to plot the learning curve convergences plots, likely due to '
+                  'insufficient data')
 
 def plot_learning_curve_convergence(train_sizes, test_mean, score_name, learning_curve_type, savepath):
     """
