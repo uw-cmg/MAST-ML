@@ -40,9 +40,9 @@ Install the MAST-ML package
 
 Git clone the repository, for example::
 
-    git clone ssh://git@github.com/uw-cmg/MAST-ML
+    git clone https://git@github.com/uw-cmg/MAST-ML
     OR
-    git clone ssh://git@github.com/uw-cmg/MAST-ML --branch master
+    git clone https://git@github.com/uw-cmg/MAST-ML --branch master
 
 Clone from “master” unless instructed specifically to use another branch.
 Ask for access if you cannot find this code.
