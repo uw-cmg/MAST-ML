@@ -28,6 +28,13 @@ from matminer.featurizers import structure as struc
 from pymatgen.io.vasp.inputs import Poscar
 import mastml
 from mastml import utils
+from matminer.data_retrieval.retrieve_Citrine import CitrineDataRetrieval
+from matminer.data_retrieval.retrieve_MP import MPDataRetrieval
+from matminer.data_retrieval.retrieve_MDF import MDFDataRetrieval
+from matminer.data_retrieval.retrieve_MPDS import MPDSDataRetrieval
+from matminer.data_retrieval.retrieve_AFLOW import AFLOWDataRetrieval
+
+
 
 log = logging.getLogger('mastml')
 print('mastml dir: ', mastml.__path__)
@@ -102,6 +109,99 @@ class Matminer(BaseEstimator, TransformerMixin):
         df = df.drop(self.structure_col, axis=1)
         df = df.drop('Material', axis=1)
         return df  # return generated dataframe
+
+    def retrieve_mp(self, criteria, properties=["band_gap", "volume", "density", "formation_energy_per_atom"], index_mpid=True, api_key=None):
+        """
+        Gets data from MP in a dataframe format. See api_link for more details.
+
+        Args:
+            criteria (dict): (str/dict) see MPRester.query() for a description of this
+                    parameter. String examples: "mp-1234", "Fe2O3", "Li-Fe-O',
+                    "\\*2O3". Dict example: {"band_gap": {"$gt": 1}}
+
+            properties ([str]): (list) see MPRester.query() for a description of this
+                    parameter. Example: ["formula", "formation_energy_per_atom"]
+
+            plus: "structure", "initial_structure", "final_structure",
+                  "bandstructure" (line mode), "bandstructure_uniform",
+                  "phonon_bandstructure", "phonon_ddb", "phonon_bandstructure",
+                  "phonon_dos". Note that for a long list of compounds, it may
+                   take a long time to retrieve some of these objects.
+
+            index_mpid (bool): (bool) Whether to set the materials_id as the dataframe
+                    index.
+
+            api_key: (str) Your Materials Project API key, or None if you've
+                set up your pymatgen config.
+
+        Returns (pandas.Dataframe): containing results
+
+        notes/bugs: works pretty great, API easy to use and accurate. What to fix for
+                    dataframe integration into mastml?
+        """
+        mp_df = MPDataRetrieval(api_key).get_dataframe(criteria, properties, index_mpid)
+        mp_df = mp_df.loc[mp_df['formation_energy_per_atom'].idxmin(), :].to_frame().transpose().reset_index().drop('index', axis=1)
+
+        return mp_df
+
+
+    def retrieve_citrine(self, criteria, properties, common_fields, secondary_fields, print_properties_options, api_key):
+        """
+        Gets a Pandas dataframe object from data retrieved from
+        the Citrine API.
+
+        Args:
+            criteria (dict): see get_data method for supported keys except
+                    prop; prop should be included in properties.
+
+            properties ([str]): requested properties/fields/columns.
+                    For example, ["Seebeck coefficient", "Band gap"]. If unsure
+                    about the exact words, capitalization, etc try something like
+                    ["gap"] and "max_results": 3 and print_properties_options=True
+                    to see the exact options for this field
+
+            common_fields ([str]): fields that are common to all the requested
+                    properties. Common example can be "chemicalFormula". Look for
+                    suggested common fields after a quick query for more info
+
+            secondary_fields (bool): if True, fields not included in properties
+                    may be added to the output (e.g. references). Recommended only
+                    if len(properties)==1'
+
+            print_properties_options (bool): whether to print available options
+                    for "properties" and "common_fields" arguments.
+
+            api_key: (str) Your Citrine API key, or None if
+                    you've set the CITRINE_KEY environment variable
+
+        return: (object) Pandas dataframe object containing the results
+
+        notes/bugs: criteria needs a dictionary, not specified in get_data() as mentioned,
+                    and example on documentation webpage does not work. What to fix for
+                    dataframe integration into mastml?
+        """
+
+        citrine_df = CitrineDataRetrieval(api_key).get_dataframe(criteria, properties, common_fields, secondary_fields, print_properties_options)
+        return citrine_df
+
+    def retrieve_MDF(self, criteria, anonymous=False, properties=None, unwind_arrays=True):
+        mdf_df = MDFDataRetrieval(anonymous).get_dataframe(criteria, properties, unwind_arrays)
+        return mdf_df
+
+    def retrieve_MPDS(self, criteria, properties=None, api_key=None, endpoint=None):
+        mpds_df = MPDSDataRetrieval(api_key, endpoint).get_dataframe(criteria, properties)
+        return mpds_df
+
+    def retrieve_AFLOW(self, criteria, properties, files=None, request_size=10000, request_limit=0, index_auid=True):
+        aflow_df = AFLOWDataRetrieval().get_dataframe(criteria, properties, files, request_size, index_auid)
+        return aflow_df
+
+
+
+
+
+
+
 
 class PolynomialFeatures(BaseEstimator, TransformerMixin):
     """
