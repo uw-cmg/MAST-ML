@@ -12,6 +12,40 @@ from scipy.linalg import orth
 
 log = logging.getLogger('mastml')
 
+def flag_outliers(df, conf_not_input_features, savepath, n_stdevs=3):
+    """
+    Method that scans values in each X feature matrix column and flags values that are larger than 3 standard deviations
+    from the average of that column value. The index and column values of potentially problematic points are listed and
+    written to an output file.
+
+    Args:
+        df: (dataframe), pandas dataframe containing data
+
+    Returns:
+        None, just writes results to file
+
+    """
+    n_rows = df.shape[0]
+    outlier_dict = dict()
+    for col in df.columns:
+        outlier_rows = list()
+        outlier_vals = list()
+        if col not in conf_not_input_features:
+            avg = np.average(df[col])
+            stdev = np.std(df[col])
+            for row in range(n_rows):
+                if df[col].iloc[row] > avg + n_stdevs*stdev:
+                    outlier_rows.append(row)
+                    outlier_vals.append(df[col].iloc[row])
+                elif df[col].iloc[row] < avg - n_stdevs*stdev:
+                    outlier_rows.append(row)
+                    outlier_vals.append(df[col].iloc[row])
+                else:
+                    pass
+        outlier_dict[col] = (outlier_rows, outlier_vals)
+    pd.DataFrame().from_dict(data=outlier_dict,orient='index', columns=['Indices', 'Values']).to_excel(os.path.join(savepath,'data_potential_outliers.xlsx'))
+    return
+
 def remove(df, axis):
     """
     Method that removes a full column or row of data values if one column or row contains NaN or is blank
