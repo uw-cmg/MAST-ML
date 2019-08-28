@@ -249,7 +249,7 @@ class GridSearch(HyperOptUtils):
             self.cv = ms.RepeatedKFold()
 
         model = GridSearchCV(self.estimator, param_dict, scoring=self.scoring, cv=self.cv, refit=refit,
-                             iid=iid)
+                             iid=iid, verbose=2)
 
         try:
             rst[estimator_name] = model.fit(X, y)
@@ -326,7 +326,8 @@ class RandomizedSearch(HyperOptUtils):
         if self.cv is None:
             self.cv = ms.RepeatedKFold()
 
-        model = RandomizedSearchCV(self.estimator, param_dict, n_iter=self.n_iter, scoring=self.scoring, cv=self.cv, refit=refit)
+        model = RandomizedSearchCV(self.estimator, param_dict, n_iter=self.n_iter, scoring=self.scoring, cv=self.cv,
+                                   refit=refit, verbose=2)
 
         try:
             rst[estimator_name] = model.fit(X, y)
@@ -404,7 +405,7 @@ class BayesianSearch(HyperOptUtils):
             self.cv = ms.RepeatedKFold()
 
         model = BayesSearchCV(estimator=self.estimator, search_spaces=param_dict, n_iter=self.n_iter,
-                              scoring=self.scoring, cv=self.cv, refit=refit)
+                              scoring=self.scoring, cv=self.cv, refit=refit, verbose=2)
 
         try:
             rst[estimator_name] = model.fit(X, y)
