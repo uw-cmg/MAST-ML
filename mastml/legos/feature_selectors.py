@@ -15,6 +15,9 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.decomposition import PCA
 import sklearn.feature_selection as fs
 from mlxtend.feature_selection import SequentialFeatureSelector
+import os, logging
+
+log = logging.getLogger('mastml')
 
 from mastml.legos import util_legos
 
@@ -175,12 +178,31 @@ class MASTMLFeatureSelector(object):
         self.n_features_to_select = n_features_to_select
         self.cv = cv
 
-    def fit(self, X, y, Xgroups=None):
+        ##################
+        # Only temporary, to do feature selection with GPR
+        ##################
+        #from sklearn.gaussian_process import GaussianProcessRegressor
+        #from sklearn.gaussian_process.kernels import RBF, ConstantKernel
+        #self.estimator = GaussianProcessRegressor(kernel=RBF(), n_restarts_optimizer=25, alpha=0.000001)
+        #self.estimator = GaussianProcessRegressor(kernel=0.474**2*RBF(), n_restarts_optimizer=5)
+        #self.estimator = GaussianProcessRegressor(kernel=RBF(), n_restarts_optimizer=10)
+
+    def fit(self, X, y, savepath, Xgroups=None):
         if Xgroups.shape[0] == 0:
             xgroups = np.zeros(len(y))
             Xgroups = pd.DataFrame(xgroups)
 
-        self.selected_feature_names = list()
+        ##################
+        # HERE- can include a starting feature if desired
+        ##################
+        #self.selected_feature_names = ['Site2_MeltingT', 'NdUnfilled_composition_average', 'Site2_BCCenergy_pa']
+        #self.selected_feature_names = ['Site2_MeltingT']
+        #self.selected_feature_names = []
+        #log.info('STARTING WITH FEATURES')
+        #log.info(self.selected_feature_names)
+        ##################
+
+        self.selected_feature_names = []
         selected_feature_avg_rmses = list()
         selected_feature_std_rmses = list()
         basic_forward_selection_dict = dict()
@@ -189,6 +211,9 @@ class MASTMLFeatureSelector(object):
         if self.n_features_to_select >= len(x_features):
             self.n_features_to_select = len(x_features)
         while num_features_selected < self.n_features_to_select:
+            log.info('On number of features selected')
+            log.info(str(num_features_selected))
+
             # Catch pandas warnings here
             with warnings.catch_warnings():
                 warnings.simplefilter('ignore')
@@ -196,6 +221,9 @@ class MASTMLFeatureSelector(object):
                 top_feature_name, top_feature_avg_rmse, top_feature_std_rmse = self._choose_top_feature(ranked_features=ranked_features)
 
             self.selected_feature_names.append(top_feature_name)
+            if len(self.selected_feature_names) > 0:
+                log.info('selected features')
+                log.info(self.selected_feature_names)
             selected_feature_avg_rmses.append(top_feature_avg_rmse)
             selected_feature_std_rmses.append(top_feature_std_rmse)
 
@@ -208,6 +236,8 @@ class MASTMLFeatureSelector(object):
                 'Avg RMSE using top features'] = top_feature_avg_rmse
             basic_forward_selection_dict[str(num_features_selected)][
                 'Stdev RMSE using top features'] = top_feature_std_rmse
+            # Save for every loop of selecting features
+            pd.DataFrame(basic_forward_selection_dict).to_excel(os.path.join(savepath,'forward_selection_data_feature_'+str(num_features_selected)+'.xlsx'))
             num_features_selected += 1
         basic_forward_selection_dict[str(self.n_features_to_select - 1)][
             'Full feature set Names'] = self.selected_feature_names
@@ -217,6 +247,7 @@ class MASTMLFeatureSelector(object):
             'Full feature set Stdev RMSEs'] = selected_feature_std_rmses
         #self._plot_featureselected_learningcurve(selected_feature_avg_rmses=selected_feature_avg_rmses,
         #                                         selected_feature_std_rmses=selected_feature_std_rmses)
+
         return self
 
     def transform(self, X):
@@ -232,15 +263,29 @@ class MASTMLFeatureSelector(object):
             groups = groups.iloc[:,0].tolist()
         for col in X.columns:
             if col not in self.selected_feature_names:
+                #log.info('testing column')
+                #log.info(str(col))
                 X_ = X.loc[:, self.selected_feature_names]
-                X_ = np.array(pd.concat([X_, X[col]],axis=1))
+                X__ = X.loc[:, col]
+                #col1 = pd.DataFrame(X_).columns[:]
+                #col2 = pd.DataFrame(X__).columns[0]
+                #log.info('predicting for columns')
+                #log.info(col1)
+                #log.info(col2)
+                X_ = np.array(pd.concat([X_, X__], axis=1))
+
                 for trains, tests in self.cv.split(X_, y, groups):
                     self.estimator.fit(X_[trains], y[trains])
+                    #print(self.estimator.kernel_)
                     #predict_trains = self.estimator.predict(X_[trains])
                     predict_tests = self.estimator.predict(X_[tests])
                     #trains_metrics.append(root_mean_squared_error(y[trains], predict_trains))
                     tests_metrics.append(root_mean_squared_error(y[tests], predict_tests))
                 avg_rmse = np.mean(tests_metrics)
+
+                #log.info('got avg RMSE of () for column ()')
+                #log.info(str(avg_rmse))
+                #log.info(col)
                 std_rmse = np.std(tests_metrics)
                 ranked_features[col] = {"avg_rmse": avg_rmse, "std_rmse": std_rmse}
         return ranked_features
@@ -269,6 +314,7 @@ class MASTMLFeatureSelector(object):
                     feature_std_rmses_sorted.append(v['std_rmse'])
 
         top_feature_name = feature_names_sorted[0]
+        #print('found top feature name', top_feature_name)
         top_feature_avg_rmse = feature_avg_rmses_sorted[0]
         top_feature_std_rmse = feature_std_rmses_sorted[0]
 
