@@ -123,6 +123,10 @@ def mastml_run(conf_path, data_path, outdir):
         # There are no X feature vectors specified, so can't clean data
         log.warning("There are no X feature vectors imported from the data file. Therefore, data cleaning cannot be performed.")
     else:
+        # Always scan the input data and flag potential outliers
+        data_cleaner.flag_outliers(df=df, conf_not_input_features=conf['GeneralSetup']['not_input_features'],
+                                   savepath=outdir,
+                                   n_stdevs=3)
         if dc['cleaning_method'] == 'remove':
             df, nan_indices = data_cleaner.remove(df, axis=1)
             X, nan_indices = data_cleaner.remove(X, axis=1)
