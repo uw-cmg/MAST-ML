@@ -462,7 +462,8 @@ def mastml_run(conf_path, data_path, outdir):
                     # NOTE: Changed from .fit_transform to .fit.transform
                     # because PCA.fit_transform doesn't call PCA.transform
                     if selector_instance.__class__.__name__ == 'MASTMLFeatureSelector':
-                        X_selected = selector_instance.fit(X_normalized, y, X_grouped).transform(X_normalized)
+                        dirname = join(outdir, normalizer_name)
+                        X_selected = selector_instance.fit(X_normalized, y, dirname, X_grouped).transform(X_normalized)
                     else:
                         X_selected = selector_instance.fit(X_normalized, y).transform(X_normalized)
                     log.info("    Saving selected features to csv...")
@@ -971,7 +972,7 @@ def _snatch_models(models, conf_feature_selection):
 
 def _snatch_gpr_model(models, conf_models):
     for model in models.keys():
-        if model == 'GaussianProcessRegressor':
+        if 'GaussianProcessRegressor' in model:
             import sklearn.gaussian_process
             from sklearn.gaussian_process import GaussianProcessRegressor
             kernel_list = ['WhiteKernel', 'RBF', 'ConstantKernel', 'Matern', 'RationalQuadratic', 'ExpSineSquared', 'DotProduct']
