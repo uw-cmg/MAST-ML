@@ -828,12 +828,20 @@ def mastml_run(conf_path, data_path, outdir):
 
             # Write stats in each split path, not main path
             if is_validation:
+                _write_stats_tocsv(split_result['train_metrics'],
+                         split_result['test_metrics'],
+                         path,
+                         split_result['prediction_metrics'],
+                         validation_column_names)
                 _write_stats(split_result['train_metrics'],
                          split_result['test_metrics'],
                          path,
                          split_result['prediction_metrics'],
                          validation_column_names)
             else:
+                _write_stats_tocsv(split_result['train_metrics'],
+                             split_result['test_metrics'],
+                             path)
                 _write_stats(split_result['train_metrics'],
                              split_result['test_metrics'],
                              path)
@@ -883,12 +891,18 @@ def mastml_run(conf_path, data_path, outdir):
         if is_validation:
             avg_train_stats, avg_test_stats, avg_prediction_stats = make_train_test_average_and_std_stats()
             # Here- write average stats to main folder of splitter
+            _write_stats_tocsv(avg_train_stats,
+                         avg_test_stats,
+                         main_path, prediction_metrics=avg_prediction_stats, prediction_names=validation_column_names)
             _write_stats(avg_train_stats,
                          avg_test_stats,
                          main_path, prediction_metrics=avg_prediction_stats, prediction_names=validation_column_names)
         else:
             avg_train_stats, avg_test_stats = make_train_test_average_and_std_stats()
             # Here- write average stats to main folder of splitter
+            _write_stats_tocsv(avg_train_stats,
+                         avg_test_stats,
+                         main_path)
             _write_stats(avg_train_stats,
                          avg_test_stats,
                          main_path)
@@ -1173,7 +1187,7 @@ def _save_all_runs(runs, outdir):
     pd.DataFrame(table).to_html(join(outdir, 'all_runs_table.html'))
 
 def _write_stats(train_metrics, test_metrics, outdir, prediction_metrics=None, prediction_names=None):
-    with open(join(outdir, 'stats.txt'), 'w') as f:
+    with open(join(outdir, 'stats_summary.txt'), 'w') as f:
         f.write("TRAIN:\n")
         for name,score in train_metrics.items():
             if type(score) == tuple:
@@ -1195,6 +1209,30 @@ def _write_stats(train_metrics, test_metrics, outdir, prediction_metrics=None, p
                         f.write(f"{name}: {'%.3f'%float(score[0])} +/- {'%.3f'%float(score[1])}\n")
                     else:
                         f.write(f"{name}: {'%.3f'%float(score)}\n")
+
+def _write_stats_tocsv(train_metrics, test_metrics, outdir, prediction_metrics=None, prediction_names=None):
+    datadict = dict()
+    for name, score in train_metrics.items():
+        if type(score) == tuple:
+            datadict[name+' train score'] = float(score[0])
+            datadict[name+' train stdev'] = float(score[1])
+        else:
+            datadict[name+' train score'] = float(score)
+    for name, score in test_metrics.items():
+        if type(score) == tuple:
+            datadict[name+' validation score'] = float(score[0])
+            datadict[name+' validation stdev'] = float(score[1])
+        else:
+            datadict[name+' validation score'] = float(score)
+    for prediction_metric, prediction_name in zip(prediction_metrics, prediction_names):
+        for name, score in prediction_metric.items():
+            if type(score) == tuple:
+                datadict[prediction_name+' '+name+' score'] = float(score[0])
+                datadict[prediction_name+' '+name+' stdev'] = float(score[1])
+            else:
+                datadict[prediction_name+' '+name+' score'] = float(score)
+    pd.DataFrame().from_dict(data=datadict, orient='index').to_csv(join(outdir, 'stats_summary.csv'))
+    return
 
 def _exclude_validation(df, validation_column):
     return df.loc[validation_column != 1]
