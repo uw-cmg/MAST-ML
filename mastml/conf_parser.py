@@ -89,7 +89,7 @@ def parse_conf_file(filepath):
 
     def check_general_setup_settings_are_valid():
         all_settings =  ['input_features', 'target_feature', 'metrics',
-                         'randomizer', 'validation_columns', 'not_input_features', 'grouping_feature', 'normalize_target_feature']
+                         'randomizer', 'validation_columns', 'not_input_features', 'grouping_feature']
         for name in GS:
             if name not in all_settings:
                 raise utils.InvalidConfParameters(
@@ -194,7 +194,8 @@ def parse_conf_file(filepath):
     make_long_name_short_name_pairs()
 
     def check_and_boolify_plot_settings():
-        default_false = ['feature_vs_target', 'error_plots', 'average_error_plots', 'error_method', 'percentile']
+        default_false = ['feature_vs_target', 'error_plots', 'rf_error_method', 'rf_error_percentile',
+                         'normalize_target_feature']
         default_true = ['target_histogram', 'train_test_plots', 'predicted_vs_true',
                          'predicted_vs_true_bars', 'best_worst_per_point']
         all_settings = default_false + default_true
