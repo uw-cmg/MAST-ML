@@ -16,6 +16,7 @@ import logging
 from collections import Iterable
 from os.path import join
 from collections import OrderedDict
+from math import log, floor, ceil
 
 # Ignore the harmless warning about the gelsd driver on mac.
 warnings.filterwarnings(action="ignore", module="scipy",
@@ -38,8 +39,8 @@ from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
 
 # Needed imports for ipynb_maker
-from mastml.utils import nice_range
-from mastml.metrics import nice_names
+#from mastml.utils import nice_range
+#from mastml.metrics import nice_names
 
 import inspect
 import textwrap
@@ -57,11 +58,11 @@ matplotlib.rc('figure', autolayout=True) # turn on autolayout
 # adding dpi as a constant global so it can be changed later
 DPI = 250
 
-log = logging.getLogger() # only used inside ipynb_maker I guess
+#logger = logging.getLogger() # only used inside ipynb_maker I guess
 
 # HEADERENDER don't delete this line, it's used by ipynb maker
 
-log = logging.getLogger('mastml') # the real logger
+logger = logging.getLogger('mastml') # the real logger
 
 def ipynb_maker(plot_func):
     """
@@ -118,7 +119,12 @@ def ipynb_maker(plot_func):
                     break
                 header += line
 
-        core_funcs = [plot_helper.stat_to_string, plot_helper.plot_stats, plot_helper.make_fig_ax]
+        core_funcs = [plot_helper.stat_to_string, plot_helper.plot_stats, plot_helper.make_fig_ax,
+                      plot_helper.get_histogram_bins, plot_helper.nice_names, plot_helper.nice_range,
+                      plot_helper.nice_mean, plot_helper.nice_std, plot_helper.rounder, plot_helper._set_tick_labels,
+                      plot_helper._set_tick_labels_different, plot_helper._nice_range_helper, plot_helper._nearest_pow_ten,
+                      plot_helper._three_sigfigs, plot_helper._n_sigfigs, plot_helper._int_if_int, plot_helper._round_up,
+                      plot_helper.prediction_intervals]
         func_strings = '\n\n'.join(inspect.getsource(func) for func in core_funcs)
 
         plot_func_string = inspect.getsource(plot_func)
@@ -140,10 +146,15 @@ def ipynb_maker(plot_func):
         args_block = ("from numpy import array\n" +
                       "from collections import OrderedDict\n" +
                       "from io import StringIO\n" +
+                    "from sklearn.gaussian_process import GaussianProcessRegressor  # Need for error plots\n" +
+                    "from sklearn.gaussian_process.kernels import *  # Need for error plots\n" +
+                    "from sklearn.ensemble import RandomForestRegressor  # Need for error plots\n" +
                       '\n'.join(arg_assignments))
         arg_names = ', '.join(arg_names)
 
         if knows_savepath:
+            if '.png' not in basename:
+                basename += '.png'
             main = textwrap.dedent(f"""\
                 import pandas as pd
                 from IPython.display import Image, display
@@ -156,7 +167,7 @@ def ipynb_maker(plot_func):
                 import pandas as pd
                 from IPython.display import Image, display
 
-                plot_paths = plot_predicted_vs_true(train_triple, test_triple, outdir)
+                plot_paths = plot_predicted_vs_true(train_quad, test_quad, outdir, label)
                 for plot_path in plot_paths:
                     display(Image(filename=plot_path))
             """)
@@ -249,7 +260,7 @@ def make_error_plots(run, path, is_classification, label, model, train_X, test_X
     train_groups, test_groups = run['train_groups'], run['test_groups']
 
     if is_classification:
-        log.debug('There is no error distribution plotting for classification problems, just passing through...')
+        logger.debug('There is no error distribution plotting for classification problems, just passing through...')
     else: # is_regression
 
         #title = 'train_normalized_error'
@@ -267,7 +278,6 @@ def make_error_plots(run, path, is_classification, label, model, train_X, test_X
         title = 'test_cumulative_normalized_error'
         plot_cumulative_normalized_error(y_test_true, y_test_pred, join(path, title+'.png'), model, rf_error_method,
                                          rf_error_percentile, X=test_X, Xtrain=train_X, Xtest=test_X)
-
 
 @ipynb_maker
 def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False, title='Confusion matrix', cmap=plt.cm.Blues):
@@ -591,13 +601,13 @@ def plot_predicted_vs_true(train_quad, test_quad, outdir, label):
         else:
             handles = dict()
             unique_groups = np.unique(np.concatenate((train_groups, test_groups), axis=0))
-            log.debug(' '*12 + 'unique groups: ' +str(list(unique_groups)))
+            logger.debug(' '*12 + 'unique groups: ' +str(list(unique_groups)))
             colors = ['blue', 'red', 'green', 'purple', 'orange', 'black']
             markers = ['o', 'v', '^', 's', 'p', 'h', 'D', '*', 'X', '<', '>', 'P']
             colorcount = markercount = 0
             for groupcount, group in enumerate(unique_groups):
                 mask = groups == group
-                log.debug(' '*12 + f'{group} group_percent = {np.count_nonzero(mask) / len(groups)}')
+                logger.debug(' '*12 + f'{group} group_percent = {np.count_nonzero(mask) / len(groups)}')
                 handles[group] = ax.scatter(y_true[mask], y_pred[mask], label=group, color=colors[colorcount],
                                             marker=markers[markercount], s=100, alpha=0.7)
                 colorcount += 1
@@ -1469,7 +1479,7 @@ def plot_learning_curve(train_sizes, train_mean, test_mean, train_stdev, test_st
     try:
         plot_learning_curve_convergence(train_sizes, test_mean, score_name, learning_curve_type, savepath)
     except IndexError:
-        log.error('MASTML encountered an error while trying to plot the learning curve convergences plots, likely due to '
+        logger.error('MASTML encountered an error while trying to plot the learning curve convergences plots, likely due to '
                   'insufficient data')
 
 @ipynb_maker
@@ -1639,7 +1649,7 @@ def get_histogram_bins(y_df):
         num_bins = 10
     return num_bins
 
-def stat_to_string(name, value):
+def stat_to_string(name, value, nice_names):
     """
     Method that converts a metric object into a string for displaying on a plot
 
@@ -1699,7 +1709,7 @@ def plot_stats(fig, stats, x_align=0.65, y_align=0.90, font_dict=dict(), fontsiz
 
     """
 
-    stat_str = '\n'.join(stat_to_string(name, value)
+    stat_str = '\n'.join(stat_to_string(name, value, nice_names=nice_names())
                            for name,value in stats.items())
 
     fig.text(x_align, y_align, stat_str,
@@ -2045,3 +2055,229 @@ def _clean_tick_labels(tickvals, delta):
     else:
         tickvals_clean = tickvals
     return tickvals_clean
+
+## Math utilities to aid plot_helper to make ranges
+
+def nice_range(lower, upper):
+    """
+    Method to create a range of values, including the specified start and end points, with nicely spaced intervals
+
+    Args:
+
+        lower: (float or int), lower bound of range to create
+
+        upper: (float or int), upper bound of range to create
+
+    Returns:
+
+        (list), list of numerical values in established range
+
+    """
+
+    flipped = 1 # set to -1 for inverted
+
+    # Case for validation where nan is passed in
+    if np.isnan(lower):
+        lower = 0
+    if np.isnan(upper):
+        upper = 0.1
+
+    if upper < lower:
+        upper, lower = lower, upper
+        flipped = -1
+    return [_int_if_int(x) for x in _nice_range_helper(lower, upper)][::flipped]
+
+def _nice_range_helper(lower, upper):
+    """
+    Method to help make a better range of axis ticks
+
+    Args:
+
+        lower: (float), lower value of axis ticks
+
+        upper: (float), upper value of axis ticks
+
+    Returns:
+
+        upper: (float), modified upper tick value fixed based on set of axis ticks
+
+    """
+    steps = 8
+    diff = abs(lower - upper)
+
+    # special case where lower and upper are the same
+    if diff == 0:
+        return [lower,]
+
+    # the exact step needed
+    step = diff / steps
+
+    # a rough estimate of best step
+    step = _nearest_pow_ten(step) # whole decimal increments
+
+    # tune in one the best step size
+    factors = [0.1, 0.2, 0.5, 1, 2, 5, 10]
+
+    # use this to minimize how far we are from ideal step size
+    def best_one(steps_factor):
+        steps_count, factor = steps_factor
+        return abs(steps_count - steps)
+    n_steps, best_factor = min([(diff / (step * f), f) for f in factors], key = best_one)
+
+    #print('should see n steps', ceil(n_steps + 2))
+    # multiply in the optimal factor for getting as close to ten steps as we can
+    step = step * best_factor
+
+    # make the bounds look nice
+    lower = _three_sigfigs(lower)
+    upper = _three_sigfigs(upper)
+
+    start = _round_up(lower, step)
+
+    # prepare for iteration
+    x = start # pointless init
+    i = 0
+
+    # itereate until we reach upper
+    while x < upper - step:
+        x = start + i * step
+        yield _three_sigfigs(x) # using sigfigs because of floating point error
+        i += 1
+
+    # finish off with ending bound
+    yield upper
+
+def _three_sigfigs(x):
+    """
+    Method invoking special case of _n_sigfigs to return 3 sig figs
+
+    Args:
+
+        x: (float), an axis tick number
+
+    Returns:
+
+        (float), number of sig figs (always 3)
+
+    """
+    return _n_sigfigs(x, 3)
+
+def _n_sigfigs(x, n):
+    """
+    Method to return number of sig figs to use for axis ticks
+
+    Args:
+
+        x: (float), an axis tick number
+
+    Returns:
+
+        (float), number of sig figs
+
+    """
+    sign = 1
+    if x == 0:
+        return 0
+    if x < 0: # case for negatives
+        x = -x
+        sign = -1
+    if x < 1:
+        base = n - round(log(x, 10))
+    else:
+        base = (n-1) - round(log(x, 10))
+    return sign * round(x, base)
+
+def _nearest_pow_ten(x):
+    """
+    Method to return the nearest power of ten for an axis tick value
+
+    Args:
+
+        x: (float), an axis tick number
+
+    Returns:
+
+        (float), nearest power of ten of x
+
+    """
+    sign = 1
+    if x == 0:
+        return 0
+    if x < 0: # case for negatives
+        x = -x
+        sign = -1
+    return sign*10**ceil(log(x, 10))
+
+def _int_if_int(x):
+    """
+    Method to return integer mapped value of x
+
+    Args:
+
+        x: (float or int), a number
+
+    Returns:
+
+        x: (float), value of x mapped as integer
+
+    """
+    if int(x) == x:
+        return int(x)
+    return x
+
+def _round_up(x, inc):
+    """
+    Method to round up the value of x
+
+    Args:
+
+        x: (float or int), a number
+
+        inc: (float), an increment for axis ticks
+
+    Returns:
+
+        (float), value of x rounded up
+
+    """
+    sign = 1
+    if x < 0: # case for negative
+        x = -x
+        sign = -1
+
+    return sign * inc * ceil(x / inc)
+
+def nice_names():
+    nice_names = {
+    # classification:
+    'accuracy': 'Accuracy',
+    'f1_binary': '$F_1$',
+    'f1_macro': 'f1_macro',
+    'f1_micro': 'f1_micro',
+    'f1_samples': 'f1_samples',
+    'f1_weighted': 'f1_weighted',
+    'log_loss': 'log_loss',
+    'precision_binary': 'Precision',
+    'precision_macro': 'prec_macro',
+    'precision_micro': 'prec_micro',
+    'precision_samples': 'prec_samples',
+    'precision_weighted': 'prec_weighted',
+    'recall_binary': 'Recall',
+    'recall_macro': 'rcl_macro',
+    'recall_micro': 'rcl_micro',
+    'recall_samples': 'rcl_samples',
+    'recall_weighted': 'rcl_weighted',
+    'roc_auc': 'ROC_AUC',
+    # regression:
+    'explained_variance': 'expl_var',
+    'mean_absolute_error': 'MAE',
+    'mean_squared_error': 'MSE',
+    'mean_squared_log_error': 'MSLE',
+    'median_absolute_error': 'MedAE',
+    'root_mean_squared_error': 'RMSE',
+    'rmse_over_stdev': r'RMSE/$\sigma_y$',
+    'R2': '$R^2$',
+    'R2_noint': '$R^2_{noint}$',
+    'R2_adjusted': '$R^2_{adjusted}$'
+    }
+    return nice_names

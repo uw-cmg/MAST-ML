@@ -219,7 +219,7 @@ class InvalidValue(MastError):
 
 
 ## Math utilities to aid plot_helper to make ranges
-
+#TODO: can likely remove from here as in plot_helper now
 def nice_range(lower, upper):
     """
     Method to create a range of values, including the specified start and end points, with nicely spaced intervals
@@ -410,9 +410,8 @@ def _round_up(x, inc):
     return sign * inc * ceil(x / inc)
 
 
-
 ## Joke functions:
-
+"""
 ### String formatting funcs for inserting into log._log when in verbose mode
 def to_upper(message):
     return str(message).upper()
@@ -485,3 +484,4 @@ def verbosalize_logger(log, verbosity):
         old_log(level, [None, None, to_upper, to_full_width, to_leet, deep_fry, deep_fry_2, emojify][verbosity](msg), *args, **kwargs)
 
     log._log = new_log
+"""
