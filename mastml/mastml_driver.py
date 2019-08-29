@@ -315,7 +315,7 @@ def mastml_run(conf_path, data_path, outdir):
         validation_y = list()
 
     def do_all_combos(X, y, df):
-        log.info(f"There are {len(normalizers)} feature normalizers, {len(hyperopts)} hyperparameter optimziers, "
+        log.info(f"There are {len(normalizers)} feature normalizers, {len(hyperopts)} hyperparameter optimizers, "
                  f"{len(selectors)} feature selectors, {len(models)} models, and {len(splitters)} splitters.")
 
         def generate_features():
@@ -457,7 +457,8 @@ def mastml_run(conf_path, data_path, outdir):
                     # Do sample learning curve
                     train_sizes, train_mean, test_mean, train_stdev, test_stdev = learning_curve.sample_learning_curve(X=X_novalidation_normalized, y=y_novalidation,
                                                             estimator=learning_curve_estimator, cv=learning_curve_cv,
-                                                            scoring=learning_curve_scoring, Xgroups=X_grouped_novalidation)
+                                                            scoring=learning_curve_scoring,
+                                                            Xgroups=X_grouped_novalidation)
                     plot_helper.plot_learning_curve(train_sizes, train_mean, test_mean, train_stdev, test_stdev,
                                                     scoring_name_nice, 'sample_learning_curve',
                                                     join(dirname, f'data_learning_curve'))
@@ -465,6 +466,7 @@ def mastml_run(conf_path, data_path, outdir):
                     train_sizes, train_mean, test_mean, train_stdev, test_stdev = learning_curve.feature_learning_curve(X=X_novalidation_normalized, y=y_novalidation,
                                                             estimator=learning_curve_estimator, cv=learning_curve_cv,
                                                             scoring=learning_curve_scoring, selector_name=selector_name,
+                                                            savepath=dirname,
                                                             n_features_to_select=n_features_to_select,
                                                             Xgroups=X_grouped_novalidation)
                     plot_helper.plot_learning_curve(train_sizes, train_mean, test_mean, train_stdev, test_stdev,
@@ -482,9 +484,13 @@ def mastml_run(conf_path, data_path, outdir):
                     # because PCA.fit_transform doesn't call PCA.transform
                     if selector_instance.__class__.__name__ == 'MASTMLFeatureSelector':
                         dirname = join(outdir, normalizer_name)
-                        X_selected = selector_instance.fit(X_normalized, y, dirname, X_grouped).transform(X_normalized)
+                        X_selected = selector_instance.fit(X_novalidation_normalized, y_novalidation, dirname, X_grouped_novalidation).transform(X_novalidation_normalized)
                     else:
-                        X_selected = selector_instance.fit(X_normalized, y).transform(X_normalized)
+                        X_selected = selector_instance.fit(X_novalidation_normalized, y_novalidation).transform(X_novalidation_normalized)
+                    features_selected = X_selected.columns.tolist()
+                    # Need to do this instead of taking X_selected directly because otherwise won't concatenate correctly with test data values, which are
+                    # left out of the feature selection process.
+                    X_selected = X_normalized[features_selected]
                     log.info("    Saving selected features to csv...")
                     dirname = join(outdir, normalizer_name, selector_name)
                     os.mkdir(dirname)
