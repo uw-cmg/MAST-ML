@@ -145,6 +145,9 @@ class MASTMLFeatureSelector(object):
 
         cv: (scikit-learn cross-validation object), a scikit-learn cross-validation object
 
+        manually_selected_features: (list), a list of features manually set by the user. The feature selector will first
+        start from this list of features and sequentially add features until n_features_to_select is met.
+
     Methods:
 
         fit: performs feature selection
@@ -173,10 +176,12 @@ class MASTMLFeatureSelector(object):
 
     """
 
-    def __init__(self, estimator, n_features_to_select, cv):
+    def __init__(self, estimator, n_features_to_select, cv, manually_selected_features=str()):
         self.estimator = estimator
         self.n_features_to_select = n_features_to_select
         self.cv = cv
+        self.manually_selected_features = manually_selected_features
+        self.selected_feature_names = self.manually_selected_features
 
         ##################
         # Only temporary, to do feature selection with GPR
@@ -192,17 +197,6 @@ class MASTMLFeatureSelector(object):
             xgroups = np.zeros(len(y))
             Xgroups = pd.DataFrame(xgroups)
 
-        ##################
-        # HERE- can include a starting feature if desired
-        ##################
-        #self.selected_feature_names = ['Site2_MeltingT', 'NdUnfilled_composition_average', 'Site2_BCCenergy_pa']
-        #self.selected_feature_names = ['Site2_MeltingT']
-        #self.selected_feature_names = []
-        #log.info('STARTING WITH FEATURES')
-        #log.info(self.selected_feature_names)
-        ##################
-
-        self.selected_feature_names = []
         selected_feature_avg_rmses = list()
         selected_feature_std_rmses = list()
         basic_forward_selection_dict = dict()
@@ -237,7 +231,7 @@ class MASTMLFeatureSelector(object):
             basic_forward_selection_dict[str(num_features_selected)][
                 'Stdev RMSE using top features'] = top_feature_std_rmse
             # Save for every loop of selecting features
-            pd.DataFrame(basic_forward_selection_dict).to_excel(os.path.join(savepath,'forward_selection_data_feature_'+str(num_features_selected)+'.xlsx'))
+            pd.DataFrame(basic_forward_selection_dict).to_csv(os.path.join(savepath,'MASTMLFeatureSelector_data_feature_'+str(num_features_selected)+'.csv'))
             num_features_selected += 1
         basic_forward_selection_dict[str(self.n_features_to_select - 1)][
             'Full feature set Names'] = self.selected_feature_names
@@ -263,29 +257,16 @@ class MASTMLFeatureSelector(object):
             groups = groups.iloc[:,0].tolist()
         for col in X.columns:
             if col not in self.selected_feature_names:
-                #log.info('testing column')
-                #log.info(str(col))
                 X_ = X.loc[:, self.selected_feature_names]
                 X__ = X.loc[:, col]
-                #col1 = pd.DataFrame(X_).columns[:]
-                #col2 = pd.DataFrame(X__).columns[0]
-                #log.info('predicting for columns')
-                #log.info(col1)
-                #log.info(col2)
                 X_ = np.array(pd.concat([X_, X__], axis=1))
 
                 for trains, tests in self.cv.split(X_, y, groups):
                     self.estimator.fit(X_[trains], y[trains])
-                    #print(self.estimator.kernel_)
-                    #predict_trains = self.estimator.predict(X_[trains])
                     predict_tests = self.estimator.predict(X_[tests])
-                    #trains_metrics.append(root_mean_squared_error(y[trains], predict_trains))
                     tests_metrics.append(root_mean_squared_error(y[tests], predict_tests))
                 avg_rmse = np.mean(tests_metrics)
 
-                #log.info('got avg RMSE of () for column ()')
-                #log.info(str(avg_rmse))
-                #log.info(col)
                 std_rmse = np.std(tests_metrics)
                 ranked_features[col] = {"avg_rmse": avg_rmse, "std_rmse": std_rmse}
         return ranked_features
@@ -314,7 +295,6 @@ class MASTMLFeatureSelector(object):
                     feature_std_rmses_sorted.append(v['std_rmse'])
 
         top_feature_name = feature_names_sorted[0]
-        #print('found top feature name', top_feature_name)
         top_feature_avg_rmse = feature_avg_rmses_sorted[0]
         top_feature_std_rmse = feature_std_rmses_sorted[0]
 
