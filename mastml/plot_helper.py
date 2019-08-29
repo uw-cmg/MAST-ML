@@ -1461,7 +1461,7 @@ def plot_learning_curve(train_sizes, train_mean, test_mean, train_stdev, test_st
     h2 = ax.plot(train_sizes, test_mean, '-o', color='red', markersize=10, alpha=0.7)[0]
     ax.fill_between(train_sizes, test_mean-test_stdev, test_mean+test_stdev,
                      alpha=0.1, color='red')
-    ax.legend([h1, h2], ['train score', 'test score'], loc='center right', fontsize=12)
+    ax.legend([h1, h2], ['train score', 'validation score'], loc='center right', fontsize=12)
     if learning_curve_type == 'sample_learning_curve':
         ax.set_xlabel('Number of training data points', fontsize=16)
     elif learning_curve_type == 'feature_learning_curve':
@@ -1544,6 +1544,12 @@ def plot_learning_curve_convergence(train_sizes, test_mean, score_name, learning
     ax.set_xlabel('Learning curve step', fontsize=16)
     ax.set_ylabel('Change in '+score_name, fontsize=16)
     fig.savefig(savepath+'_convergence'+'.png', dpi=DPI, bbox_inches='tight')
+
+    datadict = {"Steps": np.array(steps), "Slopes": np.array(slopes),
+                "Steps moving average": np.squeeze(np.array(steps_moving_average)),
+                "Slopes moving average": np.squeeze(np.array(slopes_moving_average))}
+
+    pd.DataFrame().from_dict(data=datadict).to_csv(savepath+'_convergence.csv')
 
     if learning_curve_type == 'feature_learning_curve':
         # First, set number optimal features to all features in case stopping criteria not met
