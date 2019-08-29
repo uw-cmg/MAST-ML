@@ -7,7 +7,7 @@ import logging
 from mastml import utils
 log = logging.getLogger('mastml')
 
-def load_data(file_path, input_features=None, target_feature=None, grouping_feature = None, feature_blacklist=list()):
+def load_data(file_path, input_features=None, input_target=None, input_grouping= None, feature_blacklist=list()):
     """
     Method that accepts the filepath of an input data file and returns a full dataframe and parsed X and y dataframes
 
@@ -41,12 +41,12 @@ def load_data(file_path, input_features=None, target_feature=None, grouping_feat
         df = pd.read_excel(file_path)
 
     # Assign default values to input_features and target_feature;
-    if input_features is None and target_feature is None: # input is first n-1 and target is just n
+    if input_features is None and input_target is None: # input is first n-1 and target is just n
         input_features = list(df.columns[:-1])
         target_feature = df.columns[-1]
     elif input_features is None: # input is all the features except the target feature
-        input_features = [col for col in df.columns if col != target_feature]
-    elif target_feature is None: # target is the last non-input feature
+        input_features = [col for col in df.columns if col != input_target]
+    elif input_target is None: # target is the last non-input feature
         for col in df.columns[::-1]:
             if col not in input_features:
                 target_feature = col
@@ -55,16 +55,16 @@ def load_data(file_path, input_features=None, target_feature=None, grouping_feat
     # Collect required features:
     if type(input_features) is str:
         input_features = [input_features]
-    required_features = input_features + [target_feature]
+    required_features = input_features + [input_target]
 
     # Ensure they are all present:
     for feature in required_features:
         if feature not in df.columns:
             raise Exception(f"Data file does not have column '{feature}'")
 
-    X, y = df[input_features], df[target_feature]
+    X, y = df[input_features], df[input_target]
 
-    log.info('blacklisted features, either from "not_input_features" or a "grouping_column":' +
+    log.info('blacklisted features, either from "input_other" or a "input_grouping":' +
                  str(feature_blacklist))
     # take blacklisted features out of X:
     X_noinput_dict = dict()
@@ -83,17 +83,17 @@ def load_data(file_path, input_features=None, target_feature=None, grouping_feat
 
     X_noinput = pd.DataFrame(X_noinput_dict)
 
-    if grouping_feature:
-        X_grouped = pd.DataFrame(df[grouping_feature])
+    if input_grouping:
+        X_grouped = pd.DataFrame(df[input_grouping])
     else:
         X_grouped = None
 
-    df = df.drop(target_feature, axis=1)
+    df = df.drop(input_target, axis=1)
 
     #Check if features are unambiguously selected
     for feature in X_noinput.columns:
         if feature in X.columns:
-            raise utils.ConfError('An error has occurred wwhere the same feature in both the "input_features" and '
-                                  '"not_input_features" fields. Please correct your input file and re-run MAST-ML')
+            raise utils.ConfError('An error has occurred where the same feature in both the "input_features" and '
+                                  '"input_other" fields. Please correct your input file and re-run MAST-ML')
 
     return df, X, X_noinput, X_grouped, y

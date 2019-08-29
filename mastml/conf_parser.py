@@ -88,8 +88,10 @@ def parse_conf_file(filepath):
     GS = conf['GeneralSetup']
 
     def check_general_setup_settings_are_valid():
-        all_settings =  ['input_features', 'target_feature', 'metrics',
-                         'randomizer', 'validation_columns', 'not_input_features', 'grouping_feature']
+        #all_settings =  ['input_features', 'target_feature', 'metrics',
+        #                 'randomizer', 'validation_columns', 'not_input_features', 'grouping_feature']
+        all_settings =  ['input_features', 'input_target', 'metrics',
+                         'randomizer', 'input_testdata', 'input_other', 'input_grouping']
         for name in GS:
             if name not in all_settings:
                 raise utils.InvalidConfParameters(
@@ -97,8 +99,8 @@ def parse_conf_file(filepath):
                         f"Valid GeneralSetup options are: {all_settings}")
     check_general_setup_settings_are_valid()
 
-    if 'grouping_feature' not in GS:
-        GS['grouping_feature'] = None
+    if 'input_grouping' not in GS:
+        GS['input_grouping'] = None
 
     # Find grouping features and 'not_input_features' to blacklist out of X (see data loader)
     def collect_grouping_features():
@@ -109,26 +111,26 @@ def parse_conf_file(filepath):
                 SS = conf[section][subsection]
                 if not isinstance(SS, dict):
                     continue
-                if 'grouping_column' in SS.keys():
-                    logging.debug('found grouping_feature: ' + SS['grouping_column'])
-                    yield SS['grouping_column']
+                if 'input_grouping' in SS.keys():
+                    logging.debug('found input_grouping feature: ' + SS['input_grouping'])
+                    yield SS['input_grouping']
     # Issue here where if clusters are automatically generated, new column is made but isn't in intitial df, even though
     # listed as grouping_feature. Here, just have to remember to put grouping_feature names in not_input_features
     #feature_blacklist = list(collect_grouping_features())
     feature_blacklist = list()
     # default not_input_features to a list
-    if 'not_input_features' not in GS:
-        GS['not_input_features'] = list()
+    if 'input_other' not in GS:
+        GS['input_other'] = list()
     else:
-        if type(GS['not_input_features']) is str:
+        if type(GS['input_other']) is str:
             new_list = list()
-            new_list.append(GS['not_input_features'])
-            GS['not_input_features'] = new_list
-        elif type(GS['not_input_features']) is list:
+            new_list.append(GS['input_other'])
+            GS['input_other'] = new_list
+        elif type(GS['input_other']) is list:
             pass
 
     # and add the discovered ones to the list
-    GS['not_input_features'] += feature_blacklist
+    GS['input_other'] += feature_blacklist
     #GS['not_input_features'] = [f for f in feature_blacklist if f not in GS['not_input_features']]
 
     def set_randomizer_setting():
@@ -140,7 +142,7 @@ def parse_conf_file(filepath):
 
 
     def set_default_features():
-        for name in ['input_features', 'target_feature']:
+        for name in ['input_features', 'input_target']:
             if (name not in GS) or (GS[name] == 'Auto'):
                 GS[name] = None
     set_default_features()

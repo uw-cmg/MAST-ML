@@ -105,10 +105,10 @@ def mastml_run(conf_path, data_path, outdir):
     # X is model input, y is target feature for model
     df, X, X_noinput, X_grouped, y = data_loader.load_data(data_path,
                                      conf['GeneralSetup']['input_features'],
-                                     conf['GeneralSetup']['target_feature'],
-                                     conf['GeneralSetup']['grouping_feature'],
-                                     conf['GeneralSetup']['not_input_features'])
-    if not conf['GeneralSetup']['grouping_feature']:
+                                     conf['GeneralSetup']['input_target'],
+                                     conf['GeneralSetup']['input_grouping'],
+                                     conf['GeneralSetup']['input_other'])
+    if not conf['GeneralSetup']['input_grouping']:
         X_grouped = pd.DataFrame()
 
     # Perform data cleaning here
@@ -124,7 +124,7 @@ def mastml_run(conf_path, data_path, outdir):
         log.warning("There are no X feature vectors imported from the data file. Therefore, data cleaning cannot be performed.")
     else:
         # Always scan the input data and flag potential outliers
-        data_cleaner.flag_outliers(df=df, conf_not_input_features=conf['GeneralSetup']['not_input_features'],
+        data_cleaner.flag_outliers(df=df, conf_not_input_features=conf['GeneralSetup']['input_other'],
                                    savepath=outdir,
                                    n_stdevs=3)
         if dc['cleaning_method'] == 'remove':
@@ -298,15 +298,15 @@ def mastml_run(conf_path, data_path, outdir):
 
 
 
-    # TODO make this block its own function
+    # TODO make this block its own function, and change naming from is_validation to is_test here and throughout. Just symantic annoyance.
     # get parameters out for 'validation_column'
-    is_validation = 'validation_columns' in conf['GeneralSetup']
+    is_validation = 'input_testdata' in conf['GeneralSetup']
     if is_validation:
-        if type(conf['GeneralSetup']['validation_columns']) is list:
-            validation_column_names = list(conf['GeneralSetup']['validation_columns'])
-        elif type(conf['GeneralSetup']['validation_columns']) is str:
+        if type(conf['GeneralSetup']['input_testdata']) is list:
+            validation_column_names = list(conf['GeneralSetup']['input_testdata'])
+        elif type(conf['GeneralSetup']['input_testdata']) is str:
             validation_column_names = list()
-            validation_column_names.append(conf['GeneralSetup']['validation_columns'][:])
+            validation_column_names.append(conf['GeneralSetup']['input_testdata'][:])
         validation_columns = dict()
         for validation_column_name in validation_column_names:
             validation_columns[validation_column_name] = df[validation_column_name]
@@ -370,14 +370,14 @@ def mastml_run(conf_path, data_path, outdir):
             intersection = reduce(np.intersect1d, (i for i in idxy_list))
             X_novalidation = X.iloc[intersection]
             y_novalidation = y.iloc[intersection]
-            if conf['GeneralSetup']['grouping_feature']:
+            if conf['GeneralSetup']['input_grouping']:
                 X_grouped_novalidation = X_grouped.iloc[intersection]
             else:
                 X_grouped_novalidation = pd.DataFrame()
         else:
             X_novalidation = X
             y_novalidation = y
-            if conf['GeneralSetup']['grouping_feature']:
+            if conf['GeneralSetup']['input_grouping']:
                 X_grouped_novalidation = X_grouped
             else:
                 X_grouped_novalidation = pd.DataFrame()
@@ -427,10 +427,10 @@ def mastml_run(conf_path, data_path, outdir):
                     y_novalidation_new = pd.DataFrame(np.array(y_novalidation).reshape(-1, 1))
                     y_normalized = normalizer_instance_y.fit_transform(yreshape, yreshape)
                     y_novalidation_normalized = normalizer_instance_y_novalidation.fit_transform(y_novalidation_new, y_novalidation_new)
-                    y_normalized.columns = [conf['GeneralSetup']['target_feature']]
-                    y_novalidation_normalized.columns = [conf['GeneralSetup']['target_feature']]
-                    y = pd.Series(np.squeeze(y_normalized), name=conf['GeneralSetup']['target_feature'])
-                    y_novalidation = pd.Series(np.squeeze(y_novalidation_normalized), name=conf['GeneralSetup']['target_feature'])
+                    y_normalized.columns = [conf['GeneralSetup']['input_target']]
+                    y_novalidation_normalized.columns = [conf['GeneralSetup']['input_target']]
+                    y = pd.Series(np.squeeze(y_normalized), name=conf['GeneralSetup']['input_target'])
+                    y_novalidation = pd.Series(np.squeeze(y_novalidation_normalized), name=conf['GeneralSetup']['input_target'])
                 else:
                     normalizer_instance_y = None
                 log.info("Saving normalized data to csv...")
@@ -898,11 +898,11 @@ def mastml_run(conf_path, data_path, outdir):
 
         def make_pred_vs_true_plots(model, y):
             if conf['PlotSettings']['normalize_target_feature'] == True:
-                y = pd.Series(normalizer_instance.inverse_transform(y), name=conf['GeneralSetup']['target_feature'])
+                y = pd.Series(normalizer_instance.inverse_transform(y), name=conf['GeneralSetup']['input_target'])
 
             if PlotSettings['predicted_vs_true']:
                 plot_helper.plot_best_worst_split(y.values, best, worst,
-                                                  join(main_path, 'best_worst_split'), label=conf['GeneralSetup']['target_feature'])
+                                                  join(main_path, 'best_worst_split'), label=conf['GeneralSetup']['input_target'])
             predictions = [[] for _ in range(X.shape[0])]
             for split_num, (train_indices, test_indices) in enumerate(trains_tests):
                 for i, pred in zip(test_indices, split_results[split_num]['y_test_pred']):
@@ -910,11 +910,11 @@ def mastml_run(conf_path, data_path, outdir):
             if PlotSettings['predicted_vs_true_bars']:
                 plot_helper.plot_predicted_vs_true_bars(
                         y.values, predictions, avg_test_stats,
-                        join(main_path, 'average_points_with_bars'), label=conf['GeneralSetup']['target_feature'])
+                        join(main_path, 'average_points_with_bars'), label=conf['GeneralSetup']['input_target'])
             if PlotSettings['best_worst_per_point']:
                 plot_helper.plot_best_worst_per_point(y.values, predictions,
                                                       join(main_path, 'best_worst_per_point'),
-                                                      metrics_dict, avg_test_stats, label=conf['GeneralSetup']['target_feature'])
+                                                      metrics_dict, avg_test_stats, label=conf['GeneralSetup']['input_target'])
             #if PlotSettings['average_error_plots']:
             #    plot_helper.plot_normalized_error(y.values, predictions,
             #                                      join(main_path, 'average_test_normalized_errors.png'), model, X=None,
