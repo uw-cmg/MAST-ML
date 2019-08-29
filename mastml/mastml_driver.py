@@ -413,11 +413,26 @@ def mastml_run(conf_path, data_path, outdir):
 
         def make_normalizer_selector_dataframe_triples(models):
             triples = []
+            nonlocal y, y_novalidation
             for normalizer_name, normalizer_instance in normalizers:
 
                 # Run feature normalization
                 log.info(f"Running normalizer {normalizer_name} ...")
+                normalizer_instance_y = normalizer_instance
+                normalizer_instance_y_novalidation = normalizer_instance
                 X_normalized = normalizer_instance.fit_transform(X, y)
+                X_novalidation_normalized = normalizer_instance.fit_transform(X_novalidation, y)
+                if conf['PlotSettings']['normalize_target_feature'] is True:
+                    yreshape = pd.DataFrame(np.array(y).reshape(-1, 1))
+                    y_novalidation_new = pd.DataFrame(np.array(y_novalidation).reshape(-1, 1))
+                    y_normalized = normalizer_instance_y.fit_transform(yreshape, yreshape)
+                    y_novalidation_normalized = normalizer_instance_y_novalidation.fit_transform(y_novalidation_new, y_novalidation_new)
+                    y_normalized.columns = [conf['GeneralSetup']['target_feature']]
+                    y_novalidation_normalized.columns = [conf['GeneralSetup']['target_feature']]
+                    y = pd.Series(np.squeeze(y_normalized), name=conf['GeneralSetup']['target_feature'])
+                    y_novalidation = pd.Series(np.squeeze(y_novalidation_normalized), name=conf['GeneralSetup']['target_feature'])
+                else:
+                    normalizer_instance_y = None
                 log.info("Saving normalized data to csv...")
                 dirname = join(outdir, normalizer_name)
                 os.mkdir(dirname)
@@ -440,14 +455,14 @@ def mastml_run(conf_path, data_path, outdir):
                     for s in scoring_name.split('_'):
                         scoring_name_nice += s + ' '
                     # Do sample learning curve
-                    train_sizes, train_mean, test_mean, train_stdev, test_stdev = learning_curve.sample_learning_curve(X=X_novalidation, y=y_novalidation,
+                    train_sizes, train_mean, test_mean, train_stdev, test_stdev = learning_curve.sample_learning_curve(X=X_novalidation_normalized, y=y_novalidation,
                                                             estimator=learning_curve_estimator, cv=learning_curve_cv,
                                                             scoring=learning_curve_scoring, Xgroups=X_grouped_novalidation)
                     plot_helper.plot_learning_curve(train_sizes, train_mean, test_mean, train_stdev, test_stdev,
                                                     scoring_name_nice, 'sample_learning_curve',
                                                     join(dirname, f'data_learning_curve'))
                     # Do feature learning curve
-                    train_sizes, train_mean, test_mean, train_stdev, test_stdev = learning_curve.feature_learning_curve(X=X_novalidation, y=y_novalidation,
+                    train_sizes, train_mean, test_mean, train_stdev, test_stdev = learning_curve.feature_learning_curve(X=X_novalidation_normalized, y=y_novalidation,
                                                             estimator=learning_curve_estimator, cv=learning_curve_cv,
                                                             scoring=learning_curve_scoring, selector_name=selector_name,
                                                             n_features_to_select=n_features_to_select,
@@ -474,7 +489,8 @@ def mastml_run(conf_path, data_path, outdir):
                     dirname = join(outdir, normalizer_name, selector_name)
                     os.mkdir(dirname)
                     pd.concat([X_selected, X_noinput, y], 1).to_csv(join(dirname, "selected.csv"), index=False)
-                    triples.append((normalizer_name, selector_name, X_selected))
+                    #TODO: fix this naming convention
+                    triples.append((normalizer_name, normalizer_instance_y, selector_name, X_selected))
 
                     # Run Hyperparam optimization, update model list with optimized model(s)
                     for hyperopt_name, hyperopt_instance in hyperopts:
@@ -608,7 +624,7 @@ def mastml_run(conf_path, data_path, outdir):
             original_models = list(original_models.items())
             original_model_names = [model[0] for model in original_models]
             all_results = []
-            for normalizer_name, selector_name, X in normalizer_selector_dataframe_triples:
+            for normalizer_name, normalizer_instance, selector_name, X in normalizer_selector_dataframe_triples:
                 subdir = join(outdir, normalizer_name, selector_name)
 
                 if PlotSettings['feature_vs_target']:
@@ -633,15 +649,15 @@ def mastml_run(conf_path, data_path, outdir):
                             subsubdir = join(outdir, subdir)
                             os.makedirs(subsubdir)
                             # NOTE: do_one_splitter is a big old function, does lots
-                            runs = do_one_splitter(X, y, model_instance, subsubdir, trains_tests, grouping_data)
+                            runs = do_one_splitter(X, y, model_instance, subsubdir, trains_tests, grouping_data, normalizer_instance)
                             all_results.extend(runs)
             return all_results
 
         return do_models_splits(models, original_models)
 
-    def do_one_splitter(X, y, model, main_path, trains_tests, grouping_data):
+    def do_one_splitter(X, y, model, main_path, trains_tests, grouping_data, normalizer_instance):
 
-        def one_fit(split_num, train_indices, test_indices):
+        def one_fit(split_num, train_indices, test_indices, normalizer_instance):
 
             log.info(f"        Doing split number {split_num}")
             train_X, train_y = X.loc[train_indices], y.loc[train_indices]
@@ -689,6 +705,11 @@ def mastml_run(conf_path, data_path, outdir):
             else:
                 train_pred = model.predict(train_X)
                 test_pred  = model.predict(test_X)
+                if conf['PlotSettings']['normalize_target_feature'] is True:
+                    train_pred = normalizer_instance.inverse_transform(train_pred)
+                    test_pred = normalizer_instance.inverse_transform(test_pred)
+                    train_y = pd.Series(normalizer_instance.inverse_transform(train_y))
+                    test_y = pd.Series(normalizer_instance.inverse_transform(test_y))
 
                 # Here- for Random Forest output feature importances
                 if model.__class__.__name__=='RandomForestRegressor':
@@ -707,6 +728,7 @@ def mastml_run(conf_path, data_path, outdir):
                     validation_y_forpred_list.append(validation_y_forpred)
 
                     # save them as 'predicitons.csv'
+                    validation_predictions = np.squeeze(validation_predictions)
                     validation_predictions_series = pd.Series(validation_predictions, name='clean_predictions', index=validation_X_forpred.index)
                     #validation_noinput_series = pd.Series(X_noinput.index, index=validation_X.index)
                     pd.concat([validation_X_forpred,  validation_y_forpred,  validation_predictions_series],  1)\
@@ -794,7 +816,8 @@ def mastml_run(conf_path, data_path, outdir):
             if PlotSettings['error_plots']:
                 plot_helper.make_error_plots(split_result, path, is_classification,
                                              label=y.name, model=model, train_X=train_X, test_X=test_X,
-                                             error_method=PlotSettings['error_method'], percentile=PlotSettings['percentile'],
+                                             rf_error_method=PlotSettings['rf_error_method'],
+                                             rf_error_percentile=PlotSettings['rf_error_percentile'],
                                              groups=grouping_data)
 
             # Write stats in each split path, not main path
@@ -813,7 +836,7 @@ def mastml_run(conf_path, data_path, outdir):
 
         split_results = []
         for split_num, (train_indices, test_indices) in enumerate(trains_tests):
-            split_results.append(one_fit(split_num, train_indices, test_indices))
+            split_results.append(one_fit(split_num, train_indices, test_indices, normalizer_instance))
 
         log.info("    Calculating mean and stdev of scores...")
         def make_train_test_average_and_std_stats():
@@ -873,10 +896,13 @@ def mastml_run(conf_path, data_path, outdir):
             return s[0], s[len(split_results)//2], s[-1]
         worst, median, best = get_best_worst_median_runs()
 
-        def make_pred_vs_true_plots(model):
+        def make_pred_vs_true_plots(model, y):
+            if conf['PlotSettings']['normalize_target_feature'] == True:
+                y = pd.Series(normalizer_instance.inverse_transform(y), name=conf['GeneralSetup']['target_feature'])
+
             if PlotSettings['predicted_vs_true']:
                 plot_helper.plot_best_worst_split(y.values, best, worst,
-                                                  join(main_path, 'best_worst_split'), label=y.name)
+                                                  join(main_path, 'best_worst_split'), label=conf['GeneralSetup']['target_feature'])
             predictions = [[] for _ in range(X.shape[0])]
             for split_num, (train_indices, test_indices) in enumerate(trains_tests):
                 for i, pred in zip(test_indices, split_results[split_num]['y_test_pred']):
@@ -884,23 +910,23 @@ def mastml_run(conf_path, data_path, outdir):
             if PlotSettings['predicted_vs_true_bars']:
                 plot_helper.plot_predicted_vs_true_bars(
                         y.values, predictions, avg_test_stats,
-                        join(main_path, 'average_points_with_bars'), label=y.name)
+                        join(main_path, 'average_points_with_bars'), label=conf['GeneralSetup']['target_feature'])
             if PlotSettings['best_worst_per_point']:
                 plot_helper.plot_best_worst_per_point(y.values, predictions,
                                                       join(main_path, 'best_worst_per_point'),
-                                                      metrics_dict, avg_test_stats, label=y.name)
-            if PlotSettings['average_error_plots']:
-                plot_helper.plot_normalized_error(y.values, predictions,
-                                                  join(main_path, 'average_test_normalized_errors.png'), model, X=None,
-                                                  avg_stats=avg_test_stats, error_method=PlotSettings['error_method'],
-                                                  percentile=PlotSettings['percentile'])
-                plot_helper.plot_cumulative_normalized_error(y.values, predictions,
-                                                  join(main_path, 'average_test_cumulative_normalized_errors.png'), model, X=None,
-                                                  avg_stats=avg_test_stats, error_method=PlotSettings['error_method'],
-                                                  percentile=PlotSettings['percentile'])
+                                                      metrics_dict, avg_test_stats, label=conf['GeneralSetup']['target_feature'])
+            #if PlotSettings['average_error_plots']:
+            #    plot_helper.plot_normalized_error(y.values, predictions,
+            #                                      join(main_path, 'average_test_normalized_errors.png'), model, X=None,
+            #                                      avg_stats=avg_test_stats, error_method=PlotSettings['error_method'],
+            #                                      percentile=PlotSettings['percentile'])
+            #    plot_helper.plot_cumulative_normalized_error(y.values, predictions,
+            #                                      join(main_path, 'average_test_cumulative_normalized_errors.png'), model, X=None,
+            #                                      avg_stats=avg_test_stats, error_method=PlotSettings['error_method'],
+            #                                      percentile=PlotSettings['percentile'])
 
         if not is_classification:
-            make_pred_vs_true_plots(model=model)
+            make_pred_vs_true_plots(model=model, y=y)
 
         return split_results
 
@@ -1016,7 +1042,6 @@ def _snatch_gpr_model(models, conf_models):
             for kernel in kernel_types_asstr:
                 kernel_ = getattr(sklearn.gaussian_process.kernels, kernel)
                 kernel_types_ascls.append(kernel_())
-
             # Case for single kernel
             if len(kernel_types_ascls) == 1:
                 kernel = kernel_types_ascls[0]
@@ -1026,17 +1051,19 @@ def _snatch_gpr_model(models, conf_models):
                 if i+1 != len(kernel_operators_used):
                     if operator == "+":
                         kernel = kernel_types_ascls[kernel_count] + kernel_types_ascls[kernel_count + 1]
-                    if operator == "-":
-                        kernel = kernel_types_ascls[kernel_count] - kernel_types_ascls[kernel_count + 1]
-                    if operator == "*":
+                    elif operator == "*":
                         kernel = kernel_types_ascls[kernel_count] * kernel_types_ascls[kernel_count + 1]
+                    else:
+                        logging.warning('You have chosen an invalid operator to construct a composite kernel. Please choose'
+                                      ' either "+" or "*".')
                 if i+1 == len(kernel_operators_used):
                     if operator == "+":
-                        kernel += kernel_types_ascls[kernel_count]
-                    if operator == "-":
-                        kernel -= kernel_types_ascls[kernel_count]
-                    if operator == "*":
-                        kernel *= kernel_types_ascls[kernel_count]
+                        kernel = kernel_types_ascls[kernel_count-1] + kernel_types_ascls[kernel_count]
+                    elif operator == "*":
+                        kernel = kernel_types_ascls[kernel_count-1] * kernel_types_ascls[kernel_count]
+                    else:
+                        logging.warning('You have chosen an invalid operator to construct a composite kernel. Please choose'
+                                      ' either "+" or "*".')
                 kernel_count += 2
 
             gpr = GaussianProcessRegressor(kernel=kernel, **params[1])
