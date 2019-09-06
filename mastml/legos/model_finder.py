@@ -9,6 +9,7 @@ import sklearn.base
 import sklearn.utils.testing
 from sklearn.externals import joblib
 import numpy as np
+import xgboost as xgb
 
 #from . import keras_models
 from mastml import utils
@@ -132,6 +133,8 @@ custom_models = {
     'AlwaysFive': AlwaysFive,
     'RandomGuesser': RandomGuesser,
     'ModelImport': ModelImport,
+    'XGBRegressor': xgb.XGBRegressor,
+    'XGBClassifier': xgb.XGBClassifier
     #'DNNClassifier': keras_models.DNNClassifier
 }
 
