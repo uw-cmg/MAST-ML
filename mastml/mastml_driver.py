@@ -1224,13 +1224,14 @@ def _write_stats_tocsv(train_metrics, test_metrics, outdir, prediction_metrics=N
             datadict[name+' validation stdev'] = float(score[1])
         else:
             datadict[name+' validation score'] = float(score)
-    for prediction_metric, prediction_name in zip(prediction_metrics, prediction_names):
-        for name, score in prediction_metric.items():
-            if type(score) == tuple:
-                datadict[prediction_name+' '+name+' score'] = float(score[0])
-                datadict[prediction_name+' '+name+' stdev'] = float(score[1])
-            else:
-                datadict[prediction_name+' '+name+' score'] = float(score)
+    if prediction_names:
+        for prediction_metric, prediction_name in zip(prediction_metrics, prediction_names):
+            for name, score in prediction_metric.items():
+                if type(score) == tuple:
+                    datadict[prediction_name+' '+name+' score'] = float(score[0])
+                    datadict[prediction_name+' '+name+' stdev'] = float(score[1])
+                else:
+                    datadict[prediction_name+' '+name+' score'] = float(score)
     pd.DataFrame().from_dict(data=datadict, orient='index').to_csv(join(outdir, 'stats_summary.csv'))
     return
 
