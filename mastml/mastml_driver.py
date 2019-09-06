@@ -98,7 +98,7 @@ def mastml_run(conf_path, data_path, outdir):
 
     # Load in and parse the configuration and data files:
     conf = conf_parser.parse_conf_file(conf_path)
-    PlotSettings = conf['PlotSettings']
+    MiscSettings = conf['MiscSettings']
     is_classification = conf['is_classification']
     # The df is used by feature generators, clusterers, and grouping_column to 
     # create more features for x.
@@ -207,7 +207,7 @@ def mastml_run(conf_path, data_path, outdir):
     """
 
 
-    if conf['PlotSettings']['target_histogram']:
+    if conf['MiscSettings']['plot_target_histogram']:
         # First, save input data stats to csv
         y.describe().to_csv(join(outdir, 'input_data_statistics.csv'))
         plot_helper.plot_target_histogram(y, join(outdir, 'target_histogram.png'), label=y.name)
@@ -402,7 +402,7 @@ def mastml_run(conf_path, data_path, outdir):
                         filename = f'{column}_vs_target_by_{name}_scatter.png'
                         plot_helper.plot_scatter(X[column], y, join(outdir, filename),
                                                 clustered_df[name], xlabel=column, label=y.name)
-        if PlotSettings['feature_vs_target']:
+        if MiscSettings['plot_each_feature_vs_target']:
             make_feature_vs_target_plots()
 
         log.info("Saving clustered data to csv...")
@@ -422,7 +422,7 @@ def mastml_run(conf_path, data_path, outdir):
                 normalizer_instance_y_novalidation = normalizer_instance
                 X_normalized = normalizer_instance.fit_transform(X, y)
                 X_novalidation_normalized = normalizer_instance.fit_transform(X_novalidation, y)
-                if conf['PlotSettings']['normalize_target_feature'] is True:
+                if conf['MiscSettings']['normalize_target_feature'] is True:
                     yreshape = pd.DataFrame(np.array(y).reshape(-1, 1))
                     y_novalidation_new = pd.DataFrame(np.array(y_novalidation).reshape(-1, 1))
                     y_normalized = normalizer_instance_y.fit_transform(yreshape, yreshape)
@@ -633,7 +633,7 @@ def mastml_run(conf_path, data_path, outdir):
             for normalizer_name, normalizer_instance, selector_name, X in normalizer_selector_dataframe_triples:
                 subdir = join(outdir, normalizer_name, selector_name)
 
-                if PlotSettings['feature_vs_target']:
+                if MiscSettings['plot_each_feature_vs_target']:
                     #if selector_name == 'DoNothing': continue
                     # for each selector/normalizer, plot y against each x column
                     for column in X:
@@ -711,7 +711,7 @@ def mastml_run(conf_path, data_path, outdir):
             else:
                 train_pred = model.predict(train_X)
                 test_pred  = model.predict(test_X)
-                if conf['PlotSettings']['normalize_target_feature'] is True:
+                if conf['MiscSettings']['normalize_target_feature'] is True:
                     train_pred = normalizer_instance.inverse_transform(train_pred)
                     test_pred = normalizer_instance.inverse_transform(test_pred)
                     train_y = pd.Series(normalizer_instance.inverse_transform(train_y))
@@ -814,16 +814,16 @@ def mastml_run(conf_path, data_path, outdir):
                 split_result['y_test_pred_proba'] = test_pred_proba
 
             log.info("             Making plots...")
-            if PlotSettings['train_test_plots']:
+            if MiscSettings['plot_train_test_plots']:
                 plot_helper.make_train_test_plots(
                         split_result, path, is_classification, 
                         label=y.name, model=model, train_X=train_X, test_X=test_X, groups=grouping_data)
 
-            if PlotSettings['error_plots']:
+            if MiscSettings['plot_error_plots']:
                 plot_helper.make_error_plots(split_result, path, is_classification,
                                              label=y.name, model=model, train_X=train_X, test_X=test_X,
-                                             rf_error_method=PlotSettings['rf_error_method'],
-                                             rf_error_percentile=PlotSettings['rf_error_percentile'],
+                                             rf_error_method=MiscSettings['rf_error_method'],
+                                             rf_error_percentile=MiscSettings['rf_error_percentile'],
                                              groups=grouping_data)
 
             # Write stats in each split path, not main path
@@ -917,33 +917,24 @@ def mastml_run(conf_path, data_path, outdir):
         worst, median, best = get_best_worst_median_runs()
 
         def make_pred_vs_true_plots(model, y):
-            if conf['PlotSettings']['normalize_target_feature'] == True:
+            if conf['MiscSettings']['normalize_target_feature'] == True:
                 y = pd.Series(normalizer_instance.inverse_transform(y), name=conf['GeneralSetup']['input_target'])
 
-            if PlotSettings['predicted_vs_true']:
+            if MiscSettings['plot_predicted_vs_true']:
                 plot_helper.plot_best_worst_split(y.values, best, worst,
                                                   join(main_path, 'best_worst_split'), label=conf['GeneralSetup']['input_target'])
             predictions = [[] for _ in range(X.shape[0])]
             for split_num, (train_indices, test_indices) in enumerate(trains_tests):
                 for i, pred in zip(test_indices, split_results[split_num]['y_test_pred']):
                     predictions[i].append(pred)
-            if PlotSettings['predicted_vs_true_bars']:
+            if MiscSettings['plot_predicted_vs_true_average']:
                 plot_helper.plot_predicted_vs_true_bars(
                         y.values, predictions, avg_test_stats,
-                        join(main_path, 'average_points_with_bars'), label=conf['GeneralSetup']['input_target'])
-            if PlotSettings['best_worst_per_point']:
+                        join(main_path, 'predicted_vs_true_average'), label=conf['GeneralSetup']['input_target'])
+            if MiscSettings['plot_best_worst_per_point']:
                 plot_helper.plot_best_worst_per_point(y.values, predictions,
                                                       join(main_path, 'best_worst_per_point'),
                                                       metrics_dict, avg_test_stats, label=conf['GeneralSetup']['input_target'])
-            #if PlotSettings['average_error_plots']:
-            #    plot_helper.plot_normalized_error(y.values, predictions,
-            #                                      join(main_path, 'average_test_normalized_errors.png'), model, X=None,
-            #                                      avg_stats=avg_test_stats, error_method=PlotSettings['error_method'],
-            #                                      percentile=PlotSettings['percentile'])
-            #    plot_helper.plot_cumulative_normalized_error(y.values, predictions,
-            #                                      join(main_path, 'average_test_cumulative_normalized_errors.png'), model, X=None,
-            #                                      avg_stats=avg_test_stats, error_method=PlotSettings['error_method'],
-            #                                      percentile=PlotSettings['percentile'])
 
         if not is_classification:
             make_pred_vs_true_plots(model=model, y=y)

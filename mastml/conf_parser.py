@@ -38,7 +38,7 @@ def parse_conf_file(filepath):
     set_required_sections_to_empty()
 
     def check_unknown_sections():
-        all_sections = main_sections + feature_sections + ['PlotSettings']
+        all_sections = main_sections + feature_sections + ['MiscSettings']
         for section_name in conf:
             if section_name not in all_sections:
                 raise Exception(f'[{section_name}] is not a valid section!'
@@ -196,29 +196,29 @@ def parse_conf_file(filepath):
     make_long_name_short_name_pairs()
 
     def check_and_boolify_plot_settings():
-        default_false = ['feature_vs_target', 'error_plots', 'rf_error_method', 'rf_error_percentile',
+        default_false = ['plot_each_feature_vs_target', 'rf_error_method', 'rf_error_percentile',
                          'normalize_target_feature']
-        default_true = ['target_histogram', 'train_test_plots', 'predicted_vs_true',
-                         'predicted_vs_true_bars', 'best_worst_per_point']
+        default_true = ['plot_target_histogram', 'plot_train_test_plots', 'plot_predicted_vs_true', 'plot_error_plots',
+                         'plot_predicted_vs_true_average', 'plot_best_worst_per_point']
         all_settings = default_false + default_true
-        if 'PlotSettings' not in conf:
-            conf['PlotSettings'] = dict()
-        PS = conf['PlotSettings']
-        for name, value in PS.items():
+        if 'MiscSettings' not in conf:
+            conf['MiscSettings'] = dict()
+        MS = conf['MiscSettings']
+        for name, value in MS.items():
             if name not in all_settings:
-                raise utils.InvalidConfParameters(f"[PlotSettings] parameter '{name}' is unknown")
+                raise utils.InvalidConfParameters(f"[MiscSettings] parameter '{name}' is unknown")
             try:
-                PS[name] = mybool(value)
+                MS[name] = mybool(value)
             except ValueError:
                 pass
             #    raise utils.InvalidConfParameters(
             #        f"[PlotSettings] parameter '{name}' must be a boolean")
         for name in default_false:
-            if name not in PS:
-                PS[name] = False
+            if name not in MS:
+                MS[name] = False
         for name in default_true:
-            if name not in PS:
-                PS[name] = True
+            if name not in MS:
+                MS[name] = True
     check_and_boolify_plot_settings()
 
     # TODO: remove?
