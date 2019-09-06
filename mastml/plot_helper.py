@@ -1035,7 +1035,7 @@ def prediction_intervals(model, X, rf_error_method, rf_error_percentile, Xtrain,
     err_down = list()
     err_up = list()
     X_aslist = X.values.tolist()
-    if model.__class__.__name__=='RandomForestRegressor':
+    if model.__class__.__name__ in ['RandomForestRegressor', 'GradientBoostingRegressor']:
 
         #if rf_error_method == 'jackknife':
         #    #new method based on http://contrib.scikit-learn.org/forest-confidence-interval/auto_examples/plot_mpg.html#sphx-glr-auto-examples-plot-mpg-py
@@ -1050,9 +1050,12 @@ def prediction_intervals(model, X, rf_error_method, rf_error_percentile, Xtrain,
 
         for x in range(len(X_aslist)):
             preds = list()
-            for pred in model.estimators_:
-                preds.append(pred.predict(np.array(X_aslist[x]).reshape(1,-1))[0])
-
+            if model.__class__.__name__ == 'RandomForestRegressor':
+                for pred in model.estimators_:
+                    preds.append(pred.predict(np.array(X_aslist[x]).reshape(1,-1))[0])
+            elif model.__class__.__name__ == 'GradientBoostingRegressor':
+                for pred in model.estimators_.tolist():
+                    preds.append(pred[0].predict(np.array(X_aslist[x]).reshape(1,-1))[0])
             if rf_error_method == 'confint':
                 e_down = np.percentile(preds, (100 - int(rf_error_percentile)) / 2.)
                 e_up = np.percentile(preds, 100 - (100 - int(rf_error_percentile)) / 2.)
@@ -1112,7 +1115,7 @@ def plot_normalized_error(y_true, y_pred, savepath, model, rf_error_method, rf_e
     # Here: if model is random forest or Gaussian process, get real error bars. Else, just residuals
     model_name = model.__class__.__name__
     # TODO: also add support for Gradient Boosted Regressor
-    models_with_error_predictions = ['RandomForestRegressor', 'GaussianProcessRegressor']
+    models_with_error_predictions = ['RandomForestRegressor', 'GaussianProcessRegressor', 'GradientBoostingRegressor']
     has_model_errors = False
     if model_name in models_with_error_predictions:
         has_model_errors = True
@@ -1193,7 +1196,7 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, rf_error_m
     # Here: if model is random forest or Gaussian process, get real error bars. Else, just residuals
     model_name = model.__class__.__name__
     # TODO: also add support for Gradient Boosted Regressor
-    models_with_error_predictions = ['RandomForestRegressor', 'GaussianProcessRegressor']
+    models_with_error_predictions = ['RandomForestRegressor', 'GaussianProcessRegressor', 'GradientBoostingRegressor']
     has_model_errors = False
     if model_name in models_with_error_predictions:
         has_model_errors = True
