@@ -62,8 +62,9 @@ def parse_conf_file(filepath):
             for name, value in parameter_dict.items():
                 # Does this parameter-only section include a subsection?
                 if isinstance(value, dict):
-                    raise utils.InvalidConfSubSection(
-                            f"Subsection in parameter-only section: {key}")
+                    continue
+                    #raise utils.InvalidConfSubSection(
+                    #        f"Subsection in parameter-only section: {key}")
                 # cast the strings to their respective types
                 parameter_dict[name] = fix_types(value)
     parameter_dict_type_check_and_cast()
