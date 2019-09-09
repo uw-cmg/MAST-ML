@@ -26,8 +26,8 @@ if sys.version_info[0] < 3:
     print('Python version >= 3 needed!')
     sys.exit(0)
 
-print("Python version 3.6.6 is REQUIRED")
-print("Check with `python --version`")
+#print("Python version 3.6.6 is REQUIRED")
+#print("Check with `python --version`")
 
 # One of the techniques from https://packaging.python.org/guides/single-sourcing-package-version/
 verstr = "unknown"
@@ -46,16 +46,18 @@ setup(
         "citrination-client==4.6.0",
         "configobj==5.0.6",
         "cycler==0.10.0",
+        "Cython=0.29.13",
         "decorator==4.3.0",
-        "dominate==2.3.1",
+        "dominate==2.3.5",
+        "forestsci",
         "idna==2.7",
         "ipython-genutils==0.2.0",
         "jsonschema==2.6.0",
         "jupyter-core==4.4.0",
         "kiwisolver==1.0.1",
-        "matminer==0.4.3",
+        "matminer==0.5.8",
         "matplotlib==2.2.2",
-        "mlxtend==0.12.0",
+        "mlxtend==0.17.0",
         "monty==1.0.3",
         "mpmath==1.0.0",
         "nbformat==4.4.0",
@@ -67,11 +69,13 @@ setup(
         "pymatgen==2018.6.27",
         "pyparsing==2.2.0",
         "pypif==2.1.0",
+        "pytest=5.0.1",
         "python-dateutil==2.7.3",
         "pytz==2018.5",
         "requests==2.20.0",
         "ruamel.yaml==0.15.42",
         "scikit-learn==0.19.1",
+        "scikit-optimize=0.13.2",
         "scipy==1.1.0",
         "six==1.11.0",
         "spglib==1.10.3.65",
@@ -79,7 +83,7 @@ setup(
         "tabulate==0.8.2",
         "traitlets==4.3.2",
         "urllib3==1.23",
-    ],
+        "xgboost"],
     author="MAST Development Team, University of Wisconsin-Madison Computational Materials Group",
     author_email="ddmorgan@wisc.edu",
     url="https://github.com/uw-cmg/MAST-ML",
