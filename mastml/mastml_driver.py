@@ -12,6 +12,7 @@ from datetime import datetime
 from collections import OrderedDict
 from os.path import join # We use join tons
 from functools import reduce
+from contextlib import redirect_stdout
 
 import numpy as np
 import pandas as pd
@@ -225,8 +226,6 @@ def mastml_run(conf_path, data_path, outdir):
                           model_finder.name_to_constructor,
                           'model')
 
-    #models = OrderedDict(models) # for easier modification
-
     models = _snatch_models(models, conf['FeatureSelection'])
 
     # Instantiate all the sections of the conf file:
@@ -264,7 +263,8 @@ def mastml_run(conf_path, data_path, outdir):
 
     models = snatch_model_cv_and_scoring_for_learning_curve(models=models)
 
-    #models = list(models.items())
+    models = _snatch_keras_model(models, conf['Models'])
+    original_models = models
 
     # Need to specially snatch the GPR model if it is in models list because it contains special kernel object
     models = _snatch_gpr_model(models, conf['Models'])
@@ -295,8 +295,6 @@ def mastml_run(conf_path, data_path, outdir):
     log.debug(f'hyperopts: \n{hyperopts}')
     log.debug(f'selectors: \n{selectors}')
     log.debug(f'splitters: \n{splitters}')
-
-
 
     # TODO make this block its own function, and change naming from is_validation to is_test here and throughout. Just symantic annoyance.
     # get parameters out for 'validation_column'
@@ -681,7 +679,22 @@ def mastml_run(conf_path, data_path, outdir):
             log.info("             Fitting model and making predictions...")
             # Catch the ValueError associated with not being able to convert string to float
             try:
-                model.fit(train_X, train_y)
+                history = model.fit(train_X, train_y)
+
+                # For Keras model, save model summary to main_path and plot training/validation vals vs. epochs
+                if 'KerasRegressor' in str(model.__class__.__name__):
+                    with open(join(main_path, 'keras_model_summary.txt'), 'w') as f:
+                        with redirect_stdout(f):
+                            model.summary()
+
+                    plot_helper.plot_keras_history(model_history=history,
+                                                   savepath=join(path,'keras_model_accuracy.png'),
+                                                   plot_type='accuracy')
+                    plot_helper.plot_keras_history(model_history=history,
+                                                   savepath=join(path, 'keras_model_loss.png'),
+                                                   plot_type='loss')
+                    pd.DataFrame().from_dict(data=history.history).to_excel(join(path,'keras_model_data.xlsx'))
+
             except ValueError:
                 raise utils.InvalidValue('MAST-ML has detected that one of your feature vectors contains a string, and cannot be'
                                    'used in model fitting. Please add any features that contain strings to the "not_input_features"'
@@ -711,6 +724,10 @@ def mastml_run(conf_path, data_path, outdir):
             else:
                 train_pred = model.predict(train_X)
                 test_pred  = model.predict(test_X)
+                if train_pred.ndim > 1:
+                    train_pred = np.squeeze(train_pred)
+                if test_pred.ndim > 1:
+                    test_pred = np.squeeze(test_pred)
                 if conf['MiscSettings']['normalize_target_feature'] is True:
                     train_pred = normalizer_instance.inverse_transform(train_pred)
                     test_pred = normalizer_instance.inverse_transform(test_pred)
@@ -958,8 +975,12 @@ def _instantiate(kwargs_dict, name_to_constructor, category, X_grouped=None, X_i
     for long_name, (name, kwargs) in kwargs_dict.items():
         log.debug(f'instantiation: {long_name}, {name}({kwargs})')
         try:
+            #skip instantiate step for keras model because need to pass dict to build model and not all values directly
+            if long_name=='KerasRegressor':
+                pass
+
             # Need to construct cv object when have special case of RFECV and LeaveOneGroupOut cross-validation!
-            if name == 'RFECV':
+            elif name == 'RFECV':
                 if 'cv' in kwargs.keys():
                     if X_grouped is not None:
                         if kwargs['cv'].__class__.__name__ == 'LeaveOneGroupOut':
@@ -970,7 +991,9 @@ def _instantiate(kwargs_dict, name_to_constructor, category, X_grouped=None, X_i
                                 tests.append(test_idx)
                             custom_cv = zip(trains, tests)
                             kwargs['cv'] = custom_cv
-            instantiations.append([long_name, name_to_constructor[name](**kwargs)])
+                instantiations.append([long_name, name_to_constructor[name](**kwargs)])
+            else:
+                instantiations.append([long_name, name_to_constructor[name](**kwargs)])
 
         except TypeError:
             log.info(f"ARGUMENTS FOR '{name}': {inspect.signature(name_to_constructor[name])}")
@@ -1009,6 +1032,14 @@ def _snatch_models(models, conf_feature_selection):
                 raise utils.MastError(f"The selector {selector_name} specified model {model_name},"
                                       f"which was not found in the [Models] section")
     log.debug(f'models, post-snatching: \n{models}')
+    return models
+
+def _snatch_keras_model(models, conf_models):
+    for model in conf_models.keys():
+        if 'KerasRegressor' in model:
+            keras_model = model_finder.KerasRegressor(conf_models[model][1])
+            models[model] = keras_model
+            break
     return models
 
 def _snatch_gpr_model(models, conf_models):
