@@ -924,6 +924,45 @@ def mastml_run(conf_path, data_path, outdir):
                          avg_test_stats,
                          main_path)
 
+        def make_average_error_plots(main_path):
+            dfs_cumulative_errors = list()
+            for split_folder, _, __ in os.walk(main_path):
+                if "split" in split_folder:
+                    path = join(main_path, split_folder)
+                    try:
+                        dfs_cumulative_errors.append(pd.read_csv(join(path,'test_cumulative_normalized_error.csv')))
+                    except:
+                        pass
+
+            # Concatenate all dfs in list to one big df
+            df_cumulative_errors = pd.concat(dfs_cumulative_errors)
+            # Need to get average values of df columns by averagin over groups of Y True values (since each Y True should
+            # only appear once)
+            df_normalized_errors_avgvalues = df_cumulative_errors.groupby('Y True').mean().reset_index()
+            y_true = np.array(df_normalized_errors_avgvalues['Y True'])
+            y_pred = np.array(df_normalized_errors_avgvalues['Y Pred'])
+            try:
+                average_error_values = np.array(df_normalized_errors_avgvalues['error_bars_down'])
+                has_model_errors = True
+            except:
+                average_error_values = None
+                has_model_errors = False
+
+            plot_helper.plot_average_cumulative_normalized_error(y_true=y_true, y_pred=y_pred,
+                                                                 savepath=join(main_path,'test_cumulative_normalized_error_average_allsplits.png'),
+                                                                 has_model_errors=has_model_errors,
+                                                                 err_avg=average_error_values)
+            plot_helper.plot_average_normalized_error(y_true=y_true, y_pred=y_pred,
+                                                      savepath=join(main_path,'test_normalized_error_average_allsplits.png'),
+                                                                 has_model_errors=has_model_errors,
+                                                                 err_avg=average_error_values)
+            return
+
+        # Call to make average error plots
+        if conf['MiscSettings']['plot_error_plots']:
+            log.info("    Making average error plots over all splits")
+            make_average_error_plots(main_path=main_path)
+
         log.info("    Making best/worst plots...")
         def get_best_worst_median_runs():
             # sort splits by the test score of first metric:
