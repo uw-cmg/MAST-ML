@@ -692,6 +692,40 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', label='target data'):
     #ax.set_xticklabels(rotation=45)
     fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
 
+def plot_keras_history(model_history, savepath, plot_type):
+    # Set image aspect ratio:
+    fig, ax = make_fig_ax()
+    keys = model_history.history.keys()
+    for k in keys:
+        if 'loss' not in k and 'val' not in k:
+            metric = k
+    accuracy = model_history.history[str(metric)]
+    loss = model_history.history['loss']
+
+    if plot_type == 'accuracy':
+        ax.plot(accuracy, label='training '+str(metric))
+        ax.set_ylabel(str(metric)+' (Accuracy)', fontsize=16)
+        try:
+            validation_accuracy = model_history.history['val_'+str(metric)]
+            ax.plot(validation_accuracy, label='validation '+str(metric))
+        except:
+            pass
+    if plot_type == 'loss':
+        ax.plot(loss, label='training loss')
+        ax.set_ylabel(str(metric)+' (Loss)', fontsize=16)
+        try:
+            validation_loss = model_history.history['val_loss']
+            ax.plot(validation_loss, label='validation loss')
+        except:
+            pass
+    ax.legend(loc='upper right', fontsize=12)
+
+    #_set_tick_labels_different(ax, max_tick_x, min_tick_x, max_tick_y, min_tick_y)
+    ax.set_xlabel('Epochs', fontsize=16)
+
+    fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
+    return
+
 @ipynb_maker
 def plot_best_worst_split(y_true, best_run, worst_run, savepath,
                           title='Best Worst Overlay', label='target_value'):
