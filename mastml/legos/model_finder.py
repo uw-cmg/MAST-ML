@@ -4,12 +4,18 @@ error handling functions
 """
 
 import warnings
+import inspect
 
 import sklearn.base
 import sklearn.utils.testing
 from sklearn.externals import joblib
 import numpy as np
 import xgboost as xgb
+
+import keras
+from keras.models import model_from_json
+from keras.models import load_model
+from keras.models import Sequential
 
 #from . import keras_models
 from mastml import utils
@@ -87,6 +93,85 @@ class RandomGuesser(sklearn.base.RegressorMixin):
     def predict(self, X):
         return np.random.choice(self.possible_answers, size=X.shape[0])
 
+class KerasRegressor():
+    def __init__(self, conf_dict):
+        self.conf_dict = conf_dict
+        self.model = self.build_model()
+
+    def build_model(self):
+        model_vals = self.conf_dict
+        model = Sequential()
+
+        for layer_dict, layer_val in model_vals.items():
+            if (layer_dict != 'FitParams'):
+                layer_type = layer_val.get('layer_type')
+                neuron_num = int(layer_val.get('neuron_num'))
+                if (layer_dict == 'Layer1'):
+                    input_dim = int(layer_val.get('input_dim'))
+                kernel_initializer = layer_val.get('kernel_initializer')
+                activation = layer_val.get('activation')
+
+                for layer_name, cls in inspect.getmembers(keras.layers, inspect.isclass):
+                    if layer_type == 'Dense':
+                        layer_type = getattr(keras.layers, layer_type)  # (neuron_num)
+
+            else:
+                if layer_val.get('epochs'):
+                    self.epochs = int(layer_val.get('epochs'))
+                else:
+                    self.epochs = 1
+                if layer_val.get('batch_size'):
+                    self.batch_size = int(layer_val.get('batch_size'))
+                else:
+                    self.batch_size = None
+                if layer_val.get('loss'):
+                    self.loss = str(layer_val.get('loss'))
+                else:
+                    self.loss = 'mean_squared_error'
+                if layer_val.get('optimizer'):
+                    self.optimzier = str(layer_val.get('optimizer'))
+                else:
+                    self.optimizer = 'adam'
+                if layer_val.get('metrics'):
+                    self.metrics = layer_val.get('metrics').split(',')
+                else:
+                    self.metrics = ['mae']
+                if layer_val.get('verbose'):
+                    self.verbose = str(layer_val.get('verbose'))
+                else:
+                    self.verbose = 0
+                if layer_val.get('shuffle'):
+                    self.shuffle = bool(layer_val.get('shuffle'))
+                else:
+                    self.shuffle = True
+                if layer_val.get('validation_split'):
+                    self.validation_split = float(layer_val.get('validation_split'))
+                else:
+                    self.validation_split = 0.0
+                continue
+
+            if (layer_dict == 'Layer1'):
+                model.add(layer_type(neuron_num, input_dim=input_dim, kernel_initializer=kernel_initializer,
+                                     activation=activation))
+
+            else:
+                model.add(layer_type(neuron_num, kernel_initializer=kernel_initializer, activation=activation))
+
+        return model
+
+    def fit(self, X, Y):
+        # Need to rebuild and re-compile model at every fit instance so don't have information of weights from other fits
+        self.model = self.build_model()
+        self.model.compile(loss=self.loss, optimizer=self.optimzier, metrics=self.metrics)
+        return self.model.fit(X, Y, epochs=self.epochs, batch_size=self.batch_size, verbose=self.verbose,
+                              validation_split=self.validation_split, shuffle=self.shuffle)
+
+    def predict(self, X):
+        return self.model.predict(X)
+
+    def summary(self):
+        return self.model.summary()
+
 class ModelImport():
     """
     Class used to import pickled models from previous machine learning fits
@@ -134,7 +219,8 @@ custom_models = {
     'RandomGuesser': RandomGuesser,
     'ModelImport': ModelImport,
     'XGBRegressor': xgb.XGBRegressor,
-    'XGBClassifier': xgb.XGBClassifier
+    'XGBClassifier': xgb.XGBClassifier,
+    'KerasRegressor': KerasRegressor
     #'DNNClassifier': keras_models.DNNClassifier
 }
 
