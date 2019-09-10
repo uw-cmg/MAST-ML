@@ -582,7 +582,6 @@ def plot_predicted_vs_true(train_quad, test_quad, outdir, label):
     min1 = round(float(min1), rounder(max1-min1))
     for y_true, y_pred, stats, groups, title_addon in \
             (train_quad+('train',), test_quad+('test',)):
-
         # make fig and ax, use x_align when placing text so things don't overlap
         x_align=0.64
         fig, ax = make_fig_ax(x_align=x_align)
@@ -601,19 +600,29 @@ def plot_predicted_vs_true(train_quad, test_quad, outdir, label):
         else:
             handles = dict()
             unique_groups = np.unique(np.concatenate((train_groups, test_groups), axis=0))
-            logger.debug(' '*12 + 'unique groups: ' +str(list(unique_groups)))
+            unique_groups_train = np.unique(train_groups)
+            unique_groups_test = np.unique(test_groups)
+            #logger.debug(' '*12 + 'unique groups: ' +str(list(unique_groups)))
             colors = ['blue', 'red', 'green', 'purple', 'orange', 'black']
             markers = ['o', 'v', '^', 's', 'p', 'h', 'D', '*', 'X', '<', '>', 'P']
             colorcount = markercount = 0
             for groupcount, group in enumerate(unique_groups):
                 mask = groups == group
-                logger.debug(' '*12 + f'{group} group_percent = {np.count_nonzero(mask) / len(groups)}')
+                #logger.debug(' '*12 + f'{group} group_percent = {np.count_nonzero(mask) / len(groups)}')
                 handles[group] = ax.scatter(y_true[mask], y_pred[mask], label=group, color=colors[colorcount],
                                             marker=markers[markercount], s=100, alpha=0.7)
                 colorcount += 1
                 if colorcount % len(colors) == 0:
                     markercount += 1
                     colorcount = 0
+            if title_addon == 'train':
+                to_delete = [k for k in handles.keys() if k not in unique_groups_train]
+                for k in to_delete:
+                    del handles[k]
+            elif title_addon == 'test':
+                to_delete = [k for k in handles.keys() if k not in unique_groups_test]
+                for k in to_delete:
+                    del handles[k]
             ax.legend(handles.values(), handles.keys(), loc='lower right', fontsize=12)
 
         # set axis labels
