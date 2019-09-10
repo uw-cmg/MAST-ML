@@ -85,7 +85,7 @@ setup(
         "tabulate==0.8.2",
         "tensorflow==1.13.1",
         "traitlets==4.3.2",
-        "urllib3==1.23",
+        "urllib3>=1.24.2",
         "xgboost",
         "xlrd"],
     author="MAST Development Team, University of Wisconsin-Madison Computational Materials Group",
