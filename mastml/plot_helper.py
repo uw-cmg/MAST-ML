@@ -525,8 +525,11 @@ def plot_target_histogram(y_df, savepath, title='target histogram', label='targe
     num_bins = get_histogram_bins(y_df=y_df)
 
     # do the actual plotting
-    ax.hist(y_df, bins=num_bins, color='b', edgecolor='k')#, histtype='stepfilled')
-
+    try:
+        ax.hist(y_df, bins=num_bins, color='b', edgecolor='k')#, histtype='stepfilled')
+    except:
+        print('Could not plot target histgram')
+        return
     # normal text stuff
     ax.set_xlabel('Value of '+label, fontsize=16)
     ax.set_ylabel('Number of occurences', fontsize=16)
@@ -1109,7 +1112,6 @@ def prediction_intervals(model, X, rf_error_method, rf_error_percentile, Xtrain,
         #    random_forest_stdevs = random_forest_stdevs[~np.isnan(random_forest_stdevs)]
         #    err_up = random_forest_stdevs
         #    err_down = random_forest_stdevs
-
         for x in range(len(X_aslist)):
             preds = list()
             if model.__class__.__name__ == 'RandomForestRegressor':
@@ -1124,7 +1126,10 @@ def prediction_intervals(model, X, rf_error_method, rf_error_percentile, Xtrain,
             elif rf_error_method == 'stdev':
                 e_down = np.std(preds)
                 e_up = np.std(preds)
-
+            elif rf_error_method == 'False' or rf_error_method is False:
+                # basically default to stdev
+                e_down = np.std(preds)
+                e_up = np.std(preds)
             if e_up == 0.0:
                 e_up = 10 ** 10
             if e_down == 0.0:

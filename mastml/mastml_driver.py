@@ -696,9 +696,8 @@ def mastml_run(conf_path, data_path, outdir):
                     pd.DataFrame().from_dict(data=history.history).to_excel(join(path,'keras_model_data.xlsx'))
 
             except ValueError:
-                raise utils.InvalidValue('MAST-ML has detected that one of your feature vectors contains a string, and cannot be'
-                                   'used in model fitting. Please add any features that contain strings to the "not_input_features"'
-                                   'field of the input file')
+                raise utils.InvalidValue('MAST-ML has detected an error with one of your feature vectors which has caused an error'
+                                   ' in model fitting.')
             # Save off the trained model as .pkl for future import
             joblib.dump(model, join(path, str(model.__class__.__name__)+"_split_"+str(split_num)+".pkl"))
 
