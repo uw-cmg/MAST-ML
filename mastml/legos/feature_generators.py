@@ -16,8 +16,18 @@ from sklearn.preprocessing import PolynomialFeatures as SklearnPolynomialFeature
 import pymatgen
 from pymatgen import Element, Composition
 from pymatgen.ext.matproj import MPRester
-#from citrination_client import CitrinationClient, PifQuery, SystemQuery, ChemicalFieldQuery, ChemicalFilter
-# trouble? try: `pip install citrination_client=="2.1.0"`
+
+# matminer class imports
+import inspect # used to get a dictionary of classes in a module
+from matminer.featurizers import structure as struc
+from pymatgen.io.vasp.inputs import Poscar
+import mastml
+from mastml import utils
+from matminer.data_retrieval.retrieve_Citrine import CitrineDataRetrieval
+from matminer.data_retrieval.retrieve_MP import MPDataRetrieval
+from matminer.data_retrieval.retrieve_MDF import MDFDataRetrieval
+from matminer.data_retrieval.retrieve_MPDS import MPDSDataRetrieval
+from matminer.data_retrieval.retrieve_AFLOW import AFLOWDataRetrieval
 
 # locate path to directory containing AtomicNumber.table, AtomicRadii.table AtomicVolume.table, etc
 # (needs to do it the hard way becuase python -m sets cwd to wherever python is ran from)
@@ -25,9 +35,6 @@ import mastml
 from mastml import utils
 log = logging.getLogger('mastml')
 MAGPIE_DATA_PATH = os.path.join(mastml.__path__[0], '../magpie/')
-
-#from matminer.data_retrieval.retrieve_Citrine import CitrineDataRetrieval
-#from matminer.data_retrieval.retrieve_MP import MPDataRetrieval
 
 class PolynomialFeatures(BaseEstimator, TransformerMixin):
     """
@@ -252,217 +259,142 @@ class MaterialsProject(BaseEstimator, TransformerMixin):
         df = clean_dataframe(df)
         assert self.composition_feature not in df.columns
         return df
-"""
 
-class MaterialsProject(BaseEstimator, TransformerMixin, MPDataRetrieval):
-
-    Class that wraps MaterialsProjectFeatureGeneration, giving it scikit-learn structure
-
+class Matminer(BaseEstimator, TransformerMixin):
+    """
+    Class to generate structural features from matminer structure module
     Args:
-
-        composition_feature: (str), string denoting a chemical composition to generate elemental features from
-
-        mapi_key: (str), string denoting your Materials Project API key
-
+        structural_features: the structure feature(s) the user wants to instantiate and generate
+        structure_col: the dataframe column that contains the pymatgen structure object. Matminer needs a pymatgen
+        structure object in order to instantiate the structural feature
     Methods:
-
-        fit: pass through, copies input columns as pre-generated features
-
+        fit: pass through, needed to maintain scikit-learn class structure
         Args:
-
-            df: (dataframe), input dataframe containing X and y data
-
-        transform: generate Materials Project features
-
+            df: (dataframe), dataframe of input x and y data
+        transform: main method that iterates through rows of dataframe to create pymatgen structure objects for
+        matminer routines. Iterates through list of structural features from conf file and instantiates each structure;
+        drops unused dataframe columns and returns the generated features dataframe
         Args:
-
-            df: (dataframe), input dataframe containing X and y data
-
+            df: (dataframe), dataframe containing the path of file to create pymatgen structure object which is under the structure_col
+            column
         Returns:
-
-            df: (dataframe), output dataframe containing generated features, original features and y data
-
-
-
-    def __init__(self, composition_feature, api_key):
-        super(MaterialsProject, self).__init__(api_key=api_key)
-        self.composition_feature = composition_feature
-        self.api_key = api_key
-        self.original_features = None
-
-    def fit(self, df, y=None):
-        self.original_features = df.columns
-        return self
-
-    def transform(self, df=None):
-        # make materials project api call (uses internet)
-        #mpg = MaterialsProjectFeatureGeneration(df.copy(), self.api_key, self.composition_feature)
-        print('HERE')
-        print(df[self.composition_feature])
-        print(df[self.composition_feature].tolist())
-        materials_asstr = self._list2str(lst=df[self.composition_feature].tolist())
-        print(materials_asstr)
-        df = self.get_dataframe(criteria=df[self.composition_feature].tolist()[0], properties=["formation_energy_per_atom"])
-        print(df)
-        #df = self.get_dataframe(criteria=materials_asstr, properties=["formation_energy_per_atom"])
-        #df = mpg.generate_materialsproject_features()
-
-        df = df.drop(self.original_features, axis=1)
-        # delete missing values, generation makes a lot of garbage.
-        df = clean_dataframe(df)
-        assert self.composition_feature not in df.columns
-        return df
-
-    def _list2str(self, lst):
-        s = ''
-        for l in lst:
-            s += l+' '
-        return s
-"""
-
-"""
-
-
-class Citrine(BaseEstimator, TransformerMixin, CitrineDataRetrieval):
-
-    Class that wraps MaterialsProjectFeatureGeneration, giving it scikit-learn structure
-
-    Args:
-
-        composition_feature: (str), string denoting a chemical composition to generate elemental features from
-
-        mapi_key: (str), string denoting your Materials Project API key
-
-    Methods:
-
-        fit: pass through, copies input columns as pre-generated features
-
-        Args:
-
-            df: (dataframe), input dataframe containing X and y data
-
-        transform: generate Materials Project features
-
-        Args:
-
-            df: (dataframe), input dataframe containing X and y data
-
-        Returns:
-
-            df: (dataframe), output dataframe containing generated features, original features and y data
-
-
-
-    def __init__(self, composition_feature, api_key):
-        super(Citrine, self).__init__(api_key=api_key)
-        self.composition_feature = composition_feature
-        self.api_key = api_key
-        self.original_features = None
-
-    def fit(self, df, y=None):
-        self.original_features = df.columns
-        return self
-
-    def transform(self, df=None):
-        # make materials project api call (uses internet)
-        #mpg = MaterialsProjectFeatureGeneration(df.copy(), self.api_key, self.composition_feature)
-        materials_asstr = self._list2str(lst=df[self.composition_feature].tolist())
-        df_count = 0
-        props = self._citrine_property_list()
-        for i, material in enumerate(df[self.composition_feature].tolist()):
-            try:
-                df = self.get_dataframe(criteria={'formula': str(material)}, properties=props)
-                df_count += 1
-                cols = [col for col in df.columns.tolist() if col in props]
-                df = df[cols]
-                print('FINAL DF')
-                print(df)
-            except:
-                logging.info('MAST-ML encountered a problem generating features from Citrine for', str(material), 'continuing...')
-        print('COMPLETED')
-        print(df_count)
-        exit()
-        #df = self.get_dataframe(criteria=materials_asstr, properties=["formation_energy_per_atom"])
-        #df = mpg.generate_materialsproject_features()
-
-        df = df.drop(self.original_features, axis=1)
-        # delete missing values, generation makes a lot of garbage.
-        df = clean_dataframe(df)
-        assert self.composition_feature not in df.columns
-        return df
-
-    def _list2str(self, lst):
-        s = ''
-        for l in lst:
-            s += l+' '
-        return s
-
-    def _citrine_property_list(self):
-        props = ['Energy Above Convex Hull', 'Unit Cell Volume', 'VASP Energy for Structure', 'FirstIonizationEnergy_stoich_avg',
-                 'HeatFusion_min', 'GSbandgap_min', 'Enthalpy of Formation','Covalent Radius_Max', 'MeltingT_min',
-                 'HeatCapacityMolar_min', 'Bulk Modulus, Voigt', 'HeatCapacityMolar_max', 'Density_Min', 'Bulk Modulus, Reuss',
-                 'Atomic Weight_Min', 'Density_Max', 'Density', 'HeatFusion_stoich_avg', 'MeltingT_max', 'Molecular mass',
-                 'HeatCapacityMolar_stoich_avg', 'Number of Elements', 'Boiling Temp_Stoich Avg', 'GSbandgap_stoich_avg',
-                 'LUMO energy', 'Shear Modulus, Voigt', 'Solubility', 'Electronegativity_Max', 'Bulk Modulus, Voigt-Reuss-Hill',
-                 'FirstIonizationEnergy_min', 'HOMO energy', 'Atomic Weight_Max', 'Boiling Temp_Max', 'Density_Stoich Avg',
-                 'Electronegativity_Stoich Avg', 'Molar Mass', 'Boiling Temp_Min', 'Electronegativity_Min', 'Shear Modulus, Reuss',
-                 'HeatFusion_max', 'Shear Modulus, Voigt-Reuss-Hill', 'Dipole moment', 'Heat of formation', 'Melting Point',
-                 'Total Magnetization', 'MeltingT_stoich_avg', 'GSbandgap_max', "Poisson's Ratio", 'Volume', 'Atomic Volume_min',
-                 'Atomic Volume_max', 'Covalent Radius_Min', 'FirstIonizationEnergy_max']
-        return props
-"""
-
-class Citrine(BaseEstimator, TransformerMixin):
+            (dataframe), the generated features dataframe
     """
 
-    Class that wraps CitrineFeatureGeneration, giving it scikit-learn structure
+    def __init__(self, structural_features, structure_col):  # _instantiate only needs this
+        # assuming dataframe is coming in with a column 'Structure' with coords.
+        # where do I need to raise errors
+        if type(structural_features) is str:
+            structural_features = [structural_features]
 
-    Args:
-
-        composition_feature: (str), string denoting a chemical composition to generate elemental features from
-
-        api_key: (str), string denoting your Citrine API key
-
-    Methods:
-
-        fit: pass through, copies input columns as pre-generated features
-
-        Args:
-
-            df: (dataframe), input dataframe containing X and y data
-
-        transform: generate Citrine features
-
-        Args:
-
-            df: (dataframe), input dataframe containing X and y data
-
-        Returns:
-
-            df: (dataframe), output dataframe containing generated features, original features and y data
-    """
-
-
-
-    def __init__(self, composition_feature, api_key):
-        self.composition_feature = composition_feature
-        self.api_key = api_key
+        structural_features = structural_features  # structural feature is now cast as a list
+        self.structural_features = structural_features  # structural feature field of class
+        self.structure_col = structure_col
 
     def fit(self, df, y=None):
-        self.original_features = df.columns
         return self
 
-    def transform(self, df):
-        # make citrine api call (uses internet)
-        cfg = CitrineFeatureGeneration(df.copy(), self.api_key, self.composition_feature)
-        df = cfg.generate_citrine_features()
+    def transform(self, df, y=None):
+        # iterate through dataframe rows
+        for i, rows in df.iterrows():
+            f = Poscar.from_file(df.at[i, self.structure_col])
+            structure = f.structure  # create pymatgen structure object
+            df.at[i, self.structure_col] = structure  # replace path with structure object
 
-        df = df.drop(self.original_features, axis=1)
-        # delete missing values, generation makes a lot of garbage.
-        df = clean_dataframe(df)
-        assert self.composition_feature not in df.columns
-        return df
+        # iterate through structural_features list
+        for struc_feat in range(len(self.structural_features)):
+            # nested loop to check structural_features list item against matminer structures list
+            for feature_name in inspect.getmembers(struc, inspect.isclass):
+                # if structural feature item is a match
+                if feature_name[0] == self.structural_features[struc_feat]:
+                    sf = getattr(struc, self.structural_features[struc_feat])()  # instantiates the structure featurizer
+                    df = sf.fit_featurize_dataframe(df, self.structure_col)  # fit_featurize_dataframe() works for all
+                    # updates dataframe if the structural feature happens to be the GlobalSymmetryFeatures
+                    if self.structural_features[struc_feat] == 'GlobalSymmetryFeatures':
+                        df = df.drop('crystal_system', axis=1)
+                        df['is_centrosymmetric'].replace(True, 1, inplace=True)
+                        df['is_centrosymmetric'].replace(False, 0, inplace=True)
 
+                    break  # structure feature was found for this iteration, repeat
+
+        # drop unused dataframe columns for rest of application
+        df = df.drop(self.structure_col, axis=1)
+        df = df.drop('Material', axis=1)
+        return df  # return generated dataframe
+
+    def retrieve_mp(self, criteria, properties=["band_gap", "volume", "density", "formation_energy_per_atom"],
+                    index_mpid=True, api_key=None):
+        """
+        Gets data from MP in a dataframe format. See api_link for more details.
+        Args:
+            criteria (dict): (str/dict) see MPRester.query() for a description of this
+                    parameter. String examples: "mp-1234", "Fe2O3", "Li-Fe-O',
+                    "\\*2O3". Dict example: {"band_gap": {"$gt": 1}}
+            properties ([str]): (list) see MPRester.query() for a description of this
+                    parameter. Example: ["formula", "formation_energy_per_atom"]
+            plus: "structure", "initial_structure", "final_structure",
+                  "bandstructure" (line mode), "bandstructure_uniform",
+                  "phonon_bandstructure", "phonon_ddb", "phonon_bandstructure",
+                  "phonon_dos". Note that for a long list of compounds, it may
+                   take a long time to retrieve some of these objects.
+            index_mpid (bool): (bool) Whether to set the materials_id as the dataframe
+                    index.
+            api_key: (str) Your Materials Project API key, or None if you've
+                set up your pymatgen config.
+        Returns (pandas.Dataframe): containing results
+        notes/bugs: works pretty great, API easy to use and accurate. What to fix for
+                    dataframe integration into mastml?
+        """
+        mp_df = MPDataRetrieval(api_key).get_dataframe(criteria, properties, index_mpid)
+        mp_df = mp_df.loc[mp_df['formation_energy_per_atom'].idxmin(), :].to_frame().transpose().reset_index().drop(
+            'index', axis=1)
+
+        return mp_df
+
+    def retrieve_citrine(self, criteria, properties, common_fields, secondary_fields, print_properties_options,
+                         api_key):
+        """
+        Gets a Pandas dataframe object from data retrieved from
+        the Citrine API.
+        Args:
+            criteria (dict): see get_data method for supported keys except
+                    prop; prop should be included in properties.
+            properties ([str]): requested properties/fields/columns.
+                    For example, ["Seebeck coefficient", "Band gap"]. If unsure
+                    about the exact words, capitalization, etc try something like
+                    ["gap"] and "max_results": 3 and print_properties_options=True
+                    to see the exact options for this field
+            common_fields ([str]): fields that are common to all the requested
+                    properties. Common example can be "chemicalFormula". Look for
+                    suggested common fields after a quick query for more info
+            secondary_fields (bool): if True, fields not included in properties
+                    may be added to the output (e.g. references). Recommended only
+                    if len(properties)==1'
+            print_properties_options (bool): whether to print available options
+                    for "properties" and "common_fields" arguments.
+            api_key: (str) Your Citrine API key, or None if
+                    you've set the CITRINE_KEY environment variable
+        return: (object) Pandas dataframe object containing the results
+        notes/bugs: criteria needs a dictionary, not specified in get_data() as mentioned,
+                    and example on documentation webpage does not work. What to fix for
+                    dataframe integration into mastml?
+        """
+
+        citrine_df = CitrineDataRetrieval(api_key).get_dataframe(criteria, properties, common_fields, secondary_fields,
+                                                                 print_properties_options)
+        return citrine_df
+
+    def retrieve_MDF(self, criteria, anonymous=False, properties=None, unwind_arrays=True):
+        mdf_df = MDFDataRetrieval(anonymous).get_dataframe(criteria, properties, unwind_arrays)
+        return mdf_df
+
+    def retrieve_MPDS(self, criteria, properties=None, api_key=None, endpoint=None):
+        mpds_df = MPDSDataRetrieval(api_key, endpoint).get_dataframe(criteria, properties)
+        return mpds_df
+
+    def retrieve_AFLOW(self, criteria, properties, files=None, request_size=10000, request_limit=0, index_auid=True):
+        aflow_df = AFLOWDataRetrieval().get_dataframe(criteria, properties, files, request_size, index_auid)
+        return aflow_df
 
 class NoGenerate(BaseEstimator, TransformerMixin):
     """
@@ -506,11 +438,10 @@ name_to_constructor = {
     'DoNothing': NoGenerate,
     'PolynomialFeatures': PolynomialFeatures,
     'Magpie': Magpie,
-    'Citrine': Citrine,
+    'Matminer': Matminer,
     'MaterialsProject': MaterialsProject,
-    # including these here for now. May get their own section eventually
     'ContainsElement': ContainsElement,
-}
+    }
 
 def clean_dataframe(df):
     """
@@ -1304,169 +1235,6 @@ class MaterialsProjectFeatureGeneration(object):
             log.info(f'MAterials Project Feature Generation {composition} {structure_data_dict_condensed}')
         return structure_data_dict_condensed
 
-class CitrineFeatureGeneration(object):
-    """
-    Class to generate new features using Citrine data and dataframe containing material compositions
-    Datarame must have a column named "Material compositions".
-
-    Args:
-        dataframe: (dataframe), dataframe containing x and y data and feature names
-
-        api_key: (str), your Citrination API key
-
-        composition_feature: (str), string denoting a chemical composition to generate elemental features from
-
-    Methods:
-
-        generate_citrine_features : generates Citrine feature set based on compositions in dataframe
-
-            Args:
-
-                None
-
-            Returns:
-
-                dataframe: (dataframe), dataframe containing citrine generated feature set
-    """
-    def __init__(self, dataframe, api_key, composition_feature):
-        self.dataframe = dataframe
-        self.api_key = api_key
-        self.client = CitrinationClient(api_key, 'https://citrination.com')
-        self.composition_feature = composition_feature
-
-    def generate_citrine_features(self):
-        log.warning('WARNING: You have specified generation of features from Citrine. Based on which'
-              ' materials you are interested in, there may be many records to parse through, thus'
-              ' this routine may take a long time to complete!')
-        try:
-            compositions = self.dataframe[self.composition_feature].tolist()
-        except KeyError as e:
-            log.error(f'original python error: {str(e)}')
-            raise utils.MissingColumnError('Error! No column named {self.composition_feature} found in your input data file. '
-                    'To use this feature generation routine, you must supply a material composition for each data point')
-        citrine_dict_property_min = dict()
-        citrine_dict_property_max = dict()
-        citrine_dict_property_avg = dict()
-
-        # before: ~11 seconds
-        # made into a func so we can do requests in parallel
-
-        # now like 1.8 secs!
-        pool = multiprocessing.Pool(processes=20)
-        #result_tuples = pool.map(self._load_composition, compositions)
-        result_tuples = map(self._load_composition, compositions)
-
-        for comp, (prop_min, prop_max, prop_avg) in zip(compositions, result_tuples):
-            citrine_dict_property_min[comp] = prop_min
-            citrine_dict_property_max[comp] = prop_max
-            citrine_dict_property_avg[comp] = prop_avg
-
-        dataframe = self.dataframe
-        citrine_dict_list = [citrine_dict_property_min, citrine_dict_property_max, citrine_dict_property_avg]
-        for citrine_dict in citrine_dict_list:
-            dataframe_citrine = pd.DataFrame.from_dict(data=citrine_dict, orient='index')
-            # Need to reorder compositions in new dataframe to match input dataframe
-            dataframe_citrine = dataframe_citrine.reindex(self.dataframe[self.composition_feature].tolist())
-            # Need to make compositions the first column, instead of the row names
-            dataframe_citrine.index.name = self.composition_feature
-            dataframe_citrine.reset_index(inplace=True)
-            # Need to delete duplicate column before merging dataframes
-            del dataframe_citrine[self.composition_feature]
-            # Merge magpie feature dataframe with originally supplied dataframe
-            dataframe = DataframeUtilities().merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_citrine)
-
-        return dataframe
-
-    def _load_composition(self, composition):
-        pifquery = self._get_pifquery(composition=composition)
-        property_name_list, property_value_list = self._get_pifquery_property_list(pifquery=pifquery)
-        #print("Citrine Feature Generation: ", composition, property_name_list, property_value_list)
-        property_names_unique, parsed_property_min, parsed_property_max, parsed_property_avg = self._parse_pifquery_property_list(property_name_list=property_name_list, property_value_list=property_value_list)
-        return parsed_property_min, parsed_property_max, parsed_property_avg
-
-    def _get_pifquery(self, composition):
-        # TODO: does this stop csv generation on first invalid composition?
-        # TODO: Is there a way to send many compositions in one call to citrine?
-        pif_query = PifQuery(system=SystemQuery(chemical_formula=ChemicalFieldQuery(filter=ChemicalFilter(equal=composition))))
-        # Check if any results found
-        if 'hits' not in self.client.search(pif_query).as_dictionary():
-            raise KeyError('No results found!')
-        pifquery = self.client.search(pif_query).as_dictionary()['hits']
-        return pifquery
-
-    def _get_pifquery_property_list(self, pifquery):
-        property_name_list = list()
-        property_value_list = list()
-        accepted_properties_list = [
-            'mass', 'space group', 'band', 'Band', 'energy', 'volume', 'density', 'dielectric',
-            'Dielectric', 'Enthalpy', 'Convex', 'Magnetization', 'Elements', 'Modulus', 'Shear',
-            "Poisson's", 'Elastic', 'Energy'
-        ]
-
-        for result_number, results in enumerate(pifquery):
-            for i, dictionary in enumerate(results['system']['properties']):
-                if 'name' not in dictionary or dictionary['name'] == "CIF File": continue
-                value = dictionary['name']
-                for entry in accepted_properties_list:
-                    if entry not in value: continue
-                    property_name_list.append(value)
-                    try:
-                        property_value_list.append(
-                            float(dictionary['scalars'][0]['value']))
-                    except (ValueError, KeyError):
-                        property_name_list.pop(-1)
-                        continue
-
-        #for result_number, results in enumerate(pifquery):
-        #    property_value = results['system']['properties']
-        #    for list_index, list_element in enumerate(property_value):
-        #        for name, value in property_value[list_index].items():
-        #            if name == 'name' and value != "CIF File":
-        #                for entry in accepted_properties_list:
-        #                    if entry in value:
-        #                        property_name_list.append(value)
-        #                        try:
-        #                            property_value_list.append(
-        #                                float(property_value[list_index]['scalars'][0]['value']))
-        #                        except (ValueError, KeyError):
-        #                            # print('found something to remove', property_value[list_index]['scalars'][0]['value'])
-        #                            property_name_list.pop(-1)
-        #                            continue
-
-        return property_name_list, property_value_list
-
-    def _parse_pifquery_property_list(self, property_name_list, property_value_list):
-        parsed_property_max = dict()
-        parsed_property_min = dict()
-        parsed_property_avg = dict()
-        property_names_unique = list()
-        if len(property_name_list) != len(property_value_list):
-            print('Error! Length of property name and property value lists are not the same. There must be a bug in the _get_pifquerey_property_list method')
-            raise IndexError("property_name_list and property_value_list are not the same size.")
-        else:
-            # Get unique property names
-            for name in property_name_list:
-                if name not in property_names_unique:
-                    property_names_unique.append(name)
-            for unique_name in property_names_unique:
-                unique_property = list()
-                unique_property_avg = 0
-                count = 0
-                for i, name in enumerate(property_name_list):
-                    # Only include property values whose name are same as those in unique_name list
-                    if name == unique_name:
-                        count += 1 # count how many instances of the same property occur
-                        unique_property_avg += property_value_list[i]
-                        unique_property.append(property_value_list[i])
-                unique_property_min = min(entry for entry in unique_property)
-                unique_property_max = max(entry for entry in unique_property)
-                unique_property_avg = unique_property_avg/count
-                parsed_property_min[str(unique_name)+"_min"] = unique_property_min
-                parsed_property_max[str(unique_name) + "_max"] = unique_property_max
-                parsed_property_avg[str(unique_name) + "_avg"] = unique_property_avg
-
-        return property_names_unique, parsed_property_min, parsed_property_max, parsed_property_avg
-
 class DataframeUtilities(object):
     """
     Class of basic utilities for dataframe manipulation, and exchanging between dataframes and numpy arrays
@@ -1628,3 +1396,222 @@ class DataframeUtilities(object):
         fname = configdict['General Setup']['save_path'] + "/" + 'input_data_statistics_'+data_path_name+'.csv'
         dataframe_stats.to_csv(fname, index=True)
         return fname
+
+# Old Citrine classes likely to be deleted
+"""
+    class Citrine(BaseEstimator, TransformerMixin):
+
+
+        Class that wraps CitrineFeatureGeneration, giving it scikit-learn structure
+
+        Args:
+
+            composition_feature: (str), string denoting a chemical composition to generate elemental features from
+
+            api_key: (str), string denoting your Citrine API key
+
+        Methods:
+
+            fit: pass through, copies input columns as pre-generated features
+
+            Args:
+
+                df: (dataframe), input dataframe containing X and y data
+
+            transform: generate Citrine features
+
+            Args:
+
+                df: (dataframe), input dataframe containing X and y data
+
+            Returns:
+
+                df: (dataframe), output dataframe containing generated features, original features and y data
+
+
+
+
+        def __init__(self, composition_feature, api_key):
+            self.composition_feature = composition_feature
+            self.api_key = api_key
+
+        def fit(self, df, y=None):
+            self.original_features = df.columns
+            return self
+
+        def transform(self, df):
+            # make citrine api call (uses internet)
+            cfg = CitrineFeatureGeneration(df.copy(), self.api_key, self.composition_feature)
+            df = cfg.generate_citrine_features()
+
+            df = df.drop(self.original_features, axis=1)
+            # delete missing values, generation makes a lot of garbage.
+            df = clean_dataframe(df)
+            assert self.composition_feature not in df.columns
+            return df
+    """
+
+"""
+class CitrineFeatureGeneration(object):
+
+    Class to generate new features using Citrine data and dataframe containing material compositions
+    Datarame must have a column named "Material compositions".
+
+    Args:
+        dataframe: (dataframe), dataframe containing x and y data and feature names
+
+        api_key: (str), your Citrination API key
+
+        composition_feature: (str), string denoting a chemical composition to generate elemental features from
+
+    Methods:
+
+        generate_citrine_features : generates Citrine feature set based on compositions in dataframe
+
+            Args:
+
+                None
+
+            Returns:
+
+                dataframe: (dataframe), dataframe containing citrine generated feature set
+
+    def __init__(self, dataframe, api_key, composition_feature):
+        self.dataframe = dataframe
+        self.api_key = api_key
+        self.client = CitrinationClient(api_key, 'https://citrination.com')
+        self.composition_feature = composition_feature
+
+    def generate_citrine_features(self):
+        log.warning('WARNING: You have specified generation of features from Citrine. Based on which'
+              ' materials you are interested in, there may be many records to parse through, thus'
+              ' this routine may take a long time to complete!')
+        try:
+            compositions = self.dataframe[self.composition_feature].tolist()
+        except KeyError as e:
+            log.error(f'original python error: {str(e)}')
+            raise utils.MissingColumnError('Error! No column named {self.composition_feature} found in your input data file. '
+                    'To use this feature generation routine, you must supply a material composition for each data point')
+        citrine_dict_property_min = dict()
+        citrine_dict_property_max = dict()
+        citrine_dict_property_avg = dict()
+
+        # before: ~11 seconds
+        # made into a func so we can do requests in parallel
+
+        # now like 1.8 secs!
+        pool = multiprocessing.Pool(processes=20)
+        #result_tuples = pool.map(self._load_composition, compositions)
+        result_tuples = map(self._load_composition, compositions)
+
+        for comp, (prop_min, prop_max, prop_avg) in zip(compositions, result_tuples):
+            citrine_dict_property_min[comp] = prop_min
+            citrine_dict_property_max[comp] = prop_max
+            citrine_dict_property_avg[comp] = prop_avg
+
+        dataframe = self.dataframe
+        citrine_dict_list = [citrine_dict_property_min, citrine_dict_property_max, citrine_dict_property_avg]
+        for citrine_dict in citrine_dict_list:
+            dataframe_citrine = pd.DataFrame.from_dict(data=citrine_dict, orient='index')
+            # Need to reorder compositions in new dataframe to match input dataframe
+            dataframe_citrine = dataframe_citrine.reindex(self.dataframe[self.composition_feature].tolist())
+            # Need to make compositions the first column, instead of the row names
+            dataframe_citrine.index.name = self.composition_feature
+            dataframe_citrine.reset_index(inplace=True)
+            # Need to delete duplicate column before merging dataframes
+            del dataframe_citrine[self.composition_feature]
+            # Merge magpie feature dataframe with originally supplied dataframe
+            dataframe = DataframeUtilities().merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_citrine)
+
+        return dataframe
+
+    def _load_composition(self, composition):
+        pifquery = self._get_pifquery(composition=composition)
+        property_name_list, property_value_list = self._get_pifquery_property_list(pifquery=pifquery)
+        #print("Citrine Feature Generation: ", composition, property_name_list, property_value_list)
+        property_names_unique, parsed_property_min, parsed_property_max, parsed_property_avg = self._parse_pifquery_property_list(property_name_list=property_name_list, property_value_list=property_value_list)
+        return parsed_property_min, parsed_property_max, parsed_property_avg
+
+    def _get_pifquery(self, composition):
+        # TODO: does this stop csv generation on first invalid composition?
+        # TODO: Is there a way to send many compositions in one call to citrine?
+        pif_query = PifQuery(system=SystemQuery(chemical_formula=ChemicalFieldQuery(filter=ChemicalFilter(equal=composition))))
+        # Check if any results found
+        if 'hits' not in self.client.search(pif_query).as_dictionary():
+            raise KeyError('No results found!')
+        pifquery = self.client.search(pif_query).as_dictionary()['hits']
+        return pifquery
+
+    def _get_pifquery_property_list(self, pifquery):
+        property_name_list = list()
+        property_value_list = list()
+        accepted_properties_list = [
+            'mass', 'space group', 'band', 'Band', 'energy', 'volume', 'density', 'dielectric',
+            'Dielectric', 'Enthalpy', 'Convex', 'Magnetization', 'Elements', 'Modulus', 'Shear',
+            "Poisson's", 'Elastic', 'Energy'
+        ]
+
+        for result_number, results in enumerate(pifquery):
+            for i, dictionary in enumerate(results['system']['properties']):
+                if 'name' not in dictionary or dictionary['name'] == "CIF File": continue
+                value = dictionary['name']
+                for entry in accepted_properties_list:
+                    if entry not in value: continue
+                    property_name_list.append(value)
+                    try:
+                        property_value_list.append(
+                            float(dictionary['scalars'][0]['value']))
+                    except (ValueError, KeyError):
+                        property_name_list.pop(-1)
+                        continue
+
+        #for result_number, results in enumerate(pifquery):
+        #    property_value = results['system']['properties']
+        #    for list_index, list_element in enumerate(property_value):
+        #        for name, value in property_value[list_index].items():
+        #            if name == 'name' and value != "CIF File":
+        #                for entry in accepted_properties_list:
+        #                    if entry in value:
+        #                        property_name_list.append(value)
+        #                        try:
+        #                            property_value_list.append(
+        #                                float(property_value[list_index]['scalars'][0]['value']))
+        #                        except (ValueError, KeyError):
+        #                            # print('found something to remove', property_value[list_index]['scalars'][0]['value'])
+        #                            property_name_list.pop(-1)
+        #                            continue
+
+        return property_name_list, property_value_list
+
+    def _parse_pifquery_property_list(self, property_name_list, property_value_list):
+        parsed_property_max = dict()
+        parsed_property_min = dict()
+        parsed_property_avg = dict()
+        property_names_unique = list()
+        if len(property_name_list) != len(property_value_list):
+            print('Error! Length of property name and property value lists are not the same. There must be a bug in the _get_pifquerey_property_list method')
+            raise IndexError("property_name_list and property_value_list are not the same size.")
+        else:
+            # Get unique property names
+            for name in property_name_list:
+                if name not in property_names_unique:
+                    property_names_unique.append(name)
+            for unique_name in property_names_unique:
+                unique_property = list()
+                unique_property_avg = 0
+                count = 0
+                for i, name in enumerate(property_name_list):
+                    # Only include property values whose name are same as those in unique_name list
+                    if name == unique_name:
+                        count += 1 # count how many instances of the same property occur
+                        unique_property_avg += property_value_list[i]
+                        unique_property.append(property_value_list[i])
+                unique_property_min = min(entry for entry in unique_property)
+                unique_property_max = max(entry for entry in unique_property)
+                unique_property_avg = unique_property_avg/count
+                parsed_property_min[str(unique_name)+"_min"] = unique_property_min
+                parsed_property_max[str(unique_name) + "_max"] = unique_property_max
+                parsed_property_avg[str(unique_name) + "_avg"] = unique_property_avg
+
+        return property_names_unique, parsed_property_min, parsed_property_max, parsed_property_avg
+"""
