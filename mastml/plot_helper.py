@@ -2510,6 +2510,7 @@ def nice_names():
     'rmse_over_stdev': r'RMSE/$\sigma_y$',
     'R2': '$R^2$',
     'R2_noint': '$R^2_{noint}$',
-    'R2_adjusted': '$R^2_{adjusted}$'
+    'R2_adjusted': '$R^2_{adjusted}$',
+    'R2_fitted': '$R^2_{fitted}$'
     }
     return nice_names
