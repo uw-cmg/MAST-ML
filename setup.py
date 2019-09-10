@@ -41,6 +41,7 @@ setup(
     packages=find_packages(),
     version=verstr,
     install_requires=[
+        "aflow",
         "certifi==2018.4.16",
         "chardet==3.0.4",
         "citrination-client==4.6.0",
@@ -50,6 +51,7 @@ setup(
         "decorator==4.3.0",
         "dominate==2.3.5",
         "forestci==0.3",
+        "httplib2",
         "idna==2.7",
         "ipython-genutils==0.2.0",
         "jsonschema==2.6.0",
