@@ -987,6 +987,12 @@ def mastml_run(conf_path, data_path, outdir):
                 plot_helper.plot_predicted_vs_true_bars(
                         y.values, predictions, avg_test_stats,
                         join(main_path, 'predicted_vs_true_average'), label=conf['GeneralSetup']['input_target'])
+                if grouping_data is not None:
+                    plot_helper.plot_predicted_vs_true_bars(
+                        y.values, predictions, avg_test_stats,
+                        join(main_path, 'predicted_vs_true_average_groupslabeled'),
+                        label=conf['GeneralSetup']['input_target'],
+                        groups=grouping_data)
             if MiscSettings['plot_best_worst_per_point']:
                 plot_helper.plot_best_worst_per_point(y.values, predictions,
                                                       join(main_path, 'best_worst_per_point'),

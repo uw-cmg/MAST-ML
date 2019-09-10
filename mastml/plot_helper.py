@@ -892,7 +892,7 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
 
 @ipynb_maker
 def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
-                                savepath, title='best worst with bars', label='target_value'):
+                                savepath, title='best worst with bars', label='target_value', groups=None):
     """
     Method to calculate parity plot (predicted vs. true) of average predictions, averaged over all CV splits, with error
 
@@ -945,8 +945,27 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
     #print(maxx, minn, rounder(maxx - minn))
     _set_tick_labels(ax, maxx, minn)
 
-    ax.errorbar(y_true, means, yerr=standard_errors, fmt='o', markerfacecolor='blue', markeredgecolor='black', markersize=10,
+    if groups is None:
+        ax.errorbar(y_true, means, yerr=standard_errors, fmt='o', markerfacecolor='blue', markeredgecolor='black', markersize=10,
                 alpha=0.7, capsize=3)
+    else:
+        colors = ['blue', 'red', 'green', 'purple', 'orange', 'black']
+        markers = ['o', 'v', '^', 's', 'p', 'h', 'D', '*', 'X', '<', '>', 'P']
+        colorcount = markercount = 0
+        handles = dict()
+        unique_groups = np.unique(groups)
+        for groupcount, group in enumerate(unique_groups):
+            mask = groups == group
+            # logger.debug(' '*12 + f'{group} group_percent = {np.count_nonzero(mask) / len(groups)}')
+            handles[group] = ax.errorbar(y_true[mask], np.array(means)[mask], yerr=np.array(standard_errors)[mask],
+                                         marker=markers[markercount], markerfacecolor=colors[colorcount],
+                                         markeredgecolor=colors[colorcount], ecolor=colors[colorcount],
+                                         markersize=10, alpha=0.7, capsize=3, fmt='o')
+            colorcount += 1
+            if colorcount % len(colors) == 0:
+                markercount += 1
+                colorcount = 0
+        ax.legend(handles.values(), handles.keys(), loc='lower right', fontsize=10)
 
     plot_stats(fig, avg_stats, x_align=x_align, y_align=0.90)
 
