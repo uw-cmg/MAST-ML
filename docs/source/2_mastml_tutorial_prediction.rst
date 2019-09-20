@@ -14,12 +14,12 @@ Example::
 
     [GeneralSetup]
         input_features = Auto
-        target_feature = Reduced barrier (eV)
+        input_target = Reduced barrier (eV)
         randomizer = False
         metrics = Auto
-        not_input_features = Host element, Solute element, predict_Pt
-        grouping_feature = Host element
-        validation_columns = predict_Pt
+        input_other = Host element, Solute element, predict_Pt
+        input_grouping = Host element
+        input_testdata = predict_Pt
 
 For this test, let's run both the random cross-validation and LOG test. As a reminder, we need to un-comment the random
 cross-validation test in the DataSplits section:

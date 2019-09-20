@@ -18,7 +18,7 @@ Example::
             estimator = KernelRidge
             cv = RepeatedKFold
             param_names = alpha ; gamma
-            param_values = -5 5 100 log ; -5 5 100 log
+            param_values = -5 5 100 log float ; -5 5 100 log float
             scoring = root_mean_squared_error
 
 Let's take a final look at the same full fit and RepeatedKFold random cross-validation tests for this run:
