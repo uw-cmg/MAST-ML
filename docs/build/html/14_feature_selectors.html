@@ -246,13 +246,15 @@ selectors. More information on scikit-learn feature selectors is available at:</
 <p><a class="reference external" href="http://scikit-learn.org/stable/modules/classes.html#module-sklearn.feature_selection">http://scikit-learn.org/stable/modules/classes.html#module-sklearn.feature_selection</a></p>
 <dl class="class">
 <dt id="feature_selectors.MASTMLFeatureSelector">
-<em class="property">class </em><code class="descclassname">feature_selectors.</code><code class="descname">MASTMLFeatureSelector</code><span class="sig-paren">(</span><em>estimator</em>, <em>n_features_to_select</em>, <em>cv</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/feature_selectors.html#MASTMLFeatureSelector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#feature_selectors.MASTMLFeatureSelector" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">feature_selectors.</code><code class="descname">MASTMLFeatureSelector</code><span class="sig-paren">(</span><em>estimator</em>, <em>n_features_to_select</em>, <em>cv</em>, <em>manually_selected_features=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/feature_selectors.html#MASTMLFeatureSelector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#feature_selectors.MASTMLFeatureSelector" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class custom-written for MAST-ML to conduct forward selection of features with flexible model and cv scheme</p>
 <p>Args:</p>
 <blockquote>
 <div><p>estimator: (scikit-learn model/estimator object), a scikit-learn model/estimator</p>
 <p>n_features_to_select: (int), the number of features to select</p>
 <p>cv: (scikit-learn cross-validation object), a scikit-learn cross-validation object</p>
+<p>manually_selected_features: (list), a list of features manually set by the user. The feature selector will first
+start from this list of features and sequentially add features until n_features_to_select is met.</p>
 </div></blockquote>
 <p>Methods:</p>
 <blockquote>

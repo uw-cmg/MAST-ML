@@ -248,6 +248,62 @@ a dataframe or a numpy array.</p>
 <dd><a class="reference external" href="http://scikit-learn.org/stable/modules/classes.html#module-sklearn.model_selection">http://scikit-learn.org/stable/modules/classes.html#module-sklearn.model_selection</a></dd>
 </dl>
 <dl class="class">
+<dt id="data_splitters.Bootstrap">
+<em class="property">class </em><code class="descclassname">data_splitters.</code><code class="descname">Bootstrap</code><span class="sig-paren">(</span><em>n</em>, <em>n_bootstraps=3</em>, <em>train_size=0.5</em>, <em>test_size=None</em>, <em>n_train=None</em>, <em>n_test=None</em>, <em>random_state=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_splitters.html#Bootstrap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data_splitters.Bootstrap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Random sampling with replacement cross-validation iterator
+Provides train/test indices to split data in train test sets
+while resampling the input n_bootstraps times: each time a new
+random split of the data is performed and then samples are drawn
+(with replacement) on each side of the split to build the training
+and test sets.
+Note: contrary to other cross-validation strategies, bootstrapping
+will allow some samples to occur several times in each splits. However
+a sample that occurs in the train split will never occur in the test
+split and vice-versa.
+If you want each sample to occur at most once you should probably
+use ShuffleSplit cross validation instead.
+Parameters
+———-
+n : int</p>
+<blockquote>
+<div>Total number of elements in the dataset.</div></blockquote>
+<dl class="docutils">
+<dt>n_bootstraps <span class="classifier-delimiter">:</span> <span class="classifier">int (default is 3)</span></dt>
+<dd>Number of bootstrapping iterations</dd>
+<dt>train_size <span class="classifier-delimiter">:</span> <span class="classifier">int or float (default is 0.5)</span></dt>
+<dd>If int, number of samples to include in the training split
+(should be smaller than the total number of samples passed
+in the dataset).
+If float, should be between 0.0 and 1.0 and represent the
+proportion of the dataset to include in the train split.</dd>
+<dt>test_size <span class="classifier-delimiter">:</span> <span class="classifier">int or float or None (default is None)</span></dt>
+<dd>If int, number of samples to include in the training set
+(should be smaller than the total number of samples passed
+in the dataset).
+If float, should be between 0.0 and 1.0 and represent the
+proportion of the dataset to include in the test split.
+If None, n_test is set as the complement of n_train.</dd>
+<dt>random_state <span class="classifier-delimiter">:</span> <span class="classifier">int or RandomState</span></dt>
+<dd>Pseudo number generator state used for random sampling.</dd>
+</dl>
+<p>#&gt;&gt;&gt; from sklearn import cross_validation
+#&gt;&gt;&gt; bs = cross_validation.Bootstrap(9, random_state=0)
+#&gt;&gt;&gt; len(bs)
+3
+#&gt;&gt;&gt; print bs
+Bootstrap(9, n_bootstraps=3, train_size=5, test_size=4, random_state=0)
+#&gt;&gt;&gt; for train_index, test_index in bs:
+…    print “TRAIN:”, train_index, “TEST:”, test_index
+…
+TRAIN: [1 8 7 7 8] TEST: [0 3 0 5]
+TRAIN: [5 4 2 4 2] TEST: [6 7 1 0]
+TRAIN: [4 7 0 1 1] TEST: [5 3 6 5]
+See also
+——–
+ShuffleSplit: cross validation using random permutations.</p>
+</dd></dl>
+
+<dl class="class">
 <dt id="data_splitters.JustEachGroup">
 <em class="property">class </em><code class="descclassname">data_splitters.</code><code class="descname">JustEachGroup</code><a class="reference internal" href="_modules/data_splitters.html#JustEachGroup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data_splitters.JustEachGroup" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class to train the model on one group at a time and test it on the rest of the data

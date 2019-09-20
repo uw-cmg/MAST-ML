@@ -251,6 +251,9 @@
 <span class="kn">from</span> <span class="nn">sklearn.decomposition</span> <span class="k">import</span> <span class="n">PCA</span>
 <span class="kn">import</span> <span class="nn">sklearn.feature_selection</span> <span class="k">as</span> <span class="nn">fs</span>
 <span class="kn">from</span> <span class="nn">mlxtend.feature_selection</span> <span class="k">import</span> <span class="n">SequentialFeatureSelector</span>
+<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">logging</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;mastml&#39;</span><span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">mastml.legos</span> <span class="k">import</span> <span class="n">util_legos</span>
 
@@ -378,6 +381,9 @@
 
 <span class="sd">        cv: (scikit-learn cross-validation object), a scikit-learn cross-validation object</span>
 
+<span class="sd">        manually_selected_features: (list), a list of features manually set by the user. The feature selector will first</span>
+<span class="sd">        start from this list of features and sequentially add features until n_features_to_select is met.</span>
+
 <span class="sd">    Methods:</span>
 
 <span class="sd">        fit: performs feature selection</span>
@@ -406,17 +412,27 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">estimator</span><span class="p">,</span> <span class="n">n_features_to_select</span><span class="p">,</span> <span class="n">cv</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">estimator</span><span class="p">,</span> <span class="n">n_features_to_select</span><span class="p">,</span> <span class="n">cv</span><span class="p">,</span> <span class="n">manually_selected_features</span><span class="o">=</span><span class="nb">str</span><span class="p">()):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span> <span class="o">=</span> <span class="n">estimator</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_features_to_select</span> <span class="o">=</span> <span class="n">n_features_to_select</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cv</span> <span class="o">=</span> <span class="n">cv</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">manually_selected_features</span> <span class="o">=</span> <span class="n">manually_selected_features</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selected_feature_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manually_selected_features</span>
 
-    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">Xgroups</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1">##################</span>
+        <span class="c1"># Only temporary, to do feature selection with GPR</span>
+        <span class="c1">##################</span>
+        <span class="c1">#from sklearn.gaussian_process import GaussianProcessRegressor</span>
+        <span class="c1">#from sklearn.gaussian_process.kernels import RBF, ConstantKernel</span>
+        <span class="c1">#self.estimator = GaussianProcessRegressor(kernel=RBF(), n_restarts_optimizer=25, alpha=0.000001)</span>
+        <span class="c1">#self.estimator = GaussianProcessRegressor(kernel=0.474**2*RBF(), n_restarts_optimizer=5)</span>
+        <span class="c1">#self.estimator = GaussianProcessRegressor(kernel=RBF(), n_restarts_optimizer=10)</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">savepath</span><span class="p">,</span> <span class="n">Xgroups</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">Xgroups</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">xgroups</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
             <span class="n">Xgroups</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">xgroups</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">selected_feature_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="n">selected_feature_avg_rmses</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="n">selected_feature_std_rmses</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="n">basic_forward_selection_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
@@ -425,6 +441,9 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_features_to_select</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_features</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">n_features_to_select</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_features</span><span class="p">)</span>
         <span class="k">while</span> <span class="n">num_features_selected</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_features_to_select</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;On number of features selected&#39;</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">num_features_selected</span><span class="p">))</span>
+
             <span class="c1"># Catch pandas warnings here</span>
             <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
                 <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
@@ -432,6 +451,9 @@
                 <span class="n">top_feature_name</span><span class="p">,</span> <span class="n">top_feature_avg_rmse</span><span class="p">,</span> <span class="n">top_feature_std_rmse</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_choose_top_feature</span><span class="p">(</span><span class="n">ranked_features</span><span class="o">=</span><span class="n">ranked_features</span><span class="p">)</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">selected_feature_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">top_feature_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">selected_feature_names</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;selected features&#39;</span><span class="p">)</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">selected_feature_names</span><span class="p">)</span>
             <span class="n">selected_feature_avg_rmses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">top_feature_avg_rmse</span><span class="p">)</span>
             <span class="n">selected_feature_std_rmses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">top_feature_std_rmse</span><span class="p">)</span>
 
@@ -444,6 +466,8 @@
                 <span class="s1">&#39;Avg RMSE using top features&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">top_feature_avg_rmse</span>
             <span class="n">basic_forward_selection_dict</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">num_features_selected</span><span class="p">)][</span>
                 <span class="s1">&#39;Stdev RMSE using top features&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">top_feature_std_rmse</span>
+            <span class="c1"># Save for every loop of selecting features</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">basic_forward_selection_dict</span><span class="p">)</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savepath</span><span class="p">,</span><span class="s1">&#39;MASTMLFeatureSelector_data_feature_&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">num_features_selected</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;.csv&#39;</span><span class="p">))</span>
             <span class="n">num_features_selected</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="n">basic_forward_selection_dict</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_features_to_select</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)][</span>
             <span class="s1">&#39;Full feature set Names&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">selected_feature_names</span>
@@ -453,6 +477,7 @@
             <span class="s1">&#39;Full feature set Stdev RMSEs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">selected_feature_std_rmses</span>
         <span class="c1">#self._plot_featureselected_learningcurve(selected_feature_avg_rmses=selected_feature_avg_rmses,</span>
         <span class="c1">#                                         selected_feature_std_rmses=selected_feature_std_rmses)</span>
+
         <span class="k">return</span> <span class="bp">self</span>
 
     <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
@@ -469,14 +494,15 @@
         <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">X</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">selected_feature_names</span><span class="p">:</span>
                 <span class="n">X_</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">selected_feature_names</span><span class="p">]</span>
-                <span class="n">X_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">X_</span><span class="p">,</span> <span class="n">X</span><span class="p">[</span><span class="n">col</span><span class="p">]],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+                <span class="n">X__</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">col</span><span class="p">]</span>
+                <span class="n">X_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">X_</span><span class="p">,</span> <span class="n">X__</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
                 <span class="k">for</span> <span class="n">trains</span><span class="p">,</span> <span class="n">tests</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X_</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">groups</span><span class="p">):</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_</span><span class="p">[</span><span class="n">trains</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">trains</span><span class="p">])</span>
-                    <span class="c1">#predict_trains = self.estimator.predict(X_[trains])</span>
                     <span class="n">predict_tests</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_</span><span class="p">[</span><span class="n">tests</span><span class="p">])</span>
-                    <span class="c1">#trains_metrics.append(root_mean_squared_error(y[trains], predict_trains))</span>
                     <span class="n">tests_metrics</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">root_mean_squared_error</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">tests</span><span class="p">],</span> <span class="n">predict_tests</span><span class="p">))</span>
                 <span class="n">avg_rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">tests_metrics</span><span class="p">)</span>
+
                 <span class="n">std_rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">tests_metrics</span><span class="p">)</span>
                 <span class="n">ranked_features</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;avg_rmse&quot;</span><span class="p">:</span> <span class="n">avg_rmse</span><span class="p">,</span> <span class="s2">&quot;std_rmse&quot;</span><span class="p">:</span> <span class="n">std_rmse</span><span class="p">}</span>
         <span class="k">return</span> <span class="n">ranked_features</span>

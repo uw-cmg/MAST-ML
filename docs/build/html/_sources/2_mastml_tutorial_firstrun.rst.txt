@@ -11,10 +11,10 @@ Example::
 
     [GeneralSetup]
         input_features = Auto
-        target_feature = Reduced barrier (eV)
+        input_target = Reduced barrier (eV)
         randomizer = False
         metrics = Auto
-        not_input_features = Host element, Solute element, predict_Pt
+        input_other = Host element, Solute element, predict_Pt
 
 The General Setup section contains high-level control about how your input data file is parsed. Additional details of
 each parameter can be found in the MAST-ML Input File section in this documentation. Briefly, setting "input_features" to

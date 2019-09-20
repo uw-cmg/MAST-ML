@@ -274,7 +274,7 @@
     <span class="n">set_required_sections_to_empty</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">check_unknown_sections</span><span class="p">():</span>
-        <span class="n">all_sections</span> <span class="o">=</span> <span class="n">main_sections</span> <span class="o">+</span> <span class="n">feature_sections</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;PlotSettings&#39;</span><span class="p">]</span>
+        <span class="n">all_sections</span> <span class="o">=</span> <span class="n">main_sections</span> <span class="o">+</span> <span class="n">feature_sections</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;MiscSettings&#39;</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">section_name</span> <span class="ow">in</span> <span class="n">conf</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">section_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">all_sections</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;[</span><span class="si">{section_name}</span><span class="s1">] is not a valid section!&#39;</span>
@@ -298,8 +298,9 @@
             <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">parameter_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="c1"># Does this parameter-only section include a subsection?</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-                    <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">InvalidConfSubSection</span><span class="p">(</span>
-                            <span class="n">f</span><span class="s2">&quot;Subsection in parameter-only section: </span><span class="si">{key}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                    <span class="c1">#raise utils.InvalidConfSubSection(</span>
+                    <span class="c1">#        f&quot;Subsection in parameter-only section: {key}&quot;)</span>
                 <span class="c1"># cast the strings to their respective types</span>
                 <span class="n">parameter_dict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">fix_types</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
     <span class="n">parameter_dict_type_check_and_cast</span><span class="p">()</span>
@@ -324,8 +325,10 @@
     <span class="n">GS</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;GeneralSetup&#39;</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">check_general_setup_settings_are_valid</span><span class="p">():</span>
-        <span class="n">all_settings</span> <span class="o">=</span>  <span class="p">[</span><span class="s1">&#39;input_features&#39;</span><span class="p">,</span> <span class="s1">&#39;target_feature&#39;</span><span class="p">,</span> <span class="s1">&#39;metrics&#39;</span><span class="p">,</span>
-                         <span class="s1">&#39;randomizer&#39;</span><span class="p">,</span> <span class="s1">&#39;validation_columns&#39;</span><span class="p">,</span> <span class="s1">&#39;not_input_features&#39;</span><span class="p">,</span> <span class="s1">&#39;grouping_feature&#39;</span><span class="p">]</span>
+        <span class="c1">#all_settings =  [&#39;input_features&#39;, &#39;target_feature&#39;, &#39;metrics&#39;,</span>
+        <span class="c1">#                 &#39;randomizer&#39;, &#39;validation_columns&#39;, &#39;not_input_features&#39;, &#39;grouping_feature&#39;]</span>
+        <span class="n">all_settings</span> <span class="o">=</span>  <span class="p">[</span><span class="s1">&#39;input_features&#39;</span><span class="p">,</span> <span class="s1">&#39;input_target&#39;</span><span class="p">,</span> <span class="s1">&#39;metrics&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;randomizer&#39;</span><span class="p">,</span> <span class="s1">&#39;input_testdata&#39;</span><span class="p">,</span> <span class="s1">&#39;input_other&#39;</span><span class="p">,</span> <span class="s1">&#39;input_grouping&#39;</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">GS</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">all_settings</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">InvalidConfParameters</span><span class="p">(</span>
@@ -333,8 +336,8 @@
                         <span class="n">f</span><span class="s2">&quot;Valid GeneralSetup options are: </span><span class="si">{all_settings}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">check_general_setup_settings_are_valid</span><span class="p">()</span>
 
-    <span class="k">if</span> <span class="s1">&#39;grouping_feature&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">GS</span><span class="p">:</span>
-        <span class="n">GS</span><span class="p">[</span><span class="s1">&#39;grouping_feature&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="s1">&#39;input_grouping&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">GS</span><span class="p">:</span>
+        <span class="n">GS</span><span class="p">[</span><span class="s1">&#39;input_grouping&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="c1"># Find grouping features and &#39;not_input_features&#39; to blacklist out of X (see data loader)</span>
     <span class="k">def</span> <span class="nf">collect_grouping_features</span><span class="p">():</span>
@@ -345,26 +348,26 @@
                 <span class="n">SS</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="n">section</span><span class="p">][</span><span class="n">subsection</span><span class="p">]</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">SS</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
                     <span class="k">continue</span>
-                <span class="k">if</span> <span class="s1">&#39;grouping_column&#39;</span> <span class="ow">in</span> <span class="n">SS</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;found grouping_feature: &#39;</span> <span class="o">+</span> <span class="n">SS</span><span class="p">[</span><span class="s1">&#39;grouping_column&#39;</span><span class="p">])</span>
-                    <span class="k">yield</span> <span class="n">SS</span><span class="p">[</span><span class="s1">&#39;grouping_column&#39;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="s1">&#39;input_grouping&#39;</span> <span class="ow">in</span> <span class="n">SS</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;found input_grouping feature: &#39;</span> <span class="o">+</span> <span class="n">SS</span><span class="p">[</span><span class="s1">&#39;input_grouping&#39;</span><span class="p">])</span>
+                    <span class="k">yield</span> <span class="n">SS</span><span class="p">[</span><span class="s1">&#39;input_grouping&#39;</span><span class="p">]</span>
     <span class="c1"># Issue here where if clusters are automatically generated, new column is made but isn&#39;t in intitial df, even though</span>
     <span class="c1"># listed as grouping_feature. Here, just have to remember to put grouping_feature names in not_input_features</span>
     <span class="c1">#feature_blacklist = list(collect_grouping_features())</span>
     <span class="n">feature_blacklist</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="c1"># default not_input_features to a list</span>
-    <span class="k">if</span> <span class="s1">&#39;not_input_features&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">GS</span><span class="p">:</span>
-        <span class="n">GS</span><span class="p">[</span><span class="s1">&#39;not_input_features&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="k">if</span> <span class="s1">&#39;input_other&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">GS</span><span class="p">:</span>
+        <span class="n">GS</span><span class="p">[</span><span class="s1">&#39;input_other&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">GS</span><span class="p">[</span><span class="s1">&#39;not_input_features&#39;</span><span class="p">])</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">GS</span><span class="p">[</span><span class="s1">&#39;input_other&#39;</span><span class="p">])</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
             <span class="n">new_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-            <span class="n">new_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">GS</span><span class="p">[</span><span class="s1">&#39;not_input_features&#39;</span><span class="p">])</span>
-            <span class="n">GS</span><span class="p">[</span><span class="s1">&#39;not_input_features&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_list</span>
-        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">GS</span><span class="p">[</span><span class="s1">&#39;not_input_features&#39;</span><span class="p">])</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
+            <span class="n">new_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">GS</span><span class="p">[</span><span class="s1">&#39;input_other&#39;</span><span class="p">])</span>
+            <span class="n">GS</span><span class="p">[</span><span class="s1">&#39;input_other&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_list</span>
+        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">GS</span><span class="p">[</span><span class="s1">&#39;input_other&#39;</span><span class="p">])</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
             <span class="k">pass</span>
 
     <span class="c1"># and add the discovered ones to the list</span>
-    <span class="n">GS</span><span class="p">[</span><span class="s1">&#39;not_input_features&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">feature_blacklist</span>
+    <span class="n">GS</span><span class="p">[</span><span class="s1">&#39;input_other&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">feature_blacklist</span>
     <span class="c1">#GS[&#39;not_input_features&#39;] = [f for f in feature_blacklist if f not in GS[&#39;not_input_features&#39;]]</span>
 
     <span class="k">def</span> <span class="nf">set_randomizer_setting</span><span class="p">():</span>
@@ -376,7 +379,7 @@
 
 
     <span class="k">def</span> <span class="nf">set_default_features</span><span class="p">():</span>
-        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;input_features&#39;</span><span class="p">,</span> <span class="s1">&#39;target_feature&#39;</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;input_features&#39;</span><span class="p">,</span> <span class="s1">&#39;input_target&#39;</span><span class="p">]:</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">GS</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">GS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Auto&#39;</span><span class="p">):</span>
                 <span class="n">GS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">set_default_features</span><span class="p">()</span>
@@ -430,27 +433,29 @@
     <span class="n">make_long_name_short_name_pairs</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">check_and_boolify_plot_settings</span><span class="p">():</span>
-        <span class="n">default_false</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;feature_vs_target&#39;</span><span class="p">,</span> <span class="s1">&#39;error_plots&#39;</span><span class="p">,</span> <span class="s1">&#39;average_error_plots&#39;</span><span class="p">]</span>
-        <span class="n">default_true</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;target_histogram&#39;</span><span class="p">,</span> <span class="s1">&#39;train_test_plots&#39;</span><span class="p">,</span> <span class="s1">&#39;predicted_vs_true&#39;</span><span class="p">,</span>
-                         <span class="s1">&#39;predicted_vs_true_bars&#39;</span><span class="p">,</span> <span class="s1">&#39;best_worst_per_point&#39;</span><span class="p">]</span>
+        <span class="n">default_false</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;plot_each_feature_vs_target&#39;</span><span class="p">,</span> <span class="s1">&#39;rf_error_method&#39;</span><span class="p">,</span> <span class="s1">&#39;rf_error_percentile&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;normalize_target_feature&#39;</span><span class="p">]</span>
+        <span class="n">default_true</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;plot_target_histogram&#39;</span><span class="p">,</span> <span class="s1">&#39;plot_train_test_plots&#39;</span><span class="p">,</span> <span class="s1">&#39;plot_predicted_vs_true&#39;</span><span class="p">,</span> <span class="s1">&#39;plot_error_plots&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;plot_predicted_vs_true_average&#39;</span><span class="p">,</span> <span class="s1">&#39;plot_best_worst_per_point&#39;</span><span class="p">]</span>
         <span class="n">all_settings</span> <span class="o">=</span> <span class="n">default_false</span> <span class="o">+</span> <span class="n">default_true</span>
-        <span class="k">if</span> <span class="s1">&#39;PlotSettings&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">conf</span><span class="p">:</span>
-            <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;PlotSettings&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-        <span class="n">PS</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;PlotSettings&#39;</span><span class="p">]</span>
-        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">PS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="s1">&#39;MiscSettings&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">conf</span><span class="p">:</span>
+            <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;MiscSettings&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">MS</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;MiscSettings&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">MS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">all_settings</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">InvalidConfParameters</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;[PlotSettings] parameter &#39;</span><span class="si">{name}</span><span class="s2">&#39; is unknown&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">InvalidConfParameters</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;[MiscSettings] parameter &#39;</span><span class="si">{name}</span><span class="s2">&#39; is unknown&quot;</span><span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">PS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">mybool</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                <span class="n">MS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">mybool</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">InvalidConfParameters</span><span class="p">(</span>
-                    <span class="n">f</span><span class="s2">&quot;[PlotSettings] parameter &#39;</span><span class="si">{name}</span><span class="s2">&#39; must be a boolean&quot;</span><span class="p">)</span>
+                <span class="k">pass</span>
+            <span class="c1">#    raise utils.InvalidConfParameters(</span>
+            <span class="c1">#        f&quot;[PlotSettings] parameter &#39;{name}&#39; must be a boolean&quot;)</span>
         <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">default_false</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">PS</span><span class="p">:</span>
-                <span class="n">PS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">MS</span><span class="p">:</span>
+                <span class="n">MS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">default_true</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">PS</span><span class="p">:</span>
-                <span class="n">PS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">MS</span><span class="p">:</span>
+                <span class="n">MS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="n">check_and_boolify_plot_settings</span><span class="p">()</span>
 
     <span class="c1"># TODO: remove?</span>

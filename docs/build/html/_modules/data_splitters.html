@@ -249,6 +249,10 @@
 <span class="kn">from</span> <span class="nn">matminer.featurizers.composition</span> <span class="k">import</span> <span class="n">ElementFraction</span>
 <span class="kn">from</span> <span class="nn">pymatgen</span> <span class="k">import</span> <span class="n">Composition</span>
 
+<span class="kn">from</span> <span class="nn">math</span> <span class="k">import</span> <span class="n">ceil</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">sklearn.utils</span> <span class="k">import</span> <span class="n">check_random_state</span>
+
 <div class="viewcode-block" id="SplittersUnion"><a class="viewcode-back" href="../9_data_splitters.html#data_splitters.SplittersUnion">[docs]</a><span class="k">class</span> <span class="nc">SplittersUnion</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Class to take the union of two separate splitting routines, so that many splitting routines can be performed at once</span>
@@ -464,8 +468,150 @@
             <span class="n">split</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">trains</span><span class="p">,</span> <span class="n">tests</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">split</span></div>
 
+<span class="c1"># Note: Bootstrap taken directly from sklearn Github (https://github.com/scikit-learn/scikit-learn/blob/0.11.X/sklearn/cross_validation.py)</span>
+<span class="c1"># which was necessary as it was later removed from more recent sklearn releases</span>
+<div class="viewcode-block" id="Bootstrap"><a class="viewcode-back" href="../9_data_splitters.html#data_splitters.Bootstrap">[docs]</a><span class="k">class</span> <span class="nc">Bootstrap</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Random sampling with replacement cross-validation iterator</span>
+<span class="sd">    Provides train/test indices to split data in train test sets</span>
+<span class="sd">    while resampling the input n_bootstraps times: each time a new</span>
+<span class="sd">    random split of the data is performed and then samples are drawn</span>
+<span class="sd">    (with replacement) on each side of the split to build the training</span>
+<span class="sd">    and test sets.</span>
+<span class="sd">    Note: contrary to other cross-validation strategies, bootstrapping</span>
+<span class="sd">    will allow some samples to occur several times in each splits. However</span>
+<span class="sd">    a sample that occurs in the train split will never occur in the test</span>
+<span class="sd">    split and vice-versa.</span>
+<span class="sd">    If you want each sample to occur at most once you should probably</span>
+<span class="sd">    use ShuffleSplit cross validation instead.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n : int</span>
+<span class="sd">        Total number of elements in the dataset.</span>
+<span class="sd">    n_bootstraps : int (default is 3)</span>
+<span class="sd">        Number of bootstrapping iterations</span>
+<span class="sd">    train_size : int or float (default is 0.5)</span>
+<span class="sd">        If int, number of samples to include in the training split</span>
+<span class="sd">        (should be smaller than the total number of samples passed</span>
+<span class="sd">        in the dataset).</span>
+<span class="sd">        If float, should be between 0.0 and 1.0 and represent the</span>
+<span class="sd">        proportion of the dataset to include in the train split.</span>
+<span class="sd">    test_size : int or float or None (default is None)</span>
+<span class="sd">        If int, number of samples to include in the training set</span>
+<span class="sd">        (should be smaller than the total number of samples passed</span>
+<span class="sd">        in the dataset).</span>
+<span class="sd">        If float, should be between 0.0 and 1.0 and represent the</span>
+<span class="sd">        proportion of the dataset to include in the test split.</span>
+<span class="sd">        If None, n_test is set as the complement of n_train.</span>
+<span class="sd">    random_state : int or RandomState</span>
+<span class="sd">        Pseudo number generator state used for random sampling.</span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    #&gt;&gt;&gt; from sklearn import cross_validation</span>
+<span class="sd">    #&gt;&gt;&gt; bs = cross_validation.Bootstrap(9, random_state=0)</span>
+<span class="sd">    #&gt;&gt;&gt; len(bs)</span>
+<span class="sd">    3</span>
+<span class="sd">    #&gt;&gt;&gt; print bs</span>
+<span class="sd">    Bootstrap(9, n_bootstraps=3, train_size=5, test_size=4, random_state=0)</span>
+<span class="sd">    #&gt;&gt;&gt; for train_index, test_index in bs:</span>
+<span class="sd">    ...    print &quot;TRAIN:&quot;, train_index, &quot;TEST:&quot;, test_index</span>
+<span class="sd">    ...</span>
+<span class="sd">    TRAIN: [1 8 7 7 8] TEST: [0 3 0 5]</span>
+<span class="sd">    TRAIN: [5 4 2 4 2] TEST: [6 7 1 0]</span>
+<span class="sd">    TRAIN: [4 7 0 1 1] TEST: [5 3 6 5]</span>
+<span class="sd">    See also</span>
+<span class="sd">    --------</span>
+<span class="sd">    ShuffleSplit: cross validation using random permutations.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Static marker to be able to introspect the CV type</span>
+    <span class="n">indices</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">n_bootstraps</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">train_size</span><span class="o">=.</span><span class="mi">5</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">n_train</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_test</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="n">n</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_bootstraps</span> <span class="o">=</span> <span class="n">n_bootstraps</span>
+        <span class="k">if</span> <span class="n">n_train</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">train_size</span> <span class="o">=</span> <span class="n">n_train</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s2">&quot;n_train is deprecated in 0.11 and scheduled for &quot;</span>
+                <span class="s2">&quot;removal in 0.12, use train_size instead&quot;</span><span class="p">,</span>
+                <span class="ne">DeprecationWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">n_test</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">test_size</span> <span class="o">=</span> <span class="n">n_test</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s2">&quot;n_test is deprecated in 0.11 and scheduled for &quot;</span>
+                <span class="s2">&quot;removal in 0.12, use test_size instead&quot;</span><span class="p">,</span>
+                <span class="ne">DeprecationWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">train_size</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">and</span> <span class="n">train_size</span> <span class="o">&gt;=</span> <span class="mf">0.0</span>
+                            <span class="ow">and</span> <span class="n">train_size</span> <span class="o">&lt;=</span> <span class="mf">1.0</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">train_size</span> <span class="o">=</span> <span class="n">ceil</span><span class="p">(</span><span class="n">train_size</span> <span class="o">*</span> <span class="n">n</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">train_size</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">train_size</span> <span class="o">=</span> <span class="n">train_size</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid value for train_size: </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span>
+                             <span class="n">train_size</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_size</span> <span class="o">&gt;</span> <span class="n">n</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;train_size=</span><span class="si">%d</span><span class="s2"> should not be larger than n=</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span>
+                             <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">train_size</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">test_size</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">and</span> <span class="n">test_size</span> <span class="o">&gt;=</span> <span class="mf">0.0</span>
+                    <span class="ow">and</span> <span class="n">test_size</span> <span class="o">&lt;=</span> <span class="mf">1.0</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">test_size</span> <span class="o">=</span> <span class="n">ceil</span><span class="p">(</span><span class="n">test_size</span> <span class="o">*</span> <span class="n">n</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">test_size</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">test_size</span> <span class="o">=</span> <span class="n">test_size</span>
+        <span class="k">elif</span> <span class="n">test_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">test_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_size</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid value for test_size: </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">test_size</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_size</span> <span class="o">&gt;</span> <span class="n">n</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;test_size=</span><span class="si">%d</span><span class="s2"> should not be larger than n=</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span>
+                             <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">test_size</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
+
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">rng</span> <span class="o">=</span> <span class="n">check_random_state</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_bootstraps</span><span class="p">):</span>
+            <span class="c1"># random partition</span>
+            <span class="n">permutation</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
+            <span class="n">ind_train</span> <span class="o">=</span> <span class="n">permutation</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">train_size</span><span class="p">]</span>
+            <span class="n">ind_test</span> <span class="o">=</span> <span class="n">permutation</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">train_size</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">train_size</span>
+                                   <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_size</span><span class="p">]</span>
+
+            <span class="c1"># bootstrap in each split individually</span>
+            <span class="n">train</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_size</span><span class="p">,</span>
+                                <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">train_size</span><span class="p">,))</span>
+            <span class="n">test</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_size</span><span class="p">,</span>
+                                <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">test_size</span><span class="p">,))</span>
+            <span class="k">yield</span> <span class="n">ind_train</span><span class="p">[</span><span class="n">train</span><span class="p">],</span> <span class="n">ind_test</span><span class="p">[</span><span class="n">test</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">(</span><span class="si">%d</span><span class="s1">, n_bootstraps=</span><span class="si">%d</span><span class="s1">, train_size=</span><span class="si">%d</span><span class="s1">, test_size=</span><span class="si">%d</span><span class="s1">, &#39;</span>
+                <span class="s1">&#39;random_state=</span><span class="si">%d</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">n_bootstraps</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">train_size</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">test_size</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">,</span>
+                <span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_bootstraps</span>
+
+    <span class="k">def</span> <span class="nf">get_n_splits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__len__</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">split</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">split</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">trains</span><span class="p">,</span> <span class="n">tests</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="n">split</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">trains</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">tests</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))</span>
+        <span class="k">return</span> <span class="n">split</span></div>
+
 <span class="n">name_to_constructor</span> <span class="o">=</span> <span class="p">{</span>
     <span class="c1"># sklearn splitters:</span>
+    <span class="s1">&#39;Bootstrap&#39;</span><span class="p">:</span> <span class="n">Bootstrap</span><span class="p">,</span>
     <span class="s1">&#39;GroupKFold&#39;</span><span class="p">:</span> <span class="n">ms</span><span class="o">.</span><span class="n">GroupKFold</span><span class="p">,</span>
     <span class="s1">&#39;GroupShuffleSplit&#39;</span><span class="p">:</span> <span class="n">ms</span><span class="o">.</span><span class="n">GroupShuffleSplit</span><span class="p">,</span>
     <span class="s1">&#39;KFold&#39;</span><span class="p">:</span> <span class="n">ms</span><span class="o">.</span><span class="n">KFold</span><span class="p">,</span>

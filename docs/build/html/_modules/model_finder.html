@@ -240,11 +240,18 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">inspect</span>
 
 <span class="kn">import</span> <span class="nn">sklearn.base</span>
 <span class="kn">import</span> <span class="nn">sklearn.utils.testing</span>
 <span class="kn">from</span> <span class="nn">sklearn.externals</span> <span class="k">import</span> <span class="n">joblib</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">xgboost</span> <span class="k">as</span> <span class="nn">xgb</span>
+
+<span class="kn">import</span> <span class="nn">keras</span>
+<span class="kn">from</span> <span class="nn">keras.models</span> <span class="k">import</span> <span class="n">model_from_json</span>
+<span class="kn">from</span> <span class="nn">keras.models</span> <span class="k">import</span> <span class="n">load_model</span>
+<span class="kn">from</span> <span class="nn">keras.models</span> <span class="k">import</span> <span class="n">Sequential</span>
 
 <span class="c1">#from . import keras_models</span>
 <span class="kn">from</span> <span class="nn">mastml</span> <span class="k">import</span> <span class="n">utils</span>
@@ -322,6 +329,85 @@
     <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">possible_answers</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
 
+<span class="k">class</span> <span class="nc">KerasRegressor</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conf_dict</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conf_dict</span> <span class="o">=</span> <span class="n">conf_dict</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_model</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">build_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">model_vals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conf_dict</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Sequential</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">layer_dict</span><span class="p">,</span> <span class="n">layer_val</span> <span class="ow">in</span> <span class="n">model_vals</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">layer_dict</span> <span class="o">!=</span> <span class="s1">&#39;FitParams&#39;</span><span class="p">):</span>
+                <span class="n">layer_type</span> <span class="o">=</span> <span class="n">layer_val</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;layer_type&#39;</span><span class="p">)</span>
+                <span class="n">neuron_num</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">layer_val</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;neuron_num&#39;</span><span class="p">))</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">layer_dict</span> <span class="o">==</span> <span class="s1">&#39;Layer1&#39;</span><span class="p">):</span>
+                    <span class="n">input_dim</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">layer_val</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;input_dim&#39;</span><span class="p">))</span>
+                <span class="n">kernel_initializer</span> <span class="o">=</span> <span class="n">layer_val</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;kernel_initializer&#39;</span><span class="p">)</span>
+                <span class="n">activation</span> <span class="o">=</span> <span class="n">layer_val</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;activation&#39;</span><span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">layer_name</span><span class="p">,</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getmembers</span><span class="p">(</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="p">,</span> <span class="n">inspect</span><span class="o">.</span><span class="n">isclass</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">layer_type</span> <span class="o">==</span> <span class="s1">&#39;Dense&#39;</span><span class="p">:</span>
+                        <span class="n">layer_type</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="p">,</span> <span class="n">layer_type</span><span class="p">)</span>  <span class="c1"># (neuron_num)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">layer_val</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;epochs&#39;</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">epochs</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">layer_val</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;epochs&#39;</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">epochs</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="n">layer_val</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;batch_size&#39;</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">layer_val</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;batch_size&#39;</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="n">layer_val</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;loss&#39;</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">layer_val</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;loss&#39;</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">=</span> <span class="s1">&#39;mean_squared_error&#39;</span>
+                <span class="k">if</span> <span class="n">layer_val</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;optimizer&#39;</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">optimzier</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">layer_val</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;optimizer&#39;</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="s1">&#39;adam&#39;</span>
+                <span class="k">if</span> <span class="n">layer_val</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;metrics&#39;</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="o">=</span> <span class="n">layer_val</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;metrics&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;mae&#39;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">layer_val</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;verbose&#39;</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">layer_val</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;verbose&#39;</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">if</span> <span class="n">layer_val</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;shuffle&#39;</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">shuffle</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">layer_val</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;shuffle&#39;</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">shuffle</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">if</span> <span class="n">layer_val</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;validation_split&#39;</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">validation_split</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">layer_val</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;validation_split&#39;</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">validation_split</span> <span class="o">=</span> <span class="mf">0.0</span>
+                <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">layer_dict</span> <span class="o">==</span> <span class="s1">&#39;Layer1&#39;</span><span class="p">):</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">layer_type</span><span class="p">(</span><span class="n">neuron_num</span><span class="p">,</span> <span class="n">input_dim</span><span class="o">=</span><span class="n">input_dim</span><span class="p">,</span> <span class="n">kernel_initializer</span><span class="o">=</span><span class="n">kernel_initializer</span><span class="p">,</span>
+                                     <span class="n">activation</span><span class="o">=</span><span class="n">activation</span><span class="p">))</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">layer_type</span><span class="p">(</span><span class="n">neuron_num</span><span class="p">,</span> <span class="n">kernel_initializer</span><span class="o">=</span><span class="n">kernel_initializer</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="n">activation</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">model</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">):</span>
+        <span class="c1"># Need to rebuild and re-compile model at every fit instance so don&#39;t have information of weights from other fits</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_model</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">loss</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">optimzier</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">epochs</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">,</span>
+                              <span class="n">validation_split</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">validation_split</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">shuffle</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">summary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+
 <div class="viewcode-block" id="ModelImport"><a class="viewcode-back" href="../17_model_finder.html#model_finder.ModelImport">[docs]</a><span class="k">class</span> <span class="nc">ModelImport</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Class used to import pickled models from previous machine learning fits</span>
@@ -368,6 +454,9 @@
     <span class="s1">&#39;AlwaysFive&#39;</span><span class="p">:</span> <span class="n">AlwaysFive</span><span class="p">,</span>
     <span class="s1">&#39;RandomGuesser&#39;</span><span class="p">:</span> <span class="n">RandomGuesser</span><span class="p">,</span>
     <span class="s1">&#39;ModelImport&#39;</span><span class="p">:</span> <span class="n">ModelImport</span><span class="p">,</span>
+    <span class="s1">&#39;XGBRegressor&#39;</span><span class="p">:</span> <span class="n">xgb</span><span class="o">.</span><span class="n">XGBRegressor</span><span class="p">,</span>
+    <span class="s1">&#39;XGBClassifier&#39;</span><span class="p">:</span> <span class="n">xgb</span><span class="o">.</span><span class="n">XGBClassifier</span><span class="p">,</span>
+    <span class="s1">&#39;KerasRegressor&#39;</span><span class="p">:</span> <span class="n">KerasRegressor</span>
     <span class="c1">#&#39;DNNClassifier&#39;: keras_models.DNNClassifier</span>
 <span class="p">}</span>
 

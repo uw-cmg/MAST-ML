@@ -261,6 +261,70 @@ tweaking plots for a presentation or publication).</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="plot_helper._int_if_int">
+<code class="descclassname">plot_helper.</code><code class="descname">_int_if_int</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#_int_if_int"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper._int_if_int" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to return integer mapped value of x</p>
+<p>Args:</p>
+<blockquote>
+<div>x: (float or int), a number</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>x: (float), value of x mapped as integer</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="plot_helper._n_sigfigs">
+<code class="descclassname">plot_helper.</code><code class="descname">_n_sigfigs</code><span class="sig-paren">(</span><em>x</em>, <em>n</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#_n_sigfigs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper._n_sigfigs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to return number of sig figs to use for axis ticks</p>
+<p>Args:</p>
+<blockquote>
+<div>x: (float), an axis tick number</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>(float), number of sig figs</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="plot_helper._nearest_pow_ten">
+<code class="descclassname">plot_helper.</code><code class="descname">_nearest_pow_ten</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#_nearest_pow_ten"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper._nearest_pow_ten" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to return the nearest power of ten for an axis tick value</p>
+<p>Args:</p>
+<blockquote>
+<div>x: (float), an axis tick number</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>(float), nearest power of ten of x</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="plot_helper._nice_range_helper">
+<code class="descclassname">plot_helper.</code><code class="descname">_nice_range_helper</code><span class="sig-paren">(</span><em>lower</em>, <em>upper</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#_nice_range_helper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper._nice_range_helper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to help make a better range of axis ticks</p>
+<p>Args:</p>
+<blockquote>
+<div><p>lower: (float), lower value of axis ticks</p>
+<p>upper: (float), upper value of axis ticks</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>upper: (float), modified upper tick value fixed based on set of axis ticks</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="plot_helper._round_up">
+<code class="descclassname">plot_helper.</code><code class="descname">_round_up</code><span class="sig-paren">(</span><em>x</em>, <em>inc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#_round_up"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper._round_up" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to round up the value of x</p>
+<p>Args:</p>
+<blockquote>
+<div><p>x: (float or int), a number</p>
+<p>inc: (float), an increment for axis ticks</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>(float), value of x rounded up</div></blockquote>
+</dd></dl>
+
+<dl class="function">
 <dt id="plot_helper._set_tick_labels">
 <code class="descclassname">plot_helper.</code><code class="descname">_set_tick_labels</code><span class="sig-paren">(</span><em>ax</em>, <em>maxx</em>, <em>minn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#_set_tick_labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper._set_tick_labels" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method that sets the x and y ticks to be in the same range</p>
@@ -290,6 +354,18 @@ tweaking plots for a presentation or publication).</p>
 <p>Returns:</p>
 <blockquote>
 <div>None</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="plot_helper._three_sigfigs">
+<code class="descclassname">plot_helper.</code><code class="descname">_three_sigfigs</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#_three_sigfigs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper._three_sigfigs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method invoking special case of _n_sigfigs to return 3 sig figs</p>
+<p>Args:</p>
+<blockquote>
+<div>x: (float), an axis tick number</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>(float), number of sig figs (always 3)</div></blockquote>
 </dd></dl>
 
 <dl class="function">
@@ -414,6 +490,20 @@ tweaking plots for a presentation or publication).</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="plot_helper.nice_range">
+<code class="descclassname">plot_helper.</code><code class="descname">nice_range</code><span class="sig-paren">(</span><em>lower</em>, <em>upper</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#nice_range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.nice_range" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to create a range of values, including the specified start and end points, with nicely spaced intervals</p>
+<p>Args:</p>
+<blockquote>
+<div><p>lower: (float or int), lower bound of range to create</p>
+<p>upper: (float or int), upper bound of range to create</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>(list), list of numerical values in established range</div></blockquote>
+</dd></dl>
+
+<dl class="function">
 <dt id="plot_helper.nice_std">
 <code class="descclassname">plot_helper.</code><code class="descname">nice_std</code><span class="sig-paren">(</span><em>ls</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#nice_std"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.nice_std" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to return standard deviation of a list or equivalent array with NaN values</p>
@@ -471,6 +561,42 @@ tweaking plots for a presentation or publication).</p>
 <p>zlabel: (str), the z-axis label</p>
 <p>heatlabel: (str), the heat value axis label</p>
 </div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="plot_helper.plot_average_cumulative_normalized_error">
+<code class="descclassname">plot_helper.</code><code class="descname">plot_average_cumulative_normalized_error</code><span class="sig-paren">(</span><em>y_true</em>, <em>y_pred</em>, <em>savepath</em>, <em>has_model_errors</em>, <em>err_avg=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#plot_average_cumulative_normalized_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.plot_average_cumulative_normalized_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to plot the cumulative normalized residual errors of a model prediction</p>
+<p>Args:</p>
+<blockquote>
+<div><p>y_true: (numpy array), array containing the true y data values</p>
+<p>y_pred: (numpy array), array containing the predicted y data values</p>
+<p>savepath: (str), path to save the plotted cumulative normalized error plot</p>
+<p>model: (scikit-learn model/estimator object), a scikit-learn model object</p>
+<p>X: (numpy array), array of X features</p>
+<p>avg_stats: (dict), dict of calculated average metrics over all CV splits</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>None</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="plot_helper.plot_average_normalized_error">
+<code class="descclassname">plot_helper.</code><code class="descname">plot_average_normalized_error</code><span class="sig-paren">(</span><em>y_true</em>, <em>y_pred</em>, <em>savepath</em>, <em>has_model_errors</em>, <em>err_avg=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#plot_average_normalized_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.plot_average_normalized_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to plot the normalized residual errors of a model prediction</p>
+<p>Args:</p>
+<blockquote>
+<div><p>y_true: (numpy array), array containing the true y data values</p>
+<p>y_pred: (numpy array), array containing the predicted y data values</p>
+<p>savepath: (str), path to save the plotted normalized error plot</p>
+<p>model: (scikit-learn model/estimator object), a scikit-learn model object</p>
+<p>X: (numpy array), array of X features</p>
+<p>avg_stats: (dict), dict of calculated average metrics over all CV splits</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div>None</div></blockquote>
 </dd></dl>
 
 <dl class="function">
@@ -533,7 +659,7 @@ at: <a class="reference external" href="http://scikit-learn.org/stable/auto_exam
 
 <dl class="function">
 <dt id="plot_helper.plot_cumulative_normalized_error">
-<code class="descclassname">plot_helper.</code><code class="descname">plot_cumulative_normalized_error</code><span class="sig-paren">(</span><em>y_true</em>, <em>y_pred</em>, <em>savepath</em>, <em>model</em>, <em>X=None</em>, <em>avg_stats=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#plot_cumulative_normalized_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.plot_cumulative_normalized_error" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">plot_helper.</code><code class="descname">plot_cumulative_normalized_error</code><span class="sig-paren">(</span><em>y_true</em>, <em>y_pred</em>, <em>savepath</em>, <em>model</em>, <em>rf_error_method</em>, <em>rf_error_percentile</em>, <em>X=None</em>, <em>Xtrain=None</em>, <em>Xtest=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#plot_cumulative_normalized_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.plot_cumulative_normalized_error" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to plot the cumulative normalized residual errors of a model prediction</p>
 <p>Args:</p>
 <blockquote>
@@ -623,7 +749,7 @@ at: <a class="reference external" href="http://scikit-learn.org/stable/auto_exam
 
 <dl class="function">
 <dt id="plot_helper.plot_normalized_error">
-<code class="descclassname">plot_helper.</code><code class="descname">plot_normalized_error</code><span class="sig-paren">(</span><em>y_true</em>, <em>y_pred</em>, <em>savepath</em>, <em>model</em>, <em>X=None</em>, <em>avg_stats=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#plot_normalized_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.plot_normalized_error" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">plot_helper.</code><code class="descname">plot_normalized_error</code><span class="sig-paren">(</span><em>y_true</em>, <em>y_pred</em>, <em>savepath</em>, <em>model</em>, <em>rf_error_method</em>, <em>rf_error_percentile</em>, <em>X=None</em>, <em>Xtrain=None</em>, <em>Xtest=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#plot_normalized_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.plot_normalized_error" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to plot the normalized residual errors of a model prediction</p>
 <p>Args:</p>
 <blockquote>
@@ -674,7 +800,7 @@ at: <a class="reference external" href="http://scikit-learn.org/stable/auto_exam
 
 <dl class="function">
 <dt id="plot_helper.plot_predicted_vs_true_bars">
-<code class="descclassname">plot_helper.</code><code class="descname">plot_predicted_vs_true_bars</code><span class="sig-paren">(</span><em>y_true</em>, <em>y_pred_list</em>, <em>avg_stats</em>, <em>savepath</em>, <em>title='best worst with bars'</em>, <em>label='target_value'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#plot_predicted_vs_true_bars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.plot_predicted_vs_true_bars" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">plot_helper.</code><code class="descname">plot_predicted_vs_true_bars</code><span class="sig-paren">(</span><em>y_true</em>, <em>y_pred_list</em>, <em>avg_stats</em>, <em>savepath</em>, <em>title='best worst with bars'</em>, <em>label='target_value'</em>, <em>groups=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#plot_predicted_vs_true_bars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.plot_predicted_vs_true_bars" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to calculate parity plot (predicted vs. true) of average predictions, averaged over all CV splits, with error</p>
 <p>bars on each point corresponding to the standard deviation of the predicted values over all CV splits.</p>
 <p>Args:</p>
@@ -778,13 +904,15 @@ at: <a class="reference external" href="http://scikit-learn.org/stable/auto_exam
 
 <dl class="function">
 <dt id="plot_helper.prediction_intervals">
-<code class="descclassname">plot_helper.</code><code class="descname">prediction_intervals</code><span class="sig-paren">(</span><em>model</em>, <em>X</em>, <em>percentile=68</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#prediction_intervals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.prediction_intervals" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">plot_helper.</code><code class="descname">prediction_intervals</code><span class="sig-paren">(</span><em>model</em>, <em>X</em>, <em>rf_error_method</em>, <em>rf_error_percentile</em>, <em>Xtrain</em>, <em>Xtest</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#prediction_intervals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.prediction_intervals" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to calculate prediction intervals when using Random Forest and Gaussian Process regression models.</p>
 <p>Prediction intervals for random forest adapted from <a class="reference external" href="https://blog.datadive.net/prediction-intervals-for-random-forests/">https://blog.datadive.net/prediction-intervals-for-random-forests/</a></p>
 <p>Args:</p>
 <blockquote>
 <div><p>model: (scikit-learn model/estimator object), a scikit-learn model object</p>
 <p>X: (numpy array), array of X features</p>
+<p>method: (str), type of error bar to formulate (e.g. “stdev” is standard deviation of predicted errors, “confint”
+is error bar as confidence interval</p>
 <p>percentile: (int), percentile for which to form error bars</p>
 </div></blockquote>
 <p>Returns:</p>
@@ -874,7 +1002,7 @@ at: <a class="reference external" href="http://scikit-learn.org/stable/auto_exam
 
 <dl class="function">
 <dt id="plot_helper.stat_to_string">
-<code class="descclassname">plot_helper.</code><code class="descname">stat_to_string</code><span class="sig-paren">(</span><em>name</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#stat_to_string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.stat_to_string" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">plot_helper.</code><code class="descname">stat_to_string</code><span class="sig-paren">(</span><em>name</em>, <em>value</em>, <em>nice_names</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#stat_to_string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.stat_to_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method that converts a metric object into a string for displaying on a plot</p>
 <p>Args:</p>
 <blockquote>

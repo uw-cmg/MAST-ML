@@ -269,10 +269,12 @@ navigate to a directory housing the notebook and type:</p>
 </div>
 <div class="section" id="install-the-mast-ml-package">
 <h2>Install the MAST-ML package<a class="headerlink" href="#install-the-mast-ml-package" title="Permalink to this headline">¶</a></h2>
-<p>Git clone the repository, for example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">ssh</span><span class="p">:</span><span class="o">//</span><span class="n">git</span><span class="nd">@github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">uw</span><span class="o">-</span><span class="n">cmg</span><span class="o">/</span><span class="n">MAST</span><span class="o">-</span><span class="n">ML</span>
-<span class="n">OR</span>
-<span class="n">git</span> <span class="n">clone</span> <span class="n">ssh</span><span class="p">:</span><span class="o">//</span><span class="n">git</span><span class="nd">@github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">uw</span><span class="o">-</span><span class="n">cmg</span><span class="o">/</span><span class="n">MAST</span><span class="o">-</span><span class="n">ML</span> <span class="o">--</span><span class="n">branch</span> <span class="n">master</span>
+<p>Pip install MAST-ML from PyPi:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">mastml</span>
+</pre></div>
+</div>
+<p>Alternatively, git clone the Github repository, for example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="o">--</span><span class="n">single</span><span class="o">-</span><span class="n">branch</span> <span class="n">master</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">uw</span><span class="o">-</span><span class="n">cmg</span><span class="o">/</span><span class="n">MAST</span><span class="o">-</span><span class="n">ML</span>
 </pre></div>
 </div>
 <p>Clone from “master” unless instructed specifically to use another branch.
@@ -280,47 +282,6 @@ Ask for access if you cannot find this code.</p>
 <p>Check status.github.com for issues if you believe github may be malfunctioning</p>
 <p>Run:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
-</pre></div>
-</div>
-<p>If setup.py didn’t work, manually pip install the following dependencies:
-Dependencies:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">certifi</span><span class="o">==</span><span class="mf">2018.4</span><span class="o">.</span><span class="mi">16</span><span class="p">,</span>
-<span class="n">chardet</span><span class="o">==</span><span class="mf">3.0</span><span class="o">.</span><span class="p">,</span>
-<span class="n">citrination</span><span class="o">-</span><span class="n">client</span><span class="o">==</span><span class="mf">2.1</span><span class="o">.</span><span class="mi">0</span><span class="p">,</span>
-<span class="n">configobj</span><span class="o">==</span><span class="mf">5.0</span><span class="o">.</span><span class="mi">6</span><span class="p">,</span>
-<span class="n">cycler</span><span class="o">==</span><span class="mf">0.10</span><span class="o">.</span><span class="mi">0</span><span class="p">,</span>
-<span class="n">decorator</span><span class="o">==</span><span class="mf">4.3</span><span class="o">.</span><span class="mi">0</span><span class="p">,</span>
-<span class="n">dominate</span><span class="o">==</span><span class="mf">2.3</span><span class="o">.</span><span class="mi">1</span><span class="p">,</span>
-<span class="n">idna</span><span class="o">==</span><span class="mf">2.7</span><span class="p">,</span>
-<span class="n">ipython</span><span class="o">-</span><span class="n">genutils</span><span class="o">==</span><span class="mf">0.2</span><span class="o">.</span><span class="mi">0</span><span class="p">,</span>
-<span class="n">jsonschema</span><span class="o">==</span><span class="mf">2.6</span><span class="o">.</span><span class="mi">0</span><span class="p">,</span>
-<span class="n">jupyter</span><span class="o">-</span><span class="n">core</span><span class="o">==</span><span class="mf">4.4</span><span class="o">.</span><span class="mi">0</span><span class="p">,</span>
-<span class="n">kiwisolver</span><span class="o">==</span><span class="mf">1.0</span><span class="o">.</span><span class="mi">1</span><span class="p">,</span>
-<span class="n">matplotlib</span><span class="o">==</span><span class="mf">2.2</span><span class="o">.</span><span class="mi">2</span><span class="p">,</span>
-<span class="n">mlxtend</span><span class="o">==</span><span class="mf">0.12</span><span class="o">.</span><span class="mi">0</span><span class="p">,</span>
-<span class="n">monty</span><span class="o">==</span><span class="mf">1.0</span><span class="o">.</span><span class="mi">3</span><span class="p">,</span>
-<span class="n">mpmath</span><span class="o">==</span><span class="mf">1.0</span><span class="o">.</span><span class="mi">0</span><span class="p">,</span>
-<span class="n">nbformat</span><span class="o">==</span><span class="mf">4.4</span><span class="o">.</span><span class="mi">0</span><span class="p">,</span>
-<span class="n">nose</span><span class="o">==</span><span class="mf">1.3</span><span class="o">.</span><span class="mi">7</span><span class="p">,</span>
-<span class="n">numpy</span><span class="o">==</span><span class="mf">1.15</span><span class="o">.</span><span class="mi">0</span><span class="n">rc2</span><span class="p">,</span>
-<span class="n">palettable</span><span class="o">==</span><span class="mf">3.1</span><span class="o">.</span><span class="mi">1</span><span class="p">,</span>
-<span class="n">pandas</span><span class="o">==</span><span class="mf">0.23</span><span class="o">.</span><span class="mi">3</span><span class="p">,</span>
-<span class="n">PyDispatcher</span><span class="o">==</span><span class="mf">2.0</span><span class="o">.</span><span class="mi">5</span><span class="p">,</span>
-<span class="n">pymatgen</span><span class="o">==</span><span class="mf">2018.6</span><span class="o">.</span><span class="mi">27</span><span class="p">,</span>
-<span class="n">pyparsing</span><span class="o">==</span><span class="mf">2.2</span><span class="o">.</span><span class="mi">0</span><span class="p">,</span>
-<span class="n">pypif</span><span class="o">==</span><span class="mf">2.1</span><span class="o">.</span><span class="mi">0</span><span class="p">,</span>
-<span class="n">python</span><span class="o">-</span><span class="n">dateutil</span><span class="o">==</span><span class="mf">2.7</span><span class="o">.</span><span class="mi">3</span><span class="p">,</span>
-<span class="n">pytz</span><span class="o">==</span><span class="mf">2018.5</span><span class="p">,</span>
-<span class="n">requests</span><span class="o">==</span><span class="mf">2.19</span><span class="o">.</span><span class="mi">1</span><span class="p">,</span>
-<span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">==</span><span class="mf">0.15</span><span class="o">.</span><span class="mi">42</span><span class="p">,</span>
-<span class="n">scikit</span><span class="o">-</span><span class="n">learn</span><span class="o">==</span><span class="mf">0.19</span><span class="o">.</span><span class="mi">1</span><span class="p">,</span>
-<span class="n">scipy</span><span class="o">==</span><span class="mf">1.1</span><span class="o">.</span><span class="mi">0</span><span class="p">,</span>
-<span class="n">six</span><span class="o">==</span><span class="mf">1.11</span><span class="o">.</span><span class="mi">0</span><span class="p">,</span>
-<span class="n">spglib</span><span class="o">==</span><span class="mf">1.10</span><span class="o">.</span><span class="mf">3.65</span><span class="p">,</span>
-<span class="n">sympy</span><span class="o">==</span><span class="mf">1.2</span><span class="p">,</span>
-<span class="n">tabulate</span><span class="o">==</span><span class="mf">0.8</span><span class="o">.</span><span class="mi">2</span><span class="p">,</span>
-<span class="n">traitlets</span><span class="o">==</span><span class="mf">4.3</span><span class="o">.</span><span class="mi">2</span><span class="p">,</span>
-<span class="n">urllib3</span><span class="o">==</span><span class="mf">1.23</span><span class="p">,</span>
 </pre></div>
 </div>
 <div class="section" id="imports-that-dont-work">

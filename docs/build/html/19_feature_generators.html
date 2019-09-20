@@ -242,57 +242,6 @@
 <span id="feature-generators"></span><h1>Feature Generators<a class="headerlink" href="#module-feature_generators" title="Permalink to this headline">¶</a></h1>
 <p>This module contains a collection of classes for generating input features to fit machine learning models to.</p>
 <dl class="class">
-<dt id="feature_generators.Citrine">
-<em class="property">class </em><code class="descclassname">feature_generators.</code><code class="descname">Citrine</code><span class="sig-paren">(</span><em>composition_feature</em>, <em>api_key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/feature_generators.html#Citrine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#feature_generators.Citrine" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class that wraps CitrineFeatureGeneration, giving it scikit-learn structure</p>
-<p>Args:</p>
-<blockquote>
-<div><p>composition_feature: (str), string denoting a chemical composition to generate elemental features from</p>
-<p>api_key: (str), string denoting your Citrine API key</p>
-</div></blockquote>
-<p>Methods:</p>
-<blockquote>
-<div><p>fit: pass through, copies input columns as pre-generated features</p>
-<p>Args:</p>
-<blockquote>
-<div>df: (dataframe), input dataframe containing X and y data</div></blockquote>
-<p>transform: generate Citrine features</p>
-<p>Args:</p>
-<blockquote>
-<div>df: (dataframe), input dataframe containing X and y data</div></blockquote>
-<p>Returns:</p>
-<blockquote>
-<div>df: (dataframe), output dataframe containing generated features, original features and y data</div></blockquote>
-</div></blockquote>
-</dd></dl>
-
-<dl class="class">
-<dt id="feature_generators.CitrineFeatureGeneration">
-<em class="property">class </em><code class="descclassname">feature_generators.</code><code class="descname">CitrineFeatureGeneration</code><span class="sig-paren">(</span><em>dataframe</em>, <em>api_key</em>, <em>composition_feature</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/feature_generators.html#CitrineFeatureGeneration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#feature_generators.CitrineFeatureGeneration" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class to generate new features using Citrine data and dataframe containing material compositions
-Datarame must have a column named “Material compositions”.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><p class="first">dataframe: (dataframe), dataframe containing x and y data and feature names</p>
-<p>api_key: (str), your Citrination API key</p>
-<p class="last">composition_feature: (str), string denoting a chemical composition to generate elemental features from</p>
-</dd>
-</dl>
-<p>Methods:</p>
-<blockquote>
-<div><p>generate_citrine_features : generates Citrine feature set based on compositions in dataframe</p>
-<blockquote>
-<div><p>Args:</p>
-<blockquote>
-<div>None</div></blockquote>
-<p>Returns:</p>
-<blockquote>
-<div>dataframe: (dataframe), dataframe containing citrine generated feature set</div></blockquote>
-</div></blockquote>
-</div></blockquote>
-</dd></dl>
-
-<dl class="class">
 <dt id="feature_generators.ContainsElement">
 <em class="property">class </em><code class="descclassname">feature_generators.</code><code class="descname">ContainsElement</code><span class="sig-paren">(</span><em>composition_feature</em>, <em>element</em>, <em>new_name</em>, <em>all_elements=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/feature_generators.html#ContainsElement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#feature_generators.ContainsElement" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class to generate new categorical features (i.e. values of 1 or 0) based on whether an input composition contains a
@@ -511,6 +460,101 @@ Datarame must have a column named “Material compositions”.</p>
 </dl>
 </div></blockquote>
 </div></blockquote>
+</dd></dl>
+
+<dl class="class">
+<dt id="feature_generators.Matminer">
+<em class="property">class </em><code class="descclassname">feature_generators.</code><code class="descname">Matminer</code><span class="sig-paren">(</span><em>structural_features</em>, <em>structure_col</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/feature_generators.html#Matminer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#feature_generators.Matminer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to generate structural features from matminer structure module
+Args:</p>
+<blockquote>
+<div>structural_features: the structure feature(s) the user wants to instantiate and generate
+structure_col: the dataframe column that contains the pymatgen structure object. Matminer needs a pymatgen
+structure object in order to instantiate the structural feature</div></blockquote>
+<dl class="docutils">
+<dt>Methods:</dt>
+<dd><p class="first">fit: pass through, needed to maintain scikit-learn class structure
+Args:</p>
+<blockquote>
+<div>df: (dataframe), dataframe of input x and y data</div></blockquote>
+<p>transform: main method that iterates through rows of dataframe to create pymatgen structure objects for
+matminer routines. Iterates through list of structural features from conf file and instantiates each structure;
+drops unused dataframe columns and returns the generated features dataframe
+Args:</p>
+<blockquote>
+<div>df: (dataframe), dataframe containing the path of file to create pymatgen structure object which is under the structure_col
+column</div></blockquote>
+<dl class="last docutils">
+<dt>Returns:</dt>
+<dd>(dataframe), the generated features dataframe</dd>
+</dl>
+</dd>
+</dl>
+<dl class="method">
+<dt id="feature_generators.Matminer.retrieve_citrine">
+<code class="descname">retrieve_citrine</code><span class="sig-paren">(</span><em>criteria</em>, <em>properties</em>, <em>common_fields</em>, <em>secondary_fields</em>, <em>print_properties_options</em>, <em>api_key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/feature_generators.html#Matminer.retrieve_citrine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#feature_generators.Matminer.retrieve_citrine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets a Pandas dataframe object from data retrieved from
+the Citrine API.
+Args:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>criteria (dict): see get_data method for supported keys except</dt>
+<dd>prop; prop should be included in properties.</dd>
+<dt>properties ([str]): requested properties/fields/columns.</dt>
+<dd>For example, [“Seebeck coefficient”, “Band gap”]. If unsure
+about the exact words, capitalization, etc try something like
+[“gap”] and “max_results”: 3 and print_properties_options=True
+to see the exact options for this field</dd>
+<dt>common_fields ([str]): fields that are common to all the requested</dt>
+<dd>properties. Common example can be “chemicalFormula”. Look for
+suggested common fields after a quick query for more info</dd>
+<dt>secondary_fields (bool): if True, fields not included in properties</dt>
+<dd>may be added to the output (e.g. references). Recommended only
+if len(properties)==1’</dd>
+<dt>print_properties_options (bool): whether to print available options</dt>
+<dd>for “properties” and “common_fields” arguments.</dd>
+<dt>api_key: (str) Your Citrine API key, or None if</dt>
+<dd>you’ve set the CITRINE_KEY environment variable</dd>
+</dl>
+</div></blockquote>
+<p>return: (object) Pandas dataframe object containing the results
+notes/bugs: criteria needs a dictionary, not specified in get_data() as mentioned,</p>
+<blockquote>
+<div>and example on documentation webpage does not work. What to fix for
+dataframe integration into mastml?</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="feature_generators.Matminer.retrieve_mp">
+<code class="descname">retrieve_mp</code><span class="sig-paren">(</span><em>criteria, properties=['band_gap', 'volume', 'density', 'formation_energy_per_atom'], index_mpid=True, api_key=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/feature_generators.html#Matminer.retrieve_mp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#feature_generators.Matminer.retrieve_mp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets data from MP in a dataframe format. See api_link for more details.
+Args:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>criteria (dict): (str/dict) see MPRester.query() for a description of this</dt>
+<dd>parameter. String examples: “mp-1234”, “Fe2O3”, “Li-Fe-O’,
+“*2O3”. Dict example: {“band_gap”: {“$gt”: 1}}</dd>
+<dt>properties ([str]): (list) see MPRester.query() for a description of this</dt>
+<dd>parameter. Example: [“formula”, “formation_energy_per_atom”]</dd>
+<dt>plus: “structure”, “initial_structure”, “final_structure”,</dt>
+<dd><p class="first">“bandstructure” (line mode), “bandstructure_uniform”,
+“phonon_bandstructure”, “phonon_ddb”, “phonon_bandstructure”,
+“phonon_dos”. Note that for a long list of compounds, it may</p>
+<blockquote class="last">
+<div>take a long time to retrieve some of these objects.</div></blockquote>
+</dd>
+<dt>index_mpid (bool): (bool) Whether to set the materials_id as the dataframe</dt>
+<dd>index.</dd>
+<dt>api_key: (str) Your Materials Project API key, or None if you’ve</dt>
+<dd>set up your pymatgen config.</dd>
+</dl>
+</div></blockquote>
+<p>Returns (pandas.Dataframe): containing results
+notes/bugs: works pretty great, API easy to use and accurate. What to fix for</p>
+<blockquote>
+<div>dataframe integration into mastml?</div></blockquote>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
