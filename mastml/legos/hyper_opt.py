@@ -143,44 +143,47 @@ class HyperOptUtils():
         # Construct prior distribution for Bayesian search
         for param_name, param_val in param_dict.items():
             param_val_split = param_val
-            #param_val_split = param_val.split(' ')
-
-            is_int = False
             is_str = False
+            is_int = False
             is_float = False
-            if '.' in param_val_split[0][:]:
-                is_float = True
-            else:
-                # Could be string, but will differentiate that below
+            if param_val_split[-1] == 'int':
                 is_int = True
+            elif param_val_split[-1] == 'float':
+                is_float = True
+            elif param_val_split[-1] == 'str':
+                is_str = True
+            else:
+                print('An error occurred with parsing your param_dict for hyperparam optimization. You must choose one of'
+                      '[int, float, str] as second to last entry for Bayesian Search')
 
-            if is_int is True:
-                try:
-                    start = int(param_val_split[0])
-                    end = int(param_val_split[1])
-                except ValueError:
-                    # Found a string
-                    is_int = False
-                    is_str = True
-
-            prior = str(param_val_split[-1])
+            prior = str(param_val_split[-2])
             if prior == 'log':
                 prior = 'log-uniform'
                 # If someone specifies log spacing, assume they mean to have floats and not ints for linear spacing, and
                 # override is_int = True from above
-                is_float = True
-                is_int = False
-                start = float(10**(float(param_val_split[0])))
-                end = float(10**(float(param_val_split[1])))
-            elif prior == 'lin':
+                if is_float is True:
+                    start = float(10**(float(param_val_split[0])))
+                    end = float(10**(float(param_val_split[1])))
+                elif is_int is True:
+                    start = int(param_val_split[0])
+                    end = int(param_val_split[1])
+            if prior == 'lin':
                 prior = 'uniform'
 
             if is_int is True:
+                start = int(param_val_split[0])
+                end = int(param_val_split[1])
                 param_val_ = Integer(start, end)
             elif is_float is True:
+                if prior == 'uniform':
+                    start = float(param_val_split[0])
+                    end = float(param_val_split[1])
+                elif prior == 'log-uniform':
+                    start = float(10**(float(param_val_split[0])))
+                    end = float(10**(float(param_val_split[1])))
                 param_val_ = Real(start, end, prior=prior)
             elif is_str is True:
-                param_val_ = Categorical(param_val_split)
+                param_val_ = Categorical([s for s in param_val_split if s not in ['int', 'float', 'str', 'lin', 'log']])
             else:
                 log.error('Your hyperparam input values were not parsed correctly, possibly due to unreasonable value choices'
                           '(e.g. negative values when only positive values make sense). Please check your input file and '
@@ -305,7 +308,7 @@ class RandomizedSearch(HyperOptUtils):
             _estimator_name : returns string of estimator name
 
         """
-    def __init__(self, estimator, cv, param_names, param_values, scoring=None, n_iter=10):
+    def __init__(self, estimator, cv, param_names, param_values, scoring=None, n_iter=50):
         super(RandomizedSearch, self).__init__(param_names=param_names, param_values=param_values)
         self.estimator = estimator
         self.cv = cv
