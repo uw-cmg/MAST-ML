@@ -1,10 +1,10 @@
 # Materials Simulation Toolkit for Machine Learning (MAST-ML)
 
+MAST-ML is an open-source Python package designed to broaden and accelerate the use of machine learning in materials science research
+
 <a href='https://mastmldocs.readthedocs.io/en/latest/?badge=latest'>
     <img src='https://readthedocs.org/projects/mastmldocs/badge/?version=latest' alt='Documentation Status' />
 </a>
-
-MAST-ML is an open-source Python package designed to broaden and accelerate the use of machine learning in materials science research
 
 ## Contributors
 
