@@ -193,15 +193,18 @@ class Magpie(BaseEstimator, TransformerMixin):
 
     """
 
-    def __init__(self, composition_feature):
+    def __init__(self, composition_feature, feature_types=None):
         self.composition_feature = composition_feature
+        self.feature_types = feature_types
+        if self.feature_types is None:
+            self.feature_types = ['composition_avg', 'arithmetic_avg', 'max', 'min', 'difference', 'elements']
 
     def fit(self, df, y=None):
         self.original_features = df.columns
         return self
 
     def transform(self, df):
-        mfg = MagpieFeatureGeneration(df, self.composition_feature)
+        mfg = MagpieFeatureGeneration(df, self.composition_feature, self.feature_types)
         df = mfg.generate_magpie_features()
         df = df.drop(self.original_features, axis=1)
         # delete missing values, generation makes a lot of garbage.
@@ -484,6 +487,10 @@ class MagpieFeatureGeneration(object):
 
         composition_feature: (str), string denoting a chemical composition to generate elemental features from
 
+        feature_types: (list), list containing types of magpie features to include in the final dataframe. Options
+        include ["composition_avg", "arithmetic_avg", "max", "min", "difference", "elements"]. Specifying nothing will
+        include all features.
+
     Methods:
 
         generate_magpie_features : generates magpie feature set based on compositions in dataframe
@@ -497,9 +504,10 @@ class MagpieFeatureGeneration(object):
                 dataframe: (dataframe) : dataframe containing magpie feature set
     """
 
-    def __init__(self, dataframe, composition_feature):
+    def __init__(self, dataframe, composition_feature, feature_types):
         self.dataframe = dataframe
         self.composition_feature = composition_feature
+        self.feature_types = feature_types
 
     def generate_magpie_features(self):
         # Replace empty composition fields with empty string instead of NaN
@@ -734,8 +742,70 @@ class MagpieFeatureGeneration(object):
                                 magpiedata_dict_max, magpiedata_dict_min, magpiedata_dict_difference, magpiedata_dict_atomic_bysite]
 
         dataframe = self.dataframe
+        magpiedata_dict_list_toinclude = list()
+        if 'composition_avg' in self.feature_types:
+            magpiedata_dict_list_toinclude.append(magpiedata_dict_list[0])
+        if 'arithmetic_avg' in self.feature_types:
+            magpiedata_dict_list_toinclude.append(magpiedata_dict_list[1])
+        if 'max' in self.feature_types:
+            magpiedata_dict_list_toinclude.append(magpiedata_dict_list[2])
+        if 'min' in self.feature_types:
+            magpiedata_dict_list_toinclude.append(magpiedata_dict_list[3])
+        if 'difference' in self.feature_types:
+            magpiedata_dict_list_toinclude.append(magpiedata_dict_list[4])
+        if 'elements' in self.feature_types:
+            magpiedata_dict_list_toinclude.append(magpiedata_dict_list[5])
+        if has_sublattices is True:
+            if number_sites == 1:
+                if 'composition_avg' in self.feature_types:
+                    magpiedata_dict_list_toinclude.append(magpiedata_dict_list[6])
+                if 'arithmetic_avg' in self.feature_types:
+                    magpiedata_dict_list_toinclude.append(magpiedata_dict_list[7])
+                if 'max' in self.feature_types:
+                    magpiedata_dict_list_toinclude.append(magpiedata_dict_list[8])
+                if 'min' in self.feature_types:
+                    magpiedata_dict_list_toinclude.append(magpiedata_dict_list[9])
+                if 'difference' in self.feature_types:
+                    magpiedata_dict_list_toinclude.append(magpiedata_dict_list[10])
+            if number_sites == 2:
+                if 'composition_avg' in self.feature_types:
+                    magpiedata_dict_list_toinclude.append(magpiedata_dict_list[6])
+                    magpiedata_dict_list_toinclude.append(magpiedata_dict_list[11])
+                if 'arithmetic_avg' in self.feature_types:
+                    magpiedata_dict_list_toinclude.append(magpiedata_dict_list[7])
+                    magpiedata_dict_list_toinclude.append(magpiedata_dict_list[12])
+                if 'max' in self.feature_types:
+                    magpiedata_dict_list_toinclude.append(magpiedata_dict_list[8])
+                    magpiedata_dict_list_toinclude.append(magpiedata_dict_list[13])
+                if 'min' in self.feature_types:
+                    magpiedata_dict_list_toinclude.append(magpiedata_dict_list[9])
+                    magpiedata_dict_list_toinclude.append(magpiedata_dict_list[14])
+                if 'difference' in self.feature_types:
+                    magpiedata_dict_list_toinclude.append(magpiedata_dict_list[10])
+                    magpiedata_dict_list_toinclude.append(magpiedata_dict_list[15])
+            if number_sites == 3:
+                if 'composition_avg' in self.feature_types:
+                    magpiedata_dict_list_toinclude.append(magpiedata_dict_list[6])
+                    magpiedata_dict_list_toinclude.append(magpiedata_dict_list[11])
+                    magpiedata_dict_list_toinclude.append(magpiedata_dict_list[16])
+                if 'arithmetic_avg' in self.feature_types:
+                    magpiedata_dict_list_toinclude.append(magpiedata_dict_list[7])
+                    magpiedata_dict_list_toinclude.append(magpiedata_dict_list[12])
+                    magpiedata_dict_list_toinclude.append(magpiedata_dict_list[17])
+                if 'max' in self.feature_types:
+                    magpiedata_dict_list_toinclude.append(magpiedata_dict_list[8])
+                    magpiedata_dict_list_toinclude.append(magpiedata_dict_list[13])
+                    magpiedata_dict_list_toinclude.append(magpiedata_dict_list[18])
+                if 'min' in self.feature_types:
+                    magpiedata_dict_list_toinclude.append(magpiedata_dict_list[9])
+                    magpiedata_dict_list_toinclude.append(magpiedata_dict_list[14])
+                    magpiedata_dict_list_toinclude.append(magpiedata_dict_list[19])
+                if 'difference' in self.feature_types:
+                    magpiedata_dict_list_toinclude.append(magpiedata_dict_list[10])
+                    magpiedata_dict_list_toinclude.append(magpiedata_dict_list[15])
+                    magpiedata_dict_list_toinclude.append(magpiedata_dict_list[20])
 
-        for magpiedata_dict in magpiedata_dict_list:
+        for magpiedata_dict in magpiedata_dict_list_toinclude:
             dataframe_magpie = pd.DataFrame.from_dict(data=magpiedata_dict, orient='index')
             # Need to reorder compositions in new dataframe to match input dataframe
             dataframe_magpie = dataframe_magpie.reindex(self.dataframe[self.composition_feature].tolist())
@@ -986,67 +1056,67 @@ class MagpieFeatureGeneration(object):
         if site_dict:
             if number_sites == 1:
                 for key in magpiedata_composition_average_site1:
-                    magpiedata_composition_average_site1_renamed[key + "_Site1_composition_average"] = magpiedata_composition_average_site1[key]
+                    magpiedata_composition_average_site1_renamed["Site1_"+ key + "_composition_average"] = magpiedata_composition_average_site1[key]
                 for key in magpiedata_arithmetic_average_site1:
-                    magpiedata_arithmetic_average_site1_renamed[key + "_Site1_arithmetic_average"] = magpiedata_arithmetic_average_site1[key]
+                    magpiedata_arithmetic_average_site1_renamed["Site1_"+ key + "_arithmetic_average"] = magpiedata_arithmetic_average_site1[key]
                 for key in magpiedata_max_site1:
-                    magpiedata_max_site1_renamed[key + "_Site1_max_value"] = magpiedata_max_site1[key]
+                    magpiedata_max_site1_renamed["Site1_"+ key + "_max_value"] = magpiedata_max_site1[key]
                 for key in magpiedata_min_site1:
-                    magpiedata_min_site1_renamed[key + "_Site1_min_value"] = magpiedata_min_site1[key]
+                    magpiedata_min_site1_renamed["Site1_"+ key + "_min_value"] = magpiedata_min_site1[key]
                 for key in magpiedata_difference_site1:
-                    magpiedata_difference_site1_renamed[key + "_Site1_difference"] = magpiedata_difference_site1[key]
+                    magpiedata_difference_site1_renamed["Site1_"+ key + "_difference"] = magpiedata_difference_site1[key]
             elif number_sites == 2:
                 for key in magpiedata_composition_average_site1:
-                    magpiedata_composition_average_site1_renamed[key + "_Site1_composition_average"] = magpiedata_composition_average_site1[key]
+                    magpiedata_composition_average_site1_renamed["Site1_"+ key + "_composition_average"] = magpiedata_composition_average_site1[key]
                 for key in magpiedata_arithmetic_average_site1:
-                    magpiedata_arithmetic_average_site1_renamed[key + "_Site1_arithmetic_average"] = magpiedata_arithmetic_average_site1[key]
+                    magpiedata_arithmetic_average_site1_renamed["Site1_"+ key + "_arithmetic_average"] = magpiedata_arithmetic_average_site1[key]
                 for key in magpiedata_max_site1:
-                    magpiedata_max_site1_renamed[key + "_Site1_max_value"] = magpiedata_max_site1[key]
+                    magpiedata_max_site1_renamed["Site1_"+ key + "_max_value"] = magpiedata_max_site1[key]
                 for key in magpiedata_min_site1:
-                    magpiedata_min_site1_renamed[key + "_Site1_min_value"] = magpiedata_min_site1[key]
+                    magpiedata_min_site1_renamed["Site1_"+ key + "_min_value"] = magpiedata_min_site1[key]
                 for key in magpiedata_difference_site1:
-                    magpiedata_difference_site1_renamed[key + "_Site1_difference"] = magpiedata_difference_site1[key]
+                    magpiedata_difference_site1_renamed["Site1_"+ key + "_difference"] = magpiedata_difference_site1[key]
                 for key in magpiedata_composition_average_site2:
-                    magpiedata_composition_average_site2_renamed[key + "_Site2_composition_average"] = magpiedata_composition_average_site2[key]
+                    magpiedata_composition_average_site2_renamed["Site2_"+ key + "_composition_average"] = magpiedata_composition_average_site2[key]
                 for key in magpiedata_arithmetic_average_site2:
-                    magpiedata_arithmetic_average_site2_renamed[key + "_Site2_arithmetic_average"] = magpiedata_arithmetic_average_site2[key]
+                    magpiedata_arithmetic_average_site2_renamed["Site2_"+ key + "_arithmetic_average"] = magpiedata_arithmetic_average_site2[key]
                 for key in magpiedata_max_site2:
-                    magpiedata_max_site2_renamed[key + "_Site2_max_value"] = magpiedata_max_site2[key]
+                    magpiedata_max_site2_renamed["Site2_"+ key + "_max_value"] = magpiedata_max_site2[key]
                 for key in magpiedata_min_site2:
-                    magpiedata_min_site2_renamed[key + "_Site2_min_value"] = magpiedata_min_site2[key]
+                    magpiedata_min_site2_renamed["Site2_"+ key + "_min_value"] = magpiedata_min_site2[key]
                 for key in magpiedata_difference_site2:
-                    magpiedata_difference_site2_renamed[key + "_Site2_difference"] = magpiedata_difference_site2[key]
+                    magpiedata_difference_site2_renamed["Site2_"+ key + "_difference"] = magpiedata_difference_site2[key]
             elif number_sites == 3:
                 for key in magpiedata_composition_average_site1:
-                    magpiedata_composition_average_site1_renamed[key + "_Site1_composition_average"] = magpiedata_composition_average_site1[key]
+                    magpiedata_composition_average_site1_renamed["Site1_"+ key + "_composition_average"] = magpiedata_composition_average_site1[key]
                 for key in magpiedata_arithmetic_average_site1:
-                    magpiedata_arithmetic_average_site1_renamed[key + "_Site1_arithmetic_average"] = magpiedata_arithmetic_average_site1[key]
+                    magpiedata_arithmetic_average_site1_renamed["Site1_"+ key + "_arithmetic_average"] = magpiedata_arithmetic_average_site1[key]
                 for key in magpiedata_max_site1:
-                    magpiedata_max_site1_renamed[key + "_Site1_max_value"] = magpiedata_max_site1[key]
+                    magpiedata_max_site1_renamed["Site1_"+ key + "_max_value"] = magpiedata_max_site1[key]
                 for key in magpiedata_min_site1:
-                    magpiedata_min_site1_renamed[key + "_Site1_min_value"] = magpiedata_min_site1[key]
+                    magpiedata_min_site1_renamed["Site1_"+ key + "_min_value"] = magpiedata_min_site1[key]
                 for key in magpiedata_difference_site1:
-                    magpiedata_difference_site1_renamed[key + "_Site1_difference"] = magpiedata_difference_site1[key]
+                    magpiedata_difference_site1_renamed["Site1_"+ key + "_difference"] = magpiedata_difference_site1[key]
                 for key in magpiedata_composition_average_site2:
-                    magpiedata_composition_average_site2_renamed[key + "_Site2_composition_average"] = magpiedata_composition_average_site2[key]
+                    magpiedata_composition_average_site2_renamed["Site2_"+ key + "_composition_average"] = magpiedata_composition_average_site2[key]
                 for key in magpiedata_arithmetic_average_site2:
-                    magpiedata_arithmetic_average_site2_renamed[key + "_Site2_arithmetic_average"] = magpiedata_arithmetic_average_site2[key]
+                    magpiedata_arithmetic_average_site2_renamed["Site2_"+ key + "_arithmetic_average"] = magpiedata_arithmetic_average_site2[key]
                 for key in magpiedata_max_site2:
-                    magpiedata_max_site2_renamed[key + "_Site2_max_value"] = magpiedata_max_site2[key]
+                    magpiedata_max_site2_renamed["Site2_"+ key + "_max_value"] = magpiedata_max_site2[key]
                 for key in magpiedata_min_site2:
-                    magpiedata_min_site2_renamed[key + "_Site2_min_value"] = magpiedata_min_site2[key]
+                    magpiedata_min_site2_renamed["Site2_"+ key + "_min_value"] = magpiedata_min_site2[key]
                 for key in magpiedata_difference_site2:
-                    magpiedata_difference_site2_renamed[key + "_Site2_difference"] = magpiedata_difference_site2[key]
+                    magpiedata_difference_site2_renamed["Site2_"+ key + "_Site2_difference"] = magpiedata_difference_site2[key]
                 for key in magpiedata_composition_average_site3:
-                    magpiedata_composition_average_site3_renamed[key + "_Site3_composition_average"] = magpiedata_composition_average_site3[key]
+                    magpiedata_composition_average_site3_renamed["Site3_"+ key + "_composition_average"] = magpiedata_composition_average_site3[key]
                 for key in magpiedata_arithmetic_average_site3:
-                    magpiedata_arithmetic_average_site3_renamed[key + "_Site3_arithmetic_average"] = magpiedata_arithmetic_average_site3[key]
+                    magpiedata_arithmetic_average_site3_renamed["Site3_"+ key + "_arithmetic_average"] = magpiedata_arithmetic_average_site3[key]
                 for key in magpiedata_max_site3:
-                    magpiedata_max_site3_renamed[key + "_Site3_max_value"] = magpiedata_max_site3[key]
+                    magpiedata_max_site3_renamed["Site3_"+ key + "_max_value"] = magpiedata_max_site3[key]
                 for key in magpiedata_min_site1:
-                    magpiedata_min_site3_renamed[key + "_Site3_min_value"] = magpiedata_min_site3[key]
+                    magpiedata_min_site3_renamed["Site3_"+ key + "_min_value"] = magpiedata_min_site3[key]
                 for key in magpiedata_difference_site3:
-                    magpiedata_difference_site3_renamed[key + "_Site3_difference"] = magpiedata_difference_site3[key]
+                    magpiedata_difference_site3_renamed["Site3_"+ key + "_difference"] = magpiedata_difference_site3[key]
 
         if site_dict:
             if number_sites == 1:
