@@ -18,6 +18,7 @@ University of Wisconsin-Madison Computational Materials Group:
 University of Kentucky contributors:
 * Luke Harold Miles
 * Robert Max Williams
+* Matthew Turner
 * Prof. Raphael Finkel
 
 ## MAST-ML documentation
@@ -44,5 +45,5 @@ MAST-ML is freely available via Github:
 ```
 https://github.com/uw-cmg/MAST-ML
 
-git clone --single-branch master https://github.com/uw-cmg/MAST-ML
+git clone https://github.com/uw-cmg/MAST-ML
 ```
