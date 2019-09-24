@@ -49,6 +49,7 @@ setup(
         "citeproc-py>=0.4",
         "citrination-client==4.6.0",
         "configobj==5.0.6",
+        "cryptography",
         "cycler==0.10.0",
         "Cython==0.29.13",
         "decorator==4.3.0",
