@@ -40,7 +40,8 @@ setup(
     name="mastml", # TODO  should this be MAST-ML?
     #packages=find_packages(),
     packages=['mastml', 'mastml.legos', 'magpie', 'tests', 'tests.conf', 'tests.csv'],
-    data_files=[('magpie', ['magpie/AtomicNumber.table','magpie/AtomicRadii.table'])],
+    #data_files=[('magpie', ['magpie/AtomicNumber.table','magpie/AtomicRadii.table'])],
+    package_data = {'mastml': ['magpie/*'], 'mastml': ['tests/*']},
     include_package_data = True,
     version=verstr,
     install_requires=[
