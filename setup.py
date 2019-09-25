@@ -39,7 +39,7 @@ except EnvironmentError:
 setup(
     name="mastml", # TODO  should this be MAST-ML?
     #packages=find_packages(),
-    packages=['mastml', 'mastml.magpie', 'mastml.legos', 'mastml.tests'],
+    packages=['mastml', 'magpie', 'legos', 'tests'],
     include_package_data = True,
     version=verstr,
     install_requires=[
