@@ -1020,7 +1020,7 @@ def _instantiate(kwargs_dict, name_to_constructor, category, X_grouped=None, X_i
         log.debug(f'instantiation: {long_name}, {name}({kwargs})')
         try:
             #skip instantiate step for keras model because need to pass dict to build model and not all values directly
-            if long_name=='KerasRegressor':
+            if 'KerasRegressor' in long_name:
                 pass
 
             # Need to construct cv object when have special case of RFECV and LeaveOneGroupOut cross-validation!
@@ -1083,7 +1083,6 @@ def _snatch_keras_model(models, conf_models):
         if 'KerasRegressor' in model:
             keras_model = model_finder.KerasRegressor(conf_models[model][1])
             models[model] = keras_model
-            break
     return models
 
 def _snatch_gpr_model(models, conf_models):
