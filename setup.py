@@ -39,6 +39,7 @@ except EnvironmentError:
 setup(
     name="mastml", # TODO  should this be MAST-ML?
     packages=find_packages(),
+    include_package_data = True,
     version=verstr,
     install_requires=[
         "aflow",
@@ -98,7 +99,7 @@ setup(
         "pytest==5.0.1",
         "python-dateutil==2.7.3",
         "pytz==2018.5",
-        "pyyaml==3.12",
+        "pyyaml>=4.2b1",
         "requests==2.20.0",
         "retrying",
         "ruamel.yaml==0.15.42",
