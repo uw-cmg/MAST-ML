@@ -34,7 +34,8 @@ from matminer.data_retrieval.retrieve_AFLOW import AFLOWDataRetrieval
 import mastml
 from mastml import utils
 log = logging.getLogger('mastml')
-MAGPIE_DATA_PATH = os.path.join(mastml.__path__[0], '../magpie/')
+
+MAGPIE_DATA_PATH = os.path.join(mastml.__path__[0], 'magpie')
 
 class PolynomialFeatures(BaseEstimator, TransformerMixin):
     """
