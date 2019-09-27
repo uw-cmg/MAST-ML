@@ -47,3 +47,9 @@ https://github.com/uw-cmg/MAST-ML
 
 git clone https://github.com/uw-cmg/MAST-ML
 ```
+
+MAST-ML can also be installed via pip:
+
+```
+pip install mastml
+```
