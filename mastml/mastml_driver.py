@@ -483,6 +483,15 @@ def mastml_run(conf_path, data_path, outdir):
                     if selector_instance.__class__.__name__ == 'MASTMLFeatureSelector':
                         dirname = join(outdir, normalizer_name)
                         X_selected = selector_instance.fit(X_novalidation_normalized, y_novalidation, dirname, X_grouped_novalidation).transform(X_novalidation_normalized)
+                    elif selector_instance.__class__.__name__ == 'SequentialFeatureSelector':
+                        X_selected = selector_instance.fit(X_novalidation_normalized, y_novalidation).transform(X_novalidation_normalized)
+                        # SFS renames the columns. Need to replace the column names with correct feature names.
+                        feature_name_dict = dict()
+                        for feature in X_selected.columns.tolist():
+                            for realfeature in X_novalidation_normalized.columns.tolist():
+                                if X_novalidation_normalized[realfeature].equals(X_selected[feature]):
+                                    feature_name_dict[feature] = realfeature
+                        X_selected.rename(columns= feature_name_dict, inplace=True)
                     else:
                         X_selected = selector_instance.fit(X_novalidation_normalized, y_novalidation).transform(X_novalidation_normalized)
                     features_selected = X_selected.columns.tolist()
