@@ -176,21 +176,12 @@ class MASTMLFeatureSelector(object):
 
     """
 
-    def __init__(self, estimator, n_features_to_select, cv, manually_selected_features=str()):
+    def __init__(self, estimator, n_features_to_select, cv, manually_selected_features=list()):
         self.estimator = estimator
         self.n_features_to_select = n_features_to_select
         self.cv = cv
         self.manually_selected_features = manually_selected_features
         self.selected_feature_names = self.manually_selected_features
-
-        ##################
-        # Only temporary, to do feature selection with GPR
-        ##################
-        #from sklearn.gaussian_process import GaussianProcessRegressor
-        #from sklearn.gaussian_process.kernels import RBF, ConstantKernel
-        #self.estimator = GaussianProcessRegressor(kernel=RBF(), n_restarts_optimizer=25, alpha=0.000001)
-        #self.estimator = GaussianProcessRegressor(kernel=0.474**2*RBF(), n_restarts_optimizer=5)
-        #self.estimator = GaussianProcessRegressor(kernel=RBF(), n_restarts_optimizer=10)
 
     def fit(self, X, y, savepath, Xgroups=None):
         if Xgroups.shape[0] == 0:
