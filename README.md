@@ -35,7 +35,9 @@ This work was and is funded by the National Science Foundation (NSF) SI2 award N
 
 ## Citing MAST-ML
 
-A journal publication for MAST-ML is in preparation and is expected to be published in Computational Materials Science by mid-2019.
+If you find MAST-ML useful, please cite the following publication in your work:
+
+Jacobs, R., Mayeshiba, T., Afflerbach, B., Miles, L., Williams, M., Turner, M., Finkel, R., Morgan, D., "The Materials Simulation Toolkit for Machine Learning (MAST-ML): An automated open source toolkit to accelerate data-driven materials research". Computational Materials Science, 176 (2020). https://doi.org/10.1016/j.commatsci.2020.109544
 
 
 ## Code Repository
