@@ -8,6 +8,7 @@ import os
 import shutil
 import logging
 import warnings
+import re
 from datetime import datetime
 from collections import OrderedDict
 from os.path import join # We use join tons
@@ -418,8 +419,12 @@ def mastml_run(conf_path, data_path, outdir):
                 log.info(f"Running normalizer {normalizer_name} ...")
                 normalizer_instance_y = normalizer_instance
                 normalizer_instance_y_novalidation = normalizer_instance
-                X_normalized = normalizer_instance.fit_transform(X, y)
-                X_novalidation_normalized = normalizer_instance.fit_transform(X_novalidation, y)
+
+                # HERE- try to address issue with normalizing non-validation part of dataset
+                normalizer = normalizer_instance.fit(X_novalidation, y)
+                X_normalized = normalizer.transform(X)
+                X_novalidation_normalized = normalizer.transform(X_novalidation)
+
                 if conf['MiscSettings']['normalize_target_feature'] is True:
                     yreshape = pd.DataFrame(np.array(y).reshape(-1, 1))
                     y_novalidation_new = pd.DataFrame(np.array(y_novalidation).reshape(-1, 1))
@@ -435,6 +440,9 @@ def mastml_run(conf_path, data_path, outdir):
                 dirname = join(outdir, normalizer_name)
                 os.mkdir(dirname)
                 pd.concat([X_normalized, X_noinput, y], 1).to_csv(join(dirname, "normalized.csv"), index=False)
+
+                # Save off the normalizer as .pkl for future import
+                joblib.dump(normalizer, join(dirname, str(normalizer.__class__.__name__) + ".pkl"))
 
                 # Put learning curve here??
                 if conf['LearningCurve']:
@@ -689,26 +697,29 @@ def mastml_run(conf_path, data_path, outdir):
 
             log.info("             Fitting model and making predictions...")
             # Catch the ValueError associated with not being able to convert string to float
-            try:
-                history = model.fit(train_X, train_y)
+            #try:
+                #print(train_X, train_y)
+
 
                 # For Keras model, save model summary to main_path and plot training/validation vals vs. epochs
-                if 'KerasRegressor' in str(model.__class__.__name__):
-                    with open(join(main_path, 'keras_model_summary.txt'), 'w') as f:
-                        with redirect_stdout(f):
-                            model.summary()
-
-                    plot_helper.plot_keras_history(model_history=history,
+            if 'KerasRegressor' in str(model.__class__.__name__):
+                with open(join(main_path, 'keras_model_summary.txt'), 'w') as f:
+                    with redirect_stdout(f):
+                        model.summary()
+                history = model.fit(train_X, train_y)
+                plot_helper.plot_keras_history(model_history=history,
                                                    savepath=join(path,'keras_model_accuracy.png'),
                                                    plot_type='accuracy')
-                    plot_helper.plot_keras_history(model_history=history,
+                plot_helper.plot_keras_history(model_history=history,
                                                    savepath=join(path, 'keras_model_loss.png'),
                                                    plot_type='loss')
-                    pd.DataFrame().from_dict(data=history.history).to_excel(join(path,'keras_model_data.xlsx'))
+                pd.DataFrame().from_dict(data=history.history).to_excel(join(path,'keras_model_data.xlsx'))
+            else:
+                model.fit(train_X, train_y)
 
-            except ValueError:
-                raise utils.InvalidValue('MAST-ML has detected an error with one of your feature vectors which has caused an error'
-                                   ' in model fitting.')
+            #except ValueError:
+            #    raise utils.InvalidValue('MAST-ML has detected an error with one of your feature vectors which has caused an error'
+            #                       ' in model fitting.')
             # Save off the trained model as .pkl for future import
             joblib.dump(model, join(path, str(model.__class__.__name__)+"_split_"+str(split_num)+".pkl"))
 
@@ -847,12 +858,24 @@ def mastml_run(conf_path, data_path, outdir):
                         label=y.name, model=model, train_X=train_X, test_X=test_X, groups=grouping_data)
 
             if MiscSettings['plot_error_plots']:
-                plot_helper.make_error_plots(split_result, path, is_classification,
-                                             label=y.name, model=model, train_X=train_X, test_X=test_X,
-                                             rf_error_method=MiscSettings['rf_error_method'],
-                                             rf_error_percentile=MiscSettings['rf_error_percentile'],
-                                             groups=grouping_data)
-
+                if is_validation:
+                    plot_helper.make_error_plots(split_result, path, is_classification,
+                                                 label=y.name, model=model, train_X=train_X, test_X=test_X,
+                                                 rf_error_method=MiscSettings['rf_error_method'],
+                                                 rf_error_percentile=MiscSettings['rf_error_percentile'],
+                                                 is_validation = is_validation,
+                                                 validation_column_name = validation_column_name,
+                                                 validation_X = validation_X_forpred,
+                                                 groups=grouping_data)
+                else:
+                    plot_helper.make_error_plots(split_result, path, is_classification,
+                                                 label=y.name, model=model, train_X=train_X, test_X=test_X,
+                                                 rf_error_method=MiscSettings['rf_error_method'],
+                                                 rf_error_percentile=MiscSettings['rf_error_percentile'],
+                                                 is_validation = is_validation,
+                                                 validation_column_name = None,
+                                                 validation_X= None,
+                                                 groups=grouping_data)
             # Write stats in each split path, not main path
             if is_validation:
                 _write_stats_tocsv(split_result['train_metrics'],
@@ -936,24 +959,36 @@ def mastml_run(conf_path, data_path, outdir):
 
         def make_average_error_plots(main_path):
             dfs_cumulative_errors = list()
+            dfs_cumulative_errors_validation = list()
             for split_folder, _, __ in os.walk(main_path):
                 if "split" in split_folder:
                     path = join(main_path, split_folder)
                     try:
                         dfs_cumulative_errors.append(pd.read_csv(join(path,'test_cumulative_normalized_error.csv')))
+                        if is_validation:
+                            dfs_cumulative_errors_validation.append(pd.read_csv(join(path, 'validation_cumulative_normalized_error.csv')))
                     except:
                         pass
 
             # Concatenate all dfs in list to one big df
             df_cumulative_errors = pd.concat(dfs_cumulative_errors)
+            if is_validation:
+                df_cumulative_errors_validation = pd.concat(dfs_cumulative_errors_validation)
             # Need to get average values of df columns by averagin over groups of Y True values (since each Y True should
             # only appear once)
             df_normalized_errors_avgvalues = df_cumulative_errors.groupby('Y True').mean().reset_index()
             y_true = np.array(df_normalized_errors_avgvalues['Y True'])
             y_pred = np.array(df_normalized_errors_avgvalues['Y Pred'])
+            if is_validation:
+                df_normalized_errors_avgvalues_validation = df_cumulative_errors_validation.groupby('Y True').mean().reset_index()
+                y_true_validation = np.array(df_normalized_errors_avgvalues_validation['Y True'])
+                y_pred_validation = np.array(df_normalized_errors_avgvalues_validation['Y Pred'])
             try:
                 average_error_values = np.array(df_normalized_errors_avgvalues['error_bars_down'])
                 has_model_errors = True
+                if is_validation:
+                    average_error_values_validation = np.array(df_normalized_errors_avgvalues_validation['error_bars_down'])
+                    has_model_errors_validation = True
             except:
                 average_error_values = None
                 has_model_errors = False
@@ -962,6 +997,12 @@ def mastml_run(conf_path, data_path, outdir):
                                                                  savepath=join(main_path,'test_cumulative_normalized_error_average_allsplits.png'),
                                                                  has_model_errors=has_model_errors,
                                                                  err_avg=average_error_values)
+            if is_validation:
+                plot_helper.plot_average_cumulative_normalized_error(y_true=y_true_validation, y_pred=y_pred_validation,
+                                                                     savepath=join(main_path,
+                                                                                   'validation_cumulative_normalized_error_average_allsplits.png'),
+                                                                     has_model_errors=has_model_errors_validation,
+                                                                     err_avg=average_error_values_validation)
             plot_helper.plot_average_normalized_error(y_true=y_true, y_pred=y_pred,
                                                       savepath=join(main_path,'test_normalized_error_average_allsplits.png'),
                                                                  has_model_errors=has_model_errors,
@@ -1103,7 +1144,7 @@ def _snatch_gpr_model(models, conf_models):
             from sklearn.gaussian_process import GaussianProcessRegressor
             kernel_list = ['WhiteKernel', 'RBF', 'ConstantKernel', 'Matern', 'RationalQuadratic', 'ExpSineSquared', 'DotProduct']
             kernel_operators = ['+', '*', '-']
-            params = conf_models['GaussianProcessRegressor']
+            params = conf_models[model]
             kernel_string = params[1]['kernel']
             # Need to delete old kernel (as str) from params so can use other specified params in new GPR model
             del params[1]['kernel']
@@ -1119,48 +1160,40 @@ def _snatch_gpr_model(models, conf_models):
             # Do case for single kernel, no operators
             if len(kernel_operators_used) == 0:
                 kernel_types_asstr.append(kernel_string)
-
-            # Do case for parsing operators in kernel string for multiple kernels
-            for i, operator in enumerate(kernel_operators_used):
-                kernel_string_split = kernel_string.split(operator)
-                if kernel_string_split[0] in kernel_list:
-                    kernel_types_asstr.append(kernel_string_split[0])
-                else:
-                    raise utils.MastError(f"The kernel {kernel_string_split[0]} could not be found in sklearn!")
-                kernel_string = kernel_string_split[1]
-                # If got to last operator, also append last kernel type
-                if i+1 == len(kernel_operators_used):
-                    if kernel_string_split[1] in kernel_list:
-                        kernel_types_asstr.append(kernel_string_split[1])
-                    else:
-                        raise utils.MastError(f"The kernel {kernel_string_split[1]} could not be found in sklearn!")
+            else:
+                # New method, using re
+                unique_operators = np.unique(kernel_operators_used).tolist()
+                unique_operators_asstr = '['
+                for i in unique_operators:
+                    unique_operators_asstr += str(i)
+                unique_operators_asstr += ']'
+                kernel_types_asstr = re.split(unique_operators_asstr, kernel_string)
 
             for kernel in kernel_types_asstr:
                 kernel_ = getattr(sklearn.gaussian_process.kernels, kernel)
                 kernel_types_ascls.append(kernel_())
+
             # Case for single kernel
             if len(kernel_types_ascls) == 1:
                 kernel = kernel_types_ascls[0]
 
             kernel_count = 0
             for i, operator in enumerate(kernel_operators_used):
-                if i+1 != len(kernel_operators_used):
+                if i+1 <= len(kernel_operators_used):
                     if operator == "+":
-                        kernel = kernel_types_ascls[kernel_count] + kernel_types_ascls[kernel_count + 1]
+                        if kernel_count == 0:
+                            kernel = kernel_types_ascls[kernel_count] + kernel_types_ascls[kernel_count+1]
+                        else:
+                            kernel += kernel_types_ascls[kernel_count+1]
                     elif operator == "*":
-                        kernel = kernel_types_ascls[kernel_count] * kernel_types_ascls[kernel_count + 1]
+                        if kernel_count == 0:
+                            kernel = kernel_types_ascls[kernel_count] * kernel_types_ascls[kernel_count+1]
+                        else:
+                            kernel *= kernel_types_ascls[kernel_count+1]
                     else:
                         logging.warning('You have chosen an invalid operator to construct a composite kernel. Please choose'
                                       ' either "+" or "*".')
-                if i+1 == len(kernel_operators_used):
-                    if operator == "+":
-                        kernel = kernel_types_ascls[kernel_count-1] + kernel_types_ascls[kernel_count]
-                    elif operator == "*":
-                        kernel = kernel_types_ascls[kernel_count-1] * kernel_types_ascls[kernel_count]
-                    else:
-                        logging.warning('You have chosen an invalid operator to construct a composite kernel. Please choose'
-                                      ' either "+" or "*".')
-                kernel_count += 2
+                    kernel_count += 1
 
             gpr = GaussianProcessRegressor(kernel=kernel, **params[1])
             # Need to delete old GPR from model list and replace with new GPR with correct kernel and other params.
