@@ -129,7 +129,7 @@ class KerasRegressor():
                 else:
                     self.loss = 'mean_squared_error'
                 if layer_val.get('optimizer'):
-                    self.optimzier = str(layer_val.get('optimizer'))
+                    self.optimizer = str(layer_val.get('optimizer'))
                 else:
                     self.optimizer = 'adam'
                 if layer_val.get('metrics'):
@@ -162,7 +162,7 @@ class KerasRegressor():
     def fit(self, X, Y):
         # Need to rebuild and re-compile model at every fit instance so don't have information of weights from other fits
         self.model = self.build_model()
-        self.model.compile(loss=self.loss, optimizer=self.optimzier, metrics=self.metrics)
+        self.model.compile(loss=self.loss, optimizer=self.optimizer, metrics=self.metrics)
         return self.model.fit(X, Y, epochs=self.epochs, batch_size=self.batch_size, verbose=self.verbose,
                               validation_split=self.validation_split, shuffle=self.shuffle)
 
