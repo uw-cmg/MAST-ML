@@ -101,7 +101,7 @@ setup(
         "requests>=2.20.0",
         "retrying",
         "ruamel.yaml>=0.15.42",
-        "scikit-learn>=0.20.3",
+        "scikit-learn==0.20.3",
         "scikit-optimize>=0.5.2",
         "scipy>=1.2.1",
         "six>=1.11.0",
