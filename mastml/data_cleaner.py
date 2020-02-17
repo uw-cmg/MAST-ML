@@ -88,7 +88,7 @@ def imputation(df, strategy, cols_to_leave_out=None):
         df = df_imputed
     else:
         df = pd.concat([df_hold_out, df_imputed], axis=1)
-    df.columns = col_names
+        col_names = df.columns.tolist()
     return df
 
 def ppca(df, cols_to_leave_out=None):
