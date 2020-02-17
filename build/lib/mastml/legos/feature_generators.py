@@ -515,11 +515,6 @@ class MagpieFeatureGeneration(object):
         self.dataframe = self.dataframe.fillna('')
 
         compositions_raw = self.dataframe[self.composition_feature].tolist()
-
-        ls = [type(item) for item in compositions_raw]
-        print(ls)
-        print(compositions_raw)
-
         # Check first entry of comps to find [] for delimiting different sublattices
         has_sublattices = False
         if '[' in compositions_raw[0]:
