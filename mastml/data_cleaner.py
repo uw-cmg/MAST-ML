@@ -79,16 +79,21 @@ def imputation(df, strategy, cols_to_leave_out=None):
     """
     col_names = df.columns.tolist()
     if cols_to_leave_out is None:
-        df_imputed = pd.DataFrame(Imputer(missing_values=float('nan'), strategy=strategy).fit_transform(df))
+        df_imputed = pd.DataFrame(Imputer(missing_values=np.nan, strategy=strategy).fit_transform(df))
+        # df_imputed = pd.DataFrame
     else:
         df_include = df.drop(cols_to_leave_out, axis=1)
         df_hold_out = df.drop([c for c in df.columns if c not in cols_to_leave_out], axis=1)
-        df_imputed = pd.DataFrame(Imputer(missing_values=float('nan'), strategy=strategy).fit_transform(df_include), columns=df_include.columns)
+        df_imputed = pd.DataFrame(Imputer(missing_values=np.nan, strategy=strategy).fit_transform(df_include), columns=df_include.columns)
     # Need to join the imputed dataframe with the columns containing strings that were held out
     if cols_to_leave_out is None:
         df = df_imputed
     else:
-        df = pd.concat([df_hold_out, df_imputed], axis=1)
+        print(df_hold_out)
+        print(df_imputed)
+        # df = pd.concat([df_hold_out, df_imputed], axis=1)
+        df = pd.concat([df_imputed, df_hold_out], axis=1)
+        print(df)
     df.columns = col_names
     return df
 

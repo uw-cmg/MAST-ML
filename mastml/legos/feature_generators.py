@@ -514,6 +514,8 @@ class MagpieFeatureGeneration(object):
         # Replace empty composition fields with empty string instead of NaN
         self.dataframe = self.dataframe.fillna('')
 
+        print(self.dataframe)
+
         compositions_raw = self.dataframe[self.composition_feature].tolist()
 
         ls = [type(item) for item in compositions_raw]
