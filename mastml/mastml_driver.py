@@ -436,6 +436,8 @@ def mastml_run(conf_path, data_path, outdir):
                 os.mkdir(dirname)
                 pd.concat([X_normalized, X_noinput, y], 1).to_csv(join(dirname, "normalized.csv"), index=False)
 
+                # find data twins
+
                 # Put learning curve here??
                 if conf['LearningCurve']:
                     learning_curve_estimator = conf['LearningCurve']['estimator']

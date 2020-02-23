@@ -89,11 +89,8 @@ def imputation(df, strategy, cols_to_leave_out=None):
     if cols_to_leave_out is None:
         df = df_imputed
     else:
-        print(df_hold_out)
-        print(df_imputed)
-        # df = pd.concat([df_hold_out, df_imputed], axis=1)
-        df = pd.concat([df_imputed, df_hold_out], axis=1)
-        print(df)
+        df = pd.concat([df_hold_out, df_imputed], axis=1)
+    col_names = df.columns.tolist()
     df.columns = col_names
     return df
 
