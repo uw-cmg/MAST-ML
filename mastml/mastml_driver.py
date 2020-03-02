@@ -465,10 +465,24 @@ def mastml_run(conf_path, data_path, outdir):
                     # for a, b in itertools.combinations(x_normalized.iterrows(), 2):
                     #     # print(type(a))
                     #     print(type(distance.euclidean(a, b)))
+                    distances = []
                     for a, b in itertools.combinations(x_normalized.itertuples(), 2):
                         # print(type(distance.euclidean(a, b)))
                         diff = distance.euclidean(a, b)
-                        print(diff)
+                        # print(diff)
+                        # print(type(diff))
+                        distances.append(diff)
+                    distances = np.array([distances])
+                    # distances = np.argpartition(distances, len(distances)-10)
+                    # distances = np.argpartition(distances, 10)
+                    distances = np.sort(distances)
+                    print(distances)
+                    for i in np.nditer(distances[0][:10]):
+                        print(i)
+                        # print(type(i))
+                    # print(distances[0][:10])
+                    # print(distances[0][:10].size)
+                    # print(distances.size)
 
                 data_twins(X_normalized)
 
