@@ -4,13 +4,13 @@ Main MAST-ML module responsible for executing the workflow of a MAST-ML run
 
 import argparse
 import inspect
+import itertools
 import logging
 import numpy as np
 import os
 import pandas as pd
 import shutil
 import warnings
-import itertools
 from collections import OrderedDict
 from contextlib import redirect_stdout
 from datetime import datetime
@@ -476,13 +476,49 @@ def mastml_run(conf_path, data_path, outdir):
                     # distances = np.argpartition(distances, len(distances)-10)
                     # distances = np.argpartition(distances, 10)
                     distances = np.sort(distances)
+
+                    distances = distances[0]
+
                     print(distances)
-                    for i in np.nditer(distances[0][:10]):
+                    print("Largest distances: ")
+                    x = distances.size - 10
+                    for i in np.nditer(distances[x:]):
+                        print(i)
+                    print("Smallest distances: ")
+                    for i in np.nditer(distances[:10]):
                         print(i)
                         # print(type(i))
-                    # print(distances[0][:10])
-                    # print(distances[0][:10].size)
+                    # print(distances[:10])
+                    # print(distances[:10].size)
                     # print(distances.size)
+
+                    n = 5
+                    print("Remove " + str(n) + " smallest values...")
+                    # remove n smallest values
+                    # x = distances.size - n
+                    distances = distances[n:]
+
+                    print("Smallest distances: ")
+                    for i in np.nditer(distances[:10]):
+                        print(i)
+
+                    def find_nearest_idx(array, value):
+                        idx = np.searchsorted(array, value, side="right")
+                        # if idx > 0 and (
+                        #         idx == array.size or math.fabs(value - array[idx - 1]) < math.fabs(value - array[idx])):
+                        #     return idx - 1
+                        # else:
+                        #     return idx
+                        return idx
+
+                    min_distance = 9
+                    print("Remove distances less than" + str(min_distance) + "...")
+                    x = find_nearest_idx(distances, min_distance)
+                    distances = distances[x:]
+
+                    print("Smallest distances: ")
+                    for i in np.nditer(distances[:10]):
+                        print(i)
 
                 data_twins(X_normalized)
 
