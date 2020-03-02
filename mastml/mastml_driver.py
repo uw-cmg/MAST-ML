@@ -512,7 +512,7 @@ def mastml_run(conf_path, data_path, outdir):
                         return idx
 
                     min_distance = 9
-                    print("Remove distances less than" + str(min_distance) + "...")
+                    print("Remove distances less than " + str(min_distance) + "...")
                     x = find_nearest_idx(distances, min_distance)
                     distances = distances[x:]
 
