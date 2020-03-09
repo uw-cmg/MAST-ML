@@ -6,16 +6,196 @@ For more information and a list of scikit-learn splitter classes, see:
  http://scikit-learn.org/stable/modules/classes.html#module-sklearn.model_selection
 """
 
+import itertools
 import numpy as np
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.neighbors import NearestNeighbors
+import pandas as pd
 import sklearn.model_selection as ms
+import warnings
+from math import ceil
 from matminer.featurizers.composition import ElementFraction
 from pymatgen import Composition
-
-from math import ceil
-import warnings
+from scipy.spatial import distance
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.neighbors import NearestNeighbors
 from sklearn.utils import check_random_state
+
+
+class LeaveOutTwinCV(BaseEstimator, TransformerMixin):
+
+    def __init__(self, threshold, cv):
+        self.threshold = threshold
+        self.cv = name_to_constructor[cv]
+        # self.cv = cv
+        # self.cv = "RepeatedKFold"
+        print("LeaveOutTwinCV running...")
+
+    def get_n_splits(self, X=None, y=None, groups=None):
+        return 1
+
+    def split(self, X, y, groups=None):
+        # Here- remove twins from X, y data to get X_notwin, y_notwin
+
+        # find data twins
+        # for row in X.iterrows():
+        #     for row in X.iterrows():
+        #         # print("index: " + str(index) + " row:" + str(type(row)) + " " + str(row[1]))
+        #         distance.euclidean(row, row);
+        #         # print(str(index) + ": " + row[0] + str(index + 1) + ": ")
+        # for a, b in itertools.combinations(X.iterrows(), 2):
+        #     # print(type(a))
+        #     print(type(distance.euclidean(a, b)))
+        distances = []
+
+        # for a, b in itertools.combinations(X.itertuples(), 2):
+        #     diff = distance.euclidean(a, b)
+        #     # print(diff)
+        #     # exit()
+        #     # print(diff)
+        #     # print(type(diff))
+        #     distances.append(diff)
+
+        # print(X)
+        # print(X.shape)
+        i = 0
+        j = 0
+        for a in X.T.iteritems():
+            for b in X.T.iteritems():
+                if j > i:
+                    diff = np.linalg.norm(a[1] - b[1])
+                    # diff = distance.euclidean(a[1], b[1])
+                    # print("return: ")
+                    # print(distance.euclidean(a[1], b[1]))
+                    # print(type(distance.euclidean(a[1], b[1])))
+                    # print(np.linalg.norm(a-b))
+                    # print("other")
+                    # print(type(np.linalg.norm(a[1] - b[1])))
+                    # print("a")
+                    # print(type(a))
+                    # print(a)
+                    #
+                    # print("a[0]")
+                    # print(type(a[0]))
+                    # print(a[0])
+                    #
+                    # print("a[1]")
+                    # print(type(a[1]))
+                    # print(a[1])
+                    #
+                    # print("b")
+                    # print(type(b))
+                    # print(b)
+                    print(str(a[0]) + ", " + str(b[0]))
+                    print(np.linalg.norm(a[1] - b[1]))
+                    distances.append([diff, a[0], b[0]])
+                    # print(a[0])
+                    # print(b[0])
+                    # exit()
+                j += 1
+            i += 1
+            j = 0
+
+        # for a, b in itertools.combinations(X.itertuples(), 2):
+        #     diff = distance.euclidean(a, b)
+        #     distances.append(diff)
+
+        # print("unsorted")
+        # for i in range(10):
+        #     print(distances[i])
+        #     # print(type(distances[i]))
+
+        distances = sorted(distances, key=lambda x: x[0])
+
+        # print("sorted")
+        # for i in range(10):
+        #     print(distances[i])
+        #     # print(type(distances[i]))
+        #
+        # # print(distances)
+        print("Largest distances: ")
+        x = len(distances) - 10
+        for i in distances[x:]:
+            print(i)
+        print("Smallest distances: ")
+        for i in distances[:10]:
+            print(i)
+
+        #
+        # # n = 5
+        # # print("Remove " + str(n) + " smallest values...")
+        # # distances = distances[n:]
+        # # print("Smallest distances: ")
+        # # for i in distances[:10]:
+        # #     print(i)
+
+        def find_nearest_idx(array, value):
+            return min(range(len(array)), key=lambda i: abs(array[i][0] - value)) + 1
+
+        min_distance = self.threshold
+        print("Remove distances less than " + str(min_distance) + "...")
+        x = find_nearest_idx(distances, min_distance)
+        print("threshold row: ")
+        print(distances[x])
+        removed = distances[:x]
+        print("pairs of twins to remove: " + str(len(removed)))
+        print(len(removed))
+        # distances = distances[x:]
+
+        # print("Smallest distances: ")
+        # for i in range(10):
+        #     print(removed[i])
+        # print("Largest distances: ")
+        # x = len(removed) - 10
+        # for i in removed[x:]:
+        #     print(i)
+
+        X_notwin = X.copy()
+        y_notwin = y.copy()
+
+        print(X_notwin)
+        print(X_notwin.drop(1))
+        # print(removed[i][1])
+        # print(type(removed[i][1]))
+        # print(X_notwin.index[removed[i][1]])
+        # print(type(X_notwin.index[removed[i][1]]))
+        # use removed[i][1] and removed[i][2] to remove the data twins from X for X_notwin and from y for y_notwin
+        for i in range(len(removed)):
+            print(str(i) + " X_notwin length " + str(len(X_notwin.index)) + " y_notwin length " + str(y_notwin.size))
+            if removed[i][1] < len(X_notwin.index) and removed[i][1] in X_notwin.index:
+                X_notwin.drop(removed[i][1], inplace=True)
+                print("removed " + str(removed[i][1]) + " with " + str(removed[i][0]))
+
+            if removed[i][1] < y_notwin.size and removed[i][1] in y_notwin.index:
+                y_notwin.drop(removed[i][1], inplace=True)
+                print("removed " + str(removed[i][1]) + " with " + str(removed[i][0]))
+
+            if removed[i][2] < len(X_notwin.index) and removed[i][2] in X_notwin.index:
+                X_notwin.drop(removed[i][2], inplace=True)
+                print("removed " + str(removed[i][2]) + " with " + str(removed[i][0]))
+
+            if removed[i][2] < y_notwin.size and removed[i][2] in y_notwin.index:
+                y_notwin.drop(removed[i][2], inplace=True)
+                print("removed " + str(removed[i][2]) + " with " + str(removed[i][0]))
+
+        print("final product?")
+        print(X)
+        print("to")
+        print(X_notwin)
+        print("\n")
+        print(y)
+        print("to")
+        print(y_notwin)
+        # For testing, doesn't do anything
+        # X_notwin = X
+        # y_notwin = y
+        # X_notwin = X
+        # y_notwin = y
+        # print("name to constructor")
+        # print(type(self.cv))
+        # print(dir(self.cv))
+        train, test = self.cv.split(X_notwin, y_notwin)
+        return [train, test]
+        # return [[train], [test]]
+
 
 class SplittersUnion(BaseEstimator, TransformerMixin):
     """
@@ -46,6 +226,7 @@ class SplittersUnion(BaseEstimator, TransformerMixin):
                 (numpy array), array of train and test indices
 
     """
+
     def __init__(self, splitters):
         self.splitters = splitters
 
@@ -55,6 +236,7 @@ class SplittersUnion(BaseEstimator, TransformerMixin):
     def split(self, X, y, groups=None):
         for splitter in self.splitters:
             yield from splitter.split(X, y, groups)
+
 
 class NoSplit(BaseEstimator, TransformerMixin):
     """
@@ -82,6 +264,7 @@ class NoSplit(BaseEstimator, TransformerMixin):
                 (numpy array), array of train and test indices (all data used as train and test for NoSplit)
 
     """
+
     def __init__(self):
         pass
 
@@ -91,6 +274,7 @@ class NoSplit(BaseEstimator, TransformerMixin):
     def split(self, X, y, groups=None):
         indices = np.arange(X.shape[0])
         return [[indices, indices]]
+
 
 class JustEachGroup(BaseEstimator, TransformerMixin):
     """
@@ -121,6 +305,7 @@ class JustEachGroup(BaseEstimator, TransformerMixin):
                 (numpy array), array of train and test indices
 
     """
+
     def __init__(self):
         pass
 
@@ -129,11 +314,12 @@ class JustEachGroup(BaseEstimator, TransformerMixin):
 
     def split(self, X, y, groups):
         n_groups = self.get_n_splits(groups=groups)
-        #print('n_groups', n_groups)
-        lpgo = ms.LeavePGroupsOut(n_groups=n_groups-1)
+        # print('n_groups', n_groups)
+        lpgo = ms.LeavePGroupsOut(n_groups=n_groups - 1)
         return lpgo.split(X, y, groups)
 
-#class WithoutElement(BaseEstimator, TransformerMixin):
+
+# class WithoutElement(BaseEstimator, TransformerMixin):
 #    " Train the model without each element, then test on the rows with that element "
 #    pass
 
@@ -176,7 +362,6 @@ class LeaveCloseCompositionsOut(ms.BaseCrossValidator):
 
         # Loop through each entry in X
         for i, x in enumerate(elem_fracs):
-
             # Get all the entries within the threshold distance of the test point
             too_close, = neigh.radius_neighbors([x], self.dist_threshold, return_distance=False)
 
@@ -187,6 +372,7 @@ class LeaveCloseCompositionsOut(ms.BaseCrossValidator):
 
     def get_n_splits(self, X=None, y=None, groups=None):
         return len(X)
+
 
 class LeaveOutPercent(BaseEstimator, TransformerMixin):
     """
@@ -217,6 +403,7 @@ class LeaveOutPercent(BaseEstimator, TransformerMixin):
                 (numpy array), array of train and test indices
 
     """
+
     def __init__(self, percent_leave_out=0.2, n_repeats=5):
         self.percent_leave_out = percent_leave_out
         self.n_repeats = n_repeats
@@ -228,9 +415,11 @@ class LeaveOutPercent(BaseEstimator, TransformerMixin):
         indices = range(X.shape[0])
         split = list()
         for i in range(self.n_repeats):
-            trains, tests = ms.train_test_split(indices, test_size=self.percent_leave_out, random_state=np.random.randint(1, 1000), shuffle=True)
+            trains, tests = ms.train_test_split(indices, test_size=self.percent_leave_out,
+                                                random_state=np.random.randint(1, 1000), shuffle=True)
             split.append((trains, tests))
         return split
+
 
 # Note: Bootstrap taken directly from sklearn Github (https://github.com/scikit-learn/scikit-learn/blob/0.11.X/sklearn/cross_validation.py)
 # which was necessary as it was later removed from more recent sklearn releases
@@ -307,7 +496,7 @@ class Bootstrap(object):
                 "removal in 0.12, use test_size instead",
                 DeprecationWarning, stacklevel=2)
         if (isinstance(train_size, float) and train_size >= 0.0
-                            and train_size <= 1.0):
+                and train_size <= 1.0):
             self.train_size = ceil(train_size * n)
         elif isinstance(train_size, int):
             self.train_size = train_size
@@ -319,7 +508,7 @@ class Bootstrap(object):
                              (self.train_size, n))
 
         if (isinstance(test_size, float) and test_size >= 0.0
-                    and test_size <= 1.0):
+                and test_size <= 1.0):
             self.test_size = ceil(test_size * n)
         elif isinstance(test_size, int):
             self.test_size = test_size
@@ -340,13 +529,13 @@ class Bootstrap(object):
             permutation = rng.permutation(self.n)
             ind_train = permutation[:self.train_size]
             ind_test = permutation[self.train_size:self.train_size
-                                   + self.test_size]
+                                                   + self.test_size]
 
             # bootstrap in each split individually
             train = rng.randint(0, self.train_size,
                                 size=(self.train_size,))
             test = rng.randint(0, self.test_size,
-                                size=(self.test_size,))
+                               size=(self.test_size,))
             yield ind_train[train], ind_test[test]
 
     def __repr__(self):
@@ -373,6 +562,7 @@ class Bootstrap(object):
             split.append((trains.tolist(), tests.tolist()))
         return split
 
+
 name_to_constructor = {
     # sklearn splitters:
     'Bootstrap': Bootstrap,
@@ -384,9 +574,9 @@ name_to_constructor = {
     'LeaveOneOut': ms.LeaveOneOut,
     'LeavePOut': ms.LeavePOut,
     'PredefinedSplit': ms.PredefinedSplit,
-    'RepeatedKFold': ms.RepeatedKFold, # NOTE: can use for repeated leave percent out / kfold
+    'RepeatedKFold': ms.RepeatedKFold,  # NOTE: can use for repeated leave percent out / kfold
     'RepeatedStratifiedKFold': ms.RepeatedStratifiedKFold,
-    'ShuffleSplit': ms.ShuffleSplit, # NOTE: like leave percent out
+    'ShuffleSplit': ms.ShuffleSplit,  # NOTE: like leave percent out
     'StratifiedKFold': ms.StratifiedKFold,
     'StratifiedShuffleSplit': ms.StratifiedShuffleSplit,
     'TimeSeriesSplit': ms.TimeSeriesSplit,
@@ -396,5 +586,6 @@ name_to_constructor = {
     'JustEachGroup': JustEachGroup,
     'LeaveCloseCompositionsOut': LeaveCloseCompositionsOut,
     'LeaveOutPercent': LeaveOutPercent,
-    #'WithoutElement': WithoutElement,
+    'LeaveOutTwinCV': LeaveOutTwinCV
+    # 'WithoutElement': WithoutElement,
 }
