@@ -25,174 +25,104 @@ class LeaveOutTwinCV(BaseEstimator, TransformerMixin):
     def __init__(self, threshold, cv):
         self.threshold = threshold
         self.cv = name_to_constructor[cv]
-        # self.cv = cv
-        # self.cv = "RepeatedKFold"
         print("LeaveOutTwinCV running...")
+        # print("self.cv: " + str(self.cv))
+        # print("self.threshold: " + str(self.threshold))
 
     def get_n_splits(self, X=None, y=None, groups=None):
         return 1
 
     def split(self, X, y, groups=None):
         # Here- remove twins from X, y data to get X_notwin, y_notwin
-
-        # find data twins
-        # for row in X.iterrows():
-        #     for row in X.iterrows():
-        #         # print("index: " + str(index) + " row:" + str(type(row)) + " " + str(row[1]))
-        #         distance.euclidean(row, row);
-        #         # print(str(index) + ": " + row[0] + str(index + 1) + ": ")
-        # for a, b in itertools.combinations(X.iterrows(), 2):
-        #     # print(type(a))
-        #     print(type(distance.euclidean(a, b)))
+        # intialize
         distances = []
-
-        # for a, b in itertools.combinations(X.itertuples(), 2):
-        #     diff = distance.euclidean(a, b)
-        #     # print(diff)
-        #     # exit()
-        #     # print(diff)
-        #     # print(type(diff))
-        #     distances.append(diff)
-
-        # print(X)
-        # print(X.shape)
         i = 0
         j = 0
-        for a in X.T.iteritems():
+        count = 0
+
+        # do every combination
+        # both a and b will be tuples of (name, Series)
+        for a in X.T.iteritems():  # possible change to iterrows but I don't want to break it
             for b in X.T.iteritems():
                 if j > i:
                     diff = np.linalg.norm(a[1] - b[1])
-                    # diff = distance.euclidean(a[1], b[1])
-                    # print("return: ")
-                    # print(distance.euclidean(a[1], b[1]))
-                    # print(type(distance.euclidean(a[1], b[1])))
-                    # print(np.linalg.norm(a-b))
-                    # print("other")
-                    # print(type(np.linalg.norm(a[1] - b[1])))
-                    # print("a")
-                    # print(type(a))
-                    # print(a)
-                    #
-                    # print("a[0]")
-                    # print(type(a[0]))
-                    # print(a[0])
-                    #
-                    # print("a[1]")
-                    # print(type(a[1]))
-                    # print(a[1])
-                    #
-                    # print("b")
-                    # print(type(b))
-                    # print(b)
-                    print(str(a[0]) + ", " + str(b[0]))
-                    print(np.linalg.norm(a[1] - b[1]))
+                    # print(diff)
                     distances.append([diff, a[0], b[0]])
-                    # print(a[0])
-                    # print(b[0])
                     # exit()
+                    # count += 1
                 j += 1
+            # print(diff)
             i += 1
             j = 0
 
-        # for a, b in itertools.combinations(X.itertuples(), 2):
-        #     diff = distance.euclidean(a, b)
-        #     distances.append(diff)
-
-        # print("unsorted")
-        # for i in range(10):
-        #     print(distances[i])
-        #     # print(type(distances[i]))
-
         distances = sorted(distances, key=lambda x: x[0])
+        # print(distances)
 
-        # print("sorted")
-        # for i in range(10):
-        #     print(distances[i])
-        #     # print(type(distances[i]))
-        #
-        # # print(distances)
-        print("Largest distances: ")
-        x = len(distances) - 10
-        for i in distances[x:]:
-            print(i)
-        print("Smallest distances: ")
-        for i in distances[:10]:
-            print(i)
+        def find_nearest_index(array, value):
+            for idx, n in enumerate(array):
+                # print(n[0])
+                if (n[0] >= value):
+                    return idx
+            return 0
 
-        #
-        # # n = 5
-        # # print("Remove " + str(n) + " smallest values...")
-        # # distances = distances[n:]
-        # # print("Smallest distances: ")
-        # # for i in distances[:10]:
-        # #     print(i)
-
-        def find_nearest_idx(array, value):
-            return min(range(len(array)), key=lambda i: abs(array[i][0] - value)) + 1
-
-        min_distance = self.threshold
-        print("Remove distances less than " + str(min_distance) + "...")
-        x = find_nearest_idx(distances, min_distance)
-        print("threshold row: ")
-        print(distances[x])
+        print("Remove distances less than " + str(self.threshold) + "...")
+        x = find_nearest_index(distances, self.threshold)
+        # print("before, threshold row, after: ")
+        # print(distances[x-1])
+        # print(distances[x])
+        # print(distances[x+1])
         removed = distances[:x]
-        print("pairs of twins to remove: " + str(len(removed)))
-        print(len(removed))
-        # distances = distances[x:]
-
-        # print("Smallest distances: ")
-        # for i in range(10):
-        #     print(removed[i])
-        # print("Largest distances: ")
-        # x = len(removed) - 10
-        # for i in removed[x:]:
-        #     print(i)
+        # print("pairs of twins to remove: " + str(len(removed)))
+        # print(len(removed))
 
         X_notwin = X.copy()
         y_notwin = y.copy()
 
-        print(X_notwin)
-        print(X_notwin.drop(1))
-        # print(removed[i][1])
-        # print(type(removed[i][1]))
-        # print(X_notwin.index[removed[i][1]])
-        # print(type(X_notwin.index[removed[i][1]]))
-        # use removed[i][1] and removed[i][2] to remove the data twins from X for X_notwin and from y for y_notwin
-        for i in range(len(removed)):
-            print(str(i) + " X_notwin length " + str(len(X_notwin.index)) + " y_notwin length " + str(y_notwin.size))
-            if removed[i][1] < len(X_notwin.index) and removed[i][1] in X_notwin.index:
-                X_notwin.drop(removed[i][1], inplace=True)
-                print("removed " + str(removed[i][1]) + " with " + str(removed[i][0]))
+        # remove
+        for i in removed:
+            if (i[1] in X_notwin.index):
+                X_notwin.drop(i[1], inplace=True)
+                print("removed index " + str(i[1]) + " with distance " + str(i[0]))
+            if (i[2] in X_notwin.index):
+                X_notwin.drop(i[2], inplace=True)
+                print("removed index " + str(i[2]) + " with distance " + str(i[0]))
+            if (i[1] in y_notwin.index):
+                y_notwin.drop(i[1], inplace=True)
+            if (i[2] in y_notwin.index):
+                y_notwin.drop(i[2], inplace=True)
 
-            if removed[i][1] < y_notwin.size and removed[i][1] in y_notwin.index:
-                y_notwin.drop(removed[i][1], inplace=True)
-                print("removed " + str(removed[i][1]) + " with " + str(removed[i][0]))
+        # see output
 
-            if removed[i][2] < len(X_notwin.index) and removed[i][2] in X_notwin.index:
-                X_notwin.drop(removed[i][2], inplace=True)
-                print("removed " + str(removed[i][2]) + " with " + str(removed[i][0]))
-
-            if removed[i][2] < y_notwin.size and removed[i][2] in y_notwin.index:
-                y_notwin.drop(removed[i][2], inplace=True)
-                print("removed " + str(removed[i][2]) + " with " + str(removed[i][0]))
-
-        print("final product?")
+        print("OUTCOMES")
+        print("\nX\n")
         print(X)
-        print("to")
+        print("\nto X_notwin\n")
         print(X_notwin)
-        print("\n")
+        print("\nY\n")
         print(y)
-        print("to")
+        print("\nto y_notwin\n")
         print(y_notwin)
+
         # For testing, doesn't do anything
         # X_notwin = X
         # y_notwin = y
         # X_notwin = X
         # y_notwin = y
-        # print("name to constructor")
+
+        print("accessing chosen cv to do after removing twins")
+
+        # debugging cv
         # print(type(self.cv))
-        # print(dir(self.cv))
-        train, test = self.cv.split(X_notwin, y_notwin)
+        # print(self.cv)
+        # print(str(self.cv))
+
+        # train, test = self.cv.split(X_notwin, y_notwin)
+        # train, test = ms.RepeatedKFold.split(X_notwin, y_notwin)
+        rkf = ms.RepeatedKFold(n_splits=3, n_repeats=3)
+        print("test")
+        print(type(rkf))
+        print(rkf.split(X_notwin, y_notwin))
+        train, test = rkf.split(X_notwin, y_notwin)
         return [train, test]
         # return [[train], [test]]
 
@@ -351,7 +281,8 @@ class LeaveCloseCompositionsOut(ms.BaseCrossValidator):
 
         # Generate the composition vectors
         frac_computer = ElementFraction()
-        elem_fracs = frac_computer.featurize_many(list(map(Composition, X)), pbar=False)
+        elem_fracs = frac_computer.featurize_many(
+            list(map(Composition, X)), pbar=False)
 
         # Generate the nearest-neighbor lookup tool
         neigh = NearestNeighbors(**self.nn_kwargs)
@@ -363,7 +294,8 @@ class LeaveCloseCompositionsOut(ms.BaseCrossValidator):
         # Loop through each entry in X
         for i, x in enumerate(elem_fracs):
             # Get all the entries within the threshold distance of the test point
-            too_close, = neigh.radius_neighbors([x], self.dist_threshold, return_distance=False)
+            too_close, = neigh.radius_neighbors(
+                [x], self.dist_threshold, return_distance=False)
 
             # Get the training set as "not these points"
             train_inds = np.setdiff1d(all_inds, too_close)
@@ -529,7 +461,7 @@ class Bootstrap(object):
             permutation = rng.permutation(self.n)
             ind_train = permutation[:self.train_size]
             ind_test = permutation[self.train_size:self.train_size
-                                                   + self.test_size]
+                                   + self.test_size]
 
             # bootstrap in each split individually
             train = rng.randint(0, self.train_size,
@@ -574,7 +506,8 @@ name_to_constructor = {
     'LeaveOneOut': ms.LeaveOneOut,
     'LeavePOut': ms.LeavePOut,
     'PredefinedSplit': ms.PredefinedSplit,
-    'RepeatedKFold': ms.RepeatedKFold,  # NOTE: can use for repeated leave percent out / kfold
+    # NOTE: can use for repeated leave percent out / kfold
+    'RepeatedKFold': ms.RepeatedKFold,
     'RepeatedStratifiedKFold': ms.RepeatedStratifiedKFold,
     'ShuffleSplit': ms.ShuffleSplit,  # NOTE: like leave percent out
     'StratifiedKFold': ms.StratifiedKFold,
