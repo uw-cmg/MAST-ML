@@ -24,8 +24,14 @@ class LeaveOutTwinCV(BaseEstimator, TransformerMixin):
 
     def __init__(self, threshold, cv):
         self.threshold = threshold
-        self.cv = name_to_constructor[cv]
-        print("LeaveOutTwinCV running...")
+
+        # self.cv = name_to_constructor[cv]() #replace this line with some snatch method like for _snatch_models_cv_for_hyperopt in mastml_driver.py
+        if cv is None:
+            self.cv = ms.RepeatedKFold()
+        else:
+            self.cv = cv
+        # self.cv = ms.RepeatedKFold()
+        # print("LeaveOutTwinCV running...")
         # print("self.cv: " + str(self.cv))
         # print("self.threshold: " + str(self.threshold))
 
@@ -65,7 +71,7 @@ class LeaveOutTwinCV(BaseEstimator, TransformerMixin):
                     return idx
             return 0
 
-        print("Remove distances less than " + str(self.threshold) + "...")
+        # print("Remove distances less than " + str(self.threshold) + "...")
         x = find_nearest_index(distances, self.threshold)
         # print("before, threshold row, after: ")
         # print(distances[x-1])
@@ -73,35 +79,42 @@ class LeaveOutTwinCV(BaseEstimator, TransformerMixin):
         # print(distances[x+1])
         removed = distances[:x]
         # print("pairs of twins to remove: " + str(len(removed)))
-        # print(len(removed))
+        # print(removed)
 
         X_notwin = X.copy()
         y_notwin = y.copy()
 
         # remove
-        for i in removed:
-            if (i[1] in X_notwin.index):
-                X_notwin.drop(i[1], inplace=True)
-                print("removed index " + str(i[1]) + " with distance " + str(i[0]))
-            if (i[2] in X_notwin.index):
-                X_notwin.drop(i[2], inplace=True)
-                print("removed index " + str(i[2]) + " with distance " + str(i[0]))
-            if (i[1] in y_notwin.index):
-                y_notwin.drop(i[1], inplace=True)
-            if (i[2] in y_notwin.index):
-                y_notwin.drop(i[2], inplace=True)
+        # num = 0
+        if (len(removed) != 0):
+            for i in removed:
+                if (i[1] in X_notwin.index):
+                    X_notwin.drop(i[1], inplace=True)
+                    # print(str(num) + ": " + "removed index " + str(i[1]) + " with distance " + str(i[0]))
+                    # num+=1
+                if (i[2] in X_notwin.index):
+                    X_notwin.drop(i[2], inplace=True)
+                    # print("removed index " + str(i[2]) + " with distance " + str(i[0]))
+                if (i[1] in y_notwin.index):
+                    y_notwin.drop(i[1], inplace=True)
+                if (i[2] in y_notwin.index):
+                    y_notwin.drop(i[2], inplace=True)
+        # num=0
 
         # see output
 
-        print("OUTCOMES")
-        print("\nX\n")
-        print(X)
-        print("\nto X_notwin\n")
-        print(X_notwin)
-        print("\nY\n")
-        print(y)
-        print("\nto y_notwin\n")
-        print(y_notwin)
+        y_notwin.reset_index(drop=True, inplace=True)
+        X_notwin.reset_index(drop=True, inplace=True)
+
+        # print("OUTCOMES")
+        # print("\nX\n")
+        # print(X)
+        # print("\nto X_notwin\n")
+        # print(X_notwin)
+        # print("\nY\n")
+        # print(y)
+        # print("\nto y_notwin\n")
+        # print(y_notwin)
 
         # For testing, doesn't do anything
         # X_notwin = X
@@ -109,7 +122,7 @@ class LeaveOutTwinCV(BaseEstimator, TransformerMixin):
         # X_notwin = X
         # y_notwin = y
 
-        print("accessing chosen cv to do after removing twins")
+        # "accessing chosen cv to do after removing twins"
 
         # debugging cv
         # print(type(self.cv))
@@ -118,13 +131,40 @@ class LeaveOutTwinCV(BaseEstimator, TransformerMixin):
 
         # train, test = self.cv.split(X_notwin, y_notwin)
         # train, test = ms.RepeatedKFold.split(X_notwin, y_notwin)
-        rkf = ms.RepeatedKFold(n_splits=3, n_repeats=3)
-        print("test")
-        print(type(rkf))
-        print(rkf.split(X_notwin, y_notwin))
-        train, test = rkf.split(X_notwin, y_notwin)
-        return [train, test]
+
+        # rkf = ms.RepeatedKFold(n_splits=2, n_repeats=2, random_state=36851234)
+        # rkf = ms.RepeatedKFold()
+
+        # print("X_notwin: " + str(X_notwin.shape))
+        # print("y_notwin: " + str(y_notwin.shape))
+
+        # for train_index, test_index in rkf.split(X_notwin, y_notwin):
+        # idx = 0
+        # for train_index, test_index in rkf.split(X_notwin):
+        #     print("TRAIN:", train_index, "TEST:", test_index)
+        #     # X_train, X_test = X[train_index], X[test_index]
+        #     # y_train, y_test = y[train_index], y[test_index]
+        #     train, test = X_notwin[train_index], y_notwin[test_index]
+        #     print(str(idx) + " shape")
+        #     print(train_index.shape)
+        #     print(test_index.shape)
+        #     idx+=1
+
+        # print(rkf.split(X_notwin, y_notwin))
+
+        # train, test = rkf.split(np.zeros((20, 30)), np.zeros((20, 1)))
+
+        # train, test = rkf.split(X_notwin, y_notwin)
+
+        # for train, test in rkf.split(X_notwin, y_notwin):
+        #     print("TRAIN:", train_index, "TEST:", test_index)
+        #     X_train, X_test = X_notwin[train_index], X_notwin[test_index]
+        #     y_train, y_test = y_notwin[train_index], y_notwin[test_index]
+        # return [train, test]
         # return [[train], [test]]
+
+        # return rkf.split(X_notwin, y_notwin)
+        return self.cv.split(X_notwin, y_notwin)
 
 
 class SplittersUnion(BaseEstimator, TransformerMixin):

@@ -247,6 +247,9 @@ def mastml_run(conf_path, data_path, outdir):
                              data_splitters.name_to_constructor,
                              'datasplit')
 
+    # Need to snatch CV objects for leaveouttwin splitter
+    splitters = _snatch_cv_for_leaveoutwin(conf['DataSplits'], splitters)
+
     def snatch_model_cv_and_scoring_for_learning_curve(models):
         models = OrderedDict(models)
         if conf['LearningCurve']:
@@ -610,7 +613,7 @@ def mastml_run(conf_path, data_path, outdir):
                     # Locate the grouping column among all dataframes
                     for df_ in [clustered_df, df, X_]:
                         if col in df_.columns:
-                            # FOund it!
+                            # Found it!
                             # Get groups for plotting first
                             splitter_to_group_column[name] = df_[col].values
                             if is_validation:
@@ -1261,6 +1264,20 @@ def _snatch_models_cv_for_hyperopt(conf, models, splitters):
 
     return conf['HyperOpt']
 
+def _snatch_cv_for_leaveoutwin(conf, splitters):
+    for splitter in splitters:
+        if splitter[0] == 'LeaveOutTwinCV':
+            # LeaveOutTwinCV is being used
+            # get cv being used in LeaveOutTwinCV
+            cv_used = splitter[1].cv
+            for splitter2 in splitters:
+                if splitter2[0] == cv_used:
+                    splitter[1].cv = splitter2[1]
+                    break
+            break
+    return splitters
+
+    return conf['DataSplits']
 
 def _snatch_splitters(splitters, conf_feature_selection):
     log.debug(f'cv, pre-snatching: \n{splitters}')
