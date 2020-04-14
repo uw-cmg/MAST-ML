@@ -689,6 +689,9 @@ def mastml_run(conf_path, data_path, outdir):
                             log.info(f"    Running splits for {subdir}")
                             subsubdir = join(outdir, subdir)
                             os.makedirs(subsubdir)
+                            # write removed files for LeaveOutTwinsCV
+                            if splitter_name == 'LeaveOutTwinCV':
+                                print('ol')
                             # NOTE: do_one_splitter is a big old function, does lots
                             runs = do_one_splitter(X, y, model_instance, subsubdir, trains_tests, grouping_data,
                                                    normalizer_instance)

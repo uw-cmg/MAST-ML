@@ -18,153 +18,140 @@ from scipy.spatial import distance
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.neighbors import NearestNeighbors
 from sklearn.utils import check_random_state
+from os.path import join
 
 
 class LeaveOutTwinCV(BaseEstimator, TransformerMixin):
 
     def __init__(self, threshold, cv):
         self.threshold = threshold
-
-        # self.cv = name_to_constructor[cv]() #replace this line with some snatch method like for _snatch_models_cv_for_hyperopt in mastml_driver.py
         if cv is None:
             self.cv = ms.RepeatedKFold()
         else:
             self.cv = cv
-        # self.cv = ms.RepeatedKFold()
-        # print("LeaveOutTwinCV running...")
-        # print("self.cv: " + str(self.cv))
-        # print("self.threshold: " + str(self.threshold))
 
     def get_n_splits(self, X=None, y=None, groups=None):
         return 1
 
     def split(self, X, y, groups=None):
         # Here- remove twins from X, y data to get X_notwin, y_notwin
-        # intialize
         distances = []
         i = 0
         j = 0
         count = 0
 
-        # do every combination
-        # both a and b will be tuples of (name, Series)
-        for a in X.T.iteritems():  # possible change to iterrows but I don't want to break it
+        # do every combination; both a and b will be tuples of (name, Series)
+        # with T, it will be (rowIndex, Series)
+        for a in X.T.iteritems():
             for b in X.T.iteritems():
                 if j > i:
                     diff = np.linalg.norm(a[1] - b[1])
-                    # print(diff)
                     distances.append([diff, a[0], b[0]])
-                    # exit()
-                    # count += 1
                 j += 1
-            # print(diff)
             i += 1
             j = 0
 
         distances = sorted(distances, key=lambda x: x[0])
-        # print(distances)
 
         def find_nearest_index(array, value):
             for idx, n in enumerate(array):
-                # print(n[0])
                 if (n[0] >= value):
                     return idx
             return 0
 
         # print("Remove distances less than " + str(self.threshold) + "...")
         x = find_nearest_index(distances, self.threshold)
-        # print("before, threshold row, after: ")
-        # print(distances[x-1])
-        # print(distances[x])
-        # print(distances[x+1])
         removed = distances[:x]
         # print("pairs of twins to remove: " + str(len(removed)))
-        # print(removed)
+        removed_indices = []
+        if (len(removed) != 0):
+            for i in removed:
+                if i[1] not in removed_indices:
+                    removed_indices.append(i[1])
+                if i[2] not in removed_indices:
+                    removed_indices.append(i[2])
+
+        removed_x = X.iloc[removed_indices]
+        removed_y = y.iloc[removed_indices]
 
         X_notwin = X.copy()
         y_notwin = y.copy()
 
+        # removed_x.describe().to_csv(join(outdir, 'removed_x.csv'))
+        # removed_y.describe().to_csv(join(outdir, 'removed_y.csv'))
+
+        # removed_x.to_csv(('/Users/averychan/Desktop/Root/projects/MAST-ML/code/MAST-ML/results/data_twins_results_04_14_01_23_12'+'/'+'removed_x.csv'))
+        # removed_y.to_csv(('/Users/averychan/Desktop/Root/projects/MAST-ML/code/MAST-ML/results/data_twins_results_04_14_01_23_12'+'/'+'removed_y.csv'))
+
         # remove
-        # num = 0
+        print('[HEYO] len of removed' + str(len(removed)))
         if (len(removed) != 0):
             for i in removed:
                 if (i[1] in X_notwin.index):
-                    X_notwin.drop(i[1], inplace=True)
+                    X_notwin = X_notwin.drop(i[1], inplace=False)
+                    # X_notwin.drop(i[1], inplace=True)
+                    # removed_x.append(X.loc[i[1]])
                     # print(str(num) + ": " + "removed index " + str(i[1]) + " with distance " + str(i[0]))
                     # num+=1
                 if (i[2] in X_notwin.index):
-                    X_notwin.drop(i[2], inplace=True)
+                    X_notwin = X_notwin.drop(i[2], inplace=False)
+                    # X_notwin.drop(i[2], inplace=True)
+                    # removed_x.append(X.loc[i[2]])
                     # print("removed index " + str(i[2]) + " with distance " + str(i[0]))
                 if (i[1] in y_notwin.index):
-                    y_notwin.drop(i[1], inplace=True)
+                    y_notwin = y_notwin.drop(i[1], inplace=False)
+                    # y_notwin.drop(i[1], inplace=True)
+                    # removed_y.append(y.loc[i[1]])
                 if (i[2] in y_notwin.index):
-                    y_notwin.drop(i[2], inplace=True)
+                    y_notwin = y_notwin.drop(i[2], inplace=False)
+                    # y_notwin.drop(i[2], inplace=True)
+                    # removed_y.append(y.loc[i[2]])
         # num=0
 
-        # see output
+        # print("REMOVED:\n\n")
+        # print('removed_x')
+        # print(removed_x)
+        # print('removed_y')
+        # print(removed_y)
+        # print("\n")
 
-        y_notwin.reset_index(drop=True, inplace=True)
-        X_notwin.reset_index(drop=True, inplace=True)
+        # X_notwin.reset_index(drop=True, inplace=True)
+        # y_notwin.reset_index(drop=True, inplace=True)
 
-        # print("OUTCOMES")
-        # print("\nX\n")
-        # print(X)
-        # print("\nto X_notwin\n")
+        # X_notwin.to_csv(('/Users/averychan/Desktop/Root/projects/MAST-ML/code/MAST-ML/results/data_twins_results_04_14_01_23_12'+'/'+'X_notwin.csv'))
+        # y_notwin.to_csv(('/Users/averychan/Desktop/Root/projects/MAST-ML/code/MAST-ML/results/data_twins_results_04_14_01_23_12'+'/'+'y_notwin.csv'))
+
+        # print('X_notwin')
         # print(X_notwin)
-        # print("\nY\n")
-        # print(y)
-        # print("\nto y_notwin\n")
+        # print('y_notwin')
         # print(y_notwin)
 
-        # For testing, doesn't do anything
-        # X_notwin = X
-        # y_notwin = y
-        # X_notwin = X
-        # y_notwin = y
+        train, test = self.cv.split(X_notwin, y_notwin)
 
-        # "accessing chosen cv to do after removing twins"
+        # print("\n\nINDICES\n\n")
+        # for i in X_notwin.index:
+        #     print(i)
+        old_index = X_notwin.index
 
-        # debugging cv
-        # print(type(self.cv))
-        # print(self.cv)
-        # print(str(self.cv))
+        # need to change split relative indices that range from 0 to removed length-1 to old indices
+        for split in train:
+            for idx, val in enumerate(split):
+                split[idx] = old_index[idx]
+        for split in test:
+            for idx, val in enumerate(split):
+                split[idx] = old_index[idx]
 
-        # train, test = self.cv.split(X_notwin, y_notwin)
-        # train, test = ms.RepeatedKFold.split(X_notwin, y_notwin)
+        print_removed_to_csv('/Users/averychan/Desktop/Root/projects/MAST-ML/code/MAST-ML/results/data_twins_results_04_14_01_23_12')
 
-        # rkf = ms.RepeatedKFold(n_splits=2, n_repeats=2, random_state=36851234)
-        # rkf = ms.RepeatedKFold()
+        # returning indices on a reduced size X_notwin and y_notwin, but those indices are being applied to the original dataset
+        return train, test
+        # return ms.RepeatedKFold(n_splits=2, n_repeats=1).split(X_notwin, y_notwin)
 
-        # print("X_notwin: " + str(X_notwin.shape))
-        # print("y_notwin: " + str(y_notwin.shape))
-
-        # for train_index, test_index in rkf.split(X_notwin, y_notwin):
-        # idx = 0
-        # for train_index, test_index in rkf.split(X_notwin):
-        #     print("TRAIN:", train_index, "TEST:", test_index)
-        #     # X_train, X_test = X[train_index], X[test_index]
-        #     # y_train, y_test = y[train_index], y[test_index]
-        #     train, test = X_notwin[train_index], y_notwin[test_index]
-        #     print(str(idx) + " shape")
-        #     print(train_index.shape)
-        #     print(test_index.shape)
-        #     idx+=1
-
-        # print(rkf.split(X_notwin, y_notwin))
-
-        # train, test = rkf.split(np.zeros((20, 30)), np.zeros((20, 1)))
-
-        # train, test = rkf.split(X_notwin, y_notwin)
-
-        # for train, test in rkf.split(X_notwin, y_notwin):
-        #     print("TRAIN:", train_index, "TEST:", test_index)
-        #     X_train, X_test = X_notwin[train_index], X_notwin[test_index]
-        #     y_train, y_test = y_notwin[train_index], y_notwin[test_index]
-        # return [train, test]
-        # return [[train], [test]]
-
-        # return rkf.split(X_notwin, y_notwin)
-        return self.cv.split(X_notwin, y_notwin)
+        def print_removed_to_csv(path):
+            removed_x.to_csv(join(path, 'removed_x.csv'))
+            removed_y.to_csv(join(path, 'removed_y.csv'))
+            # X_notwin.to_csv(join(path, 'X_notwin.csv'))
+            # y_notwin.to_csv(join(path, 'y_notwin.csv'))
 
 
 class SplittersUnion(BaseEstimator, TransformerMixin):
