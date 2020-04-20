@@ -41,9 +41,9 @@ class LeaveOutTwinCV(BaseEstimator, TransformerMixin):
         i = 0
         j = 0
         count = 0
+        log = logging.getLogger('mastml')
 
-        # do every combination; both a and b will be tuples of (name, Series)
-        # with T, it will be (rowIndex, Series)
+        # do every combination
         for a in X.T.iteritems():
             for b in X.T.iteritems():
                 if j > i:
@@ -61,10 +61,9 @@ class LeaveOutTwinCV(BaseEstimator, TransformerMixin):
                     return idx
             return 0
 
-        # print("Remove distances less than " + str(self.threshold) + "...")
         x = find_nearest_index(distances, self.threshold)
         removed = distances[:x]
-        # print("pairs of twins to remove: " + str(len(removed)))
+
         removed_indices = []
         if (len(removed) != 0):
             for i in removed:
@@ -84,80 +83,58 @@ class LeaveOutTwinCV(BaseEstimator, TransformerMixin):
             removed_x = pd.concat([removed_x, X_noinput], axis=1)
         removed_y = y.iloc[removed_indices]
         removed_y = pd.concat([removed_y, X_noinput], axis=1)
-        # removed_y.combine(X_noinput)
 
         X_notwin = X.copy()
         y_notwin = y.copy()
 
-        # remove
-        if (len(removed) != 0):
-            for i in removed:
-                if not self.allow_twins_in_train:
+        if not self.allow_twins_in_train:
+            # remove all twins in both X and y
+            if (len(removed) != 0):
+                for i in removed:
                     if (i[1] in X_notwin.index):
                         X_notwin = X_notwin.drop(i[1], inplace=False)
                     if (i[2] in X_notwin.index):
                         X_notwin = X_notwin.drop(i[2], inplace=False)
-                if not self.allow_twins_in_train:
                     if (i[1] in y_notwin.index):
                         y_notwin = y_notwin.drop(i[1], inplace=False)
                     if (i[2] in y_notwin.index):
                         y_notwin = y_notwin.drop(i[2], inplace=False)
 
-        # splits is generator, each split has a train, test tuple
+        # generate splits from chosen cv
         splits_generator = self.cv.split(X_notwin, y_notwin)
 
+        # change splits into list form so it can be mutated
         splits = list()
         for split in splits_generator:
             splits.append(list(split))
 
+        # need to change the split's relative indices to old indices
         old_index = X_notwin.index
-
-        # need to change split relative indices that range from 0 to removed length-1 to old indices
         for split in splits:
             for idx, val in enumerate(split[0]):
                 split[0][idx] = old_index[idx]
             for idx, val in enumerate(split[1]):
                 split[1][idx] = old_index[idx]
 
-        # remove from test if needed
-
-        # print(f"original train/split sizes")
-        # for split in splits:
-        #     print(f"train size is {len(split[0])}, test size is {len(split[1])}, total {len(split[0]) + len(split[1])}")
-
-        log = logging.getLogger('mastml')
-
         if self.allow_twins_in_train:
+            # remove from test sets
             if (len(removed) != 0):
-                # print(f'removing... : {removed}')
                 for split in splits:
                     orig_size = len(split[1])
                     for i in removed:
-                        # exit()
                         if (i[1] in split[1]):
-                            # remove occurances of i[1] in split[1] (test set)
                             split[1] = [x for x in split[1] if x != i[1]]
-                        # if (i[2] in split[1]):
-                        #     # remove occurances of i[2] in split[1] (test set)
-                        #     split[1] = [x for x in split[1] if x != i[2]]
-                        #     print(f"removing occurance of {i[2]} with distance {i[0]}")
                     red_size = len(split[1])
+                    # log percentage removed
                     log.info(f"{100-red_size/orig_size*100} percent of test data removed as twins")
                     if len(split[1]) == 0:
                         raise utils.MastError(f"Twin removal removed all test data. Threshold was {self.threshold}, consider reducing this value.")
                     # print(f"percent removed : {100-red_size/orig_size*100}")
 
-        # print(f"removed train/split sizes")
-        # for split in splits:
-        #     print(f"train size is {len(split[0])}, test size is {len(split[1])}, total {len(split[0]) + len(split[1])}")
-
+        # print removed data to a csv
         def print_removed_to_csv(path):
             removed_x.to_csv(join(path, 'removed_twins_X.csv'))
             removed_y.to_csv(join(path, 'removed_twins_y.csv'))
-            # X_notwin.to_csv(join(path, 'X_notwin.csv'))
-            # y_notwin.to_csv(join(path, 'y_notwin.csv'))
-
-        # print_removed_to_csv('/Users/averychan/Desktop/Root/projects/MAST-ML/code/MAST-ML/results')
         print_removed_to_csv(path)
 
         return splits
