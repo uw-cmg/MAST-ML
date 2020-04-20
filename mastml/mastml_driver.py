@@ -640,7 +640,11 @@ def mastml_run(conf_path, data_path, outdir):
 
                             # and use the no-validation one for the split
                             grouping_data = df_[col].values
-                            split = proper_index(instance.split(X_, y_, grouping_data))
+                            # if splitting with LeaveOutTwinCV, give access to path and X_noinput
+                            if name == "LeaveOutTwinCV":
+                                split = proper_index(instance.split(X_, y_, X_noinput, outdir, grouping_data))
+                            else:
+                                split = proper_index(instance.split(X_, y_, grouping_data))
                             pairs.append((name, split))
                             break
                     # If we didn't find that column anywhere, raise
@@ -651,7 +655,11 @@ def mastml_run(conf_path, data_path, outdir):
                 # If we don't need grouping column
                 else:
                     splitter_to_group_column[name] = None
-                    split = proper_index(instance.split(X_, y_))
+                    # if splitting with LeaveOutTwinCV, give access to path and X_noinput
+                    if name == "LeaveOutTwinCV":
+                        split = proper_index(instance.split(X_, y_, X_noinput, outdir))
+                    else:
+                        split = proper_index(instance.split(X_, y_))
                     pairs.append((name, split))
 
             return pairs, splitter_to_group_column
@@ -689,9 +697,6 @@ def mastml_run(conf_path, data_path, outdir):
                             log.info(f"    Running splits for {subdir}")
                             subsubdir = join(outdir, subdir)
                             os.makedirs(subsubdir)
-                            # write removed files for LeaveOutTwinsCV
-                            if splitter_name == 'LeaveOutTwinCV':
-                                print('ol')
                             # NOTE: do_one_splitter is a big old function, does lots
                             runs = do_one_splitter(X, y, model_instance, subsubdir, trains_tests, grouping_data,
                                                    normalizer_instance)
@@ -910,7 +915,6 @@ def mastml_run(conf_path, data_path, outdir):
                              path)
 
             return split_result
-
         split_results = []
         for split_num, (train_indices, test_indices) in enumerate(trains_tests):
             split_results.append(one_fit(split_num, train_indices, test_indices, normalizer_instance))
@@ -1268,19 +1272,23 @@ def _snatch_models_cv_for_hyperopt(conf, models, splitters):
     return conf['HyperOpt']
 
 def _snatch_cv_for_leaveoutwin(conf, splitters):
+    cv_found = False
     for splitter in splitters:
         if splitter[0] == 'LeaveOutTwinCV':
-            # LeaveOutTwinCV is being used
             # get cv being used in LeaveOutTwinCV
             cv_used = splitter[1].cv
-            for splitter2 in splitters:
+            for idx, splitter2 in enumerate(splitters):
                 if splitter2[0] == cv_used:
                     splitter[1].cv = splitter2[1]
+                    # remove the cv used from conf and splitters
+                    del splitters[idx]
+                    del conf[cv_used]
+                    cv_found = True
                     break
+            if (not cv_found):
+                raise utils.MastError(f"The cv {cv_used} specified for LeaveOutTwinCV, was not found in the [DataSplits] section")
             break
     return splitters
-
-    return conf['DataSplits']
 
 def _snatch_splitters(splitters, conf_feature_selection):
     log.debug(f'cv, pre-snatching: \n{splitters}')
