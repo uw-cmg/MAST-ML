@@ -108,13 +108,6 @@ class LeaveOutTwinCV(BaseEstimator, TransformerMixin):
         for split in splits_generator:
             splits.append(list(split))
 
-        # need to change the split's relative indices to old indices
-        old_index = X_notwin.index
-        for split in splits:
-            for idx, val in enumerate(split[0]):
-                split[0][idx] = old_index[idx]
-            for idx, val in enumerate(split[1]):
-                split[1][idx] = old_index[idx]
 
         if self.allow_twins_in_train:
             # remove from test sets
@@ -126,10 +119,18 @@ class LeaveOutTwinCV(BaseEstimator, TransformerMixin):
                             split[1] = [x for x in split[1] if x != i[1]]
                     red_size = len(split[1])
                     # log percentage removed
-                    log.info(f"{100-red_size/orig_size*100} percent of test data removed as twins")
+                    log.info(f"{100 - (red_size / orig_size * 100)} percent of test data removed as twins")
                     if len(split[1]) == 0:
                         raise utils.MastError(f"Twin removal removed all test data. Threshold was {self.threshold}, consider reducing this value.")
                     # print(f"percent removed : {100-red_size/orig_size*100}")
+        else:
+            # need to change the split's relative indices to old indices, because called split on data with indicies removed
+            old_index = X_notwin.index
+            for split in splits:
+                for idx, val in enumerate(split[0]):
+                    split[0][idx] = old_index[idx]
+                for idx, val in enumerate(split[1]):
+                    split[1][idx] = old_index[idx]
 
         # print removed data to a csv
         def print_removed_to_csv(path):
