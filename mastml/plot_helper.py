@@ -545,6 +545,31 @@ def plot_target_histogram(y_df, savepath, title='target histogram', label='targe
 
     fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
 
+def plot_data_twins_histogram(distances, path):
+    """
+    Method to plot the histogram of data twins
+
+    Args:
+
+        distances: (pandas dataframe), dataframe of data twins
+
+        path: (str), path to save the plotted precision-recall curve
+
+    Returns:
+
+        None
+
+    """
+    
+    x_align = 0.70
+    fig, ax = make_fig_ax(aspect_ratio=0.5, x_align=x_align)
+    num_bins = max(min(int(len(distances)*.01), 100), 10)
+    n, bins, patches = ax.hist(distances, num_bins, histtype="stepfilled", facecolor='blue', alpha=0.5)
+    ax.set_xlabel('Distances', fontsize=16)
+    ax.set_ylabel('Number of Occurrances', fontsize=16)
+    plot_stats(fig, dict(distances.describe()), x_align=x_align, y_align=0.90, fontsize=14)
+    fig.savefig(join(path, 'data_twins/distances.png'))
+
 @ipynb_maker
 def plot_predicted_vs_true(train_quad, test_quad, outdir, label):
     """

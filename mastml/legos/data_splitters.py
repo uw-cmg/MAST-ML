@@ -20,10 +20,35 @@ from sklearn.neighbors import NearestNeighbors
 from sklearn.utils import check_random_state
 from os.path import join
 import logging
-from mastml import utils
-
+from mastml import utils, plot_helper
+import os
 
 class LeaveOutTwinCV(BaseEstimator, TransformerMixin):
+    """
+    Class to remove data twins from the test data
+
+    Methods:
+        get_n_splits: method to calculate the number of splits to perform across all splitters
+
+            Args:
+                X: (numpy array), array of X features
+                y: (numpy array), array of y data
+                groups: (numpy array), array of group labels
+
+            Returns:
+                (int), the number 1 always
+
+        split: method to perform split into train indices and test indices
+
+            Args:
+                X: (numpy array), array of X features
+                y: (numpy array), array of y data
+                groups: (numpy array), array of group labels
+
+            Returns:
+                (numpy array), array of train and test indices
+
+    """
 
     def __init__(self, threshold, cv, allow_twins_in_train=True):
         self.threshold = threshold
@@ -63,6 +88,8 @@ class LeaveOutTwinCV(BaseEstimator, TransformerMixin):
 
         x = find_nearest_index(distances, self.threshold)
         removed = distances[:x]
+
+        distances = pd.DataFrame(distances, columns=['dist', 'a', 'b'])
 
         removed_indices = []
         if (len(removed) != 0):
@@ -122,7 +149,6 @@ class LeaveOutTwinCV(BaseEstimator, TransformerMixin):
                     log.info(f"{100 - (red_size / orig_size * 100)} percent of test data removed as twins")
                     if len(split[1]) == 0:
                         raise utils.MastError(f"Twin removal removed all test data. Threshold was {self.threshold}, consider reducing this value.")
-                    # print(f"percent removed : {100-red_size/orig_size*100}")
         else:
             # need to change the split's relative indices to old indices, because called split on data with indicies removed
             old_index = X_notwin.index
@@ -134,8 +160,15 @@ class LeaveOutTwinCV(BaseEstimator, TransformerMixin):
 
         # print removed data to a csv
         def print_removed_to_csv(path):
-            removed_x.to_csv(join(path, 'removed_twins_X.csv'))
-            removed_y.to_csv(join(path, 'removed_twins_y.csv'))
+            os.mkdir(join(path, 'data_twins'))
+            # write other files
+            removed_x.to_csv(join(path, 'data_twins/removed_twins_X.csv'))
+            removed_y.to_csv(join(path, 'data_twins/removed_twins_y.csv'))
+            removed_x.describe().to_csv(join(path, 'data_twins/removed_twins_X_info.csv'))
+            removed_y.describe().to_csv(join(path, 'data_twins/removed_twins_y_info.csv'))
+            # make histogram
+            plot_helper.plot_data_twins_histogram(distances['dist'], path)
+
         print_removed_to_csv(path)
 
         return splits
