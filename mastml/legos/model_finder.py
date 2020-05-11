@@ -10,7 +10,12 @@ import sklearn.base
 import sklearn.utils.testing
 from sklearn.externals import joblib
 import numpy as np
-import xgboost as xgb
+
+# Sometimes xgboost is hard to install so make it optional
+try:
+    import xgboost as xgb
+except:
+    pass
 
 import keras
 from keras.models import model_from_json
@@ -221,16 +226,25 @@ class ModelImport():
     def predict(self, X):
         return self.model.predict(X)
 
-custom_models = {
-    'AlwaysFive': AlwaysFive,
-    'RandomGuesser': RandomGuesser,
-    'ModelImport': ModelImport,
-    'XGBRegressor': xgb.XGBRegressor,
-    'XGBClassifier': xgb.XGBClassifier,
-    'KerasRegressor': KerasRegressor
-    #'DNNClassifier': keras_models.DNNClassifier
-}
-
+# Optional to have xgboost working
+try:
+    custom_models = {
+        'AlwaysFive': AlwaysFive,
+        'RandomGuesser': RandomGuesser,
+        'ModelImport': ModelImport,
+        'XGBRegressor': xgb.XGBRegressor,
+        'XGBClassifier': xgb.XGBClassifier,
+        'KerasRegressor': KerasRegressor
+        #'DNNClassifier': keras_models.DNNClassifier
+    }
+except NameError:
+    custom_models = {
+        'AlwaysFive': AlwaysFive,
+        'RandomGuesser': RandomGuesser,
+        'ModelImport': ModelImport,
+        'KerasRegressor': KerasRegressor
+        # 'DNNClassifier': keras_models.DNNClassifier
+    }
 name_to_constructor.update(custom_models)
 
 def find_model(model_name):
