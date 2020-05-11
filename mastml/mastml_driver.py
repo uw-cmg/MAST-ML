@@ -9,6 +9,7 @@ import shutil
 import logging
 import warnings
 import re
+import json
 from datetime import datetime
 from collections import OrderedDict
 from os.path import join # We use join tons
@@ -26,10 +27,11 @@ from mastml import conf_parser, data_loader, html_helper, plot_helper, utils, le
 from mastml.legos import (data_splitters, feature_generators, feature_normalizers,
                     feature_selectors, model_finder, util_legos, randomizers, hyper_opt)
 from mastml.legos import clusterers as legos_clusterers
+from mastml.legos import model_hosting
 
 log = logging.getLogger('mastml')
 
-def main(conf_path, data_path, outdir, verbosity=0):
+def main(conf_path, data_path, outdir=join(os.getcwd(), 'results_mastml_run'), verbosity=0):
     """
     This method is responsible for setting up the initial stage of the MAST-ML run, such as parsing input directories to
     designate where data will be imported and results saved to, as well as creation of the MAST-ML run log.
@@ -52,7 +54,7 @@ def main(conf_path, data_path, outdir, verbosity=0):
 
     conf_path, data_path, outdir = check_paths(conf_path, data_path, outdir)
 
-    utils.activate_logging(outdir, (conf_path, data_path, outdir), verbosity=verbosity)
+    utils.activate_logging(outdir, (str(conf_path), str(data_path), outdir), verbosity=verbosity)
 
     if verbosity >= 1:
         warnings.simplefilter('error') # turn warnings into errors
@@ -95,21 +97,36 @@ def mastml_run(conf_path, data_path, outdir):
 
     # Copy the original input files to the output directory for easy reference
     log.info("Copying input files to output directory...")
-    shutil.copy2(conf_path, outdir)
-    shutil.copy2(data_path, outdir)
+    if type(conf_path) is str:
+        shutil.copy2(conf_path, outdir)
+    elif type(conf_path) is dict:
+        with open(join(outdir, 'conf_file.conf'), 'w') as f:
+            json.dump(conf_path, f)
+
+    if type(data_path) is str:
+        shutil.copy2(data_path, outdir)
+    elif type(data_path) is type(pd.DataFrame()):
+        data_path.to_excel(join(outdir, 'input_data.xlsx'), index=False)
+        data_path = join(outdir, 'input_data.xlsx')
 
     # Load in and parse the configuration and data files:
-    conf = conf_parser.parse_conf_file(conf_path)
+    if type(conf_path) is str:
+        conf = conf_parser.parse_conf_file(conf_path, from_dict=False)
+    elif type(conf_path) is dict:
+        conf = conf_parser.parse_conf_file(conf_path, from_dict=True)
+    else:
+        raise TypeError('Your conf_path must either be a path string to a .conf file or a dict directly containing the config info')
+
     MiscSettings = conf['MiscSettings']
     is_classification = conf['is_classification']
     # The df is used by feature generators, clusterers, and grouping_column to 
     # create more features for x.
     # X is model input, y is target feature for model
     df, X, X_noinput, X_grouped, y = data_loader.load_data(data_path,
-                                     conf['GeneralSetup']['input_features'],
-                                     conf['GeneralSetup']['input_target'],
-                                     conf['GeneralSetup']['input_grouping'],
-                                     conf['GeneralSetup']['input_other'])
+                                         conf['GeneralSetup']['input_features'],
+                                         conf['GeneralSetup']['input_target'],
+                                         conf['GeneralSetup']['input_grouping'],
+                                         conf['GeneralSetup']['input_other'])
     if not conf['GeneralSetup']['input_grouping']:
         X_grouped = pd.DataFrame()
 
@@ -444,6 +461,9 @@ def mastml_run(conf_path, data_path, outdir):
                 # Save off the normalizer as .pkl for future import
                 joblib.dump(normalizer, join(dirname, str(normalizer.__class__.__name__) + ".pkl"))
 
+                # HERE- find data twins
+
+
                 # Put learning curve here??
                 if conf['LearningCurve']:
                     learning_curve_estimator = conf['LearningCurve']['estimator']
@@ -486,6 +506,8 @@ def mastml_run(conf_path, data_path, outdir):
                 # Run feature selection
                 for selector_name, selector_instance in selectors:
                     log.info(f"    Running selector {selector_name} ...")
+                    dirname = join(outdir, normalizer_name, selector_name)
+                    os.mkdir(dirname)
                     # NOTE: Changed from .fit_transform to .fit.transform
                     # because PCA.fit_transform doesn't call PCA.transform
                     if selector_instance.__class__.__name__ == 'MASTMLFeatureSelector':
@@ -502,6 +524,8 @@ def mastml_run(conf_path, data_path, outdir):
                                 if X_novalidation_normalized_reset[realfeature].equals(X_selected[feature]):
                                     feature_name_dict[feature] = realfeature
                         X_selected.rename(columns= feature_name_dict, inplace=True)
+                    elif selector_instance.__class__.__name__ == 'PearsonSelector':
+                        X_selected = selector_instance.fit(X=X_novalidation_normalized, savepath=dirname, y=y_novalidation).transform(X_novalidation_normalized)
                     else:
                         X_selected = selector_instance.fit(X_novalidation_normalized, y_novalidation).transform(X_novalidation_normalized)
                     features_selected = X_selected.columns.tolist()
@@ -509,8 +533,7 @@ def mastml_run(conf_path, data_path, outdir):
                     # left out of the feature selection process.
                     X_selected = X_normalized[features_selected]
                     log.info("    Saving selected features to csv...")
-                    dirname = join(outdir, normalizer_name, selector_name)
-                    os.mkdir(dirname)
+
                     pd.concat([X_selected, X_noinput, y], 1).to_csv(join(dirname, "selected.csv"), index=False)
                     #TODO: fix this naming convention
                     triples.append((normalizer_name, normalizer_instance_y, selector_name, X_selected))
@@ -721,7 +744,10 @@ def mastml_run(conf_path, data_path, outdir):
             #    raise utils.InvalidValue('MAST-ML has detected an error with one of your feature vectors which has caused an error'
             #                       ' in model fitting.')
             # Save off the trained model as .pkl for future import
-            joblib.dump(model, join(path, str(model.__class__.__name__)+"_split_"+str(split_num)+".pkl"))
+
+            # TODO: note that saving keras models has broken with updated keras version
+            if 'KerasRegressor' not in model.__class__.__name__:
+                joblib.dump(model, os.path.abspath(join(path, str(model.__class__.__name__)+"_split_"+str(split_num)+".pkl")))
 
             if is_classification:
                 # For classification, need probabilty of prediction to make accurate ROC curve (and other predictions??).
@@ -755,9 +781,9 @@ def mastml_run(conf_path, data_path, outdir):
                     train_y = pd.Series(normalizer_instance.inverse_transform(train_y))
                     test_y = pd.Series(normalizer_instance.inverse_transform(test_y))
 
-                # Here- for Random Forest output feature importances
-                if model.__class__.__name__=='RandomForestRegressor':
-                    pd.concat([pd.DataFrame(X.columns), pd.DataFrame(model.feature_importances_)],  1).to_csv(join(path, 'randomforest_featureimportances.csv'), index=False)
+                # Here- for Random Forest, Extra Trees, and Gradient Boosters output feature importances
+                if model.__class__.__name__ in ['RandomForestRegressor', 'ExtraTreesRegressor', 'GradientBoostingRegressor']:
+                    pd.concat([pd.DataFrame(X.columns), pd.DataFrame(model.feature_importances_)],  1).to_excel(join(path, str(model.__class__.__name__)+'_featureimportances.xlsx'), index=False)
 
             # here is where we need to collect validation stats
             if is_validation:
@@ -958,6 +984,8 @@ def mastml_run(conf_path, data_path, outdir):
                          main_path)
 
         def make_average_error_plots(main_path):
+            has_model_errors = False
+            has_model_errors_validation = False
             dfs_cumulative_errors = list()
             dfs_cumulative_errors_validation = list()
             for split_folder, _, __ in os.walk(main_path):
@@ -976,6 +1004,7 @@ def mastml_run(conf_path, data_path, outdir):
                 df_cumulative_errors_validation = pd.concat(dfs_cumulative_errors_validation)
             # Need to get average values of df columns by averagin over groups of Y True values (since each Y True should
             # only appear once)
+            # TODO: change this to get values explicitly from each split and then average, as some Y True values may have same value and appear multiple times
             df_normalized_errors_avgvalues = df_cumulative_errors.groupby('Y True').mean().reset_index()
             y_true = np.array(df_normalized_errors_avgvalues['Y True'])
             y_pred = np.array(df_normalized_errors_avgvalues['Y Pred'])
@@ -986,12 +1015,17 @@ def mastml_run(conf_path, data_path, outdir):
             try:
                 average_error_values = np.array(df_normalized_errors_avgvalues['error_bars_down'])
                 has_model_errors = True
-                if is_validation:
-                    average_error_values_validation = np.array(df_normalized_errors_avgvalues_validation['error_bars_down'])
-                    has_model_errors_validation = True
             except:
                 average_error_values = None
                 has_model_errors = False
+
+            if is_validation:
+                try:
+                    average_error_values_validation = np.array(df_normalized_errors_avgvalues_validation['error_bars_down'])
+                    has_model_errors_validation = True
+                except:
+                    average_error_values_validation = None
+                    has_model_errors_validation = False
 
             plot_helper.plot_average_cumulative_normalized_error(y_true=y_true, y_pred=y_pred,
                                                                  savepath=join(main_path,'test_cumulative_normalized_error_average_allsplits.png'),
@@ -1061,6 +1095,21 @@ def mastml_run(conf_path, data_path, outdir):
 
     log.info("Making html file of all runs stats...")
     _save_all_runs(runs, outdir)
+
+    # Here- do DLHub model hosting if have section
+    if bool(conf['ModelHosting']) != False: # dict is empty
+        model_hosting.host_model(model_path=conf['ModelHosting']['model_path'],
+                                 preprocessor_path=conf['ModelHosting']['preprocessor_path'],
+                                 training_data_path=conf['ModelHosting']['training_data_path'],
+                                 exclude_columns=conf['GeneralSetup']['input_other']+[conf['GeneralSetup']['input_target']],
+                                 set_title=conf['ModelHosting']['set_title'],
+                                 model_name=conf['ModelHosting']['model_name'],
+                                 serialization_method="joblib",
+                                 model_type="scikit-learn")
+        log.info('Finished uploading model to DLHub...')
+
+    log.info('Your MAST-ML run has finished successfully!')
+    return
 
 def _instantiate(kwargs_dict, name_to_constructor, category, X_grouped=None, X_indices=None):
     """
@@ -1375,16 +1424,26 @@ def check_paths(conf_path, data_path, outdir):
 
 
     # Check conf path:
-    if os.path.splitext(conf_path)[1] != '.conf':
-        raise utils.FiletypeError(f"Conf file does not end in .conf: '{conf_path}'")
-    if not os.path.isfile(conf_path):
-        raise utils.FileNotFoundError(f"No such file: {conf_path}")
+    if type(conf_path) is str:
+        if os.path.splitext(conf_path)[1] != '.conf':
+            raise utils.FiletypeError(f"Conf file does not end in .conf: '{conf_path}'")
+        if not os.path.isfile(conf_path):
+            raise utils.FileNotFoundError(f"No such file: {conf_path}")
+    elif type(conf_path) is dict:
+        pass
+    else:
+        raise TypeError('Your conf_path must be either a string to .conf file path or a dict')
 
     # Check data path:
-    if os.path.splitext(data_path)[1] not in ['.csv', '.xlsx']:
-        raise utils.FiletypeError(f"Data file does not end in .csv or .xlsx: '{data_path}'")
-    if not os.path.isfile(data_path):
-        raise utils.FileNotFoundError(f"No such file: {data_path}")
+    if type(data_path) is str:
+        if os.path.splitext(data_path)[1] not in ['.csv', '.xlsx']:
+            raise utils.FiletypeError(f"Data file does not end in .csv or .xlsx: '{data_path}'")
+        if not os.path.isfile(data_path):
+            raise utils.FileNotFoundError(f"No such file: {data_path}")
+    elif type(data_path) is type(pd.DataFrame()):
+        pass
+    else:
+        raise TypeError('Your data_path must be either a string to .csv or .xlsx data file or a pd.DataFrame object')
 
     # Check output directory:
 
