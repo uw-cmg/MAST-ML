@@ -105,17 +105,21 @@ class KerasRegressor():
         for layer_dict, layer_val in model_vals.items():
             if (layer_dict != 'FitParams'):
                 layer_type = layer_val.get('layer_type')
-                neuron_num = int(layer_val.get('neuron_num'))
-                if (layer_dict == 'Layer1'):
-                    input_dim = int(layer_val.get('input_dim'))
-                kernel_initializer = layer_val.get('kernel_initializer')
-                activation = layer_val.get('activation')
-
+                layer_name_asstr = layer_type
+                if layer_name_asstr == 'Dense':
+                    neuron_num = int(layer_val.get('neuron_num'))
+                    if (layer_dict == 'Layer1'):
+                        input_dim = int(layer_val.get('input_dim'))
+                    kernel_initializer = layer_val.get('kernel_initializer')
+                    activation = layer_val.get('activation')
+                elif layer_name_asstr == 'Dropout':
+                    rate = float(layer_val.get('rate'))
                 for layer_name, cls in inspect.getmembers(keras.layers, inspect.isclass):
-                    if layer_type == 'Dense':
-                        layer_type = getattr(keras.layers, layer_type)  # (neuron_num)
+                    layer_type = getattr(keras.layers, layer_name_asstr)  # (neuron_num)
 
             else:
+                if layer_val.get('rate'):
+                    self.rate = float(layer_val.get('rate'))
                 if layer_val.get('epochs'):
                     self.epochs = int(layer_val.get('epochs'))
                 else:
@@ -155,7 +159,10 @@ class KerasRegressor():
                                      activation=activation))
 
             else:
-                model.add(layer_type(neuron_num, kernel_initializer=kernel_initializer, activation=activation))
+                if layer_name_asstr == 'Dense':
+                    model.add(layer_type(neuron_num, kernel_initializer=kernel_initializer, activation=activation))
+                if layer_name_asstr == 'Dropout':
+                    model.add(layer_type(rate=rate))
 
         return model
 
