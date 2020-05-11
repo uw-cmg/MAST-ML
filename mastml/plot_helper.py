@@ -33,8 +33,7 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure, figaspect
 from matplotlib.animation import FuncAnimation
 from matplotlib.font_manager import FontProperties
-import matplotlib.mlab as mlab
-from scipy.stats import gaussian_kde
+from scipy.stats import gaussian_kde, norm
 from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
 
@@ -1223,7 +1222,7 @@ def plot_normalized_error(y_true, y_pred, savepath, model, rf_error_method, rf_e
     normalized_residuals = (y_true_-y_pred_)/np.std(y_true_-y_pred_)
     density_residuals = gaussian_kde(normalized_residuals)
     x = np.linspace(mu - 5 * sigma, mu + 5 * sigma, y_true_.shape[0])
-    ax.plot(x, mlab.normpdf(x, mu, sigma), linewidth=4, color='blue', label="Analytical Gaussian")
+    ax.plot(x, norm.pdf(x, mu, sigma), linewidth=4, color='blue', label="Analytical Gaussian")
     ax.plot(x, density_residuals(x), linewidth=4, color='green', label="Model Residuals")
     maxx = 5
     minn = -5
@@ -1232,24 +1231,24 @@ def plot_normalized_error(y_true, y_pred, savepath, model, rf_error_method, rf_e
         err_avg = [(abs(e1)+abs(e2))/2 for e1, e2 in zip(err_up, err_down)]
         model_errors = (y_true_-y_pred_)/err_avg
         density_errors = gaussian_kde(model_errors)
-        maxy = max(max(density_residuals(x)), max(mlab.normpdf(x, mu, sigma)), max(density_errors(x)))
-        miny = min(min(density_residuals(x)), min(mlab.normpdf(x, mu, sigma)), max(density_errors(x)))
+        maxy = max(max(density_residuals(x)), max(norm.pdf(x, mu, sigma)), max(density_errors(x)))
+        miny = min(min(density_residuals(x)), min(norm.pdf(x, mu, sigma)), max(density_errors(x)))
         ax.plot(x, density_errors(x), linewidth=4, color='purple', label="Model Errors")
         # Save data to csv file
         data_dict = {"Y True": y_true_, "Y Pred": y_pred_, "Plotted x values": x, "error_bars_up": err_up,
                      "error_bars_down": err_down, "error_avg": err_avg,
-                     "analytical gaussian (plotted y blue values)": mlab.normpdf(x, mu, sigma),
+                     "analytical gaussian (plotted y blue values)": norm.pdf(x, mu, sigma),
                      "model residuals": residuals,
                      "model normalized residuals (plotted y green values)": density_residuals(x),
                      "model errors (plotted y purple values)": density_errors(x)}
         pd.DataFrame(data_dict).to_csv(savepath.split('.png')[0]+'.csv')
     else:
         # Save data to csv file
-        data_dict = {"Y True": y_true, "Y Pred": y_pred, "x values": x, "analytical gaussian": mlab.normpdf(x, mu, sigma),
+        data_dict = {"Y True": y_true, "Y Pred": y_pred, "x values": x, "analytical gaussian": norm.pdf(x, mu, sigma),
                     "model residuals": density_residuals(x)}
         pd.DataFrame(data_dict).to_csv(savepath.split('.png')[0]+'.csv')
-        maxy = max(max(density_residuals(x)), max(mlab.normpdf(x, mu, sigma)))
-        miny = min(min(density_residuals(x)), min(mlab.normpdf(x, mu, sigma)))
+        maxy = max(max(density_residuals(x)), max(norm.pdf(x, mu, sigma)))
+        miny = min(min(density_residuals(x)), min(norm.pdf(x, mu, sigma)))
 
     ax.legend(loc=0, fontsize=12, frameon=False)
     ax.set_xlabel(r"$\mathrm{x}/\mathit{\sigma}$", fontsize=18)
@@ -1494,7 +1493,7 @@ def plot_average_normalized_error(y_true, y_pred, savepath, has_model_errors, er
     normalized_residuals = (y_true-y_pred)/np.std(y_true-y_pred)
     density_residuals = gaussian_kde(normalized_residuals)
     x = np.linspace(mu - 5 * sigma, mu + 5 * sigma, y_true.shape[0])
-    ax.plot(x, mlab.normpdf(x, mu, sigma), linewidth=4, color='blue', label="Analytical Gaussian")
+    ax.plot(x, norm.pdf(x, mu, sigma), linewidth=4, color='blue', label="Analytical Gaussian")
     ax.plot(x, density_residuals(x), linewidth=4, color='green', label="Model Residuals")
     maxx = 5
     minn = -5
@@ -1502,23 +1501,23 @@ def plot_average_normalized_error(y_true, y_pred, savepath, has_model_errors, er
     if has_model_errors:
         model_errors = (y_true-y_pred)/err_avg
         density_errors = gaussian_kde(model_errors)
-        maxy = max(max(density_residuals(x)), max(mlab.normpdf(x, mu, sigma)), max(density_errors(x)))
-        miny = min(min(density_residuals(x)), min(mlab.normpdf(x, mu, sigma)), min(density_errors(x)))
+        maxy = max(max(density_residuals(x)), max(norm.pdf(x, mu, sigma)), max(density_errors(x)))
+        miny = min(min(density_residuals(x)), min(norm.pdf(x, mu, sigma)), min(density_errors(x)))
         ax.plot(x, density_errors(x), linewidth=4, color='purple', label="Model Errors")
         # Save data to csv file
         data_dict = {"Y True": y_true, "Y Pred": y_pred, "Plotted x values": x, "Model errors": err_avg,
-                     "analytical gaussian (plotted y blue values)": mlab.normpdf(x, mu, sigma),
+                     "analytical gaussian (plotted y blue values)": norm.pdf(x, mu, sigma),
                      "model residuals": residuals,
                      "model normalized residuals (plotted y green values)": density_residuals(x),
                      "model errors (plotted y purple values)": density_errors(x)}
         pd.DataFrame(data_dict).to_csv(savepath.split('.png')[0]+'.csv')
     else:
         # Save data to csv file
-        data_dict = {"Y True": y_true, "Y Pred": y_pred, "x values": x, "analytical gaussian": mlab.normpdf(x, mu, sigma),
+        data_dict = {"Y True": y_true, "Y Pred": y_pred, "x values": x, "analytical gaussian": norm.pdf(x, mu, sigma),
                     "model residuals": density_residuals(x)}
         pd.DataFrame(data_dict).to_csv(savepath.split('.png')[0]+'.csv')
-        maxy = max(max(density_residuals(x)), max(mlab.normpdf(x, mu, sigma)))
-        miny = min(min(density_residuals(x)), min(mlab.normpdf(x, mu, sigma)))
+        maxy = max(max(density_residuals(x)), max(norm.pdf(x, mu, sigma)))
+        miny = min(min(density_residuals(x)), min(norm.pdf(x, mu, sigma)))
 
     ax.legend(loc=0, fontsize=12, frameon=False)
     ax.set_xlabel(r"$\mathrm{x}/\mathit{\sigma}$", fontsize=18)
