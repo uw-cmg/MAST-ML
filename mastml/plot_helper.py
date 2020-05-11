@@ -251,13 +251,18 @@ def make_train_test_plots(run, path, is_classification, label, model, train_X, t
                                  title=title, label=label)
 
 def make_error_plots(run, path, is_classification, label, model, train_X, test_X, rf_error_method, rf_error_percentile,
-                     groups=None):
+                     is_validation, validation_column_name, validation_X, groups=None):
 
     y_train_true, y_train_pred, y_test_true = \
         run['y_train_true'], run['y_train_pred'], run['y_test_true']
     y_test_pred, train_metrics, test_metrics = \
         run['y_test_pred'], run['train_metrics'], run['test_metrics']
     train_groups, test_groups = run['train_groups'], run['test_groups']
+    if is_validation:
+        y_validation_pred, y_validation_true, prediction_metrics = \
+            run['y_validation_pred'+'_'+str(validation_column_name)], \
+            run['y_validation_true'+'_'+str(validation_column_name)], \
+            run['prediction_metrics']
 
     if is_classification:
         logger.debug('There is no error distribution plotting for classification problems, just passing through...')
@@ -278,6 +283,16 @@ def make_error_plots(run, path, is_classification, label, model, train_X, test_X
         title = 'test_cumulative_normalized_error'
         plot_cumulative_normalized_error(y_test_true, y_test_pred, join(path, title+'.png'), model, rf_error_method,
                                          rf_error_percentile, X=test_X, Xtrain=train_X, Xtest=test_X)
+
+        # HERE, add your RMS residual vs. error plot function
+
+        if is_validation:
+            title = 'validation_cumulative_normalized_error'
+            plot_cumulative_normalized_error(y_validation_true, y_validation_pred, join(path, title+'.png'), model, rf_error_method,
+                                             rf_error_percentile, X=validation_X, Xtrain=train_X, Xtest=test_X)
+            title = 'validation_normalized_error'
+            plot_normalized_error(y_validation_true, y_validation_pred, join(path, title + '.png'), model, rf_error_method,
+                                  rf_error_percentile, X=validation_X, Xtrain=train_X, Xtest=test_X)
 
 @ipynb_maker
 def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False, title='Confusion matrix', cmap=plt.cm.Blues):
@@ -1100,7 +1115,7 @@ def prediction_intervals(model, X, rf_error_method, rf_error_percentile, Xtrain,
     err_down = list()
     err_up = list()
     X_aslist = X.values.tolist()
-    if model.__class__.__name__ in ['RandomForestRegressor', 'GradientBoostingRegressor']:
+    if model.__class__.__name__ in ['RandomForestRegressor', 'GradientBoostingRegressor', 'ExtraTreesRegressor']:
 
         #if rf_error_method == 'jackknife':
         #    #new method based on http://contrib.scikit-learn.org/forest-confidence-interval/auto_examples/plot_mpg.html#sphx-glr-auto-examples-plot-mpg-py
@@ -1112,30 +1127,38 @@ def prediction_intervals(model, X, rf_error_method, rf_error_percentile, Xtrain,
         #    random_forest_stdevs = random_forest_stdevs[~np.isnan(random_forest_stdevs)]
         #    err_up = random_forest_stdevs
         #    err_down = random_forest_stdevs
-        for x in range(len(X_aslist)):
-            preds = list()
-            if model.__class__.__name__ == 'RandomForestRegressor':
-                for pred in model.estimators_:
-                    preds.append(pred.predict(np.array(X_aslist[x]).reshape(1,-1))[0])
-            elif model.__class__.__name__ == 'GradientBoostingRegressor':
-                for pred in model.estimators_.tolist():
-                    preds.append(pred[0].predict(np.array(X_aslist[x]).reshape(1,-1))[0])
-            if rf_error_method == 'confint':
-                e_down = np.percentile(preds, (100 - int(rf_error_percentile)) / 2.)
-                e_up = np.percentile(preds, 100 - (100 - int(rf_error_percentile)) / 2.)
-            elif rf_error_method == 'stdev':
-                e_down = np.std(preds)
-                e_up = np.std(preds)
-            elif rf_error_method == 'False' or rf_error_method is False:
-                # basically default to stdev
-                e_down = np.std(preds)
-                e_up = np.std(preds)
-            if e_up == 0.0:
-                e_up = 10 ** 10
-            if e_down == 0.0:
-                e_down = 10 ** 10
-            err_down.append(e_down)
-            err_up.append(e_up)
+        if rf_error_method == 'jackknife':
+            rf_variances = fci.random_forest_error(model, X_train=Xtrain, X_test=Xtest, calibrate=False)
+            rf_stdevs = np.sqrt(rf_variances)
+            indices_to_ignore = np.argwhere(np.isnan((rf_stdevs)))
+            rf_stdevs = rf_stdevs[~np.isnan(rf_stdevs)]
+            err_up = err_down = rf_stdevs
+
+        else:
+            for x in range(len(X_aslist)):
+                preds = list()
+                if model.__class__.__name__ == 'RandomForestRegressor':
+                    for pred in model.estimators_:
+                        preds.append(pred.predict(np.array(X_aslist[x]).reshape(1,-1))[0])
+                elif model.__class__.__name__ == 'GradientBoostingRegressor':
+                    for pred in model.estimators_.tolist():
+                        preds.append(pred[0].predict(np.array(X_aslist[x]).reshape(1,-1))[0])
+                if rf_error_method == 'confint':
+                    e_down = np.percentile(preds, (100 - int(rf_error_percentile)) / 2.)
+                    e_up = np.percentile(preds, 100 - (100 - int(rf_error_percentile)) / 2.)
+                elif rf_error_method == 'stdev':
+                    e_down = np.std(preds)
+                    e_up = np.std(preds)
+                elif rf_error_method == 'False' or rf_error_method is False:
+                    # basically default to stdev
+                    e_down = np.std(preds)
+                    e_up = np.std(preds)
+                if e_up == 0.0:
+                    e_up = 10 ** 10
+                if e_down == 0.0:
+                    e_down = 10 ** 10
+                err_down.append(e_down)
+                err_up.append(e_up)
 
     if model.__class__.__name__=='GaussianProcessRegressor':
         preds = model.predict(X, return_std=True)[1] # Get the stdev model error from the predictions of GPR
