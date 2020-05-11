@@ -12,21 +12,24 @@ from mastml.legos import feature_selectors, model_finder
 
 log = logging.getLogger('mastml')
 
-def parse_conf_file(filepath):
+def parse_conf_file(filepath, from_dict=False):
     """
     Method that accepts the filepath of an input configuration file and returns its parsed dictionary
 
     Args:
-        filepath: (str), path to config file
+        filepath: (str), path to config file, or a dict of config values directly
 
     Returns:
         conf: (dict): dictionary parsed from config file
 
     """
 
-    conf = ConfigObj(filepath)
+    if from_dict == False:
+        conf = ConfigObj(filepath)
+    else:
+        conf = filepath # The filepath in this case is an actual dictionary of values used as the config fiel
 
-    main_sections = ['GeneralSetup', 'DataSplits', 'Models', 'LearningCurve', 'DataCleaning', 'HyperOpt']
+    main_sections = ['GeneralSetup', 'DataSplits', 'Models', 'LearningCurve', 'DataCleaning', 'HyperOpt', 'ModelHosting']
     feature_sections = ['FeatureGeneration', 'Clustering',
                         'FeatureNormalization', 'FeatureSelection']
     feature_section_dicts = [conf[name] for name in feature_sections if name in conf]
@@ -54,7 +57,10 @@ def parse_conf_file(filepath):
     verify_subsection_only_sections()
 
     def parameter_dict_type_check_and_cast():
-        parameter_dicts = conf['Models'].values() + conf['DataSplits'].values()
+        parameter_dicts = list()
+        parameter_dicts.extend(conf['Models'].values())
+        parameter_dicts.extend(conf['DataSplits'].values())
+        #parameter_dicts = conf['Models'].values() + conf['DataSplits'].values()
         for feature_section in feature_section_dicts:
             parameter_dicts.extend(feature_section.values())
 
