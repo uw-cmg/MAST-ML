@@ -110,28 +110,35 @@ for constructor in name_to_constructor.values():
     constructor.old_transform = constructor.transform
     constructor.transform = dataframify_selector(constructor.transform)
 
-# TODO: Not used anymore, now uses util_legos.DoNothing
-"""
-class PassThrough(BaseEstimator, TransformerMixin):
 
+class EnsembleModelFeatureSelector(object):
 
-    def __init__(self, features):
-        print(features)
-        print(type(features))
-        exit()
+    def __init__(self, estimator, k_features):
+        self.estimator = estimator
+        self.k_features = k_features
+        # Check that a correct model was passed in
+        self._check_model()
+        self.selected_features = list()
 
-        if not isinstance(features, list):
-            features = [features]
-        self.features = features
+    def _check_model(self):
+        if self.estimator.__class__.__name__ not in ['RandomForestRegressor', 'ExtraTreesRegressor', 'GradientBoostingRegressor']:
+            raise ValueError('Models used in EnsembleModelFeatureSelector must be one of RandomForestRegressor, ExtraTreesRegressor, GradientBoostingRegressor')
+        return
 
-    def fit(self, df, y=None):
-        for feature in self.features:
-            if feature not in df.columns:
-                raise Exception(f"Specified feature '{feature}' to PassThrough not present in data file.")
+    def fit(self, X, y=None):
+        feature_importances = self.estimator.fit(X, y).feature_importances_
+        feature_importance_dict = dict()
+        for col, f in zip(X.columns.tolist(), feature_importances):
+            feature_importance_dict[col] = f
+        feature_importances_sorted = sorted(((f, col) for col, f in feature_importance_dict.items()), reverse=True)
+        sorted_features_list = [f[1] for f in feature_importances_sorted]
+        self.selected_features = sorted_features_list[0:self.k_features]
+        return self
 
-    def transform(self, df):
-        return df[self.features]
-"""
+    def transform(self, X):
+        df = X[self.selected_features]
+        return df
+
 
 class MASTMLFeatureSelector(object):
     """
@@ -296,25 +303,6 @@ class MASTMLFeatureSelector(object):
         X_selected = X.loc[:, selected_feature_names]
         return X_selected
 
-    # TODO: Not used anymore
-    #def _plot_featureselected_learningcurve(self, selected_feature_avg_rmses, selected_feature_std_rmses):
-    #    from matplotlib import pyplot as plt
-    #    plt.figure()
-    #    plt.title('Basic forward selection learning curve')
-    #    plt.grid()
-    #    #savedir = self.configdict['General Setup']['save_path']
-    #    Xdata = np.linspace(start=1, stop=self.n_features_to_select, num=5).tolist()
-    #    ydata = selected_feature_avg_rmses
-    #    yspread = selected_feature_std_rmses
-    #    plt.plot(Xdata, ydata, '-o', color='r', label='Avg RMSE 10 tests 5-fold CV')
-    #    plt.fill_between(Xdata, np.array(ydata) - np.array(yspread),
-    #                     np.array(ydata) + np.array(yspread), alpha=0.1,
-    #                     color="r")
-    #    plt.xlabel("Number of features")
-    #    plt.ylabel("RMSE")
-    #    plt.legend(loc="best")
-    #    plt.savefig(savedir + "/" + "basic_forward_selection_learning_curve_featurenumber.png", dpi=250)
-    #    return
 
 # Include Principal Component Analysis
 PCA.transform = dataframify_new_column_names(PCA.transform, 'pca_')
@@ -332,4 +320,5 @@ name_to_constructor.update({
     'PCA': PCA,
     'SequentialFeatureSelector': SequentialFeatureSelector,
     'MASTMLFeatureSelector' : MASTMLFeatureSelector,
+    'EnsembleModelFeatureSelector': EnsembleModelFeatureSelector
 })
