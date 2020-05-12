@@ -5,6 +5,9 @@ from dlhub_sdk.models.servables.sklearn import ScikitLearnModel
 from sklearn.externals import joblib
 import os
 import mastml
+import logging
+
+log = logging.getLogger('mastml')
 
 def get_input_columns(training_data_path, exclude_columns):
     # Load in training data and get input columns
@@ -40,9 +43,14 @@ def host_model(model_path, preprocessor_path, training_data_path, exclude_column
     #model_info.set_domains(["materials science"])
 
     # Add additional files to model servable- needed to do featurization of predictions using DLHub
-    model_info.add_file(preprocessor_path)  # Add the preprocessor .pkl file
-    model_info.add_file(training_data_path) # Add the training_data .csv file
-    model_info.add_file(os.path.join(mastml.__path__[0],'legos/dlhub_predictor.py'))  # Add the dlhub_predictor.py script, which featurizes prediction data and runs the DLHub servable to make predictions
+    model_info.add_file(os.path.abspath(preprocessor_path))  # Add the preprocessor .pkl file
+    model_info.add_file(os.path.abspath(training_data_path)) # Add the training_data .csv file
+    model_info.add_file(os.path.abspath(os.path.join(mastml.__path__[0],'legos/dlhub_predictor.py')))  # Add the dlhub_predictor.py script, which featurizes prediction data and runs the DLHub servable to make predictions
+
+    log.info('Submitting preprocessor file to DLHub:')
+    log.info(os.path.abspath(preprocessor_path))
+    log.info('Submitting training data file to DLHub:')
+    log.info(os.path.abspath(training_data_path))
 
     # Add pip installable dependency for MAST-ML
     model_info.add_requirement('mastml', 'latest')
