@@ -108,7 +108,7 @@ setup(
         "traitlets>=4.3.2",
         "urllib3<1.25,>=1.24.2",
         "wcwidth",
-        "xgboost", #Note that sometimes xgboost has issues installing. Comment out this line if install fails on xgboost pip install
+        #"xgboost", #Note that sometimes xgboost has issues installing. Comment out this line if install fails on xgboost pip install
         "xlrd",
         "zipp"],
     author="MAST Development Team, University of Wisconsin-Madison Computational Materials Group",
