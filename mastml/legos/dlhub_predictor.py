@@ -142,3 +142,4 @@ def run(dlhub_predictor_dict):
     #scaler_path = '/Users/ryanjacobs/'+servable['dlhub']['files']['other'][0]
     #training_data_path = '/Users/ryanjacobs/'+servable['dlhub']['files']['other'][1]
     pred_dict = make_prediction(dlhub_servable, prediction_data, scaler_path, training_data_path, exclude_columns=['composition', 'band_gap'])
+    return pred_dict
