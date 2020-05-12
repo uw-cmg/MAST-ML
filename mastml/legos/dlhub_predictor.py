@@ -97,15 +97,17 @@ def make_prediction(dlhub_servable, prediction_data, scaler_path, training_data_
     """
 
     # Featurize the prediction data
+    print('Starting featurizing')
     compositions, X_test = featurize_mastml(prediction_data, scaler_path, training_data_path, exclude_columns)
-
+    print('Done featurizing')
     # Run the predictions on the DLHub server
     dl = DLHubClient()
     # Ryan Chard: it seems this needs to be changed to something like what is commented below:
     # model = joblib.load(servable['dlhub']['files']['model'])
     #y_pred_new = model.predict(X_test)
+    print('Running predictions')
     y_pred_new = dl.run(name=dlhub_servable, inputs=X_test.tolist())
-
+    print('Done getting predictions')
     pred_dict = dict()
     for comp, pred in zip(compositions, y_pred_new.tolist()):
         pred_dict[comp] = pred
@@ -115,10 +117,11 @@ def make_prediction(dlhub_servable, prediction_data, scaler_path, training_data_
     df_pred.to_excel('new_material_predictions.xlsx')
     return pred_dict
 
-def run(dlhub_servable, prediction_data):
-    # dlhub_servable: the servable name. This is needed because it runs dlhub.run() internally to make the model inference.
+def run(dlhub_predictor_dict):
+    # dlhub_predictor_dict: dict containing the following two keys:
+    #       dlhub_servable: the servable name. This is needed because it runs dlhub.run() internally to make the model inference.
     #                For this example, use 'rjacobs3_wisc/Bandgap_GW_2020_04_20'
-    # prediction_data: the material composition to be featurized and predicted. This is what we would like the new input
+    #       prediction_data: the material composition to be featurized and predicted. This is what we would like the new input
     #                   DLHubClient().run() to be, e.g. DLHubClient().run(dlhub_servable, prediction_data), which would
     #                   now be a composition (e.g. "Al2O3") instead of a featurized matrix of data, which would now be
     #                   done internally.
@@ -129,7 +132,13 @@ def run(dlhub_servable, prediction_data):
     # exclude_columns: Other column names that are in the "selected.csv" file but not used in featurization. Just hard
     #                   coded for now, will make general later if this works as expected
 
+    dlhub_servable = dlhub_predictor_dict['dlhub_servable']
+    prediction_data = dlhub_predictor_dict['prediction_data']
+    scaler_path = dlhub_predictor_dict['scaler_path']
+    training_data_path = dlhub_predictor_dict['training_data_path']
     servable = DLHubClient().describe_servable(dlhub_servable)
-    scaler_path = servable['dlhub']['files']['other'][0]
-    training_data_path = servable['dlhub']['files']['other'][1]
+
+    # TODO: need to get preprocessor and training data info from servable, but this is currently giving FileNotFound errors
+    #scaler_path = '/Users/ryanjacobs/'+servable['dlhub']['files']['other'][0]
+    #training_data_path = '/Users/ryanjacobs/'+servable['dlhub']['files']['other'][1]
     pred_dict = make_prediction(dlhub_servable, prediction_data, scaler_path, training_data_path, exclude_columns=['composition', 'band_gap'])
