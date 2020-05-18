@@ -27,6 +27,11 @@ class LeaveOutTwinCV(BaseEstimator, TransformerMixin):
     """
     Class to remove data twins from the test data
 
+    Args:
+        threshold: (int), the threshold at which two data points are considered twins
+        cv: A scikit-learn cross validation generator object to be used to create split
+        allow_twins_in_train: (boolean), true if the twins should be allowed in training data but removed from the test sets, false if twins should just be removed altogether
+
     Methods:
         get_n_splits: method to calculate the number of splits to perform across all splitters
 
@@ -62,13 +67,14 @@ class LeaveOutTwinCV(BaseEstimator, TransformerMixin):
         return 1
 
     def split(self, X, y, X_noinput=None, path="/", groups=None):
+        # intialize variables
         distances = []
         i = 0
         j = 0
         count = 0
         log = logging.getLogger('mastml')
 
-        # do every combination
+        # calculate distances between every combination of items in X
         for a in X.T.iteritems():
             for b in X.T.iteritems():
                 if j > i:
@@ -78,19 +84,19 @@ class LeaveOutTwinCV(BaseEstimator, TransformerMixin):
             i += 1
             j = 0
 
+        # identifies the datapoints within the threshold
         distances = sorted(distances, key=lambda x: x[0])
-
         def find_nearest_index(array, value):
             for idx, n in enumerate(array):
                 if (n[0] >= value):
                     return idx
             return 0
-
         x = find_nearest_index(distances, self.threshold)
         removed = distances[:x]
 
         distances = pd.DataFrame(distances, columns=['dist', 'a', 'b'])
 
+        # Format data to be output as csv with previously removed data and other information
         removed_indices = []
         if (len(removed) != 0):
             for i in removed:
@@ -100,6 +106,7 @@ class LeaveOutTwinCV(BaseEstimator, TransformerMixin):
                     removed_indices.append(i[2])
 
         X_noinput = X_noinput.iloc[removed_indices]
+        X_other_columns = X.iloc[removed_indices]
 
         if (self.allow_twins_in_train):
             removed_x = pd.DataFrame(columns = X.columns)
@@ -110,7 +117,9 @@ class LeaveOutTwinCV(BaseEstimator, TransformerMixin):
             removed_x = pd.concat([removed_x, X_noinput], axis=1)
         removed_y = y.iloc[removed_indices]
         removed_y = pd.concat([removed_y, X_noinput], axis=1)
+        removed_y = pd.concat([removed_y, X_other_columns], axis=1)
 
+        # create X and y with twins removed
         X_notwin = X.copy()
         y_notwin = y.copy()
 
@@ -135,7 +144,6 @@ class LeaveOutTwinCV(BaseEstimator, TransformerMixin):
         for split in splits_generator:
             splits.append(list(split))
 
-
         if self.allow_twins_in_train:
             # remove from test sets
             if (len(removed) != 0):
@@ -150,7 +158,7 @@ class LeaveOutTwinCV(BaseEstimator, TransformerMixin):
                     if len(split[1]) == 0:
                         raise utils.MastError(f"Twin removal removed all test data. Threshold was {self.threshold}, consider reducing this value.")
         else:
-            # need to change the split's relative indices to old indices, because called split on data with indicies removed
+            # change the split's relative indices to old indices, because called split on data with indicies removed
             old_index = X_notwin.index
             for split in splits:
                 for idx, val in enumerate(split[0]):
