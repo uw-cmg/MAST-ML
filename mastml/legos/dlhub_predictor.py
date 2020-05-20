@@ -4,9 +4,7 @@
 from mastml.legos import feature_generators
 import pandas as pd
 import numpy as np
-from dlhub_sdk import DLHubClient
 from sklearn.externals import joblib
-import os
 
 def get_input_columns(training_data_path, exclude_columns):
     # Load in training data and get input columns
@@ -60,6 +58,8 @@ def featurize_mastml(prediction_data, scaler_path, training_data_path, exclude_c
     magpie.fit(df_new)
     df_new_featurized = magpie.transform(df_new)
 
+    # df_train may have other columns with it. Just take the composition column to make features ???
+    df_train = pd.DataFrame(df_train[COMPOSITION_COLUMN_NAME])
     magpie.fit(df_train)
     df_train_featurized = magpie.transform(df_train)
 
@@ -71,11 +71,11 @@ def featurize_mastml(prediction_data, scaler_path, training_data_path, exclude_c
     df_new_featurized_noconst = df_new_featurized.drop(columns=constant_cols)
 
     # Unpack the scaler from a .pkl file if needed. Probably a better way to do this.
-    if os.path.splitext(scaler_path)[1] == '.pkl':
-        scaler = joblib.load(scaler_path)
+    #if os.path.splitext(scaler_path)[1] == '.pkl':
+    #    scaler = joblib.load(scaler_path)
 
     # Normalize full feature set
-    df_new_featurized_normalized = pd.DataFrame(scaler.transform(df_new_featurized_noconst),
+    df_new_featurized_normalized = pd.DataFrame(scaler_path.transform(df_new_featurized_noconst),
                                                 columns=df_new_featurized_noconst.columns.tolist(),
                                                 index=df_new_featurized_noconst.index)
 
@@ -89,7 +89,7 @@ def featurize_mastml(prediction_data, scaler_path, training_data_path, exclude_c
     X_test= np.array(df_new_featurized_normalized_trimmed)
     return compositions, X_test
 
-def make_prediction(dlhub_servable, prediction_data, scaler_path, training_data_path, exclude_columns=['composition', 'band_gap']):
+def make_prediction(model, prediction_data, scaler_path, training_data_path, exclude_columns=['composition', 'band_gap']):
     """
     dlhub_servable : a DLHubClient servable model, used to call DLHub to use cloud resources to run model predictions
     compositions (list) : list of composition strings for data points to predict
@@ -97,17 +97,14 @@ def make_prediction(dlhub_servable, prediction_data, scaler_path, training_data_
     """
 
     # Featurize the prediction data
-    print('Starting featurizing')
     compositions, X_test = featurize_mastml(prediction_data, scaler_path, training_data_path, exclude_columns)
-    print('Done featurizing')
     # Run the predictions on the DLHub server
-    dl = DLHubClient()
+    #dl = DLHubClient()
     # Ryan Chard: it seems this needs to be changed to something like what is commented below:
     # model = joblib.load(servable['dlhub']['files']['model'])
     #y_pred_new = model.predict(X_test)
-    print('Running predictions')
-    y_pred_new = dl.run(name=dlhub_servable, inputs=X_test.tolist())
-    print('Done getting predictions')
+    #y_pred_new = dl.run(name=dlhub_servable, inputs=X_test.tolist())
+    y_pred_new = model.predict(X_test)
     pred_dict = dict()
     for comp, pred in zip(compositions, y_pred_new.tolist()):
         pred_dict[comp] = pred
@@ -117,7 +114,7 @@ def make_prediction(dlhub_servable, prediction_data, scaler_path, training_data_
     df_pred.to_excel('new_material_predictions.xlsx')
     return pred_dict
 
-def run(dlhub_predictor_dict):
+def run_dlhub_prediction(comp_list):
     # dlhub_predictor_dict: dict containing the following two keys:
     #       dlhub_servable: the servable name. This is needed because it runs dlhub.run() internally to make the model inference.
     #                For this example, use 'rjacobs3_wisc/Bandgap_GW_2020_04_20'
@@ -132,14 +129,27 @@ def run(dlhub_predictor_dict):
     # exclude_columns: Other column names that are in the "selected.csv" file but not used in featurization. Just hard
     #                   coded for now, will make general later if this works as expected
 
-    dlhub_servable = dlhub_predictor_dict['dlhub_servable']
-    prediction_data = dlhub_predictor_dict['prediction_data']
-    scaler_path = dlhub_predictor_dict['scaler_path']
-    training_data_path = dlhub_predictor_dict['training_data_path']
-    servable = DLHubClient().describe_servable(dlhub_servable)
+    # Note: this function is meant to run in a DLHub container that will have access to the following files:
+    #  model.pkl : a trained sklearn model
+    #  selected.csv : csv file containing training data
+    #  preprocessor.pkl : a preprocessor from sklearn
 
-    # TODO: need to get preprocessor and training data info from servable, but this is currently giving FileNotFound errors
+    #dlhub_servable = dlhub_predictor_dict['dlhub_servable']
+    #prediction_data = dlhub_predictor_dict['prediction_data']
+    #scaler_path = dlhub_predictor_dict['scaler_path']
+    #training_data_path = dlhub_predictor_dict['training_data_path']
+    #servable = DLHubClient().describe_servable(dlhub_servable)
+
+    # Load scaler:
+    scaler_path = joblib.load('preprocessor.pkl')
+    # Load model:
+    model = joblib.load('model.pkl')
+    # Prediction data comps:
+    prediction_data = comp_list
+    # Load training data:
+    training_data_path = 'selected.csv'
+
     #scaler_path = '/Users/ryanjacobs/'+servable['dlhub']['files']['other'][0]
     #training_data_path = '/Users/ryanjacobs/'+servable['dlhub']['files']['other'][1]
-    pred_dict = make_prediction(dlhub_servable, prediction_data, scaler_path, training_data_path, exclude_columns=['composition', 'band_gap'])
+    pred_dict = make_prediction(model, prediction_data, scaler_path, training_data_path, exclude_columns=['composition', 'band_gap'])
     return pred_dict
