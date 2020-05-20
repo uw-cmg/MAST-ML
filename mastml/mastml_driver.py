@@ -1101,10 +1101,8 @@ def mastml_run(conf_path, data_path, outdir):
         model_hosting.host_model(model_path=conf['ModelHosting']['model_path'],
                                  preprocessor_path=conf['ModelHosting']['preprocessor_path'],
                                  training_data_path=conf['ModelHosting']['training_data_path'],
-                                 exclude_columns=conf['GeneralSetup']['input_other']+[conf['GeneralSetup']['input_target']],
-                                 set_title=conf['ModelHosting']['set_title'],
+                                 model_title=conf['ModelHosting']['model_title'],
                                  model_name=conf['ModelHosting']['model_name'],
-                                 serialization_method="joblib",
                                  model_type="scikit-learn")
         log.info('Finished uploading model to DLHub...')
 
