@@ -212,7 +212,7 @@ class Magpie(BaseEstimator, TransformerMixin):
         df = clean_dataframe(df)
         df = df.select_dtypes(['number']).dropna(axis=1)
         assert self.composition_feature not in df.columns
-        return df
+        return df[sorted(df.columns.tolist())]
 
 class MaterialsProject(BaseEstimator, TransformerMixin):
     """
