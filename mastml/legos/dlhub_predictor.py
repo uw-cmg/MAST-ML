@@ -5,6 +5,7 @@ from mastml.legos import feature_generators
 import pandas as pd
 import numpy as np
 from sklearn.externals import joblib
+import glob
 
 def get_input_columns(training_data_path, exclude_columns):
     # Load in training data and get input columns
@@ -141,13 +142,13 @@ def run_dlhub_prediction(comp_list):
     #servable = DLHubClient().describe_servable(dlhub_servable)
 
     # Load scaler:
-    scaler_path = joblib.load('preprocessor.pkl')
+    scaler_path = joblib.load(glob.glob('*preprocessor.pkl'))
     # Load model:
-    model = joblib.load('model.pkl')
+    model = joblib.load(glob.glob('*model.pkl'))
     # Prediction data comps:
     prediction_data = comp_list
     # Load training data:
-    training_data_path = 'selected.csv'
+    training_data_path = glob.glob('*selected.csv')
 
     #scaler_path = '/Users/ryanjacobs/'+servable['dlhub']['files']['other'][0]
     #training_data_path = '/Users/ryanjacobs/'+servable['dlhub']['files']['other'][1]
