@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 from sklearn.externals import joblib
 import glob
+import os
 
 def get_input_columns(training_data_path, exclude_columns):
     # Load in training data and get input columns
@@ -110,9 +111,9 @@ def make_prediction(model, prediction_data, scaler_path, training_data_path, exc
     for comp, pred in zip(compositions, y_pred_new.tolist()):
         pred_dict[comp] = pred
 
-    # Save new predictions to excel file
+    # Save new predictions to excel file in cwd
     df_pred = pd.DataFrame.from_dict(pred_dict, orient='index', columns=['Predicted value'])
-    df_pred.to_excel('new_material_predictions.xlsx')
+    df_pred.to_excel(os.path.join(os.getcwd(),'new_material_predictions.xlsx'))
     return pred_dict
 
 def run_dlhub_prediction(comp_list):
@@ -141,14 +142,27 @@ def run_dlhub_prediction(comp_list):
     #training_data_path = dlhub_predictor_dict['training_data_path']
     #servable = DLHubClient().describe_servable(dlhub_servable)
 
+    # For now, assume we are running from job made on Google Colab. Files stored at /content/filename
     # Load scaler:
-    scaler_path = joblib.load(glob.glob('*preprocessor.pkl')[0])
+    #scaler_path = joblib.load(glob.glob('*preprocessor.pkl')[0])
+    try:
+        scaler_path = '/content/preprocessor.pkl'
+    except:
+        scaler_path = 'preprocessor.pkl'
     # Load model:
-    model = joblib.load(glob.glob('*model.pkl')[0])
+    #model = joblib.load(glob.glob('*model.pkl')[0])
+    try:
+        model = joblib.load('/content/model.pkl')
+    except:
+        model = joblib.load('model.pkl')
     # Prediction data comps:
     prediction_data = comp_list
     # Load training data:
-    training_data_path = glob.glob('*selected.csv')[0]
+    #training_data_path = glob.glob('*selected.csv')[0]
+    try:
+        training_data_path = '/content/selected.csv'
+    except:
+        training_data_path = 'selected.csv'
 
     #scaler_path = '/Users/ryanjacobs/'+servable['dlhub']['files']['other'][0]
     #training_data_path = '/Users/ryanjacobs/'+servable['dlhub']['files']['other'][1]
