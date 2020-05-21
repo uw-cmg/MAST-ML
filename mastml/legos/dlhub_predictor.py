@@ -100,12 +100,7 @@ def make_prediction(model, prediction_data, scaler_path, training_data_path, exc
 
     # Featurize the prediction data
     compositions, X_test = featurize_mastml(prediction_data, scaler_path, training_data_path, exclude_columns)
-    # Run the predictions on the DLHub server
-    #dl = DLHubClient()
-    # Ryan Chard: it seems this needs to be changed to something like what is commented below:
-    # model = joblib.load(servable['dlhub']['files']['model'])
-    #y_pred_new = model.predict(X_test)
-    #y_pred_new = dl.run(name=dlhub_servable, inputs=X_test.tolist())
+
     y_pred_new = model.predict(X_test)
     pred_dict = dict()
     for comp, pred in zip(compositions, y_pred_new.tolist()):
@@ -117,40 +112,20 @@ def make_prediction(model, prediction_data, scaler_path, training_data_path, exc
     return pred_dict
 
 def run_dlhub_prediction(comp_list):
-    # dlhub_predictor_dict: dict containing the following two keys:
-    #       dlhub_servable: the servable name. This is needed because it runs dlhub.run() internally to make the model inference.
-    #                For this example, use 'rjacobs3_wisc/Bandgap_GW_2020_04_20'
-    #       prediction_data: the material composition to be featurized and predicted. This is what we would like the new input
-    #                   DLHubClient().run() to be, e.g. DLHubClient().run(dlhub_servable, prediction_data), which would
-    #                   now be a composition (e.g. "Al2O3") instead of a featurized matrix of data, which would now be
-    #                   done internally.
-    # scaler_path: the .pkl preprocessor file. This is used in the featurization process. This is "StandardScaler.pkl"
-    #              in the example servable
-    # training_data_path: The training data used to train the saved model. Needed to get feature names to select in
-    #                    featurization step. This is "selected.csv" in the example servable.
-    # exclude_columns: Other column names that are in the "selected.csv" file but not used in featurization. Just hard
-    #                   coded for now, will make general later if this works as expected
+    # comp_list (list): list of strings of material compositions to featurize and predict
 
     # Note: this function is meant to run in a DLHub container that will have access to the following files:
     #  model.pkl : a trained sklearn model
     #  selected.csv : csv file containing training data
     #  preprocessor.pkl : a preprocessor from sklearn
 
-    #dlhub_servable = dlhub_predictor_dict['dlhub_servable']
-    #prediction_data = dlhub_predictor_dict['prediction_data']
-    #scaler_path = dlhub_predictor_dict['scaler_path']
-    #training_data_path = dlhub_predictor_dict['training_data_path']
-    #servable = DLHubClient().describe_servable(dlhub_servable)
-
     # For now, assume we are running from job made on Google Colab. Files stored at /content/filename
     # Load scaler:
-    #scaler_path = joblib.load(glob.glob('*preprocessor.pkl')[0])
     try:
         scaler_path = '/content/preprocessor.pkl'
     except:
         scaler_path = 'preprocessor.pkl'
     # Load model:
-    #model = joblib.load(glob.glob('*model.pkl')[0])
     try:
         model = joblib.load('/content/model.pkl')
     except:
@@ -158,13 +133,10 @@ def run_dlhub_prediction(comp_list):
     # Prediction data comps:
     prediction_data = comp_list
     # Load training data:
-    #training_data_path = glob.glob('*selected.csv')[0]
     try:
         training_data_path = '/content/selected.csv'
     except:
         training_data_path = 'selected.csv'
 
-    #scaler_path = '/Users/ryanjacobs/'+servable['dlhub']['files']['other'][0]
-    #training_data_path = '/Users/ryanjacobs/'+servable['dlhub']['files']['other'][1]
     pred_dict = make_prediction(model, prediction_data, scaler_path, training_data_path, exclude_columns=['composition', 'band_gap'])
     return pred_dict
