@@ -9,10 +9,11 @@ import os
 
 def get_input_columns(training_data_path, exclude_columns):
     # Load in training data and get input columns
-    try:
-        df_train = pd.read_csv(training_data_path)
-    except:
-        df_train = pd.read_excel(training_data_path)
+    #try:
+    #    df_train = pd.read_csv(training_data_path)
+    #except:
+    #    df_train = pd.read_excel(training_data_path)
+    df_train = training_data_path
     input_columns = [col for col in df_train.columns.tolist() if col not in exclude_columns]
     return input_columns
 
@@ -47,11 +48,14 @@ def featurize_mastml(prediction_data, scaler_path, training_data_path, exclude_c
         raise TypeError('prediction_data must be a composition in the form of a string, list of strings, or .csv or .xlsx file path')
 
     # Also get the training data so can build MAGPIE list and see which are constant features
-    if type(training_data_path) is str:
-        if '.xlsx' in training_data_path:
-            df_train = pd.read_excel(training_data_path, header=0)
-        elif '.csv' in training_data_path:
-            df_train = pd.read_csv(training_data_path, header=0)
+    #if type(training_data_path) is str:
+    #    if '.xlsx' in training_data_path:
+    #        df_train = pd.read_excel(training_data_path, header=0)
+    #    elif '.csv' in training_data_path:
+    #        df_train = pd.read_csv(training_data_path, header=0)
+    #else:
+
+    df_train = training_data_path
 
     # Generate and use magpie featurizer using mastml
     magpie = feature_generators.Magpie(composition_feature=COMPOSITION_COLUMN_NAME,
@@ -121,21 +125,21 @@ def run_dlhub_prediction(comp_list):
     # For now, assume we are running from job made on Google Colab. Files stored at /content/filename
     # Load scaler:
     try:
-        scaler_path = 'content/preprocessor.pkl'
-    except:
-        scaler_path = 'preprocessor.pkl'
+        scaler_path = joblib.load('content/preprocessor.pkl')
+    except FileNotFoundError:
+        scaler_path = joblib.load('preprocessor.pkl')
     # Load model:
     try:
         model = joblib.load('content/model.pkl')
-    except:
+    except FileNotFoundError:
         model = joblib.load('model.pkl')
     # Prediction data comps:
     prediction_data = comp_list
     # Load training data:
     try:
-        training_data_path = 'content/selected.csv'
-    except:
-        training_data_path = 'selected.csv'
+        training_data_path = pd.read_csv('content/selected.csv')
+    except FileNotFoundError:
+        training_data_path = pd.read_csv('selected.csv')
 
     pred_dict = make_prediction(model, prediction_data, scaler_path, training_data_path, exclude_columns=['composition', 'band_gap'])
     return pred_dict
