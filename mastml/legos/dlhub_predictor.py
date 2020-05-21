@@ -5,7 +5,6 @@ from mastml.legos import feature_generators
 import pandas as pd
 import numpy as np
 from sklearn.externals import joblib
-import glob
 import os
 
 def get_input_columns(training_data_path, exclude_columns):
@@ -122,19 +121,19 @@ def run_dlhub_prediction(comp_list):
     # For now, assume we are running from job made on Google Colab. Files stored at /content/filename
     # Load scaler:
     try:
-        scaler_path = '/content/preprocessor.pkl'
+        scaler_path = 'content/preprocessor.pkl'
     except:
         scaler_path = 'preprocessor.pkl'
     # Load model:
     try:
-        model = joblib.load('/content/model.pkl')
+        model = joblib.load('content/model.pkl')
     except:
         model = joblib.load('model.pkl')
     # Prediction data comps:
     prediction_data = comp_list
     # Load training data:
     try:
-        training_data_path = '/content/selected.csv'
+        training_data_path = 'content/selected.csv'
     except:
         training_data_path = 'selected.csv'
 
