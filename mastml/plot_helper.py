@@ -17,6 +17,9 @@ from collections import Iterable
 from os.path import join
 from collections import OrderedDict
 from math import log, floor, ceil
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 # Ignore the harmless warning about the gelsd driver on mac.
 warnings.filterwarnings(action="ignore", module="scipy",
@@ -284,6 +287,8 @@ def make_error_plots(run, path, is_classification, label, model, train_X, test_X
                                          rf_error_percentile, X=test_X, Xtrain=train_X, Xtest=test_X)
 
         # HERE, add your RMS residual vs. error plot function
+        y_all_data = np.concatenate([y_test_true, y_train_true])
+        plot_real_vs_predicted_error(y_all_data, path, model, data_test_type='test')
 
         if is_validation:
             title = 'validation_cumulative_normalized_error'
@@ -292,6 +297,9 @@ def make_error_plots(run, path, is_classification, label, model, train_X, test_X
             title = 'validation_normalized_error'
             plot_normalized_error(y_validation_true, y_validation_pred, join(path, title + '.png'), model, rf_error_method,
                                   rf_error_percentile, X=validation_X, Xtrain=train_X, Xtest=test_X)
+
+            y_all_data = np.concatenate([y_test_true, y_train_true])
+            plot_real_vs_predicted_error(y_all_data, path, model, data_test_type='validation')
 
 @ipynb_maker
 def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False, title='Confusion matrix', cmap=plt.cm.Blues):
@@ -1526,6 +1534,174 @@ def plot_average_normalized_error(y_true, y_pred, savepath, has_model_errors, er
     fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
     return
 
+def plot_real_vs_predicted_error(y_true, savepath, model, data_test_type):
+
+    bin_values, rms_residual_values, num_values_per_bin = parse_error_data(dataset_stdev=np.std(y_true),
+                                                                          path_to_test=savepath,
+                                                                           data_test_type=data_test_type)
+
+    model_name = model.__class__.__name__
+    if model_name == 'RandomForestRegressor':
+        model_type = 'RF'
+    elif model_name == 'GradientBoostingRegressor':
+        model_type = 'GBR'
+    elif model_name == 'ExtraTreesRegressor':
+        model_type = 'ET'
+    elif model_name == 'GaussianProcessRegressor':
+        model_type = 'GPR'
+
+    if data_test_type not in ['test', 'validation']:
+        print('Error: data_test_type must be one of "test" or "validation"')
+        exit()
+
+    # Make RF error plot
+    fig, ax = make_fig_ax(aspect_ratio=0.5, x_align=0.65)
+
+    ax.scatter(bin_values[0:10], rms_residual_values[0:10], s=100, color='blue', alpha=0.7)
+    ax.scatter(bin_values[10:], rms_residual_values[10:], s=100, color='red', alpha=0.7)
+
+    ax.set_xlabel(str(model_type) + ' model errors / dataset stdev', fontsize=12)
+    ax.set_ylabel('RMS Absolute residuals\n / dataset stdev', fontsize=12)
+    ax.tick_params(labelsize=10)
+
+    linear = LinearRegression(fit_intercept=False)
+    # Fit just blue circle data
+    # Find nan entries
+    nans = np.argwhere(np.isnan(rms_residual_values)).tolist()
+
+    lowval = 0
+    if len(nans) > 0:
+        if nans[0][0] == 0:
+            nans = nans[1:]
+            lowval = 1
+            if len(nans) > 0:
+                if nans[0][0] == 1:
+                    nans = nans[1:]
+                    lowval = 2
+                    if len(nans) > 0:
+                        if nans[0][0] == 2:
+                            nans = nans[1:]
+                            lowval = 3
+                            if len(nans) > 0:
+                                if nans[0][0] == 3:
+                                    nans = nans[1:]
+                                    lowval = 4
+
+    try:
+        val = min(nans)[0]
+    except ValueError:
+        val = 10
+    if val > 10:
+        val = 10
+
+    linear.fit(np.array(bin_values[lowval:val]).reshape(-1, 1), rms_residual_values[lowval:val])
+
+    yfit = linear.predict(np.array(bin_values[lowval:val]).reshape(-1, 1))
+    ax.plot(bin_values[lowval:val], yfit, 'k--', linewidth=2)
+    slope = linear.coef_
+    r2 = r2_score(rms_residual_values[lowval:val], yfit)
+    ax.text(0.02, 1.2, 'slope = %3.2f ' % slope, fontsize=12, fontdict={'color': 'k'})
+    ax.text(0.02, 1.1, 'R$^2$ = %3.2f ' % r2, fontsize=12, fontdict={'color': 'k'})
+
+    divider = make_axes_locatable(ax)
+    axbarx = divider.append_axes("top", 1.2, pad=0.12, sharex=ax)
+
+    axbarx.bar(x=bin_values, height=num_values_per_bin, width=0.05276488, color='blue', edgecolor='black',
+               alpha=0.7)
+    axbarx.tick_params(labelsize=10, axis='y')
+    axbarx.tick_params(labelsize=0, axis='x')
+    axbarx.set_ylabel('Counts', fontsize=12)
+
+    total_samples = sum(num_values_per_bin)
+    axbarx.text(0.95, round(0.67 * max(num_values_per_bin)), 'Total counts = ' + str(total_samples), fontsize=12)
+
+    ax.set_ylim(bottom=0, top=1.3)
+    axbarx.set_ylim(bottom=0, top=max(num_values_per_bin) + 50)
+    ax.set_xlim(left=0, right=1.6)
+
+    fig.savefig(
+        os.path.join(savepath.split('.png')[0], str(model_type) + '_residuals_vs_modelerror_' + str(data_test_type) + '.png'),
+        dpi=300, bbox_inches='tight')
+
+    return
+
+def parse_error_data(dataset_stdev, path_to_test, data_test_type):
+    if data_test_type not in ['test', 'validation']:
+        print('Error: data_test_type must be one of "test" or "validation"')
+        exit()
+    dfs_ytrue = list()
+    dfs_ypred = list()
+    dfs_erroravg = list()
+    dfs_modelresiduals = list()
+    files_to_parse = list()
+    splits = list()
+
+    for folder, subfolders, files in os.walk(path_to_test):
+        if 'split' in folder:
+            splits.append(folder)
+
+    for path in splits:
+        if os.path.exists(os.path.join(path, str(data_test_type)+'_normalized_error.csv')):
+            files_to_parse.append(os.path.join(path, str(data_test_type)+'_normalized_error.csv'))
+
+    for file in files_to_parse:
+        df = pd.read_csv(file)
+        dfs_ytrue.append(np.array(df['Y True']))
+        dfs_ypred.append(np.array(df['Y Pred']))
+        dfs_erroravg.append(np.array(df['error_avg']))
+        dfs_modelresiduals.append(np.array(df['model residuals']))
+
+    ytrue_all = np.concatenate(dfs_ytrue).ravel()
+    ypred_all = np.concatenate(dfs_ypred).ravel()
+
+    erroravg_all = np.concatenate(dfs_erroravg).ravel().tolist()
+    modelresiduals_all = np.concatenate(dfs_modelresiduals).ravel().tolist()
+    absmodelresiduals_all = [abs(i) for i in modelresiduals_all]
+    squaredmodelresiduals_all = [i**2 for i in absmodelresiduals_all]
+
+    erroravg_all_reduced = [i/dataset_stdev for i in erroravg_all]
+    # Need to square the dataset_stdev here since these are squared residuals
+    squaredmodelresiduals_all_reduced = [i/dataset_stdev**2 for i in squaredmodelresiduals_all]
+
+    erroravg_reduced_sorted, squaredresiduals_reduced_sorted = (list(t) for t in zip(*sorted(zip(erroravg_all_reduced, squaredmodelresiduals_all_reduced))))
+
+    bin_values = [0.05, 0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95, 1.05, 1.15, 1.25, 1.35, 1.45, 1.55]
+    bin_delta = 0.05
+
+    rms_residual_values = list()
+    num_values_per_bin = list()
+
+    for bin_value in bin_values:
+        bin_indices = list()
+        bin_residuals = list()
+        for i, val in enumerate(erroravg_reduced_sorted):
+            if val > bin_value-bin_delta:
+                if val < bin_value+bin_delta:
+                    bin_indices.append(i)
+        for i in bin_indices:
+            bin_residuals.append(squaredresiduals_reduced_sorted[i])
+        rms_residual_values.append(np.sqrt(np.mean(bin_residuals)))
+        num_values_per_bin.append(len(bin_indices))
+
+    data_dict = {"Y True": ytrue_all,
+                 "Y Pred": ypred_all,
+                 "Model Residuals": modelresiduals_all,
+                 "Abs Model Residuals": absmodelresiduals_all,
+                 "Squared Model Resiuals": squaredmodelresiduals_all,
+                 "Squared Model Residuals / dataset stdev": squaredmodelresiduals_all_reduced,
+                 "Model errors": erroravg_all,
+                 "Model errors / dataset stdev": erroravg_all_reduced,
+                 "Model errors / dataset stdev (sorted)": erroravg_reduced_sorted,
+                 "Squared Model Residuals / dataset stdev (sorted)": squaredresiduals_reduced_sorted,
+                 "Bin values (Model errors / dataset stdev)": bin_values,
+                 "Model RMS absolute residuals in each bin": rms_residual_values,
+                 "Number of values in each bin": num_values_per_bin}
+
+    df = pd.DataFrame().from_dict(data=data_dict, orient='index').transpose()
+    df.to_excel(os.path.join(path_to_test, 'ModelErrorAnalysis_'+str(data_test_type)+'.xlsx'))
+
+    return bin_values, rms_residual_values, num_values_per_bin
+
 def plot_1d_heatmap(xs, heats, savepath, xlabel='x', heatlabel='heats'):
     """
     Method to plot a heatmap for values of a single variable; used for plotting GridSearch results in hyperparameter optimization.
@@ -1555,7 +1731,6 @@ def plot_1d_heatmap(xs, heats, savepath, xlabel='x', heatlabel='heats'):
     # Escape from error of passing tuples when optimizing neural net
     except TypeError:
         pass
-
 
 def plot_2d_heatmap(xs, ys, heats, savepath,
                     xlabel='x', ylabel='y', heatlabel='heat'):
