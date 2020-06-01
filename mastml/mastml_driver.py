@@ -1031,12 +1031,23 @@ def mastml_run(conf_path, data_path, outdir):
                                                                  savepath=join(main_path,'test_cumulative_normalized_error_average_allsplits.png'),
                                                                  has_model_errors=has_model_errors,
                                                                  err_avg=average_error_values)
+            # Here- plot predicted vs real errors for all splits, only if using RF, GBR, GPR, or ET
+            if model.__class__.__name__ in ['RandomForestRegressor', 'ExtraTreesRegressor', 'GradientBoostingRegressor', 'GaussianProcessRegressor']:
+                plot_helper.plot_real_vs_predicted_error(y_true, main_path, model, data_test_type='test')
+
             if is_validation:
                 plot_helper.plot_average_cumulative_normalized_error(y_true=y_true_validation, y_pred=y_pred_validation,
                                                                      savepath=join(main_path,
                                                                                    'validation_cumulative_normalized_error_average_allsplits.png'),
                                                                      has_model_errors=has_model_errors_validation,
                                                                      err_avg=average_error_values_validation)
+
+                # Here- plot predicted vs real errors for all splits
+                # Use y_true here because want to normalize to full training dataset stdev
+                if model.__class__.__name__ in ['RandomForestRegressor', 'ExtraTreesRegressor',
+                                                'GradientBoostingRegressor', 'GaussianProcessRegressor']:
+                    plot_helper.plot_real_vs_predicted_error(y_true, main_path, model, data_test_type='validation')
+
             plot_helper.plot_average_normalized_error(y_true=y_true, y_pred=y_pred,
                                                       savepath=join(main_path,'test_normalized_error_average_allsplits.png'),
                                                                  has_model_errors=has_model_errors,
