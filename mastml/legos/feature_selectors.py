@@ -5,6 +5,7 @@ selectors. More information on scikit-learn feature selectors is available at:
 http://scikit-learn.org/stable/modules/classes.html#module-sklearn.feature_selection
 """
 
+from mastml.legos import util_legos
 from functools import wraps
 import warnings
 import numpy as np
@@ -15,11 +16,11 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.decomposition import PCA
 import sklearn.feature_selection as fs
 from mlxtend.feature_selection import SequentialFeatureSelector
-import os, logging
+import os
+import logging
 
 log = logging.getLogger('mastml')
 
-from mastml.legos import util_legos
 
 def dataframify_selector(transform):
     """
@@ -39,9 +40,10 @@ def dataframify_selector(transform):
     def new_transform(self, df):
         if isinstance(df, pd.DataFrame):
             return df[df.columns[self.get_support(indices=True)]]
-        else: # just in case you try to use it with an array ;)
+        else:  # just in case you try to use it with an array ;)
             return df
     return new_transform
+
 
 def dataframify_new_column_names(transform, name):
     """
@@ -65,6 +67,7 @@ def dataframify_new_column_names(transform, name):
         return pd.DataFrame(arr, columns=labels)
     return new_transform
 
+
 def fitify_just_use_values(fit):
     """
     Method which enables a feature selector fit method to operate on dataframes
@@ -83,27 +86,38 @@ def fitify_just_use_values(fit):
         return fit(self, X_df.values, y_df.values)
     return new_fit
 
+
 score_func_selectors = {
-    'GenericUnivariateSelect': fs.GenericUnivariateSelect, # Univariate feature selector with configurable strategy.
-    'SelectFdr': fs.SelectFdr, # Filter: Select the p-values for an estimated false discovery rate
-    'SelectFpr': fs.SelectFpr, # Filter: Select the pvalues below alpha based on a FPR test.
-    'SelectFwe': fs.SelectFwe, # Filter: Select the p-values corresponding to Family-wise error rate
-    'SelectKBest': fs.SelectKBest, # Select features according to the k highest scores.
-    'SelectPercentile': fs.SelectPercentile, # Select features according to a percentile of the highest scores.
+    # Univariate feature selector with configurable strategy.
+    'GenericUnivariateSelect': fs.GenericUnivariateSelect,
+    # Filter: Select the p-values for an estimated false discovery rate
+    'SelectFdr': fs.SelectFdr,
+    # Filter: Select the pvalues below alpha based on a FPR test.
+    'SelectFpr': fs.SelectFpr,
+    # Filter: Select the p-values corresponding to Family-wise error rate
+    'SelectFwe': fs.SelectFwe,
+    # Select features according to the k highest scores.
+    'SelectKBest': fs.SelectKBest,
+    # Select features according to a percentile of the highest scores.
+    'SelectPercentile': fs.SelectPercentile,
 }
 
-model_selectors = { # feature selectors which take a model instance as first parameter
-    'RFE': fs.RFE, # Feature ranking with recursive feature elimination.
-    'RFECV': fs.RFECV, # Feature ranking with recursive feature elimination and cross-validated selection of the best number of features.
-    'SelectFromModel': fs.SelectFromModel, # Meta-transformer for selecting features based on importance weights.
+model_selectors = {  # feature selectors which take a model instance as first parameter
+    'RFE': fs.RFE,  # Feature ranking with recursive feature elimination.
+    # Feature ranking with recursive feature elimination and cross-validated selection of the best number of features.
+    'RFECV': fs.RFECV,
+    # Meta-transformer for selecting features based on importance weights.
+    'SelectFromModel': fs.SelectFromModel,
 }
 
 other_selectors = {
-    'VarianceThreshold': fs.VarianceThreshold, # Feature selector that removes all low-variance features.
+    # Feature selector that removes all low-variance features.
+    'VarianceThreshold': fs.VarianceThreshold,
 }
 
 # Union together the above dicts for the primary export:
-name_to_constructor = dict(**score_func_selectors, **model_selectors, **other_selectors)
+name_to_constructor = dict(**score_func_selectors, **
+                           model_selectors, **other_selectors)
 
 # Modify all sklearn transform methods to return dataframes:
 for constructor in name_to_constructor.values():
@@ -132,6 +146,7 @@ class PassThrough(BaseEstimator, TransformerMixin):
     def transform(self, df):
         return df[self.features]
 """
+
 
 class MASTMLFeatureSelector(object):
     """
@@ -203,7 +218,8 @@ class MASTMLFeatureSelector(object):
             with warnings.catch_warnings():
                 warnings.simplefilter('ignore')
                 ranked_features = self._rank_features(X=X, y=y, groups=Xgroups)
-                top_feature_name, top_feature_avg_rmse, top_feature_std_rmse = self._choose_top_feature(ranked_features=ranked_features)
+                top_feature_name, top_feature_avg_rmse, top_feature_std_rmse = self._choose_top_feature(
+                    ranked_features=ranked_features)
 
             self.selected_feature_names.append(top_feature_name)
             if len(self.selected_feature_names) > 0:
@@ -222,7 +238,8 @@ class MASTMLFeatureSelector(object):
             basic_forward_selection_dict[str(num_features_selected)][
                 'Stdev RMSE using top features'] = top_feature_std_rmse
             # Save for every loop of selecting features
-            pd.DataFrame(basic_forward_selection_dict).to_csv(os.path.join(savepath,'MASTMLFeatureSelector_data_feature_'+str(num_features_selected)+'.csv'))
+            pd.DataFrame(basic_forward_selection_dict).to_csv(os.path.join(
+                savepath, 'MASTMLFeatureSelector_data_feature_'+str(num_features_selected)+'.csv'))
             num_features_selected += 1
         basic_forward_selection_dict[str(self.n_features_to_select - 1)][
             'Full feature set Names'] = self.selected_feature_names
@@ -230,13 +247,14 @@ class MASTMLFeatureSelector(object):
             'Full feature set Avg RMSEs'] = selected_feature_avg_rmses
         basic_forward_selection_dict[str(self.n_features_to_select - 1)][
             'Full feature set Stdev RMSEs'] = selected_feature_std_rmses
-        #self._plot_featureselected_learningcurve(selected_feature_avg_rmses=selected_feature_avg_rmses,
+        # self._plot_featureselected_learningcurve(selected_feature_avg_rmses=selected_feature_avg_rmses,
         #                                         selected_feature_std_rmses=selected_feature_std_rmses)
 
         return self
 
     def transform(self, X):
-        dataframe = self._get_featureselected_dataframe(X=X, selected_feature_names=self.selected_feature_names)
+        dataframe = self._get_featureselected_dataframe(
+            X=X, selected_feature_names=self.selected_feature_names)
         return dataframe
 
     def _rank_features(self, X, y, groups):
@@ -245,7 +263,7 @@ class MASTMLFeatureSelector(object):
         trains_metrics = list()
         tests_metrics = list()
         if groups is not None:
-            groups = groups.iloc[:,0].tolist()
+            groups = groups.iloc[:, 0].tolist()
         for col in X.columns:
             if col not in self.selected_feature_names:
                 X_ = X.loc[:, self.selected_feature_names]
@@ -255,11 +273,13 @@ class MASTMLFeatureSelector(object):
                 for trains, tests in self.cv.split(X_, y, groups):
                     self.estimator.fit(X_[trains], y[trains])
                     predict_tests = self.estimator.predict(X_[tests])
-                    tests_metrics.append(root_mean_squared_error(y[tests], predict_tests))
+                    tests_metrics.append(
+                        root_mean_squared_error(y[tests], predict_tests))
                 avg_rmse = np.mean(tests_metrics)
 
                 std_rmse = np.std(tests_metrics)
-                ranked_features[col] = {"avg_rmse": avg_rmse, "std_rmse": std_rmse}
+                ranked_features[col] = {
+                    "avg_rmse": avg_rmse, "std_rmse": std_rmse}
         return ranked_features
 
     def _choose_top_feature(self, ranked_features):
@@ -297,7 +317,7 @@ class MASTMLFeatureSelector(object):
         return X_selected
 
     # TODO: Not used anymore
-    #def _plot_featureselected_learningcurve(self, selected_feature_avg_rmses, selected_feature_std_rmses):
+    # def _plot_featureselected_learningcurve(self, selected_feature_avg_rmses, selected_feature_std_rmses):
     #    from matplotlib import pyplot as plt
     #    plt.figure()
     #    plt.title('Basic forward selection learning curve')
@@ -316,20 +336,23 @@ class MASTMLFeatureSelector(object):
     #    plt.savefig(savedir + "/" + "basic_forward_selection_learning_curve_featurenumber.png", dpi=250)
     #    return
 
+
 # Include Principal Component Analysis
 PCA.transform = dataframify_new_column_names(PCA.transform, 'pca_')
 
 # Include Sequential Forward Selector
-SequentialFeatureSelector.transform = dataframify_new_column_names(SequentialFeatureSelector.transform, 'sfs_')
-SequentialFeatureSelector.fit = fitify_just_use_values(SequentialFeatureSelector.fit)
+SequentialFeatureSelector.transform = dataframify_new_column_names(
+    SequentialFeatureSelector.transform, 'sfs_')
+SequentialFeatureSelector.fit = fitify_just_use_values(
+    SequentialFeatureSelector.fit)
 model_selectors['SequentialFeatureSelector'] = SequentialFeatureSelector
 name_to_constructor['SequentialFeatureSelector'] = SequentialFeatureSelector
 
 # Custom selectors don't need to be dataframified
 name_to_constructor.update({
-    #'PassThrough': PassThrough,
+    # 'PassThrough': PassThrough,
     'DoNothing': util_legos.DoNothing,
     'PCA': PCA,
     'SequentialFeatureSelector': SequentialFeatureSelector,
-    'MASTMLFeatureSelector' : MASTMLFeatureSelector,
+    'MASTMLFeatureSelector': MASTMLFeatureSelector,
 })
