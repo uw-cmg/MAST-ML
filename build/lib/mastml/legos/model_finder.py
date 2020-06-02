@@ -8,9 +8,8 @@ import inspect
 
 import sklearn.base
 import sklearn.utils.testing
-import joblib
+from sklearn.externals import joblib
 import numpy as np
-import os
 
 # Sometimes xgboost is hard to install so make it optional
 try:
@@ -23,14 +22,8 @@ from keras.models import model_from_json
 from keras.models import load_model
 from keras.models import Sequential
 
-import random
-
-import pandas as pd
-
 #from . import keras_models
 from mastml import utils
-
-from scipy import stats
 
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -191,130 +184,6 @@ class KerasRegressor():
     def summary(self):
         return self.model.summary()
 
-# ref: https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.BaggingRegressor.html#sklearn.ensemble.BaggingRegressor
-# NOTE: in order to use this, other models for the custom ensemble must be defined 
-#       in the conf file with "_ensemble" somewhere in the name
-class EnsembleRegressor():
-    def __init__(self, n_estimators, num_samples, model_list, num_models):
-        self.model_list = model_list # should be list of strings
-        self.num_models = num_models # how many of each of the specified models should be included in the ensemble
-        self.n_estimators = n_estimators
-        self.num_samples = num_samples
-        self.max_samples = num_samples
-        self.bootstrapped_datasets = []
-        self.bootstrapped_idxs = []
-        self.all_preds = []
-        self.path = ""
-        self.model = self.build_models() # actually a list of models for use as the members in the ensemble
-
-        self.fold = -1
-
-        self.bootstrap = True
-
-        assert self.n_estimators == sum(self.num_models)
-
-    def build_models(self):
-        model = []
-
-        for i, num_m in enumerate(self.num_models):
-            for j in range(num_m):
-                model.append(self.model_list[i])
-
-        return model
-
-    def setup(self, path):
-        self.fold += 1
-        self.bootstrapped_idxs = []
-        self.bootstrapped_datasets = []
-        self.path = path
-
-    def fit(self, X, Y):
-        X = X.values
-        Y = Y.values
-
-        idxs = np.arange(len(X))
-        # fit each model in the ensemble
-        for i in range(self.n_estimators):
-            model = self.model[i]
-
-            # do bootstrapping given the validation data
-            bootstrap_idxs = random.choices(idxs, k=self.num_samples)
-            bootstrap_X = X[bootstrap_idxs]
-            bootstrap_Y = Y[bootstrap_idxs]
-            if 1 == len(bootstrap_X.shape):
-                bootstrap_X = np.expand_dims(np.asarray(bootstrap_X), -1)
-            if 1 == len(bootstrap_Y.shape):
-                bootstrap_Y = np.expand_dims(np.asarray(bootstrap_Y), -1)
-
-            self.bootstrapped_idxs.append(bootstrap_idxs)
-            self.bootstrapped_datasets.append(bootstrap_X)
-            model.fit(bootstrap_X, bootstrap_Y)
-
-    def predict(self, X, return_std=False):
-
-        if isinstance(X, pd.DataFrame):
-            X = X.values
-
-        all_preds = []
-        means = []
-
-        for x_i in range(len(X)):
-            preds = []
-            for i in range(self.n_estimators):
-                sample_X = X[x_i]
-                if 1 == len(sample_X.shape):
-                    sample_X = np.expand_dims(np.asarray(sample_X), 0)
-                preds.append(self.model[i].predict(sample_X))
-            all_preds.append(preds)
-            means.append(np.mean(preds))
-
-            # NOTE for ref (if manual jackknife implementation is necessary)
-            # https://www.jpytr.com/post/random_forests_and_jackknife_variance/
-            # https://github.com/scikit-learn-contrib/forest-confidence-interval/tree/master/forestci
-            # http://contrib.scikit-learn.org/forest-confidence-interval/reference/forestci.html
-
-        self.all_preds = all_preds
-
-        return np.asarray(means)
-
-    # check for failed fits, warn users, and re-calculate
-    def stats_check_models(self, X, Y):
-        maes = []
-        for i in range(self.n_estimators):
-            abs_errors = np.absolute(np.absolute(np.squeeze(np.asarray(self.all_preds)[:,i])) - Y)
-            maes.append(sum(abs_errors) / len(abs_errors))
-
-        alpha = 0.01
-        bad_idxs = []
-        for i in range(self.n_estimators):
-            other_maes = np.delete(maes, [i])
-            # ref: https://towardsdatascience.com/statistical-significance-hypothesis-testing-the-normal-curve-and-p-values-93274fa32687
-            z_score = (maes[i] - np.mean(other_maes)) / np.std(other_maes)
-            # ref: https://stackoverflow.com/questions/3496656/convert-z-score-z-value-standard-score-to-p-value-for-normal-distribution-in/3508321
-            p_val = stats.norm.sf(abs(z_score))*2
-
-            if p_val <= alpha:
-                # TODO ok to print these/how to print/log properly?
-                print("Estimator {} failed under statistical significance threshold {} (p_val {}), relevant dataset output to file with name format \'<fold>_<estimator idx>_bootstrapped_dataset.csv\'".format(i, alpha, p_val))
-                print("bad estimator mae: {}".format(maes[i]))
-                print("maes (for ref):")
-                print(maes)
-                fname = "fold"+str(self.fold)+"_"+"estimator"+str(i)+"_bootstrapped_dataset.csv"
-                np.savetxt(os.path.join(self.path, fname), self.bootstrapped_datasets[i])
-                bad_idxs.append(i)
-
-        if len(bad_idxs) == self.n_estimators:
-            print("ALL models failed, wtf is your data")
-            return
-        # NOTE do not remove these models and recalculate for now
-        self.all_preds = np.delete(self.all_preds, bad_idxs, 1)
-
-        y_preds = []
-        for idx, x_i in enumerate(self.all_preds):
-            y_preds.append(np.mean(x_i))
-
-        return np.asarray(y_preds)
-
 class ModelImport():
     """
     Class used to import pickled models from previous machine learning fits
@@ -365,8 +234,7 @@ try:
         'ModelImport': ModelImport,
         'XGBRegressor': xgb.XGBRegressor,
         'XGBClassifier': xgb.XGBClassifier,
-        'KerasRegressor': KerasRegressor,
-        'EnsembleRegressor': EnsembleRegressor
+        'KerasRegressor': KerasRegressor
         #'DNNClassifier': keras_models.DNNClassifier
     }
 except NameError:
@@ -374,8 +242,7 @@ except NameError:
         'AlwaysFive': AlwaysFive,
         'RandomGuesser': RandomGuesser,
         'ModelImport': ModelImport,
-        'KerasRegressor': KerasRegressor,
-        'EnsembleRegressor': EnsembleRegressor
+        'KerasRegressor': KerasRegressor
         # 'DNNClassifier': keras_models.DNNClassifier
     }
 name_to_constructor.update(custom_models)

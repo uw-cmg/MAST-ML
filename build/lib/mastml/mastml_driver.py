@@ -15,15 +15,13 @@ from collections import OrderedDict
 from os.path import join # We use join tons
 from functools import reduce
 from contextlib import redirect_stdout
-from copy import deepcopy
 
 import numpy as np
 import pandas as pd
-import joblib
+from sklearn.externals import joblib
 from sklearn.exceptions import UndefinedMetricWarning
 from sklearn.model_selection import LeaveOneGroupOut
 from sklearn.metrics import make_scorer
-from sklearn.base import clone
 
 from mastml import conf_parser, data_loader, html_helper, plot_helper, utils, learning_curve, data_cleaner, metrics
 from mastml.legos import (data_splitters, feature_generators, feature_normalizers,
@@ -242,15 +240,9 @@ def mastml_run(conf_path, data_path, outdir):
     log.debug('splitter_to_group_names:\n' + str(splitter_to_group_names))
 
     # Instantiate models first so we can snatch them and pass them into feature selectors
-
     models = _instantiate(conf['Models'],
                           model_finder.name_to_constructor,
                           'model')
-
-    # Need to specially snatch the GPR model if it is in models list because it contains special kernel object. Do
-    # this before setting up feature selectors in case GPR used in e.g. forward selection
-    models = _snatch_gpr_model(models, conf['Models'])
-    original_models = models
 
     models = _snatch_models(models, conf['FeatureSelection'])
 
@@ -292,29 +284,12 @@ def mastml_run(conf_path, data_path, outdir):
     models = _snatch_keras_model(models, conf['Models'])
     original_models = models
 
-    # init of ensemble models
-    for long_name, (name, kwargs) in conf['Models'].items():
-        if 'EnsembleRegressor' in long_name:
-            sub_models = []
-            sub_models_names = models[long_name].model
-            for submodel_long_name in sub_models_names:
-                for sm_long_name, (sm_name, sm_kwargs) in conf['Models'].items():
-                    if sm_long_name in submodel_long_name:
-                        sm = None
-                        if 'KerasRegressor' in sm_long_name:
-                            sm = model_finder.KerasRegressor(conf['Models']['KerasRegressor_ensemble'][1])
-                        else:
-                            sm = clone(models[sm_long_name])
-                        sub_models.append(sm)
-                        break
-            models[long_name].model = sub_models
-
-    for long_name, (name, kwargs) in conf['Models'].items():
-        if '_ensemble' in long_name:
-            del models[long_name]
+    # Need to specially snatch the GPR model if it is in models list because it contains special kernel object
+    models = _snatch_gpr_model(models, conf['Models'])
+    original_models = models
 
     # Need to snatch models and CV objects for Hyperparam Opt
-    hyperopt_params = _snatch_models_cv_for_hyperopt(conf, models, splitters, is_classification)
+    hyperopt_params = _snatch_models_cv_for_hyperopt(conf, models, splitters)
 
     hyperopts = _instantiate(hyperopt_params,
                              hyper_opt.name_to_constructor,
@@ -793,13 +768,9 @@ def mastml_run(conf_path, data_path, outdir):
                     exit()
                 train_pred = model.predict(train_X)
                 test_pred = model.predict(test_X)
-                if 'EnsembleRegressor' in model.__class__.__name__:
-                    test_pred = model.stats_check_models(test_X, test_y)
             else:
                 train_pred = model.predict(train_X)
                 test_pred  = model.predict(test_X)
-                if 'EnsembleRegressor' in model.__class__.__name__:
-                    test_pred = model.stats_check_models(test_X, test_y)
                 if train_pred.ndim > 1:
                     train_pred = np.squeeze(train_pred)
                 if test_pred.ndim > 1:
@@ -823,8 +794,6 @@ def mastml_run(conf_path, data_path, outdir):
                     validation_y_forpred = _only_validation(y, validation_columns[validation_column_name])
                     log.info("             Making predictions on prediction_only data...")
                     validation_predictions = model.predict(validation_X_forpred)
-                    if 'EnsembleRegressor' in model.__class__.__name__:
-                        validation_predictions = model.stats_check_models(validation_X_forpred, validation_y_forpred)
                     validation_predictions_list.append(validation_predictions)
                     validation_y_forpred_list.append(validation_y_forpred)
 
@@ -957,11 +926,6 @@ def mastml_run(conf_path, data_path, outdir):
 
         split_results = []
         for split_num, (train_indices, test_indices) in enumerate(trains_tests):
-
-            path = join(main_path, f"split_{split_num}")
-            if 'EnsembleRegressor' in model.__class__.__name__:
-                models['EnsembleRegressor'].setup(path)
-
             split_results.append(one_fit(split_num, train_indices, test_indices, normalizer_instance))
 
         log.info("    Calculating mean and stdev of scores...")
@@ -1067,23 +1031,12 @@ def mastml_run(conf_path, data_path, outdir):
                                                                  savepath=join(main_path,'test_cumulative_normalized_error_average_allsplits.png'),
                                                                  has_model_errors=has_model_errors,
                                                                  err_avg=average_error_values)
-            # Here- plot predicted vs real errors for all splits, only if using RF, GBR, GPR, or ET
-            if model.__class__.__name__ in ['RandomForestRegressor', 'ExtraTreesRegressor', 'GradientBoostingRegressor', 'GaussianProcessRegressor', 'EnsembleRegressor']:
-                plot_helper.plot_real_vs_predicted_error(y_true, main_path, model, data_test_type='test')
-
             if is_validation:
                 plot_helper.plot_average_cumulative_normalized_error(y_true=y_true_validation, y_pred=y_pred_validation,
                                                                      savepath=join(main_path,
                                                                                    'validation_cumulative_normalized_error_average_allsplits.png'),
                                                                      has_model_errors=has_model_errors_validation,
                                                                      err_avg=average_error_values_validation)
-
-                # Here- plot predicted vs real errors for all splits
-                # Use y_true here because want to normalize to full training dataset stdev
-                if model.__class__.__name__ in ['RandomForestRegressor', 'ExtraTreesRegressor',
-                                                'GradientBoostingRegressor', 'GaussianProcessRegressor', 'EnsembleRegressor']:
-                    plot_helper.plot_real_vs_predicted_error(y_true, main_path, model, data_test_type='validation')
-
             plot_helper.plot_average_normalized_error(y_true=y_true, y_pred=y_pred,
                                                       savepath=join(main_path,'test_normalized_error_average_allsplits.png'),
                                                                  has_model_errors=has_model_errors,
@@ -1093,8 +1046,7 @@ def mastml_run(conf_path, data_path, outdir):
         # Call to make average error plots
         if conf['MiscSettings']['plot_error_plots']:
             log.info("    Making average error plots over all splits")
-            if 'NoSplit' not in main_path:
-                make_average_error_plots(main_path=main_path)
+            make_average_error_plots(main_path=main_path)
 
         log.info("    Making best/worst plots...")
         def get_best_worst_median_runs():
@@ -1233,12 +1185,10 @@ def _snatch_keras_model(models, conf_models):
     return models
 
 def _snatch_gpr_model(models, conf_models):
-    models = OrderedDict(models)
-    models_orig = deepcopy(models)
-    for model in models_orig.keys():
-        if 'GaussianProcessRegressor' in model or 'GaussianProcessClassifier' in model:
+    for model in models.keys():
+        if 'GaussianProcessRegressor' in model:
             import sklearn.gaussian_process
-            from sklearn.gaussian_process import GaussianProcessRegressor, GaussianProcessClassifier
+            from sklearn.gaussian_process import GaussianProcessRegressor
             kernel_list = ['WhiteKernel', 'RBF', 'ConstantKernel', 'Matern', 'RationalQuadratic', 'ExpSineSquared', 'DotProduct']
             kernel_operators = ['+', '*', '-']
             params = conf_models[model]
@@ -1292,20 +1242,14 @@ def _snatch_gpr_model(models, conf_models):
                                       ' either "+" or "*".')
                     kernel_count += 1
 
-            if 'GaussianProcessRegressor' in model:
-                gpr = GaussianProcessRegressor(kernel=kernel, **params[1])
-                # Need to delete old GPR from model list and replace with new GPR with correct kernel and other params.
-                del models[model]
-                models[model] = gpr
-            elif 'GaussianProcessClassifier' in model:
-                gpc = GaussianProcessClassifier(kernel=kernel, **params[1])
-                # Need to delete old GPC from model list and replace with new GPC with correct kernel and other params.
-                del models[model]
-                models[model] = gpc
-
+            gpr = GaussianProcessRegressor(kernel=kernel, **params[1])
+            # Need to delete old GPR from model list and replace with new GPR with correct kernel and other params.
+            del models[model]
+            models[model] = gpr
+            break
     return models
 
-def _snatch_models_cv_for_hyperopt(conf, models, splitters, is_classification):
+def _snatch_models_cv_for_hyperopt(conf, models, splitters):
     models = list(models.items())
     if conf['HyperOpt']:
         for searchtype, searchparams in conf['HyperOpt'].items():
@@ -1333,10 +1277,7 @@ def _snatch_models_cv_for_hyperopt(conf, models, splitters, is_classification):
                 if paramtype == 'scoring':
                     # Need to grab correct scoring object
                     found_scorer = False
-                    if is_classification:
-                        metrics_dict = metrics.classification_metrics
-                    else:
-                        metrics_dict = metrics.regression_metrics
+                    metrics_dict = metrics.regression_metrics
                     if paramvalue in metrics_dict.keys():
                         conf['HyperOpt'][searchtype][1]['scoring'] = make_scorer(metrics_dict[paramvalue][1],
                                                                                  greater_is_better=metrics_dict[paramvalue][0])

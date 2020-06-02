@@ -17,13 +17,6 @@ import sklearn.feature_selection as fs
 from mlxtend.feature_selection import SequentialFeatureSelector
 import os, logging
 
-## XIYU's import for PearsonSelector
-import copy
-from numpy import cov
-import xlsxwriter
-from scipy.stats import pearsonr
-##
-
 log = logging.getLogger('mastml')
 
 from mastml.legos import util_legos
@@ -146,137 +139,6 @@ class EnsembleModelFeatureSelector(object):
         df = X[self.selected_features]
         return df
 
-class PearsonSelector(object):
-    def __init__(self, threshold_between_features, threshold_with_target, remove_highly_correlated_features, k_features):
-        self.threshold_between_features = threshold_between_features
-        self.threshold_with_target = threshold_with_target
-        self.remove_highly_correlated_features = remove_highly_correlated_features
-        self.k_features = k_features
-        self.selected_features = list()
-
-    def fit(self, X, savepath, y=None, Xgroups=None):
-        df = X
-        df_features = df.columns.tolist()
-        n_col = df.shape[1]
-
-        if self.remove_highly_correlated_features == True:
-            array_data = list()
-
-            for i in range(n_col):
-                col_data = df.iloc[:, i]
-                col = list()
-                for j in range(n_col):
-                    row_data = df.iloc[:, j]
-                    corr, _ = pearsonr(row_data, col_data)  # Pearson Correlation
-                    col.append(corr)
-                array_data.append(col)
-
-            array_df = pd.DataFrame(array_data, index=df_features[:n_col], columns=df_features[:n_col])
-
-            array_df.to_excel(os.path.join(savepath, 'Full_correlation_matrix.xlsx'))
-
-            #### Print features highly-correlated to each other into excel
-            hcorr = dict()
-            highly_correlated_features = list()
-            for i in range(len(array_df.iloc[0, :])):  # This includes all the data in the array_df
-                # feature1 = array_df.iloc[:, i] # This does not work because feature1 is not the col name but a list of values
-                feature1 = array_df.columns[i]
-                for j in range(len(array_df.iloc[0, :])):  # This includes all the data in the array_df
-                    # feature2 = array_df.iloc[:, j] # This does not work because feature2 is not the col name but a list of values
-                    feature2 = array_df.columns[j]
-                    if abs(array_df.iloc[i - 1, j - 1]) >= np.float64(self.threshold_between_features):
-                        if i != j:  # Ignore diagonal features
-                            if not (feature2, feature1) in hcorr:  # Ignore the same correlations
-                                hcorr[(feature1, feature2)] = array_df.iloc[i - 1, j - 1]
-                                highly_correlated_features.append(feature2)
-
-            hcorr_df = pd.DataFrame(hcorr, index=["Corr"])
-            hcorr_df.to_excel(os.path.join(savepath, 'Highly_correlated_features.xlsx'))
-
-            highly_correlated_features = list(np.unique(np.array(highly_correlated_features)))
-
-            #### Print the removed features and the new smaller dataframe with features removed
-            # Deep copy the original dataframe
-            removed_features_df = copy.deepcopy(X)
-            new_df = copy.deepcopy(X)
-
-            # Drop the features that can be removed
-            all_features = list(new_df.columns)
-            removed_features = list()
-            for feature in all_features:
-                if feature not in highly_correlated_features:
-                    removed_features.append(feature)
-                    new_df = new_df.drop(columns=feature)
-
-            # Print the highly correlated features that were removed
-            for feature in all_features:
-                if feature not in removed_features:
-                    removed_features_df = removed_features_df.drop(columns=feature)
-            removed_features_df.to_excel(os.path.join(savepath, "Highly_correlated_features_removed.xlsx"),
-                                         index=False)
-
-            # Define self.selected_features
-            remaining_features = list(new_df.columns)
-        else:
-            remaining_features = list(df.columns)
-
-        # Compute Pearson correlations between each feature and target feature
-        all_corrs = {}
-        for i in range(len(remaining_features)):
-            feature_name = df.columns[i]
-            feature_data = df.iloc[:, i]
-            corr, _ = pearsonr(y, feature_data)
-            all_corrs[feature_name] = corr
-        all_corrs = abs(pd.Series(all_corrs))
-
-        self.selected_features = list(all_corrs[all_corrs > self.threshold_with_target].sort_values(
-                                                ascending=False).keys())
-
-        # Sometimes the specificed threshold is too high. Make it lower until at least 1 feature is selected
-        while len(self.selected_features) < self.k_features:
-            log.debug('WARNING: Pearson selector threshold was too high to result in selecting any features, lowering threshold to get specified feature number')
-            self.threshold_with_target -= 0.05
-            self.selected_features = list(all_corrs[all_corrs > self.threshold_with_target].sort_values(
-                ascending=False).keys())
-            if len(self.selected_features) == n_col:
-                log.debug('WARNING: Pearson selector reduce the threshold such that all features were included')
-                break
-            log.debug('Pearson selector selected features with an adjusted threshold value')
-        if len(self.selected_features) > self.k_features:
-            self.selected_features = list(all_corrs[all_corrs > self.threshold_with_target].sort_values(ascending=False).keys())[:self.k_features]
-
-        # Create a Pandas Excel writer using XlsxWriter as the engine.
-        writer = pd.ExcelWriter(os.path.join(savepath, 'Features_highly_correlated_with_target.xlsx'), engine='xlsxwriter')
-
-        # Create the dataframe displaying the highly correlated features and the Pearson Correlations
-        hcorr_with_target_df = pd.DataFrame(all_corrs,
-                                            index=list(all_corrs[all_corrs > self.threshold_with_target].sort_values(
-                                                ascending=False).keys()),
-                                            columns=["Pearson Correlation (absolute value)"])
-        hcorr_with_target_df.to_excel(writer, sheet_name='Sheet1', index=True)
-        hcorr_with_target_features = list(hcorr_with_target_df.index)
-
-        # Create dataframe containing the highly correlated features
-        all_features = list(df.columns)
-        for feature in all_features:
-            if not feature in hcorr_with_target_features:
-                df = df.drop(columns=feature)
-
-        # Reorder the dataframe by columns (by their correlation to the target feature)
-        df = df.reindex(columns=hcorr_with_target_features)
-
-        # Print the dataframe to a spreadsheet
-        df.to_excel(writer, sheet_name='Sheet2',
-                    index=False)  # From left to right, the strength of correlation decreases.
-
-        # Close the Pandas Excel writer and output the Excel file.
-        writer.save()
-
-        return self
-
-    def transform(self, X):
-        dataframe = X[self.selected_features]
-        return dataframe
 
 class MASTMLFeatureSelector(object):
     """
@@ -458,6 +320,5 @@ name_to_constructor.update({
     'PCA': PCA,
     'SequentialFeatureSelector': SequentialFeatureSelector,
     'MASTMLFeatureSelector' : MASTMLFeatureSelector,
-    'PearsonSelector': PearsonSelector,
     'EnsembleModelFeatureSelector': EnsembleModelFeatureSelector
 })
