@@ -1171,6 +1171,10 @@ def prediction_intervals(model, X, rf_error_method, rf_error_percentile, Xtrain,
         preds = model.predict(X, return_std=True)[1] # Get the stdev model error from the predictions of GPR
         err_up = preds
         err_down = preds
+    if model.__class__.__name__=='EnsembleRegressor':
+        preds = model.predict(X, return_std=True)[1] # Get the stdev model error from the predictions of GPR
+        err_up = preds/2.0
+        err_down = preds/2.0
 
     #if model.__class__.__name__=='ModelImport':
     #    if model.model.__class__.__name__=='GaussianProcessRegressor':
@@ -1212,7 +1216,7 @@ def plot_normalized_error(y_true, y_pred, savepath, model, rf_error_method, rf_e
     # Here: if model is random forest or Gaussian process, get real error bars. Else, just residuals
     model_name = model.__class__.__name__
     # TODO: also add support for Gradient Boosted Regressor
-    models_with_error_predictions = ['RandomForestRegressor', 'GaussianProcessRegressor', 'GradientBoostingRegressor']
+    models_with_error_predictions = ['RandomForestRegressor', 'GaussianProcessRegressor', 'GradientBoostingRegressor', 'EnsembleRegressor']
     has_model_errors = False
     if model_name in models_with_error_predictions:
         has_model_errors = True
@@ -1237,6 +1241,9 @@ def plot_normalized_error(y_true, y_pred, savepath, model, rf_error_method, rf_e
 
     if has_model_errors:
         err_avg = [(abs(e1)+abs(e2))/2 for e1, e2 in zip(err_up, err_down)]
+        err_avg = np.asarray(err_avg)
+        err_avg[err_avg==0.0] = 0.0001
+        err_avg = err_avg.tolist()
         model_errors = (y_true_-y_pred_)/err_avg
         density_errors = gaussian_kde(model_errors)
         maxy = max(max(density_residuals(x)), max(norm.pdf(x, mu, sigma)), max(density_errors(x)))
@@ -1293,7 +1300,7 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, rf_error_m
 
     # Here: if model is random forest or Gaussian process, get real error bars. Else, just residuals
     model_name = model.__class__.__name__
-    models_with_error_predictions = ['RandomForestRegressor', 'GaussianProcessRegressor', 'GradientBoostingRegressor']
+    models_with_error_predictions = ['RandomForestRegressor', 'GaussianProcessRegressor', 'GradientBoostingRegressor', 'EnsembleRegressor']
     has_model_errors = False
     if model_name in models_with_error_predictions:
         has_model_errors = True
@@ -1331,6 +1338,9 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, rf_error_m
 
     if has_model_errors:
         err_avg = [(abs(e1)+abs(e2))/2 for e1, e2 in zip(err_up, err_down)]
+        err_avg = np.asarray(err_avg)
+        err_avg[err_avg==0.0] = 0.0001
+        err_avg = err_avg.tolist()
         model_errors = abs((y_true_-y_pred_)/err_avg)
         n_errors = np.arange(1, len(model_errors) + 1) / np.float(len(model_errors))
         X_errors = np.sort(model_errors)
@@ -1421,6 +1431,9 @@ def plot_average_cumulative_normalized_error(y_true, y_pred, savepath, has_model
     ax.set_xlim([0, 5])
 
     if has_model_errors:
+        err_avg = np.asarray(err_avg)
+        err_avg[err_avg==0.0] = 0.0001
+        err_avg = err_avg.tolist()
         model_errors = abs((y_true-y_pred)/err_avg)
         n_errors = np.arange(1, len(model_errors) + 1) / np.float(len(model_errors))
         X_errors = np.sort(model_errors)
@@ -1507,6 +1520,9 @@ def plot_average_normalized_error(y_true, y_pred, savepath, has_model_errors, er
     minn = -5
 
     if has_model_errors:
+        err_avg = np.asarray(err_avg)
+        err_avg[err_avg==0.0] = 0.0001
+        err_avg = err_avg.tolist()
         model_errors = (y_true-y_pred)/err_avg
         density_errors = gaussian_kde(model_errors)
         maxy = max(max(density_residuals(x)), max(norm.pdf(x, mu, sigma)), max(density_errors(x)))
@@ -1549,6 +1565,8 @@ def plot_real_vs_predicted_error(y_true, savepath, model, data_test_type):
         model_type = 'ET'
     elif model_name == 'GaussianProcessRegressor':
         model_type = 'GPR'
+    elif model_name == 'EnsembleRegressor':
+        model_type = 'ER'
 
     if data_test_type not in ['test', 'validation']:
         print('Error: data_test_type must be one of "test" or "validation"')
@@ -1569,37 +1587,57 @@ def plot_real_vs_predicted_error(y_true, savepath, model, data_test_type):
     # Find nan entries
     nans = np.argwhere(np.isnan(rms_residual_values)).tolist()
 
-    lowval = 0
-    if len(nans) > 0:
-        if nans[0][0] == 0:
-            nans = nans[1:]
-            lowval = 1
-            if len(nans) > 0:
-                if nans[0][0] == 1:
-                    nans = nans[1:]
-                    lowval = 2
-                    if len(nans) > 0:
-                        if nans[0][0] == 2:
-                            nans = nans[1:]
-                            lowval = 3
-                            if len(nans) > 0:
-                                if nans[0][0] == 3:
-                                    nans = nans[1:]
-                                    lowval = 4
+    # use nans (which are indices) to delete relevant parts of bin_values and 
+    # rms_residual_values as they can't be used to fit anyway
+    bin_values_copy = np.empty_like(bin_values)
+    bin_values_copy[:] = bin_values
+    rms_residual_values_copy = np.empty_like(rms_residual_values)
+    rms_residual_values_copy[:] = rms_residual_values
+    bin_values_copy = np.delete(bin_values_copy, nans)
+    rms_residual_values_copy = np.delete(rms_residual_values_copy, nans)
 
-    try:
-        val = min(nans)[0]
-    except ValueError:
-        val = 10
-    if val > 10:
-        val = 10
+    # BEGIN OLD CODE
+    # --------------
+    #lowval = 0
+    #if len(nans) > 0:
+    #    if nans[0][0] == 0:
+    #        nans = nans[1:]
+    #        lowval = 1
+    #        if len(nans) > 0:
+    #            if nans[0][0] == 1:
+    #                nans = nans[1:]
+    #                lowval = 2
+    #                if len(nans) > 0:
+    #                    if nans[0][0] == 2:
+    #                        nans = nans[1:]
+    #                        lowval = 3
+    #                        if len(nans) > 0:
+    #                            if nans[0][0] == 3:
+    #                                nans = nans[1:]
+    #                                lowval = 4
 
-    linear.fit(np.array(bin_values[lowval:val]).reshape(-1, 1), rms_residual_values[lowval:val])
+    #try:
+    #    val = min(nans)[0]
+    #except ValueError:
+    #    val = 10
+    #if val > 10:
+    #    val = 10
 
-    yfit = linear.predict(np.array(bin_values[lowval:val]).reshape(-1, 1))
-    ax.plot(bin_values[lowval:val], yfit, 'k--', linewidth=2)
+    #linear.fit(np.array(bin_values[lowval:val]).reshape(-1, 1), rms_residual_values[lowval:val])
+
+    #yfit = linear.predict(np.array(bin_values[lowval:val]).reshape(-1, 1))
+    #ax.plot(bin_values[lowval:val], yfit, 'k--', linewidth=2)
+    #slope = linear.coef_
+    #r2 = r2_score(rms_residual_values[lowval:val], yfit)
+    # --------------
+
+    linear.fit(np.array(bin_values_copy).reshape(-1, 1), rms_residual_values_copy)
+
+    yfit = linear.predict(np.array(bin_values_copy).reshape(-1, 1))
+    ax.plot(bin_values_copy, yfit, 'k--', linewidth=2)
     slope = linear.coef_
-    r2 = r2_score(rms_residual_values[lowval:val], yfit)
+    r2 = r2_score(rms_residual_values_copy, yfit)
+
     ax.text(0.02, 1.2, 'slope = %3.2f ' % slope, fontsize=12, fontdict={'color': 'k'})
     ax.text(0.02, 1.1, 'R$^2$ = %3.2f ' % r2, fontsize=12, fontdict={'color': 'k'})
 

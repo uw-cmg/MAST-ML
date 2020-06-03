@@ -22,6 +22,9 @@ from keras.models import model_from_json
 from keras.models import load_model
 from keras.models import Sequential
 
+from sklearn.kernel_ridge import KernelRidge
+from random import choices
+
 #from . import keras_models
 from mastml import utils
 
@@ -184,6 +187,97 @@ class KerasRegressor():
     def summary(self):
         return self.model.summary()
 
+# ref: https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.BaggingRegressor.html#sklearn.ensemble.BaggingRegressor
+# for now this just uses a default defined regressor
+class EnsembleRegressor():
+    def __init__(self, n_estimators, num_samples, model_str=None):
+        self.model_str = model_str
+        self.n_estimators = n_estimators
+        self.num_samples = num_samples
+        self.model = self.build_models() # actually a list of models for use as the members in the ensemble
+
+    def build_models(self):
+        model = []
+
+        for i in range(self.n_estimators):
+            if self.model_str:
+                # TODO
+                # proposed procedure for this:
+                #  1. check if using EnsembleRegressor
+                #  2. if so, specifically get the list of these models
+                #  3. run the whole _instantiate/_snatch_models routine through THOSE models, not this one
+                pass
+            else:
+                estimator = KernelRidge(alpha=0.01, kernel='rbf', gamma=0.1)
+            model.append(estimator)
+
+        # DEBUG
+        #print("self.model_str: {}".format(self.model_str))
+        #print("self.n_estimators: {}".format(self.n_estimators))
+        #print("self.num_samples: {}".format(self.num_samples))
+        #print("EnsembleRegressor model:")
+        #print(model)
+
+        return model
+
+    def fit(self, X, Y):
+        X = X.values[:,0]
+        Y = Y.values
+
+        # DBEUG (will delete)
+        #print("X:")
+        #print(X)
+        #print("Y:")
+        #print(Y)
+
+        idxs = np.arange(len(X))
+        # fit each model in the ensemble
+        for i in range(self.n_estimators):
+            model = self.model[i]
+
+            # do bootstrapping given the validation data
+            bootstrap_idxs = choices(idxs, k=self.num_samples)
+            bootstrap_X = X[bootstrap_idxs]
+            bootstrap_Y = Y[bootstrap_idxs]
+
+            # DEBUG (will delete)
+            #print("bootstrap_idxs:")
+            #print(bootstrap_idxs)
+            #print("bootstrap_X:")
+            #print(bootstrap_X)
+            #print("bootstrap_Y:")
+            #print(bootstrap_Y)
+
+            model.fit(np.expand_dims(np.asarray(bootstrap_X), -1), np.expand_dims(np.asarray(bootstrap_Y), -1))
+
+    def predict(self, X, return_std=False):
+        X = X.values[:,0]
+
+        # DBEUG (will delete)
+        #print("X:")
+        #print(X)
+
+        means = []
+        stdevs = []
+
+        for x_i in range(len(X)):
+            preds = []
+            for i in range(self.n_estimators):
+                preds.append(self.model[i].predict([[X[x_i]]]))
+            means.append(np.mean(preds))
+            stdevs.append(np.std(preds)) # for now, the error estimate is just the standard deviation, are there others?
+
+        # DEBUG (will delete)
+        #print("means:")
+        #print(means)
+        #print("stdevs:")
+        #print(stdevs)
+
+        if return_std:
+            return np.asarray(means), np.asarray(stdevs)
+        else:
+            return np.asarray(means)
+
 class ModelImport():
     """
     Class used to import pickled models from previous machine learning fits
@@ -234,7 +328,8 @@ try:
         'ModelImport': ModelImport,
         'XGBRegressor': xgb.XGBRegressor,
         'XGBClassifier': xgb.XGBClassifier,
-        'KerasRegressor': KerasRegressor
+        'KerasRegressor': KerasRegressor,
+        'EnsembleRegressor': EnsembleRegressor
         #'DNNClassifier': keras_models.DNNClassifier
     }
 except NameError:
@@ -242,7 +337,8 @@ except NameError:
         'AlwaysFive': AlwaysFive,
         'RandomGuesser': RandomGuesser,
         'ModelImport': ModelImport,
-        'KerasRegressor': KerasRegressor
+        'KerasRegressor': KerasRegressor,
+        'EnsembleRegressor': EnsembleRegressor
         # 'DNNClassifier': keras_models.DNNClassifier
     }
 name_to_constructor.update(custom_models)

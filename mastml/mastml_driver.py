@@ -1032,7 +1032,7 @@ def mastml_run(conf_path, data_path, outdir):
                                                                  has_model_errors=has_model_errors,
                                                                  err_avg=average_error_values)
             # Here- plot predicted vs real errors for all splits, only if using RF, GBR, GPR, or ET
-            if model.__class__.__name__ in ['RandomForestRegressor', 'ExtraTreesRegressor', 'GradientBoostingRegressor', 'GaussianProcessRegressor']:
+            if model.__class__.__name__ in ['RandomForestRegressor', 'ExtraTreesRegressor', 'GradientBoostingRegressor', 'GaussianProcessRegressor', 'EnsembleRegressor']:
                 plot_helper.plot_real_vs_predicted_error(y_true, main_path, model, data_test_type='test')
 
             if is_validation:
@@ -1045,7 +1045,7 @@ def mastml_run(conf_path, data_path, outdir):
                 # Here- plot predicted vs real errors for all splits
                 # Use y_true here because want to normalize to full training dataset stdev
                 if model.__class__.__name__ in ['RandomForestRegressor', 'ExtraTreesRegressor',
-                                                'GradientBoostingRegressor', 'GaussianProcessRegressor']:
+                                                'GradientBoostingRegressor', 'GaussianProcessRegressor', 'EnsembleRegressor']:
                     plot_helper.plot_real_vs_predicted_error(y_true, main_path, model, data_test_type='validation')
 
             plot_helper.plot_average_normalized_error(y_true=y_true, y_pred=y_pred,
