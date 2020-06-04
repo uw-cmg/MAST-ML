@@ -240,6 +240,7 @@ def mastml_run(conf_path, data_path, outdir):
     log.debug('splitter_to_group_names:\n' + str(splitter_to_group_names))
 
     # Instantiate models first so we can snatch them and pass them into feature selectors
+
     models = _instantiate(conf['Models'],
                           model_finder.name_to_constructor,
                           'model')
@@ -287,6 +288,18 @@ def mastml_run(conf_path, data_path, outdir):
     # Need to specially snatch the GPR model if it is in models list because it contains special kernel object
     models = _snatch_gpr_model(models, conf['Models'])
     original_models = models
+
+    # init of ensemble models
+    for long_name, (name, kwargs) in conf['Models'].items():
+        if 'EnsembleRegressor' in long_name:
+            sub_models = []
+            for submodel_long_name, (submodel_name, submodel_kwargs) in conf['Models'].items():
+                if '_ensemble' in submodel_long_name:
+                    sub_models.append(models[submodel_long_name])
+            for submodel_long_name, (submodel_name, submodel_kwargs) in conf['Models'].items():
+                if '_ensemble' in submodel_long_name:
+                    del models[submodel_long_name]
+            models['EnsembleRegressor'].model = sub_models
 
     # Need to snatch models and CV objects for Hyperparam Opt
     hyperopt_params = _snatch_models_cv_for_hyperopt(conf, models, splitters)
