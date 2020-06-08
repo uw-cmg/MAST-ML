@@ -193,34 +193,27 @@ class KerasRegressor():
 # TODO add support for:
 #       - choosing error type
 class EnsembleRegressor():
-    def __init__(self, n_estimators, num_samples, error_type='std', model_list=[], num_models=[], use_custom_models=False):
+    def __init__(self, n_estimators, num_samples, model_list, num_models, error_type='std'):
         self.model_list = model_list # should be list of strings
         self.num_models = num_models # how many of each of the specified models should be included in the ensemble
-        self.use_custom_models = use_custom_models
         self.error_type = error_type
         self.n_estimators = n_estimators
         self.num_samples = num_samples
         self.model = self.build_models() # actually a list of models for use as the members in the ensemble
 
-        if self.use_custom_models:
-            assert self.n_estimators == sum(self.num_models)
+        assert self.n_estimators == sum(self.num_models)
 
     def build_models(self):
         model = []
 
-        if self.use_custom_models:
-            for i, num_m in enumerate(self.num_models):
-                for j in range(num_m):
-                    model.append(self.model_list[i])
-        else:
-          for i in range(self.n_estimators):
-              estimator = KernelRidge(alpha=0.01, kernel='rbf', gamma=0.1)
-              model.append(estimator)
+        for i, num_m in enumerate(self.num_models):
+            for j in range(num_m):
+                model.append(self.model_list[i])
 
         return model
 
     def fit(self, X, Y):
-        X = X.values[:,0]
+        X = X.values
         Y = Y.values
 
         idxs = np.arange(len(X))
@@ -232,11 +225,15 @@ class EnsembleRegressor():
             bootstrap_idxs = choices(idxs, k=self.num_samples)
             bootstrap_X = X[bootstrap_idxs]
             bootstrap_Y = Y[bootstrap_idxs]
+            if 1 == len(bootstrap_X.shape):
+                bootstrap_X = np.expand_dims(np.asarray(bootstrap_X), -1)
+            if 1 == len(bootstrap_Y.shape):
+                bootstrap_Y = np.expand_dims(np.asarray(bootstrap_Y), -1)
 
-            model.fit(np.expand_dims(np.asarray(bootstrap_X), -1), np.expand_dims(np.asarray(bootstrap_Y), -1))
+            model.fit(bootstrap_X, bootstrap_Y)
 
     def predict(self, X, return_std=False):
-        X = X.values[:,0]
+        X = X.values
 
         means = []
         stdevs = []
@@ -244,7 +241,10 @@ class EnsembleRegressor():
         for x_i in range(len(X)):
             preds = []
             for i in range(self.n_estimators):
-                preds.append(self.model[i].predict([[X[x_i]]]))
+                sample_X = X[x_i]
+                if 1 == len(sample_X.shape):
+                    sample_X = np.expand_dims(np.asarray(sample_X), 0)
+                preds.append(self.model[i].predict(sample_X))
             means.append(np.mean(preds))
 
             if 'std' in self.error_type:
