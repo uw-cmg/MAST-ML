@@ -293,13 +293,16 @@ def mastml_run(conf_path, data_path, outdir):
     for long_name, (name, kwargs) in conf['Models'].items():
         if 'EnsembleRegressor' in long_name:
             sub_models = []
-            for submodel_long_name, (submodel_name, submodel_kwargs) in conf['Models'].items():
-                if '_ensemble' in submodel_long_name:
-                    sub_models.append(models[submodel_long_name])
-            for submodel_long_name, (submodel_name, submodel_kwargs) in conf['Models'].items():
-                if '_ensemble' in submodel_long_name:
-                    del models[submodel_long_name]
-            models['EnsembleRegressor'].model = sub_models
+            sub_models_names = models[long_name].model
+            for submodel_long_name in sub_models_names:
+                for sm_long_name, (sm_name, sm_kwargs) in conf['Models'].items():
+                    if sm_long_name in submodel_long_name:
+                        sub_models.append(models[sm_long_name])
+                        break
+            models[long_name].model = sub_models
+    for long_name, (name, kwargs) in conf['Models'].items():
+        if '_ensemble' in long_name:
+            del models[long_name]
 
     # Need to snatch models and CV objects for Hyperparam Opt
     hyperopt_params = _snatch_models_cv_for_hyperopt(conf, models, splitters)

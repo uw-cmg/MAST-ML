@@ -190,19 +190,28 @@ class KerasRegressor():
 # ref: https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.BaggingRegressor.html#sklearn.ensemble.BaggingRegressor
 # NOTE: in order to use this, other models for the custom ensemble must be defined 
 #       in the conf file with "_ensemble" somewhere in the name
+# TODO add support for:
+#       - choosing error type
 class EnsembleRegressor():
-    def __init__(self, n_estimators, num_samples, model_list=[], use_custom_models=False):
+    def __init__(self, n_estimators, num_samples, error_type='std', model_list=[], num_models=[], use_custom_models=False):
         self.model_list = model_list # should be list of strings
+        self.num_models = num_models # how many of each of the specified models should be included in the ensemble
         self.use_custom_models = use_custom_models
+        self.error_type = error_type
         self.n_estimators = n_estimators
         self.num_samples = num_samples
         self.model = self.build_models() # actually a list of models for use as the members in the ensemble
+
+        if self.use_custom_models:
+            assert self.n_estimators == sum(self.num_models)
 
     def build_models(self):
         model = []
 
         if self.use_custom_models:
-            model = self.model_list
+            for i, num_m in enumerate(self.num_models):
+                for j in range(num_m):
+                    model.append(self.model_list[i])
         else:
           for i in range(self.n_estimators):
               estimator = KernelRidge(alpha=0.01, kernel='rbf', gamma=0.1)
@@ -237,7 +246,14 @@ class EnsembleRegressor():
             for i in range(self.n_estimators):
                 preds.append(self.model[i].predict([[X[x_i]]]))
             means.append(np.mean(preds))
-            stdevs.append(np.std(preds)) # for now, the error estimate is just the standard deviation, are there others?
+
+            if 'std' in self.error_type:
+                stdevs.append(np.std(preds))
+            elif 'inf_jack' in self.error_type:
+                # TODO
+                pass
+            else:
+                stdevs.append(np.std(preds))
 
         if return_std:
             return np.asarray(means), np.asarray(stdevs)
