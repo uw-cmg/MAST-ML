@@ -22,8 +22,9 @@ from keras.models import model_from_json
 from keras.models import load_model
 from keras.models import Sequential
 
-from sklearn.kernel_ridge import KernelRidge
 from random import choices
+
+import pandas as pd
 
 #from . import keras_models
 from mastml import utils
@@ -190,16 +191,16 @@ class KerasRegressor():
 # ref: https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.BaggingRegressor.html#sklearn.ensemble.BaggingRegressor
 # NOTE: in order to use this, other models for the custom ensemble must be defined 
 #       in the conf file with "_ensemble" somewhere in the name
-# TODO add support for:
-#       - choosing error type
 class EnsembleRegressor():
-    def __init__(self, n_estimators, num_samples, model_list, num_models, error_type='std'):
+    def __init__(self, n_estimators, num_samples, model_list, num_models):
         self.model_list = model_list # should be list of strings
         self.num_models = num_models # how many of each of the specified models should be included in the ensemble
-        self.error_type = error_type
         self.n_estimators = n_estimators
         self.num_samples = num_samples
+        self.max_samples = num_samples
         self.model = self.build_models() # actually a list of models for use as the members in the ensemble
+
+        self.bootstrap = True
 
         assert self.n_estimators == sum(self.num_models)
 
@@ -233,10 +234,10 @@ class EnsembleRegressor():
             model.fit(bootstrap_X, bootstrap_Y)
 
     def predict(self, X, return_std=False):
-        X = X.values
+        if isinstance(X, pd.DataFrame):
+            X = X.values
 
         means = []
-        stdevs = []
 
         for x_i in range(len(X)):
             preds = []
@@ -247,18 +248,12 @@ class EnsembleRegressor():
                 preds.append(self.model[i].predict(sample_X))
             means.append(np.mean(preds))
 
-            if 'std' in self.error_type:
-                stdevs.append(np.std(preds))
-            elif 'inf_jack' in self.error_type:
-                # TODO
-                pass
-            else:
-                stdevs.append(np.std(preds))
+            # NOTE for ref, manual jackknife if necessary
+            # https://www.jpytr.com/post/random_forests_and_jackknife_variance/
+            # https://github.com/scikit-learn-contrib/forest-confidence-interval/tree/master/forestci
+            # http://contrib.scikit-learn.org/forest-confidence-interval/reference/forestci.html
 
-        if return_std:
-            return np.asarray(means), np.asarray(stdevs)
-        else:
-            return np.asarray(means)
+        return np.asarray(means)
 
 class ModelImport():
     """

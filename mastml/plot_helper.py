@@ -1122,7 +1122,7 @@ def prediction_intervals(model, X, rf_error_method, rf_error_percentile, Xtrain,
     err_down = list()
     err_up = list()
     X_aslist = X.values.tolist()
-    if model.__class__.__name__ in ['RandomForestRegressor', 'GradientBoostingRegressor', 'ExtraTreesRegressor']:
+    if model.__class__.__name__ in ['RandomForestRegressor', 'GradientBoostingRegressor', 'ExtraTreesRegressor', 'EnsembleRegressor']:
 
         #if rf_error_method == 'jackknife':
         #    #new method based on http://contrib.scikit-learn.org/forest-confidence-interval/auto_examples/plot_mpg.html#sphx-glr-auto-examples-plot-mpg-py
@@ -1150,6 +1150,9 @@ def prediction_intervals(model, X, rf_error_method, rf_error_percentile, Xtrain,
                 elif model.__class__.__name__ == 'GradientBoostingRegressor':
                     for pred in model.estimators_.tolist():
                         preds.append(pred[0].predict(np.array(X_aslist[x]).reshape(1,-1))[0])
+                elif model.__class__.__name__ == 'EnsembleRegressor':
+                    for pred in model.model:
+                        preds.append(pred.predict(np.array(X_aslist[x]).reshape(1,-1))[0])
                 if rf_error_method == 'confint':
                     e_down = np.percentile(preds, (100 - int(rf_error_percentile)) / 2.)
                     e_up = np.percentile(preds, 100 - (100 - int(rf_error_percentile)) / 2.)
@@ -1171,10 +1174,6 @@ def prediction_intervals(model, X, rf_error_method, rf_error_percentile, Xtrain,
         preds = model.predict(X, return_std=True)[1] # Get the stdev model error from the predictions of GPR
         err_up = preds
         err_down = preds
-    if model.__class__.__name__=='EnsembleRegressor':
-        preds = model.predict(X, return_std=True)[1] # Get the stdev model error from the predictions of GPR
-        err_up = preds/2.0
-        err_down = preds/2.0
 
     #if model.__class__.__name__=='ModelImport':
     #    if model.model.__class__.__name__=='GaussianProcessRegressor':

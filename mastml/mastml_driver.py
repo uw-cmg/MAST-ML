@@ -22,6 +22,7 @@ from sklearn.externals import joblib
 from sklearn.exceptions import UndefinedMetricWarning
 from sklearn.model_selection import LeaveOneGroupOut
 from sklearn.metrics import make_scorer
+from sklearn.base import clone
 
 from mastml import conf_parser, data_loader, html_helper, plot_helper, utils, learning_curve, data_cleaner, metrics
 from mastml.legos import (data_splitters, feature_generators, feature_normalizers,
@@ -297,7 +298,12 @@ def mastml_run(conf_path, data_path, outdir):
             for submodel_long_name in sub_models_names:
                 for sm_long_name, (sm_name, sm_kwargs) in conf['Models'].items():
                     if sm_long_name in submodel_long_name:
-                        sub_models.append(models[sm_long_name])
+                        sm = None
+                        if 'KerasRegressor' in sm_long_name:
+                            sm = model_finder.KerasRegressor(conf['Models']['KerasRegressor_ensemble'][1])
+                        else:
+                            sm = clone(models[sm_long_name])
+                        sub_models.append(sm)
                         break
             models[long_name].model = sub_models
     for long_name, (name, kwargs) in conf['Models'].items():
