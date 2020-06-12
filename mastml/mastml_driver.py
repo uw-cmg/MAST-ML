@@ -15,6 +15,7 @@ from collections import OrderedDict
 from os.path import join # We use join tons
 from functools import reduce
 from contextlib import redirect_stdout
+from copy import deepcopy
 
 import numpy as np
 import pandas as pd
@@ -244,6 +245,11 @@ def mastml_run(conf_path, data_path, outdir):
                           model_finder.name_to_constructor,
                           'model')
 
+    # Need to specially snatch the GPR model if it is in models list because it contains special kernel object. Do
+    # this before setting up feature selectors in case GPR used in e.g. forward selection
+    models = _snatch_gpr_model(models, conf['Models'])
+    original_models = models
+
     models = _snatch_models(models, conf['FeatureSelection'])
 
     # Instantiate all the sections of the conf file:
@@ -282,10 +288,6 @@ def mastml_run(conf_path, data_path, outdir):
     models = snatch_model_cv_and_scoring_for_learning_curve(models=models)
 
     models = _snatch_keras_model(models, conf['Models'])
-    original_models = models
-
-    # Need to specially snatch the GPR model if it is in models list because it contains special kernel object
-    models = _snatch_gpr_model(models, conf['Models'])
     original_models = models
 
     # Need to snatch models and CV objects for Hyperparam Opt
@@ -1057,7 +1059,8 @@ def mastml_run(conf_path, data_path, outdir):
         # Call to make average error plots
         if conf['MiscSettings']['plot_error_plots']:
             log.info("    Making average error plots over all splits")
-            make_average_error_plots(main_path=main_path)
+            if 'NoSplit' not in main_path:
+                make_average_error_plots(main_path=main_path)
 
         log.info("    Making best/worst plots...")
         def get_best_worst_median_runs():
@@ -1196,7 +1199,9 @@ def _snatch_keras_model(models, conf_models):
     return models
 
 def _snatch_gpr_model(models, conf_models):
-    for model in models.keys():
+    models = OrderedDict(models)
+    models_orig = deepcopy(models)
+    for model in models_orig.keys():
         if 'GaussianProcessRegressor' in model:
             import sklearn.gaussian_process
             from sklearn.gaussian_process import GaussianProcessRegressor
@@ -1257,7 +1262,6 @@ def _snatch_gpr_model(models, conf_models):
             # Need to delete old GPR from model list and replace with new GPR with correct kernel and other params.
             del models[model]
             models[model] = gpr
-            break
     return models
 
 def _snatch_models_cv_for_hyperopt(conf, models, splitters):
