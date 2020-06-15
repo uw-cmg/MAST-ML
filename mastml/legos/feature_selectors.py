@@ -210,6 +210,7 @@ class MASTMLFeatureSelector(object):
         x_features = X.columns.tolist()
         if self.n_features_to_select >= len(x_features):
             self.n_features_to_select = len(x_features)
+
         while num_features_selected < self.n_features_to_select:
             log.info('On number of features selected')
             log.info(str(num_features_selected))
@@ -241,6 +242,7 @@ class MASTMLFeatureSelector(object):
             pd.DataFrame(basic_forward_selection_dict).to_csv(os.path.join(
                 savepath, 'MASTMLFeatureSelector_data_feature_'+str(num_features_selected)+'.csv'))
             num_features_selected += 1
+
         basic_forward_selection_dict[str(self.n_features_to_select - 1)][
             'Full feature set Names'] = self.selected_feature_names
         basic_forward_selection_dict[str(self.n_features_to_select - 1)][
@@ -341,10 +343,8 @@ class MASTMLFeatureSelector(object):
 PCA.transform = dataframify_new_column_names(PCA.transform, 'pca_')
 
 # Include Sequential Forward Selector
-SequentialFeatureSelector.transform = dataframify_new_column_names(
-    SequentialFeatureSelector.transform, 'sfs_')
-SequentialFeatureSelector.fit = fitify_just_use_values(
-    SequentialFeatureSelector.fit)
+SequentialFeatureSelector.transform = dataframify_new_column_names(SequentialFeatureSelector.transform, 'sfs_')
+SequentialFeatureSelector.fit = fitify_just_use_values(SequentialFeatureSelector.fit)
 model_selectors['SequentialFeatureSelector'] = SequentialFeatureSelector
 name_to_constructor['SequentialFeatureSelector'] = SequentialFeatureSelector
 
