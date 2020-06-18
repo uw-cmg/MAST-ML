@@ -22,7 +22,7 @@ from keras.models import model_from_json
 from keras.models import load_model
 from keras.models import Sequential
 
-from random import choices
+import random
 
 import pandas as pd
 
@@ -223,7 +223,7 @@ class EnsembleRegressor():
             model = self.model[i]
 
             # do bootstrapping given the validation data
-            bootstrap_idxs = choices(idxs, k=self.num_samples)
+            bootstrap_idxs = random.choices(idxs, k=self.num_samples)
             bootstrap_X = X[bootstrap_idxs]
             bootstrap_Y = Y[bootstrap_idxs]
             if 1 == len(bootstrap_X.shape):
