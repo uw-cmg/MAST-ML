@@ -289,8 +289,9 @@ def make_error_plots(run, path, is_classification, label, model, train_X, test_X
                                          rf_error_percentile, X=test_X, Xtrain=train_X, Xtest=test_X)
 
         # HERE, add your RMS residual vs. error plot function
-        y_all_data = np.concatenate([y_test_true, y_train_true])
-        plot_real_vs_predicted_error(y_all_data, path, model, data_test_type='test')
+        if model.__class__.__name__ in ['RandomForestRegressor', 'ExtraTreesRegressor', 'GaussianProcessRegressor', 'GradientBoostingRegressor']:
+            y_all_data = np.concatenate([y_test_true, y_train_true])
+            plot_real_vs_predicted_error(y_all_data, path, model, data_test_type='test')
 
         if is_validation:
             title = 'validation_cumulative_normalized_error'
@@ -299,9 +300,11 @@ def make_error_plots(run, path, is_classification, label, model, train_X, test_X
             title = 'validation_normalized_error'
             plot_normalized_error(y_validation_true, y_validation_pred, join(path, title + '.png'), model, rf_error_method,
                                   rf_error_percentile, X=validation_X, Xtrain=train_X, Xtest=test_X)
-
-            y_all_data = np.concatenate([y_test_true, y_train_true])
-            plot_real_vs_predicted_error(y_all_data, path, model, data_test_type='validation')
+            
+            if model.__class__.__name__ in ['RandomForestRegressor', 'ExtraTreesRegressor', 'GaussianProcessRegressor',
+                                            'GradientBoostingRegressor']:
+                y_all_data = np.concatenate([y_test_true, y_train_true])
+                plot_real_vs_predicted_error(y_all_data, path, model, data_test_type='validation')
 
 @ipynb_maker
 def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False, title='Confusion matrix', cmap=plt.cm.Blues):
