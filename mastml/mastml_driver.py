@@ -306,6 +306,7 @@ def mastml_run(conf_path, data_path, outdir):
                         sub_models.append(sm)
                         break
             models[long_name].model = sub_models
+
     for long_name, (name, kwargs) in conf['Models'].items():
         if '_ensemble' in long_name:
             del models[long_name]
@@ -790,9 +791,13 @@ def mastml_run(conf_path, data_path, outdir):
                     exit()
                 train_pred = model.predict(train_X)
                 test_pred = model.predict(test_X)
+                if 'EnsembleRegressor' in model.__class__.__name__:
+                    test_pred = model.stats_check_models(test_X, test_y)
             else:
                 train_pred = model.predict(train_X)
                 test_pred  = model.predict(test_X)
+                if 'EnsembleRegressor' in model.__class__.__name__:
+                    test_pred = model.stats_check_models(test_X, test_y)
                 if train_pred.ndim > 1:
                     train_pred = np.squeeze(train_pred)
                 if test_pred.ndim > 1:
@@ -816,6 +821,8 @@ def mastml_run(conf_path, data_path, outdir):
                     validation_y_forpred = _only_validation(y, validation_columns[validation_column_name])
                     log.info("             Making predictions on prediction_only data...")
                     validation_predictions = model.predict(validation_X_forpred)
+                    if 'EnsembleRegressor' in model.__class__.__name__:
+                        validation_predictions = model.stats_check_models(validation_X_forpred, validation_y_forpred)
                     validation_predictions_list.append(validation_predictions)
                     validation_y_forpred_list.append(validation_y_forpred)
 
@@ -948,6 +955,10 @@ def mastml_run(conf_path, data_path, outdir):
 
         split_results = []
         for split_num, (train_indices, test_indices) in enumerate(trains_tests):
+
+            path = join(main_path, f"split_{split_num}")
+            models['EnsembleRegressor'].setup(path)
+
             split_results.append(one_fit(split_num, train_indices, test_indices, normalizer_instance))
 
         log.info("    Calculating mean and stdev of scores...")

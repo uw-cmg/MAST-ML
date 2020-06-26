@@ -1241,10 +1241,10 @@ def random_forest_error_modified(forest, is_ensemble, X_train, X_test, basic_IJ=
     if np.max(inbag) == 1:
         variance_inflation = 1 / (1 - np.mean(inbag)) ** 2
         V_IJ_unbiased *= variance_inflation
-    
+
     if basic_IJ:
         return V_IJ
-    
+
     if not calibrate:
         return V_IJ_unbiased
 

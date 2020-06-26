@@ -29,6 +29,8 @@ import pandas as pd
 #from . import keras_models
 from mastml import utils
 
+from scipy import stats
+
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     name_to_constructor = dict(sklearn.utils.testing.all_estimators())
@@ -198,7 +200,12 @@ class EnsembleRegressor():
         self.n_estimators = n_estimators
         self.num_samples = num_samples
         self.max_samples = num_samples
+        self.bootstrapped_datasets = []
+        self.all_preds = []
+        self.path = ""
         self.model = self.build_models() # actually a list of models for use as the members in the ensemble
+
+        self.fold = -1
 
         self.bootstrap = True
 
@@ -212,6 +219,11 @@ class EnsembleRegressor():
                 model.append(self.model_list[i])
 
         return model
+
+    def setup(self, path):
+        self.fold += 1
+        self.bootstrapped_datasets = []
+        self.path = path
 
     def fit(self, X, Y):
         X = X.values
@@ -231,12 +243,15 @@ class EnsembleRegressor():
             if 1 == len(bootstrap_Y.shape):
                 bootstrap_Y = np.expand_dims(np.asarray(bootstrap_Y), -1)
 
+            self.bootstrapped_datasets.append(bootstrap_X)
             model.fit(bootstrap_X, bootstrap_Y)
 
     def predict(self, X, return_std=False):
+
         if isinstance(X, pd.DataFrame):
             X = X.values
 
+        all_preds = []
         means = []
 
         for x_i in range(len(X)):
@@ -246,14 +261,54 @@ class EnsembleRegressor():
                 if 1 == len(sample_X.shape):
                     sample_X = np.expand_dims(np.asarray(sample_X), 0)
                 preds.append(self.model[i].predict(sample_X))
+            all_preds.append(preds)
             means.append(np.mean(preds))
 
-            # NOTE for ref, manual jackknife if necessary
+            # NOTE for ref (if manual jackknife implementation is necessary)
             # https://www.jpytr.com/post/random_forests_and_jackknife_variance/
             # https://github.com/scikit-learn-contrib/forest-confidence-interval/tree/master/forestci
             # http://contrib.scikit-learn.org/forest-confidence-interval/reference/forestci.html
 
+        self.all_preds = all_preds
+
         return np.asarray(means)
+
+    # check for failed fits, warn users, and re-calculate
+    def stats_check_models(self, X, Y):
+        maes = []
+        for i in range(self.n_estimators):
+            abs_errors = np.absolute(np.absolute(np.squeeze(np.asarray(self.all_preds)[:,i])) - Y)
+            maes.append(sum(abs_errors) / len(abs_errors))
+
+        alpha = 0.01
+        bad_idxs = []
+        for i in range(self.n_estimators):
+            other_maes = np.delete(maes, [i])
+            # ref: https://towardsdatascience.com/statistical-significance-hypothesis-testing-the-normal-curve-and-p-values-93274fa32687
+            z_score = (maes[i] - np.mean(other_maes)) / np.std(other_maes)
+            # ref: https://stackoverflow.com/questions/3496656/convert-z-score-z-value-standard-score-to-p-value-for-normal-distribution-in/3508321
+            p_val = stats.norm.sf(abs(z_score))*2
+
+            if p_val <= alpha:
+                # TODO ok to print these/how to print/log properly?
+                print("Estimator {} failed under statistical significance threshold {} (p_val {}), relevant dataset output to file with name format \'<fold>_<estimator idx>_bootstrapped_dataset.csv\'".format(i, alpha, p_val))
+                print("bad estimator mae: {}".format(maes[i]))
+                print("maes (for ref):")
+                print(maes)
+                np.savetxt(self.path + "\\{}_{}_bootstrapped_dataset.csv".format(self.fold, i), self.bootstrapped_datasets[i], delimiter=",")
+                bad_idxs.append(i)
+
+        if len(bad_idxs) == self.n_estimators:
+            print("ALL models failed, wtf is your data")
+            return
+        # NOTE do not remove these models and recalculate for now
+        #all_preds = np.delete(self.all_preds, bad_idxs, 1)
+
+        #y_preds = []
+        #for idx, x_i in enumerate(all_preds):
+        #    y_preds.append(np.mean(x_i))
+
+        return np.asarray(y_preds)
 
 class ModelImport():
     """
