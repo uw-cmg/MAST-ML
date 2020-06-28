@@ -1202,9 +1202,9 @@ def _snatch_gpr_model(models, conf_models):
     models = OrderedDict(models)
     models_orig = deepcopy(models)
     for model in models_orig.keys():
-        if 'GaussianProcessRegressor' in model:
+        if 'GaussianProcessRegressor' in model or 'GaussianProcessClassifier' in model:
             import sklearn.gaussian_process
-            from sklearn.gaussian_process import GaussianProcessRegressor
+            from sklearn.gaussian_process import GaussianProcessRegressor, GaussianProcessClassifier
             kernel_list = ['WhiteKernel', 'RBF', 'ConstantKernel', 'Matern', 'RationalQuadratic', 'ExpSineSquared', 'DotProduct']
             kernel_operators = ['+', '*', '-']
             params = conf_models[model]
@@ -1258,10 +1258,17 @@ def _snatch_gpr_model(models, conf_models):
                                       ' either "+" or "*".')
                     kernel_count += 1
 
-            gpr = GaussianProcessRegressor(kernel=kernel, **params[1])
-            # Need to delete old GPR from model list and replace with new GPR with correct kernel and other params.
-            del models[model]
-            models[model] = gpr
+            if 'GaussianProcessRegressor' in model:
+                gpr = GaussianProcessRegressor(kernel=kernel, **params[1])
+                # Need to delete old GPR from model list and replace with new GPR with correct kernel and other params.
+                del models[model]
+                models[model] = gpr
+            elif 'GaussianProcessClassifier' in model:
+                gpc = GaussianProcessClassifier(kernel=kernel, **params[1])
+                # Need to delete old GPC from model list and replace with new GPC with correct kernel and other params.
+                del models[model]
+                models[model] = gpc
+
     return models
 
 def _snatch_models_cv_for_hyperopt(conf, models, splitters, is_classification):
