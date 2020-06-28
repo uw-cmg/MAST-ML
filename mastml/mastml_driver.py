@@ -291,7 +291,7 @@ def mastml_run(conf_path, data_path, outdir):
     original_models = models
 
     # Need to snatch models and CV objects for Hyperparam Opt
-    hyperopt_params = _snatch_models_cv_for_hyperopt(conf, models, splitters)
+    hyperopt_params = _snatch_models_cv_for_hyperopt(conf, models, splitters, is_classification)
 
     hyperopts = _instantiate(hyperopt_params,
                              hyper_opt.name_to_constructor,
@@ -1264,7 +1264,7 @@ def _snatch_gpr_model(models, conf_models):
             models[model] = gpr
     return models
 
-def _snatch_models_cv_for_hyperopt(conf, models, splitters):
+def _snatch_models_cv_for_hyperopt(conf, models, splitters, is_classification):
     models = list(models.items())
     if conf['HyperOpt']:
         for searchtype, searchparams in conf['HyperOpt'].items():
@@ -1292,7 +1292,10 @@ def _snatch_models_cv_for_hyperopt(conf, models, splitters):
                 if paramtype == 'scoring':
                     # Need to grab correct scoring object
                     found_scorer = False
-                    metrics_dict = metrics.regression_metrics
+                    if is_classification:
+                        metrics_dict = metrics.classification_metrics
+                    else:
+                        metrics_dict = metrics.regression_metrics
                     if paramvalue in metrics_dict.keys():
                         conf['HyperOpt'][searchtype][1]['scoring'] = make_scorer(metrics_dict[paramvalue][1],
                                                                                  greater_is_better=metrics_dict[paramvalue][0])
