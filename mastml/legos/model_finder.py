@@ -30,6 +30,7 @@ import pandas as pd
 #from . import keras_models
 from mastml import utils
 
+#import pickle
 from scipy import stats
 
 with warnings.catch_warnings():
@@ -198,7 +199,7 @@ class EnsembleRegressor():
     def __init__(self, n_estimators, num_samples, model_list, num_models):
         self.model_list = model_list # should be list of strings
         self.num_models = num_models # how many of each of the specified models should be included in the ensemble
-        self.n_estimators = n_estimators
+        self.n_estimators = sum(self.num_models)
         self.num_samples = num_samples
         self.max_samples = num_samples
         self.bootstrapped_datasets = []
@@ -211,8 +212,6 @@ class EnsembleRegressor():
 
         self.bootstrap = True
 
-        assert self.n_estimators == sum(self.num_models)
-
     def build_models(self):
         model = []
 
@@ -224,6 +223,11 @@ class EnsembleRegressor():
 
     def setup(self, path):
         self.fold += 1
+        # NOTE temp for testing
+        #for i in range(self.n_estimators):
+        #    self.model[i].model.load_weights("../Errors/test/model_weights/model_weights_{}.h5".format(i+self.n_estimators*self.fold))
+        #    #print(self.model[i].model.get_weights()[0][0])
+        #    #input("wait")
         self.bootstrapped_idxs = []
         self.bootstrapped_datasets = []
         self.path = path
@@ -232,13 +236,23 @@ class EnsembleRegressor():
         X = X.values
         Y = Y.values
 
+        # NOTE temp for testing
+        #with open("../Errors/test/ALL_bootstrap_idxs.pickle", "rb") as fp:
+        #    const_bootstrap_idxs = pickle.load(fp)
+        #    #print(np.asarray(const_bootstrap_idxs).shape)
+        #    #print(self.fold)
+        #    #input("wait")
+
         idxs = np.arange(len(X))
         # fit each model in the ensemble
         for i in range(self.n_estimators):
             model = self.model[i]
 
             # do bootstrapping given the validation data
-            bootstrap_idxs = random.choices(idxs, k=self.num_samples)
+            #bootstrap_idxs = random.choices(idxs, k=self.num_samples)
+            bootstrap_idxs = random.choices(idxs, k=len(X))
+            # NOTE temp for testing
+            #bootstrap_idxs = const_bootstrap_idxs[(self.fold * self.n_estimators)+i]
             bootstrap_X = X[bootstrap_idxs]
             bootstrap_Y = Y[bootstrap_idxs]
             if 1 == len(bootstrap_X.shape):
@@ -279,35 +293,34 @@ class EnsembleRegressor():
 
     # check for failed fits, warn users, and re-calculate
     def stats_check_models(self, X, Y):
-        maes = []
-        for i in range(self.n_estimators):
-            abs_errors = np.absolute(np.absolute(np.squeeze(np.asarray(self.all_preds)[:,i])) - Y)
-            maes.append(sum(abs_errors) / len(abs_errors))
+        if self.n_estimators > 10:
+            maes = []
+            for i in range(self.n_estimators):
+                abs_errors = np.absolute(np.absolute(np.squeeze(np.asarray(self.all_preds)[:,i])) - Y)
+                maes.append(sum(abs_errors) / len(abs_errors))
 
-        alpha = 0.01
-        bad_idxs = []
-        for i in range(self.n_estimators):
-            other_maes = np.delete(maes, [i])
-            # ref: https://towardsdatascience.com/statistical-significance-hypothesis-testing-the-normal-curve-and-p-values-93274fa32687
-            z_score = (maes[i] - np.mean(other_maes)) / np.std(other_maes)
-            # ref: https://stackoverflow.com/questions/3496656/convert-z-score-z-value-standard-score-to-p-value-for-normal-distribution-in/3508321
-            p_val = stats.norm.sf(abs(z_score))*2
+            alpha = 0.01
+            bad_idxs = []
+            for i in range(self.n_estimators):
+                other_maes = np.delete(maes, [i])
+                # ref: https://towardsdatascience.com/statistical-significance-hypothesis-testing-the-normal-curve-and-p-values-93274fa32687
+                z_score = (maes[i] - np.mean(other_maes)) / np.std(other_maes)
+                # ref: https://stackoverflow.com/questions/3496656/convert-z-score-z-value-standard-score-to-p-value-for-normal-distribution-in/3508321
+                p_val = stats.norm.sf(abs(z_score))*2
 
-            if p_val <= alpha:
-                # TODO ok to print these/how to print/log properly?
-                print("Estimator {} failed under statistical significance threshold {} (p_val {}), relevant dataset output to file with name format \'<fold>_<estimator idx>_bootstrapped_dataset.csv\'".format(i, alpha, p_val))
-                print("bad estimator mae: {}".format(maes[i]))
-                print("maes (for ref):")
-                print(maes)
-                fname = "fold"+str(self.fold)+"_"+"estimator"+str(i)+"_bootstrapped_dataset.csv"
-                np.savetxt(os.path.join(self.path, fname), self.bootstrapped_datasets[i])
-                bad_idxs.append(i)
+                if p_val <= alpha:
+                    # TODO ok to print these/how to print/log properly?
+                    print("Estimator {} failed under statistical significance threshold {} (p_val {}), relevant dataset output to file with name format \'<fold>_<estimator idx>_bootstrapped_dataset.csv\'".format(i, alpha, p_val))
+                    print("bad estimator mae: {}".format(maes[i]))
+                    print("mean mae (for ref):")
+                    print(np.mean(maes))
+                    np.savetxt(self.path + "\\{}_{}_bootstrapped_dataset.csv".format(self.fold, i), self.bootstrapped_datasets[i], delimiter=",")
+                    bad_idxs.append(i)
 
-        if len(bad_idxs) == self.n_estimators:
-            print("ALL models failed, wtf is your data")
-            return
-        # NOTE do not remove these models and recalculate for now
-        self.all_preds = np.delete(self.all_preds, bad_idxs, 1)
+            if len(bad_idxs) == self.n_estimators:
+                print("ALL models failed, wtf is your data")
+                return
+            self.all_preds = np.delete(self.all_preds, bad_idxs, 1)
 
         y_preds = []
         for idx, x_i in enumerate(self.all_preds):
