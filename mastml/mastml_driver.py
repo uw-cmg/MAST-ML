@@ -23,6 +23,7 @@ from sklearn.externals import joblib
 from sklearn.exceptions import UndefinedMetricWarning
 from sklearn.model_selection import LeaveOneGroupOut
 from sklearn.metrics import make_scorer
+from sklearn.base import clone
 
 from mastml import conf_parser, data_loader, html_helper, plot_helper, utils, learning_curve, data_cleaner, metrics
 from mastml.legos import (data_splitters, feature_generators, feature_normalizers,
@@ -241,6 +242,7 @@ def mastml_run(conf_path, data_path, outdir):
     log.debug('splitter_to_group_names:\n' + str(splitter_to_group_names))
 
     # Instantiate models first so we can snatch them and pass them into feature selectors
+
     models = _instantiate(conf['Models'],
                           model_finder.name_to_constructor,
                           'model')
@@ -289,6 +291,27 @@ def mastml_run(conf_path, data_path, outdir):
 
     models = _snatch_keras_model(models, conf['Models'])
     original_models = models
+
+    # init of ensemble models
+    for long_name, (name, kwargs) in conf['Models'].items():
+        if 'EnsembleRegressor' in long_name:
+            sub_models = []
+            sub_models_names = models[long_name].model
+            for submodel_long_name in sub_models_names:
+                for sm_long_name, (sm_name, sm_kwargs) in conf['Models'].items():
+                    if sm_long_name in submodel_long_name:
+                        sm = None
+                        if 'KerasRegressor' in sm_long_name:
+                            sm = model_finder.KerasRegressor(conf['Models']['KerasRegressor_ensemble'][1])
+                        else:
+                            sm = clone(models[sm_long_name])
+                        sub_models.append(sm)
+                        break
+            models[long_name].model = sub_models
+
+    for long_name, (name, kwargs) in conf['Models'].items():
+        if '_ensemble' in long_name:
+            del models[long_name]
 
     # Need to snatch models and CV objects for Hyperparam Opt
     hyperopt_params = _snatch_models_cv_for_hyperopt(conf, models, splitters, is_classification)
@@ -770,9 +793,13 @@ def mastml_run(conf_path, data_path, outdir):
                     exit()
                 train_pred = model.predict(train_X)
                 test_pred = model.predict(test_X)
+                if 'EnsembleRegressor' in model.__class__.__name__:
+                    test_pred = model.stats_check_models(test_X, test_y)
             else:
                 train_pred = model.predict(train_X)
                 test_pred  = model.predict(test_X)
+                if 'EnsembleRegressor' in model.__class__.__name__:
+                    test_pred = model.stats_check_models(test_X, test_y)
                 if train_pred.ndim > 1:
                     train_pred = np.squeeze(train_pred)
                 if test_pred.ndim > 1:
@@ -796,6 +823,8 @@ def mastml_run(conf_path, data_path, outdir):
                     validation_y_forpred = _only_validation(y, validation_columns[validation_column_name])
                     log.info("             Making predictions on prediction_only data...")
                     validation_predictions = model.predict(validation_X_forpred)
+                    if 'EnsembleRegressor' in model.__class__.__name__:
+                        validation_predictions = model.stats_check_models(validation_X_forpred, validation_y_forpred)
                     validation_predictions_list.append(validation_predictions)
                     validation_y_forpred_list.append(validation_y_forpred)
 
@@ -928,6 +957,10 @@ def mastml_run(conf_path, data_path, outdir):
 
         split_results = []
         for split_num, (train_indices, test_indices) in enumerate(trains_tests):
+
+            path = join(main_path, f"split_{split_num}")
+            models['EnsembleRegressor'].setup(path)
+
             split_results.append(one_fit(split_num, train_indices, test_indices, normalizer_instance))
 
         log.info("    Calculating mean and stdev of scores...")
@@ -1034,7 +1067,7 @@ def mastml_run(conf_path, data_path, outdir):
                                                                  has_model_errors=has_model_errors,
                                                                  err_avg=average_error_values)
             # Here- plot predicted vs real errors for all splits, only if using RF, GBR, GPR, or ET
-            if model.__class__.__name__ in ['RandomForestRegressor', 'ExtraTreesRegressor', 'GradientBoostingRegressor', 'GaussianProcessRegressor']:
+            if model.__class__.__name__ in ['RandomForestRegressor', 'ExtraTreesRegressor', 'GradientBoostingRegressor', 'GaussianProcessRegressor', 'EnsembleRegressor']:
                 plot_helper.plot_real_vs_predicted_error(y_true, main_path, model, data_test_type='test')
 
             if is_validation:
@@ -1047,7 +1080,7 @@ def mastml_run(conf_path, data_path, outdir):
                 # Here- plot predicted vs real errors for all splits
                 # Use y_true here because want to normalize to full training dataset stdev
                 if model.__class__.__name__ in ['RandomForestRegressor', 'ExtraTreesRegressor',
-                                                'GradientBoostingRegressor', 'GaussianProcessRegressor']:
+                                                'GradientBoostingRegressor', 'GaussianProcessRegressor', 'EnsembleRegressor']:
                     plot_helper.plot_real_vs_predicted_error(y_true, main_path, model, data_test_type='validation')
 
             plot_helper.plot_average_normalized_error(y_true=y_true, y_pred=y_pred,
