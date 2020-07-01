@@ -11,6 +11,7 @@ import sklearn.utils.testing
 import joblib
 #from sklearn.externals import joblib
 import numpy as np
+import os
 
 # Sometimes xgboost is hard to install so make it optional
 try:
@@ -202,6 +203,7 @@ class EnsembleRegressor():
         self.num_samples = num_samples
         self.max_samples = num_samples
         self.bootstrapped_datasets = []
+        self.bootstrapped_idxs = []
         self.all_preds = []
         self.path = ""
         self.model = self.build_models() # actually a list of models for use as the members in the ensemble
@@ -223,6 +225,7 @@ class EnsembleRegressor():
 
     def setup(self, path):
         self.fold += 1
+        self.bootstrapped_idxs = []
         self.bootstrapped_datasets = []
         self.path = path
 
@@ -244,6 +247,7 @@ class EnsembleRegressor():
             if 1 == len(bootstrap_Y.shape):
                 bootstrap_Y = np.expand_dims(np.asarray(bootstrap_Y), -1)
 
+            self.bootstrapped_idxs.append(bootstrap_idxs)
             self.bootstrapped_datasets.append(bootstrap_X)
             model.fit(bootstrap_X, bootstrap_Y)
 
@@ -296,18 +300,19 @@ class EnsembleRegressor():
                 print("bad estimator mae: {}".format(maes[i]))
                 print("maes (for ref):")
                 print(maes)
-                np.savetxt(self.path + "\\{}_{}_bootstrapped_dataset.csv".format(self.fold, i), self.bootstrapped_datasets[i], delimiter=",")
+                fname = "fold"+str(self.fold)+"_"+"estimator"+str(i)+"_bootstrapped_dataset.csv"
+                np.savetxt(os.path.join(self.path, fname), self.bootstrapped_datasets[i])
                 bad_idxs.append(i)
 
         if len(bad_idxs) == self.n_estimators:
             print("ALL models failed, wtf is your data")
             return
         # NOTE do not remove these models and recalculate for now
-        #all_preds = np.delete(self.all_preds, bad_idxs, 1)
+        self.all_preds = np.delete(self.all_preds, bad_idxs, 1)
 
-        #y_preds = []
-        #for idx, x_i in enumerate(all_preds):
-        #    y_preds.append(np.mean(x_i))
+        y_preds = []
+        for idx, x_i in enumerate(self.all_preds):
+            y_preds.append(np.mean(x_i))
 
         return np.asarray(y_preds)
 
