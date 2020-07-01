@@ -50,7 +50,7 @@ setup(
         "duecredit",
         "et_xmlfile",
         "folium>=0.2.1",
-        "forestci>=0.3",
+        "forestci>=0.4.1",
         "future>=0.16.0",
         "globus_nexus_client",
         "globus_sdk",
