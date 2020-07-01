@@ -292,7 +292,8 @@ def make_error_plots(run, path, is_classification, label, model, train_X, test_X
                                          rf_error_percentile, X=test_X, Xtrain=train_X, Xtest=test_X)
 
         # HERE, add your RMS residual vs. error plot function
-        if model.__class__.__name__ in ['RandomForestRegressor', 'ExtraTreesRegressor', 'GaussianProcessRegressor', 'GradientBoostingRegressor']:
+        if model.__class__.__name__ in ['RandomForestRegressor', 'ExtraTreesRegressor', 'GaussianProcessRegressor',
+                                        'GradientBoostingRegressor', 'EnsembleRegressor']:
             y_all_data = np.concatenate([y_test_true, y_train_true])
             plot_real_vs_predicted_error(y_all_data, path, model, data_test_type='test')
 
@@ -305,7 +306,7 @@ def make_error_plots(run, path, is_classification, label, model, train_X, test_X
                                   rf_error_percentile, X=validation_X, Xtrain=train_X, Xtest=test_X)
             
             if model.__class__.__name__ in ['RandomForestRegressor', 'ExtraTreesRegressor', 'GaussianProcessRegressor',
-                                            'GradientBoostingRegressor']:
+                                            'GradientBoostingRegressor', 'EnsembleRegressor']:
                 y_all_data = np.concatenate([y_test_true, y_train_true])
                 plot_real_vs_predicted_error(y_all_data, path, model, data_test_type='validation')
 
@@ -1146,14 +1147,15 @@ def calc_inbag_modified(n_samples, forest, is_ensemble):
                                          n_samples, n_samples_bootstrap))
             inbag[:, t_idx] = np.bincount(sample_idx[-1], minlength=n_samples)
         else:
-            rand_state = 0
-            try:
-                rand_state = forest.model[t_idx].random_state
-            except:
-                pass
-            sample_idx.append(
-                _generate_sample_indices(rand_state,
-                                         n_samples, n_samples_bootstrap))
+            #rand_state = 0
+            #try:
+            #    rand_state = forest.model[t_idx].random_state
+            #except:
+            #    pass
+            #sample_idx.append(
+            #    _generate_sample_indices(rand_state,
+            #                             n_samples, n_samples_bootstrap))
+            sample_idx = forest.bootstrapped_idxs[t_idx]
             inbag[:, t_idx] = np.bincount(sample_idx[-1], minlength=n_samples)
 
     return inbag
@@ -1312,123 +1314,6 @@ def prediction_intervals(model, X, rf_error_method, rf_error_percentile, Xtrain,
         err_down: (list), list of lower bounds of error bars for each data point
 
     """
-
-    # Credit to: http://contrib.scikit-learn.org/forest-confidence-interval/_modules/forestci/forestci.html#random_forest_error
-    def random_forest_error_modified(forest, X_train, X_test, basic_IJ=False, inbag=None,
-                                     calibrate=True, memory_constrained=False,
-                                     memory_limit=None):
-        """
-        Calculate error bars from scikit-learn RandomForest estimators.
-
-        RandomForest is a regressor or classifier object
-        this variance can be used to plot error bars for RandomForest objects
-
-        Parameters
-        ----------
-        forest : RandomForest
-            Regressor or Classifier object.
-
-        X_train : ndarray
-            An array with shape (n_train_sample, n_features). The design matrix for
-            training data.
-
-        X_test : ndarray
-            An array with shape (n_test_sample, n_features). The design matrix
-            for testing data
-
-        basic_IJ : boolean, optional
-            Return the value of basic infinitesimal jackknife or Monte Carlo
-            corrected infinitesimal jackknife.
-
-        inbag : ndarray, optional
-            The inbag matrix that fit the data. If set to `None` (default) it
-            will be inferred from the forest. However, this only works for trees
-            for which bootstrapping was set to `True`. That is, if sampling was
-            done with replacement. Otherwise, users need to provide their own
-            inbag matrix.
-
-        calibrate: boolean, optional
-            Whether to apply calibration to mitigate Monte Carlo noise.
-            Some variance estimates may be negative due to Monte Carlo effects if
-            the number of trees in the forest is too small. To use calibration,
-            Default: True
-
-        memory_constrained: boolean, optional
-            Whether or not there is a restriction on memory. If False, it is
-            assumed that a ndarry of shape (n_train_sample,n_test_sample) fits
-            in main memory. Setting to True can actually provide a speed up if
-            memory_limit is tuned to the optimal range.
-
-        memory_limit: int, optional.
-            An upper bound for how much memory the itermediate matrices will take
-            up in Megabytes. This must be provided if memory_constrained=True.
-
-        Returns
-        -------
-        An array with the unbiased sampling variance (V_IJ_unbiased)
-        for a RandomForest object.
-
-        See Also
-        ----------
-        :func:`calc_inbag`
-
-        Notes
-        -----
-        The calculation of error is based on the infinitesimal jackknife variance,
-        as described in [Wager2014]_ and is a Python implementation of the R code
-        provided at: https://github.com/swager/randomForestCI
-
-        .. [Wager2014] S. Wager, T. Hastie, B. Efron. "Confidence Intervals for
-           Random Forests: The Jackknife and the Infinitesimal Jackknife", Journal
-           of Machine Learning Research vol. 15, pp. 1625-1651, 2014.
-        """
-        if inbag is None:
-            inbag = fci.calc_inbag(X_train.shape[0], forest)
-
-        pred = np.array([tree.predict(X_test) for tree in forest]).T
-        pred_mean = np.mean(pred, 0)
-        pred_centered = pred - pred_mean
-        n_trees = forest.n_estimators
-        V_IJ = fci._core_computation(X_train, X_test, inbag, pred_centered, n_trees,
-                                     memory_constrained, memory_limit)
-        V_IJ_unbiased = fci._bias_correction(V_IJ, inbag, pred_centered, n_trees)
-
-        # Correct for cases where resampling is done without replacement:
-        if np.max(inbag) == 1:
-            variance_inflation = 1 / (1 - np.mean(inbag)) ** 2
-            V_IJ_unbiased *= variance_inflation
-
-        if basic_IJ:
-            return V_IJ
-
-        if not calibrate:
-            return V_IJ_unbiased
-
-        if V_IJ_unbiased.shape[0] <= 20:
-            print("No calibration with n_samples <= 20")
-            return V_IJ_unbiased
-        if calibrate:
-            calibration_ratio = 2
-            n_sample = np.ceil(n_trees / calibration_ratio)
-            new_forest = copy.deepcopy(forest)
-            new_forest.estimators_ = \
-                np.random.permutation(new_forest.estimators_)[:int(n_sample)]
-            new_forest.n_estimators = int(n_sample)
-
-            results_ss = fci.random_forest_error(new_forest, X_train, X_test,
-                                                 calibrate=False,
-                                                 memory_constrained=memory_constrained,
-                                                 memory_limit=memory_limit)
-            # Use this second set of variance estimates
-            # to estimate scale of Monte Carlo noise
-            sigma2_ss = np.mean((results_ss - V_IJ_unbiased) ** 2)
-            delta = n_sample / n_trees
-            sigma2 = (delta ** 2 + (1 - delta) ** 2) / (2 * (1 - delta) ** 2) * sigma2_ss
-
-            # Use Monte Carlo noise scale estimate for empirical Bayes calibration
-            V_IJ_calibrated = calibrateEB(V_IJ_unbiased, sigma2)
-
-            return V_IJ_calibrated
 
     err_down = list()
     err_up = list()
