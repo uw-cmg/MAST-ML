@@ -5,7 +5,7 @@ The data_cleaner module is used to clean missing or NaN values from pandas dataf
 import pandas as pd
 import numpy as np
 import logging
-from sklearn.preprocessing import Imputer
+from sklearn.impute import SimpleImputer as Imputer
 
 import os
 from scipy.linalg import orth

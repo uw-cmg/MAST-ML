@@ -8,7 +8,8 @@ import inspect
 
 import sklearn.base
 import sklearn.utils.testing
-from sklearn.externals import joblib
+import joblib
+#from sklearn.externals import joblib
 import numpy as np
 
 # Sometimes xgboost is hard to install so make it optional

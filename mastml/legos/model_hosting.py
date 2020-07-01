@@ -1,9 +1,9 @@
 import pandas as pd
 import numpy as np
 from dlhub_sdk import DLHubClient
-from dlhub_sdk.models.servables.sklearn import ScikitLearnModel
+#from dlhub_sdk.models.servables.sklearn import ScikitLearnModel
 from dlhub_sdk.models.servables.python import PythonStaticMethodModel
-from sklearn.externals import joblib
+#from sklearn.externals import joblib
 from mastml.legos.dlhub_predictor import run_dlhub_prediction
 import os
 import mastml

@@ -21,7 +21,7 @@ from collections import OrderedDict
 from math import log, floor, ceil
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
-from sklearn.ensemble.forest import _generate_sample_indices, _get_n_samples_bootstrap
+from sklearn.ensemble._forest import _generate_sample_indices, _get_n_samples_bootstrap
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 # Ignore the harmless warning about the gelsd driver on mac.

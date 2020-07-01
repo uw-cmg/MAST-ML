@@ -4,7 +4,8 @@
 from mastml.legos import feature_generators
 import pandas as pd
 import numpy as np
-from sklearn.externals import joblib
+#from sklearn.externals import joblib
+import joblib
 import os
 
 def get_input_columns(training_data_path, exclude_columns):
