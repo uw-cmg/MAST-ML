@@ -8,7 +8,9 @@ tweaking plots for a presentation or publication).
 """
 
 import math
+import statistics
 import os
+import copy
 import pandas as pd
 import itertools
 import warnings
@@ -19,6 +21,7 @@ from collections import OrderedDict
 from math import log, floor, ceil
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
+from sklearn.ensemble.forest import _generate_sample_indices, _get_n_samples_bootstrap
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 # Ignore the harmless warning about the gelsd driver on mac.
@@ -1100,6 +1103,191 @@ def plot_metric_vs_group_size(metric, groups, stats, avg_stats, savepath):
     fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
     return
 
+# Credit to: http://contrib.scikit-learn.org/forest-confidence-interval/_modules/forestci/forestci.html
+def calc_inbag_modified(n_samples, forest, is_ensemble):
+    """
+    Derive samples used to create trees in scikit-learn RandomForest objects.
+
+    Recovers the samples in each tree from the random state of that tree using
+    :func:`forest._generate_sample_indices`.
+
+    Parameters
+    ----------
+    n_samples : int
+        The number of samples used to fit the scikit-learn RandomForest object.
+
+    forest : RandomForest
+        Regressor or Classifier object that is already fit by scikit-learn.
+
+    Returns
+    -------
+    Array that records how many times a data point was placed in a tree.
+    Columns are individual trees. Rows are the number of times a sample was
+    used in a tree.
+    """
+
+    if not forest.bootstrap:
+        e_s = "Cannot calculate the inbag from a forest that has "
+        e_s = " bootstrap=False"
+        raise ValueError(e_s)
+
+    n_trees = forest.n_estimators
+    inbag = np.zeros((n_samples, n_trees))
+    sample_idx = []
+    n_samples_bootstrap = _get_n_samples_bootstrap(
+        #n_samples, forest.max_samples
+        n_samples, n_samples
+    )
+
+    for t_idx in range(n_trees):
+        if not is_ensemble:
+            sample_idx.append(
+                _generate_sample_indices(forest.estimators_[t_idx].random_state,
+                                         n_samples, n_samples_bootstrap))
+            inbag[:, t_idx] = np.bincount(sample_idx[-1], minlength=n_samples)
+        else:
+            rand_state = 0
+            try:
+                rand_state = forest.model[t_idx].random_state
+            except:
+                pass
+            sample_idx.append(
+                _generate_sample_indices(rand_state,
+                                         n_samples, n_samples_bootstrap))
+            inbag[:, t_idx] = np.bincount(sample_idx[-1], minlength=n_samples)
+
+    return inbag
+
+# Credit to: http://contrib.scikit-learn.org/forest-confidence-interval/_modules/forestci/forestci.html
+def random_forest_error_modified(forest, is_ensemble, X_train, X_test, basic_IJ=False,inbag=None,
+                        calibrate=True, memory_constrained=False,
+                        memory_limit=None):
+    """
+    Calculate error bars from scikit-learn RandomForest estimators.
+
+    RandomForest is a regressor or classifier object
+    this variance can be used to plot error bars for RandomForest objects
+
+    Parameters
+    ----------
+    forest : RandomForest
+        Regressor or Classifier object.
+
+    X_train : ndarray
+        An array with shape (n_train_sample, n_features). The design matrix for
+        training data.
+
+    X_test : ndarray
+        An array with shape (n_test_sample, n_features). The design matrix
+        for testing data
+        
+    basic_IJ : boolean, optional
+        Return the value of basic infinitesimal jackknife or Monte Carlo 
+        corrected infinitesimal jackknife.
+
+    inbag : ndarray, optional
+        The inbag matrix that fit the data. If set to `None` (default) it
+        will be inferred from the forest. However, this only works for trees
+        for which bootstrapping was set to `True`. That is, if sampling was
+        done with replacement. Otherwise, users need to provide their own
+        inbag matrix.
+
+    calibrate: boolean, optional
+        Whether to apply calibration to mitigate Monte Carlo noise.
+        Some variance estimates may be negative due to Monte Carlo effects if
+        the number of trees in the forest is too small. To use calibration,
+        Default: True
+
+    memory_constrained: boolean, optional
+        Whether or not there is a restriction on memory. If False, it is
+        assumed that a ndarry of shape (n_train_sample,n_test_sample) fits
+        in main memory. Setting to True can actually provide a speed up if
+        memory_limit is tuned to the optimal range.
+
+    memory_limit: int, optional.
+        An upper bound for how much memory the itermediate matrices will take
+        up in Megabytes. This must be provided if memory_constrained=True.
+
+    Returns
+    -------
+    An array with the unbiased sampling variance (V_IJ_unbiased)
+    for a RandomForest object.
+
+    See Also
+    ----------
+    :func:`calc_inbag`
+
+    Notes
+    -----
+    The calculation of error is based on the infinitesimal jackknife variance,
+    as described in [Wager2014]_ and is a Python implementation of the R code
+    provided at: https://github.com/swager/randomForestCI
+
+    .. [Wager2014] S. Wager, T. Hastie, B. Efron. "Confidence Intervals for
+       Random Forests: The Jackknife and the Infinitesimal Jackknife", Journal
+       of Machine Learning Research vol. 15, pp. 1625-1651, 2014.
+    """
+    if inbag is None:
+        inbag = calc_inbag_modified(X_train.shape[0], forest, is_ensemble)
+
+    if not is_ensemble:
+        pred = np.array([tree.predict(X_test) for tree in forest]).T
+    else:
+        pred = np.array([tree.predict(X_test) for tree in forest.model]).T
+        pred = pred[0]
+    pred_mean = np.mean(pred, 0)
+    pred_centered = pred - pred_mean
+    n_trees = forest.n_estimators
+    V_IJ = fci._core_computation(X_train, X_test, inbag, pred_centered, n_trees,
+                             memory_constrained, memory_limit)
+    V_IJ_unbiased = fci._bias_correction(V_IJ, inbag, pred_centered, n_trees)
+
+    # Correct for cases where resampling is done without replacement:
+    if np.max(inbag) == 1:
+        variance_inflation = 1 / (1 - np.mean(inbag)) ** 2
+        V_IJ_unbiased *= variance_inflation
+
+    if basic_IJ:
+        return V_IJ
+
+    if not calibrate:
+        return V_IJ_unbiased
+
+    if V_IJ_unbiased.shape[0] <= 20:
+        print("No calibration with n_samples <= 20")
+        return V_IJ_unbiased
+    if calibrate:
+
+        calibration_ratio = 2
+        n_sample = np.ceil(n_trees / calibration_ratio)
+        new_forest = copy.deepcopy(forest) # NOTE may need to do explicitly this for EnsembleRegressor -> update: doesn't seem to cause any issues
+        if not is_ensemble:
+            new_forest.estimators_ =\
+                np.random.permutation(new_forest.estimators_)[:int(n_sample)]
+        else:
+            new_forest.model =\
+                np.random.permutation(new_forest.model)[:int(n_sample)]
+        new_forest.n_estimators = int(n_sample)
+
+        #results_ss = fci.random_forest_error(new_forest, X_train, X_test,
+        #                                 calibrate=False,
+        #                                 memory_constrained=memory_constrained,
+        #                                 memory_limit=memory_limit)
+        results_ss = random_forest_error_modified(new_forest, is_ensemble, X_train, X_test,
+                                         calibrate=False,
+                                         memory_constrained=memory_constrained,
+                                         memory_limit=memory_limit)
+        # Use this second set of variance estimates
+        # to estimate scale of Monte Carlo noise
+        sigma2_ss = np.mean((results_ss - V_IJ_unbiased)**2)
+        delta = n_sample / n_trees
+        sigma2 = (delta**2 + (1 - delta)**2) / (2 * (1 - delta)**2) * sigma2_ss
+
+        # Use Monte Carlo noise scale estimate for empirical Bayes calibration
+        V_IJ_calibrated = fci.calibration.calibrateEB(V_IJ_unbiased, sigma2)
+
+        return V_IJ_calibrated
+
 def prediction_intervals(model, X, rf_error_method, rf_error_percentile, Xtrain, Xtest):
     """
     Method to calculate prediction intervals when using Random Forest and Gaussian Process regression models.
@@ -1247,7 +1435,7 @@ def prediction_intervals(model, X, rf_error_method, rf_error_percentile, Xtrain,
     nan_indices = list()
     indices_TF = list()
     X_aslist = X.values.tolist()
-    if model.__class__.__name__ in ['RandomForestRegressor', 'GradientBoostingRegressor', 'ExtraTreesRegressor']:
+    if model.__class__.__name__ in ['RandomForestRegressor', 'GradientBoostingRegressor', 'ExtraTreesRegressor', 'EnsembleRegressor']:
 
         if rf_error_method == 'jackknife_calibrated':
             rf_variances = random_forest_error_modified(model, X_train=Xtrain, X_test=Xtest, basic_IJ=False, calibrate=True)
@@ -1295,6 +1483,9 @@ def prediction_intervals(model, X, rf_error_method, rf_error_percentile, Xtrain,
                 elif model.__class__.__name__ == 'GradientBoostingRegressor':
                     for pred in model.estimators_.tolist():
                         preds.append(pred[0].predict(np.array(X_aslist[x]).reshape(1,-1))[0])
+                elif model.__class__.__name__ == 'EnsembleRegressor':
+                    for pred in model.model:
+                        preds.append(pred.predict(np.array(X_aslist[x]).reshape(1,-1))[0])
                 if rf_error_method == 'confint':
                     #e_down = np.percentile(preds, (100 - int(rf_error_percentile)) / 2.)
                     #e_up = np.percentile(preds, 100 - (100 - int(rf_error_percentile)) / 2.)
@@ -1361,8 +1552,12 @@ def plot_normalized_error(y_true, y_pred, savepath, model, rf_error_method, rf_e
     # Here: if model is random forest or Gaussian process, get real error bars. Else, just residuals
     model_name = model.__class__.__name__
     # TODO: also add support for Gradient Boosted Regressor
-    models_with_error_predictions = ['RandomForestRegressor', 'GaussianProcessRegressor', 'GradientBoostingRegressor']
+    models_with_error_predictions = ['RandomForestRegressor', 'GaussianProcessRegressor', 'GradientBoostingRegressor', 'EnsembleRegressor']
     has_model_errors = False
+
+    y_pred_ = y_pred
+    y_true_ = y_true
+
     if model_name in models_with_error_predictions:
         has_model_errors = True
         err_down, err_up, nan_indices, indices_TF = prediction_intervals(model, X, rf_error_method=rf_error_method,
@@ -1390,6 +1585,9 @@ def plot_normalized_error(y_true, y_pred, savepath, model, rf_error_method, rf_e
 
     if has_model_errors:
         err_avg = [(abs(e1)+abs(e2))/2 for e1, e2 in zip(err_up, err_down)]
+        err_avg = np.asarray(err_avg)
+        err_avg[err_avg==0.0] = 0.0001
+        err_avg = err_avg.tolist()
         model_errors = (y_true_-y_pred_)/err_avg
         density_errors = gaussian_kde(model_errors)
         maxy = max(max(density_residuals(x)), max(norm.pdf(x, mu, sigma)), max(density_errors(x)))
@@ -1446,15 +1644,23 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, rf_error_m
 
     # Here: if model is random forest or Gaussian process, get real error bars. Else, just residuals
     model_name = model.__class__.__name__
-    models_with_error_predictions = ['RandomForestRegressor', 'GaussianProcessRegressor', 'GradientBoostingRegressor']
+    models_with_error_predictions = ['RandomForestRegressor', 'GaussianProcessRegressor', 'GradientBoostingRegressor', 'EnsembleRegressor']
     has_model_errors = False
+
+    y_pred_ = y_pred
+    y_true_ = y_true
+
     if model_name in models_with_error_predictions:
         has_model_errors = True
         err_down, err_up, nan_indices, indices_TF = prediction_intervals(model, X, rf_error_method=rf_error_method,
                                                     rf_error_percentile=rf_error_percentile,  Xtrain=Xtrain, Xtest=Xtest)
 
-    y_pred_ = y_pred
-    y_true_ = y_true
+        # Need to amend which y_true and y_pred we are considering by removing values from indices_to_ignore to make sure
+        # length of these arrays and err_avg matches
+        y_true_ = np.delete(y_true_, indices_to_ignore)
+        y_pred_ = np.delete(y_pred_, indices_to_ignore)
+        err_down = np.asarray(err_down)[~np.isnan(y_pred_)]
+        err_up = np.asarray(err_up)[~np.isnan(y_pred_)]
 
     #Need to remove NaN's before plotting. These will be present when doing validation runs. Note NaN's only show up in y_pred_
     # Correct for nan indices being present
@@ -1464,11 +1670,6 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, rf_error_m
 
     y_true_ = y_true_[~np.isnan(y_pred_)]
     y_pred_ = y_pred_[~np.isnan(y_pred_)]
-
-    # Need to amend which y_true and y_pred we are considering by removing values from indices_to_ignore to make sure
-    # length of these arrays and err_avg matches
-    #y_true_ = np.delete(y_true_, indices_to_ignore)
-    #y_pred_ = np.delete(y_pred_, indices_to_ignore)
 
     x_align = 0.64
     fig, ax = make_fig_ax(x_align=x_align)
@@ -1489,6 +1690,9 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, rf_error_m
 
     if has_model_errors:
         err_avg = [(abs(e1)+abs(e2))/2 for e1, e2 in zip(err_up, err_down)]
+        err_avg = np.asarray(err_avg)
+        err_avg[err_avg==0.0] = 0.0001
+        err_avg = err_avg.tolist()
         model_errors = abs((y_true_-y_pred_)/err_avg)
         n_errors = np.arange(1, len(model_errors) + 1) / np.float(len(model_errors))
         X_errors = np.sort(model_errors)
@@ -1580,6 +1784,9 @@ def plot_average_cumulative_normalized_error(y_true, y_pred, savepath, has_model
     ax.set_xlim([0, 5])
 
     if has_model_errors:
+        err_avg = np.asarray(err_avg)
+        err_avg[err_avg==0.0] = 0.0001
+        err_avg = err_avg.tolist()
         model_errors = abs((y_true-y_pred)/err_avg)
         model_errors = model_errors[~np.isnan(model_errors)]
         n_errors = np.arange(1, len(model_errors) + 1) / np.float(len(model_errors))
@@ -1668,6 +1875,14 @@ def plot_average_normalized_error(y_true, y_pred, savepath, has_model_errors, er
     minn = -5
 
     if has_model_errors:
+        nans = np.argwhere(np.isnan(err_avg)).tolist()
+        nans = np.squeeze(nans)
+        if nans.size:
+            err_avg[nans] = 0.0
+
+        err_avg = np.asarray(err_avg)
+        err_avg[err_avg==0.0] = 0.0001
+        err_avg = err_avg.tolist()
         model_errors = (y_true-y_pred)/err_avg
         model_errors = model_errors[~np.isnan(model_errors)]
         density_errors = gaussian_kde(model_errors)
@@ -1711,6 +1926,8 @@ def plot_real_vs_predicted_error(y_true, savepath, model, data_test_type):
         model_type = 'ET'
     elif model_name == 'GaussianProcessRegressor':
         model_type = 'GPR'
+    elif model_name == 'EnsembleRegressor':
+        model_type = 'ER'
 
     if data_test_type not in ['test', 'validation']:
         print('Error: data_test_type must be one of "test" or "validation"')
@@ -1726,43 +1943,75 @@ def plot_real_vs_predicted_error(y_true, savepath, model, data_test_type):
     ax.set_ylabel('RMS Absolute residuals\n / dataset stdev', fontsize=12)
     ax.tick_params(labelsize=10)
 
-    linear = LinearRegression(fit_intercept=False)
+    linear_int = LinearRegression(fit_intercept=False)
+    linear = LinearRegression(fit_intercept=True)
     # Fit just blue circle data
     # Find nan entries
     nans = np.argwhere(np.isnan(rms_residual_values)).tolist()
 
-    lowval = 0
-    if len(nans) > 0:
-        if nans[0][0] == 0:
-            nans = nans[1:]
-            lowval = 1
-            if len(nans) > 0:
-                if nans[0][0] == 1:
-                    nans = nans[1:]
-                    lowval = 2
-                    if len(nans) > 0:
-                        if nans[0][0] == 2:
-                            nans = nans[1:]
-                            lowval = 3
-                            if len(nans) > 0:
-                                if nans[0][0] == 3:
-                                    nans = nans[1:]
-                                    lowval = 4
+    # use nans (which are indices) to delete relevant parts of bin_values and 
+    # rms_residual_values as they can't be used to fit anyway
+    bin_values_copy = np.empty_like(bin_values)
+    bin_values_copy[:] = bin_values
+    rms_residual_values_copy = np.empty_like(rms_residual_values)
+    rms_residual_values_copy[:] = rms_residual_values
+    bin_values_copy = np.delete(bin_values_copy, nans)
+    rms_residual_values_copy = np.delete(rms_residual_values_copy, nans)
 
-    try:
-        val = min(nans)[0]
-    except ValueError:
-        val = 10
-    if val > 10:
-        val = 10
+    # BEGIN OLD CODE
+    # --------------
+    #lowval = 0
+    #if len(nans) > 0:
+    #    if nans[0][0] == 0:
+    #        nans = nans[1:]
+    #        lowval = 1
+    #        if len(nans) > 0:
+    #            if nans[0][0] == 1:
+    #                nans = nans[1:]
+    #                lowval = 2
+    #                if len(nans) > 0:
+    #                    if nans[0][0] == 2:
+    #                        nans = nans[1:]
+    #                        lowval = 3
+    #                        if len(nans) > 0:
+    #                            if nans[0][0] == 3:
+    #                                nans = nans[1:]
+    #                                lowval = 4
 
-    linear.fit(np.array(bin_values[lowval:val]).reshape(-1, 1), rms_residual_values[lowval:val])
-    yfit = linear.predict(np.array(bin_values[lowval:val]).reshape(-1, 1))
-    ax.plot(bin_values[lowval:val], yfit, 'k--', linewidth=2)
-    slope = linear.coef_
-    r2 = r2_score(rms_residual_values[lowval:val], yfit)
-    ax.text(0.02, 1.2, 'slope = %3.2f ' % slope, fontsize=12, fontdict={'color': 'k'})
-    ax.text(0.02, 1.1, 'R$^2$ = %3.2f ' % r2, fontsize=12, fontdict={'color': 'k'})
+    #try:
+    #    val = min(nans)[0]
+    #except ValueError:
+    #    val = 10
+    #if val > 10:
+    #    val = 10
+
+    #linear.fit(np.array(bin_values[lowval:val]).reshape(-1, 1), rms_residual_values[lowval:val])
+
+    #yfit = linear.predict(np.array(bin_values[lowval:val]).reshape(-1, 1))
+    #ax.plot(bin_values[lowval:val], yfit, 'k--', linewidth=2)
+    #slope = linear.coef_
+    #r2 = r2_score(rms_residual_values[lowval:val], yfit)
+    # --------------
+
+    if not rms_residual_values_copy.size:
+        print("---WARNING: ALL ERRORS TOO LARGE FOR PLOTTING---")
+    else:
+        linear_int.fit(np.array(bin_values_copy).reshape(-1, 1), rms_residual_values_copy)
+        linear.fit(np.array(bin_values_copy).reshape(-1, 1), rms_residual_values_copy)
+
+        yfit_int = linear_int.predict(np.array(bin_values_copy).reshape(-1, 1))
+        yfit = linear.predict(np.array(bin_values_copy).reshape(-1, 1))
+        ax.plot(bin_values_copy, yfit_int, 'r--', linewidth=2)
+        ax.plot(bin_values_copy, yfit, 'k--', linewidth=2)
+        slope_int = linear_int.coef_
+        r2_int = r2_score(rms_residual_values_copy, yfit_int)
+        slope = linear.coef_
+        r2 = r2_score(rms_residual_values_copy, yfit)
+
+        ax.text(0.02, 1.2, 'intercept slope = %3.2f ' % slope_int, fontsize=12, fontdict={'color': 'r'})
+        ax.text(0.02, 1.1, 'intercept R$^2$ = %3.2f ' % r2_int, fontsize=12, fontdict={'color': 'r'})
+        ax.text(0.02, 1.0, 'slope = %3.2f ' % slope, fontsize=12, fontdict={'color': 'k'})
+        ax.text(0.02, 0.9, 'R$^2$ = %3.2f ' % r2, fontsize=12, fontdict={'color': 'k'})
 
     divider = make_axes_locatable(ax)
     axbarx = divider.append_axes("top", 1.2, pad=0.12, sharex=ax)
@@ -1776,9 +2025,9 @@ def plot_real_vs_predicted_error(y_true, savepath, model, data_test_type):
     total_samples = sum(num_values_per_bin)
     axbarx.text(0.95, round(0.67 * max(num_values_per_bin)), 'Total counts = ' + str(total_samples), fontsize=12)
 
-    ax.set_ylim(bottom=0, top=1.3)
+    ax.set_ylim(bottom=0, top=max(1.3, max(rms_residual_values)))
     axbarx.set_ylim(bottom=0, top=max(num_values_per_bin) + 50)
-    ax.set_xlim(left=0, right=1.6)
+    ax.set_xlim(left=0, right=max(max(bin_values_copy) + 0.05, 1.6))
 
     fig.savefig(
         os.path.join(savepath.split('.png')[0], str(model_type) + '_residuals_vs_modelerror_' + str(data_test_type) + '.png'),
@@ -1829,6 +2078,24 @@ def parse_error_data(dataset_stdev, path_to_test, data_test_type):
     bin_values = [0.05, 0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95, 1.05, 1.15, 1.25, 1.35, 1.45, 1.55]
     bin_delta = 0.05
 
+    over_count = 0
+    over_vals = []
+    for e in erroravg_reduced_sorted:
+        if e > (max(bin_values) + bin_delta):
+            over_count += 1
+            over_vals.append(e)
+
+    if len(over_vals):
+        med_over_val = statistics.median(over_vals)
+        if med_over_val <= max(bin_values) * 2.0:
+            # just add another bin and put everthing in there
+            bin_values.append(1.65)
+        else:
+            # extend histogram
+            max_over_val = max(over_vals)
+            extra_bin_values = np.arange(1.65, max_over_val+1.0, 0.05)
+            bin_values = np.concatenate([bin_values, extra_bin_values])
+
     rms_residual_values = list()
     num_values_per_bin = list()
 
@@ -1837,8 +2104,11 @@ def parse_error_data(dataset_stdev, path_to_test, data_test_type):
         bin_residuals = list()
         for i, val in enumerate(erroravg_reduced_sorted):
             if val > bin_value-bin_delta:
-                if val < bin_value+bin_delta:
+                if bin_value == bin_values[len(bin_values)-1]:
                     bin_indices.append(i)
+                else:
+                    if val < bin_value+bin_delta:
+                        bin_indices.append(i)
         for i in bin_indices:
             bin_residuals.append(squaredresiduals_reduced_sorted[i])
         rms_residual_values.append(np.sqrt(np.mean(bin_residuals)))

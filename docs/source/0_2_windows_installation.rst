@@ -14,8 +14,7 @@ Create a conda environment
 ---------------------------------
 
 From the Anaconda Navigator, go to Environments and create a new environment
-Select python version **3.5** (3.6 may work with later version of the pymatgen
-conda package)
+Select python version **3.6**
 
 Under "Channels", along with defaults channel, "Add" the "materials" channel.
 The Channels list should now read::
