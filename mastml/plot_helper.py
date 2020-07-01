@@ -1657,8 +1657,8 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, rf_error_m
 
         # Need to amend which y_true and y_pred we are considering by removing values from indices_to_ignore to make sure
         # length of these arrays and err_avg matches
-        y_true_ = np.delete(y_true_, indices_to_ignore)
-        y_pred_ = np.delete(y_pred_, indices_to_ignore)
+        y_true_ = np.delete(y_true_, nan_indices)
+        y_pred_ = np.delete(y_pred_, nan_indices)
         err_down = np.asarray(err_down)[~np.isnan(y_pred_)]
         err_up = np.asarray(err_up)[~np.isnan(y_pred_)]
 
