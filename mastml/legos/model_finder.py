@@ -320,7 +320,7 @@ class EnsembleRegressor():
             if len(bad_idxs) == self.n_estimators:
                 print("ALL models failed, wtf is your data")
                 return
-            self.all_preds = np.delete(self.all_preds, bad_idxs, 1)
+            #self.all_preds = np.delete(self.all_preds, bad_idxs, 1)
 
         y_preds = []
         for idx, x_i in enumerate(self.all_preds):

@@ -313,27 +313,6 @@ def mastml_run(conf_path, data_path, outdir):
         if '_ensemble' in long_name:
             del models[long_name]
 
-    # init of ensemble models
-    for long_name, (name, kwargs) in conf['Models'].items():
-        if 'EnsembleRegressor' in long_name:
-            sub_models = []
-            sub_models_names = models[long_name].model
-            for submodel_long_name in sub_models_names:
-                for sm_long_name, (sm_name, sm_kwargs) in conf['Models'].items():
-                    if sm_long_name in submodel_long_name:
-                        sm = None
-                        if 'KerasRegressor' in sm_long_name:
-                            sm = model_finder.KerasRegressor(conf['Models']['KerasRegressor_ensemble'][1])
-                        else:
-                            sm = clone(models[sm_long_name])
-                        sub_models.append(sm)
-                        break
-            models[long_name].model = sub_models
-
-    for long_name, (name, kwargs) in conf['Models'].items():
-        if '_ensemble' in long_name:
-            del models[long_name]
-
     # Need to snatch models and CV objects for Hyperparam Opt
     hyperopt_params = _snatch_models_cv_for_hyperopt(conf, models, splitters, is_classification)
 

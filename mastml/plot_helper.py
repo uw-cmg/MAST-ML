@@ -1156,7 +1156,7 @@ def calc_inbag_modified(n_samples, forest, is_ensemble):
             #    _generate_sample_indices(rand_state,
             #                             n_samples, n_samples_bootstrap))
             sample_idx = forest.bootstrapped_idxs[t_idx]
-            inbag[:, t_idx] = np.bincount(sample_idx[-1], minlength=n_samples)
+            inbag[:, t_idx] = np.bincount(sample_idx, minlength=n_samples)
 
     return inbag
 
@@ -1323,7 +1323,10 @@ def prediction_intervals(model, X, rf_error_method, rf_error_percentile, Xtrain,
     if model.__class__.__name__ in ['RandomForestRegressor', 'GradientBoostingRegressor', 'ExtraTreesRegressor', 'EnsembleRegressor']:
 
         if rf_error_method == 'jackknife_calibrated':
-            rf_variances = random_forest_error_modified(model, X_train=Xtrain, X_test=Xtest, basic_IJ=False, calibrate=True)
+            if 'EnsembleRegressor' in model.__class__.__name__:
+                rf_variances = random_forest_error_modified(model, True, X_train=Xtrain, X_test=Xtest, basic_IJ=False, calibrate=True)
+            else:
+                rf_variances = random_forest_error_modified(model, False, X_train=Xtrain, X_test=Xtest, basic_IJ=False, calibrate=True)
             rf_stdevs = np.sqrt(rf_variances)
             nan_indices = np.where(np.isnan(rf_stdevs))
             nan_indices_sorted = np.array(sorted(nan_indices[0], reverse=True))
@@ -1335,7 +1338,10 @@ def prediction_intervals(model, X, rf_error_method, rf_error_percentile, Xtrain,
             rf_stdevs = rf_stdevs[~np.isnan(rf_stdevs)]
             err_up = err_down = rf_stdevs
         elif rf_error_method == 'jackknife_uncalibrated':
-            rf_variances = random_forest_error_modified(model, X_train=Xtrain, X_test=Xtest, basic_IJ=False, calibrate=False)
+            if 'EnsembleRegressor' in model.__class__.__name__:
+                rf_variances = random_forest_error_modified(model, True, X_train=Xtrain, X_test=Xtest, basic_IJ=False, calibrate=False)
+            else:
+                rf_variances = random_forest_error_modified(model, False, X_train=Xtrain, X_test=Xtest, basic_IJ=False, calibrate=False)
             rf_stdevs = np.sqrt(rf_variances)
             nan_indices = np.where(np.isnan(rf_stdevs))
             nan_indices_sorted = np.array(sorted(nan_indices[0], reverse=True))
@@ -1347,7 +1353,10 @@ def prediction_intervals(model, X, rf_error_method, rf_error_percentile, Xtrain,
             rf_stdevs = rf_stdevs[~np.isnan(rf_stdevs)]
             err_up = err_down = rf_stdevs
         elif rf_error_method == 'jackknife_basic':
-            rf_variances = random_forest_error_modified(model, X_train=Xtrain, X_test=Xtest, basic_IJ=True, calibrate=False)
+            if 'EnsembleRegressor' in model.__class__.__name__:
+                rf_variances = random_forest_error_modified(model, True, X_train=Xtrain, X_test=Xtest, basic_IJ=True, calibrate=False)
+            else:
+                rf_variances = random_forest_error_modified(model, False, X_train=Xtrain, X_test=Xtest, basic_IJ=True, calibrate=False)
             rf_stdevs = np.sqrt(rf_variances)
             nan_indices = np.where(np.isnan(rf_stdevs))
             nan_indices_sorted = np.array(sorted(nan_indices[0], reverse=True))
@@ -1404,6 +1413,13 @@ def prediction_intervals(model, X, rf_error_method, rf_error_percentile, Xtrain,
         preds = model.predict(X, return_std=True)[1] # Get the stdev model error from the predictions of GPR
         err_up = preds
         err_down = preds
+        nan_indices = np.where(np.isnan(err_up))
+        nan_indices_sorted = np.array(sorted(nan_indices[0], reverse=True))
+        for i, val in enumerate(list(err_up)):
+            if i in nan_indices_sorted:
+                indices_TF.append(False)
+            else:
+                indices_TF.append(True)
 
     return err_down, err_up, nan_indices, np.array(indices_TF)
 
@@ -1448,8 +1464,6 @@ def plot_normalized_error(y_true, y_pred, savepath, model, rf_error_method, rf_e
         err_down, err_up, nan_indices, indices_TF = prediction_intervals(model, X, rf_error_method=rf_error_method,
                                                 rf_error_percentile=rf_error_percentile, Xtrain=Xtrain, Xtest=Xtest)
 
-    y_pred_ = y_pred
-    y_true_ = y_true
     # Correct for nan indices being present
     if has_model_errors:
         y_pred_ = y_pred_[indices_TF]
@@ -1540,14 +1554,7 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, rf_error_m
         err_down, err_up, nan_indices, indices_TF = prediction_intervals(model, X, rf_error_method=rf_error_method,
                                                     rf_error_percentile=rf_error_percentile,  Xtrain=Xtrain, Xtest=Xtest)
 
-        # Need to amend which y_true and y_pred we are considering by removing values from indices_to_ignore to make sure
-        # length of these arrays and err_avg matches
-        y_true_ = np.delete(y_true_, nan_indices)
-        y_pred_ = np.delete(y_pred_, nan_indices)
-        err_down = np.asarray(err_down)[~np.isnan(y_pred_)]
-        err_up = np.asarray(err_up)[~np.isnan(y_pred_)]
-
-    #Need to remove NaN's before plotting. These will be present when doing validation runs. Note NaN's only show up in y_pred_
+    # Need to remove NaN's before plotting. These will be present when doing validation runs. Note NaN's only show up in y_pred_
     # Correct for nan indices being present
     if has_model_errors:
         y_pred_ = y_pred_[indices_TF]
