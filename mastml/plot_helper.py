@@ -1147,14 +1147,6 @@ def calc_inbag_modified(n_samples, forest, is_ensemble):
                                          n_samples, n_samples_bootstrap))
             inbag[:, t_idx] = np.bincount(sample_idx[-1], minlength=n_samples)
         else:
-            #rand_state = 0
-            #try:
-            #    rand_state = forest.model[t_idx].random_state
-            #except:
-            #    pass
-            #sample_idx.append(
-            #    _generate_sample_indices(rand_state,
-            #                             n_samples, n_samples_bootstrap))
             sample_idx = forest.bootstrapped_idxs[t_idx]
             inbag[:, t_idx] = np.bincount(sample_idx, minlength=n_samples)
 

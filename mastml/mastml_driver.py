@@ -960,7 +960,6 @@ def mastml_run(conf_path, data_path, outdir):
 
             path = join(main_path, f"split_{split_num}")
             if 'EnsembleRegressor' in model.__class__.__name__:
-                #path = join(main_path, f"split_{split_num}")
                 models['EnsembleRegressor'].setup(path)
 
             split_results.append(one_fit(split_num, train_indices, test_indices, normalizer_instance))

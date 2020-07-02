@@ -30,7 +30,6 @@ import pandas as pd
 #from . import keras_models
 from mastml import utils
 
-#import pickle
 from scipy import stats
 
 with warnings.catch_warnings():
@@ -223,11 +222,6 @@ class EnsembleRegressor():
 
     def setup(self, path):
         self.fold += 1
-        # NOTE temp for testing
-        #for i in range(self.n_estimators):
-        #    self.model[i].model.load_weights("../Errors/test/model_weights/model_weights_{}.h5".format(i+self.n_estimators*self.fold))
-        #    #print(self.model[i].model.get_weights()[0][0])
-        #    #input("wait")
         self.bootstrapped_idxs = []
         self.bootstrapped_datasets = []
         self.path = path
@@ -236,23 +230,13 @@ class EnsembleRegressor():
         X = X.values
         Y = Y.values
 
-        # NOTE temp for testing
-        #with open("../Errors/test/ALL_bootstrap_idxs.pickle", "rb") as fp:
-        #    const_bootstrap_idxs = pickle.load(fp)
-        #    #print(np.asarray(const_bootstrap_idxs).shape)
-        #    #print(self.fold)
-        #    #input("wait")
-
         idxs = np.arange(len(X))
         # fit each model in the ensemble
         for i in range(self.n_estimators):
             model = self.model[i]
 
             # do bootstrapping given the validation data
-            #bootstrap_idxs = random.choices(idxs, k=self.num_samples)
-            bootstrap_idxs = random.choices(idxs, k=len(X))
-            # NOTE temp for testing
-            #bootstrap_idxs = const_bootstrap_idxs[(self.fold * self.n_estimators)+i]
+            bootstrap_idxs = random.choices(idxs, k=self.num_samples)
             bootstrap_X = X[bootstrap_idxs]
             bootstrap_Y = Y[bootstrap_idxs]
             if 1 == len(bootstrap_X.shape):

@@ -45,7 +45,7 @@ setup(
         "cycler>=0.10.0",
         "Cython>=0.29.13",
         "decorator>=4.3.0",
-        #"dlhub_sdk", # NOTE this causes version issues, manually install it afterwards if it isn't installed already (I have version 0.8.4 on my system)
+        #"dlhub_sdk",
         "dominate>=2.3.5",
         "duecredit",
         "et_xmlfile",
@@ -55,7 +55,7 @@ setup(
         "globus_nexus_client",
         "globus_sdk",
         "httplib2",
-        "idna==2.7", # NOTE now this has to be 2.7
+        "idna==2.7",
         "imageio>=2.3.0",
         "imgaug>=0.2.5",
         "importlib-metadata>=0.12",
@@ -93,10 +93,10 @@ setup(
         "python-dateutil>=2.7.3",
         "pytz>=2018.5",
         "pyyaml>=4.2b1",
-        "requests>=2.20.0", # NOTE I believe some packages need the older version of 2.20.0
+        "requests>=2.20.0",
         "retrying",
         "ruamel.yaml>=0.15.42",
-        "scikit-learn==0.22.2", # NOTE I have this version on my system and everything seems to work (you need this older version for forestci to work if I'm remembering correctly)
+        "scikit-learn==0.22.2",
         "scikit-optimize>=0.5.2",
         "scipy>=1.2.1",
         "six>=1.11.0",
@@ -108,7 +108,7 @@ setup(
         "traitlets>=4.3.2",
         "urllib3<1.25,>=1.24.2",
         "wcwidth",
-        #"xgboost", #Note that sometimes xgboost has issues installing. Comment out this line if install fails on xgboost pip install
+        #"xgboost",
         "xlrd",
         "zipp"],
     author="MAST Development Team, University of Wisconsin-Madison Computational Materials Group",
