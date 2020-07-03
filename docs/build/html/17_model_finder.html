@@ -247,7 +247,8 @@ error handling functions</p>
 <dl class="class">
 <dt id="mastml.legos.model_finder.AlwaysFive">
 <em class="property">class </em><code class="sig-prename descclassname">mastml.legos.model_finder.</code><code class="sig-name descname">AlwaysFive</code><span class="sig-paren">(</span><em class="sig-param">constant=5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/model_finder.html#AlwaysFive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.model_finder.AlwaysFive" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class used as a test model that always predicts a value of 5.</p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.RegressorMixin</span></code></p>
+<p>Class used as a test model that always predicts a value of 5.</p>
 <p>Args:</p>
 <blockquote>
 <div><p>constant: (int), the value to predict. Always 5 by default</p>
@@ -267,12 +268,80 @@ error handling functions</p>
 </div></blockquote>
 </div></blockquote>
 </div></blockquote>
+<dl class="method">
+<dt id="mastml.legos.model_finder.AlwaysFive.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">y</em>, <em class="sig-param">groups=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/model_finder.html#AlwaysFive.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.model_finder.AlwaysFive.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.model_finder.AlwaysFive.predict">
+<code class="sig-name descname">predict</code><span class="sig-paren">(</span><em class="sig-param">X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/model_finder.html#AlwaysFive.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.model_finder.AlwaysFive.predict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="mastml.legos.model_finder.EnsembleRegressor">
+<em class="property">class </em><code class="sig-prename descclassname">mastml.legos.model_finder.</code><code class="sig-name descname">EnsembleRegressor</code><span class="sig-paren">(</span><em class="sig-param">n_estimators</em>, <em class="sig-param">num_samples</em>, <em class="sig-param">model_list</em>, <em class="sig-param">num_models</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/model_finder.html#EnsembleRegressor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.model_finder.EnsembleRegressor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="mastml.legos.model_finder.EnsembleRegressor.build_models">
+<code class="sig-name descname">build_models</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/model_finder.html#EnsembleRegressor.build_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.model_finder.EnsembleRegressor.build_models" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.model_finder.EnsembleRegressor.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">Y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/model_finder.html#EnsembleRegressor.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.model_finder.EnsembleRegressor.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.model_finder.EnsembleRegressor.predict">
+<code class="sig-name descname">predict</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">return_std=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/model_finder.html#EnsembleRegressor.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.model_finder.EnsembleRegressor.predict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.model_finder.EnsembleRegressor.setup">
+<code class="sig-name descname">setup</code><span class="sig-paren">(</span><em class="sig-param">path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/model_finder.html#EnsembleRegressor.setup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.model_finder.EnsembleRegressor.setup" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.model_finder.EnsembleRegressor.stats_check_models">
+<code class="sig-name descname">stats_check_models</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">Y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/model_finder.html#EnsembleRegressor.stats_check_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.model_finder.EnsembleRegressor.stats_check_models" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="mastml.legos.model_finder.KerasRegressor">
+<em class="property">class </em><code class="sig-prename descclassname">mastml.legos.model_finder.</code><code class="sig-name descname">KerasRegressor</code><span class="sig-paren">(</span><em class="sig-param">conf_dict</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/model_finder.html#KerasRegressor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.model_finder.KerasRegressor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="mastml.legos.model_finder.KerasRegressor.build_model">
+<code class="sig-name descname">build_model</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/model_finder.html#KerasRegressor.build_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.model_finder.KerasRegressor.build_model" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.model_finder.KerasRegressor.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">Y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/model_finder.html#KerasRegressor.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.model_finder.KerasRegressor.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.model_finder.KerasRegressor.predict">
+<code class="sig-name descname">predict</code><span class="sig-paren">(</span><em class="sig-param">X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/model_finder.html#KerasRegressor.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.model_finder.KerasRegressor.predict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.model_finder.KerasRegressor.summary">
+<code class="sig-name descname">summary</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/model_finder.html#KerasRegressor.summary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.model_finder.KerasRegressor.summary" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="class">
 <dt id="mastml.legos.model_finder.ModelImport">
 <em class="property">class </em><code class="sig-prename descclassname">mastml.legos.model_finder.</code><code class="sig-name descname">ModelImport</code><span class="sig-paren">(</span><em class="sig-param">model_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/model_finder.html#ModelImport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.model_finder.ModelImport" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class used to import pickled models from previous machine learning fits</p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class used to import pickled models from previous machine learning fits</p>
 <p>Args:</p>
 <blockquote>
 <div><p>model_path (str): string designating the path to load the saved .pkl model file</p>
@@ -306,12 +375,18 @@ error handling functions</p>
 <dd><p>Only here for compatibility</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="mastml.legos.model_finder.ModelImport.predict">
+<code class="sig-name descname">predict</code><span class="sig-paren">(</span><em class="sig-param">X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/model_finder.html#ModelImport.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.model_finder.ModelImport.predict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="class">
 <dt id="mastml.legos.model_finder.RandomGuesser">
 <em class="property">class </em><code class="sig-prename descclassname">mastml.legos.model_finder.</code><code class="sig-name descname">RandomGuesser</code><a class="reference internal" href="_modules/mastml/legos/model_finder.html#RandomGuesser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.model_finder.RandomGuesser" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class used as a test model that always predicts random values for y data.</p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.RegressorMixin</span></code></p>
+<p>Class used as a test model that always predicts random values for y data.</p>
 <p>Args:</p>
 <blockquote>
 <div><p>None</p>
@@ -337,6 +412,16 @@ error handling functions</p>
 </div></blockquote>
 </div></blockquote>
 </div></blockquote>
+<dl class="method">
+<dt id="mastml.legos.model_finder.RandomGuesser.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">y</em>, <em class="sig-param">groups=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/model_finder.html#RandomGuesser.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.model_finder.RandomGuesser.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.model_finder.RandomGuesser.predict">
+<code class="sig-name descname">predict</code><span class="sig-paren">(</span><em class="sig-param">X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/model_finder.html#RandomGuesser.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.model_finder.RandomGuesser.predict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="function">
@@ -415,6 +500,7 @@ error handling functions</p>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
 
   

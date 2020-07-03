@@ -244,6 +244,21 @@
 <span id="mast-ml-driver"></span><h1>MAST-ML Driver<a class="headerlink" href="#module-mastml.mastml_driver" title="Permalink to this headline">¶</a></h1>
 <p>Main MAST-ML module responsible for executing the workflow of a MAST-ML run</p>
 <dl class="function">
+<dt id="mastml.mastml_driver._exclude_validation">
+<code class="sig-prename descclassname">mastml.mastml_driver.</code><code class="sig-name descname">_exclude_validation</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">validation_column</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/mastml_driver.html#_exclude_validation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.mastml_driver._exclude_validation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="mastml.mastml_driver._extract_grouping_column_names">
+<code class="sig-prename descclassname">mastml.mastml_driver.</code><code class="sig-name descname">_extract_grouping_column_names</code><span class="sig-paren">(</span><em class="sig-param">splitter_to_kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/mastml_driver.html#_extract_grouping_column_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.mastml_driver._extract_grouping_column_names" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="mastml.mastml_driver._grouping_column_to_group_number">
+<code class="sig-prename descclassname">mastml.mastml_driver.</code><code class="sig-name descname">_grouping_column_to_group_number</code><span class="sig-paren">(</span><em class="sig-param">X_grouped</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/mastml_driver.html#_grouping_column_to_group_number"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.mastml_driver._grouping_column_to_group_number" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
 <dt id="mastml.mastml_driver._instantiate">
 <code class="sig-prename descclassname">mastml.mastml_driver.</code><code class="sig-name descname">_instantiate</code><span class="sig-paren">(</span><em class="sig-param">kwargs_dict</em>, <em class="sig-param">name_to_constructor</em>, <em class="sig-param">category</em>, <em class="sig-param">X_grouped=None</em>, <em class="sig-param">X_indices=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/mastml_driver.html#_instantiate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.mastml_driver._instantiate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Uses name_to_constructor to instantiate every item in kwargs_dict and return
@@ -251,10 +266,55 @@ the list of instantiations</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="mastml.mastml_driver._only_validation">
+<code class="sig-prename descclassname">mastml.mastml_driver.</code><code class="sig-name descname">_only_validation</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">validation_column</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/mastml_driver.html#_only_validation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.mastml_driver._only_validation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="mastml.mastml_driver._remove_constant_features">
+<code class="sig-prename descclassname">mastml.mastml_driver.</code><code class="sig-name descname">_remove_constant_features</code><span class="sig-paren">(</span><em class="sig-param">df</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/mastml_driver.html#_remove_constant_features"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.mastml_driver._remove_constant_features" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
 <dt id="mastml.mastml_driver._save_all_runs">
 <code class="sig-prename descclassname">mastml.mastml_driver.</code><code class="sig-name descname">_save_all_runs</code><span class="sig-paren">(</span><em class="sig-param">runs</em>, <em class="sig-param">outdir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/mastml_driver.html#_save_all_runs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.mastml_driver._save_all_runs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Produces a giant html table of all stats for all runs</p>
 </dd></dl>
+
+<dl class="function">
+<dt id="mastml.mastml_driver._snatch_gpr_model">
+<code class="sig-prename descclassname">mastml.mastml_driver.</code><code class="sig-name descname">_snatch_gpr_model</code><span class="sig-paren">(</span><em class="sig-param">models</em>, <em class="sig-param">conf_models</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/mastml_driver.html#_snatch_gpr_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.mastml_driver._snatch_gpr_model" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="mastml.mastml_driver._snatch_keras_model">
+<code class="sig-prename descclassname">mastml.mastml_driver.</code><code class="sig-name descname">_snatch_keras_model</code><span class="sig-paren">(</span><em class="sig-param">models</em>, <em class="sig-param">conf_models</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/mastml_driver.html#_snatch_keras_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.mastml_driver._snatch_keras_model" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="mastml.mastml_driver._snatch_models">
+<code class="sig-prename descclassname">mastml.mastml_driver.</code><code class="sig-name descname">_snatch_models</code><span class="sig-paren">(</span><em class="sig-param">models</em>, <em class="sig-param">conf_feature_selection</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/mastml_driver.html#_snatch_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.mastml_driver._snatch_models" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="mastml.mastml_driver._snatch_models_cv_for_hyperopt">
+<code class="sig-prename descclassname">mastml.mastml_driver.</code><code class="sig-name descname">_snatch_models_cv_for_hyperopt</code><span class="sig-paren">(</span><em class="sig-param">conf</em>, <em class="sig-param">models</em>, <em class="sig-param">splitters</em>, <em class="sig-param">is_classification</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/mastml_driver.html#_snatch_models_cv_for_hyperopt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.mastml_driver._snatch_models_cv_for_hyperopt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="mastml.mastml_driver._snatch_splitters">
+<code class="sig-prename descclassname">mastml.mastml_driver.</code><code class="sig-name descname">_snatch_splitters</code><span class="sig-paren">(</span><em class="sig-param">splitters</em>, <em class="sig-param">conf_feature_selection</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/mastml_driver.html#_snatch_splitters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.mastml_driver._snatch_splitters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="mastml.mastml_driver._write_stats">
+<code class="sig-prename descclassname">mastml.mastml_driver.</code><code class="sig-name descname">_write_stats</code><span class="sig-paren">(</span><em class="sig-param">train_metrics</em>, <em class="sig-param">test_metrics</em>, <em class="sig-param">outdir</em>, <em class="sig-param">prediction_metrics=None</em>, <em class="sig-param">prediction_names=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/mastml_driver.html#_write_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.mastml_driver._write_stats" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="mastml.mastml_driver._write_stats_tocsv">
+<code class="sig-prename descclassname">mastml.mastml_driver.</code><code class="sig-name descname">_write_stats_tocsv</code><span class="sig-paren">(</span><em class="sig-param">train_metrics</em>, <em class="sig-param">test_metrics</em>, <em class="sig-param">outdir</em>, <em class="sig-param">prediction_metrics=None</em>, <em class="sig-param">prediction_names=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/mastml_driver.html#_write_stats_tocsv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.mastml_driver._write_stats_tocsv" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="function">
 <dt id="mastml.mastml_driver.check_paths">
@@ -374,6 +434,7 @@ designate where data will be imported and results saved to, as well as creation 
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
 
   
