@@ -101,6 +101,7 @@ setup(
         "scipy>=1.2.1",
         "six>=1.11.0",
         "spglib>=1.10.3.65",
+        "sphinx-automodapi",
         "sympy>=1.2",
         "tabulate>=0.8.2",
         "tensorflow>=1.13.1",
