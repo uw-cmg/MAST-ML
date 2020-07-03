@@ -19,7 +19,7 @@
 #
 import os
 import sys
-os.system('pip install sphinx=="2.4.4" sphinx-automodapi pandas scikit-learn')
+os.system('pip install sphinx-automodapi pandas scikit-learn')
 #import sphinx_automodapi
 sys.path.insert(0, os.path.abspath('../../'))
 sys.path.insert(0, os.path.abspath('../../mastml'))
