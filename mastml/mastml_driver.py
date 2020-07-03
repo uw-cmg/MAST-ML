@@ -20,7 +20,6 @@ from copy import deepcopy
 import numpy as np
 import pandas as pd
 import joblib
-#from sklearn.externals import joblib
 from sklearn.exceptions import UndefinedMetricWarning
 from sklearn.model_selection import LeaveOneGroupOut
 from sklearn.metrics import make_scorer
