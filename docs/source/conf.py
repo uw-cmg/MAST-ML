@@ -19,7 +19,7 @@
 #
 import os
 import sys
-os.system('python ../../setup.py --install')
+os.system('python ../../setup.py install')
 #import sphinx_automodapi
 sys.path.insert(0, os.path.abspath('../../'))
 sys.path.insert(0, os.path.abspath('../../mastml'))
