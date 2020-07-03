@@ -246,7 +246,8 @@
 <dl class="class">
 <dt id="mastml.utils.BetweenFilter">
 <em class="property">class </em><code class="sig-prename descclassname">mastml.utils.</code><code class="sig-name descname">BetweenFilter</code><span class="sig-paren">(</span><em class="sig-param">min_level</em>, <em class="sig-param">max_level</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/utils.html#BetweenFilter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.utils.BetweenFilter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class to aid in handling logger display levels</p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class to aid in handling logger display levels</p>
 <p>Args:</p>
 <blockquote>
 <div><p>min_level: (int), minimum verbosity level</p>
@@ -266,66 +267,81 @@
 </div></blockquote>
 </div></blockquote>
 </div></blockquote>
+<dl class="method">
+<dt id="mastml.utils.BetweenFilter.filter">
+<code class="sig-name descname">filter</code><span class="sig-paren">(</span><em class="sig-param">logRecord</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/utils.html#BetweenFilter.filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.utils.BetweenFilter.filter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="exception">
 <dt id="mastml.utils.ConfError">
 <em class="property">exception </em><code class="sig-prename descclassname">mastml.utils.</code><code class="sig-name descname">ConfError</code><a class="reference internal" href="_modules/mastml/utils.html#ConfError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.utils.ConfError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class representing error in input configuration file</p>
+<dd><p>Bases: <a class="reference internal" href="#mastml.utils.MastError" title="mastml.utils.MastError"><code class="xref py py-class docutils literal notranslate"><span class="pre">mastml.utils.MastError</span></code></a></p>
+<p>Class representing error in input configuration file</p>
 </dd></dl>
 
 <dl class="exception">
 <dt id="mastml.utils.FileNotFoundError">
 <em class="property">exception </em><code class="sig-prename descclassname">mastml.utils.</code><code class="sig-name descname">FileNotFoundError</code><a class="reference internal" href="_modules/mastml/utils.html#FileNotFoundError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.utils.FileNotFoundError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class representing error raised when a needed file cannot be found</p>
+<dd><p>Bases: <a class="reference internal" href="#mastml.utils.MastError" title="mastml.utils.MastError"><code class="xref py py-class docutils literal notranslate"><span class="pre">mastml.utils.MastError</span></code></a></p>
+<p>Class representing error raised when a needed file cannot be found</p>
 </dd></dl>
 
 <dl class="exception">
 <dt id="mastml.utils.FiletypeError">
 <em class="property">exception </em><code class="sig-prename descclassname">mastml.utils.</code><code class="sig-name descname">FiletypeError</code><a class="reference internal" href="_modules/mastml/utils.html#FiletypeError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.utils.FiletypeError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class representing error raised when an improper file extension is used</p>
+<dd><p>Bases: <a class="reference internal" href="#mastml.utils.MastError" title="mastml.utils.MastError"><code class="xref py py-class docutils literal notranslate"><span class="pre">mastml.utils.MastError</span></code></a></p>
+<p>Class representing error raised when an improper file extension is used</p>
 </dd></dl>
 
 <dl class="exception">
 <dt id="mastml.utils.InvalidConfParameters">
 <em class="property">exception </em><code class="sig-prename descclassname">mastml.utils.</code><code class="sig-name descname">InvalidConfParameters</code><a class="reference internal" href="_modules/mastml/utils.html#InvalidConfParameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.utils.InvalidConfParameters" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class representing error raised when you have invalid input configuration file parameters</p>
+<dd><p>Bases: <a class="reference internal" href="#mastml.utils.MastError" title="mastml.utils.MastError"><code class="xref py py-class docutils literal notranslate"><span class="pre">mastml.utils.MastError</span></code></a></p>
+<p>Class representing error raised when you have invalid input configuration file parameters</p>
 </dd></dl>
 
 <dl class="exception">
 <dt id="mastml.utils.InvalidConfSection">
 <em class="property">exception </em><code class="sig-prename descclassname">mastml.utils.</code><code class="sig-name descname">InvalidConfSection</code><a class="reference internal" href="_modules/mastml/utils.html#InvalidConfSection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.utils.InvalidConfSection" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class representing error raised when an invalid section name is present in the input configuration file</p>
+<dd><p>Bases: <a class="reference internal" href="#mastml.utils.MastError" title="mastml.utils.MastError"><code class="xref py py-class docutils literal notranslate"><span class="pre">mastml.utils.MastError</span></code></a></p>
+<p>Class representing error raised when an invalid section name is present in the input configuration file</p>
 </dd></dl>
 
 <dl class="exception">
 <dt id="mastml.utils.InvalidConfSubSection">
 <em class="property">exception </em><code class="sig-prename descclassname">mastml.utils.</code><code class="sig-name descname">InvalidConfSubSection</code><a class="reference internal" href="_modules/mastml/utils.html#InvalidConfSubSection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.utils.InvalidConfSubSection" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class representing error raised when an invalid subsection name is present in the input configuration file</p>
+<dd><p>Bases: <a class="reference internal" href="#mastml.utils.MastError" title="mastml.utils.MastError"><code class="xref py py-class docutils literal notranslate"><span class="pre">mastml.utils.MastError</span></code></a></p>
+<p>Class representing error raised when an invalid subsection name is present in the input configuration file</p>
 </dd></dl>
 
 <dl class="exception">
 <dt id="mastml.utils.InvalidModel">
 <em class="property">exception </em><code class="sig-prename descclassname">mastml.utils.</code><code class="sig-name descname">InvalidModel</code><a class="reference internal" href="_modules/mastml/utils.html#InvalidModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.utils.InvalidModel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class representing error when model does not exist</p>
+<dd><p>Bases: <a class="reference internal" href="#mastml.utils.MastError" title="mastml.utils.MastError"><code class="xref py py-class docutils literal notranslate"><span class="pre">mastml.utils.MastError</span></code></a></p>
+<p>Class representing error when model does not exist</p>
 </dd></dl>
 
 <dl class="exception">
 <dt id="mastml.utils.InvalidValue">
 <em class="property">exception </em><code class="sig-prename descclassname">mastml.utils.</code><code class="sig-name descname">InvalidValue</code><a class="reference internal" href="_modules/mastml/utils.html#InvalidValue"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.utils.InvalidValue" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class representing error raised when an invalid value has been used</p>
+<dd><p>Bases: <a class="reference internal" href="#mastml.utils.MastError" title="mastml.utils.MastError"><code class="xref py py-class docutils literal notranslate"><span class="pre">mastml.utils.MastError</span></code></a></p>
+<p>Class representing error raised when an invalid value has been used</p>
 </dd></dl>
 
 <dl class="exception">
 <dt id="mastml.utils.MastError">
 <em class="property">exception </em><code class="sig-prename descclassname">mastml.utils.</code><code class="sig-name descname">MastError</code><a class="reference internal" href="_modules/mastml/utils.html#MastError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.utils.MastError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Base class for MAST-ML specific errors that should be shown to the user</p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Base class for MAST-ML specific errors that should be shown to the user</p>
 </dd></dl>
 
 <dl class="exception">
 <dt id="mastml.utils.MissingColumnError">
 <em class="property">exception </em><code class="sig-prename descclassname">mastml.utils.</code><code class="sig-name descname">MissingColumnError</code><a class="reference internal" href="_modules/mastml/utils.html#MissingColumnError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.utils.MissingColumnError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class representing error raised when your csv doesn’t have the specified column</p>
+<dd><p>Bases: <a class="reference internal" href="#mastml.utils.MastError" title="mastml.utils.MastError"><code class="xref py py-class docutils literal notranslate"><span class="pre">mastml.utils.MastError</span></code></a></p>
+<p>Class representing error raised when your csv doesn’t have the specified column</p>
 </dd></dl>
 
 <dl class="function">
@@ -471,6 +487,11 @@
 </div></blockquote>
 </dd></dl>
 
+<dl class="function">
+<dt id="mastml.utils.verbosalize_logger">
+<code class="sig-prename descclassname">mastml.utils.</code><code class="sig-name descname">verbosalize_logger</code><span class="sig-paren">(</span><em class="sig-param">log</em>, <em class="sig-param">verbosity</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/utils.html#verbosalize_logger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.utils.verbosalize_logger" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </div>
 
 
@@ -519,6 +540,7 @@
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
 
   

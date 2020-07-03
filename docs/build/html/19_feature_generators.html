@@ -245,7 +245,8 @@
 <dl class="class">
 <dt id="mastml.legos.feature_generators.ContainsElement">
 <em class="property">class </em><code class="sig-prename descclassname">mastml.legos.feature_generators.</code><code class="sig-name descname">ContainsElement</code><span class="sig-paren">(</span><em class="sig-param">composition_feature</em>, <em class="sig-param">element</em>, <em class="sig-param">new_name</em>, <em class="sig-param">all_elements=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#ContainsElement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.ContainsElement" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class to generate new categorical features (i.e. values of 1 or 0) based on whether an input composition contains a
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.BaseEstimator</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.TransformerMixin</span></code></p>
+<p>Class to generate new categorical features (i.e. values of 1 or 0) based on whether an input composition contains a
 certain designated element</p>
 <p>Args:</p>
 <blockquote>
@@ -271,12 +272,23 @@ certain designated element</p>
 <div><p>df_trans: (dataframe), dataframe with generated element-specific features</p>
 </div></blockquote>
 </div></blockquote>
+<dl class="method">
+<dt id="mastml.legos.feature_generators.ContainsElement.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">y=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#ContainsElement.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.ContainsElement.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.feature_generators.ContainsElement.transform">
+<code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">y=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#ContainsElement.transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.ContainsElement.transform" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="class">
 <dt id="mastml.legos.feature_generators.DataframeUtilities">
 <em class="property">class </em><code class="sig-prename descclassname">mastml.legos.feature_generators.</code><code class="sig-name descname">DataframeUtilities</code><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#DataframeUtilities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.DataframeUtilities" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class of basic utilities for dataframe manipulation, and exchanging between dataframes and numpy arrays</p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class of basic utilities for dataframe manipulation, and exchanging between dataframes and numpy arrays</p>
 <p>Args:</p>
 <blockquote>
 <div><p>None</p>
@@ -378,12 +390,53 @@ certain designated element</p>
 </div></blockquote>
 </div></blockquote>
 </div></blockquote>
+<dl class="method">
+<dt id="mastml.legos.feature_generators.DataframeUtilities.array_to_dataframe">
+<em class="property">classmethod </em><code class="sig-name descname">array_to_dataframe</code><span class="sig-paren">(</span><em class="sig-param">array</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#DataframeUtilities.array_to_dataframe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.DataframeUtilities.array_to_dataframe" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.feature_generators.DataframeUtilities.assign_columns_as_features">
+<em class="property">classmethod </em><code class="sig-name descname">assign_columns_as_features</code><span class="sig-paren">(</span><em class="sig-param">dataframe</em>, <em class="sig-param">x_features</em>, <em class="sig-param">y_feature</em>, <em class="sig-param">remove_first_row=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#DataframeUtilities.assign_columns_as_features"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.DataframeUtilities.assign_columns_as_features" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.feature_generators.DataframeUtilities.concatenate_arrays">
+<em class="property">classmethod </em><code class="sig-name descname">concatenate_arrays</code><span class="sig-paren">(</span><em class="sig-param">X_array</em>, <em class="sig-param">y_array</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#DataframeUtilities.concatenate_arrays"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.DataframeUtilities.concatenate_arrays" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.feature_generators.DataframeUtilities.dataframe_to_array">
+<em class="property">classmethod </em><code class="sig-name descname">dataframe_to_array</code><span class="sig-paren">(</span><em class="sig-param">dataframe</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#DataframeUtilities.dataframe_to_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.DataframeUtilities.dataframe_to_array" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.feature_generators.DataframeUtilities.get_dataframe_statistics">
+<em class="property">classmethod </em><code class="sig-name descname">get_dataframe_statistics</code><span class="sig-paren">(</span><em class="sig-param">dataframe</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#DataframeUtilities.get_dataframe_statistics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.DataframeUtilities.get_dataframe_statistics" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.feature_generators.DataframeUtilities.merge_dataframe_columns">
+<em class="property">classmethod </em><code class="sig-name descname">merge_dataframe_columns</code><span class="sig-paren">(</span><em class="sig-param">dataframe1</em>, <em class="sig-param">dataframe2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#DataframeUtilities.merge_dataframe_columns"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.DataframeUtilities.merge_dataframe_columns" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.feature_generators.DataframeUtilities.merge_dataframe_rows">
+<em class="property">classmethod </em><code class="sig-name descname">merge_dataframe_rows</code><span class="sig-paren">(</span><em class="sig-param">dataframe1</em>, <em class="sig-param">dataframe2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#DataframeUtilities.merge_dataframe_rows"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.DataframeUtilities.merge_dataframe_rows" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.feature_generators.DataframeUtilities.save_all_dataframe_statistics">
+<em class="property">classmethod </em><code class="sig-name descname">save_all_dataframe_statistics</code><span class="sig-paren">(</span><em class="sig-param">dataframe</em>, <em class="sig-param">configdict</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#DataframeUtilities.save_all_dataframe_statistics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.DataframeUtilities.save_all_dataframe_statistics" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="class">
 <dt id="mastml.legos.feature_generators.Magpie">
 <em class="property">class </em><code class="sig-prename descclassname">mastml.legos.feature_generators.</code><code class="sig-name descname">Magpie</code><span class="sig-paren">(</span><em class="sig-param">composition_feature</em>, <em class="sig-param">feature_types=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#Magpie"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.Magpie" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class that wraps MagpieFeatureGeneration, giving it scikit-learn structure</p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.BaseEstimator</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.TransformerMixin</span></code></p>
+<p>Class that wraps MagpieFeatureGeneration, giving it scikit-learn structure</p>
 <p>Args:</p>
 <blockquote>
 <div><p>composition_feature: (str), string denoting a chemical composition to generate elemental features from</p>
@@ -405,12 +458,23 @@ certain designated element</p>
 <div><p>df: (dataframe), output dataframe containing generated features, original features and y data</p>
 </div></blockquote>
 </div></blockquote>
+<dl class="method">
+<dt id="mastml.legos.feature_generators.Magpie.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">y=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#Magpie.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.Magpie.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.feature_generators.Magpie.transform">
+<code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">df</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#Magpie.transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.Magpie.transform" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="class">
 <dt id="mastml.legos.feature_generators.MagpieFeatureGeneration">
 <em class="property">class </em><code class="sig-prename descclassname">mastml.legos.feature_generators.</code><code class="sig-name descname">MagpieFeatureGeneration</code><span class="sig-paren">(</span><em class="sig-param">dataframe</em>, <em class="sig-param">composition_feature</em>, <em class="sig-param">feature_types</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#MagpieFeatureGeneration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.MagpieFeatureGeneration" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class to generate new features using Magpie data and dataframe containing material compositions</p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class to generate new features using Magpie data and dataframe containing material compositions</p>
 <p>Args:</p>
 <blockquote>
 <div><p>dataframe: (pandas dataframe), dataframe containing x and y data and feature names</p>
@@ -433,12 +497,18 @@ include all features.</p>
 </div></blockquote>
 </div></blockquote>
 </div></blockquote>
+<dl class="method">
+<dt id="mastml.legos.feature_generators.MagpieFeatureGeneration.generate_magpie_features">
+<code class="sig-name descname">generate_magpie_features</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#MagpieFeatureGeneration.generate_magpie_features"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.MagpieFeatureGeneration.generate_magpie_features" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="class">
 <dt id="mastml.legos.feature_generators.MaterialsProject">
 <em class="property">class </em><code class="sig-prename descclassname">mastml.legos.feature_generators.</code><code class="sig-name descname">MaterialsProject</code><span class="sig-paren">(</span><em class="sig-param">composition_feature</em>, <em class="sig-param">api_key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#MaterialsProject"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.MaterialsProject" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class that wraps MaterialsProjectFeatureGeneration, giving it scikit-learn structure</p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.BaseEstimator</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.TransformerMixin</span></code></p>
+<p>Class that wraps MaterialsProjectFeatureGeneration, giving it scikit-learn structure</p>
 <p>Args:</p>
 <blockquote>
 <div><p>composition_feature: (str), string denoting a chemical composition to generate elemental features from</p>
@@ -461,12 +531,23 @@ include all features.</p>
 <div><p>df: (dataframe), output dataframe containing generated features, original features and y data</p>
 </div></blockquote>
 </div></blockquote>
+<dl class="method">
+<dt id="mastml.legos.feature_generators.MaterialsProject.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">y=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#MaterialsProject.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.MaterialsProject.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.feature_generators.MaterialsProject.transform">
+<code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">df</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#MaterialsProject.transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.MaterialsProject.transform" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="class">
 <dt id="mastml.legos.feature_generators.MaterialsProjectFeatureGeneration">
 <em class="property">class </em><code class="sig-prename descclassname">mastml.legos.feature_generators.</code><code class="sig-name descname">MaterialsProjectFeatureGeneration</code><span class="sig-paren">(</span><em class="sig-param">dataframe</em>, <em class="sig-param">mapi_key</em>, <em class="sig-param">composition_feature</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#MaterialsProjectFeatureGeneration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.MaterialsProjectFeatureGeneration" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class to generate new features using Materials Project data and dataframe containing material compositions
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class to generate new features using Materials Project data and dataframe containing material compositions
 Datarame must have a column named “Material compositions”.</p>
 <dl>
 <dt>Args:</dt><dd><p>dataframe: (dataframe), dataframe containing x and y data and feature names</p>
@@ -488,12 +569,18 @@ Datarame must have a column named “Material compositions”.</p>
 </dl>
 </div></blockquote>
 </div></blockquote>
+<dl class="method">
+<dt id="mastml.legos.feature_generators.MaterialsProjectFeatureGeneration.generate_materialsproject_features">
+<code class="sig-name descname">generate_materialsproject_features</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#MaterialsProjectFeatureGeneration.generate_materialsproject_features"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.MaterialsProjectFeatureGeneration.generate_materialsproject_features" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="class">
 <dt id="mastml.legos.feature_generators.Matminer">
 <em class="property">class </em><code class="sig-prename descclassname">mastml.legos.feature_generators.</code><code class="sig-name descname">Matminer</code><span class="sig-paren">(</span><em class="sig-param">structural_features</em>, <em class="sig-param">structure_col</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#Matminer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.Matminer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class to generate structural features from matminer structure module
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.BaseEstimator</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.TransformerMixin</span></code></p>
+<p>Class to generate structural features from matminer structure module
 Args:</p>
 <blockquote>
 <div><p>structural_features: the structure feature(s) the user wants to instantiate and generate
@@ -520,6 +607,26 @@ column</p>
 </dl>
 </dd>
 </dl>
+<dl class="method">
+<dt id="mastml.legos.feature_generators.Matminer.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">y=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#Matminer.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.Matminer.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.feature_generators.Matminer.retrieve_AFLOW">
+<code class="sig-name descname">retrieve_AFLOW</code><span class="sig-paren">(</span><em class="sig-param">criteria</em>, <em class="sig-param">properties</em>, <em class="sig-param">files=None</em>, <em class="sig-param">request_size=10000</em>, <em class="sig-param">request_limit=0</em>, <em class="sig-param">index_auid=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#Matminer.retrieve_AFLOW"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.Matminer.retrieve_AFLOW" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.feature_generators.Matminer.retrieve_MDF">
+<code class="sig-name descname">retrieve_MDF</code><span class="sig-paren">(</span><em class="sig-param">criteria</em>, <em class="sig-param">anonymous=False</em>, <em class="sig-param">properties=None</em>, <em class="sig-param">unwind_arrays=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#Matminer.retrieve_MDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.Matminer.retrieve_MDF" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.feature_generators.Matminer.retrieve_MPDS">
+<code class="sig-name descname">retrieve_MPDS</code><span class="sig-paren">(</span><em class="sig-param">criteria</em>, <em class="sig-param">properties=None</em>, <em class="sig-param">api_key=None</em>, <em class="sig-param">endpoint=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#Matminer.retrieve_MPDS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.Matminer.retrieve_MPDS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="method">
 <dt id="mastml.legos.feature_generators.Matminer.retrieve_citrine">
 <code class="sig-name descname">retrieve_citrine</code><span class="sig-paren">(</span><em class="sig-param">criteria</em>, <em class="sig-param">properties</em>, <em class="sig-param">common_fields</em>, <em class="sig-param">secondary_fields</em>, <em class="sig-param">print_properties_options</em>, <em class="sig-param">api_key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#Matminer.retrieve_citrine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.Matminer.retrieve_citrine" title="Permalink to this definition">¶</a></dt>
@@ -587,12 +694,18 @@ notes/bugs: works pretty great, API easy to use and accurate. What to fix for</p
 </div></blockquote>
 </dd></dl>
 
+<dl class="method">
+<dt id="mastml.legos.feature_generators.Matminer.transform">
+<code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">y=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#Matminer.transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.Matminer.transform" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="class">
 <dt id="mastml.legos.feature_generators.NoGenerate">
 <em class="property">class </em><code class="sig-prename descclassname">mastml.legos.feature_generators.</code><code class="sig-name descname">NoGenerate</code><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#NoGenerate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.NoGenerate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class for having a “null” transform where the output is the same as the input. Needed by MAST-ML as a placeholder if
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.BaseEstimator</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.TransformerMixin</span></code></p>
+<p>Class for having a “null” transform where the output is the same as the input. Needed by MAST-ML as a placeholder if
 certain workflow aspects are not performed.</p>
 <p>Args:</p>
 <blockquote>
@@ -615,12 +728,23 @@ certain workflow aspects are not performed.</p>
 <div><p>(dataframe), dataframe of X features</p>
 </div></blockquote>
 </div></blockquote>
+<dl class="method">
+<dt id="mastml.legos.feature_generators.NoGenerate.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">y=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#NoGenerate.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.NoGenerate.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.feature_generators.NoGenerate.transform">
+<code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#NoGenerate.transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.NoGenerate.transform" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="class">
 <dt id="mastml.legos.feature_generators.PolynomialFeatures">
 <em class="property">class </em><code class="sig-prename descclassname">mastml.legos.feature_generators.</code><code class="sig-name descname">PolynomialFeatures</code><span class="sig-paren">(</span><em class="sig-param">features=None</em>, <em class="sig-param">degree=2</em>, <em class="sig-param">interaction_only=False</em>, <em class="sig-param">include_bias=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#PolynomialFeatures"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.PolynomialFeatures" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class to generate polynomial features using scikit-learn’s polynomial features method
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.BaseEstimator</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.TransformerMixin</span></code></p>
+<p>Class to generate polynomial features using scikit-learn’s polynomial features method
 More info at: <a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html">http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html</a></p>
 <p>Args:</p>
 <blockquote>
@@ -647,6 +771,16 @@ are zero (i.e. a column of ones - acts as an intercept term in a linear model).<
 <div><p>(dataframe), dataframe containing new polynomial features, plus original features present</p>
 </div></blockquote>
 </div></blockquote>
+<dl class="method">
+<dt id="mastml.legos.feature_generators.PolynomialFeatures.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">y=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#PolynomialFeatures.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.PolynomialFeatures.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.feature_generators.PolynomialFeatures.transform">
+<code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">df</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_generators.html#PolynomialFeatures.transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_generators.PolynomialFeatures.transform" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="function">
@@ -710,6 +844,7 @@ NaN value, or remove a row that is fully empty</p>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
 
   

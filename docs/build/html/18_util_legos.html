@@ -246,7 +246,8 @@
 <dl class="class">
 <dt id="mastml.legos.util_legos.DataFrameFeatureUnion">
 <em class="property">class </em><code class="sig-prename descclassname">mastml.legos.util_legos.</code><code class="sig-name descname">DataFrameFeatureUnion</code><span class="sig-paren">(</span><em class="sig-param">transforms</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/util_legos.html#DataFrameFeatureUnion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.util_legos.DataFrameFeatureUnion" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class for unioning dataframe generators (sklearn.pipeline.FeatureUnion always puts out arrays)</p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.BaseEstimator</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.TransformerMixin</span></code></p>
+<p>Class for unioning dataframe generators (sklearn.pipeline.FeatureUnion always puts out arrays)</p>
 <p>Args:</p>
 <blockquote>
 <div><p>transforms: (list), list of scikit-learn functions, i.e. objects with a .fit or .transform method</p>
@@ -268,12 +269,23 @@
 <div><p>(dataframe), concatenated dataframe after all scikit-learn transforms have been completed</p>
 </div></blockquote>
 </div></blockquote>
+<dl class="method">
+<dt id="mastml.legos.util_legos.DataFrameFeatureUnion.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">y=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/util_legos.html#DataFrameFeatureUnion.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.util_legos.DataFrameFeatureUnion.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.util_legos.DataFrameFeatureUnion.transform">
+<code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/util_legos.html#DataFrameFeatureUnion.transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.util_legos.DataFrameFeatureUnion.transform" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="class">
 <dt id="mastml.legos.util_legos.DoNothing">
 <em class="property">class </em><code class="sig-prename descclassname">mastml.legos.util_legos.</code><code class="sig-name descname">DoNothing</code><a class="reference internal" href="_modules/mastml/legos/util_legos.html#DoNothing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.util_legos.DoNothing" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class for having a “null” transform where the output is the same as the input. Needed by MAST-ML as a placeholder if
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.BaseEstimator</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.TransformerMixin</span></code></p>
+<p>Class for having a “null” transform where the output is the same as the input. Needed by MAST-ML as a placeholder if
 certain workflow aspects are not performed.</p>
 <p>Args:</p>
 <blockquote>
@@ -296,6 +308,16 @@ certain workflow aspects are not performed.</p>
 <div><p>X: (numpy array), array of X features</p>
 </div></blockquote>
 </div></blockquote>
+<dl class="method">
+<dt id="mastml.legos.util_legos.DoNothing.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">y=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/util_legos.html#DoNothing.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.util_legos.DoNothing.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.util_legos.DoNothing.transform">
+<code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/util_legos.html#DoNothing.transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.util_legos.DoNothing.transform" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 </div>
@@ -346,6 +368,7 @@ certain workflow aspects are not performed.</p>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
 
   
