@@ -2,7 +2,7 @@
 Feature Normalizers
 ****************************************
 
-.. automodule:: mastml.legos.feature_normalizers
+.. automodapi:: mastml.legos.feature_normalizers
    :members:
    :undoc-members:
    :show-inheritance:

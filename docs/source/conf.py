@@ -19,6 +19,8 @@
 #
 import os
 import sys
+os.system('pip install sphinx_automodapi')
+#import sphinx_automodapi
 sys.path.insert(0, os.path.abspath('../../'))
 sys.path.insert(0, os.path.abspath('../../mastml'))
 sys.path.insert(0, os.path.abspath('../../mastml/legos'))
