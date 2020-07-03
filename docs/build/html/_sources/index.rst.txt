@@ -21,7 +21,7 @@ Welcome to MAterials Simulation Toolkit for Machine Learning (MAST-ML)'s documen
 
    2_mastml_tutorial.rst
 
-   3_code_documentation.rst
+   3_metrics.rst
 
 
 Indices and tables
