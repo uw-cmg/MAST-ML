@@ -1,5 +1,5 @@
 ****************************************
-Feature Generators
+Code Documentation: Feature Generators
 ****************************************
 
 .. automodapi:: mastml.legos.feature_generators

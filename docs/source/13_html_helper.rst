@@ -1,5 +1,5 @@
 ****************************************
-HTML Helper
+Code Documentation: HTML Helper
 ****************************************
 
 .. automodapi:: mastml.html_helper

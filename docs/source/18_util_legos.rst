@@ -1,5 +1,5 @@
 ****************************************
-Utility Legos
+Code Documentation: Utility Legos
 ****************************************
 
 .. automodapi:: mastml.legos.util_legos

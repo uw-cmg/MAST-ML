@@ -1,5 +1,5 @@
 ****************************************
-MAST-ML Driver
+Code Documentation: MAST-ML Driver
 ****************************************
 
 .. automodapi:: mastml.mastml_driver

@@ -1,6 +1,6 @@
-**************************
-Metrics
-**************************
+****************************
+Code Documentation: Metrics
+****************************
 
 .. automodapi:: mastml.metrics
    :members:

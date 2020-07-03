@@ -1,5 +1,5 @@
 ****************************************
-Plot Helper
+Code Documentation: Plot Helper
 ****************************************
 
 .. automodapi:: mastml.plot_helper

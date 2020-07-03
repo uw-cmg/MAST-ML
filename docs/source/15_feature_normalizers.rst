@@ -1,5 +1,5 @@
 ****************************************
-Feature Normalizers
+Code Documentation: Feature Normalizers
 ****************************************
 
 .. automodapi:: mastml.legos.feature_normalizers

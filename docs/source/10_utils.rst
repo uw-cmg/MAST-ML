@@ -1,5 +1,5 @@
 ****************************************
-Utils
+Code Documentation: Utils
 ****************************************
 
 .. automodapi:: mastml.utils

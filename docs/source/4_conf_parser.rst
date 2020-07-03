@@ -1,5 +1,5 @@
 ***************************************************
-Configuration file parser
+Code Documentation: Configuration file parser
 ***************************************************
 
 .. automodapi:: mastml.conf_parser

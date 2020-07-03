@@ -1,6 +1,6 @@
-**************************
-Data cleaner
-**************************
+********************************
+Code Documentation: Data cleaner
+********************************
 
 .. automodapi:: mastml.data_cleaner
    :members:

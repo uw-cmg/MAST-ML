@@ -1,5 +1,5 @@
 ****************************************
-Model Finder
+Code Documentation: Model Finder
 ****************************************
 
 .. automodapi:: mastml.legos.model_finder

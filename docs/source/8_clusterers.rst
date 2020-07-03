@@ -1,5 +1,5 @@
 ****************************************
-Clusterers
+Code Documentation: Clusterers
 ****************************************
 
 .. automodapi:: mastml.legos.clusterers

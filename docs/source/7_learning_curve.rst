@@ -1,5 +1,5 @@
 ****************************************
-Learning curve
+Code Documentation: Learning curve
 ****************************************
 
 .. automodapi:: mastml.learning_curve

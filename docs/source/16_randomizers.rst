@@ -1,5 +1,5 @@
 ****************************************
-Randomizers
+Code Documentation: Randomizers
 ****************************************
 
 .. automodapi:: mastml.legos.randomizers

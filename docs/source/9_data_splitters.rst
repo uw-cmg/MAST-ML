@@ -1,5 +1,5 @@
 ****************************************
-Data splitters
+Code Documentation: Data splitters
 ****************************************
 
 .. automodapi:: mastml.legos.data_splitters

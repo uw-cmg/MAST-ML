@@ -1,6 +1,6 @@
-**************************
-Data loader
-**************************
+*******************************
+Code Documentation: Data loader
+*******************************
 
 .. automodapi:: mastml.data_loader
    :members:

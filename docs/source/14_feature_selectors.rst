@@ -1,5 +1,5 @@
 ****************************************
-Feature Selectors
+Code Documentation: Feature Selectors
 ****************************************
 
 .. automodapi:: mastml.legos.feature_selectors
