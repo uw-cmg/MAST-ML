@@ -2,7 +2,7 @@
 Metrics
 **************************
 
-.. automodule:: mastml.metrics
+.. automodapi:: mastml.metrics
    :members:
    :undoc-members:
    :show-inheritance:

@@ -35,7 +35,10 @@ sys.path.insert(0, os.path.abspath('../../mastml/legos'))
 # ones.
 extensions = ['sphinx.ext.autodoc',
     'sphinx.ext.doctest',
-    'sphinx.ext.viewcode']
+    'sphinx.ext.viewcode',
+    'sphinx_automodapi.automodapi']
+
+numpydoc_show_class_members = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -88,15 +91,15 @@ todo_include_todos = False
 # a list of builtin themes.
 #
 #html_theme = 'alabaster'
-#html_theme = 'sphinx_rtd_theme'
-html_theme = 'classic'
+html_theme = 'sphinx_rtd_theme'
+#html_theme = 'classic'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
 # Works for sphinx_rtd_theme
-#html_theme_options = {'collapse_navigation': False}
+html_theme_options = {'collapse_navigation': False}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
