@@ -247,7 +247,8 @@ scikit-learn methods. See <a class="reference external" href="http://scikit-lear
 <dl class="class">
 <dt id="mastml.legos.feature_normalizers.MeanStdevScaler">
 <em class="property">class </em><code class="sig-prename descclassname">mastml.legos.feature_normalizers.</code><code class="sig-name descname">MeanStdevScaler</code><span class="sig-paren">(</span><em class="sig-param">features=None</em>, <em class="sig-param">mean=0</em>, <em class="sig-param">stdev=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_normalizers.html#MeanStdevScaler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_normalizers.MeanStdevScaler" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class designed to normalize input data to a specified mean and standard deviation</p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.BaseEstimator</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.TransformerMixin</span></code></p>
+<p>Class designed to normalize input data to a specified mean and standard deviation</p>
 <p>Args:</p>
 <blockquote>
 <div><p>mean: (int/float), specified normalized mean of the data</p>
@@ -289,6 +290,21 @@ scikit-learn methods. See <a class="reference external" href="http://scikit-lear
 </div></blockquote>
 </div></blockquote>
 </div></blockquote>
+<dl class="method">
+<dt id="mastml.legos.feature_normalizers.MeanStdevScaler.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">y=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_normalizers.html#MeanStdevScaler.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_normalizers.MeanStdevScaler.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.feature_normalizers.MeanStdevScaler.inverse_transform">
+<code class="sig-name descname">inverse_transform</code><span class="sig-paren">(</span><em class="sig-param">df</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_normalizers.html#MeanStdevScaler.inverse_transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_normalizers.MeanStdevScaler.inverse_transform" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.feature_normalizers.MeanStdevScaler.transform">
+<code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">df</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_normalizers.html#MeanStdevScaler.transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_normalizers.MeanStdevScaler.transform" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="function">
@@ -354,6 +370,7 @@ Enables preservation of column names.</p>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
 
   

@@ -246,9 +246,26 @@
 selectors. More information on scikit-learn feature selectors is available at:</p>
 <p><a class="reference external" href="http://scikit-learn.org/stable/modules/classes.html#module-sklearn.feature_selection">http://scikit-learn.org/stable/modules/classes.html#module-sklearn.feature_selection</a></p>
 <dl class="class">
+<dt id="mastml.legos.feature_selectors.EnsembleModelFeatureSelector">
+<em class="property">class </em><code class="sig-prename descclassname">mastml.legos.feature_selectors.</code><code class="sig-name descname">EnsembleModelFeatureSelector</code><span class="sig-paren">(</span><em class="sig-param">estimator</em>, <em class="sig-param">k_features</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_selectors.html#EnsembleModelFeatureSelector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_selectors.EnsembleModelFeatureSelector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="mastml.legos.feature_selectors.EnsembleModelFeatureSelector.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">y=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_selectors.html#EnsembleModelFeatureSelector.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_selectors.EnsembleModelFeatureSelector.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.feature_selectors.EnsembleModelFeatureSelector.transform">
+<code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_selectors.html#EnsembleModelFeatureSelector.transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_selectors.EnsembleModelFeatureSelector.transform" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="mastml.legos.feature_selectors.MASTMLFeatureSelector">
 <em class="property">class </em><code class="sig-prename descclassname">mastml.legos.feature_selectors.</code><code class="sig-name descname">MASTMLFeatureSelector</code><span class="sig-paren">(</span><em class="sig-param">estimator</em>, <em class="sig-param">n_features_to_select</em>, <em class="sig-param">cv</em>, <em class="sig-param">manually_selected_features=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_selectors.html#MASTMLFeatureSelector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_selectors.MASTMLFeatureSelector" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class custom-written for MAST-ML to conduct forward selection of features with flexible model and cv scheme</p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class custom-written for MAST-ML to conduct forward selection of features with flexible model and cv scheme</p>
 <p>Args:</p>
 <blockquote>
 <div><p>estimator: (scikit-learn model/estimator object), a scikit-learn model/estimator</p>
@@ -284,6 +301,32 @@ start from this list of features and sequentially add features until n_features_
 </div></blockquote>
 </div></blockquote>
 </div></blockquote>
+<dl class="method">
+<dt id="mastml.legos.feature_selectors.MASTMLFeatureSelector.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">y</em>, <em class="sig-param">savepath</em>, <em class="sig-param">Xgroups=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_selectors.html#MASTMLFeatureSelector.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_selectors.MASTMLFeatureSelector.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.feature_selectors.MASTMLFeatureSelector.transform">
+<code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_selectors.html#MASTMLFeatureSelector.transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_selectors.MASTMLFeatureSelector.transform" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="mastml.legos.feature_selectors.PearsonSelector">
+<em class="property">class </em><code class="sig-prename descclassname">mastml.legos.feature_selectors.</code><code class="sig-name descname">PearsonSelector</code><span class="sig-paren">(</span><em class="sig-param">threshold_between_features</em>, <em class="sig-param">threshold_with_target</em>, <em class="sig-param">remove_highly_correlated_features</em>, <em class="sig-param">k_features</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_selectors.html#PearsonSelector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_selectors.PearsonSelector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="mastml.legos.feature_selectors.PearsonSelector.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">savepath</em>, <em class="sig-param">y=None</em>, <em class="sig-param">Xgroups=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_selectors.html#PearsonSelector.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_selectors.PearsonSelector.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.feature_selectors.PearsonSelector.transform">
+<code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_selectors.html#PearsonSelector.transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_selectors.PearsonSelector.transform" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="function">
@@ -377,6 +420,7 @@ start from this list of features and sequentially add features until n_features_
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
 
   

@@ -138,7 +138,8 @@ class JustEachGroup(BaseEstimator, TransformerMixin):
 #    pass
 
 class LeaveCloseCompositionsOut(ms.BaseCrossValidator):
-    """Leave-P-out where you exclude materials with compositions close to those the test set
+    """
+    Leave-P-out where you exclude materials with compositions close to those the test set
 
     Computes the distance between the element fraction vectors. For example, the :math:`L_2`
     distance between Al and Cu is :math:`\sqrt{2}` and the :math:`L_1` distance between Al
@@ -232,10 +233,11 @@ class LeaveOutPercent(BaseEstimator, TransformerMixin):
             split.append((trains, tests))
         return split
 
-# Note: Bootstrap taken directly from sklearn Github (https://github.com/scikit-learn/scikit-learn/blob/0.11.X/sklearn/cross_validation.py)
-# which was necessary as it was later removed from more recent sklearn releases
 class Bootstrap(object):
-    """Random sampling with replacement cross-validation iterator
+    """
+    # Note: Bootstrap taken directly from sklearn Github (https://github.com/scikit-learn/scikit-learn/blob/0.11.X/sklearn/cross_validation.py)
+    # which was necessary as it was later removed from more recent sklearn releases
+    Random sampling with replacement cross-validation iterator
     Provides train/test indices to split data in train test sets
     while resampling the input n_bootstraps times: each time a new
     random split of the data is performed and then samples are drawn
@@ -247,44 +249,28 @@ class Bootstrap(object):
     split and vice-versa.
     If you want each sample to occur at most once you should probably
     use ShuffleSplit cross validation instead.
-    Parameters
-    ----------
-    n : int
-        Total number of elements in the dataset.
-    n_bootstraps : int (default is 3)
-        Number of bootstrapping iterations
-    train_size : int or float (default is 0.5)
-        If int, number of samples to include in the training split
-        (should be smaller than the total number of samples passed
-        in the dataset).
-        If float, should be between 0.0 and 1.0 and represent the
-        proportion of the dataset to include in the train split.
-    test_size : int or float or None (default is None)
-        If int, number of samples to include in the training set
-        (should be smaller than the total number of samples passed
-        in the dataset).
-        If float, should be between 0.0 and 1.0 and represent the
-        proportion of the dataset to include in the test split.
-        If None, n_test is set as the complement of n_train.
-    random_state : int or RandomState
-        Pseudo number generator state used for random sampling.
-    Examples
-    --------
-    #>>> from sklearn import cross_validation
-    #>>> bs = cross_validation.Bootstrap(9, random_state=0)
-    #>>> len(bs)
-    3
-    #>>> print bs
-    Bootstrap(9, n_bootstraps=3, train_size=5, test_size=4, random_state=0)
-    #>>> for train_index, test_index in bs:
-    ...    print "TRAIN:", train_index, "TEST:", test_index
-    ...
-    TRAIN: [1 8 7 7 8] TEST: [0 3 0 5]
-    TRAIN: [5 4 2 4 2] TEST: [6 7 1 0]
-    TRAIN: [4 7 0 1 1] TEST: [5 3 6 5]
-    See also
-    --------
-    ShuffleSplit: cross validation using random permutations.
+
+    Args:
+        n : int
+            Total number of elements in the dataset.
+        n_bootstraps : int (default is 3)
+            Number of bootstrapping iterations
+        train_size : int or float (default is 0.5)
+            If int, number of samples to include in the training split
+            (should be smaller than the total number of samples passed
+            in the dataset).
+            If float, should be between 0.0 and 1.0 and represent the
+            proportion of the dataset to include in the train split.
+        test_size : int or float or None (default is None)
+            If int, number of samples to include in the training set
+            (should be smaller than the total number of samples passed
+            in the dataset).
+            If float, should be between 0.0 and 1.0 and represent the
+            proportion of the dataset to include in the test split.
+            If None, n_test is set as the complement of n_train.
+        random_state : int or RandomState
+            Pseudo number generator state used for random sampling.
+
     """
 
     # Static marker to be able to introspect the CV type
@@ -306,8 +292,7 @@ class Bootstrap(object):
                 "n_test is deprecated in 0.11 and scheduled for "
                 "removal in 0.12, use test_size instead",
                 DeprecationWarning, stacklevel=2)
-        if (isinstance(train_size, float) and train_size >= 0.0
-                            and train_size <= 1.0):
+        if (isinstance(train_size, float) and train_size >= 0.0 and train_size <= 1.0):
             self.train_size = ceil(train_size * n)
         elif isinstance(train_size, int):
             self.train_size = train_size
@@ -318,8 +303,7 @@ class Bootstrap(object):
             raise ValueError("train_size=%d should not be larger than n=%d" %
                              (self.train_size, n))
 
-        if (isinstance(test_size, float) and test_size >= 0.0
-                    and test_size <= 1.0):
+        if (isinstance(test_size, float) and test_size >= 0.0 and test_size <= 1.0):
             self.test_size = ceil(test_size * n)
         elif isinstance(test_size, int):
             self.test_size = test_size

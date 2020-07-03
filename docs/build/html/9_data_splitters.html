@@ -251,7 +251,10 @@ a dataframe or a numpy array.</p>
 <dl class="class">
 <dt id="mastml.legos.data_splitters.Bootstrap">
 <em class="property">class </em><code class="sig-prename descclassname">mastml.legos.data_splitters.</code><code class="sig-name descname">Bootstrap</code><span class="sig-paren">(</span><em class="sig-param">n</em>, <em class="sig-param">n_bootstraps=3</em>, <em class="sig-param">train_size=0.5</em>, <em class="sig-param">test_size=None</em>, <em class="sig-param">n_train=None</em>, <em class="sig-param">n_test=None</em>, <em class="sig-param">random_state=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/data_splitters.html#Bootstrap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.data_splitters.Bootstrap" title="Permalink to this definition">¶</a></dt>
-<dd><p>Random sampling with replacement cross-validation iterator
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p># Note: Bootstrap taken directly from sklearn Github (<a class="reference external" href="https://github.com/scikit-learn/scikit-learn/blob/0.11.X/sklearn/cross_validation.py">https://github.com/scikit-learn/scikit-learn/blob/0.11.X/sklearn/cross_validation.py</a>)
+# which was necessary as it was later removed from more recent sklearn releases
+Random sampling with replacement cross-validation iterator
 Provides train/test indices to split data in train test sets
 while resampling the input n_bootstraps times: each time a new
 random split of the data is performed and then samples are drawn
@@ -262,14 +265,11 @@ will allow some samples to occur several times in each splits. However
 a sample that occurs in the train split will never occur in the test
 split and vice-versa.
 If you want each sample to occur at most once you should probably
-use ShuffleSplit cross validation instead.
-Parameters
-———-
-n : int</p>
-<blockquote>
-<div><p>Total number of elements in the dataset.</p>
-</div></blockquote>
+use ShuffleSplit cross validation instead.</p>
 <dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>n<span class="classifier">int</span></dt><dd><p>Total number of elements in the dataset.</p>
+</dd>
 <dt>n_bootstraps<span class="classifier">int (default is 3)</span></dt><dd><p>Number of bootstrapping iterations</p>
 </dd>
 <dt>train_size<span class="classifier">int or float (default is 0.5)</span></dt><dd><p>If int, number of samples to include in the training split
@@ -288,27 +288,30 @@ If None, n_test is set as the complement of n_train.</p>
 <dt>random_state<span class="classifier">int or RandomState</span></dt><dd><p>Pseudo number generator state used for random sampling.</p>
 </dd>
 </dl>
-<p>#&gt;&gt;&gt; from sklearn import cross_validation
-#&gt;&gt;&gt; bs = cross_validation.Bootstrap(9, random_state=0)
-#&gt;&gt;&gt; len(bs)
-3
-#&gt;&gt;&gt; print bs
-Bootstrap(9, n_bootstraps=3, train_size=5, test_size=4, random_state=0)
-#&gt;&gt;&gt; for train_index, test_index in bs:
-…    print “TRAIN:”, train_index, “TEST:”, test_index
-…
-TRAIN: [1 8 7 7 8] TEST: [0 3 0 5]
-TRAIN: [5 4 2 4 2] TEST: [6 7 1 0]
-TRAIN: [4 7 0 1 1] TEST: [5 3 6 5]
-See also
-——–
-ShuffleSplit: cross validation using random permutations.</p>
+</dd>
+</dl>
+<dl class="method">
+<dt id="mastml.legos.data_splitters.Bootstrap.get_n_splits">
+<code class="sig-name descname">get_n_splits</code><span class="sig-paren">(</span><em class="sig-param">X=None</em>, <em class="sig-param">y=None</em>, <em class="sig-param">groups=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/data_splitters.html#Bootstrap.get_n_splits"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.data_splitters.Bootstrap.get_n_splits" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="mastml.legos.data_splitters.Bootstrap.indices">
+<code class="sig-name descname">indices</code><em class="property"> = True</em><a class="headerlink" href="#mastml.legos.data_splitters.Bootstrap.indices" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.data_splitters.Bootstrap.split">
+<code class="sig-name descname">split</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">y</em>, <em class="sig-param">groups=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/data_splitters.html#Bootstrap.split"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.data_splitters.Bootstrap.split" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="class">
 <dt id="mastml.legos.data_splitters.JustEachGroup">
 <em class="property">class </em><code class="sig-prename descclassname">mastml.legos.data_splitters.</code><code class="sig-name descname">JustEachGroup</code><a class="reference internal" href="_modules/mastml/legos/data_splitters.html#JustEachGroup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.data_splitters.JustEachGroup" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class to train the model on one group at a time and test it on the rest of the data
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.BaseEstimator</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.TransformerMixin</span></code></p>
+<p>Class to train the model on one group at a time and test it on the rest of the data
 This class wraps scikit-learn’s LeavePGroupsOut with P set to n-1. More information is available at:
 <a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.LeavePGroupsOut.html">http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.LeavePGroupsOut.html</a></p>
 <dl>
@@ -336,12 +339,23 @@ groups: (numpy array), array of group labels</p>
 </div></blockquote>
 </dd>
 </dl>
+<dl class="method">
+<dt id="mastml.legos.data_splitters.JustEachGroup.get_n_splits">
+<code class="sig-name descname">get_n_splits</code><span class="sig-paren">(</span><em class="sig-param">X=None</em>, <em class="sig-param">y=None</em>, <em class="sig-param">groups=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/data_splitters.html#JustEachGroup.get_n_splits"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.data_splitters.JustEachGroup.get_n_splits" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.data_splitters.JustEachGroup.split">
+<code class="sig-name descname">split</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">y</em>, <em class="sig-param">groups</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/data_splitters.html#JustEachGroup.split"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.data_splitters.JustEachGroup.split" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="class">
 <dt id="mastml.legos.data_splitters.LeaveCloseCompositionsOut">
 <em class="property">class </em><code class="sig-prename descclassname">mastml.legos.data_splitters.</code><code class="sig-name descname">LeaveCloseCompositionsOut</code><span class="sig-paren">(</span><em class="sig-param">dist_threshold=0.1</em>, <em class="sig-param">nn_kwargs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/data_splitters.html#LeaveCloseCompositionsOut"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.data_splitters.LeaveCloseCompositionsOut" title="Permalink to this definition">¶</a></dt>
-<dd><p>Leave-P-out where you exclude materials with compositions close to those the test set</p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.model_selection._split.BaseCrossValidator</span></code></p>
+<p>Leave-P-out where you exclude materials with compositions close to those the test set</p>
 <p>Computes the distance between the element fraction vectors. For example, the <span class="math notranslate nohighlight">\(L_2\)</span>
 distance between Al and Cu is <span class="math notranslate nohighlight">\(\sqrt{2}\)</span> and the <span class="math notranslate nohighlight">\(L_1\)</span> distance between Al
 and Al0.9Cu0.1 is 0.2.</p>
@@ -389,7 +403,8 @@ train/test set.</p>
 <dl class="class">
 <dt id="mastml.legos.data_splitters.LeaveOutPercent">
 <em class="property">class </em><code class="sig-prename descclassname">mastml.legos.data_splitters.</code><code class="sig-name descname">LeaveOutPercent</code><span class="sig-paren">(</span><em class="sig-param">percent_leave_out=0.2</em>, <em class="sig-param">n_repeats=5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/data_splitters.html#LeaveOutPercent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.data_splitters.LeaveOutPercent" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class to train the model using a certain percentage of data as training data</p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.BaseEstimator</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.TransformerMixin</span></code></p>
+<p>Class to train the model using a certain percentage of data as training data</p>
 <dl>
 <dt>Args:</dt><dd><p>percent_leave_out (float): fraction of data to use in training (must be &gt; 0 and &lt; 1)</p>
 <p>n_repeats (int): number of repeated splits to perform (must be &gt;= 1)</p>
@@ -416,12 +431,23 @@ groups: (numpy array), array of group labels</p>
 </div></blockquote>
 </dd>
 </dl>
+<dl class="method">
+<dt id="mastml.legos.data_splitters.LeaveOutPercent.get_n_splits">
+<code class="sig-name descname">get_n_splits</code><span class="sig-paren">(</span><em class="sig-param">X=None</em>, <em class="sig-param">y=None</em>, <em class="sig-param">groups=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/data_splitters.html#LeaveOutPercent.get_n_splits"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.data_splitters.LeaveOutPercent.get_n_splits" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.data_splitters.LeaveOutPercent.split">
+<code class="sig-name descname">split</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">y</em>, <em class="sig-param">groups=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/data_splitters.html#LeaveOutPercent.split"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.data_splitters.LeaveOutPercent.split" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="class">
 <dt id="mastml.legos.data_splitters.NoSplit">
 <em class="property">class </em><code class="sig-prename descclassname">mastml.legos.data_splitters.</code><code class="sig-name descname">NoSplit</code><a class="reference internal" href="_modules/mastml/legos/data_splitters.html#NoSplit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.data_splitters.NoSplit" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class to just train the model on the training data and test it on that same data. Sometimes referred to as a “Full fit”
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.BaseEstimator</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.TransformerMixin</span></code></p>
+<p>Class to just train the model on the training data and test it on that same data. Sometimes referred to as a “Full fit”
 or a “Single fit”, equivalent to just plotting y vs. x.</p>
 <dl>
 <dt>Args:</dt><dd><p>None (only object instance)</p>
@@ -446,12 +472,23 @@ or a “Single fit”, equivalent to just plotting y vs. x.</p>
 </div></blockquote>
 </dd>
 </dl>
+<dl class="method">
+<dt id="mastml.legos.data_splitters.NoSplit.get_n_splits">
+<code class="sig-name descname">get_n_splits</code><span class="sig-paren">(</span><em class="sig-param">X=None</em>, <em class="sig-param">y=None</em>, <em class="sig-param">groups=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/data_splitters.html#NoSplit.get_n_splits"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.data_splitters.NoSplit.get_n_splits" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.data_splitters.NoSplit.split">
+<code class="sig-name descname">split</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">y</em>, <em class="sig-param">groups=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/data_splitters.html#NoSplit.split"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.data_splitters.NoSplit.split" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="class">
 <dt id="mastml.legos.data_splitters.SplittersUnion">
 <em class="property">class </em><code class="sig-prename descclassname">mastml.legos.data_splitters.</code><code class="sig-name descname">SplittersUnion</code><span class="sig-paren">(</span><em class="sig-param">splitters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/data_splitters.html#SplittersUnion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.data_splitters.SplittersUnion" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class to take the union of two separate splitting routines, so that many splitting routines can be performed at once</p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.BaseEstimator</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.TransformerMixin</span></code></p>
+<p>Class to take the union of two separate splitting routines, so that many splitting routines can be performed at once</p>
 <dl>
 <dt>Args:</dt><dd><p>splitters: (list), a list of scikit-learn splitter objects</p>
 </dd>
@@ -479,6 +516,16 @@ groups: (numpy array), array of group labels</p>
 </div></blockquote>
 </dd>
 </dl>
+<dl class="method">
+<dt id="mastml.legos.data_splitters.SplittersUnion.get_n_splits">
+<code class="sig-name descname">get_n_splits</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">y</em>, <em class="sig-param">groups=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/data_splitters.html#SplittersUnion.get_n_splits"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.data_splitters.SplittersUnion.get_n_splits" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.data_splitters.SplittersUnion.split">
+<code class="sig-name descname">split</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">y</em>, <em class="sig-param">groups=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/data_splitters.html#SplittersUnion.split"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.data_splitters.SplittersUnion.split" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 </div>
