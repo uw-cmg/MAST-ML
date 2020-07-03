@@ -1,8 +1,8 @@
-**************************
-Data loader
-**************************
+*******************************
+Code Documentation: Data loader
+*******************************
 
-.. automodule:: mastml.data_loader
+.. automodapi:: mastml.data_loader
    :members:
    :undoc-members:
    :show-inheritance:

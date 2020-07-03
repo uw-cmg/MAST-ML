@@ -26,10 +26,11 @@
 
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Configuration file parser" href="4_conf_parser.html" />
-    <link rel="prev" title="MAST-ML Code Documentation" href="3_code_documentation.html" /> 
+    <link rel="next" title="adjusted_r2_score" href="api/mastml.metrics.adjusted_r2_score.html" />
+    <link rel="prev" title="Predicting values for new, extrapolated data" href="2_mastml_tutorial_prediction.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -154,24 +155,19 @@
 <li class="toctree-l2"><a class="reference internal" href="2_mastml_tutorial_prediction.html">Predicting values for new, extrapolated data</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="reference internal" href="3_code_documentation.html">MAST-ML Code Documentation</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Metrics</a></li>
-<li class="toctree-l2"><a class="reference internal" href="4_conf_parser.html">Configuration file parser</a></li>
-<li class="toctree-l2"><a class="reference internal" href="5_data_cleaner.html">Data cleaner</a></li>
-<li class="toctree-l2"><a class="reference internal" href="6_data_loader.html">Data loader</a></li>
-<li class="toctree-l2"><a class="reference internal" href="7_learning_curve.html">Learning curve</a></li>
-<li class="toctree-l2"><a class="reference internal" href="8_clusterers.html">Clusterers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="9_data_splitters.html">Data splitters</a></li>
-<li class="toctree-l2"><a class="reference internal" href="10_utils.html">Utils</a></li>
-<li class="toctree-l2"><a class="reference internal" href="11_mastml_driver.html">MAST-ML Driver</a></li>
-<li class="toctree-l2"><a class="reference internal" href="12_plot_helper.html">Plot Helper</a></li>
-<li class="toctree-l2"><a class="reference internal" href="13_html_helper.html">HTML Helper</a></li>
-<li class="toctree-l2"><a class="reference internal" href="14_feature_selectors.html">Feature Selectors</a></li>
-<li class="toctree-l2"><a class="reference internal" href="15_feature_normalizers.html">Feature Normalizers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="16_randomizers.html">Randomizers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="17_model_finder.html">Model Finder</a></li>
-<li class="toctree-l2"><a class="reference internal" href="18_util_legos.html">Utility Legos</a></li>
-<li class="toctree-l2"><a class="reference internal" href="19_feature_generators.html">Feature Generators</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Metrics</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-mastml.metrics">mastml.metrics Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#functions">Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/mastml.metrics.adjusted_r2_score.html">adjusted_r2_score</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/mastml.metrics.check_and_fetch_names.html">check_and_fetch_names</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/mastml.metrics.r2_score_fitted.html">r2_score_fitted</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/mastml.metrics.r2_score_noint.html">r2_score_noint</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/mastml.metrics.rmse_over_stdev.html">rmse_over_stdev</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/mastml.metrics.root_mean_squared_error.html">root_mean_squared_error</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -219,8 +215,6 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-          <li><a href="3_code_documentation.html">MAST-ML Code Documentation</a> &raquo;</li>
-        
       <li>Metrics</li>
     
     
@@ -240,93 +234,43 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-mastml.metrics">
-<span id="metrics"></span><h1>Metrics<a class="headerlink" href="#module-mastml.metrics" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="metrics">
+<h1>Metrics<a class="headerlink" href="#metrics" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-mastml.metrics">
+<span id="mastml-metrics-module"></span><h2>mastml.metrics Module<a class="headerlink" href="#module-mastml.metrics" title="Permalink to this headline">¶</a></h2>
 <p>This module contains constructors for different model score metrics. Most model metrics are obtained from scikit-learn,
 while others are custom variations.</p>
 <p>The full list of score functions in scikit-learn can be found at: <a class="reference external" href="http://scikit-learn.org/stable/modules/model_evaluation.html">http://scikit-learn.org/stable/modules/model_evaluation.html</a></p>
-<dl class="function">
-<dt id="mastml.metrics.adjusted_r2_score">
-<code class="sig-prename descclassname">mastml.metrics.</code><code class="sig-name descname">adjusted_r2_score</code><span class="sig-paren">(</span><em class="sig-param">y_true</em>, <em class="sig-param">y_pred</em>, <em class="sig-param">n_features=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/metrics.html#adjusted_r2_score"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.metrics.adjusted_r2_score" title="Permalink to this definition">¶</a></dt>
-<dd><p>Method that calculates the adjusted R^2 value</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>y_true: (numpy array), array of true y data values
-y_pred: (numpy array), array of predicted y data values
-n_features: (int), number of features used in the fit</p>
-</dd>
-<dt>Returns:</dt><dd><p>(float): score of adjusted R^2</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="mastml.metrics.check_and_fetch_names">
-<code class="sig-prename descclassname">mastml.metrics.</code><code class="sig-name descname">check_and_fetch_names</code><span class="sig-paren">(</span><em class="sig-param">metric_names</em>, <em class="sig-param">is_classification</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/metrics.html#check_and_fetch_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.metrics.check_and_fetch_names" title="Permalink to this definition">¶</a></dt>
-<dd><p>Method that checks whether chosen metrics to evaluate models are appropriate for user-specified models (e.g.
-classification vs. regression models)</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>metric_names: (numpy array), array of true y data values
-is_classification: (bool), whether the task is a classification task</p>
-</dd>
-<dt>Returns:</dt><dd><p>functions (dict): dict containing the appropriate metric objects (e.g. classification vs. regression metrics)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="mastml.metrics.r2_score_fitted">
-<code class="sig-prename descclassname">mastml.metrics.</code><code class="sig-name descname">r2_score_fitted</code><span class="sig-paren">(</span><em class="sig-param">y_true</em>, <em class="sig-param">y_pred</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/metrics.html#r2_score_fitted"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.metrics.r2_score_fitted" title="Permalink to this definition">¶</a></dt>
-<dd><p>Method that calculates the R^2 value</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>y_true: (numpy array), array of true y data values
-y_pred: (numpy array), array of predicted y data values</p>
-</dd>
-<dt>Returns:</dt><dd><p>(float): score of R^2</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="mastml.metrics.r2_score_noint">
-<code class="sig-prename descclassname">mastml.metrics.</code><code class="sig-name descname">r2_score_noint</code><span class="sig-paren">(</span><em class="sig-param">y_true</em>, <em class="sig-param">y_pred</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/metrics.html#r2_score_noint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.metrics.r2_score_noint" title="Permalink to this definition">¶</a></dt>
-<dd><p>Method that calculates the R^2 value without fitting the y-intercept</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>y_true: (numpy array), array of true y data values
-y_pred: (numpy array), array of predicted y data values</p>
-</dd>
-<dt>Returns:</dt><dd><p>(float): score of R^2 with no y-intercept</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="mastml.metrics.rmse_over_stdev">
-<code class="sig-prename descclassname">mastml.metrics.</code><code class="sig-name descname">rmse_over_stdev</code><span class="sig-paren">(</span><em class="sig-param">y_true</em>, <em class="sig-param">y_pred</em>, <em class="sig-param">train_y=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/metrics.html#rmse_over_stdev"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.metrics.rmse_over_stdev" title="Permalink to this definition">¶</a></dt>
-<dd><p>Method that calculates the root mean squared error (RMSE) of a set of data, divided by the standard deviation of
-the training data set.</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>y_true: (numpy array), array of true y data values
-y_pred: (numpy array), array of predicted y data values
-train_y: (numpy array), array of training y data values</p>
-</dd>
-<dt>Returns:</dt><dd><p>(float): score of RMSE divided by standard deviation of training data</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="mastml.metrics.root_mean_squared_error">
-<code class="sig-prename descclassname">mastml.metrics.</code><code class="sig-name descname">root_mean_squared_error</code><span class="sig-paren">(</span><em class="sig-param">y_true</em>, <em class="sig-param">y_pred</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/metrics.html#root_mean_squared_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.metrics.root_mean_squared_error" title="Permalink to this definition">¶</a></dt>
-<dd><p>Method that calculates the root mean squared error (RMSE)</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>y_true: (numpy array), array of true y data values
-y_pred: (numpy array), array of predicted y data values</p>
-</dd>
-<dt>Returns:</dt><dd><p>(float): score of RMSE</p>
-</dd>
-</dl>
-</dd></dl>
-
+<div class="section" id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h3>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/mastml.metrics.adjusted_r2_score.html#mastml.metrics.adjusted_r2_score" title="mastml.metrics.adjusted_r2_score"><code class="xref py py-obj docutils literal notranslate"><span class="pre">adjusted_r2_score</span></code></a>(y_true, y_pred[, n_features])</p></td>
+<td><p>Method that calculates the adjusted R^2 value</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/mastml.metrics.check_and_fetch_names.html#mastml.metrics.check_and_fetch_names" title="mastml.metrics.check_and_fetch_names"><code class="xref py py-obj docutils literal notranslate"><span class="pre">check_and_fetch_names</span></code></a>(metric_names, …)</p></td>
+<td><p>Method that checks whether chosen metrics to evaluate models are appropriate for user-specified models (e.g.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/mastml.metrics.r2_score_fitted.html#mastml.metrics.r2_score_fitted" title="mastml.metrics.r2_score_fitted"><code class="xref py py-obj docutils literal notranslate"><span class="pre">r2_score_fitted</span></code></a>(y_true, y_pred)</p></td>
+<td><p>Method that calculates the R^2 value</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/mastml.metrics.r2_score_noint.html#mastml.metrics.r2_score_noint" title="mastml.metrics.r2_score_noint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">r2_score_noint</span></code></a>(y_true, y_pred)</p></td>
+<td><p>Method that calculates the R^2 value without fitting the y-intercept</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/mastml.metrics.rmse_over_stdev.html#mastml.metrics.rmse_over_stdev" title="mastml.metrics.rmse_over_stdev"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rmse_over_stdev</span></code></a>(y_true, y_pred[, train_y])</p></td>
+<td><p>Method that calculates the root mean squared error (RMSE) of a set of data, divided by the standard deviation of the training data set.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/mastml.metrics.root_mean_squared_error.html#mastml.metrics.root_mean_squared_error" title="mastml.metrics.root_mean_squared_error"><code class="xref py py-obj docutils literal notranslate"><span class="pre">root_mean_squared_error</span></code></a>(y_true, y_pred)</p></td>
+<td><p>Method that calculates the root mean squared error (RMSE)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 
 
@@ -337,10 +281,10 @@ y_pred: (numpy array), array of predicted y data values</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="4_conf_parser.html" class="btn btn-neutral float-right" title="Configuration file parser" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="api/mastml.metrics.adjusted_r2_score.html" class="btn btn-neutral float-right" title="adjusted_r2_score" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="3_code_documentation.html" class="btn btn-neutral" title="MAST-ML Code Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="2_mastml_tutorial_prediction.html" class="btn btn-neutral" title="Predicting values for new, extrapolated data" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

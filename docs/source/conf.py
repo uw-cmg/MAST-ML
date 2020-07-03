@@ -19,6 +19,9 @@
 #
 import os
 import sys
+#os.system('pip install sphinx-automodapi pandas scikit-learn dominate')
+os.system('pip install aflow atomicwrites attrs certifi chardet citeproc-py citrination-client configobj cryptography cycler Cython decorator dlhub_sdk dominate duecredit folium forestci future globus_nexus_client globus_sdk httplib2 idna imageio imgaug importlib-metadata ipython-genutils jdcal jsonschema jwt keras kiwisolver matminer matplotlib mdf_forge	mdf-toolbox mlxtend monty nbformat networkx nose numpy openpyxl packaging palettable pandas pint plotly pluggy psutil py PyDispatcher pymatgen pymongo pyparsing pypif pytest python-dateutil pytz pyyaml requests retrying	ruamel.yaml scikit-learn scikit-optimize scipy six spglib sphinx-automodapi sympy tabulate tensorflow tqdm traitlets urllib3 wcwidth xlrd xlsxwriter zipp')
+#import sphinx_automodapi
 sys.path.insert(0, os.path.abspath('../../'))
 sys.path.insert(0, os.path.abspath('../../mastml'))
 sys.path.insert(0, os.path.abspath('../../mastml/legos'))
@@ -35,7 +38,10 @@ sys.path.insert(0, os.path.abspath('../../mastml/legos'))
 # ones.
 extensions = ['sphinx.ext.autodoc',
     'sphinx.ext.doctest',
-    'sphinx.ext.viewcode']
+    'sphinx.ext.viewcode',
+    'sphinx_automodapi.automodapi']
+
+numpydoc_show_class_members = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -95,6 +101,7 @@ html_theme = 'sphinx_rtd_theme'
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
+# Works for sphinx_rtd_theme
 html_theme_options = {'collapse_navigation': False}
 
 # Add any paths that contain custom static files (such as style sheets) here,

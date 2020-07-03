@@ -1,8 +1,8 @@
 ***************************************************
-Configuration file parser
+Code Documentation: Configuration file parser
 ***************************************************
 
-.. automodule:: mastml.conf_parser
+.. automodapi:: mastml.conf_parser
    :members:
    :undoc-members:
    :show-inheritance:

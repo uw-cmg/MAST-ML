@@ -1,8 +1,8 @@
 ****************************************
-Model Finder
+Code Documentation: Model Finder
 ****************************************
 
-.. automodule:: mastml.legos.model_finder
+.. automodapi:: mastml.legos.model_finder
    :members:
    :undoc-members:
    :show-inheritance:

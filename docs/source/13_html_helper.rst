@@ -1,8 +1,8 @@
 ****************************************
-HTML Helper
+Code Documentation: HTML Helper
 ****************************************
 
-.. automodule:: mastml.html_helper
+.. automodapi:: mastml.html_helper
    :members:
    :undoc-members:
    :show-inheritance:

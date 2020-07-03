@@ -1,8 +1,8 @@
 ****************************************
-Clusterers
+Code Documentation: Clusterers
 ****************************************
 
-.. automodule:: mastml.legos.clusterers
+.. automodapi:: mastml.legos.clusterers
    :members:
    :undoc-members:
    :show-inheritance:

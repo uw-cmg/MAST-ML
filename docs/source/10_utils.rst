@@ -1,8 +1,8 @@
 ****************************************
-Utils
+Code Documentation: Utils
 ****************************************
 
-.. automodule:: mastml.utils
+.. automodapi:: mastml.utils
    :members:
    :private-members:
    :undoc-members:
