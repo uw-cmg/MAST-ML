@@ -109,6 +109,7 @@ setup(
         "traitlets>=4.3.2",
         "urllib3<1.25,>=1.24.2",
         "wcwidth",
+        "xlsxwriter",
         #"xgboost",
         "xlrd",
         "zipp"],
