@@ -110,6 +110,7 @@
 <li class="toctree-l4"><a class="reference internal" href="../0_2_windows_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="../0_2_windows_installation.html#windows-10-install-step-by-step-guide-credit-joe-kern">Windows 10 install: step-by-step guide (credit Joe Kern)</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../0_3_startup.html">Startup</a><ul>
@@ -131,7 +132,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#feature-selection">Feature Selection</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#data-splits">Data Splits</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#models">Models</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#plot-settings">Plot Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#misc-settings">Misc Settings</a></li>
 </ul>
 </li>
 </ul>
@@ -235,9 +236,9 @@
             
   <h1>Source code for utils</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">A collection of random little utilities and errors used throughout mastml</span>
+<span class="sd">The utils module contains a collection of miscellaneous methods and error handling used throughout MAST-ML</span>
 <span class="sd">&quot;&quot;&quot;</span>
-
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">textwrap</span>
@@ -246,9 +247,30 @@
 <span class="kn">import</span> <span class="nn">random</span>
 <span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">join</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">defaultdict</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="k">import</span> <span class="n">log</span><span class="p">,</span> <span class="n">floor</span><span class="p">,</span> <span class="n">ceil</span>
 
 <div class="viewcode-block" id="BetweenFilter"><a class="viewcode-back" href="../10_utils.html#utils.BetweenFilter">[docs]</a><span class="k">class</span> <span class="nc">BetweenFilter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; inclusive on both sides &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to aid in handling logger display levels</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">         min_level: (int), minimum verbosity level</span>
+
+<span class="sd">         max_level: (int), maximum verbosity level</span>
+
+<span class="sd">    Methods:</span>
+
+<span class="sd">        filter: Method to return logging level of logging.logRecord object</span>
+
+<span class="sd">            Args:</span>
+
+<span class="sd">                logRecord: (python logging.logRecord object)</span>
+
+<span class="sd">            Returns:</span>
+
+<span class="sd">                (int) logging level of logging.logRecord object, which is between the min and max provided levels</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_level</span><span class="p">,</span> <span class="n">max_level</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">min_level</span> <span class="o">=</span> <span class="n">min_level</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_level</span> <span class="o">=</span> <span class="n">max_level</span>
@@ -256,20 +278,41 @@
     <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logRecord</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_level</span> <span class="o">&lt;=</span> <span class="n">logRecord</span><span class="o">.</span><span class="n">levelno</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_level</span></div>
 
-<div class="viewcode-block" id="activate_logging"><a class="viewcode-back" href="../10_utils.html#utils.activate_logging">[docs]</a><span class="k">def</span> <span class="nf">activate_logging</span><span class="p">(</span><span class="n">savepath</span><span class="p">,</span> <span class="n">paths</span><span class="p">,</span> <span class="n">logger_name</span><span class="o">=</span><span class="s1">&#39;mastml&#39;</span><span class="p">,</span> <span class="n">to_screen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">to_file</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">verbosity</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="activate_logging"><a class="viewcode-back" href="../10_utils.html#utils.activate_logging">[docs]</a><span class="k">def</span> <span class="nf">activate_logging</span><span class="p">(</span><span class="n">savepath</span><span class="p">,</span> <span class="n">paths</span><span class="p">,</span> <span class="n">logger_name</span><span class="o">=</span><span class="s1">&#39;mastml&#39;</span><span class="p">,</span> <span class="n">to_screen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">to_file</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbosity</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    savepath is a dir for where to save log</span>
-<span class="sd">    paths list of 3 strings we show so the user knows what is being ran</span>
-<span class="sd">    verbosity: argument for what is shown on screen (does not affect files):</span>
-<span class="sd">        0 shows everything</span>
-<span class="sd">        -1 hides debug</span>
-<span class="sd">        -2 hides info (so no stdout except print)</span>
-<span class="sd">        -3 hides warning</span>
-<span class="sd">        -4 hides error</span>
-<span class="sd">        -5 hides all output</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    Method to create MAST-ML logger file</span>
 
+<span class="sd">    Args:</span>
+
+<span class="sd">        savepath: (str), string specifying the save path</span>
+
+<span class="sd">        paths: (list), list containing strings of path locations for config file, data file, and results folder</span>
+
+<span class="sd">        logger_name: (str), name of logger file</span>
+
+<span class="sd">        to_screen: (bool), whether or not to write the log contents to the screen during a run</span>
+
+<span class="sd">        to_file: (bool), whether or not to write the log contents to a file in the savepath</span>
+
+<span class="sd">        verbosity: (int), controls the amount of output produced in the logger. Accepted values:</span>
+
+<span class="sd">                0 shows everything</span>
+
+<span class="sd">                -1 hides debug</span>
+
+<span class="sd">                -2 hides info (so no stdout except print)</span>
+
+<span class="sd">                -3 hides warning</span>
+
+<span class="sd">                -4 hides error</span>
+
+<span class="sd">                -5 hides all output</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">        None</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1">#formatter = logging.Formatter(&quot;%(filename)s : %(funcName)s %(message)s&quot;)</span>
     <span class="n">time_formatter</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span><span class="s2">&quot;[</span><span class="si">%(levelname)s</span><span class="s2">] </span><span class="si">%(asctime)s</span><span class="s2"> : </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">level_formatter</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span><span class="s2">&quot;[</span><span class="si">%(levelname)s</span><span class="s2">] </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -318,8 +361,21 @@
 
     <span class="n">log_header</span><span class="p">(</span><span class="n">paths</span><span class="p">,</span> <span class="n">rootLogger</span><span class="p">)</span> <span class="c1"># only shows up in files</span></div>
 
-<span class="k">def</span> <span class="nf">log_header</span><span class="p">(</span><span class="n">paths</span><span class="p">,</span> <span class="n">log</span><span class="p">):</span>
+<div class="viewcode-block" id="log_header"><a class="viewcode-back" href="../10_utils.html#utils.log_header">[docs]</a><span class="k">def</span> <span class="nf">log_header</span><span class="p">(</span><span class="n">paths</span><span class="p">,</span> <span class="n">log</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Method to create header for MAST-ML logger</span>
 
+<span class="sd">    Args:</span>
+
+<span class="sd">        paths: (list), list containing strings of path locations for config file, data file, and results folder</span>
+
+<span class="sd">        log: (logging object), a python log</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">        None</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">logo</span> <span class="o">=</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">dedent</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;&quot;&quot;</span><span class="se">\</span>
 <span class="s2">           __  ___     __________    __  _____</span>
 <span class="s2">          /  |/  /__ _/ __/_  __/___/  |/  / /</span>
@@ -334,58 +390,89 @@
               <span class="n">f</span><span class="s2">&quot;saving to: {os.path.basename(paths[2])}</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="c1"># only shows on stdout and log.log</span>
-    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">header</span><span class="p">)</span></div>
 
 <span class="c1">## Custom errors for mastml:</span>
 
 <div class="viewcode-block" id="MastError"><a class="viewcode-back" href="../10_utils.html#utils.MastError">[docs]</a><span class="k">class</span> <span class="nc">MastError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; base class for errors that should be shown to the user &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for MAST-ML specific errors that should be shown to the user</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">pass</span></div>
 
 <div class="viewcode-block" id="ConfError"><a class="viewcode-back" href="../10_utils.html#utils.ConfError">[docs]</a><span class="k">class</span> <span class="nc">ConfError</span><span class="p">(</span><span class="n">MastError</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; error in conf file &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class representing error in input configuration file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">pass</span></div>
 
 <div class="viewcode-block" id="InvalidModel"><a class="viewcode-back" href="../10_utils.html#utils.InvalidModel">[docs]</a><span class="k">class</span> <span class="nc">InvalidModel</span><span class="p">(</span><span class="n">MastError</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Model does not exist &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class representing error when model does not exist</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">pass</span></div>
 
 <div class="viewcode-block" id="MissingColumnError"><a class="viewcode-back" href="../10_utils.html#utils.MissingColumnError">[docs]</a><span class="k">class</span> <span class="nc">MissingColumnError</span><span class="p">(</span><span class="n">MastError</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; raised when your csv doesn&#39;t have the column you asked for &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class representing error raised when your csv doesn&#39;t have the specified column</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">pass</span></div>
 
 <div class="viewcode-block" id="InvalidConfParameters"><a class="viewcode-back" href="../10_utils.html#utils.InvalidConfParameters">[docs]</a><span class="k">class</span> <span class="nc">InvalidConfParameters</span><span class="p">(</span><span class="n">MastError</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; invalid conf params &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class representing error raised when you have invalid input configuration file parameters</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">pass</span></div>
 
 <div class="viewcode-block" id="InvalidConfSubSection"><a class="viewcode-back" href="../10_utils.html#utils.InvalidConfSubSection">[docs]</a><span class="k">class</span> <span class="nc">InvalidConfSubSection</span><span class="p">(</span><span class="n">MastError</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; invalid section name &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class representing error raised when an invalid subsection name is present in the input configuration file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">pass</span></div>
 
 <div class="viewcode-block" id="InvalidConfSection"><a class="viewcode-back" href="../10_utils.html#utils.InvalidConfSection">[docs]</a><span class="k">class</span> <span class="nc">InvalidConfSection</span><span class="p">(</span><span class="n">MastError</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; invalid section name &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class representing error raised when an invalid section name is present in the input configuration file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">pass</span></div>
 
 <div class="viewcode-block" id="FiletypeError"><a class="viewcode-back" href="../10_utils.html#utils.FiletypeError">[docs]</a><span class="k">class</span> <span class="nc">FiletypeError</span><span class="p">(</span><span class="n">MastError</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; for using the wrong file extentions &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class representing error raised when an improper file extension is used</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">pass</span></div>
 
-<span class="k">class</span> <span class="nc">FileNotFoundError</span><span class="p">(</span><span class="n">MastError</span><span class="p">):</span> <span class="c1"># sorry for re-using builtin name</span>
-    <span class="k">pass</span>
-
-<span class="k">class</span> <span class="nc">InvalidValue</span><span class="p">(</span><span class="n">MastError</span><span class="p">):</span>
-    <span class="k">pass</span>
-
-
-<span class="c1">## Magic math stuff for plot_helper to make ranges</span>
-
-<span class="kn">from</span> <span class="nn">math</span> <span class="k">import</span> <span class="n">log</span><span class="p">,</span> <span class="n">floor</span><span class="p">,</span> <span class="n">ceil</span>
-
-<div class="viewcode-block" id="nice_range"><a class="viewcode-back" href="../10_utils.html#utils.nice_range">[docs]</a><span class="k">def</span> <span class="nf">nice_range</span><span class="p">(</span><span class="n">lower</span><span class="p">,</span> <span class="n">upper</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Pass in two numbers, and get back a list of numbers,</span>
-<span class="sd">    including both endpoints. Uses nice looking steps,</span>
-<span class="sd">    ie 0.1 or 0.5 or sometimes 2.</span>
+<div class="viewcode-block" id="FileNotFoundError"><a class="viewcode-back" href="../10_utils.html#utils.FileNotFoundError">[docs]</a><span class="k">class</span> <span class="nc">FileNotFoundError</span><span class="p">(</span><span class="n">MastError</span><span class="p">):</span> <span class="c1"># sorry for re-using builtin name</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class representing error raised when a needed file cannot be found</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="InvalidValue"><a class="viewcode-back" href="../10_utils.html#utils.InvalidValue">[docs]</a><span class="k">class</span> <span class="nc">InvalidValue</span><span class="p">(</span><span class="n">MastError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class representing error raised when an invalid value has been used</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span></div>
+
+
+<span class="c1">## Math utilities to aid plot_helper to make ranges</span>
+<span class="c1">#TODO: can likely remove from here as in plot_helper now</span>
+<div class="viewcode-block" id="nice_range"><a class="viewcode-back" href="../10_utils.html#utils.nice_range">[docs]</a><span class="k">def</span> <span class="nf">nice_range</span><span class="p">(</span><span class="n">lower</span><span class="p">,</span> <span class="n">upper</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Method to create a range of values, including the specified start and end points, with nicely spaced intervals</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        lower: (float or int), lower bound of range to create</span>
+
+<span class="sd">        upper: (float or int), upper bound of range to create</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">        (list), list of numerical values in established range</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">flipped</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># set to -1 for inverted</span>
 
     <span class="c1"># Case for validation where nan is passed in</span>
@@ -399,7 +486,21 @@
         <span class="n">flipped</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
     <span class="k">return</span> <span class="p">[</span><span class="n">_int_if_int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">_nice_range_helper</span><span class="p">(</span><span class="n">lower</span><span class="p">,</span> <span class="n">upper</span><span class="p">)][::</span><span class="n">flipped</span><span class="p">]</span></div>
 
-<span class="k">def</span> <span class="nf">_nice_range_helper</span><span class="p">(</span><span class="n">lower</span><span class="p">,</span> <span class="n">upper</span><span class="p">):</span>
+<div class="viewcode-block" id="_nice_range_helper"><a class="viewcode-back" href="../10_utils.html#utils._nice_range_helper">[docs]</a><span class="k">def</span> <span class="nf">_nice_range_helper</span><span class="p">(</span><span class="n">lower</span><span class="p">,</span> <span class="n">upper</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Method to help make a better range of axis ticks</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        lower: (float), lower value of axis ticks</span>
+
+<span class="sd">        upper: (float), upper value of axis ticks</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">        upper: (float), modified upper tick value fixed based on set of axis ticks</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">steps</span> <span class="o">=</span> <span class="mi">8</span>
     <span class="n">diff</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">lower</span> <span class="o">-</span> <span class="n">upper</span><span class="p">)</span>
 
@@ -443,12 +544,36 @@
         <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
 
     <span class="c1"># finish off with ending bound</span>
-    <span class="k">yield</span> <span class="n">upper</span>
+    <span class="k">yield</span> <span class="n">upper</span></div>
 
-<span class="k">def</span> <span class="nf">_three_sigfigs</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">_n_sigfigs</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<div class="viewcode-block" id="_three_sigfigs"><a class="viewcode-back" href="../10_utils.html#utils._three_sigfigs">[docs]</a><span class="k">def</span> <span class="nf">_three_sigfigs</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Method invoking special case of _n_sigfigs to return 3 sig figs</span>
 
-<span class="k">def</span> <span class="nf">_n_sigfigs</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+<span class="sd">    Args:</span>
+
+<span class="sd">        x: (float), an axis tick number</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">        (float), number of sig figs (always 3)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_n_sigfigs</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="_n_sigfigs"><a class="viewcode-back" href="../10_utils.html#utils._n_sigfigs">[docs]</a><span class="k">def</span> <span class="nf">_n_sigfigs</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Method to return number of sig figs to use for axis ticks</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        x: (float), an axis tick number</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">        (float), number of sig figs</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">sign</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="mi">0</span>
@@ -459,91 +584,67 @@
         <span class="n">base</span> <span class="o">=</span> <span class="n">n</span> <span class="o">-</span> <span class="nb">round</span><span class="p">(</span><span class="n">log</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">base</span> <span class="o">=</span> <span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="nb">round</span><span class="p">(</span><span class="n">log</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">sign</span> <span class="o">*</span> <span class="nb">round</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">base</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">sign</span> <span class="o">*</span> <span class="nb">round</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">base</span><span class="p">)</span></div>
 
-<span class="k">def</span> <span class="nf">_nearest_pow_ten</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<div class="viewcode-block" id="_nearest_pow_ten"><a class="viewcode-back" href="../10_utils.html#utils._nearest_pow_ten">[docs]</a><span class="k">def</span> <span class="nf">_nearest_pow_ten</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Method to return the nearest power of ten for an axis tick value</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        x: (float), an axis tick number</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">        (float), nearest power of ten of x</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">sign</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="mi">0</span>
     <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span> <span class="c1"># case for negatives</span>
         <span class="n">x</span> <span class="o">=</span> <span class="o">-</span><span class="n">x</span>
         <span class="n">sign</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
-    <span class="k">return</span> <span class="n">sign</span><span class="o">*</span><span class="mi">10</span><span class="o">**</span><span class="n">ceil</span><span class="p">(</span><span class="n">log</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">sign</span><span class="o">*</span><span class="mi">10</span><span class="o">**</span><span class="n">ceil</span><span class="p">(</span><span class="n">log</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span></div>
 
-<span class="k">def</span> <span class="nf">_int_if_int</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<div class="viewcode-block" id="_int_if_int"><a class="viewcode-back" href="../10_utils.html#utils._int_if_int">[docs]</a><span class="k">def</span> <span class="nf">_int_if_int</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Method to return integer mapped value of x</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        x: (float or int), a number</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">        x: (float), value of x mapped as integer</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">==</span> <span class="n">x</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">x</span>
+    <span class="k">return</span> <span class="n">x</span></div>
 
-<span class="k">def</span> <span class="nf">_round_up</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">inc</span><span class="p">):</span>
+<div class="viewcode-block" id="_round_up"><a class="viewcode-back" href="../10_utils.html#utils._round_up">[docs]</a><span class="k">def</span> <span class="nf">_round_up</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">inc</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Method to round up the value of x</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        x: (float or int), a number</span>
+
+<span class="sd">        inc: (float), an increment for axis ticks</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">        (float), value of x rounded up</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">sign</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span> <span class="c1"># case for negative</span>
         <span class="n">x</span> <span class="o">=</span> <span class="o">-</span><span class="n">x</span>
         <span class="n">sign</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
 
-    <span class="k">return</span> <span class="n">sign</span> <span class="o">*</span> <span class="n">inc</span> <span class="o">*</span> <span class="n">ceil</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">inc</span><span class="p">)</span>
-
-
-
-<span class="c1">## Joke functions:</span>
-
-<span class="c1">### String formatting funcs for inserting into log._log when in verbose mode</span>
-<span class="k">def</span> <span class="nf">to_upper</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
-    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">message</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
-
-<span class="k">def</span> <span class="nf">to_full_width</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
-    <span class="n">message</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-    <span class="n">ret</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">chr</span><span class="p">(</span><span class="nb">ord</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="o">+</span><span class="mh">0xFEE0</span><span class="p">)</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">isalnum</span><span class="p">()</span> <span class="k">else</span> <span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">message</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">to_leet</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
-    <span class="n">conv</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="s1">&#39;4&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="s1">&#39;8&#39;</span><span class="p">,</span> <span class="s1">&#39;e&#39;</span><span class="p">:</span> <span class="s1">&#39;3&#39;</span><span class="p">,</span> <span class="s1">&#39;l&#39;</span><span class="p">:</span> <span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">:</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span><span class="p">:</span> <span class="s1">&#39;5&#39;</span><span class="p">,</span> <span class="s1">&#39;t&#39;</span><span class="p">:</span> <span class="s1">&#39;7&#39;</span><span class="p">}</span>
-    <span class="n">message</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">conv</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="k">if</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">conv</span> <span class="k">else</span> <span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">message</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">message</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
-
-<span class="k">def</span> <span class="nf">deep_fry_helper</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
-    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">s</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.2</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="nb">chr</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10000</span><span class="p">))</span>
-        <span class="k">elif</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="n">c</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="n">c</span>
-
-<span class="k">def</span> <span class="nf">deep_fry</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
-    <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">deep_fry_helper</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">message</span><span class="p">)))</span>
-
-<span class="k">def</span> <span class="nf">deep_fry_2_helper</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
-    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">s</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.01</span><span class="p">:</span>
-            <span class="n">x</span> <span class="o">=</span> <span class="nb">chr</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10000</span><span class="p">))</span>
-            <span class="k">yield</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">x</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">)))</span>
-        <span class="k">elif</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.1</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">c</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">9</span><span class="p">)))</span>
-        <span class="k">elif</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.01</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="nb">chr</span><span class="p">(</span><span class="nb">ord</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="o">*</span><span class="mi">10</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.2</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="n">c</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="n">c</span>
-
-<span class="k">def</span> <span class="nf">deep_fry_2</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
-    <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">deep_fry_2_helper</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">message</span><span class="p">)))</span>
-
-<span class="k">def</span> <span class="nf">emojify</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
-    <span class="n">message</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-    <span class="n">words</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;score&#39;</span><span class="p">:</span><span class="mh">0x1f600</span><span class="p">,</span> <span class="s1">&#39;splits&#39;</span><span class="p">:</span> <span class="nb">chr</span><span class="p">(</span><span class="mh">0x21A9</span><span class="p">)</span><span class="o">+</span><span class="nb">chr</span><span class="p">(</span><span class="mh">0x21AA</span><span class="p">),</span> <span class="s1">&#39;split&#39;</span><span class="p">:</span> <span class="nb">chr</span><span class="p">(</span><span class="mh">0x21A9</span><span class="p">)</span><span class="o">+</span><span class="nb">chr</span><span class="p">(</span><span class="mh">0x21AA</span><span class="p">),</span> <span class="s1">&#39;score&#39;</span><span class="p">:</span><span class="mh">0x2728</span><span class="p">,</span> <span class="s1">&#39;number&#39;</span><span class="p">:</span><span class="mh">0x0023</span><span class="p">,</span>
-             <span class="s1">&#39;train&#39;</span><span class="p">:</span><span class="mh">0x1f682</span><span class="p">,</span> <span class="s1">&#39;test&#39;</span><span class="p">:</span><span class="mh">0x1f4dd</span><span class="p">,</span> <span class="s1">&#39;models&#39;</span><span class="p">:</span><span class="mh">0x1F483</span><span class="p">,</span> <span class="s1">&#39;model&#39;</span><span class="p">:</span><span class="mh">0x1F483</span><span class="p">,</span> <span class="s1">&#39;plot&#39;</span><span class="p">:</span><span class="mh">0x1f4ca</span><span class="p">,</span> <span class="s1">&#39;image&#39;</span><span class="p">:</span><span class="mh">0x1f5bc</span><span class="p">,</span>
-             <span class="s1">&#39;file&#39;</span><span class="p">:</span> <span class="mh">0x1f5c4</span><span class="p">,</span> <span class="s1">&#39;files&#39;</span><span class="p">:</span><span class="mh">0x1f5c3</span><span class="p">,</span> <span class="s1">&#39; to&#39;</span><span class="p">:</span><span class="mh">0x27a1</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span><span class="p">:</span><span class="mh">0x261d</span><span class="p">,</span> <span class="s1">&#39;2&#39;</span><span class="p">:</span><span class="mh">0x270c</span><span class="p">}</span>
-    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">words</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">words</span><span class="p">[</span><span class="n">word</span><span class="p">])</span> <span class="ow">is</span> <span class="nb">int</span><span class="p">:</span>
-            <span class="n">words</span><span class="p">[</span><span class="n">word</span><span class="p">]</span> <span class="o">=</span> <span class="nb">chr</span><span class="p">(</span><span class="n">words</span><span class="p">[</span><span class="n">word</span><span class="p">])</span>
-        <span class="n">words</span><span class="p">[</span><span class="n">word</span><span class="p">]</span> <span class="o">+=</span> <span class="s1">&#39; &#39;</span>
-    <span class="k">for</span> <span class="n">word</span><span class="p">,</span> <span class="n">emoji</span> <span class="ow">in</span> <span class="n">words</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="n">message</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">+</span><span class="n">word</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="o">+</span><span class="n">emoji</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">word</span><span class="p">,</span> <span class="n">emoji</span> <span class="ow">in</span> <span class="n">words</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="n">message</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">word</span><span class="p">,</span> <span class="n">emoji</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">message</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">sign</span> <span class="o">*</span> <span class="n">inc</span> <span class="o">*</span> <span class="n">ceil</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">inc</span><span class="p">)</span></div>
 
 <span class="k">def</span> <span class="nf">verbosalize_logger</span><span class="p">(</span><span class="n">log</span><span class="p">,</span> <span class="n">verbosity</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">verbosity</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
@@ -551,134 +652,90 @@
 
     <span class="k">if</span> <span class="n">verbosity</span> <span class="o">&gt;=</span> <span class="mi">8</span><span class="p">:</span>
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s1">&#39;MSATML&#39;</span><span class="o">*</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="o">**</span><span class="p">(</span><span class="n">verbosity</span><span class="o">-</span><span class="mi">4</span><span class="p">)))</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s1">&#39;MASTML&#39;</span><span class="o">*</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="o">**</span><span class="p">(</span><span class="n">verbosity</span><span class="o">-</span><span class="mi">4</span><span class="p">)))</span>
 
-    <span class="n">old_log</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">_log</span>
+    <span class="c1">#old_log = log._log</span>
 
-    <span class="k">def</span> <span class="nf">new_log</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="n">old_log</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">to_upper</span><span class="p">,</span> <span class="n">to_full_width</span><span class="p">,</span> <span class="n">to_leet</span><span class="p">,</span> <span class="n">deep_fry</span><span class="p">,</span> <span class="n">deep_fry_2</span><span class="p">,</span> <span class="n">emojify</span><span class="p">][</span><span class="n">verbosity</span><span class="p">](</span><span class="n">msg</span><span class="p">),</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="c1">#def new_log(level, msg, *args, **kwargs):</span>
+    <span class="c1">#    old_log(level, [None, None, to_upper, to_full_width, to_leet, deep_fry, deep_fry_2, emojify][verbosity](msg), *args, **kwargs)</span>
 
-    <span class="n">log</span><span class="o">.</span><span class="n">_log</span> <span class="o">=</span> <span class="n">new_log</span>
+    <span class="c1">#log._log = new_log</span>
 
+<span class="c1">## Joke functions:</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">### String formatting funcs for inserting into log._log when in verbose mode</span>
+<span class="sd">def to_upper(message):</span>
+<span class="sd">    return str(message).upper()</span>
 
+<span class="sd">def to_full_width(message):</span>
+<span class="sd">    message = str(message)</span>
+<span class="sd">    ret = []</span>
+<span class="sd">    return &#39;&#39;.join(chr(ord(c)+0xFEE0) if c.isalnum() else c for c in message)</span>
 
+<span class="sd">def to_leet(message):</span>
+<span class="sd">    conv = {&#39;a&#39;: &#39;4&#39;, &#39;b&#39;: &#39;8&#39;, &#39;e&#39;: &#39;3&#39;, &#39;l&#39;: &#39;1&#39;, &#39;o&#39;: &#39;0&#39;, &#39;s&#39;: &#39;5&#39;, &#39;t&#39;: &#39;7&#39;}</span>
+<span class="sd">    message = &#39;&#39;.join(conv[c] if c in conv else c for c in str(message))</span>
+<span class="sd">    return message.upper()</span>
 
-<span class="c1">### Subclassing (and outrigtht copying) from sklearn/feature_selection/rfe.py</span>
-<span class="c1">### so we can get train and test scores for feature selection</span>
-<div class="viewcode-block" id="_rfe_train_test"><a class="viewcode-back" href="../10_utils.html#utils._rfe_train_test">[docs]</a><span class="k">def</span> <span class="nf">_rfe_train_test</span><span class="p">(</span><span class="n">rfe</span><span class="p">,</span> <span class="n">estimator</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">train</span><span class="p">,</span> <span class="n">test</span><span class="p">,</span> <span class="n">scorer</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Return the score for a fit across one fold.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span> <span class="o">=</span> <span class="n">_safe_split</span><span class="p">(</span><span class="n">estimator</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">train</span><span class="p">)</span>
-    <span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">_safe_split</span><span class="p">(</span><span class="n">estimator</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test</span><span class="p">,</span> <span class="n">train</span><span class="p">)</span>
+<span class="sd">def deep_fry_helper(s):</span>
+<span class="sd">    for c in s:</span>
+<span class="sd">        if random.random() &lt; 0.2:</span>
+<span class="sd">            yield chr(random.randint(1, 10000))</span>
+<span class="sd">        elif random.random() &lt; 0.5:</span>
+<span class="sd">            yield c.upper()</span>
+<span class="sd">        else:</span>
+<span class="sd">            yield c</span>
 
-    <span class="n">train_score</span> <span class="o">=</span> <span class="n">rfe</span><span class="o">.</span><span class="n">_fit</span><span class="p">(</span>
-        <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">estimator</span><span class="p">,</span> <span class="n">features</span><span class="p">:</span>
-        <span class="n">_score</span><span class="p">(</span><span class="n">estimator</span><span class="p">,</span> <span class="n">X_test</span><span class="p">[:,</span> <span class="n">features</span><span class="p">],</span> <span class="n">y_test</span><span class="p">,</span> <span class="n">scorer</span><span class="p">))</span><span class="o">.</span><span class="n">scores_</span>
+<span class="sd">def deep_fry(message):</span>
+<span class="sd">    return &#39;&#39;.join(deep_fry_helper(str(message)))</span>
 
-    <span class="n">test_score</span> <span class="o">=</span> <span class="n">rfe</span><span class="o">.</span><span class="n">_fit</span><span class="p">(</span>
-        <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">estimator</span><span class="p">,</span> <span class="n">features</span><span class="p">:</span>
-        <span class="n">_score</span><span class="p">(</span><span class="n">estimator</span><span class="p">,</span> <span class="n">X_train</span><span class="p">[:,</span> <span class="n">features</span><span class="p">],</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">scorer</span><span class="p">))</span><span class="o">.</span><span class="n">scores_</span>
+<span class="sd">def deep_fry_2_helper(s):</span>
+<span class="sd">    for c in s:</span>
+<span class="sd">        if random.random() &lt; 0.01:</span>
+<span class="sd">            x = chr(random.randint(1, 10000))</span>
+<span class="sd">            yield &#39;&#39;.join(x for _ in range(random.randint(1,5)))</span>
+<span class="sd">        elif random.random() &lt; 0.1:</span>
+<span class="sd">            yield &#39;&#39;.join(c for _ in range(random.randint(1,9)))</span>
+<span class="sd">        elif random.random() &lt; 0.01:</span>
+<span class="sd">            yield chr(ord(c)*10)</span>
+<span class="sd">        elif random.random() &lt; 0.2:</span>
+<span class="sd">            yield c.upper()</span>
+<span class="sd">        else:</span>
+<span class="sd">            yield c</span>
 
-    <span class="k">return</span> <span class="n">train_score</span><span class="p">,</span> <span class="n">test_score</span></div>
+<span class="sd">def deep_fry_2(message):</span>
+<span class="sd">    return &#39;&#39;.join(deep_fry_2_helper(str(message)))</span>
 
+<span class="sd">def emojify(message):</span>
+<span class="sd">    message = str(message)</span>
+<span class="sd">    words = {&#39;score&#39;:0x1f600, &#39;splits&#39;: chr(0x21A9)+chr(0x21AA), &#39;split&#39;: chr(0x21A9)+chr(0x21AA), &#39;score&#39;:0x2728, &#39;number&#39;:0x0023,</span>
+<span class="sd">             &#39;train&#39;:0x1f682, &#39;test&#39;:0x1f4dd, &#39;models&#39;:0x1F483, &#39;model&#39;:0x1F483, &#39;plot&#39;:0x1f4ca, &#39;image&#39;:0x1f5bc,</span>
+<span class="sd">             &#39;file&#39;: 0x1f5c4, &#39;files&#39;:0x1f5c3, &#39; to&#39;:0x27a1, &#39;1&#39;:0x261d, &#39;2&#39;:0x270c}</span>
+<span class="sd">    for word in words:</span>
+<span class="sd">        if type(words[word]) is int:</span>
+<span class="sd">            words[word] = chr(words[word])</span>
+<span class="sd">        words[word] += &#39; &#39;</span>
+<span class="sd">    for word, emoji in words.items():</span>
+<span class="sd">        message = message.replace(&#39; &#39;+word+&#39; &#39;, &#39; &#39;+emoji+&#39; &#39;)</span>
+<span class="sd">    for word, emoji in words.items():</span>
+<span class="sd">        message = message.replace(word, emoji)</span>
+<span class="sd">    return message.upper()</span>
 
-<span class="kn">from</span> <span class="nn">sklearn.feature_selection</span> <span class="k">import</span> <span class="n">RFE</span><span class="p">,</span> <span class="n">RFECV</span>
-<span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="k">import</span> <span class="n">MetaEstimatorMixin</span>
+<span class="sd">def verbosalize_logger(log, verbosity):</span>
+<span class="sd">    if verbosity &lt;= 0:</span>
+<span class="sd">        return</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">sklearn.utils</span> <span class="k">import</span> <span class="n">check_X_y</span>
-<span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="k">import</span> <span class="n">clone</span>
-<span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="k">import</span> <span class="n">is_classifier</span>
-<span class="kn">from</span> <span class="nn">sklearn.externals.joblib</span> <span class="k">import</span> <span class="n">Parallel</span><span class="p">,</span> <span class="n">delayed</span>
-<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <span class="n">check_cv</span>
-<span class="kn">from</span> <span class="nn">sklearn.model_selection._validation</span> <span class="k">import</span> <span class="n">_safe_split</span><span class="p">,</span> <span class="n">_score</span>
-<span class="kn">from</span> <span class="nn">sklearn.metrics.scorer</span> <span class="k">import</span> <span class="n">check_scoring</span>
+<span class="sd">    if verbosity &gt;= 8:</span>
+<span class="sd">        while True:</span>
+<span class="sd">            log.critical(&#39;MSATML&#39;*random.randint(3,2**(verbosity-4)))</span>
 
-<span class="k">class</span> <span class="nc">RFECV_train_test</span><span class="p">(</span><span class="n">RFECV</span><span class="p">,</span> <span class="n">MetaEstimatorMixin</span><span class="p">):</span>
+<span class="sd">    old_log = log._log</span>
 
+<span class="sd">    def new_log(level, msg, *args, **kwargs):</span>
+<span class="sd">        old_log(level, [None, None, to_upper, to_full_width, to_leet, deep_fry, deep_fry_2, emojify][verbosity](msg), *args, **kwargs)</span>
 
-    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Fit the RFE model and automatically tune the number of selected</span>
-<span class="sd">           features.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        X : {array-like, sparse matrix}, shape = [n_samples, n_features]</span>
-<span class="sd">            Training vector, where `n_samples` is the number of samples and</span>
-<span class="sd">            `n_features` is the total number of features.</span>
-
-<span class="sd">        y : array-like, shape = [n_samples]</span>
-<span class="sd">            Target values (integers for classification, real numbers for</span>
-<span class="sd">            regression).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">check_X_y</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s2">&quot;csr&quot;</span><span class="p">)</span>
-
-        <span class="c1"># Initialization</span>
-        <span class="n">cv</span> <span class="o">=</span> <span class="n">check_cv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cv</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">is_classifier</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="p">))</span>
-        <span class="n">scorer</span> <span class="o">=</span> <span class="n">check_scoring</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scoring</span><span class="p">)</span>
-        <span class="n">n_features</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">n_features_to_select</span> <span class="o">=</span> <span class="mi">1</span>
-
-        <span class="k">if</span> <span class="mf">0.0</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">step</span> <span class="o">&lt;</span> <span class="mf">1.0</span><span class="p">:</span>
-            <span class="n">step</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">step</span> <span class="o">*</span> <span class="n">n_features</span><span class="p">))</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">step</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">step</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">step</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Step must be &gt;0&quot;</span><span class="p">)</span>
-
-        <span class="n">rfe</span> <span class="o">=</span> <span class="n">RFE</span><span class="p">(</span><span class="n">estimator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="p">,</span>
-                  <span class="n">n_features_to_select</span><span class="o">=</span><span class="n">n_features_to_select</span><span class="p">,</span>
-                  <span class="n">step</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">step</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
-
-        <span class="c1"># Determine the number of subsets of features by fitting across</span>
-        <span class="c1"># the train folds and choosing the &quot;features_to_select&quot; parameter</span>
-        <span class="c1"># that gives the least averaged error across all folds.</span>
-
-        <span class="c1"># Note that joblib raises a non-picklable error for bound methods</span>
-        <span class="c1"># even if n_jobs is set to 1 with the default multiprocessing</span>
-        <span class="c1"># backend.</span>
-        <span class="c1"># This branching is done so that to</span>
-        <span class="c1"># make sure that user code that sets n_jobs to 1</span>
-        <span class="c1"># and provides bound methods as scorers is not broken with the</span>
-        <span class="c1"># addition of n_jobs parameter in version 0.18.</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">parallel</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="nb">list</span><span class="p">,</span> <span class="n">_rfe_train_test</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">parallel</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="o">=</span> <span class="n">Parallel</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span><span class="p">),</span> <span class="n">delayed</span><span class="p">(</span><span class="n">_rfe_train_test</span><span class="p">)</span>
-
-        <span class="n">train_test_scores</span> <span class="o">=</span> <span class="n">parallel</span><span class="p">(</span>
-            <span class="n">func</span><span class="p">(</span><span class="n">rfe</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">train</span><span class="p">,</span> <span class="n">test</span><span class="p">,</span> <span class="n">scorer</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">train</span><span class="p">,</span> <span class="n">test</span> <span class="ow">in</span> <span class="n">cv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
-
-        <span class="n">train_scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">train_test_scores</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="n">test_scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">train_test_scores</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="n">scores</span> <span class="o">=</span> <span class="n">test_scores</span>
-
-        <span class="n">n_features_to_select</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
-            <span class="n">n_features</span> <span class="o">-</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span> <span class="o">*</span> <span class="n">step</span><span class="p">),</span>
-            <span class="n">n_features_to_select</span><span class="p">)</span>
-
-        <span class="c1"># Re-execute an elimination with best_k over the whole set</span>
-        <span class="n">rfe</span> <span class="o">=</span> <span class="n">RFE</span><span class="p">(</span><span class="n">estimator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="p">,</span>
-                  <span class="n">n_features_to_select</span><span class="o">=</span><span class="n">n_features_to_select</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">step</span><span class="p">)</span>
-
-        <span class="n">rfe</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-
-        <span class="c1"># Set final attributes</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">support_</span> <span class="o">=</span> <span class="n">rfe</span><span class="o">.</span><span class="n">support_</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">n_features_</span> <span class="o">=</span> <span class="n">rfe</span><span class="o">.</span><span class="n">n_features_</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ranking_</span> <span class="o">=</span> <span class="n">rfe</span><span class="o">.</span><span class="n">ranking_</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="n">y</span><span class="p">)</span>
-
-        <span class="c1"># Fixing a normalization error, n is equal to get_n_splits(X, y) - 1</span>
-        <span class="c1"># here, the scores are normalized by get_n_splits(X, y)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">grid_train_scores_</span> <span class="o">=</span> <span class="n">train_scores</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">cv</span><span class="o">.</span><span class="n">get_n_splits</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">grid_scores_</span> <span class="o">=</span> <span class="n">test_scores</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">cv</span><span class="o">.</span><span class="n">get_n_splits</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span>
-    
+<span class="sd">    log._log = new_log</span>
+<span class="sd">&quot;&quot;&quot;</span>
 </pre></div>
 
            </div>
@@ -712,20 +769,12 @@
 
     
     
-      <script type="text/javascript">
-          var DOCUMENTATION_OPTIONS = {
-              URL_ROOT:'../',
-              VERSION:'2.0',
-              LANGUAGE:'None',
-              COLLAPSE_INDEX:false,
-              FILE_SUFFIX:'.html',
-              HAS_SOURCE:  true,
-              SOURCELINK_SUFFIX: '.txt'
-          };
-      </script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
 
   

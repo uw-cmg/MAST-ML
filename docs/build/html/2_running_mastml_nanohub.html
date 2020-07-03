@@ -112,6 +112,7 @@
 <li class="toctree-l4"><a class="reference internal" href="0_2_windows_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="0_2_windows_installation.html#windows-10-install-step-by-step-guide-credit-joe-kern">Windows 10 install: step-by-step guide (credit Joe Kern)</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="0_3_startup.html">Startup</a><ul>
@@ -133,7 +134,7 @@
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#feature-selection">Feature Selection</a></li>
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#data-splits">Data Splits</a></li>
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#models">Models</a></li>
-<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#plot-settings">Plot Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#misc-settings">Misc Settings</a></li>
 </ul>
 </li>
 </ul>
@@ -255,16 +256,16 @@ which will look something like below:</p>
 <p>You’ll see in the image above there are two files: Run_MASTML.ipynb and run_mastml.py. These are a Jupyter notebook
 and python script used to run MASTML, respectively. Your home directory won’t come with them pre-installed, but they are
 contained on the MASTML repository on Github and can also be downloaded via the links below:</p>
-<p><a class="reference download internal" href="_downloads/Run_MASTML.ipynb" download=""><code class="xref download docutils literal"><span class="pre">Run_MASTML.ipynb</span></code></a></p>
-<p><a class="reference download internal" href="_downloads/run_mastml.py" download=""><code class="xref download docutils literal"><span class="pre">run_mastml.py</span></code></a></p>
+<p><a class="reference download internal" download="" href="_downloads/9caa71ed7bd088298bb2bd6fa4be0890/Run_MASTML.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Run_MASTML.ipynb</span></code></a></p>
+<p><a class="reference download internal" download="" href="_downloads/1e1b6d6d312cda6b060dc80ad1330beb/run_mastml.py"><code class="xref download docutils literal notranslate"><span class="pre">run_mastml.py</span></code></a></p>
 <p>Once you have these files (either will do), you can easily upload them to the Nanohub Jupyter Notebook environment using
 the “Upload” button shown above in the Jupyter Notebook home directory screenshot.</p>
 <p>The last thing to do before we can run MASTML is to also upload a MASTML input file and data file to Nanohub. If you
 don’t have your own, you can download and use the files below as an example. Note that you will have to update the path
 specifying the location of the data file and input file in the .ipynb or .py file use to run MASTML, if you create a path
 which differs from the default path of ‘/tests/conf/’ and ‘/tests/csv/’.</p>
-<p><a class="reference download internal" href="_downloads/example_input.conf" download=""><code class="xref download docutils literal"><span class="pre">example_input.conf</span></code></a></p>
-<p><a class="reference download internal" href="_downloads/example_data.csv" download=""><code class="xref download docutils literal"><span class="pre">example_data.csv</span></code></a></p>
+<p><a class="reference download internal" download="" href="_downloads/acefc797ab782e0dddd863999663ef14/example_input.conf"><code class="xref download docutils literal notranslate"><span class="pre">example_input.conf</span></code></a></p>
+<p><a class="reference download internal" download="" href="_downloads/445f218f0aa5920948b3c965038b3eed/example_data.csv"><code class="xref download docutils literal notranslate"><span class="pre">example_data.csv</span></code></a></p>
 <p>Shown below is the Run_MASTML.ipynb notebook file. The first block imports MASTML, and doesn’t need to be changed.
 The second block specifies the path to find the conf file (“conf” line) and the data file (“csv” line). The “output”
 line provides a path to save the output from your MASTML run. You’ll have to update the “conf” and “csv” lines if you
@@ -319,20 +320,12 @@ folder you wish to download. Once everything is zipped up, you can can click on 
 
     
     
-      <script type="text/javascript">
-          var DOCUMENTATION_OPTIONS = {
-              URL_ROOT:'./',
-              VERSION:'2.0',
-              LANGUAGE:'None',
-              COLLAPSE_INDEX:false,
-              FILE_SUFFIX:'.html',
-              HAS_SOURCE:  true,
-              SOURCELINK_SUFFIX: '.txt'
-          };
-      </script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
 
   

@@ -112,6 +112,7 @@
 <li class="toctree-l4"><a class="reference internal" href="0_2_windows_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="0_2_windows_installation.html#windows-10-install-step-by-step-guide-credit-joe-kern">Windows 10 install: step-by-step guide (credit Joe Kern)</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="0_3_startup.html">Startup</a><ul>
@@ -133,7 +134,7 @@
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#feature-selection">Feature Selection</a></li>
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#data-splits">Data Splits</a></li>
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#models">Models</a></li>
-<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#plot-settings">Plot Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#misc-settings">Misc Settings</a></li>
 </ul>
 </li>
 </ul>
@@ -239,17 +240,17 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-data_splitters">
-<span id="data-splitters"></span><h1>Data splitters<a class="headerlink" href="#module-data_splitters" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-mastml.legos.data_splitters">
+<span id="data-splitters"></span><h1>Data splitters<a class="headerlink" href="#module-mastml.legos.data_splitters" title="Permalink to this headline">¶</a></h1>
 <p>The data_splitters module contains a collection of classes for generating (train_indices, test_indices) pairs from
 a dataframe or a numpy array.</p>
-<dl class="docutils">
-<dt>For more information and a list of scikit-learn splitter classes, see:</dt>
-<dd><a class="reference external" href="http://scikit-learn.org/stable/modules/classes.html#module-sklearn.model_selection">http://scikit-learn.org/stable/modules/classes.html#module-sklearn.model_selection</a></dd>
+<dl class="simple">
+<dt>For more information and a list of scikit-learn splitter classes, see:</dt><dd><p><a class="reference external" href="http://scikit-learn.org/stable/modules/classes.html#module-sklearn.model_selection">http://scikit-learn.org/stable/modules/classes.html#module-sklearn.model_selection</a></p>
+</dd>
 </dl>
 <dl class="class">
-<dt id="data_splitters.Bootstrap">
-<em class="property">class </em><code class="descclassname">data_splitters.</code><code class="descname">Bootstrap</code><span class="sig-paren">(</span><em>n</em>, <em>n_bootstraps=3</em>, <em>train_size=0.5</em>, <em>test_size=None</em>, <em>n_train=None</em>, <em>n_test=None</em>, <em>random_state=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_splitters.html#Bootstrap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data_splitters.Bootstrap" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.legos.data_splitters.Bootstrap">
+<em class="property">class </em><code class="sig-prename descclassname">mastml.legos.data_splitters.</code><code class="sig-name descname">Bootstrap</code><span class="sig-paren">(</span><em class="sig-param">n</em>, <em class="sig-param">n_bootstraps=3</em>, <em class="sig-param">train_size=0.5</em>, <em class="sig-param">test_size=None</em>, <em class="sig-param">n_train=None</em>, <em class="sig-param">n_test=None</em>, <em class="sig-param">random_state=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/data_splitters.html#Bootstrap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.data_splitters.Bootstrap" title="Permalink to this definition">¶</a></dt>
 <dd><p>Random sampling with replacement cross-validation iterator
 Provides train/test indices to split data in train test sets
 while resampling the input n_bootstraps times: each time a new
@@ -266,25 +267,26 @@ Parameters
 ———-
 n : int</p>
 <blockquote>
-<div>Total number of elements in the dataset.</div></blockquote>
-<dl class="docutils">
-<dt>n_bootstraps <span class="classifier-delimiter">:</span> <span class="classifier">int (default is 3)</span></dt>
-<dd>Number of bootstrapping iterations</dd>
-<dt>train_size <span class="classifier-delimiter">:</span> <span class="classifier">int or float (default is 0.5)</span></dt>
-<dd>If int, number of samples to include in the training split
+<div><p>Total number of elements in the dataset.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>n_bootstraps<span class="classifier">int (default is 3)</span></dt><dd><p>Number of bootstrapping iterations</p>
+</dd>
+<dt>train_size<span class="classifier">int or float (default is 0.5)</span></dt><dd><p>If int, number of samples to include in the training split
 (should be smaller than the total number of samples passed
 in the dataset).
 If float, should be between 0.0 and 1.0 and represent the
-proportion of the dataset to include in the train split.</dd>
-<dt>test_size <span class="classifier-delimiter">:</span> <span class="classifier">int or float or None (default is None)</span></dt>
-<dd>If int, number of samples to include in the training set
+proportion of the dataset to include in the train split.</p>
+</dd>
+<dt>test_size<span class="classifier">int or float or None (default is None)</span></dt><dd><p>If int, number of samples to include in the training set
 (should be smaller than the total number of samples passed
 in the dataset).
 If float, should be between 0.0 and 1.0 and represent the
 proportion of the dataset to include in the test split.
-If None, n_test is set as the complement of n_train.</dd>
-<dt>random_state <span class="classifier-delimiter">:</span> <span class="classifier">int or RandomState</span></dt>
-<dd>Pseudo number generator state used for random sampling.</dd>
+If None, n_test is set as the complement of n_train.</p>
+</dd>
+<dt>random_state<span class="classifier">int or RandomState</span></dt><dd><p>Pseudo number generator state used for random sampling.</p>
+</dd>
 </dl>
 <p>#&gt;&gt;&gt; from sklearn import cross_validation
 #&gt;&gt;&gt; bs = cross_validation.Bootstrap(9, random_state=0)
@@ -304,33 +306,32 @@ ShuffleSplit: cross validation using random permutations.</p>
 </dd></dl>
 
 <dl class="class">
-<dt id="data_splitters.JustEachGroup">
-<em class="property">class </em><code class="descclassname">data_splitters.</code><code class="descname">JustEachGroup</code><a class="reference internal" href="_modules/data_splitters.html#JustEachGroup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data_splitters.JustEachGroup" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.legos.data_splitters.JustEachGroup">
+<em class="property">class </em><code class="sig-prename descclassname">mastml.legos.data_splitters.</code><code class="sig-name descname">JustEachGroup</code><a class="reference internal" href="_modules/mastml/legos/data_splitters.html#JustEachGroup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.data_splitters.JustEachGroup" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class to train the model on one group at a time and test it on the rest of the data
 This class wraps scikit-learn’s LeavePGroupsOut with P set to n-1. More information is available at:
 <a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.LeavePGroupsOut.html">http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.LeavePGroupsOut.html</a></p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>None (only object instance)</dd>
-<dt>Methods:</dt>
-<dd><p class="first">get_n_splits: method to calculate the number of splits to perform</p>
+<dl>
+<dt>Args:</dt><dd><p>None (only object instance)</p>
+</dd>
+<dt>Methods:</dt><dd><p>get_n_splits: method to calculate the number of splits to perform</p>
 <blockquote>
-<div><dl class="docutils">
-<dt>Args:</dt>
-<dd>groups: (numpy array), array of group labels</dd>
-<dt>Returns:</dt>
-<dd>(int), number of unique groups, indicating number of splits to perform</dd>
+<div><dl class="simple">
+<dt>Args:</dt><dd><p>groups: (numpy array), array of group labels</p>
+</dd>
+<dt>Returns:</dt><dd><p>(int), number of unique groups, indicating number of splits to perform</p>
+</dd>
 </dl>
 </div></blockquote>
 <p>split: method to perform split into train indices and test indices</p>
-<blockquote class="last">
-<div><dl class="docutils">
-<dt>Args:</dt>
-<dd>X: (numpy array), array of X features
+<blockquote>
+<div><dl class="simple">
+<dt>Args:</dt><dd><p>X: (numpy array), array of X features
 y: (numpy array), array of y data
-groups: (numpy array), array of group labels</dd>
-<dt>Returns:</dt>
-<dd>(numpy array), array of train and test indices</dd>
+groups: (numpy array), array of group labels</p>
+</dd>
+<dt>Returns:</dt><dd><p>(numpy array), array of train and test indices</p>
+</dd>
 </dl>
 </div></blockquote>
 </dd>
@@ -338,54 +339,79 @@ groups: (numpy array), array of group labels</dd>
 </dd></dl>
 
 <dl class="class">
-<dt id="data_splitters.LeaveCloseCompositionsOut">
-<em class="property">class </em><code class="descclassname">data_splitters.</code><code class="descname">LeaveCloseCompositionsOut</code><span class="sig-paren">(</span><em>dist_threshold=0.1</em>, <em>nn_kwargs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_splitters.html#LeaveCloseCompositionsOut"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data_splitters.LeaveCloseCompositionsOut" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.legos.data_splitters.LeaveCloseCompositionsOut">
+<em class="property">class </em><code class="sig-prename descclassname">mastml.legos.data_splitters.</code><code class="sig-name descname">LeaveCloseCompositionsOut</code><span class="sig-paren">(</span><em class="sig-param">dist_threshold=0.1</em>, <em class="sig-param">nn_kwargs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/data_splitters.html#LeaveCloseCompositionsOut"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.data_splitters.LeaveCloseCompositionsOut" title="Permalink to this definition">¶</a></dt>
 <dd><p>Leave-P-out where you exclude materials with compositions close to those the test set</p>
-<p>Computes the distance between the element fraction vectors. For example, the 
-distance between Al and Cu is  and the  distance between Al
+<p>Computes the distance between the element fraction vectors. For example, the <span class="math notranslate nohighlight">\(L_2\)</span>
+distance between Al and Cu is <span class="math notranslate nohighlight">\(\sqrt{2}\)</span> and the <span class="math notranslate nohighlight">\(L_1\)</span> distance between Al
 and Al0.9Cu0.1 is 0.2.</p>
 <p>Consequently, this splitter requires a list of compositions as the input to <cite>split</cite> rather
 than the features.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt>dist_threshold (float): Entries must be farther than this distance to be included in the</dt>
-<dd>training set</dd>
-<dt>nn_kwargs (dict): Keyword arguments for the scikit-learn NearestNeighbor class used</dt>
-<dd>to find nearest points</dd>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>dist_threshold (float): Entries must be farther than this distance to be included in the</dt><dd><p>training set</p>
+</dd>
+<dt>nn_kwargs (dict): Keyword arguments for the scikit-learn NearestNeighbor class used</dt><dd><p>to find nearest points</p>
+</dd>
 </dl>
+</dd>
+</dl>
+<dl class="method">
+<dt id="mastml.legos.data_splitters.LeaveCloseCompositionsOut.get_n_splits">
+<code class="sig-name descname">get_n_splits</code><span class="sig-paren">(</span><em class="sig-param">X=None</em>, <em class="sig-param">y=None</em>, <em class="sig-param">groups=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/data_splitters.html#LeaveCloseCompositionsOut.get_n_splits"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.data_splitters.LeaveCloseCompositionsOut.get_n_splits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the number of splitting iterations in the cross-validator</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mastml.legos.data_splitters.LeaveCloseCompositionsOut.split">
+<code class="sig-name descname">split</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">y=None</em>, <em class="sig-param">groups=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/data_splitters.html#LeaveCloseCompositionsOut.split"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.data_splitters.LeaveCloseCompositionsOut.split" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate indices to split data into training and test set.</p>
+<dl class="simple">
+<dt>X<span class="classifier">array-like of shape (n_samples, n_features)</span></dt><dd><p>Training data, where n_samples is the number of samples
+and n_features is the number of features.</p>
+</dd>
+<dt>y<span class="classifier">array-like of shape (n_samples,)</span></dt><dd><p>The target variable for supervised learning problems.</p>
+</dd>
+<dt>groups<span class="classifier">array-like of shape (n_samples,), default=None</span></dt><dd><p>Group labels for the samples used while splitting the dataset into
+train/test set.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>train<span class="classifier">ndarray</span></dt><dd><p>The training set indices for that split.</p>
+</dd>
+<dt>test<span class="classifier">ndarray</span></dt><dd><p>The testing set indices for that split.</p>
 </dd>
 </dl>
 </dd></dl>
 
+</dd></dl>
+
 <dl class="class">
-<dt id="data_splitters.LeaveOutPercent">
-<em class="property">class </em><code class="descclassname">data_splitters.</code><code class="descname">LeaveOutPercent</code><span class="sig-paren">(</span><em>percent_leave_out=0.2</em>, <em>n_repeats=5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_splitters.html#LeaveOutPercent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data_splitters.LeaveOutPercent" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.legos.data_splitters.LeaveOutPercent">
+<em class="property">class </em><code class="sig-prename descclassname">mastml.legos.data_splitters.</code><code class="sig-name descname">LeaveOutPercent</code><span class="sig-paren">(</span><em class="sig-param">percent_leave_out=0.2</em>, <em class="sig-param">n_repeats=5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/data_splitters.html#LeaveOutPercent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.data_splitters.LeaveOutPercent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class to train the model using a certain percentage of data as training data</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><p class="first">percent_leave_out (float): fraction of data to use in training (must be &gt; 0 and &lt; 1)</p>
-<p class="last">n_repeats (int): number of repeated splits to perform (must be &gt;= 1)</p>
+<dl>
+<dt>Args:</dt><dd><p>percent_leave_out (float): fraction of data to use in training (must be &gt; 0 and &lt; 1)</p>
+<p>n_repeats (int): number of repeated splits to perform (must be &gt;= 1)</p>
 </dd>
-<dt>Methods:</dt>
-<dd><p class="first">get_n_splits: method to return the number of splits to perform</p>
+<dt>Methods:</dt><dd><p>get_n_splits: method to return the number of splits to perform</p>
 <blockquote>
-<div><dl class="docutils">
-<dt>Args:</dt>
-<dd>groups: (numpy array), array of group labels</dd>
-<dt>Returns:</dt>
-<dd>(int), number of unique groups, indicating number of splits to perform</dd>
+<div><dl class="simple">
+<dt>Args:</dt><dd><p>groups: (numpy array), array of group labels</p>
+</dd>
+<dt>Returns:</dt><dd><p>(int), number of unique groups, indicating number of splits to perform</p>
+</dd>
 </dl>
 </div></blockquote>
 <p>split: method to perform split into train indices and test indices</p>
-<blockquote class="last">
-<div><dl class="docutils">
-<dt>Args:</dt>
-<dd>X: (numpy array), array of X features
+<blockquote>
+<div><dl class="simple">
+<dt>Args:</dt><dd><p>X: (numpy array), array of X features
 y: (numpy array), array of y data
-groups: (numpy array), array of group labels</dd>
-<dt>Returns:</dt>
-<dd>(numpy array), array of train and test indices</dd>
+groups: (numpy array), array of group labels</p>
+</dd>
+<dt>Returns:</dt><dd><p>(numpy array), array of train and test indices</p>
+</dd>
 </dl>
 </div></blockquote>
 </dd>
@@ -393,30 +419,29 @@ groups: (numpy array), array of group labels</dd>
 </dd></dl>
 
 <dl class="class">
-<dt id="data_splitters.NoSplit">
-<em class="property">class </em><code class="descclassname">data_splitters.</code><code class="descname">NoSplit</code><a class="reference internal" href="_modules/data_splitters.html#NoSplit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data_splitters.NoSplit" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.legos.data_splitters.NoSplit">
+<em class="property">class </em><code class="sig-prename descclassname">mastml.legos.data_splitters.</code><code class="sig-name descname">NoSplit</code><a class="reference internal" href="_modules/mastml/legos/data_splitters.html#NoSplit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.data_splitters.NoSplit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class to just train the model on the training data and test it on that same data. Sometimes referred to as a “Full fit”
 or a “Single fit”, equivalent to just plotting y vs. x.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>None (only object instance)</dd>
-<dt>Methods:</dt>
-<dd><p class="first">get_n_splits: method to calculate the number of splits to perform</p>
+<dl>
+<dt>Args:</dt><dd><p>None (only object instance)</p>
+</dd>
+<dt>Methods:</dt><dd><p>get_n_splits: method to calculate the number of splits to perform</p>
 <blockquote>
-<div><dl class="docutils">
-<dt>Args:</dt>
-<dd>None</dd>
-<dt>Returns:</dt>
-<dd>(int), always 1 as only a single split is performed</dd>
+<div><dl class="simple">
+<dt>Args:</dt><dd><p>None</p>
+</dd>
+<dt>Returns:</dt><dd><p>(int), always 1 as only a single split is performed</p>
+</dd>
 </dl>
 </div></blockquote>
 <p>split: method to perform split into train indices and test indices</p>
-<blockquote class="last">
-<div><dl class="docutils">
-<dt>Args:</dt>
-<dd>X: (numpy array), array of X features</dd>
-<dt>Returns:</dt>
-<dd>(numpy array), array of train and test indices (all data used as train and test for NoSplit)</dd>
+<blockquote>
+<div><dl class="simple">
+<dt>Args:</dt><dd><p>X: (numpy array), array of X features</p>
+</dd>
+<dt>Returns:</dt><dd><p>(numpy array), array of train and test indices (all data used as train and test for NoSplit)</p>
+</dd>
 </dl>
 </div></blockquote>
 </dd>
@@ -424,33 +449,32 @@ or a “Single fit”, equivalent to just plotting y vs. x.</p>
 </dd></dl>
 
 <dl class="class">
-<dt id="data_splitters.SplittersUnion">
-<em class="property">class </em><code class="descclassname">data_splitters.</code><code class="descname">SplittersUnion</code><span class="sig-paren">(</span><em>splitters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_splitters.html#SplittersUnion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data_splitters.SplittersUnion" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.legos.data_splitters.SplittersUnion">
+<em class="property">class </em><code class="sig-prename descclassname">mastml.legos.data_splitters.</code><code class="sig-name descname">SplittersUnion</code><span class="sig-paren">(</span><em class="sig-param">splitters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/data_splitters.html#SplittersUnion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.data_splitters.SplittersUnion" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class to take the union of two separate splitting routines, so that many splitting routines can be performed at once</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>splitters: (list), a list of scikit-learn splitter objects</dd>
-<dt>Methods:</dt>
-<dd><p class="first">get_n_splits: method to calculate the number of splits to perform across all splitters</p>
+<dl>
+<dt>Args:</dt><dd><p>splitters: (list), a list of scikit-learn splitter objects</p>
+</dd>
+<dt>Methods:</dt><dd><p>get_n_splits: method to calculate the number of splits to perform across all splitters</p>
 <blockquote>
-<div><dl class="docutils">
-<dt>Args:</dt>
-<dd>X: (numpy array), array of X features
+<div><dl class="simple">
+<dt>Args:</dt><dd><p>X: (numpy array), array of X features
 y: (numpy array), array of y data
-groups: (numpy array), array of group labels</dd>
-<dt>Returns:</dt>
-<dd>(int), number of total splits to be conducted</dd>
+groups: (numpy array), array of group labels</p>
+</dd>
+<dt>Returns:</dt><dd><p>(int), number of total splits to be conducted</p>
+</dd>
 </dl>
 </div></blockquote>
 <p>split: method to perform split into train indices and test indices</p>
-<blockquote class="last">
-<div><dl class="docutils">
-<dt>Args:</dt>
-<dd>X: (numpy array), array of X features
+<blockquote>
+<div><dl class="simple">
+<dt>Args:</dt><dd><p>X: (numpy array), array of X features
 y: (numpy array), array of y data
-groups: (numpy array), array of group labels</dd>
-<dt>Returns:</dt>
-<dd>(numpy array), array of train and test indices</dd>
+groups: (numpy array), array of group labels</p>
+</dd>
+<dt>Returns:</dt><dd><p>(numpy array), array of train and test indices</p>
+</dd>
 </dl>
 </div></blockquote>
 </dd>
@@ -500,20 +524,12 @@ groups: (numpy array), array of group labels</dd>
 
     
     
-      <script type="text/javascript">
-          var DOCUMENTATION_OPTIONS = {
-              URL_ROOT:'./',
-              VERSION:'2.0',
-              LANGUAGE:'None',
-              COLLAPSE_INDEX:false,
-              FILE_SUFFIX:'.html',
-              HAS_SOURCE:  true,
-              SOURCELINK_SUFFIX: '.txt'
-          };
-      </script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
 
   

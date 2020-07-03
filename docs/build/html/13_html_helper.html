@@ -112,6 +112,7 @@
 <li class="toctree-l4"><a class="reference internal" href="0_2_windows_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="0_2_windows_installation.html#windows-10-install-step-by-step-guide-credit-joe-kern">Windows 10 install: step-by-step guide (credit Joe Kern)</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="0_3_startup.html">Startup</a><ul>
@@ -133,7 +134,7 @@
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#feature-selection">Feature Selection</a></li>
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#data-splits">Data Splits</a></li>
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#models">Models</a></li>
-<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#plot-settings">Plot Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#misc-settings">Misc Settings</a></li>
 </ul>
 </li>
 </ul>
@@ -239,38 +240,113 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-html_helper">
-<span id="html-helper"></span><h1>HTML Helper<a class="headerlink" href="#module-html_helper" title="Permalink to this headline">¶</a></h1>
-<p>Module for generating the nice collected index.html file,
-with best/worst plots, links to statistics, and more.</p>
+  <div class="section" id="module-mastml.html_helper">
+<span id="html-helper"></span><h1>HTML Helper<a class="headerlink" href="#module-mastml.html_helper" title="Permalink to this headline">¶</a></h1>
+<p>Module for generating an HTML file, called index.html, which contains an overview of the key data and plots from a
+MAST-ML run. Images of cross-validation parity plots, data histograms, data statistics, and links to the relevant files
+are all provided.</p>
 <dl class="function">
-<dt id="html_helper.make_html">
-<code class="descclassname">html_helper.</code><code class="descname">make_html</code><span class="sig-paren">(</span><em>outdir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/html_helper.html#make_html"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#html_helper.make_html" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create the main index.html file</p>
+<dt id="mastml.html_helper.is_test_image">
+<code class="sig-prename descclassname">mastml.html_helper.</code><code class="sig-name descname">is_test_image</code><span class="sig-paren">(</span><em class="sig-param">path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/html_helper.html#is_test_image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.html_helper.is_test_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method used to assess whether an image is for testing data</p>
+<p>Args:</p>
+<blockquote>
+<div><p>path: (str), source path of the image to be displayed</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div><p>(bool), True if path is an image (.png) and is for testing data (has ‘test’ in path)</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="html_helper.make_image">
-<code class="descclassname">html_helper.</code><code class="descname">make_image</code><span class="sig-paren">(</span><em>src</em>, <em>title=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/html_helper.html#make_image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#html_helper.make_image" title="Permalink to this definition">¶</a></dt>
-<dd><p>Show an image in fixed width</p>
+<dt id="mastml.html_helper.is_train_image">
+<code class="sig-prename descclassname">mastml.html_helper.</code><code class="sig-name descname">is_train_image</code><span class="sig-paren">(</span><em class="sig-param">path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/html_helper.html#is_train_image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.html_helper.is_train_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method used to assess whether an image is for training data</p>
+<p>Args:</p>
+<blockquote>
+<div><p>path: (str), source path of the image to be displayed</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div><p>(bool), True if path is an image (.png) and is for training data (has ‘train’ in path)</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="html_helper.make_link">
-<code class="descclassname">html_helper.</code><code class="descname">make_link</code><span class="sig-paren">(</span><em>href</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/html_helper.html#make_link"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#html_helper.make_link" title="Permalink to this definition">¶</a></dt>
-<dd><p>Make a link where text is filename of href</p>
+<dt id="mastml.html_helper.make_html">
+<code class="sig-prename descclassname">mastml.html_helper.</code><code class="sig-name descname">make_html</code><span class="sig-paren">(</span><em class="sig-param">outdir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/html_helper.html#make_html"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.html_helper.make_html" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method used to create the main index.html file</p>
+<p>Args:</p>
+<blockquote>
+<div><p>outdir: (str), user-specified output path which designates where all results of MAST-ML run are written</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div><p>None</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="html_helper.show_combo">
-<code class="descclassname">html_helper.</code><code class="descname">show_combo</code><span class="sig-paren">(</span><em>combo_dir</em>, <em>outdir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/html_helper.html#show_combo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#html_helper.show_combo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add one combo to the output html</p>
+<dt id="mastml.html_helper.make_image">
+<code class="sig-prename descclassname">mastml.html_helper.</code><code class="sig-name descname">make_image</code><span class="sig-paren">(</span><em class="sig-param">src</em>, <em class="sig-param">title=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/html_helper.html#make_image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.html_helper.make_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method used to generate and show an image of a fixed width. The image will be displayed in the appropriate
+section of the index.html file</p>
+<p>Args:</p>
+<blockquote>
+<div><p>src: (str), source path of the image to be displayed</p>
+<p>title: (str), title for the image</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div><p>None</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="html_helper.simple_section">
-<code class="descclassname">html_helper.</code><code class="descname">simple_section</code><span class="sig-paren">(</span><em>filepath</em>, <em>outdir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/html_helper.html#simple_section"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#html_helper.simple_section" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a section for a combo</p>
+<dt id="mastml.html_helper.make_link">
+<code class="sig-prename descclassname">mastml.html_helper.</code><code class="sig-name descname">make_link</code><span class="sig-paren">(</span><em class="sig-param">href</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/html_helper.html#make_link"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.html_helper.make_link" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method used to generate a link to a particular file created from a MAST-ML run. The link will be displayed next to the
+appropriate data or image in the index.html file</p>
+<p>Args:</p>
+<blockquote>
+<div><p>href: (str), filename to generate link for</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div><p>(dominate.tags html_tag object), hyperlink to filename</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="mastml.html_helper.show_combo">
+<code class="sig-prename descclassname">mastml.html_helper.</code><code class="sig-name descname">show_combo</code><span class="sig-paren">(</span><em class="sig-param">combo_dir</em>, <em class="sig-param">outdir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/html_helper.html#show_combo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.html_helper.show_combo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method used to collect combinations of data analysis (e.g. parity plots of train and test data in a CV split) and
+required file paths and display them in the output index.html file.</p>
+<p>Args:</p>
+<blockquote>
+<div><p>combo_dir: (str), path containing the relevant data to combine as output in the index.html file</p>
+<p>outdir: (str), user-specified output path which designates where all results of MAST-ML run are written</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div><p>None</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="mastml.html_helper.simple_section">
+<code class="sig-prename descclassname">mastml.html_helper.</code><code class="sig-name descname">simple_section</code><span class="sig-paren">(</span><em class="sig-param">filepath</em>, <em class="sig-param">outdir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/html_helper.html#simple_section"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.html_helper.simple_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method used to create a section name for a particular analysis combination that will be displayed in the index.html file.</p>
+<p>Args:</p>
+<blockquote>
+<div><p>filepath: (str), path containing the relevant data to combine as output in the index.html file</p>
+<p>outdir: (str), user-specified output path which designates where all results of MAST-ML run are written</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div><p>None</p>
+</div></blockquote>
 </dd></dl>
 
 </div>
@@ -316,20 +392,11 @@ with best/worst plots, links to statistics, and more.</p>
 
     
     
-      <script type="text/javascript">
-          var DOCUMENTATION_OPTIONS = {
-              URL_ROOT:'./',
-              VERSION:'2.0',
-              LANGUAGE:'None',
-              COLLAPSE_INDEX:false,
-              FILE_SUFFIX:'.html',
-              HAS_SOURCE:  true,
-              SOURCELINK_SUFFIX: '.txt'
-          };
-      </script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
     
 
   

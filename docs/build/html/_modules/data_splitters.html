@@ -110,6 +110,7 @@
 <li class="toctree-l4"><a class="reference internal" href="../0_2_windows_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="../0_2_windows_installation.html#windows-10-install-step-by-step-guide-credit-joe-kern">Windows 10 install: step-by-step guide (credit Joe Kern)</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../0_3_startup.html">Startup</a><ul>
@@ -131,7 +132,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#feature-selection">Feature Selection</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#data-splits">Data Splits</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#models">Models</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#plot-settings">Plot Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#misc-settings">Misc Settings</a></li>
 </ul>
 </li>
 </ul>
@@ -397,7 +398,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">dist_threshold</span> <span class="o">=</span> <span class="n">dist_threshold</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nn_kwargs</span> <span class="o">=</span> <span class="n">nn_kwargs</span>
 
-    <span class="k">def</span> <span class="nf">split</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="LeaveCloseCompositionsOut.split"><a class="viewcode-back" href="../9_data_splitters.html#data_splitters.LeaveCloseCompositionsOut.split">[docs]</a>    <span class="k">def</span> <span class="nf">split</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
         <span class="c1"># Generate the composition vectors</span>
         <span class="n">frac_computer</span> <span class="o">=</span> <span class="n">ElementFraction</span><span class="p">()</span>
@@ -419,10 +420,10 @@
             <span class="c1"># Get the training set as &quot;not these points&quot;</span>
             <span class="n">train_inds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">setdiff1d</span><span class="p">(</span><span class="n">all_inds</span><span class="p">,</span> <span class="n">too_close</span><span class="p">)</span>
 
-            <span class="k">yield</span> <span class="n">train_inds</span><span class="p">,</span> <span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">yield</span> <span class="n">train_inds</span><span class="p">,</span> <span class="p">[</span><span class="n">i</span><span class="p">]</span></div>
 
-    <span class="k">def</span> <span class="nf">get_n_splits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">)</span></div>
+<div class="viewcode-block" id="LeaveCloseCompositionsOut.get_n_splits"><a class="viewcode-back" href="../9_data_splitters.html#data_splitters.LeaveCloseCompositionsOut.get_n_splits">[docs]</a>    <span class="k">def</span> <span class="nf">get_n_splits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">)</span></div></div>
 
 <div class="viewcode-block" id="LeaveOutPercent"><a class="viewcode-back" href="../9_data_splitters.html#data_splitters.LeaveOutPercent">[docs]</a><span class="k">class</span> <span class="nc">LeaveOutPercent</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -667,20 +668,12 @@
 
     
     
-      <script type="text/javascript">
-          var DOCUMENTATION_OPTIONS = {
-              URL_ROOT:'../',
-              VERSION:'2.0',
-              LANGUAGE:'None',
-              COLLAPSE_INDEX:false,
-              FILE_SUFFIX:'.html',
-              HAS_SOURCE:  true,
-              SOURCELINK_SUFFIX: '.txt'
-          };
-      </script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
 
   

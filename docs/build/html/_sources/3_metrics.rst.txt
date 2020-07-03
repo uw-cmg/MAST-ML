@@ -2,5 +2,5 @@
 Metrics
 **************************
 
-.. automodule:: metrics
+.. automodule:: mastml.metrics
    :members:

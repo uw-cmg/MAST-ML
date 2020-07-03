@@ -112,6 +112,7 @@
 <li class="toctree-l4"><a class="reference internal" href="0_2_windows_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="0_2_windows_installation.html#windows-10-install-step-by-step-guide-credit-joe-kern">Windows 10 install: step-by-step guide (credit Joe Kern)</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="0_3_startup.html">Startup</a><ul>
@@ -133,7 +134,7 @@
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#feature-selection">Feature Selection</a></li>
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#data-splits">Data Splits</a></li>
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#models">Models</a></li>
-<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#plot-settings">Plot Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#misc-settings">Misc Settings</a></li>
 </ul>
 </li>
 </ul>
@@ -251,7 +252,7 @@ and learning curves are removed from the model queue, because in general one may
 step of the analysis than what will ultimately be used for fitting. Therefore, we need to also amend our models list to
 have this new KernelRidge_select model, as shown below.</p>
 <p>Example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">FeatureSelection</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">FeatureSelection</span><span class="p">]</span>
     <span class="p">[[</span><span class="n">SequentialFeatureSelector</span><span class="p">]]</span>
         <span class="n">estimator</span> <span class="o">=</span> <span class="n">KernelRidge_select</span>
         <span class="n">k_features</span> <span class="o">=</span> <span class="mi">20</span>
@@ -274,7 +275,7 @@ the X feature matrix. In the example LearningCurve input file section shown belo
 model, a random k-fold cross-validation and the root_mean_square_error to evaluate our learning curves. We will also
 use a maximum of 20 features, and use the SelectKBest algorithm to assess the choice of features.</p>
 <p>Example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">LearningCurve</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">LearningCurve</span><span class="p">]</span>
     <span class="n">estimator</span> <span class="o">=</span> <span class="n">KernelRidge_learn</span>
     <span class="n">cv</span> <span class="o">=</span> <span class="n">RepeatedKFold_learn</span>
     <span class="n">scoring</span> <span class="o">=</span> <span class="n">root_mean_squared_error</span>
@@ -286,7 +287,7 @@ use a maximum of 20 features, and use the SelectKBest algorithm to assess the ch
 the Models and DataSplits sections of our input file, respectively. At this point in the tutorial, the complete input
 file should look like this:</p>
 <p>Example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">GeneralSetup</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">GeneralSetup</span><span class="p">]</span>
     <span class="n">input_features</span> <span class="o">=</span> <span class="n">Auto</span>
     <span class="n">input_target</span> <span class="o">=</span> <span class="n">Reduced</span> <span class="n">barrier</span> <span class="p">(</span><span class="n">eV</span><span class="p">)</span>
     <span class="n">randomizer</span> <span class="o">=</span> <span class="kc">False</span>
@@ -398,20 +399,12 @@ additional features should could be used to further lower the error.</p>
 
     
     
-      <script type="text/javascript">
-          var DOCUMENTATION_OPTIONS = {
-              URL_ROOT:'./',
-              VERSION:'2.0',
-              LANGUAGE:'None',
-              COLLAPSE_INDEX:false,
-              FILE_SUFFIX:'.html',
-              HAS_SOURCE:  true,
-              SOURCELINK_SUFFIX: '.txt'
-          };
-      </script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
 
   

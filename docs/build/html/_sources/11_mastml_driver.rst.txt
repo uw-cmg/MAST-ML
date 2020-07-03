@@ -2,6 +2,6 @@
 MAST-ML Driver
 ****************************************
 
-.. automodule:: mastml_driver
+.. automodule:: mastml.mastml_driver
    :members:
    :private-members:

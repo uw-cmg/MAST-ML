@@ -110,6 +110,7 @@
 <li class="toctree-l4"><a class="reference internal" href="../0_2_windows_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="../0_2_windows_installation.html#windows-10-install-step-by-step-guide-credit-joe-kern">Windows 10 install: step-by-step guide (credit Joe Kern)</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../0_3_startup.html">Startup</a><ul>
@@ -131,7 +132,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#feature-selection">Feature Selection</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#data-splits">Data Splits</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#models">Models</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#plot-settings">Plot Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#misc-settings">Misc Settings</a></li>
 </ul>
 </li>
 </ul>
@@ -253,6 +254,13 @@
 <span class="kn">from</span> <span class="nn">mlxtend.feature_selection</span> <span class="k">import</span> <span class="n">SequentialFeatureSelector</span>
 <span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">logging</span>
 
+<span class="c1">## XIYU&#39;s import for PearsonSelector</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">cov</span>
+<span class="kn">import</span> <span class="nn">xlsxwriter</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="k">import</span> <span class="n">pearsonr</span>
+<span class="c1">##</span>
+
 <span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;mastml&#39;</span><span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">mastml.legos</span> <span class="k">import</span> <span class="n">util_legos</span>
@@ -346,28 +354,166 @@
     <span class="n">constructor</span><span class="o">.</span><span class="n">old_transform</span> <span class="o">=</span> <span class="n">constructor</span><span class="o">.</span><span class="n">transform</span>
     <span class="n">constructor</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="n">dataframify_selector</span><span class="p">(</span><span class="n">constructor</span><span class="o">.</span><span class="n">transform</span><span class="p">)</span>
 
-<span class="c1"># TODO: Not used anymore, now uses util_legos.DoNothing</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">class PassThrough(BaseEstimator, TransformerMixin):</span>
 
+<span class="k">class</span> <span class="nc">EnsembleModelFeatureSelector</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
-<span class="sd">    def __init__(self, features):</span>
-<span class="sd">        print(features)</span>
-<span class="sd">        print(type(features))</span>
-<span class="sd">        exit()</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">estimator</span><span class="p">,</span> <span class="n">k_features</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span> <span class="o">=</span> <span class="n">estimator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">k_features</span> <span class="o">=</span> <span class="n">k_features</span>
+        <span class="c1"># Check that a correct model was passed in</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_model</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
-<span class="sd">        if not isinstance(features, list):</span>
-<span class="sd">            features = [features]</span>
-<span class="sd">        self.features = features</span>
+    <span class="k">def</span> <span class="nf">_check_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;RandomForestRegressor&#39;</span><span class="p">,</span> <span class="s1">&#39;ExtraTreesRegressor&#39;</span><span class="p">,</span> <span class="s1">&#39;GradientBoostingRegressor&#39;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Models used in EnsembleModelFeatureSelector must be one of RandomForestRegressor, ExtraTreesRegressor, GradientBoostingRegressor&#39;</span><span class="p">)</span>
+        <span class="k">return</span>
 
-<span class="sd">    def fit(self, df, y=None):</span>
-<span class="sd">        for feature in self.features:</span>
-<span class="sd">            if feature not in df.columns:</span>
-<span class="sd">                raise Exception(f&quot;Specified feature &#39;{feature}&#39; to PassThrough not present in data file.&quot;)</span>
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">feature_importances</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">feature_importances_</span>
+        <span class="n">feature_importance_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">col</span><span class="p">,</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">feature_importances</span><span class="p">):</span>
+            <span class="n">feature_importance_dict</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span>
+        <span class="n">feature_importances_sorted</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(((</span><span class="n">f</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span> <span class="k">for</span> <span class="n">col</span><span class="p">,</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">feature_importance_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">sorted_features_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">feature_importances_sorted</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span> <span class="o">=</span> <span class="n">sorted_features_list</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">k_features</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span>
 
-<span class="sd">    def transform(self, df):</span>
-<span class="sd">        return df[self.features]</span>
-<span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">df</span>
+
+<span class="k">class</span> <span class="nc">PearsonSelector</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">threshold_between_features</span><span class="p">,</span> <span class="n">threshold_with_target</span><span class="p">,</span> <span class="n">remove_highly_correlated_features</span><span class="p">,</span> <span class="n">k_features</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">threshold_between_features</span> <span class="o">=</span> <span class="n">threshold_between_features</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">threshold_with_target</span> <span class="o">=</span> <span class="n">threshold_with_target</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">remove_highly_correlated_features</span> <span class="o">=</span> <span class="n">remove_highly_correlated_features</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">k_features</span> <span class="o">=</span> <span class="n">k_features</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">savepath</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Xgroups</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">X</span>
+        <span class="n">df_features</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">n_col</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">remove_highly_correlated_features</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">array_data</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_col</span><span class="p">):</span>
+                <span class="n">col_data</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span>
+                <span class="n">col</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_col</span><span class="p">):</span>
+                    <span class="n">row_data</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span>
+                    <span class="n">corr</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">pearsonr</span><span class="p">(</span><span class="n">row_data</span><span class="p">,</span> <span class="n">col_data</span><span class="p">)</span>  <span class="c1"># Pearson Correlation</span>
+                    <span class="n">col</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">corr</span><span class="p">)</span>
+                <span class="n">array_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
+
+            <span class="n">array_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">array_data</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">df_features</span><span class="p">[:</span><span class="n">n_col</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="n">df_features</span><span class="p">[:</span><span class="n">n_col</span><span class="p">])</span>
+
+            <span class="n">array_df</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savepath</span><span class="p">,</span> <span class="s1">&#39;Full_correlation_matrix.xlsx&#39;</span><span class="p">))</span>
+
+            <span class="c1">#### Print features highly-correlated to each other into excel</span>
+            <span class="n">hcorr</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="n">highly_correlated_features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">array_df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:])):</span>  <span class="c1"># This includes all the data in the array_df</span>
+                <span class="c1"># feature1 = array_df.iloc[:, i] # This does not work because feature1 is not the col name but a list of values</span>
+                <span class="n">feature1</span> <span class="o">=</span> <span class="n">array_df</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">array_df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:])):</span>  <span class="c1"># This includes all the data in the array_df</span>
+                    <span class="c1"># feature2 = array_df.iloc[:, j] # This does not work because feature2 is not the col name but a list of values</span>
+                    <span class="n">feature2</span> <span class="o">=</span> <span class="n">array_df</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">array_df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">threshold_between_features</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="n">j</span><span class="p">:</span>  <span class="c1"># Ignore diagonal features</span>
+                            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">feature2</span><span class="p">,</span> <span class="n">feature1</span><span class="p">)</span> <span class="ow">in</span> <span class="n">hcorr</span><span class="p">:</span>  <span class="c1"># Ignore the same correlations</span>
+                                <span class="n">hcorr</span><span class="p">[(</span><span class="n">feature1</span><span class="p">,</span> <span class="n">feature2</span><span class="p">)]</span> <span class="o">=</span> <span class="n">array_df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+                                <span class="n">highly_correlated_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature2</span><span class="p">)</span>
+
+            <span class="n">hcorr_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">hcorr</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Corr&quot;</span><span class="p">])</span>
+            <span class="n">hcorr_df</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savepath</span><span class="p">,</span> <span class="s1">&#39;Highly_correlated_features.xlsx&#39;</span><span class="p">))</span>
+
+            <span class="n">highly_correlated_features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">highly_correlated_features</span><span class="p">)))</span>
+
+            <span class="c1">#### Print the removed features and the new smaller dataframe with features removed</span>
+            <span class="c1"># Deep copy the original dataframe</span>
+            <span class="n">removed_features_df</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+            <span class="n">new_df</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+            <span class="c1"># Drop the features that can be removed</span>
+            <span class="n">all_features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">new_df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+            <span class="n">removed_features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">all_features</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">feature</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">highly_correlated_features</span><span class="p">:</span>
+                    <span class="n">removed_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+                    <span class="n">new_df</span> <span class="o">=</span> <span class="n">new_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">feature</span><span class="p">)</span>
+
+            <span class="c1"># Print the highly correlated features that were removed</span>
+            <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">all_features</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">feature</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">removed_features</span><span class="p">:</span>
+                    <span class="n">removed_features_df</span> <span class="o">=</span> <span class="n">removed_features_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">feature</span><span class="p">)</span>
+            <span class="n">removed_features_df</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savepath</span><span class="p">,</span> <span class="s2">&quot;Highly_correlated_features_removed.xlsx&quot;</span><span class="p">),</span>
+                                         <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+            <span class="c1"># Define self.selected_features</span>
+            <span class="n">remaining_features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">new_df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">remaining_features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+
+        <span class="c1"># Compute Pearson correlations between each feature and target feature</span>
+        <span class="n">all_corrs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">remaining_features</span><span class="p">)):</span>
+            <span class="n">feature_name</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">feature_data</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span>
+            <span class="n">corr</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">pearsonr</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">feature_data</span><span class="p">)</span>
+            <span class="n">all_corrs</span><span class="p">[</span><span class="n">feature_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">corr</span>
+        <span class="n">all_corrs</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">all_corrs</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">all_corrs</span><span class="p">[</span><span class="n">all_corrs</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold_with_target</span><span class="p">]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span>
+                                                <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+        <span class="c1"># Sometimes the specificed threshold is too high. Make it lower until at least 1 feature is selected</span>
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">k_features</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;WARNING: Pearson selector threshold was too high to result in selecting any features, lowering threshold to get specified feature number&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">threshold_with_target</span> <span class="o">-=</span> <span class="mf">0.05</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">all_corrs</span><span class="p">[</span><span class="n">all_corrs</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold_with_target</span><span class="p">]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span>
+                <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span><span class="p">)</span> <span class="o">==</span> <span class="n">n_col</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;WARNING: Pearson selector reduce the threshold such that all features were included&#39;</span><span class="p">)</span>
+                <span class="k">break</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Pearson selector selected features with an adjusted threshold value&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">k_features</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">all_corrs</span><span class="p">[</span><span class="n">all_corrs</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold_with_target</span><span class="p">]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">keys</span><span class="p">())[:</span><span class="bp">self</span><span class="o">.</span><span class="n">k_features</span><span class="p">]</span>
+
+        <span class="c1"># Create a Pandas Excel writer using XlsxWriter as the engine.</span>
+        <span class="n">writer</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">ExcelWriter</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savepath</span><span class="p">,</span> <span class="s1">&#39;Features_highly_correlated_with_target.xlsx&#39;</span><span class="p">),</span> <span class="n">engine</span><span class="o">=</span><span class="s1">&#39;xlsxwriter&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Create the dataframe displaying the highly correlated features and the Pearson Correlations</span>
+        <span class="n">hcorr_with_target_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">all_corrs</span><span class="p">,</span>
+                                            <span class="n">index</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">all_corrs</span><span class="p">[</span><span class="n">all_corrs</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold_with_target</span><span class="p">]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span>
+                                                <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
+                                            <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Pearson Correlation (absolute value)&quot;</span><span class="p">])</span>
+        <span class="n">hcorr_with_target_df</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="n">writer</span><span class="p">,</span> <span class="n">sheet_name</span><span class="o">=</span><span class="s1">&#39;Sheet1&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">hcorr_with_target_features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">hcorr_with_target_df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+
+        <span class="c1"># Create dataframe containing the highly correlated features</span>
+        <span class="n">all_features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">all_features</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">hcorr_with_target_features</span><span class="p">:</span>
+                <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">feature</span><span class="p">)</span>
+
+        <span class="c1"># Reorder the dataframe by columns (by their correlation to the target feature)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">hcorr_with_target_features</span><span class="p">)</span>
+
+        <span class="c1"># Print the dataframe to a spreadsheet</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="n">writer</span><span class="p">,</span> <span class="n">sheet_name</span><span class="o">=</span><span class="s1">&#39;Sheet2&#39;</span><span class="p">,</span>
+                    <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># From left to right, the strength of correlation decreases.</span>
+
+        <span class="c1"># Close the Pandas Excel writer and output the Excel file.</span>
+        <span class="n">writer</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">dataframe</span>
 
 <div class="viewcode-block" id="MASTMLFeatureSelector"><a class="viewcode-back" href="../14_feature_selectors.html#feature_selectors.MASTMLFeatureSelector">[docs]</a><span class="k">class</span> <span class="nc">MASTMLFeatureSelector</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -412,21 +558,12 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">estimator</span><span class="p">,</span> <span class="n">n_features_to_select</span><span class="p">,</span> <span class="n">cv</span><span class="p">,</span> <span class="n">manually_selected_features</span><span class="o">=</span><span class="nb">str</span><span class="p">()):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">estimator</span><span class="p">,</span> <span class="n">n_features_to_select</span><span class="p">,</span> <span class="n">cv</span><span class="p">,</span> <span class="n">manually_selected_features</span><span class="o">=</span><span class="nb">list</span><span class="p">()):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span> <span class="o">=</span> <span class="n">estimator</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_features_to_select</span> <span class="o">=</span> <span class="n">n_features_to_select</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cv</span> <span class="o">=</span> <span class="n">cv</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">manually_selected_features</span> <span class="o">=</span> <span class="n">manually_selected_features</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">selected_feature_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manually_selected_features</span>
-
-        <span class="c1">##################</span>
-        <span class="c1"># Only temporary, to do feature selection with GPR</span>
-        <span class="c1">##################</span>
-        <span class="c1">#from sklearn.gaussian_process import GaussianProcessRegressor</span>
-        <span class="c1">#from sklearn.gaussian_process.kernels import RBF, ConstantKernel</span>
-        <span class="c1">#self.estimator = GaussianProcessRegressor(kernel=RBF(), n_restarts_optimizer=25, alpha=0.000001)</span>
-        <span class="c1">#self.estimator = GaussianProcessRegressor(kernel=0.474**2*RBF(), n_restarts_optimizer=5)</span>
-        <span class="c1">#self.estimator = GaussianProcessRegressor(kernel=RBF(), n_restarts_optimizer=10)</span>
 
     <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">savepath</span><span class="p">,</span> <span class="n">Xgroups</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">Xgroups</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -541,25 +678,6 @@
         <span class="n">X_selected</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">selected_feature_names</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">X_selected</span></div>
 
-    <span class="c1"># TODO: Not used anymore</span>
-    <span class="c1">#def _plot_featureselected_learningcurve(self, selected_feature_avg_rmses, selected_feature_std_rmses):</span>
-    <span class="c1">#    from matplotlib import pyplot as plt</span>
-    <span class="c1">#    plt.figure()</span>
-    <span class="c1">#    plt.title(&#39;Basic forward selection learning curve&#39;)</span>
-    <span class="c1">#    plt.grid()</span>
-    <span class="c1">#    #savedir = self.configdict[&#39;General Setup&#39;][&#39;save_path&#39;]</span>
-    <span class="c1">#    Xdata = np.linspace(start=1, stop=self.n_features_to_select, num=5).tolist()</span>
-    <span class="c1">#    ydata = selected_feature_avg_rmses</span>
-    <span class="c1">#    yspread = selected_feature_std_rmses</span>
-    <span class="c1">#    plt.plot(Xdata, ydata, &#39;-o&#39;, color=&#39;r&#39;, label=&#39;Avg RMSE 10 tests 5-fold CV&#39;)</span>
-    <span class="c1">#    plt.fill_between(Xdata, np.array(ydata) - np.array(yspread),</span>
-    <span class="c1">#                     np.array(ydata) + np.array(yspread), alpha=0.1,</span>
-    <span class="c1">#                     color=&quot;r&quot;)</span>
-    <span class="c1">#    plt.xlabel(&quot;Number of features&quot;)</span>
-    <span class="c1">#    plt.ylabel(&quot;RMSE&quot;)</span>
-    <span class="c1">#    plt.legend(loc=&quot;best&quot;)</span>
-    <span class="c1">#    plt.savefig(savedir + &quot;/&quot; + &quot;basic_forward_selection_learning_curve_featurenumber.png&quot;, dpi=250)</span>
-    <span class="c1">#    return</span>
 
 <span class="c1"># Include Principal Component Analysis</span>
 <span class="n">PCA</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="n">dataframify_new_column_names</span><span class="p">(</span><span class="n">PCA</span><span class="o">.</span><span class="n">transform</span><span class="p">,</span> <span class="s1">&#39;pca_&#39;</span><span class="p">)</span>
@@ -577,6 +695,8 @@
     <span class="s1">&#39;PCA&#39;</span><span class="p">:</span> <span class="n">PCA</span><span class="p">,</span>
     <span class="s1">&#39;SequentialFeatureSelector&#39;</span><span class="p">:</span> <span class="n">SequentialFeatureSelector</span><span class="p">,</span>
     <span class="s1">&#39;MASTMLFeatureSelector&#39;</span> <span class="p">:</span> <span class="n">MASTMLFeatureSelector</span><span class="p">,</span>
+    <span class="s1">&#39;PearsonSelector&#39;</span><span class="p">:</span> <span class="n">PearsonSelector</span><span class="p">,</span>
+    <span class="s1">&#39;EnsembleModelFeatureSelector&#39;</span><span class="p">:</span> <span class="n">EnsembleModelFeatureSelector</span>
 <span class="p">})</span>
 </pre></div>
 
@@ -611,20 +731,12 @@
 
     
     
-      <script type="text/javascript">
-          var DOCUMENTATION_OPTIONS = {
-              URL_ROOT:'../',
-              VERSION:'2.0',
-              LANGUAGE:'None',
-              COLLAPSE_INDEX:false,
-              FILE_SUFFIX:'.html',
-              HAS_SOURCE:  true,
-              SOURCELINK_SUFFIX: '.txt'
-          };
-      </script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
 
   

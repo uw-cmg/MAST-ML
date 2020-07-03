@@ -112,6 +112,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#imports-that-dont-work">Imports that don’t work</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#windows-10-install-step-by-step-guide-credit-joe-kern">Windows 10 install: step-by-step guide (credit Joe Kern)</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="0_3_startup.html">Startup</a><ul>
@@ -133,7 +134,7 @@
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#feature-selection">Feature Selection</a></li>
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#data-splits">Data Splits</a></li>
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#models">Models</a></li>
-<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#plot-settings">Plot Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#misc-settings">Misc Settings</a></li>
 </ul>
 </li>
 </ul>
@@ -248,83 +249,15 @@ download anaconda from <a class="reference external" href="https://www.continuum
 <div class="section" id="create-a-conda-environment">
 <h3>Create a conda environment<a class="headerlink" href="#create-a-conda-environment" title="Permalink to this headline">¶</a></h3>
 <p>From the Anaconda Navigator, go to Environments and create a new environment
-Select python version <strong>3.5</strong> (3.6 may work with later version of the pymatgen
-conda package)</p>
+Select python version <strong>3.6</strong></p>
 <p>Under “Channels”, along with defaults channel, “Add” the “materials” channel.
 The Channels list should now read:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">defaults</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">defaults</span>
 <span class="n">materials</span>
 </pre></div>
 </div>
 <p>(may be the “matsci” channel instead of the “materials” channel;
 this channel is used to install pymatgen)</p>
-<p>Search for and select the following packages:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">numpy</span><span class="o">==</span><span class="mf">1.15</span><span class="o">.</span><span class="mi">0</span><span class="n">rc2</span>
-<span class="n">scipy</span><span class="o">==</span><span class="mf">1.1</span><span class="o">.</span><span class="mi">0</span>
-<span class="n">matplotlib</span><span class="o">==</span><span class="mf">2.2</span><span class="o">.</span><span class="mi">2</span>
-<span class="n">nbformat</span><span class="o">==</span><span class="mf">4.4</span><span class="o">.</span><span class="mi">0</span>
-<span class="n">pandas</span><span class="o">==</span><span class="mf">0.23</span><span class="o">.</span><span class="mi">3</span>
-<span class="n">configobj</span><span class="o">==</span><span class="mf">5.0</span><span class="o">.</span><span class="mi">6</span>
-<span class="n">scikit</span><span class="o">-</span><span class="n">learn</span><span class="o">==</span><span class="mf">0.19</span><span class="o">.</span><span class="mi">1</span>
-<span class="n">pymatgen</span><span class="o">==</span><span class="mf">2018.6</span><span class="o">.</span><span class="mi">27</span>
-</pre></div>
-</div>
-<p>Click on “Apply” at the bottom to install all of the packages.</p>
-<p>To get a terminal, from the Anaconda Navigator, go to
-Environments, make sure the environment is selected, press the green arrow
-button, and select Open terminal.</p>
-<p>From the terminal, pip install the remaining dependencies:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="s2">&quot;aflow&quot;</span><span class="p">,</span>
-<span class="s2">&quot;certifi==2018.4.16&quot;</span><span class="p">,</span>
-<span class="s2">&quot;chardet==3.0.4&quot;</span><span class="p">,</span>
-<span class="s2">&quot;citrination-client==4.6.0&quot;</span><span class="p">,</span>
-<span class="s2">&quot;configobj==5.0.6&quot;</span><span class="p">,</span>
-<span class="s2">&quot;cycler==0.10.0&quot;</span><span class="p">,</span>
-<span class="s2">&quot;Cython==0.29.13&quot;</span><span class="p">,</span>
-<span class="s2">&quot;decorator==4.3.0&quot;</span><span class="p">,</span>
-<span class="s2">&quot;dominate==2.3.5&quot;</span><span class="p">,</span>
-<span class="s2">&quot;forestci==0.3&quot;</span><span class="p">,</span>
-<span class="s2">&quot;httplib2&quot;</span><span class="p">,</span>
-<span class="s2">&quot;idna==2.7&quot;</span><span class="p">,</span>
-<span class="s2">&quot;ipython-genutils==0.2.0&quot;</span><span class="p">,</span>
-<span class="s2">&quot;jsonschema==2.6.0&quot;</span><span class="p">,</span>
-<span class="s2">&quot;jupyter-core==4.4.0&quot;</span><span class="p">,</span>
-<span class="s2">&quot;keras==2.2.4&quot;</span><span class="p">,</span>
-<span class="s2">&quot;kiwisolver==1.0.1&quot;</span><span class="p">,</span>
-<span class="s2">&quot;matminer==0.5.5&quot;</span><span class="p">,</span>
-<span class="s2">&quot;matplotlib==2.2.2&quot;</span><span class="p">,</span>
-<span class="s2">&quot;mlxtend==0.12.0&quot;</span><span class="p">,</span>
-<span class="s2">&quot;monty==1.0.3&quot;</span><span class="p">,</span>
-<span class="s2">&quot;mpmath==1.0.0&quot;</span><span class="p">,</span>
-<span class="s2">&quot;nbformat==4.4.0&quot;</span><span class="p">,</span>
-<span class="s2">&quot;nose==1.3.7&quot;</span><span class="p">,</span>
-<span class="s2">&quot;numpy==1.16.2&quot;</span><span class="p">,</span>
-<span class="s2">&quot;openpyxl&quot;</span><span class="p">,</span>
-<span class="s2">&quot;palettable==3.1.1&quot;</span><span class="p">,</span>
-<span class="s2">&quot;pandas==0.24.2&quot;</span><span class="p">,</span>
-<span class="s2">&quot;PyDispatcher==2.0.5&quot;</span><span class="p">,</span>
-<span class="s2">&quot;pymatgen==2019.1.24&quot;</span><span class="p">,</span>
-<span class="s2">&quot;pyparsing==2.2.0&quot;</span><span class="p">,</span>
-<span class="s2">&quot;pypif==2.1.0&quot;</span><span class="p">,</span>
-<span class="s2">&quot;pytest==5.0.1&quot;</span><span class="p">,</span>
-<span class="s2">&quot;python-dateutil==2.7.3&quot;</span><span class="p">,</span>
-<span class="s2">&quot;pytz==2018.5&quot;</span><span class="p">,</span>
-<span class="s2">&quot;requests==2.20.0&quot;</span><span class="p">,</span>
-<span class="s2">&quot;ruamel.yaml==0.15.42&quot;</span><span class="p">,</span>
-<span class="s2">&quot;scikit-learn==0.20.3&quot;</span><span class="p">,</span>
-<span class="s2">&quot;scikit-optimize==0.5.2&quot;</span><span class="p">,</span>
-<span class="s2">&quot;scipy==1.2.1&quot;</span><span class="p">,</span>
-<span class="s2">&quot;six==1.11.0&quot;</span><span class="p">,</span>
-<span class="s2">&quot;spglib==1.10.3.65&quot;</span><span class="p">,</span>
-<span class="s2">&quot;sympy==1.2&quot;</span><span class="p">,</span>
-<span class="s2">&quot;tabulate==0.8.2&quot;</span><span class="p">,</span>
-<span class="s2">&quot;tensorflow==1.13.1&quot;</span><span class="p">,</span>
-<span class="s2">&quot;traitlets==4.3.2&quot;</span><span class="p">,</span>
-<span class="s2">&quot;urllib3&gt;=1.24.2&quot;</span><span class="p">,</span>
-<span class="s2">&quot;xgboost&quot;</span><span class="p">,</span>
-<span class="s2">&quot;xlrd&quot;</span>
-</pre></div>
-</div>
 </div>
 <div class="section" id="set-up-the-spyder-ide-and-jupyter-notebooks">
 <h3>Set up the Spyder IDE and Jupyter notebooks<a class="headerlink" href="#set-up-the-spyder-ide-and-jupyter-notebooks" title="Permalink to this headline">¶</a></h3>
@@ -341,18 +274,18 @@ button, and select Open jupyter notebook.</p>
 <div class="section" id="install-the-mast-ml-package">
 <h2>Install the MAST-ML package<a class="headerlink" href="#install-the-mast-ml-package" title="Permalink to this headline">¶</a></h2>
 <p>Pip install MAST-ML from PyPi:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">mastml</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">mastml</span>
 </pre></div>
 </div>
 <p>Alternatively, git clone the Github repository, for example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="o">--</span><span class="n">single</span><span class="o">-</span><span class="n">branch</span> <span class="n">master</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">uw</span><span class="o">-</span><span class="n">cmg</span><span class="o">/</span><span class="n">MAST</span><span class="o">-</span><span class="n">ML</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">uw</span><span class="o">-</span><span class="n">cmg</span><span class="o">/</span><span class="n">MAST</span><span class="o">-</span><span class="n">ML</span>
 </pre></div>
 </div>
 <p>Clone from “master” unless instructed specifically to use another branch.
 Ask for access if you cannot find this code.</p>
 <p>Check status.github.com for issues if you believe github may be malfunctioning</p>
 <p>Run:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
 </pre></div>
 </div>
 <div class="section" id="imports-that-dont-work">
@@ -361,6 +294,17 @@ Ask for access if you cannot find this code.</p>
 Example: conda install numpy , or pip install numpy
 Put the path to the installed MAST-ML folder in your PYTHONPATH if it isn’t already</p>
 </div>
+</div>
+<div class="section" id="windows-10-install-step-by-step-guide-credit-joe-kern">
+<h2>Windows 10 install: step-by-step guide (credit Joe Kern)<a class="headerlink" href="#windows-10-install-step-by-step-guide-credit-joe-kern" title="Permalink to this headline">¶</a></h2>
+<p>First, figure out if your computer is 32 or 64-bit. Type “system information” in your search bar. Look at system type. x86 is a 32-bit computer, x64 is a 64-bit.</p>
+<p>Second, download an environment manager. Environments are directories in your computer that store dependencies. For instance, one program you run might be dependent on version 1.0 of another program x. However, another program you have might be dependent on version 2.0 of program x. Having multiple environments allows you utilize both programs and dependencies on your computer. I will recommend you download anaconda, not because it is the best, but because it is an environment manager I know how to get working with MAST-ML. Feel free to experiment with other managers. Download the Python 3.7 version at <a class="reference external" href="https://www.anaconda.com/distribution/">https://www.anaconda.com/distribution/</a>, just follow the installation instructions. Pick the graphical installer that corresponds with your computer system (64 bit or 32 bit).</p>
+<p>Third, download Visual studio. Some of the MAST-ML dependencies require C++ distributables in order to run. Visual Studio Code is a code editor made for Windows 10. The dependencies for MAST-ML will look in the Visual Studio Code folder for these C++ distributables when they download. There may be another way to download these these C++ distributables without Visual Studio Code, but I am not sure how to do that. Go here to download <a class="reference external" href="https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2017">https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2017</a></p>
+<p>Fourth, download Visual Studio with C++ build tools and restart the computer</p>
+<p>Fifth, Open anaconda navigator. Click Environments and create at the bottom. Name it MASTML and make it Python 3.6. DO NOT MAKE IT Python 3.7 or Python version 2.6 or 2.7. Some dependencies do not work with those other version.</p>
+<p>Sixth, click the arrow next to your environment name and open a command shell. In the command line type “pip install “ and then copy paste the dependency names from the dependency file into your command prompt.</p>
+<p>Seventh, test if MAST-ML runs. There are multiple ways to do this, but I will outline one. Navigate to your MAST-ML folder in the command prompt. To do this, you need to know the command ‘cd’. Typing ‘cd’ will let you change the directory you command prompt is operating in. In order to navigate to your mast-ml folder, right click the folder and click properties. Copy the location and in the command prompt type ‘cd’ and paste the location after. Add a ‘Mast-ml’ or whatever your folder is called to the end of the pasted value so you can get to mastml</p>
+<p>Finally, copy paste python -m mastml.mastml_driver mastml/tests/conf/example_input.conf mastml/tests/csv/example_data.csv -o results/mastml_tutorial into your command prompt and run. If it all works, you’re good to go.</p>
 </div>
 </div>
 
@@ -405,20 +349,12 @@ Put the path to the installed MAST-ML folder in your PYTHONPATH if it isn’t al
 
     
     
-      <script type="text/javascript">
-          var DOCUMENTATION_OPTIONS = {
-              URL_ROOT:'./',
-              VERSION:'2.0',
-              LANGUAGE:'None',
-              COLLAPSE_INDEX:false,
-              FILE_SUFFIX:'.html',
-              HAS_SOURCE:  true,
-              SOURCELINK_SUFFIX: '.txt'
-          };
-      </script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
 
   

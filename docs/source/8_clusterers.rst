@@ -2,5 +2,5 @@
 Clusterers
 ****************************************
 
-.. automodule:: clusterers
+.. automodule:: mastml.legos.clusterers
    :members:

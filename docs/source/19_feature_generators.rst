@@ -2,5 +2,5 @@
 Feature Generators
 ****************************************
 
-.. automodule:: feature_generators
+.. automodule:: mastml.legos.feature_generators
    :members:

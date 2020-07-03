@@ -2,5 +2,5 @@
 Data splitters
 ****************************************
 
-.. automodule:: data_splitters
+.. automodule:: mastml.legos.data_splitters
    :members:

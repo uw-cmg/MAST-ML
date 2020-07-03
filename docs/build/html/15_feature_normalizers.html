@@ -112,6 +112,7 @@
 <li class="toctree-l4"><a class="reference internal" href="0_2_windows_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="0_2_windows_installation.html#windows-10-install-step-by-step-guide-credit-joe-kern">Windows 10 install: step-by-step guide (credit Joe Kern)</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="0_3_startup.html">Startup</a><ul>
@@ -133,7 +134,7 @@
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#feature-selection">Feature Selection</a></li>
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#data-splits">Data Splits</a></li>
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#models">Models</a></li>
-<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#plot-settings">Plot Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#misc-settings">Misc Settings</a></li>
 </ul>
 </li>
 </ul>
@@ -239,13 +240,13 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-feature_normalizers">
-<span id="feature-normalizers"></span><h1>Feature Normalizers<a class="headerlink" href="#module-feature_normalizers" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-mastml.legos.feature_normalizers">
+<span id="feature-normalizers"></span><h1>Feature Normalizers<a class="headerlink" href="#module-mastml.legos.feature_normalizers" title="Permalink to this headline">¶</a></h1>
 <p>This module contains a collection of classes and methods for normalizing features. Also included is connection with
 scikit-learn methods. See <a class="reference external" href="http://scikit-learn.org/stable/modules/classes.html#module-sklearn.preprocessing">http://scikit-learn.org/stable/modules/classes.html#module-sklearn.preprocessing</a> for more info.</p>
 <dl class="class">
-<dt id="feature_normalizers.MeanStdevScaler">
-<em class="property">class </em><code class="descclassname">feature_normalizers.</code><code class="descname">MeanStdevScaler</code><span class="sig-paren">(</span><em>features=None</em>, <em>mean=0</em>, <em>stdev=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/feature_normalizers.html#MeanStdevScaler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#feature_normalizers.MeanStdevScaler" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.legos.feature_normalizers.MeanStdevScaler">
+<em class="property">class </em><code class="sig-prename descclassname">mastml.legos.feature_normalizers.</code><code class="sig-name descname">MeanStdevScaler</code><span class="sig-paren">(</span><em class="sig-param">features=None</em>, <em class="sig-param">mean=0</em>, <em class="sig-param">stdev=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_normalizers.html#MeanStdevScaler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_normalizers.MeanStdevScaler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class designed to normalize input data to a specified mean and standard deviation</p>
 <p>Args:</p>
 <blockquote>
@@ -258,43 +259,51 @@ scikit-learn methods. See <a class="reference external" href="http://scikit-lear
 <blockquote>
 <div><p>Args:</p>
 <blockquote>
-<div>df: (dataframe), dataframe of values to be normalized</div></blockquote>
+<div><p>df: (dataframe), dataframe of values to be normalized</p>
+</div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>(self, the object instance)</div></blockquote>
+<div><p>(self, the object instance)</p>
+</div></blockquote>
 </div></blockquote>
 <p>transform: Normalizes the data to new mean and stdev values</p>
 <blockquote>
 <div><p>Args:</p>
 <blockquote>
-<div>df: (dataframe), dataframe of values to be normalized</div></blockquote>
+<div><p>df: (dataframe), dataframe of values to be normalized</p>
+</div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>(dataframe), dataframe containing re-normalized data and any data that wasn’t normalized</div></blockquote>
+<div><p>(dataframe), dataframe containing re-normalized data and any data that wasn’t normalized</p>
+</div></blockquote>
 </div></blockquote>
 <p>inverse_transform: Un-normalizes the data to the old mean and stdev values</p>
 <blockquote>
 <div><p>Args:</p>
 <blockquote>
-<div>df: (dataframe), dataframe of values to be un-normalized</div></blockquote>
+<div><p>df: (dataframe), dataframe of values to be un-normalized</p>
+</div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>(dataframe), dataframe containing un-normalized data and any data that wasn’t normalized</div></blockquote>
+<div><p>(dataframe), dataframe containing un-normalized data and any data that wasn’t normalized</p>
+</div></blockquote>
 </div></blockquote>
 </div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="feature_normalizers.dataframify">
-<code class="descclassname">feature_normalizers.</code><code class="descname">dataframify</code><span class="sig-paren">(</span><em>transform</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/feature_normalizers.html#dataframify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#feature_normalizers.dataframify" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.legos.feature_normalizers.dataframify">
+<code class="sig-prename descclassname">mastml.legos.feature_normalizers.</code><code class="sig-name descname">dataframify</code><span class="sig-paren">(</span><em class="sig-param">transform</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_normalizers.html#dataframify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_normalizers.dataframify" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method which is a decorator transforms output of scikit-learn feature normalizers from array to dataframe.
 Enables preservation of column names.</p>
 <p>Args:</p>
 <blockquote>
-<div>transform: (function), a scikit-learn feature selector that has a transform method</div></blockquote>
+<div><p>transform: (function), a scikit-learn feature selector that has a transform method</p>
+</div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>new_transform: (function), an amended version of the transform method that returns a dataframe</div></blockquote>
+<div><p>new_transform: (function), an amended version of the transform method that returns a dataframe</p>
+</div></blockquote>
 </dd></dl>
 
 </div>
@@ -340,20 +349,11 @@ Enables preservation of column names.</p>
 
     
     
-      <script type="text/javascript">
-          var DOCUMENTATION_OPTIONS = {
-              URL_ROOT:'./',
-              VERSION:'2.0',
-              LANGUAGE:'None',
-              COLLAPSE_INDEX:false,
-              FILE_SUFFIX:'.html',
-              HAS_SOURCE:  true,
-              SOURCELINK_SUFFIX: '.txt'
-          };
-      </script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
     
 
   

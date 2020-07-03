@@ -112,6 +112,7 @@
 <li class="toctree-l4"><a class="reference internal" href="0_2_windows_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="0_2_windows_installation.html#windows-10-install-step-by-step-guide-credit-joe-kern">Windows 10 install: step-by-step guide (credit Joe Kern)</a></li>
 </ul>
 </li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Startup</a><ul>
@@ -133,7 +134,7 @@
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#feature-selection">Feature Selection</a></li>
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#data-splits">Data Splits</a></li>
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#models">Models</a></li>
-<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#plot-settings">Plot Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#misc-settings">Misc Settings</a></li>
 </ul>
 </li>
 </ul>
@@ -243,14 +244,14 @@
 <h1>Startup<a class="headerlink" href="#startup" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="locate-the-examples-folder">
 <h2>Locate the examples folder<a class="headerlink" href="#locate-the-examples-folder" title="Permalink to this headline">¶</a></h2>
-<p>In the installed MASTML directory, navigate to the <code class="docutils literal"><span class="pre">tests</span></code> folder.</p>
-<p>Under tests/conf, The file <code class="docutils literal"><span class="pre">example_input.conf</span></code> will use the <code class="docutils literal"><span class="pre">example_data.csv</span></code> data file located in tests/csv to run an example.</p>
+<p>In the installed MASTML directory, navigate to the <code class="docutils literal notranslate"><span class="pre">tests</span></code> folder.</p>
+<p>Under tests/conf, The file <code class="docutils literal notranslate"><span class="pre">example_input.conf</span></code> will use the <code class="docutils literal notranslate"><span class="pre">example_data.csv</span></code> data file located in tests/csv to run an example.</p>
 </div>
 <div class="section" id="run-the-mastml-command">
 <h2>Run the MASTML command<a class="headerlink" href="#run-the-mastml-command" title="Permalink to this headline">¶</a></h2>
-<p>The format is <code class="docutils literal"><span class="pre">python3</span> <span class="pre">-m</span> <span class="pre">mastml.mastml_driver</span> <span class="pre">&lt;path</span> <span class="pre">to</span> <span class="pre">config</span> <span class="pre">file&gt;</span> <span class="pre">&lt;path</span> <span class="pre">to</span> <span class="pre">data</span> <span class="pre">CSV</span> <span class="pre">file&gt;</span> <span class="pre">-o</span> <span class="pre">&lt;path</span> <span class="pre">to</span> <span class="pre">results</span> <span class="pre">folder&gt;</span></code></p>
+<p>The format is <code class="docutils literal notranslate"><span class="pre">python3</span> <span class="pre">-m</span> <span class="pre">mastml.mastml_driver</span> <span class="pre">&lt;path</span> <span class="pre">to</span> <span class="pre">config</span> <span class="pre">file&gt;</span> <span class="pre">&lt;path</span> <span class="pre">to</span> <span class="pre">data</span> <span class="pre">CSV</span> <span class="pre">file&gt;</span> <span class="pre">-o</span> <span class="pre">&lt;path</span> <span class="pre">to</span> <span class="pre">results</span> <span class="pre">folder&gt;</span></code></p>
 <p>For example, to conduct the test run above, while in the MASTML install directory:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">mastml</span><span class="o">.</span><span class="n">mastml_driver</span> <span class="n">tests</span><span class="o">/</span><span class="n">conf</span><span class="o">/</span><span class="n">example_input</span><span class="o">.</span><span class="n">conf</span> <span class="n">tests</span><span class="o">/</span><span class="n">csv</span><span class="o">/</span><span class="n">example_data</span><span class="o">.</span><span class="n">csv</span> <span class="o">-</span><span class="n">o</span> <span class="n">results</span><span class="o">/</span><span class="n">example_results</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">mastml</span><span class="o">.</span><span class="n">mastml_driver</span> <span class="n">tests</span><span class="o">/</span><span class="n">conf</span><span class="o">/</span><span class="n">example_input</span><span class="o">.</span><span class="n">conf</span> <span class="n">tests</span><span class="o">/</span><span class="n">csv</span><span class="o">/</span><span class="n">example_data</span><span class="o">.</span><span class="n">csv</span> <span class="o">-</span><span class="n">o</span> <span class="n">results</span><span class="o">/</span><span class="n">example_results</span>
 </pre></div>
 </div>
 <p>This is a terminal command.
@@ -261,10 +262,10 @@ click the green arrow button, and Open terminal.</p>
 </div>
 <div class="section" id="check-output">
 <h2>Check output<a class="headerlink" href="#check-output" title="Permalink to this headline">¶</a></h2>
-<p><code class="docutils literal"><span class="pre">index.html</span></code> should be created, linking to certain representative plots for each test</p>
+<p><code class="docutils literal notranslate"><span class="pre">index.html</span></code> should be created, linking to certain representative plots for each test</p>
 <p>For this example, output will be located in subfolders in the results/example_results folder.</p>
 <p>Check the following to see if the run completed successfully:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">A</span> <span class="n">log</span><span class="o">.</span><span class="n">log</span> <span class="n">file</span> <span class="ow">is</span> <span class="n">generated</span> <span class="ow">and</span> <span class="n">the</span> <span class="n">last</span> <span class="n">line</span> <span class="n">contains</span> <span class="n">the</span> <span class="n">phrase</span> <span class="s2">&quot;Making html file of all run stats...&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">A</span> <span class="n">log</span><span class="o">.</span><span class="n">log</span> <span class="n">file</span> <span class="ow">is</span> <span class="n">generated</span> <span class="ow">and</span> <span class="n">the</span> <span class="n">last</span> <span class="n">line</span> <span class="n">contains</span> <span class="n">the</span> <span class="n">phrase</span> <span class="s2">&quot;Making html file of all run stats...&quot;</span>
 <span class="n">An</span> <span class="n">index</span><span class="o">.</span><span class="n">html</span> <span class="n">file</span> <span class="n">that</span> <span class="n">gives</span> <span class="n">some</span> <span class="n">summary</span> <span class="n">plots</span> <span class="kn">from</span> <span class="nn">all</span> <span class="n">the</span> <span class="n">tests</span> <span class="n">that</span> <span class="n">were</span> <span class="n">run</span>
 <span class="n">A</span> <span class="n">series</span> <span class="n">of</span> <span class="n">subfolders</span> <span class="k">with</span> <span class="n">names</span> <span class="s2">&quot;StandardScaler&quot;</span><span class="o">-&gt;</span><span class="s2">&quot;DoNothing&quot;</span><span class="o">-&gt;</span><span class="s2">&quot;KernelRidge&quot;</span><span class="p">,</span> <span class="k">with</span> <span class="n">the</span> <span class="n">following</span> <span class="n">three</span> <span class="n">directories</span>
 <span class="n">within</span> <span class="n">the</span> <span class="s2">&quot;KernelRidge&quot;</span> <span class="n">directory</span><span class="p">:</span> <span class="s2">&quot;LeaveOneGroupOut_host&quot;</span><span class="p">,</span> <span class="s2">&quot;NoSplit&quot;</span><span class="p">,</span> <span class="ow">and</span> <span class="s2">&quot;RepeatedKFold&quot;</span>
@@ -315,20 +316,12 @@ click the green arrow button, and Open terminal.</p>
 
     
     
-      <script type="text/javascript">
-          var DOCUMENTATION_OPTIONS = {
-              URL_ROOT:'./',
-              VERSION:'2.0',
-              LANGUAGE:'None',
-              COLLAPSE_INDEX:false,
-              FILE_SUFFIX:'.html',
-              HAS_SOURCE:  true,
-              SOURCELINK_SUFFIX: '.txt'
-          };
-      </script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
 
   

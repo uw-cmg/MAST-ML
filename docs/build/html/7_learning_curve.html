@@ -112,6 +112,7 @@
 <li class="toctree-l4"><a class="reference internal" href="0_2_windows_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="0_2_windows_installation.html#windows-10-install-step-by-step-guide-credit-joe-kern">Windows 10 install: step-by-step guide (credit Joe Kern)</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="0_3_startup.html">Startup</a><ul>
@@ -133,7 +134,7 @@
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#feature-selection">Feature Selection</a></li>
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#data-splits">Data Splits</a></li>
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#models">Models</a></li>
-<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#plot-settings">Plot Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#misc-settings">Misc Settings</a></li>
 </ul>
 </li>
 </ul>
@@ -239,57 +240,53 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-learning_curve">
-<span id="learning-curve"></span><h1>Learning curve<a class="headerlink" href="#module-learning_curve" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-mastml.learning_curve">
+<span id="learning-curve"></span><h1>Learning curve<a class="headerlink" href="#module-mastml.learning_curve" title="Permalink to this headline">¶</a></h1>
 <p>This module contains methods to construct learning curves, which evaluate some cross-validation performance metric (e.g. RMSE)
 as a function of amount of training data (i.e. a sample learning curve) or as a function of the number of features used
 in the fitting (i.e. a feature learning curve).</p>
 <dl class="function">
-<dt id="learning_curve.feature_learning_curve">
-<code class="descclassname">learning_curve.</code><code class="descname">feature_learning_curve</code><span class="sig-paren">(</span><em>X</em>, <em>y</em>, <em>estimator</em>, <em>cv</em>, <em>scoring</em>, <em>selector_name</em>, <em>savepath</em>, <em>n_features_to_select=None</em>, <em>Xgroups=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/learning_curve.html#feature_learning_curve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#learning_curve.feature_learning_curve" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.learning_curve.feature_learning_curve">
+<code class="sig-prename descclassname">mastml.learning_curve.</code><code class="sig-name descname">feature_learning_curve</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">y</em>, <em class="sig-param">estimator</em>, <em class="sig-param">cv</em>, <em class="sig-param">scoring</em>, <em class="sig-param">selector_name</em>, <em class="sig-param">savepath</em>, <em class="sig-param">n_features_to_select=None</em>, <em class="sig-param">Xgroups=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/learning_curve.html#feature_learning_curve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.learning_curve.feature_learning_curve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method that calculates data used to plot a feature learning curve, e.g. the RMSE of a cross-validation routine using a
 specified model and a given number of features</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><p class="first">X: (numpy array), array of X data values</p>
+<dl>
+<dt>Args:</dt><dd><p>X: (numpy array), array of X data values</p>
 <p>y: (numpy array), array of y data values</p>
 <p>estimator: (scikit-learn model object), a scikit-learn model used for fitting</p>
 <p>cv: (scikit-learn cross validation object), a scikit-learn cross validation object to construct train/test splits</p>
 <p>scoring: (scikit-learn metric object), a scikit-learn metric to use as a scorer</p>
 <p>selector_name: (str), name of a scikit-learn or MAST-ML feature selection routine</p>
 <p>n_features_to_select: (int), total number of features to select, i.e. stopping criterion for number of features</p>
-<p class="last">Xgroups: (list), list of row indices corresponding to each group</p>
+<p>Xgroups: (list), list of row indices corresponding to each group</p>
 </dd>
-<dt>Returns:</dt>
-<dd><p class="first">train_sizes: (numpy array), array of fractions of training data used in learning curve</p>
+<dt>Returns:</dt><dd><p>train_sizes: (numpy array), array of fractions of training data used in learning curve</p>
 <p>train_mean: (numpy array), array of means of training data scores for each number of features</p>
 <p>test_mean: (numpy array), array of means of testing data scores for each number of features</p>
 <p>train_stdev: (numpy array), array of standard deviations of training data scores for each number of features</p>
-<p class="last">test_stdev: (numpy array), array of standard deviations of testing data scores for each number of features</p>
+<p>test_stdev: (numpy array), array of standard deviations of testing data scores for each number of features</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="function">
-<dt id="learning_curve.sample_learning_curve">
-<code class="descclassname">learning_curve.</code><code class="descname">sample_learning_curve</code><span class="sig-paren">(</span><em>X</em>, <em>y</em>, <em>estimator</em>, <em>cv</em>, <em>scoring</em>, <em>Xgroups=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/learning_curve.html#sample_learning_curve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#learning_curve.sample_learning_curve" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.learning_curve.sample_learning_curve">
+<code class="sig-prename descclassname">mastml.learning_curve.</code><code class="sig-name descname">sample_learning_curve</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">y</em>, <em class="sig-param">estimator</em>, <em class="sig-param">cv</em>, <em class="sig-param">scoring</em>, <em class="sig-param">Xgroups=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/learning_curve.html#sample_learning_curve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.learning_curve.sample_learning_curve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method that calculates data used to plot a sample learning curve, e.g. the RMSE of a cross-validation routine using a
 specified model and a given fraction of the total training data</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><p class="first">X: (numpy array), array of X data values</p>
+<dl>
+<dt>Args:</dt><dd><p>X: (numpy array), array of X data values</p>
 <p>y: (numpy array), array of y data values</p>
 <p>estimator: (scikit-learn model object), a scikit-learn model used for fitting</p>
 <p>cv: (scikit-learn cross validation object), a scikit-learn cross validation object to construct train/test splits</p>
 <p>scoring: (scikit-learn metric object), a scikit-learn metric to use as a scorer</p>
-<p class="last">Xgroups: (list), list of row indices corresponding to each group</p>
+<p>Xgroups: (list), list of row indices corresponding to each group</p>
 </dd>
-<dt>Returns:</dt>
-<dd><p class="first">train_sizes: (numpy array), array of fractions of training data used in learning curve</p>
+<dt>Returns:</dt><dd><p>train_sizes: (numpy array), array of fractions of training data used in learning curve</p>
 <p>train_mean: (numpy array), array of means of training data scores for each training data fraction</p>
 <p>test_mean: (numpy array), array of means of testing data scores for each training data fraction</p>
 <p>train_stdev: (numpy array), array of standard deviations of training data scores for each training data fraction</p>
-<p class="last">test_stdev: (numpy array), array of standard deviations of testing data scores for each training data fraction</p>
+<p>test_stdev: (numpy array), array of standard deviations of testing data scores for each training data fraction</p>
 </dd>
 </dl>
 </dd></dl>
@@ -337,20 +334,11 @@ specified model and a given fraction of the total training data</p>
 
     
     
-      <script type="text/javascript">
-          var DOCUMENTATION_OPTIONS = {
-              URL_ROOT:'./',
-              VERSION:'2.0',
-              LANGUAGE:'None',
-              COLLAPSE_INDEX:false,
-              FILE_SUFFIX:'.html',
-              HAS_SOURCE:  true,
-              SOURCELINK_SUFFIX: '.txt'
-          };
-      </script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
     
 
   

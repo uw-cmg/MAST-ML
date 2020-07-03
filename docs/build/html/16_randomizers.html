@@ -112,6 +112,7 @@
 <li class="toctree-l4"><a class="reference internal" href="0_2_windows_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="0_2_windows_installation.html#windows-10-install-step-by-step-guide-credit-joe-kern">Windows 10 install: step-by-step guide (credit Joe Kern)</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="0_3_startup.html">Startup</a><ul>
@@ -133,7 +134,7 @@
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#feature-selection">Feature Selection</a></li>
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#data-splits">Data Splits</a></li>
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#models">Models</a></li>
-<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#plot-settings">Plot Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#misc-settings">Misc Settings</a></li>
 </ul>
 </li>
 </ul>
@@ -239,33 +240,37 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-randomizers">
-<span id="randomizers"></span><h1>Randomizers<a class="headerlink" href="#module-randomizers" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-mastml.legos.randomizers">
+<span id="randomizers"></span><h1>Randomizers<a class="headerlink" href="#module-mastml.legos.randomizers" title="Permalink to this headline">¶</a></h1>
 <p>This module contains a class used to randomize the input y data, in order to create a “null model” for testing how
 rigorous other machine learning model predictions are.</p>
 <dl class="class">
-<dt id="randomizers.Randomizer">
-<em class="property">class </em><code class="descclassname">randomizers.</code><code class="descname">Randomizer</code><a class="reference internal" href="_modules/randomizers.html#Randomizer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#randomizers.Randomizer" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.legos.randomizers.Randomizer">
+<em class="property">class </em><code class="sig-prename descclassname">mastml.legos.randomizers.</code><code class="sig-name descname">Randomizer</code><a class="reference internal" href="_modules/mastml/legos/randomizers.html#Randomizer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.randomizers.Randomizer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class which randomizes X-y pairings by shuffling the y values</p>
 <p>Args:</p>
 <blockquote>
-<div>None</div></blockquote>
+<div><p>None</p>
+</div></blockquote>
 <p>Methods:</p>
 <blockquote>
 <div><p>fit: just passes through; present to maintain scikit-learn structure</p>
 <blockquote>
 <div><p>Args:</p>
 <blockquote>
-<div>None</div></blockquote>
+<div><p>None</p>
+</div></blockquote>
 </div></blockquote>
 <p>transform: randomizes the values of a dataframe</p>
 <blockquote>
 <div><p>Args:</p>
 <blockquote>
-<div>df: (dataframe), a dataframe with data to be randomized</div></blockquote>
+<div><p>df: (dataframe), a dataframe with data to be randomized</p>
+</div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>(dataframe), a dataframe with randomized data</div></blockquote>
+<div><p>(dataframe), a dataframe with randomized data</p>
+</div></blockquote>
 </div></blockquote>
 </div></blockquote>
 </dd></dl>
@@ -313,20 +318,11 @@ rigorous other machine learning model predictions are.</p>
 
     
     
-      <script type="text/javascript">
-          var DOCUMENTATION_OPTIONS = {
-              URL_ROOT:'./',
-              VERSION:'2.0',
-              LANGUAGE:'None',
-              COLLAPSE_INDEX:false,
-              FILE_SUFFIX:'.html',
-              HAS_SOURCE:  true,
-              SOURCELINK_SUFFIX: '.txt'
-          };
-      </script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
     
 
   

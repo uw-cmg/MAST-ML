@@ -112,6 +112,7 @@
 <li class="toctree-l4"><a class="reference internal" href="0_2_windows_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="0_2_windows_installation.html#windows-10-install-step-by-step-guide-credit-joe-kern">Windows 10 install: step-by-step guide (credit Joe Kern)</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="0_3_startup.html">Startup</a><ul>
@@ -133,7 +134,7 @@
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#feature-selection">Feature Selection</a></li>
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#data-splits">Data Splits</a></li>
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#models">Models</a></li>
-<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#plot-settings">Plot Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#misc-settings">Misc Settings</a></li>
 </ul>
 </li>
 </ul>
@@ -239,17 +240,18 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-model_finder">
-<span id="model-finder"></span><h1>Model Finder<a class="headerlink" href="#module-model_finder" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-mastml.legos.model_finder">
+<span id="model-finder"></span><h1>Model Finder<a class="headerlink" href="#module-mastml.legos.model_finder" title="Permalink to this headline">¶</a></h1>
 <p>This module provides a name_to_constructor dict for all models/estimators in scikit-learn, plus a couple test models and
 error handling functions</p>
 <dl class="class">
-<dt id="model_finder.AlwaysFive">
-<em class="property">class </em><code class="descclassname">model_finder.</code><code class="descname">AlwaysFive</code><span class="sig-paren">(</span><em>constant=5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model_finder.html#AlwaysFive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model_finder.AlwaysFive" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.legos.model_finder.AlwaysFive">
+<em class="property">class </em><code class="sig-prename descclassname">mastml.legos.model_finder.</code><code class="sig-name descname">AlwaysFive</code><span class="sig-paren">(</span><em class="sig-param">constant=5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/model_finder.html#AlwaysFive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.model_finder.AlwaysFive" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class used as a test model that always predicts a value of 5.</p>
 <p>Args:</p>
 <blockquote>
-<div>constant: (int), the value to predict. Always 5 by default</div></blockquote>
+<div><p>constant: (int), the value to predict. Always 5 by default</p>
+</div></blockquote>
 <p>Methods:</p>
 <blockquote>
 <div><p>fit: Just passes through to maintain scikit-learn structure</p>
@@ -257,21 +259,24 @@ error handling functions</p>
 <blockquote>
 <div><p>Args:</p>
 <blockquote>
-<div>X: (numpy array), array of X features</div></blockquote>
+<div><p>X: (numpy array), array of X features</p>
+</div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>(numpy array), prediction array where all values are equal to constant</div></blockquote>
+<div><p>(numpy array), prediction array where all values are equal to constant</p>
+</div></blockquote>
 </div></blockquote>
 </div></blockquote>
 </dd></dl>
 
 <dl class="class">
-<dt id="model_finder.ModelImport">
-<em class="property">class </em><code class="descclassname">model_finder.</code><code class="descname">ModelImport</code><span class="sig-paren">(</span><em>model_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model_finder.html#ModelImport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model_finder.ModelImport" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.legos.model_finder.ModelImport">
+<em class="property">class </em><code class="sig-prename descclassname">mastml.legos.model_finder.</code><code class="sig-name descname">ModelImport</code><span class="sig-paren">(</span><em class="sig-param">model_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/model_finder.html#ModelImport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.model_finder.ModelImport" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class used to import pickled models from previous machine learning fits</p>
 <p>Args:</p>
 <blockquote>
-<div>model_path (str): string designating the path to load the saved .pkl model file</div></blockquote>
+<div><p>model_path (str): string designating the path to load the saved .pkl model file</p>
+</div></blockquote>
 <p>Methods:</p>
 <blockquote>
 <div><p>fit: Does nothing, present for compatibility purposes</p>
@@ -287,69 +292,79 @@ error handling functions</p>
 <blockquote>
 <div><p>Args:</p>
 <blockquote>
-<div>X: (numpy array), array of X features</div></blockquote>
+<div><p>X: (numpy array), array of X features</p>
+</div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>(numpy array), prediction array using imported model</div></blockquote>
+<div><p>(numpy array), prediction array using imported model</p>
+</div></blockquote>
 </div></blockquote>
 </div></blockquote>
 <dl class="method">
-<dt id="model_finder.ModelImport.fit">
-<code class="descname">fit</code><span class="sig-paren">(</span><em>X=None</em>, <em>y=None</em>, <em>groups=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model_finder.html#ModelImport.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model_finder.ModelImport.fit" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.legos.model_finder.ModelImport.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param">X=None</em>, <em class="sig-param">y=None</em>, <em class="sig-param">groups=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/model_finder.html#ModelImport.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.model_finder.ModelImport.fit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Only here for compatibility</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="class">
-<dt id="model_finder.RandomGuesser">
-<em class="property">class </em><code class="descclassname">model_finder.</code><code class="descname">RandomGuesser</code><a class="reference internal" href="_modules/model_finder.html#RandomGuesser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model_finder.RandomGuesser" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.legos.model_finder.RandomGuesser">
+<em class="property">class </em><code class="sig-prename descclassname">mastml.legos.model_finder.</code><code class="sig-name descname">RandomGuesser</code><a class="reference internal" href="_modules/mastml/legos/model_finder.html#RandomGuesser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.model_finder.RandomGuesser" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class used as a test model that always predicts random values for y data.</p>
 <p>Args:</p>
 <blockquote>
-<div>None</div></blockquote>
+<div><p>None</p>
+</div></blockquote>
 <p>Methods:</p>
 <blockquote>
 <div><p>fit: Constructs possible predicted values based on y data</p>
 <blockquote>
 <div><p>Args:</p>
 <blockquote>
-<div>y: (numpy array), array of y data</div></blockquote>
+<div><p>y: (numpy array), array of y data</p>
+</div></blockquote>
 </div></blockquote>
 <p>predict: Provides predicted model values based on X features</p>
 <blockquote>
 <div><p>Args:</p>
 <blockquote>
-<div>X: (numpy array), array of X features</div></blockquote>
+<div><p>X: (numpy array), array of X features</p>
+</div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>(numpy array), prediction array where all values are random selections of y data</div></blockquote>
+<div><p>(numpy array), prediction array where all values are random selections of y data</p>
+</div></blockquote>
 </div></blockquote>
 </div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="model_finder.check_models_mixed">
-<code class="descclassname">model_finder.</code><code class="descname">check_models_mixed</code><span class="sig-paren">(</span><em>model_names</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model_finder.html#check_models_mixed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model_finder.check_models_mixed" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.legos.model_finder.check_models_mixed">
+<code class="sig-prename descclassname">mastml.legos.model_finder.</code><code class="sig-name descname">check_models_mixed</code><span class="sig-paren">(</span><em class="sig-param">model_names</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/model_finder.html#check_models_mixed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.model_finder.check_models_mixed" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method used to check whether the user has mixed regression and classification tasks</p>
 <p>Args:</p>
 <blockquote>
-<div>model_names: (list), list containing names of models/estimators</div></blockquote>
+<div><p>model_names: (list), list containing names of models/estimators</p>
+</div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>(bool), whether or not a classifier was found, or raises exception if both regression and classification models present.</div></blockquote>
+<div><p>(bool), whether or not a classifier was found, or raises exception if both regression and classification models present.</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="model_finder.find_model">
-<code class="descclassname">model_finder.</code><code class="descname">find_model</code><span class="sig-paren">(</span><em>model_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model_finder.html#find_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model_finder.find_model" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.legos.model_finder.find_model">
+<code class="sig-prename descclassname">mastml.legos.model_finder.</code><code class="sig-name descname">find_model</code><span class="sig-paren">(</span><em class="sig-param">model_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/model_finder.html#find_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.model_finder.find_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method used to check model names conform to scikit-learn model/estimator names</p>
 <p>Args:</p>
 <blockquote>
-<div>model_name: (str), the name of a model/estimator</div></blockquote>
+<div><p>model_name: (str), the name of a model/estimator</p>
+</div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>(str), the scikit-learn model name or raises InvalidModel error</div></blockquote>
+<div><p>(str), the scikit-learn model name or raises InvalidModel error</p>
+</div></blockquote>
 </dd></dl>
 
 </div>
@@ -395,20 +410,11 @@ error handling functions</p>
 
     
     
-      <script type="text/javascript">
-          var DOCUMENTATION_OPTIONS = {
-              URL_ROOT:'./',
-              VERSION:'2.0',
-              LANGUAGE:'None',
-              COLLAPSE_INDEX:false,
-              FILE_SUFFIX:'.html',
-              HAS_SOURCE:  true,
-              SOURCELINK_SUFFIX: '.txt'
-          };
-      </script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
     
 
   

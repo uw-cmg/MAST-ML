@@ -2,5 +2,5 @@
 Model Finder
 ****************************************
 
-.. automodule:: model_finder
+.. automodule:: mastml.legos.model_finder
    :members:

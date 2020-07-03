@@ -44,7 +44,7 @@ Pip install MAST-ML from PyPi::
 
 Alternatively, git clone the Github repository, for example::
 
-    git clone --single-branch master https://github.com/uw-cmg/MAST-ML
+    git clone https://github.com/uw-cmg/MAST-ML
 
 Clone from “master” unless instructed specifically to use another branch.
 Ask for access if you cannot find this code.

@@ -112,6 +112,7 @@
 <li class="toctree-l4"><a class="reference internal" href="0_2_windows_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="0_2_windows_installation.html#windows-10-install-step-by-step-guide-credit-joe-kern">Windows 10 install: step-by-step guide (credit Joe Kern)</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="0_3_startup.html">Startup</a><ul>
@@ -133,7 +134,7 @@
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#feature-selection">Feature Selection</a></li>
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#data-splits">Data Splits</a></li>
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#models">Models</a></li>
-<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#plot-settings">Plot Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#misc-settings">Misc Settings</a></li>
 </ul>
 </li>
 </ul>
@@ -239,42 +240,42 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-conf_parser">
-<span id="configuration-file-parser"></span><h1>Configuration file parser<a class="headerlink" href="#module-conf_parser" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-mastml.conf_parser">
+<span id="configuration-file-parser"></span><h1>Configuration file parser<a class="headerlink" href="#module-mastml.conf_parser" title="Permalink to this headline">¶</a></h1>
 <p>The conf_parser module is used for handling, parsing, and checking MAST-ML input configuration files</p>
 <dl class="function">
-<dt id="conf_parser.fix_types">
-<code class="descclassname">conf_parser.</code><code class="descname">fix_types</code><span class="sig-paren">(</span><em>maybe_list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/conf_parser.html#fix_types"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#conf_parser.fix_types" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.conf_parser.fix_types">
+<code class="sig-prename descclassname">mastml.conf_parser.</code><code class="sig-name descname">fix_types</code><span class="sig-paren">(</span><em class="sig-param">maybe_list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/conf_parser.html#fix_types"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.conf_parser.fix_types" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method that returns true datatype of values passed as string or list of strings, parsed from configuration file</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>maybe_list: (list, str), a list of strings or just a string whose datatype should be e.g. int or list of float</dd>
-<dt>Returns:</dt>
-<dd>maybe_list: (list, bool, int, float): a list of items or other data type converted from string to correct data type</dd>
+<dl class="simple">
+<dt>Args:</dt><dd><p>maybe_list: (list, str), a list of strings or just a string whose datatype should be e.g. int or list of float</p>
+</dd>
+<dt>Returns:</dt><dd><p>maybe_list: (list, bool, int, float): a list of items or other data type converted from string to correct data type</p>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="function">
-<dt id="conf_parser.mybool">
-<code class="descclassname">conf_parser.</code><code class="descname">mybool</code><span class="sig-paren">(</span><em>string</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/conf_parser.html#mybool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#conf_parser.mybool" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.conf_parser.mybool">
+<code class="sig-prename descclassname">mastml.conf_parser.</code><code class="sig-name descname">mybool</code><span class="sig-paren">(</span><em class="sig-param">string</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/conf_parser.html#mybool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.conf_parser.mybool" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method that converts a string equal to ‘True’ or ‘False’ into type bool</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>string: (str), a string as ‘True’ or ‘False’</dd>
-<dt>Returns:</dt>
-<dd>bool: (bool): bool as True or False</dd>
+<dl class="simple">
+<dt>Args:</dt><dd><p>string: (str), a string as ‘True’ or ‘False’</p>
+</dd>
+<dt>Returns:</dt><dd><p>bool: (bool): bool as True or False</p>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="function">
-<dt id="conf_parser.parse_conf_file">
-<code class="descclassname">conf_parser.</code><code class="descname">parse_conf_file</code><span class="sig-paren">(</span><em>filepath</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/conf_parser.html#parse_conf_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#conf_parser.parse_conf_file" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.conf_parser.parse_conf_file">
+<code class="sig-prename descclassname">mastml.conf_parser.</code><code class="sig-name descname">parse_conf_file</code><span class="sig-paren">(</span><em class="sig-param">filepath</em>, <em class="sig-param">from_dict=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/conf_parser.html#parse_conf_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.conf_parser.parse_conf_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method that accepts the filepath of an input configuration file and returns its parsed dictionary</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>filepath: (str), path to config file</dd>
-<dt>Returns:</dt>
-<dd>conf: (dict): dictionary parsed from config file</dd>
+<dl class="simple">
+<dt>Args:</dt><dd><p>filepath: (str), path to config file, or a dict of config values directly</p>
+</dd>
+<dt>Returns:</dt><dd><p>conf: (dict): dictionary parsed from config file</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -321,20 +322,12 @@
 
     
     
-      <script type="text/javascript">
-          var DOCUMENTATION_OPTIONS = {
-              URL_ROOT:'./',
-              VERSION:'2.0',
-              LANGUAGE:'None',
-              COLLAPSE_INDEX:false,
-              FILE_SUFFIX:'.html',
-              HAS_SOURCE:  true,
-              SOURCELINK_SUFFIX: '.txt'
-          };
-      </script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
 
   

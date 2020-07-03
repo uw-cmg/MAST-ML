@@ -2,5 +2,5 @@
 HTML Helper
 ****************************************
 
-.. automodule:: html_helper
+.. automodule:: mastml.html_helper
    :members:
