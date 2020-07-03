@@ -5,7 +5,7 @@ The data_cleaner module is used to clean missing or NaN values from pandas dataf
 import pandas as pd
 import numpy as np
 import logging
-from sklearn.preprocessing import Imputer
+from sklearn.impute import SimpleImputer as Imputer
 
 import os
 from scipy.linalg import orth
@@ -88,7 +88,7 @@ def imputation(df, strategy, cols_to_leave_out=None):
         df = df_imputed
     else:
         df = pd.concat([df_hold_out, df_imputed], axis=1)
-    df.columns = col_names
+        col_names = df.columns.tolist()
     return df
 
 def ppca(df, cols_to_leave_out=None):

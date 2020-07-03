@@ -112,6 +112,7 @@
 <li class="toctree-l4"><a class="reference internal" href="0_2_windows_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="0_2_windows_installation.html#windows-10-install-step-by-step-guide-credit-joe-kern">Windows 10 install: step-by-step guide (credit Joe Kern)</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="0_3_startup.html">Startup</a><ul>
@@ -133,7 +134,7 @@
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#feature-selection">Feature Selection</a></li>
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#data-splits">Data Splits</a></li>
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#models">Models</a></li>
-<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#plot-settings">Plot Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#misc-settings">Misc Settings</a></li>
 </ul>
 </li>
 </ul>
@@ -239,16 +240,16 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-plot_helper">
-<span id="plot-helper"></span><h1>Plot Helper<a class="headerlink" href="#module-plot_helper" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-mastml.plot_helper">
+<span id="plot-helper"></span><h1>Plot Helper<a class="headerlink" href="#module-mastml.plot_helper" title="Permalink to this headline">¶</a></h1>
 <p>This module contains a collection of functions which make plots (saved as png files) using matplotlib, generated from
 some model fits and cross-validation evaluation within a MAST-ML run.</p>
 <p>This module also contains a method to create python notebooks containing plotted data and the relevant source code from
 this module, to enable the user to make their own modifications to the created plots in a straightforward way (useful for
 tweaking plots for a presentation or publication).</p>
 <dl class="function">
-<dt id="plot_helper._clean_tick_labels">
-<code class="descclassname">plot_helper.</code><code class="descname">_clean_tick_labels</code><span class="sig-paren">(</span><em>tickvals</em>, <em>delta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#_clean_tick_labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper._clean_tick_labels" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper._clean_tick_labels">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">_clean_tick_labels</code><span class="sig-paren">(</span><em class="sig-param">tickvals</em>, <em class="sig-param">delta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#_clean_tick_labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper._clean_tick_labels" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to attempt to clean up axis tick values so they don’t overlap from being too dense</p>
 <p>Args:</p>
 <blockquote>
@@ -257,48 +258,55 @@ tweaking plots for a presentation or publication).</p>
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>tickvals_clean: (list), a list containing the updated axis tick values</div></blockquote>
+<div><p>tickvals_clean: (list), a list containing the updated axis tick values</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper._int_if_int">
-<code class="descclassname">plot_helper.</code><code class="descname">_int_if_int</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#_int_if_int"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper._int_if_int" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper._int_if_int">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">_int_if_int</code><span class="sig-paren">(</span><em class="sig-param">x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#_int_if_int"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper._int_if_int" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to return integer mapped value of x</p>
 <p>Args:</p>
 <blockquote>
-<div>x: (float or int), a number</div></blockquote>
+<div><p>x: (float or int), a number</p>
+</div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>x: (float), value of x mapped as integer</div></blockquote>
+<div><p>x: (float), value of x mapped as integer</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper._n_sigfigs">
-<code class="descclassname">plot_helper.</code><code class="descname">_n_sigfigs</code><span class="sig-paren">(</span><em>x</em>, <em>n</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#_n_sigfigs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper._n_sigfigs" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper._n_sigfigs">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">_n_sigfigs</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">n</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#_n_sigfigs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper._n_sigfigs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to return number of sig figs to use for axis ticks</p>
 <p>Args:</p>
 <blockquote>
-<div>x: (float), an axis tick number</div></blockquote>
+<div><p>x: (float), an axis tick number</p>
+</div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>(float), number of sig figs</div></blockquote>
+<div><p>(float), number of sig figs</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper._nearest_pow_ten">
-<code class="descclassname">plot_helper.</code><code class="descname">_nearest_pow_ten</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#_nearest_pow_ten"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper._nearest_pow_ten" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper._nearest_pow_ten">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">_nearest_pow_ten</code><span class="sig-paren">(</span><em class="sig-param">x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#_nearest_pow_ten"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper._nearest_pow_ten" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to return the nearest power of ten for an axis tick value</p>
 <p>Args:</p>
 <blockquote>
-<div>x: (float), an axis tick number</div></blockquote>
+<div><p>x: (float), an axis tick number</p>
+</div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>(float), nearest power of ten of x</div></blockquote>
+<div><p>(float), nearest power of ten of x</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper._nice_range_helper">
-<code class="descclassname">plot_helper.</code><code class="descname">_nice_range_helper</code><span class="sig-paren">(</span><em>lower</em>, <em>upper</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#_nice_range_helper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper._nice_range_helper" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper._nice_range_helper">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">_nice_range_helper</code><span class="sig-paren">(</span><em class="sig-param">lower</em>, <em class="sig-param">upper</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#_nice_range_helper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper._nice_range_helper" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to help make a better range of axis ticks</p>
 <p>Args:</p>
 <blockquote>
@@ -307,12 +315,13 @@ tweaking plots for a presentation or publication).</p>
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>upper: (float), modified upper tick value fixed based on set of axis ticks</div></blockquote>
+<div><p>upper: (float), modified upper tick value fixed based on set of axis ticks</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper._round_up">
-<code class="descclassname">plot_helper.</code><code class="descname">_round_up</code><span class="sig-paren">(</span><em>x</em>, <em>inc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#_round_up"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper._round_up" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper._round_up">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">_round_up</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">inc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#_round_up"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper._round_up" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to round up the value of x</p>
 <p>Args:</p>
 <blockquote>
@@ -321,12 +330,13 @@ tweaking plots for a presentation or publication).</p>
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>(float), value of x rounded up</div></blockquote>
+<div><p>(float), value of x rounded up</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper._set_tick_labels">
-<code class="descclassname">plot_helper.</code><code class="descname">_set_tick_labels</code><span class="sig-paren">(</span><em>ax</em>, <em>maxx</em>, <em>minn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#_set_tick_labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper._set_tick_labels" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper._set_tick_labels">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">_set_tick_labels</code><span class="sig-paren">(</span><em class="sig-param">ax</em>, <em class="sig-param">maxx</em>, <em class="sig-param">minn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#_set_tick_labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper._set_tick_labels" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method that sets the x and y ticks to be in the same range</p>
 <p>Args:</p>
 <blockquote>
@@ -336,12 +346,13 @@ tweaking plots for a presentation or publication).</p>
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>None</div></blockquote>
+<div><p>None</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper._set_tick_labels_different">
-<code class="descclassname">plot_helper.</code><code class="descname">_set_tick_labels_different</code><span class="sig-paren">(</span><em>ax</em>, <em>max_tick_x</em>, <em>min_tick_x</em>, <em>max_tick_y</em>, <em>min_tick_y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#_set_tick_labels_different"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper._set_tick_labels_different" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper._set_tick_labels_different">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">_set_tick_labels_different</code><span class="sig-paren">(</span><em class="sig-param">ax</em>, <em class="sig-param">max_tick_x</em>, <em class="sig-param">min_tick_x</em>, <em class="sig-param">max_tick_y</em>, <em class="sig-param">min_tick_y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#_set_tick_labels_different"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper._set_tick_labels_different" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method that sets the x and y ticks, when the axes have different ranges</p>
 <p>Args:</p>
 <blockquote>
@@ -353,24 +364,44 @@ tweaking plots for a presentation or publication).</p>
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>None</div></blockquote>
+<div><p>None</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper._three_sigfigs">
-<code class="descclassname">plot_helper.</code><code class="descname">_three_sigfigs</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#_three_sigfigs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper._three_sigfigs" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper._three_sigfigs">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">_three_sigfigs</code><span class="sig-paren">(</span><em class="sig-param">x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#_three_sigfigs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper._three_sigfigs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method invoking special case of _n_sigfigs to return 3 sig figs</p>
 <p>Args:</p>
 <blockquote>
-<div>x: (float), an axis tick number</div></blockquote>
+<div><p>x: (float), an axis tick number</p>
+</div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>(float), number of sig figs (always 3)</div></blockquote>
+<div><p>(float), number of sig figs (always 3)</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.get_divisor">
-<code class="descclassname">plot_helper.</code><code class="descname">get_divisor</code><span class="sig-paren">(</span><em>high</em>, <em>low</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#get_divisor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.get_divisor" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.calc_inbag_modified">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">calc_inbag_modified</code><span class="sig-paren">(</span><em class="sig-param">n_samples</em>, <em class="sig-param">forest</em>, <em class="sig-param">is_ensemble</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#calc_inbag_modified"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.calc_inbag_modified" title="Permalink to this definition">¶</a></dt>
+<dd><p>Derive samples used to create trees in scikit-learn RandomForest objects.</p>
+<p>Recovers the samples in each tree from the random state of that tree using
+<code class="xref py py-func docutils literal notranslate"><span class="pre">forest._generate_sample_indices()</span></code>.</p>
+<dl class="simple">
+<dt>n_samples<span class="classifier">int</span></dt><dd><p>The number of samples used to fit the scikit-learn RandomForest object.</p>
+</dd>
+<dt>forest<span class="classifier">RandomForest</span></dt><dd><p>Regressor or Classifier object that is already fit by scikit-learn.</p>
+</dd>
+</dl>
+<p>Array that records how many times a data point was placed in a tree.
+Columns are individual trees. Rows are the number of times a sample was
+used in a tree.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mastml.plot_helper.get_divisor">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">get_divisor</code><span class="sig-paren">(</span><em class="sig-param">high</em>, <em class="sig-param">low</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#get_divisor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.get_divisor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to obtain a sensible divisor based on range of two values</p>
 <p>Args:</p>
 <blockquote>
@@ -379,24 +410,27 @@ tweaking plots for a presentation or publication).</p>
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>divisor: (float), a number used to make sensible axis ticks</div></blockquote>
+<div><p>divisor: (float), a number used to make sensible axis ticks</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.get_histogram_bins">
-<code class="descclassname">plot_helper.</code><code class="descname">get_histogram_bins</code><span class="sig-paren">(</span><em>y_df</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#get_histogram_bins"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.get_histogram_bins" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.get_histogram_bins">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">get_histogram_bins</code><span class="sig-paren">(</span><em class="sig-param">y_df</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#get_histogram_bins"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.get_histogram_bins" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to obtain the number of bins to use when plotting a histogram</p>
 <p>Args:</p>
 <blockquote>
-<div>y_df: (pandas Series or numpy array), array of y data used to construct histogram</div></blockquote>
+<div><p>y_df: (pandas Series or numpy array), array of y data used to construct histogram</p>
+</div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>num_bins: (int), the number of bins to use when plotting a histogram</div></blockquote>
+<div><p>num_bins: (int), the number of bins to use when plotting a histogram</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.ipynb_maker">
-<code class="descclassname">plot_helper.</code><code class="descname">ipynb_maker</code><span class="sig-paren">(</span><em>plot_func</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#ipynb_maker"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.ipynb_maker" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.ipynb_maker">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">ipynb_maker</code><span class="sig-paren">(</span><em class="sig-param">plot_func</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#ipynb_maker"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.ipynb_maker" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method creates Jupyter Notebooks so user can modify and regenerate the plots produced by MAST-ML.</p>
 <p>Args:</p>
 <blockquote>
@@ -405,12 +439,13 @@ tweaking plots for a presentation or publication).</p>
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>(plot_helper method), the same plot_func as used as input, but after having written the Jupyter notebook with source code to create plot</div></blockquote>
+<div><p>(plot_helper method), the same plot_func as used as input, but after having written the Jupyter notebook with source code to create plot</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.make_axis_same">
-<code class="descclassname">plot_helper.</code><code class="descname">make_axis_same</code><span class="sig-paren">(</span><em>ax</em>, <em>max1</em>, <em>min1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#make_axis_same"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.make_axis_same" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.make_axis_same">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">make_axis_same</code><span class="sig-paren">(</span><em class="sig-param">ax</em>, <em class="sig-param">max1</em>, <em class="sig-param">min1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#make_axis_same"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.make_axis_same" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to make the x and y ticks for each axis the same. Useful for parity plots</p>
 <p>Args:</p>
 <blockquote>
@@ -420,12 +455,13 @@ tweaking plots for a presentation or publication).</p>
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>None</div></blockquote>
+<div><p>None</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.make_fig_ax">
-<code class="descclassname">plot_helper.</code><code class="descname">make_fig_ax</code><span class="sig-paren">(</span><em>aspect_ratio=0.5</em>, <em>x_align=0.65</em>, <em>left=0.1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#make_fig_ax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.make_fig_ax" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.make_fig_ax">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">make_fig_ax</code><span class="sig-paren">(</span><em class="sig-param">aspect_ratio=0.5</em>, <em class="sig-param">x_align=0.65</em>, <em class="sig-param">left=0.1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#make_fig_ax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.make_fig_ax" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to make matplotlib figure and axes objects. Using Object Oriented interface from <a class="reference external" href="https://matplotlib.org/gallery/api/agg_oo_sgskip.html">https://matplotlib.org/gallery/api/agg_oo_sgskip.html</a></p>
 <p>Args:</p>
 <blockquote>
@@ -441,8 +477,8 @@ tweaking plots for a presentation or publication).</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.make_fig_ax_square">
-<code class="descclassname">plot_helper.</code><code class="descname">make_fig_ax_square</code><span class="sig-paren">(</span><em>aspect='equal'</em>, <em>aspect_ratio=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#make_fig_ax_square"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.make_fig_ax_square" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.make_fig_ax_square">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">make_fig_ax_square</code><span class="sig-paren">(</span><em class="sig-param">aspect='equal'</em>, <em class="sig-param">aspect_ratio=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#make_fig_ax_square"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.make_fig_ax_square" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to make square shaped matplotlib figure and axes objects. Using Object Oriented interface from</p>
 <p><a class="reference external" href="https://matplotlib.org/gallery/api/agg_oo_sgskip.html">https://matplotlib.org/gallery/api/agg_oo_sgskip.html</a></p>
 <p>Args:</p>
@@ -458,8 +494,8 @@ tweaking plots for a presentation or publication).</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.make_train_test_plots">
-<code class="descclassname">plot_helper.</code><code class="descname">make_train_test_plots</code><span class="sig-paren">(</span><em>run</em>, <em>path</em>, <em>is_classification</em>, <em>label</em>, <em>model</em>, <em>train_X</em>, <em>test_X</em>, <em>groups=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#make_train_test_plots"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.make_train_test_plots" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.make_train_test_plots">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">make_train_test_plots</code><span class="sig-paren">(</span><em class="sig-param">run</em>, <em class="sig-param">path</em>, <em class="sig-param">is_classification</em>, <em class="sig-param">label</em>, <em class="sig-param">model</em>, <em class="sig-param">train_X</em>, <em class="sig-param">test_X</em>, <em class="sig-param">groups=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#make_train_test_plots"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.make_train_test_plots" title="Permalink to this definition">¶</a></dt>
 <dd><p>General plotting method used to execute sequence of specific plots of train-test data analysis</p>
 <p>Args:</p>
 <blockquote>
@@ -474,24 +510,27 @@ tweaking plots for a presentation or publication).</p>
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>None</div></blockquote>
+<div><p>None</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.nice_mean">
-<code class="descclassname">plot_helper.</code><code class="descname">nice_mean</code><span class="sig-paren">(</span><em>ls</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#nice_mean"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.nice_mean" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.nice_mean">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">nice_mean</code><span class="sig-paren">(</span><em class="sig-param">ls</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#nice_mean"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.nice_mean" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to return mean of a list or equivalent array with NaN values</p>
 <p>Args:</p>
 <blockquote>
-<div>ls: (list), list of values</div></blockquote>
+<div><p>ls: (list), list of values</p>
+</div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>(numpy array), array containing mean of list of values or NaN if list has no values</div></blockquote>
+<div><p>(numpy array), array containing mean of list of values or NaN if list has no values</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.nice_range">
-<code class="descclassname">plot_helper.</code><code class="descname">nice_range</code><span class="sig-paren">(</span><em>lower</em>, <em>upper</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#nice_range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.nice_range" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.nice_range">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">nice_range</code><span class="sig-paren">(</span><em class="sig-param">lower</em>, <em class="sig-param">upper</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#nice_range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.nice_range" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to create a range of values, including the specified start and end points, with nicely spaced intervals</p>
 <p>Args:</p>
 <blockquote>
@@ -500,24 +539,27 @@ tweaking plots for a presentation or publication).</p>
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>(list), list of numerical values in established range</div></blockquote>
+<div><p>(list), list of numerical values in established range</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.nice_std">
-<code class="descclassname">plot_helper.</code><code class="descname">nice_std</code><span class="sig-paren">(</span><em>ls</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#nice_std"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.nice_std" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.nice_std">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">nice_std</code><span class="sig-paren">(</span><em class="sig-param">ls</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#nice_std"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.nice_std" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to return standard deviation of a list or equivalent array with NaN values</p>
 <p>Args:</p>
 <blockquote>
-<div>ls: (list), list of values</div></blockquote>
+<div><p>ls: (list), list of values</p>
+</div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>(numpy array), array containing standard deviation of list of values or NaN if list has no values</div></blockquote>
+<div><p>(numpy array), array containing standard deviation of list of values or NaN if list has no values</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.plot_1d_heatmap">
-<code class="descclassname">plot_helper.</code><code class="descname">plot_1d_heatmap</code><span class="sig-paren">(</span><em>xs</em>, <em>heats</em>, <em>savepath</em>, <em>xlabel='x'</em>, <em>heatlabel='heats'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#plot_1d_heatmap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.plot_1d_heatmap" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.plot_1d_heatmap">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">plot_1d_heatmap</code><span class="sig-paren">(</span><em class="sig-param">xs</em>, <em class="sig-param">heats</em>, <em class="sig-param">savepath</em>, <em class="sig-param">xlabel='x'</em>, <em class="sig-param">heatlabel='heats'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#plot_1d_heatmap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.plot_1d_heatmap" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to plot a heatmap for values of a single variable; used for plotting GridSearch results in hyperparameter optimization.</p>
 <p>Args:</p>
 <blockquote>
@@ -530,8 +572,8 @@ tweaking plots for a presentation or publication).</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.plot_2d_heatmap">
-<code class="descclassname">plot_helper.</code><code class="descname">plot_2d_heatmap</code><span class="sig-paren">(</span><em>xs</em>, <em>ys</em>, <em>heats</em>, <em>savepath</em>, <em>xlabel='x'</em>, <em>ylabel='y'</em>, <em>heatlabel='heat'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#plot_2d_heatmap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.plot_2d_heatmap" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.plot_2d_heatmap">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">plot_2d_heatmap</code><span class="sig-paren">(</span><em class="sig-param">xs</em>, <em class="sig-param">ys</em>, <em class="sig-param">heats</em>, <em class="sig-param">savepath</em>, <em class="sig-param">xlabel='x'</em>, <em class="sig-param">ylabel='y'</em>, <em class="sig-param">heatlabel='heat'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#plot_2d_heatmap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.plot_2d_heatmap" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to plot a heatmap for values of two variables; used for plotting GridSearch results in hyperparameter optimization.</p>
 <p>Args:</p>
 <blockquote>
@@ -546,8 +588,8 @@ tweaking plots for a presentation or publication).</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.plot_3d_heatmap">
-<code class="descclassname">plot_helper.</code><code class="descname">plot_3d_heatmap</code><span class="sig-paren">(</span><em>xs</em>, <em>ys</em>, <em>zs</em>, <em>heats</em>, <em>savepath</em>, <em>xlabel='x'</em>, <em>ylabel='y'</em>, <em>zlabel='z'</em>, <em>heatlabel='heat'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#plot_3d_heatmap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.plot_3d_heatmap" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.plot_3d_heatmap">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">plot_3d_heatmap</code><span class="sig-paren">(</span><em class="sig-param">xs</em>, <em class="sig-param">ys</em>, <em class="sig-param">zs</em>, <em class="sig-param">heats</em>, <em class="sig-param">savepath</em>, <em class="sig-param">xlabel='x'</em>, <em class="sig-param">ylabel='y'</em>, <em class="sig-param">zlabel='z'</em>, <em class="sig-param">heatlabel='heat'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#plot_3d_heatmap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.plot_3d_heatmap" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to plot a heatmap for values of three variables; used for plotting GridSearch results in hyperparameter optimization.</p>
 <p>Args:</p>
 <blockquote>
@@ -564,8 +606,8 @@ tweaking plots for a presentation or publication).</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.plot_average_cumulative_normalized_error">
-<code class="descclassname">plot_helper.</code><code class="descname">plot_average_cumulative_normalized_error</code><span class="sig-paren">(</span><em>y_true</em>, <em>y_pred</em>, <em>savepath</em>, <em>has_model_errors</em>, <em>err_avg=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#plot_average_cumulative_normalized_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.plot_average_cumulative_normalized_error" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.plot_average_cumulative_normalized_error">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">plot_average_cumulative_normalized_error</code><span class="sig-paren">(</span><em class="sig-param">y_true</em>, <em class="sig-param">y_pred</em>, <em class="sig-param">savepath</em>, <em class="sig-param">has_model_errors</em>, <em class="sig-param">err_avg=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#plot_average_cumulative_normalized_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.plot_average_cumulative_normalized_error" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to plot the cumulative normalized residual errors of a model prediction</p>
 <p>Args:</p>
 <blockquote>
@@ -578,12 +620,13 @@ tweaking plots for a presentation or publication).</p>
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>None</div></blockquote>
+<div><p>None</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.plot_average_normalized_error">
-<code class="descclassname">plot_helper.</code><code class="descname">plot_average_normalized_error</code><span class="sig-paren">(</span><em>y_true</em>, <em>y_pred</em>, <em>savepath</em>, <em>has_model_errors</em>, <em>err_avg=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#plot_average_normalized_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.plot_average_normalized_error" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.plot_average_normalized_error">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">plot_average_normalized_error</code><span class="sig-paren">(</span><em class="sig-param">y_true</em>, <em class="sig-param">y_pred</em>, <em class="sig-param">savepath</em>, <em class="sig-param">has_model_errors</em>, <em class="sig-param">err_avg=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#plot_average_normalized_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.plot_average_normalized_error" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to plot the normalized residual errors of a model prediction</p>
 <p>Args:</p>
 <blockquote>
@@ -596,12 +639,13 @@ tweaking plots for a presentation or publication).</p>
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>None</div></blockquote>
+<div><p>None</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.plot_best_worst_per_point">
-<code class="descclassname">plot_helper.</code><code class="descname">plot_best_worst_per_point</code><span class="sig-paren">(</span><em>y_true</em>, <em>y_pred_list</em>, <em>savepath</em>, <em>metrics_dict</em>, <em>avg_stats</em>, <em>title='best worst per point'</em>, <em>label='target_value'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#plot_best_worst_per_point"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.plot_best_worst_per_point" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.plot_best_worst_per_point">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">plot_best_worst_per_point</code><span class="sig-paren">(</span><em class="sig-param">y_true</em>, <em class="sig-param">y_pred_list</em>, <em class="sig-param">savepath</em>, <em class="sig-param">metrics_dict</em>, <em class="sig-param">avg_stats</em>, <em class="sig-param">title='best worst per point'</em>, <em class="sig-param">label='target_value'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#plot_best_worst_per_point"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.plot_best_worst_per_point" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to create a parity plot (predicted vs. true values) of the set of best and worst CV scores for each</p>
 <p>individual data point.</p>
 <p>Args:</p>
@@ -616,12 +660,13 @@ tweaking plots for a presentation or publication).</p>
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>None</div></blockquote>
+<div><p>None</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.plot_best_worst_split">
-<code class="descclassname">plot_helper.</code><code class="descname">plot_best_worst_split</code><span class="sig-paren">(</span><em>y_true</em>, <em>best_run</em>, <em>worst_run</em>, <em>savepath</em>, <em>title='Best Worst Overlay'</em>, <em>label='target_value'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#plot_best_worst_split"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.plot_best_worst_split" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.plot_best_worst_split">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">plot_best_worst_split</code><span class="sig-paren">(</span><em class="sig-param">y_true</em>, <em class="sig-param">best_run</em>, <em class="sig-param">worst_run</em>, <em class="sig-param">savepath</em>, <em class="sig-param">title='Best Worst Overlay'</em>, <em class="sig-param">label='target_value'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#plot_best_worst_split"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.plot_best_worst_split" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to create a parity plot (predicted vs. true values) of just the best scoring and worst scoring CV splits</p>
 <p>Args:</p>
 <blockquote>
@@ -634,12 +679,13 @@ tweaking plots for a presentation or publication).</p>
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>None</div></blockquote>
+<div><p>None</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.plot_confusion_matrix">
-<code class="descclassname">plot_helper.</code><code class="descname">plot_confusion_matrix</code><span class="sig-paren">(</span><em>y_true</em>, <em>y_pred</em>, <em>savepath</em>, <em>stats</em>, <em>normalize=False</em>, <em>title='Confusion matrix'</em>, <em>cmap=&lt;matplotlib.colors.LinearSegmentedColormap object&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#plot_confusion_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.plot_confusion_matrix" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.plot_confusion_matrix">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">plot_confusion_matrix</code><span class="sig-paren">(</span><em class="sig-param">y_true</em>, <em class="sig-param">y_pred</em>, <em class="sig-param">savepath</em>, <em class="sig-param">stats</em>, <em class="sig-param">normalize=False</em>, <em class="sig-param">title='Confusion matrix'</em>, <em class="sig-param">cmap=&lt;matplotlib.colors.LinearSegmentedColormap object&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#plot_confusion_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.plot_confusion_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method used to generate a confusion matrix for a classification run. Additional information can be found
 at: <a class="reference external" href="http://scikit-learn.org/stable/auto_examples/model_selection/plot_confusion_matrix.html">http://scikit-learn.org/stable/auto_examples/model_selection/plot_confusion_matrix.html</a></p>
 <p>Args:</p>
@@ -654,12 +700,13 @@ at: <a class="reference external" href="http://scikit-learn.org/stable/auto_exam
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>None</div></blockquote>
+<div><p>None</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.plot_cumulative_normalized_error">
-<code class="descclassname">plot_helper.</code><code class="descname">plot_cumulative_normalized_error</code><span class="sig-paren">(</span><em>y_true</em>, <em>y_pred</em>, <em>savepath</em>, <em>model</em>, <em>rf_error_method</em>, <em>rf_error_percentile</em>, <em>X=None</em>, <em>Xtrain=None</em>, <em>Xtest=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#plot_cumulative_normalized_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.plot_cumulative_normalized_error" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.plot_cumulative_normalized_error">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">plot_cumulative_normalized_error</code><span class="sig-paren">(</span><em class="sig-param">y_true</em>, <em class="sig-param">y_pred</em>, <em class="sig-param">savepath</em>, <em class="sig-param">model</em>, <em class="sig-param">rf_error_method</em>, <em class="sig-param">rf_error_percentile</em>, <em class="sig-param">X=None</em>, <em class="sig-param">Xtrain=None</em>, <em class="sig-param">Xtest=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#plot_cumulative_normalized_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.plot_cumulative_normalized_error" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to plot the cumulative normalized residual errors of a model prediction</p>
 <p>Args:</p>
 <blockquote>
@@ -672,12 +719,13 @@ at: <a class="reference external" href="http://scikit-learn.org/stable/auto_exam
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>None</div></blockquote>
+<div><p>None</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.plot_learning_curve">
-<code class="descclassname">plot_helper.</code><code class="descname">plot_learning_curve</code><span class="sig-paren">(</span><em>train_sizes</em>, <em>train_mean</em>, <em>test_mean</em>, <em>train_stdev</em>, <em>test_stdev</em>, <em>score_name</em>, <em>learning_curve_type</em>, <em>savepath='data_learning_curve'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#plot_learning_curve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.plot_learning_curve" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.plot_learning_curve">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">plot_learning_curve</code><span class="sig-paren">(</span><em class="sig-param">train_sizes</em>, <em class="sig-param">train_mean</em>, <em class="sig-param">test_mean</em>, <em class="sig-param">train_stdev</em>, <em class="sig-param">test_stdev</em>, <em class="sig-param">score_name</em>, <em class="sig-param">learning_curve_type</em>, <em class="sig-param">savepath='data_learning_curve'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#plot_learning_curve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.plot_learning_curve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method used to plot both data and feature learning curves</p>
 <p>Args:</p>
 <blockquote>
@@ -692,12 +740,13 @@ at: <a class="reference external" href="http://scikit-learn.org/stable/auto_exam
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>None</div></blockquote>
+<div><p>None</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.plot_learning_curve_convergence">
-<code class="descclassname">plot_helper.</code><code class="descname">plot_learning_curve_convergence</code><span class="sig-paren">(</span><em>train_sizes</em>, <em>test_mean</em>, <em>score_name</em>, <em>learning_curve_type</em>, <em>savepath</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#plot_learning_curve_convergence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.plot_learning_curve_convergence" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.plot_learning_curve_convergence">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">plot_learning_curve_convergence</code><span class="sig-paren">(</span><em class="sig-param">train_sizes</em>, <em class="sig-param">test_mean</em>, <em class="sig-param">score_name</em>, <em class="sig-param">learning_curve_type</em>, <em class="sig-param">savepath</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#plot_learning_curve_convergence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.plot_learning_curve_convergence" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method used to plot both the convergence of data and feature learning curves as a function of amount of data or features</p>
 <p>used, respectively.</p>
 <p>Args:</p>
@@ -710,12 +759,13 @@ at: <a class="reference external" href="http://scikit-learn.org/stable/auto_exam
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>None</div></blockquote>
+<div><p>None</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.plot_metric_vs_group">
-<code class="descclassname">plot_helper.</code><code class="descname">plot_metric_vs_group</code><span class="sig-paren">(</span><em>metric</em>, <em>groups</em>, <em>stats</em>, <em>avg_stats</em>, <em>savepath</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#plot_metric_vs_group"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.plot_metric_vs_group" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.plot_metric_vs_group">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">plot_metric_vs_group</code><span class="sig-paren">(</span><em class="sig-param">metric</em>, <em class="sig-param">groups</em>, <em class="sig-param">stats</em>, <em class="sig-param">avg_stats</em>, <em class="sig-param">savepath</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#plot_metric_vs_group"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.plot_metric_vs_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to plot the value of a particular calculated metric (e.g. RMSE, R^2, etc) for each data group</p>
 <p>Args:</p>
 <blockquote>
@@ -727,12 +777,13 @@ at: <a class="reference external" href="http://scikit-learn.org/stable/auto_exam
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>None</div></blockquote>
+<div><p>None</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.plot_metric_vs_group_size">
-<code class="descclassname">plot_helper.</code><code class="descname">plot_metric_vs_group_size</code><span class="sig-paren">(</span><em>metric</em>, <em>groups</em>, <em>stats</em>, <em>avg_stats</em>, <em>savepath</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#plot_metric_vs_group_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.plot_metric_vs_group_size" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.plot_metric_vs_group_size">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">plot_metric_vs_group_size</code><span class="sig-paren">(</span><em class="sig-param">metric</em>, <em class="sig-param">groups</em>, <em class="sig-param">stats</em>, <em class="sig-param">avg_stats</em>, <em class="sig-param">savepath</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#plot_metric_vs_group_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.plot_metric_vs_group_size" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to plot the value of a particular calculated metric (e.g. RMSE, R^2, etc) as a function of the size of each group.</p>
 <p>Args:</p>
 <blockquote>
@@ -744,12 +795,13 @@ at: <a class="reference external" href="http://scikit-learn.org/stable/auto_exam
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>None</div></blockquote>
+<div><p>None</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.plot_normalized_error">
-<code class="descclassname">plot_helper.</code><code class="descname">plot_normalized_error</code><span class="sig-paren">(</span><em>y_true</em>, <em>y_pred</em>, <em>savepath</em>, <em>model</em>, <em>rf_error_method</em>, <em>rf_error_percentile</em>, <em>X=None</em>, <em>Xtrain=None</em>, <em>Xtest=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#plot_normalized_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.plot_normalized_error" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.plot_normalized_error">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">plot_normalized_error</code><span class="sig-paren">(</span><em class="sig-param">y_true</em>, <em class="sig-param">y_pred</em>, <em class="sig-param">savepath</em>, <em class="sig-param">model</em>, <em class="sig-param">rf_error_method</em>, <em class="sig-param">rf_error_percentile</em>, <em class="sig-param">X=None</em>, <em class="sig-param">Xtrain=None</em>, <em class="sig-param">Xtest=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#plot_normalized_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.plot_normalized_error" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to plot the normalized residual errors of a model prediction</p>
 <p>Args:</p>
 <blockquote>
@@ -762,12 +814,13 @@ at: <a class="reference external" href="http://scikit-learn.org/stable/auto_exam
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>None</div></blockquote>
+<div><p>None</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.plot_precision_recall_curve">
-<code class="descclassname">plot_helper.</code><code class="descname">plot_precision_recall_curve</code><span class="sig-paren">(</span><em>y_true</em>, <em>y_pred</em>, <em>savepath</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#plot_precision_recall_curve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.plot_precision_recall_curve" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.plot_precision_recall_curve">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">plot_precision_recall_curve</code><span class="sig-paren">(</span><em class="sig-param">y_true</em>, <em class="sig-param">y_pred</em>, <em class="sig-param">savepath</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#plot_precision_recall_curve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.plot_precision_recall_curve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to calculate and plot the precision-recall curve for classification model results</p>
 <p>Args:</p>
 <blockquote>
@@ -777,12 +830,13 @@ at: <a class="reference external" href="http://scikit-learn.org/stable/auto_exam
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>None</div></blockquote>
+<div><p>None</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.plot_predicted_vs_true">
-<code class="descclassname">plot_helper.</code><code class="descname">plot_predicted_vs_true</code><span class="sig-paren">(</span><em>train_quad</em>, <em>test_quad</em>, <em>outdir</em>, <em>label</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#plot_predicted_vs_true"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.plot_predicted_vs_true" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.plot_predicted_vs_true">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">plot_predicted_vs_true</code><span class="sig-paren">(</span><em class="sig-param">train_quad</em>, <em class="sig-param">test_quad</em>, <em class="sig-param">outdir</em>, <em class="sig-param">label</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#plot_predicted_vs_true"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.plot_predicted_vs_true" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to create a parity plot (predicted vs. true values)</p>
 <p>Args:</p>
 <blockquote>
@@ -795,12 +849,13 @@ at: <a class="reference external" href="http://scikit-learn.org/stable/auto_exam
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>None</div></blockquote>
+<div><p>None</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.plot_predicted_vs_true_bars">
-<code class="descclassname">plot_helper.</code><code class="descname">plot_predicted_vs_true_bars</code><span class="sig-paren">(</span><em>y_true</em>, <em>y_pred_list</em>, <em>avg_stats</em>, <em>savepath</em>, <em>title='best worst with bars'</em>, <em>label='target_value'</em>, <em>groups=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#plot_predicted_vs_true_bars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.plot_predicted_vs_true_bars" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.plot_predicted_vs_true_bars">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">plot_predicted_vs_true_bars</code><span class="sig-paren">(</span><em class="sig-param">y_true</em>, <em class="sig-param">y_pred_list</em>, <em class="sig-param">avg_stats</em>, <em class="sig-param">savepath</em>, <em class="sig-param">title='best worst with bars'</em>, <em class="sig-param">label='target_value'</em>, <em class="sig-param">groups=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#plot_predicted_vs_true_bars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.plot_predicted_vs_true_bars" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to calculate parity plot (predicted vs. true) of average predictions, averaged over all CV splits, with error</p>
 <p>bars on each point corresponding to the standard deviation of the predicted values over all CV splits.</p>
 <p>Args:</p>
@@ -814,12 +869,13 @@ at: <a class="reference external" href="http://scikit-learn.org/stable/auto_exam
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>None</div></blockquote>
+<div><p>None</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.plot_residuals_histogram">
-<code class="descclassname">plot_helper.</code><code class="descname">plot_residuals_histogram</code><span class="sig-paren">(</span><em>y_true</em>, <em>y_pred</em>, <em>savepath</em>, <em>stats</em>, <em>title='residuals histogram'</em>, <em>label='residuals'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#plot_residuals_histogram"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.plot_residuals_histogram" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.plot_residuals_histogram">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">plot_residuals_histogram</code><span class="sig-paren">(</span><em class="sig-param">y_true</em>, <em class="sig-param">y_pred</em>, <em class="sig-param">savepath</em>, <em class="sig-param">stats</em>, <em class="sig-param">title='residuals histogram'</em>, <em class="sig-param">label='residuals'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#plot_residuals_histogram"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.plot_residuals_histogram" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to calculate and plot the histogram of residuals from regression model</p>
 <p>Args:</p>
 <blockquote>
@@ -832,12 +888,13 @@ at: <a class="reference external" href="http://scikit-learn.org/stable/auto_exam
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>None</div></blockquote>
+<div><p>None</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.plot_roc_curve">
-<code class="descclassname">plot_helper.</code><code class="descname">plot_roc_curve</code><span class="sig-paren">(</span><em>y_true</em>, <em>y_pred</em>, <em>savepath</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#plot_roc_curve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.plot_roc_curve" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.plot_roc_curve">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">plot_roc_curve</code><span class="sig-paren">(</span><em class="sig-param">y_true</em>, <em class="sig-param">y_pred</em>, <em class="sig-param">savepath</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#plot_roc_curve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.plot_roc_curve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to calculate and plot the receiver-operator characteristic curve for classification model results</p>
 <p>Args:</p>
 <blockquote>
@@ -847,12 +904,13 @@ at: <a class="reference external" href="http://scikit-learn.org/stable/auto_exam
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>None</div></blockquote>
+<div><p>None</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.plot_scatter">
-<code class="descclassname">plot_helper.</code><code class="descname">plot_scatter</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>savepath</em>, <em>groups=None</em>, <em>xlabel='x'</em>, <em>label='target data'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#plot_scatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.plot_scatter" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.plot_scatter">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">plot_scatter</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">savepath</em>, <em class="sig-param">groups=None</em>, <em class="sig-param">xlabel='x'</em>, <em class="sig-param">label='target data'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#plot_scatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.plot_scatter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to create a general scatter plot</p>
 <p>Args:</p>
 <blockquote>
@@ -865,12 +923,13 @@ at: <a class="reference external" href="http://scikit-learn.org/stable/auto_exam
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>None</div></blockquote>
+<div><p>None</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.plot_stats">
-<code class="descclassname">plot_helper.</code><code class="descname">plot_stats</code><span class="sig-paren">(</span><em>fig</em>, <em>stats</em>, <em>x_align=0.65</em>, <em>y_align=0.9</em>, <em>font_dict={}</em>, <em>fontsize=14</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#plot_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.plot_stats" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.plot_stats">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">plot_stats</code><span class="sig-paren">(</span><em class="sig-param">fig</em>, <em class="sig-param">stats</em>, <em class="sig-param">x_align=0.65</em>, <em class="sig-param">y_align=0.9</em>, <em class="sig-param">font_dict={}</em>, <em class="sig-param">fontsize=14</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#plot_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.plot_stats" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method that prints stats onto the plot. Goes off screen if they are too long or too many in number.</p>
 <p>Args:</p>
 <blockquote>
@@ -883,12 +942,13 @@ at: <a class="reference external" href="http://scikit-learn.org/stable/auto_exam
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>None</div></blockquote>
+<div><p>None</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.plot_target_histogram">
-<code class="descclassname">plot_helper.</code><code class="descname">plot_target_histogram</code><span class="sig-paren">(</span><em>y_df</em>, <em>savepath</em>, <em>title='target histogram'</em>, <em>label='target values'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#plot_target_histogram"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.plot_target_histogram" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.plot_target_histogram">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">plot_target_histogram</code><span class="sig-paren">(</span><em class="sig-param">y_df</em>, <em class="sig-param">savepath</em>, <em class="sig-param">title='target histogram'</em>, <em class="sig-param">label='target values'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#plot_target_histogram"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.plot_target_histogram" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to plot the histogram of true y values</p>
 <p>Args:</p>
 <blockquote>
@@ -899,12 +959,13 @@ at: <a class="reference external" href="http://scikit-learn.org/stable/auto_exam
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>None</div></blockquote>
+<div><p>None</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.prediction_intervals">
-<code class="descclassname">plot_helper.</code><code class="descname">prediction_intervals</code><span class="sig-paren">(</span><em>model</em>, <em>X</em>, <em>rf_error_method</em>, <em>rf_error_percentile</em>, <em>Xtrain</em>, <em>Xtest</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#prediction_intervals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.prediction_intervals" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.prediction_intervals">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">prediction_intervals</code><span class="sig-paren">(</span><em class="sig-param">model</em>, <em class="sig-param">X</em>, <em class="sig-param">rf_error_method</em>, <em class="sig-param">rf_error_percentile</em>, <em class="sig-param">Xtrain</em>, <em class="sig-param">Xtest</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#prediction_intervals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.prediction_intervals" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to calculate prediction intervals when using Random Forest and Gaussian Process regression models.</p>
 <p>Prediction intervals for random forest adapted from <a class="reference external" href="https://blog.datadive.net/prediction-intervals-for-random-forests/">https://blog.datadive.net/prediction-intervals-for-random-forests/</a></p>
 <p>Args:</p>
@@ -923,46 +984,105 @@ is error bar as confidence interval</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.recursive_max">
-<code class="descclassname">plot_helper.</code><code class="descname">recursive_max</code><span class="sig-paren">(</span><em>arr</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#recursive_max"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.recursive_max" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.random_forest_error_modified">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">random_forest_error_modified</code><span class="sig-paren">(</span><em class="sig-param">forest</em>, <em class="sig-param">is_ensemble</em>, <em class="sig-param">X_train</em>, <em class="sig-param">X_test</em>, <em class="sig-param">basic_IJ=False</em>, <em class="sig-param">inbag=None</em>, <em class="sig-param">calibrate=True</em>, <em class="sig-param">memory_constrained=False</em>, <em class="sig-param">memory_limit=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#random_forest_error_modified"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.random_forest_error_modified" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate error bars from scikit-learn RandomForest estimators.</p>
+<p>RandomForest is a regressor or classifier object
+this variance can be used to plot error bars for RandomForest objects</p>
+<dl class="simple">
+<dt>forest<span class="classifier">RandomForest</span></dt><dd><p>Regressor or Classifier object.</p>
+</dd>
+<dt>X_train<span class="classifier">ndarray</span></dt><dd><p>An array with shape (n_train_sample, n_features). The design matrix for
+training data.</p>
+</dd>
+<dt>X_test<span class="classifier">ndarray</span></dt><dd><p>An array with shape (n_test_sample, n_features). The design matrix
+for testing data</p>
+</dd>
+<dt>basic_IJ<span class="classifier">boolean, optional</span></dt><dd><p>Return the value of basic infinitesimal jackknife or Monte Carlo 
+corrected infinitesimal jackknife.</p>
+</dd>
+<dt>inbag<span class="classifier">ndarray, optional</span></dt><dd><p>The inbag matrix that fit the data. If set to <cite>None</cite> (default) it
+will be inferred from the forest. However, this only works for trees
+for which bootstrapping was set to <cite>True</cite>. That is, if sampling was
+done with replacement. Otherwise, users need to provide their own
+inbag matrix.</p>
+</dd>
+<dt>calibrate: boolean, optional</dt><dd><p>Whether to apply calibration to mitigate Monte Carlo noise.
+Some variance estimates may be negative due to Monte Carlo effects if
+the number of trees in the forest is too small. To use calibration,
+Default: True</p>
+</dd>
+<dt>memory_constrained: boolean, optional</dt><dd><p>Whether or not there is a restriction on memory. If False, it is
+assumed that a ndarry of shape (n_train_sample,n_test_sample) fits
+in main memory. Setting to True can actually provide a speed up if
+memory_limit is tuned to the optimal range.</p>
+</dd>
+<dt>memory_limit: int, optional.</dt><dd><p>An upper bound for how much memory the itermediate matrices will take
+up in Megabytes. This must be provided if memory_constrained=True.</p>
+</dd>
+</dl>
+<p>An array with the unbiased sampling variance (V_IJ_unbiased)
+for a RandomForest object.</p>
+<p><code class="xref py py-func docutils literal notranslate"><span class="pre">calc_inbag()</span></code></p>
+<p>The calculation of error is based on the infinitesimal jackknife variance,
+as described in <a class="reference internal" href="#wager2014" id="id1"><span>[Wager2014]</span></a> and is a Python implementation of the R code
+provided at: <a class="reference external" href="https://github.com/swager/randomForestCI">https://github.com/swager/randomForestCI</a></p>
+<dl class="citation">
+<dt class="label" id="wager2014"><span class="brackets"><a class="fn-backref" href="#id1">Wager2014</a></span></dt>
+<dd><p>S. Wager, T. Hastie, B. Efron. “Confidence Intervals for
+Random Forests: The Jackknife and the Infinitesimal Jackknife”, Journal
+of Machine Learning Research vol. 15, pp. 1625-1651, 2014.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mastml.plot_helper.recursive_max">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">recursive_max</code><span class="sig-paren">(</span><em class="sig-param">arr</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#recursive_max"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.recursive_max" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to recursively find the max value of an array of iterables.</p>
 <p>Credit: <a class="reference external" href="https://www.linkedin.com/pulse/ask-recursion-during-coding-interviews-identify-good-talent-veteanu/">https://www.linkedin.com/pulse/ask-recursion-during-coding-interviews-identify-good-talent-veteanu/</a></p>
 <p>Args:</p>
 <blockquote>
-<div>arr: (numpy array), an array of values or iterables</div></blockquote>
+<div><p>arr: (numpy array), an array of values or iterables</p>
+</div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>(float), max value in arr</div></blockquote>
+<div><p>(float), max value in arr</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.recursive_max_and_min">
-<code class="descclassname">plot_helper.</code><code class="descname">recursive_max_and_min</code><span class="sig-paren">(</span><em>arr</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#recursive_max_and_min"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.recursive_max_and_min" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.recursive_max_and_min">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">recursive_max_and_min</code><span class="sig-paren">(</span><em class="sig-param">arr</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#recursive_max_and_min"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.recursive_max_and_min" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to recursively return max and min of values or iterables in array</p>
 <p>Args:</p>
 <blockquote>
-<div>arr: (numpy array), an array of values or iterables</div></blockquote>
+<div><p>arr: (numpy array), an array of values or iterables</p>
+</div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>(tuple), tuple containing max and min of arr</div></blockquote>
+<div><p>(tuple), tuple containing max and min of arr</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.recursive_min">
-<code class="descclassname">plot_helper.</code><code class="descname">recursive_min</code><span class="sig-paren">(</span><em>arr</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#recursive_min"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.recursive_min" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.recursive_min">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">recursive_min</code><span class="sig-paren">(</span><em class="sig-param">arr</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#recursive_min"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.recursive_min" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to recursively find the min value of an array of iterables.</p>
 <p>Credit: <a class="reference external" href="https://www.linkedin.com/pulse/ask-recursion-during-coding-interviews-identify-good-talent-veteanu/">https://www.linkedin.com/pulse/ask-recursion-during-coding-interviews-identify-good-talent-veteanu/</a></p>
 <p>Args:</p>
 <blockquote>
-<div>arr: (numpy array), an array of values or iterables</div></blockquote>
+<div><p>arr: (numpy array), an array of values or iterables</p>
+</div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>(float), min value in arr</div></blockquote>
+<div><p>(float), min value in arr</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.round_down">
-<code class="descclassname">plot_helper.</code><code class="descname">round_down</code><span class="sig-paren">(</span><em>num</em>, <em>divisor</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#round_down"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.round_down" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.round_down">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">round_down</code><span class="sig-paren">(</span><em class="sig-param">num</em>, <em class="sig-param">divisor</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#round_down"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.round_down" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to return a rounded down number</p>
 <p>Args:</p>
 <blockquote>
@@ -971,12 +1091,13 @@ is error bar as confidence interval</p>
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>(float), the rounded-down number</div></blockquote>
+<div><p>(float), the rounded-down number</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.round_up">
-<code class="descclassname">plot_helper.</code><code class="descname">round_up</code><span class="sig-paren">(</span><em>num</em>, <em>divisor</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#round_up"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.round_up" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.round_up">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">round_up</code><span class="sig-paren">(</span><em class="sig-param">num</em>, <em class="sig-param">divisor</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#round_up"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.round_up" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to return a rounded up number</p>
 <p>Args:</p>
 <blockquote>
@@ -985,24 +1106,27 @@ is error bar as confidence interval</p>
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>(float), the rounded-up number</div></blockquote>
+<div><p>(float), the rounded-up number</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.rounder">
-<code class="descclassname">plot_helper.</code><code class="descname">rounder</code><span class="sig-paren">(</span><em>delta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#rounder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.rounder" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.rounder">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">rounder</code><span class="sig-paren">(</span><em class="sig-param">delta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#rounder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.rounder" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to obtain number of decimal places to report on plots</p>
 <p>Args:</p>
 <blockquote>
-<div>delta: (float), a float representing the change in two y values on a plot, used to obtain the plot axis spacing size</div></blockquote>
+<div><p>delta: (float), a float representing the change in two y values on a plot, used to obtain the plot axis spacing size</p>
+</div></blockquote>
 <p>Return:</p>
 <blockquote>
-<div>(int), an integer denoting the number of decimal places to use</div></blockquote>
+<div><p>(int), an integer denoting the number of decimal places to use</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.stat_to_string">
-<code class="descclassname">plot_helper.</code><code class="descname">stat_to_string</code><span class="sig-paren">(</span><em>name</em>, <em>value</em>, <em>nice_names</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#stat_to_string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.stat_to_string" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.stat_to_string">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">stat_to_string</code><span class="sig-paren">(</span><em class="sig-param">name</em>, <em class="sig-param">value</em>, <em class="sig-param">nice_names</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#stat_to_string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.stat_to_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method that converts a metric object into a string for displaying on a plot</p>
 <p>Args:</p>
 <blockquote>
@@ -1011,19 +1135,22 @@ is error bar as confidence interval</p>
 </div></blockquote>
 <p>Return:</p>
 <blockquote>
-<div>(str), a string of the metric name, adjusted to look nicer for inclusion on a plot</div></blockquote>
+<div><p>(str), a string of the metric name, adjusted to look nicer for inclusion on a plot</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="plot_helper.trim_array">
-<code class="descclassname">plot_helper.</code><code class="descname">trim_array</code><span class="sig-paren">(</span><em>arr_list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_helper.html#trim_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_helper.trim_array" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.plot_helper.trim_array">
+<code class="sig-prename descclassname">mastml.plot_helper.</code><code class="sig-name descname">trim_array</code><span class="sig-paren">(</span><em class="sig-param">arr_list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/plot_helper.html#trim_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.plot_helper.trim_array" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method used to trim a set of arrays to make all arrays the same shape</p>
 <p>Args:</p>
 <blockquote>
-<div>arr_list: (list), list of numpy arrays, where arrays are different sizes</div></blockquote>
+<div><p>arr_list: (list), list of numpy arrays, where arrays are different sizes</p>
+</div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>arr_list: (), list of trimmed numpy arrays, where arrays are same size</div></blockquote>
+<div><p>arr_list: (), list of trimmed numpy arrays, where arrays are same size</p>
+</div></blockquote>
 </dd></dl>
 
 </div>
@@ -1069,20 +1196,11 @@ is error bar as confidence interval</p>
 
     
     
-      <script type="text/javascript">
-          var DOCUMENTATION_OPTIONS = {
-              URL_ROOT:'./',
-              VERSION:'2.0',
-              LANGUAGE:'None',
-              COLLAPSE_INDEX:false,
-              FILE_SUFFIX:'.html',
-              HAS_SOURCE:  true,
-              SOURCELINK_SUFFIX: '.txt'
-          };
-      </script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
     
 
   

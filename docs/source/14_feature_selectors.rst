@@ -2,5 +2,5 @@
 Feature Selectors
 ****************************************
 
-.. automodule:: feature_selectors
+.. automodule:: mastml.legos.feature_selectors
    :members:

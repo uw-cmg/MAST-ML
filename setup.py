@@ -1,18 +1,8 @@
 ########################################################################
 # This is the setup script for the MAterials Simulation Toolkit
-#   machine-learning module (MASTML)
-# Creator: Tam Mayeshiba
-# Maintainer: Robert Max Williams
-# Last updated: 2018-06-20
-#  _________________________________
-# / No one knows where the original \
-# \ setup.py came from.             /
-#  ---------------------------------
-#         \   ^__^
-#          \  (oo)\_______
-#             (__)\       )\/\
-#                 ||----w |
-#                 ||     ||
+#   machine-learning module (MAST-ML)
+# Creator and Maintainer: UW-Madison MAST-ML Development Team
+#
 ########################################################################
 
 from __future__ import print_function
@@ -37,7 +27,7 @@ except EnvironmentError:
     pass # Okay, there is no version file.
 
 setup(
-    name="mastml", # TODO  should this be MAST-ML?
+    name="mastml",
     packages=['mastml', 'mastml.legos', 'mastml.magpie', 'mastml.tests.conf', 'mastml.tests.csv'],
     package_data={'mastml.magpie': ["*.*"], 'mastml.tests': ["*.*"], 'mastml.tests.conf' : ["example_input.conf", "MASTML_fullinputfile.conf"], 'mastml.tests.csv' : ["example_data.csv"]},
     include_package_data = True,
@@ -55,15 +45,19 @@ setup(
         "cycler>=0.10.0",
         "Cython>=0.29.13",
         "decorator>=4.3.0",
+        #"dlhub_sdk",
         "dominate>=2.3.5",
         "duecredit",
         "et_xmlfile",
-        "forestci>=0.3",
+        "folium>=0.2.1",
+        "forestci>=0.4.1",
         "future>=0.16.0",
         "globus_nexus_client",
         "globus_sdk",
         "httplib2",
-        "idna>=2.7",
+        "idna==2.7",
+        "imageio>=2.3.0",
+        "imgaug>=0.2.5",
         "importlib-metadata>=0.12",
         "ipython-genutils>=0.2.0",
         "jdcal",
@@ -71,11 +65,11 @@ setup(
         "jwt",
         "keras>=2.2.4",
         "kiwisolver>=1.0.1",
-        "matminer==0.5.5",
-        "matplotlib==2.2.2",
+        "matminer>=0.6.3",
+        "matplotlib>=3.1.1",
         "mdf_forge>=0.6.1J",
         "mdf-toolbox>=0.4.7",
-        "mlxtend==0.12.0",
+        "mlxtend>=0.17.2",
         "monty>=1.0.2",
         "nbformat",
         "networkx>=2.1",
@@ -86,8 +80,9 @@ setup(
         "palettable>=3.1.1",
         "pandas>=0.24.2",
         "pint>=0.8.1",
-        "plotly",
+        "plotly>=4.5.0",
         "pluggy>=0.12",
+        "psutil>=5.5.1",
         "py>=1.5.0",
         "PyDispatcher>=2.0.5",
         "pymatgen>=2019.1.24",
@@ -101,7 +96,7 @@ setup(
         "requests>=2.20.0",
         "retrying",
         "ruamel.yaml>=0.15.42",
-        "scikit-learn>=0.20.3",
+        "scikit-learn==0.22.2",
         "scikit-optimize>=0.5.2",
         "scipy>=1.2.1",
         "six>=1.11.0",
@@ -111,9 +106,9 @@ setup(
         "tensorflow>=1.13.1",
         "tqdm>=4.23.1",
         "traitlets>=4.3.2",
-        "urllib3>=1.24.2",
+        "urllib3<1.25,>=1.24.2",
         "wcwidth",
-        "xgboost",
+        #"xgboost",
         "xlrd",
         "zipp"],
     author="MAST Development Team, University of Wisconsin-Madison Computational Materials Group",

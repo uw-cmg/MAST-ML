@@ -2,6 +2,6 @@
 Utils
 ****************************************
 
-.. automodule:: utils
+.. automodule:: mastml.utils
    :members:
    :private-members:

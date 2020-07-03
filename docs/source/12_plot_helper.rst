@@ -2,7 +2,7 @@
 Plot Helper
 ****************************************
 
-.. automodule:: plot_helper
+.. automodule:: mastml.plot_helper
    :members:
    :private-members:
 

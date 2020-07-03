@@ -230,13 +230,14 @@ class GridSearch(HyperOptUtils):
         _estimator_name : returns string of estimator name
 
     """
-    def __init__(self, estimator, cv, param_names, param_values, scoring=None):
+    def __init__(self, estimator, cv, param_names, param_values, scoring=None, n_jobs=1):
         super(GridSearch, self).__init__(param_names=param_names, param_values=param_values)
         self.estimator = estimator
         self.cv = cv
         self.param_names = param_names
         self.param_values = param_values
         self.scoring = scoring
+        self.n_jobs = int(n_jobs)
 
     def fit(self, X, y, savepath=None, refit=True, iid=True):
         rst = dict()
@@ -252,7 +253,7 @@ class GridSearch(HyperOptUtils):
             self.cv = ms.RepeatedKFold()
 
         model = GridSearchCV(self.estimator, param_dict, scoring=self.scoring, cv=self.cv, refit=refit,
-                             iid=iid, verbose=2)
+                             iid=iid, n_jobs=self.n_jobs, verbose=2)
 
         try:
             rst[estimator_name] = model.fit(X, y)
@@ -308,7 +309,7 @@ class RandomizedSearch(HyperOptUtils):
             _estimator_name : returns string of estimator name
 
         """
-    def __init__(self, estimator, cv, param_names, param_values, scoring=None, n_iter=50):
+    def __init__(self, estimator, cv, param_names, param_values, scoring=None, n_iter=50, n_jobs=1):
         super(RandomizedSearch, self).__init__(param_names=param_names, param_values=param_values)
         self.estimator = estimator
         self.cv = cv
@@ -316,6 +317,7 @@ class RandomizedSearch(HyperOptUtils):
         self.param_values = param_values
         self.scoring = scoring
         self.n_iter = int(n_iter)
+        self.n_jobs = int(n_jobs)
 
     def fit(self, X, y, savepath=None, refit=True):
         rst = dict()
@@ -330,7 +332,7 @@ class RandomizedSearch(HyperOptUtils):
             self.cv = ms.RepeatedKFold()
 
         model = RandomizedSearchCV(self.estimator, param_dict, n_iter=self.n_iter, scoring=self.scoring, cv=self.cv,
-                                   refit=refit, verbose=2)
+                                   refit=refit, n_jobs=self.n_jobs, verbose=2)
 
         try:
             rst[estimator_name] = model.fit(X, y)
@@ -386,7 +388,7 @@ class BayesianSearch(HyperOptUtils):
         _estimator_name : returns string of estimator name
     """
 
-    def __init__(self, estimator, cv, param_names, param_values, scoring=None, n_iter=50):
+    def __init__(self, estimator, cv, param_names, param_values, scoring=None, n_iter=50, n_jobs=1):
         super(BayesianSearch, self).__init__(param_names=param_names, param_values=param_values)
         self.estimator = estimator
         self.cv = cv
@@ -394,6 +396,7 @@ class BayesianSearch(HyperOptUtils):
         self.param_values = param_values
         self.scoring = scoring
         self.n_iter = int(n_iter)
+        self.n_jobs = int(n_jobs)
 
     def fit(self, X, y, savepath=None, refit=True):
         rst = dict()
@@ -408,7 +411,7 @@ class BayesianSearch(HyperOptUtils):
             self.cv = ms.RepeatedKFold()
 
         model = BayesSearchCV(estimator=self.estimator, search_spaces=param_dict, n_iter=self.n_iter,
-                              scoring=self.scoring, cv=self.cv, refit=refit, verbose=2)
+                              scoring=self.scoring, cv=self.cv, refit=refit, n_jobs=self.n_jobs, verbose=2)
 
         try:
             rst[estimator_name] = model.fit(X, y)

@@ -112,6 +112,7 @@
 <li class="toctree-l4"><a class="reference internal" href="0_2_windows_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="0_2_windows_installation.html#windows-10-install-step-by-step-guide-credit-joe-kern">Windows 10 install: step-by-step guide (credit Joe Kern)</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="0_3_startup.html">Startup</a><ul>
@@ -133,7 +134,7 @@
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#feature-selection">Feature Selection</a></li>
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#data-splits">Data Splits</a></li>
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#models">Models</a></li>
-<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#plot-settings">Plot Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#misc-settings">Misc Settings</a></li>
 </ul>
 </li>
 </ul>
@@ -239,53 +240,61 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-util_legos">
-<span id="utility-legos"></span><h1>Utility Legos<a class="headerlink" href="#module-util_legos" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-mastml.legos.util_legos">
+<span id="utility-legos"></span><h1>Utility Legos<a class="headerlink" href="#module-mastml.legos.util_legos" title="Permalink to this headline">¶</a></h1>
 <p>This module contains a collection of classes for debugging and control flow</p>
 <dl class="class">
-<dt id="util_legos.DataFrameFeatureUnion">
-<em class="property">class </em><code class="descclassname">util_legos.</code><code class="descname">DataFrameFeatureUnion</code><span class="sig-paren">(</span><em>transforms</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/util_legos.html#DataFrameFeatureUnion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util_legos.DataFrameFeatureUnion" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.legos.util_legos.DataFrameFeatureUnion">
+<em class="property">class </em><code class="sig-prename descclassname">mastml.legos.util_legos.</code><code class="sig-name descname">DataFrameFeatureUnion</code><span class="sig-paren">(</span><em class="sig-param">transforms</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/util_legos.html#DataFrameFeatureUnion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.util_legos.DataFrameFeatureUnion" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class for unioning dataframe generators (sklearn.pipeline.FeatureUnion always puts out arrays)</p>
 <p>Args:</p>
 <blockquote>
-<div>transforms: (list), list of scikit-learn functions, i.e. objects with a .fit or .transform method</div></blockquote>
+<div><p>transforms: (list), list of scikit-learn functions, i.e. objects with a .fit or .transform method</p>
+</div></blockquote>
 <p>Methods:</p>
 <blockquote>
 <div><p>fit: Applies the .fit method for each transform</p>
 <p>Args:</p>
 <blockquote>
-<div>X: (numpy array), array of X features</div></blockquote>
+<div><p>X: (numpy array), array of X features</p>
+</div></blockquote>
 <p>transform: Transforms the output of the scikit-learn transformer into a dataframe</p>
 <p>Args:</p>
 <blockquote>
-<div>X: (numpy array), array of X features</div></blockquote>
+<div><p>X: (numpy array), array of X features</p>
+</div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>(dataframe), concatenated dataframe after all scikit-learn transforms have been completed</div></blockquote>
+<div><p>(dataframe), concatenated dataframe after all scikit-learn transforms have been completed</p>
+</div></blockquote>
 </div></blockquote>
 </dd></dl>
 
 <dl class="class">
-<dt id="util_legos.DoNothing">
-<em class="property">class </em><code class="descclassname">util_legos.</code><code class="descname">DoNothing</code><a class="reference internal" href="_modules/util_legos.html#DoNothing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util_legos.DoNothing" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.legos.util_legos.DoNothing">
+<em class="property">class </em><code class="sig-prename descclassname">mastml.legos.util_legos.</code><code class="sig-name descname">DoNothing</code><a class="reference internal" href="_modules/mastml/legos/util_legos.html#DoNothing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.util_legos.DoNothing" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class for having a “null” transform where the output is the same as the input. Needed by MAST-ML as a placeholder if
 certain workflow aspects are not performed.</p>
 <p>Args:</p>
 <blockquote>
-<div>None</div></blockquote>
+<div><p>None</p>
+</div></blockquote>
 <p>Methods:</p>
 <blockquote>
 <div><p>fit: does nothing, just returns object instance. Needed to maintain same structure as scikit-learn classes</p>
 <p>Args:</p>
 <blockquote>
-<div>X: (numpy array), array of X features</div></blockquote>
+<div><p>X: (numpy array), array of X features</p>
+</div></blockquote>
 <p>transform: passes the input back out, in this case the array of X features</p>
 <p>Args:</p>
 <blockquote>
-<div>X: (numpy array), array of X features</div></blockquote>
+<div><p>X: (numpy array), array of X features</p>
+</div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>X: (numpy array), array of X features</div></blockquote>
+<div><p>X: (numpy array), array of X features</p>
+</div></blockquote>
 </div></blockquote>
 </dd></dl>
 
@@ -332,20 +341,11 @@ certain workflow aspects are not performed.</p>
 
     
     
-      <script type="text/javascript">
-          var DOCUMENTATION_OPTIONS = {
-              URL_ROOT:'./',
-              VERSION:'2.0',
-              LANGUAGE:'None',
-              COLLAPSE_INDEX:false,
-              FILE_SUFFIX:'.html',
-              HAS_SOURCE:  true,
-              SOURCELINK_SUFFIX: '.txt'
-          };
-      </script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
     
 
   

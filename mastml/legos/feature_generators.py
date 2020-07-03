@@ -212,7 +212,7 @@ class Magpie(BaseEstimator, TransformerMixin):
         df = clean_dataframe(df)
         df = df.select_dtypes(['number']).dropna(axis=1)
         assert self.composition_feature not in df.columns
-        return df
+        return df[sorted(df.columns.tolist())]
 
 class MaterialsProject(BaseEstimator, TransformerMixin):
     """
@@ -580,6 +580,24 @@ class MagpieFeatureGeneration(object):
         magpiedata_dict_min_site3 = {}
         magpiedata_dict_difference_site3 = {}
 
+        magpiedata_dict_composition_average_site1site2 = {}
+        magpiedata_dict_arithmetic_average_site1site2 = {}
+        magpiedata_dict_max_site1site2 = {}
+        magpiedata_dict_min_site1site2 = {}
+        magpiedata_dict_difference_site1site2 = {}
+
+        magpiedata_dict_composition_average_site1site3 = {}
+        magpiedata_dict_arithmetic_average_site1site3 = {}
+        magpiedata_dict_max_site1site3 = {}
+        magpiedata_dict_min_site1site3 = {}
+        magpiedata_dict_difference_site1site3 = {}
+
+        magpiedata_dict_composition_average_site2site3 = {}
+        magpiedata_dict_arithmetic_average_site2site3 = {}
+        magpiedata_dict_max_site2site3 = {}
+        magpiedata_dict_min_site2site3 = {}
+        magpiedata_dict_difference_site2site3 = {}
+
         for i, composition in enumerate(compositions):
             if has_sublattices:
                 magpiedata_collected = self._get_computed_magpie_features(composition=composition, data_path=MAGPIE_DATA_PATH, site_dict=site_dict_list[i])
@@ -670,6 +688,17 @@ class MagpieFeatureGeneration(object):
                     magpiedata_min_site3 = magpiedata_collected[18]
                     magpiedata_difference_site3 = magpiedata_collected[19]
 
+                    # Couplings between sites
+                    magpiedata_composition_average_site1site2 = magpiedata_collected[20]
+                    magpiedata_arithmetic_average_site1site2 = magpiedata_collected[21]
+                    magpiedata_difference_site1site2 = magpiedata_collected[22]
+                    magpiedata_composition_average_site1site3 = magpiedata_collected[23]
+                    magpiedata_arithmetic_average_site1site3 = magpiedata_collected[24]
+                    magpiedata_difference_site1site3 = magpiedata_collected[25]
+                    magpiedata_composition_average_site2site3 = magpiedata_collected[26]
+                    magpiedata_arithmetic_average_site2site3 = magpiedata_collected[27]
+                    magpiedata_difference_site2site3 = magpiedata_collected[28]
+
                     magpiedata_dict_composition_average[composition] = magpiedata_composition_average
                     magpiedata_dict_arithmetic_average[composition] = magpiedata_arithmetic_average
                     magpiedata_dict_max[composition] = magpiedata_max
@@ -693,6 +722,22 @@ class MagpieFeatureGeneration(object):
                     magpiedata_dict_max_site3[composition] = magpiedata_max_site3
                     magpiedata_dict_min_site3[composition] = magpiedata_min_site3
                     magpiedata_dict_difference_site3[composition] = magpiedata_difference_site3
+
+                    # Site1+Site2 coupling
+                    magpiedata_dict_composition_average_site1site2[composition] = magpiedata_composition_average_site1site2
+                    magpiedata_dict_arithmetic_average_site1site2[composition] = magpiedata_arithmetic_average_site1site2
+                    magpiedata_dict_difference_site1site2[composition] = magpiedata_difference_site1site2
+
+                    # Site1+Site3 coupling
+                    magpiedata_dict_composition_average_site1site3[composition] = magpiedata_composition_average_site1site3
+                    magpiedata_dict_arithmetic_average_site1site3[composition] = magpiedata_arithmetic_average_site1site3
+                    magpiedata_dict_difference_site1site3[composition] = magpiedata_difference_site1site3
+
+                    # Site2+Site3 coupling
+                    magpiedata_dict_composition_average_site2site3[composition] = magpiedata_composition_average_site2site3
+                    magpiedata_dict_arithmetic_average_site2site3[composition] = magpiedata_arithmetic_average_site2site3
+                    magpiedata_dict_difference_site2site3[composition] = magpiedata_difference_site2site3
+
             else:
                 magpiedata_composition_average = magpiedata_collected[0]
                 magpiedata_arithmetic_average = magpiedata_collected[1]
@@ -737,7 +782,10 @@ class MagpieFeatureGeneration(object):
                                         magpiedata_dict_composition_average_site2, magpiedata_dict_arithmetic_average_site2,
                                         magpiedata_dict_max_site2, magpiedata_dict_min_site2, magpiedata_dict_difference_site2,
                                         magpiedata_dict_composition_average_site3, magpiedata_dict_arithmetic_average_site3,
-                                        magpiedata_dict_max_site3, magpiedata_dict_min_site3, magpiedata_dict_difference_site3]
+                                        magpiedata_dict_max_site3, magpiedata_dict_min_site3, magpiedata_dict_difference_site3,
+                                        magpiedata_dict_composition_average_site1site2, magpiedata_dict_arithmetic_average_site1site2, magpiedata_dict_difference_site1site2,
+                                        magpiedata_dict_composition_average_site1site3, magpiedata_dict_arithmetic_average_site1site3, magpiedata_dict_difference_site1site3,
+                                        magpiedata_dict_composition_average_site2site3, magpiedata_dict_arithmetic_average_site2site3, magpiedata_dict_difference_site2site3]
         else:
             magpiedata_dict_list = [magpiedata_dict_composition_average, magpiedata_dict_arithmetic_average,
                                 magpiedata_dict_max, magpiedata_dict_min, magpiedata_dict_difference, magpiedata_dict_atomic_bysite]
@@ -789,10 +837,22 @@ class MagpieFeatureGeneration(object):
                     magpiedata_dict_list_toinclude.append(magpiedata_dict_list[6])
                     magpiedata_dict_list_toinclude.append(magpiedata_dict_list[11])
                     magpiedata_dict_list_toinclude.append(magpiedata_dict_list[16])
+                    if 'Site1Site2' in self.feature_types:
+                        magpiedata_dict_list_toinclude.append(magpiedata_dict_list[21])
+                    if 'Site1Site3' in self.feature_types:
+                        magpiedata_dict_list_toinclude.append(magpiedata_dict_list[24])
+                    if 'Site2Site3' in self.feature_types:
+                        magpiedata_dict_list_toinclude.append(magpiedata_dict_list[27])
                 if 'arithmetic_avg' in self.feature_types:
                     magpiedata_dict_list_toinclude.append(magpiedata_dict_list[7])
                     magpiedata_dict_list_toinclude.append(magpiedata_dict_list[12])
                     magpiedata_dict_list_toinclude.append(magpiedata_dict_list[17])
+                    if 'Site1Site2' in self.feature_types:
+                        magpiedata_dict_list_toinclude.append(magpiedata_dict_list[22])
+                    if 'Site1Site3' in self.feature_types:
+                        magpiedata_dict_list_toinclude.append(magpiedata_dict_list[25])
+                    if 'Site2Site3' in self.feature_types:
+                        magpiedata_dict_list_toinclude.append(magpiedata_dict_list[28])
                 if 'max' in self.feature_types:
                     magpiedata_dict_list_toinclude.append(magpiedata_dict_list[8])
                     magpiedata_dict_list_toinclude.append(magpiedata_dict_list[13])
@@ -805,6 +865,12 @@ class MagpieFeatureGeneration(object):
                     magpiedata_dict_list_toinclude.append(magpiedata_dict_list[10])
                     magpiedata_dict_list_toinclude.append(magpiedata_dict_list[15])
                     magpiedata_dict_list_toinclude.append(magpiedata_dict_list[20])
+                    if 'Site1Site2' in self.feature_types:
+                        magpiedata_dict_list_toinclude.append(magpiedata_dict_list[23])
+                    if 'Site1Site3' in self.feature_types:
+                        magpiedata_dict_list_toinclude.append(magpiedata_dict_list[26])
+                    if 'Site2Site3' in self.feature_types:
+                        magpiedata_dict_list_toinclude.append(magpiedata_dict_list[29])
 
         for magpiedata_dict in magpiedata_dict_list_toinclude:
             dataframe_magpie = pd.DataFrame.from_dict(data=magpiedata_dict, orient='index')
@@ -880,6 +946,17 @@ class MagpieFeatureGeneration(object):
                 magpiedata_max_site3 = {}
                 magpiedata_min_site3 = {}
                 magpiedata_difference_site3 = {}
+                # Couplings between sites
+                magpiedata_composition_average_site1site2 = {}
+                magpiedata_arithmetic_average_site1site2 = {}
+                magpiedata_difference_site1site2 = {}
+                magpiedata_composition_average_site1site3 = {}
+                magpiedata_arithmetic_average_site1site3 = {}
+                magpiedata_difference_site1site3 = {}
+                magpiedata_composition_average_site2site3 = {}
+                magpiedata_arithmetic_average_site2site3 = {}
+                magpiedata_difference_site2site3 = {}
+
             else:
                 log.error('MASTML currently only supports up to 3 sublattices to generate site-specific MAGPIE features. '
                           'Please reduce number of sublattices an re-run MASTML.')
@@ -926,6 +1003,16 @@ class MagpieFeatureGeneration(object):
                     magpiedata_max_site3[magpie_feature] = 0
                     magpiedata_min_site3[magpie_feature] = 0
                     magpiedata_difference_site3[magpie_feature] = 0
+                    # Couplings between sites
+                    magpiedata_composition_average_site1site2[magpie_feature] = 0
+                    magpiedata_arithmetic_average_site1site2[magpie_feature] = 0
+                    magpiedata_difference_site1site2[magpie_feature] = 0
+                    magpiedata_composition_average_site1site3[magpie_feature] = 0
+                    magpiedata_arithmetic_average_site1site3[magpie_feature] = 0
+                    magpiedata_difference_site1site3[magpie_feature] = 0
+                    magpiedata_composition_average_site2site3[magpie_feature] = 0
+                    magpiedata_arithmetic_average_site2site3[magpie_feature] = 0
+                    magpiedata_difference_site2site3[magpie_feature] = 0
 
         # Original magpie feature set
         for element in magpiedata_atomic:
@@ -1019,7 +1106,19 @@ class MagpieFeatureGeneration(object):
                                         magpiedata_min_site3[magpie_feature] = feature_value
                                     # Difference features (max - min)
                                     magpiedata_difference_site3[magpie_feature] = magpiedata_max_site3[magpie_feature] - magpiedata_min_site3[magpie_feature]
-
+                                    # Add Site couplings here
+                                    magpiedata_composition_average_site1site2[magpie_feature] += (magpiedata_composition_average_site1[magpie_feature]+magpiedata_composition_average_site2[magpie_feature])/2
+                                    magpiedata_arithmetic_average_site1site2[magpie_feature] += (magpiedata_arithmetic_average_site1[magpie_feature]+magpiedata_arithmetic_average_site2[magpie_feature])/2
+                                    #magpiedata_difference_site1site2[magpie_feature] += abs(magpiedata_difference_site1[magpie_feature]-magpiedata_difference_site2[magpie_feature])
+                                    magpiedata_difference_site1site2[magpie_feature] += max(magpiedata_max_site1[magpie_feature], magpiedata_max_site2[magpie_feature])-min(magpiedata_min_site1[magpie_feature],magpiedata_min_site2[magpie_feature])
+                                    magpiedata_composition_average_site1site3[magpie_feature] += (magpiedata_composition_average_site1[magpie_feature]+magpiedata_composition_average_site3[magpie_feature])/2
+                                    magpiedata_arithmetic_average_site1site3[magpie_feature] += (magpiedata_arithmetic_average_site1[magpie_feature]+magpiedata_arithmetic_average_site3[magpie_feature])/2
+                                    #magpiedata_difference_site1site3[magpie_feature] += abs(magpiedata_difference_site1[magpie_feature]-magpiedata_difference_site3[magpie_feature])
+                                    magpiedata_difference_site1site3[magpie_feature] += max(magpiedata_max_site1[magpie_feature],magpiedata_max_site3[magpie_feature]) - min(magpiedata_min_site1[magpie_feature], magpiedata_min_site3[magpie_feature])
+                                    magpiedata_composition_average_site2site3[magpie_feature] += (magpiedata_composition_average_site2[magpie_feature]+magpiedata_composition_average_site3[magpie_feature])/2
+                                    magpiedata_arithmetic_average_site2site3[magpie_feature] += (magpiedata_arithmetic_average_site2[magpie_feature]+magpiedata_arithmetic_average_site3[magpie_feature])/2
+                                    #magpiedata_difference_site2site3[magpie_feature] += abs(magpiedata_difference_site2[magpie_feature]-magpiedata_difference_site3[magpie_feature])
+                                    magpiedata_difference_site2site3[magpie_feature] += max(magpiedata_max_site2[magpie_feature], magpiedata_max_site3[magpie_feature]) - min(magpiedata_min_site2[magpie_feature], magpiedata_min_site3[magpie_feature])
         # Change names of features to reflect each computed type of magpie feature (max, min, etc.)
         magpiedata_composition_average_renamed = {}
         magpiedata_arithmetic_average_renamed = {}
@@ -1054,6 +1153,17 @@ class MagpieFeatureGeneration(object):
         magpiedata_max_site3_renamed = {}
         magpiedata_min_site3_renamed = {}
         magpiedata_difference_site3_renamed = {}
+        # Couplings between sites
+        magpiedata_composition_average_site1site2_renamed = {}
+        magpiedata_arithmetic_average_site1site2_renamed = {}
+        magpiedata_difference_site1site2_renamed = {}
+        magpiedata_composition_average_site1site3_renamed = {}
+        magpiedata_arithmetic_average_site1site3_renamed = {}
+        magpiedata_difference_site1site3_renamed = {}
+        magpiedata_composition_average_site2site3_renamed = {}
+        magpiedata_arithmetic_average_site2site3_renamed = {}
+        magpiedata_difference_site2site3_renamed = {}
+
         if site_dict:
             if number_sites == 1:
                 for key in magpiedata_composition_average_site1:
@@ -1107,7 +1217,7 @@ class MagpieFeatureGeneration(object):
                 for key in magpiedata_min_site2:
                     magpiedata_min_site2_renamed["Site2_"+ key + "_min_value"] = magpiedata_min_site2[key]
                 for key in magpiedata_difference_site2:
-                    magpiedata_difference_site2_renamed["Site2_"+ key + "_Site2_difference"] = magpiedata_difference_site2[key]
+                    magpiedata_difference_site2_renamed["Site2_"+ key + "_difference"] = magpiedata_difference_site2[key]
                 for key in magpiedata_composition_average_site3:
                     magpiedata_composition_average_site3_renamed["Site3_"+ key + "_composition_average"] = magpiedata_composition_average_site3[key]
                 for key in magpiedata_arithmetic_average_site3:
@@ -1118,7 +1228,25 @@ class MagpieFeatureGeneration(object):
                     magpiedata_min_site3_renamed["Site3_"+ key + "_min_value"] = magpiedata_min_site3[key]
                 for key in magpiedata_difference_site3:
                     magpiedata_difference_site3_renamed["Site3_"+ key + "_difference"] = magpiedata_difference_site3[key]
-
+                # Couplings between sites
+                for key in magpiedata_composition_average_site1site2:
+                    magpiedata_composition_average_site1site2_renamed["Site1Site2_"+ key + "_composition_average"] = magpiedata_composition_average_site1site2[key]
+                for key in magpiedata_arithmetic_average_site1site2:
+                    magpiedata_arithmetic_average_site1site2_renamed["Site1Site2_" + key + "_arithmetic_average"] = magpiedata_arithmetic_average_site1site2[key]
+                for key in magpiedata_difference_site1site2:
+                    magpiedata_difference_site1site2_renamed["Site1Site2_" + key + "_difference"] = magpiedata_difference_site1site2[key]
+                for key in magpiedata_composition_average_site1site3:
+                    magpiedata_composition_average_site1site3_renamed["Site1Site3_"+ key + "_composition_average"] = magpiedata_composition_average_site1site3[key]
+                for key in magpiedata_arithmetic_average_site1site3:
+                    magpiedata_arithmetic_average_site1site3_renamed["Site1Site3_" + key + "_arithmetic_average"] = magpiedata_arithmetic_average_site1site3[key]
+                for key in magpiedata_difference_site1site3:
+                    magpiedata_difference_site1site3_renamed["Site1Site3_" + key + "_difference"] = magpiedata_difference_site1site3[key]
+                for key in magpiedata_composition_average_site2site3:
+                    magpiedata_composition_average_site2site3_renamed["Site2Site3_"+ key + "_composition_average"] = magpiedata_composition_average_site2site3[key]
+                for key in magpiedata_arithmetic_average_site2site3:
+                    magpiedata_arithmetic_average_site2site3_renamed["Site2Site3_" + key + "_arithmetic_average"] = magpiedata_arithmetic_average_site2site3[key]
+                for key in magpiedata_difference_site2site3:
+                    magpiedata_difference_site2site3_renamed["Site2Site3_" + key + "_difference"] = magpiedata_difference_site2site3[key]
         if site_dict:
             if number_sites == 1:
                 return (magpiedata_composition_average_renamed, magpiedata_arithmetic_average_renamed,
@@ -1140,7 +1268,10 @@ class MagpieFeatureGeneration(object):
                         magpiedata_composition_average_site2_renamed, magpiedata_arithmetic_average_site2_renamed,
                         magpiedata_max_site2_renamed, magpiedata_min_site2_renamed, magpiedata_difference_site2_renamed,
                         magpiedata_composition_average_site3_renamed, magpiedata_arithmetic_average_site3_renamed,
-                        magpiedata_max_site3_renamed, magpiedata_min_site3_renamed, magpiedata_difference_site3_renamed)
+                        magpiedata_max_site3_renamed, magpiedata_min_site3_renamed, magpiedata_difference_site3_renamed,
+                        magpiedata_composition_average_site1site2_renamed, magpiedata_arithmetic_average_site1site2_renamed, magpiedata_difference_site1site2_renamed,
+                        magpiedata_composition_average_site1site3_renamed, magpiedata_arithmetic_average_site1site3_renamed, magpiedata_difference_site1site3_renamed,
+                        magpiedata_composition_average_site2site3_renamed, magpiedata_arithmetic_average_site2site3_renamed, magpiedata_difference_site2site3_renamed)
         else:
             return (magpiedata_composition_average_renamed, magpiedata_arithmetic_average_renamed,
                     magpiedata_max_renamed, magpiedata_min_renamed, magpiedata_difference_renamed)

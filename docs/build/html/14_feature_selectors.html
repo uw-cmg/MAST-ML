@@ -112,6 +112,7 @@
 <li class="toctree-l4"><a class="reference internal" href="0_2_windows_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="0_2_windows_installation.html#windows-10-install-step-by-step-guide-credit-joe-kern">Windows 10 install: step-by-step guide (credit Joe Kern)</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="0_3_startup.html">Startup</a><ul>
@@ -133,7 +134,7 @@
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#feature-selection">Feature Selection</a></li>
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#data-splits">Data Splits</a></li>
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#models">Models</a></li>
-<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#plot-settings">Plot Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#misc-settings">Misc Settings</a></li>
 </ul>
 </li>
 </ul>
@@ -239,14 +240,14 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-feature_selectors">
-<span id="feature-selectors"></span><h1>Feature Selectors<a class="headerlink" href="#module-feature_selectors" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-mastml.legos.feature_selectors">
+<span id="feature-selectors"></span><h1>Feature Selectors<a class="headerlink" href="#module-mastml.legos.feature_selectors" title="Permalink to this headline">¶</a></h1>
 <p>This module contains a collection of classes and methods for selecting features, and interfaces with scikit-learn feature
 selectors. More information on scikit-learn feature selectors is available at:</p>
 <p><a class="reference external" href="http://scikit-learn.org/stable/modules/classes.html#module-sklearn.feature_selection">http://scikit-learn.org/stable/modules/classes.html#module-sklearn.feature_selection</a></p>
 <dl class="class">
-<dt id="feature_selectors.MASTMLFeatureSelector">
-<em class="property">class </em><code class="descclassname">feature_selectors.</code><code class="descname">MASTMLFeatureSelector</code><span class="sig-paren">(</span><em>estimator</em>, <em>n_features_to_select</em>, <em>cv</em>, <em>manually_selected_features=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/feature_selectors.html#MASTMLFeatureSelector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#feature_selectors.MASTMLFeatureSelector" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.legos.feature_selectors.MASTMLFeatureSelector">
+<em class="property">class </em><code class="sig-prename descclassname">mastml.legos.feature_selectors.</code><code class="sig-name descname">MASTMLFeatureSelector</code><span class="sig-paren">(</span><em class="sig-param">estimator</em>, <em class="sig-param">n_features_to_select</em>, <em class="sig-param">cv</em>, <em class="sig-param">manually_selected_features=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_selectors.html#MASTMLFeatureSelector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_selectors.MASTMLFeatureSelector" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class custom-written for MAST-ML to conduct forward selection of features with flexible model and cv scheme</p>
 <p>Args:</p>
 <blockquote>
@@ -268,23 +269,26 @@ start from this list of features and sequentially add features until n_features_
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>None</div></blockquote>
+<div><p>None</p>
+</div></blockquote>
 </div></blockquote>
 <p>transform: performs the transform to generate output of only selected features</p>
 <blockquote>
 <div><p>Args:</p>
 <blockquote>
-<div>X: (dataframe), dataframe of X features</div></blockquote>
+<div><p>X: (dataframe), dataframe of X features</p>
+</div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>dataframe: (dataframe), dataframe of selected X features</div></blockquote>
+<div><p>dataframe: (dataframe), dataframe of selected X features</p>
+</div></blockquote>
 </div></blockquote>
 </div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="feature_selectors.dataframify_new_column_names">
-<code class="descclassname">feature_selectors.</code><code class="descname">dataframify_new_column_names</code><span class="sig-paren">(</span><em>transform</em>, <em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/feature_selectors.html#dataframify_new_column_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#feature_selectors.dataframify_new_column_names" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.legos.feature_selectors.dataframify_new_column_names">
+<code class="sig-prename descclassname">mastml.legos.feature_selectors.</code><code class="sig-name descname">dataframify_new_column_names</code><span class="sig-paren">(</span><em class="sig-param">transform</em>, <em class="sig-param">name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_selectors.html#dataframify_new_column_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_selectors.dataframify_new_column_names" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method which transforms output of scikit-learn feature selectors to dataframe, and adds column names</p>
 <p>Args:</p>
 <blockquote>
@@ -293,31 +297,36 @@ start from this list of features and sequentially add features until n_features_
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>new_transform: (function), an amended version of the transform method that returns a dataframe</div></blockquote>
+<div><p>new_transform: (function), an amended version of the transform method that returns a dataframe</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="feature_selectors.dataframify_selector">
-<code class="descclassname">feature_selectors.</code><code class="descname">dataframify_selector</code><span class="sig-paren">(</span><em>transform</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/feature_selectors.html#dataframify_selector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#feature_selectors.dataframify_selector" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.legos.feature_selectors.dataframify_selector">
+<code class="sig-prename descclassname">mastml.legos.feature_selectors.</code><code class="sig-name descname">dataframify_selector</code><span class="sig-paren">(</span><em class="sig-param">transform</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_selectors.html#dataframify_selector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_selectors.dataframify_selector" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method which transforms output of scikit-learn feature selectors from array to dataframe. Enables preservation of column names.</p>
 <p>Args:</p>
 <blockquote>
-<div>transform: (function), a scikit-learn feature selector that has a transform method</div></blockquote>
+<div><p>transform: (function), a scikit-learn feature selector that has a transform method</p>
+</div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>new_transform: (function), an amended version of the transform method that returns a dataframe</div></blockquote>
+<div><p>new_transform: (function), an amended version of the transform method that returns a dataframe</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="feature_selectors.fitify_just_use_values">
-<code class="descclassname">feature_selectors.</code><code class="descname">fitify_just_use_values</code><span class="sig-paren">(</span><em>fit</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/feature_selectors.html#fitify_just_use_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#feature_selectors.fitify_just_use_values" title="Permalink to this definition">¶</a></dt>
+<dt id="mastml.legos.feature_selectors.fitify_just_use_values">
+<code class="sig-prename descclassname">mastml.legos.feature_selectors.</code><code class="sig-name descname">fitify_just_use_values</code><span class="sig-paren">(</span><em class="sig-param">fit</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/legos/feature_selectors.html#fitify_just_use_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.legos.feature_selectors.fitify_just_use_values" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method which enables a feature selector fit method to operate on dataframes</p>
 <p>Args:</p>
 <blockquote>
-<div>fit: (function), a scikit-learn feature selector object with a fit method</div></blockquote>
+<div><p>fit: (function), a scikit-learn feature selector object with a fit method</p>
+</div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div>new_fit: (function), an amended version of the fit method that uses dataframes as input</div></blockquote>
+<div><p>new_fit: (function), an amended version of the fit method that uses dataframes as input</p>
+</div></blockquote>
 </dd></dl>
 
 </div>
@@ -363,20 +372,11 @@ start from this list of features and sequentially add features until n_features_
 
     
     
-      <script type="text/javascript">
-          var DOCUMENTATION_OPTIONS = {
-              URL_ROOT:'./',
-              VERSION:'2.0',
-              LANGUAGE:'None',
-              COLLAPSE_INDEX:false,
-              FILE_SUFFIX:'.html',
-              HAS_SOURCE:  true,
-              SOURCELINK_SUFFIX: '.txt'
-          };
-      </script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
     
 
   

@@ -2,5 +2,5 @@
 Learning curve
 ****************************************
 
-.. automodule:: learning_curve
+.. automodule:: mastml.learning_curve
    :members:

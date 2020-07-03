@@ -112,6 +112,7 @@
 <li class="toctree-l4"><a class="reference internal" href="0_2_windows_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="0_2_windows_installation.html#windows-10-install-step-by-step-guide-credit-joe-kern">Windows 10 install: step-by-step guide (credit Joe Kern)</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="0_3_startup.html">Startup</a><ul>
@@ -133,7 +134,7 @@
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#feature-selection">Feature Selection</a></li>
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#data-splits">Data Splits</a></li>
 <li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#models">Models</a></li>
-<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#plot-settings">Plot Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="1_mastml_inputfile.html#misc-settings">Misc Settings</a></li>
 </ul>
 </li>
 </ul>
@@ -239,9 +240,84 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-data_cleaner">
-<span id="data-cleaner"></span><h1>Data cleaner<a class="headerlink" href="#module-data_cleaner" title="Permalink to this headline">¶</a></h1>
-<p>Module for cleaning dataframes (e.g. removing NaN, imputation, etc.)</p>
+  <div class="section" id="module-mastml.data_cleaner">
+<span id="data-cleaner"></span><h1>Data cleaner<a class="headerlink" href="#module-mastml.data_cleaner" title="Permalink to this headline">¶</a></h1>
+<p>The data_cleaner module is used to clean missing or NaN values from pandas dataframes (e.g. removing NaN, imputation, etc.)</p>
+<dl class="class">
+<dt id="mastml.data_cleaner.PPCA">
+<em class="property">class </em><code class="sig-prename descclassname">mastml.data_cleaner.</code><code class="sig-name descname">PPCA</code><a class="reference internal" href="_modules/mastml/data_cleaner.html#PPCA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.data_cleaner.PPCA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to perform probabilistic principal component analysis (PPCA) to fill in missing data.</p>
+<p>This PPCA routine was taken directly from <a class="reference external" href="https://github.com/allentran/pca-magic">https://github.com/allentran/pca-magic</a>. Due to import errors, for ease of use
+we have elected to copy the module here. This github repo was last accessed on 8/27/18. The code comprising the PPCA
+class below was not developed by and is not owned by the University of Wisconsin-Madison MAST-ML development team.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mastml.data_cleaner.columns_with_strings">
+<code class="sig-prename descclassname">mastml.data_cleaner.</code><code class="sig-name descname">columns_with_strings</code><span class="sig-paren">(</span><em class="sig-param">df</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/data_cleaner.html#columns_with_strings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.data_cleaner.columns_with_strings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method that ascertains which columns in data contain string entries</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>df: (dataframe), pandas dataframe containing data</p>
+</dd>
+<dt>Returns:</dt><dd><p>str_columns: (list), list containing indices of columns containing strings</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mastml.data_cleaner.flag_outliers">
+<code class="sig-prename descclassname">mastml.data_cleaner.</code><code class="sig-name descname">flag_outliers</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">conf_not_input_features</em>, <em class="sig-param">savepath</em>, <em class="sig-param">n_stdevs=3</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/data_cleaner.html#flag_outliers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.data_cleaner.flag_outliers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method that scans values in each X feature matrix column and flags values that are larger than 3 standard deviations
+from the average of that column value. The index and column values of potentially problematic points are listed and
+written to an output file.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>df: (dataframe), pandas dataframe containing data</p>
+</dd>
+<dt>Returns:</dt><dd><p>None, just writes results to file</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mastml.data_cleaner.imputation">
+<code class="sig-prename descclassname">mastml.data_cleaner.</code><code class="sig-name descname">imputation</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">strategy</em>, <em class="sig-param">cols_to_leave_out=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/data_cleaner.html#imputation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.data_cleaner.imputation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method that imputes values to the missing places based on the median, mean, etc. of the data in the column</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>df: (dataframe), pandas dataframe containing data
+strategy: (str), method of imputation, e.g. median, mean, etc.
+cols_to_leave_out: (list), list of column indices to not include in imputation</p>
+</dd>
+<dt>Returns:</dt><dd><p>df: (dataframe): dataframe with NaN or missing values resolved via imputation</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mastml.data_cleaner.ppca">
+<code class="sig-prename descclassname">mastml.data_cleaner.</code><code class="sig-name descname">ppca</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">cols_to_leave_out=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/data_cleaner.html#ppca"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.data_cleaner.ppca" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method that performs a recursive PCA routine to use PCA of known columns to fill in missing values in particular column</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>df: (dataframe), pandas dataframe containing data
+cols_to_leave_out: (list), list of column indices to not include in imputation</p>
+</dd>
+<dt>Returns:</dt><dd><p>df: (dataframe): dataframe with NaN or missing values resolved via imputation</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mastml.data_cleaner.remove">
+<code class="sig-prename descclassname">mastml.data_cleaner.</code><code class="sig-name descname">remove</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">axis</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mastml/data_cleaner.html#remove"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.data_cleaner.remove" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method that removes a full column or row of data values if one column or row contains NaN or is blank</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>df: (dataframe), pandas dataframe containing data
+axis: (int), whether to remove rows (axis=0) or columns (axis=1)</p>
+</dd>
+<dt>Returns:</dt><dd><p>df: (dataframe): dataframe with NaN or missing values removed</p>
+</dd>
+</dl>
+</dd></dl>
+
 </div>
 
 
@@ -285,20 +361,11 @@
 
     
     
-      <script type="text/javascript">
-          var DOCUMENTATION_OPTIONS = {
-              URL_ROOT:'./',
-              VERSION:'2.0',
-              LANGUAGE:'None',
-              COLLAPSE_INDEX:false,
-              FILE_SUFFIX:'.html',
-              HAS_SOURCE:  true,
-              SOURCELINK_SUFFIX: '.txt'
-          };
-      </script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
     
 
   

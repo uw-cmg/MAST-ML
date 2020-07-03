@@ -2,6 +2,6 @@
 Data cleaner
 **************************
 
-.. automodule:: data_cleaner
+.. automodule:: mastml.data_cleaner
    :members:
 

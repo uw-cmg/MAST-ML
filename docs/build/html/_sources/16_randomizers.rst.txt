@@ -2,5 +2,5 @@
 Randomizers
 ****************************************
 
-.. automodule:: randomizers
+.. automodule:: mastml.legos.randomizers
    :members:

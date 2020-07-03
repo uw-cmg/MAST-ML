@@ -2,5 +2,5 @@
 Utility Legos
 ****************************************
 
-.. automodule:: util_legos
+.. automodule:: mastml.legos.util_legos
    :members:

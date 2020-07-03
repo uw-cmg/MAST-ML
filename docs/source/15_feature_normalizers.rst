@@ -2,5 +2,5 @@
 Feature Normalizers
 ****************************************
 
-.. automodule:: feature_normalizers
+.. automodule:: mastml.legos.feature_normalizers
    :members:

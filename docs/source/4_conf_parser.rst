@@ -2,5 +2,5 @@
 Configuration file parser
 ***************************************************
 
-.. automodule:: conf_parser
+.. automodule:: mastml.conf_parser
    :members:

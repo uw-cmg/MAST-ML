@@ -2,5 +2,5 @@
 Data loader
 **************************
 
-.. automodule:: data_loader
+.. automodule:: mastml.data_loader
    :members:
