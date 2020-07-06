@@ -861,12 +861,24 @@ def mastml_run(conf_path, data_path, outdir):
                 # occors in y_pred. sklearn assumes 0.0, and we want it to do so (silently).
                 warnings.simplefilter('ignore', UndefinedMetricWarning)
                 train_metrics = OrderedDict((name, function(train_y, train_pred))
-                                            for name, (_, function) in metrics_dict.items())
+                                            for name, (_, function) in metrics_dict.items() if name not in ['rmse_over_stdev', 'rmse_over_stdev_train'])
                 test_metrics = OrderedDict((name, function(test_y, test_pred))
-                                           for name, (_, function) in metrics_dict.items())
-                # Need to pass y_train data to get rmse/sigma for test rmse and sigma of train y
+                                           for name, (_, function) in metrics_dict.items() if name not in ['rmse_over_stdev', 'rmse_over_stdev_train'])
                 if 'rmse_over_stdev' in metrics_dict.keys():
-                    test_metrics['rmse_over_stdev'] = metrics_dict['rmse_over_stdev'][1](test_y, test_pred, train_y)
+                    if not np.array_equal(train_y, test_y):
+                        stdev_data = np.std(np.concatenate([train_y, test_y]))
+                    else:
+                        #Full fit case
+                        stdev_data = np.std(train_y)
+
+                    test_metrics['rmse_over_stdev'] = metrics_dict['rmse_over_stdev'][1](test_y, test_pred, stdev_data)
+                    train_metrics['rmse_over_stdev'] = metrics_dict['rmse_over_stdev'][1](train_y, train_pred, stdev_data)
+
+                if 'rmse_over_stdev_train' in metrics_dict.keys():
+                    stdev_train_data = np.std(train_y)
+                    test_metrics['rmse_over_stdev_train'] = metrics_dict['rmse_over_stdev_train'][1](test_y, test_pred, stdev_train_data)
+                    train_metrics['rmse_over_stdev_train'] = metrics_dict['rmse_over_stdev_train'][1](train_y, train_pred, stdev_train_data)
+
                 if 'R2_adjusted' in metrics_dict.keys():
                     test_metrics['R2_adjusted'] = metrics_dict['R2_adjusted'][1](test_y, test_pred, test_X.shape[1])
                     train_metrics['R2_adjusted'] = metrics_dict['R2_adjusted'][1](train_y, train_pred, train_X.shape[1])

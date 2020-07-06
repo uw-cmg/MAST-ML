@@ -91,8 +91,7 @@ def root_mean_squared_error(y_true, y_pred):
     return sm.mean_squared_error(y_true, y_pred)**0.5
 regression_metrics['root_mean_squared_error'] = (False, root_mean_squared_error)
 
-# TODO: consider two rmse/stdev metrics: one that uses stdev of full data set, and one that uses stdev of data per split
-def rmse_over_stdev(y_true, y_pred, train_y=None):
+def rmse_over_stdev(y_true, y_pred, stdev_data):
     """
     Method that calculates the root mean squared error (RMSE) of a set of data, divided by the standard deviation of
     the training data set.
@@ -100,19 +99,33 @@ def rmse_over_stdev(y_true, y_pred, train_y=None):
     Args:
         y_true: (numpy array), array of true y data values
         y_pred: (numpy array), array of predicted y data values
-        train_y: (numpy array), array of training y data values
+        stdev_data: (float), stdev of dataset used
 
     Returns:
         (float): score of RMSE divided by standard deviation of training data
 
     """
-    if train_y is not None:
-        stdev = np.std(train_y)
-    else:
-        stdev = np.std(y_true)
     rmse = root_mean_squared_error(y_true, y_pred)
-    return rmse / stdev
+    return rmse / stdev_data
 regression_metrics['rmse_over_stdev'] = (False, rmse_over_stdev)
+
+def rmse_over_stdev_train(y_true, y_pred, stdev_train_data):
+    """
+    Method that calculates the root mean squared error (RMSE) of a set of data, divided by the standard deviation of
+    the training data set.
+
+    Args:
+        y_true: (numpy array), array of true y data values
+        y_pred: (numpy array), array of predicted y data values
+        stdev_train_data: (float), stdev of training dataset used (can be different from total dataset)
+
+    Returns:
+        (float): score of RMSE divided by standard deviation of training data
+
+    """
+    rmse = root_mean_squared_error(y_true, y_pred)
+    return rmse / stdev_train_data
+regression_metrics['rmse_over_stdev_train'] = (False, rmse_over_stdev_train)
 
 def adjusted_r2_score(y_true, y_pred, n_features=None):
     """
@@ -127,7 +140,7 @@ def adjusted_r2_score(y_true, y_pred, n_features=None):
         (float): score of adjusted R^2
 
     """
-    r2 = r2_score(y_true, y_pred)
+    r2 = sm.r2_score(y_true, y_pred)
     # n is sample size
     n = len(y_true)
     # p is number of features
@@ -179,6 +192,7 @@ nice_names = {
     'median_absolute_error': 'MedAE',
     'root_mean_squared_error': 'RMSE',
     'rmse_over_stdev': r'RMSE/$\sigma_y$',
+    'rmse_over_stdev_train': r'RMSE/$\sigma_{ytrain}$',
     'R2': '$R^2$',
     'R2_noint': '$R^2_{noint}$',
     'R2_adjusted': '$R^2_{adjusted}$'
