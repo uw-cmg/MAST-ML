@@ -880,8 +880,12 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
     worst_stats = OrderedDict([('Worst combined:', None)])
     best_stats = OrderedDict([('Best combined:', None)])
     for name, (_, func) in metrics_dict.items():
-        worst_stats[name] = func(new_y_true, worsts)
-        best_stats[name] = func(new_y_true, bests)
+        if name not in ['rmse_over_stdev', 'rmse_over_stdev_train']:
+            worst_stats[name] = func(new_y_true, worsts)
+            best_stats[name] = func(new_y_true, bests)
+        elif name == 'rmse_over_stdev':
+            worst_stats[name] = func(new_y_true, worsts, np.std(y_true))
+            best_stats[name] = func(new_y_true, bests, np.std(y_true))
 
     # make fig and ax, use x_align when placing text so things don't overlap
     x_align = 15.5/24 #mmm yum
@@ -3020,6 +3024,7 @@ def nice_names():
     'median_absolute_error': 'MedAE',
     'root_mean_squared_error': 'RMSE',
     'rmse_over_stdev': r'RMSE/$\sigma_y$',
+    'rmse_over_stdev_train': r'RMSE/$\sigma_{ytrain}$',
     'R2': '$R^2$',
     'R2_noint': '$R^2_{noint}$',
     'R2_adjusted': '$R^2_{adjusted}$',
