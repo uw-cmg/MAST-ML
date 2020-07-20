@@ -928,23 +928,43 @@ def mastml_run(conf_path, data_path, outdir):
 
             if MiscSettings['plot_error_plots']:
                 if is_validation:
-                    plot_helper.make_error_plots(split_result, path, is_classification,
-                                                 label=y.name, model=model, train_X=train_X, test_X=test_X,
-                                                 rf_error_method=MiscSettings['rf_error_method'],
-                                                 rf_error_percentile=MiscSettings['rf_error_percentile'],
-                                                 is_validation = is_validation,
-                                                 validation_column_name = validation_column_name,
-                                                 validation_X = validation_X_forpred,
-                                                 groups=grouping_data)
+                    if MiscSettings['unweighted_error_plots']:
+                        plot_helper.make_error_plots(split_result, path, is_classification, False,
+                                                     label=y.name, model=model, train_X=train_X, test_X=test_X,
+                                                     rf_error_method=MiscSettings['rf_error_method'],
+                                                     rf_error_percentile=MiscSettings['rf_error_percentile'],
+                                                     is_validation = is_validation,
+                                                     validation_column_name = validation_column_name,
+                                                     validation_X = validation_X_forpred,
+                                                     groups=grouping_data)
+                    else:
+                        plot_helper.make_error_plots(split_result, path, is_classification, True,
+                                                     label=y.name, model=model, train_X=train_X, test_X=test_X,
+                                                     rf_error_method=MiscSettings['rf_error_method'],
+                                                     rf_error_percentile=MiscSettings['rf_error_percentile'],
+                                                     is_validation = is_validation,
+                                                     validation_column_name = validation_column_name,
+                                                     validation_X = validation_X_forpred,
+                                                     groups=grouping_data)
                 else:
-                    plot_helper.make_error_plots(split_result, path, is_classification,
-                                                 label=y.name, model=model, train_X=train_X, test_X=test_X,
-                                                 rf_error_method=MiscSettings['rf_error_method'],
-                                                 rf_error_percentile=MiscSettings['rf_error_percentile'],
-                                                 is_validation = is_validation,
-                                                 validation_column_name = None,
-                                                 validation_X= None,
-                                                 groups=grouping_data)
+                    if MiscSettings['unweighted_error_plots']:
+                        plot_helper.make_error_plots(split_result, path, is_classification, False,
+                                                     label=y.name, model=model, train_X=train_X, test_X=test_X,
+                                                     rf_error_method=MiscSettings['rf_error_method'],
+                                                     rf_error_percentile=MiscSettings['rf_error_percentile'],
+                                                     is_validation = is_validation,
+                                                     validation_column_name = None,
+                                                     validation_X= None,
+                                                     groups=grouping_data)
+                    else:
+                        plot_helper.make_error_plots(split_result, path, is_classification, True,
+                                                     label=y.name, model=model, train_X=train_X, test_X=test_X,
+                                                     rf_error_method=MiscSettings['rf_error_method'],
+                                                     rf_error_percentile=MiscSettings['rf_error_percentile'],
+                                                     is_validation = is_validation,
+                                                     validation_column_name = None,
+                                                     validation_X= None,
+                                                     groups=grouping_data)
             # Write stats in each split path, not main path
             if is_validation:
                 _write_stats_tocsv(split_result['train_metrics'],
@@ -1079,9 +1099,16 @@ def mastml_run(conf_path, data_path, outdir):
                                                                  savepath=join(main_path,'test_cumulative_normalized_error_average_allsplits.png'),
                                                                  has_model_errors=has_model_errors,
                                                                  err_avg=average_error_values)
+            plot_helper.plot_average_relative_cumulative_normalized_error(y_true=y_true, y_pred=y_pred,
+                                                                 savepath=join(main_path,'test_relative_cumulative_normalized_error_average_allsplits.png'),
+                                                                 has_model_errors=has_model_errors,
+                                                                 err_avg=average_error_values)
             # Here- plot predicted vs real errors for all splits, only if using RF, GBR, GPR, or ET
             if model.__class__.__name__ in ['RandomForestRegressor', 'ExtraTreesRegressor', 'GradientBoostingRegressor', 'GaussianProcessRegressor', 'EnsembleRegressor']:
-                plot_helper.plot_real_vs_predicted_error(y_true, main_path, model, data_test_type='test')
+                if MiscSettings['unweighted_error_plots']:
+                    plot_helper.plot_real_vs_predicted_error(y_true, main_path, model, False, data_test_type='test')
+                else:
+                    plot_helper.plot_real_vs_predicted_error(y_true, main_path, model, True, data_test_type='test')
 
             if is_validation:
                 plot_helper.plot_average_cumulative_normalized_error(y_true=y_true_validation, y_pred=y_pred_validation,
@@ -1094,10 +1121,17 @@ def mastml_run(conf_path, data_path, outdir):
                 # Use y_true here because want to normalize to full training dataset stdev
                 if model.__class__.__name__ in ['RandomForestRegressor', 'ExtraTreesRegressor',
                                                 'GradientBoostingRegressor', 'GaussianProcessRegressor', 'EnsembleRegressor']:
-                    plot_helper.plot_real_vs_predicted_error(y_true, main_path, model, data_test_type='validation')
+                    if MiscSettings['unweighted_error_plots']:
+                        plot_helper.plot_real_vs_predicted_error(y_true, main_path, model, False, data_test_type='test')
+                    else:
+                        plot_helper.plot_real_vs_predicted_error(y_true, main_path, model, True, data_test_type='test')
 
             plot_helper.plot_average_normalized_error(y_true=y_true, y_pred=y_pred,
                                                       savepath=join(main_path,'test_normalized_error_average_allsplits.png'),
+                                                                 has_model_errors=has_model_errors,
+                                                                 err_avg=average_error_values)
+            plot_helper.plot_average_relative_normalized_error(y_true=y_true, y_pred=y_pred,
+                                                      savepath=join(main_path,'test_relative_normalized_error_average_allsplits.png'),
                                                                  has_model_errors=has_model_errors,
                                                                  err_avg=average_error_values)
             return

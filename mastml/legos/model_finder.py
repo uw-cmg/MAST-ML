@@ -182,7 +182,7 @@ class KerasRegressor():
         # Need to rebuild and re-compile model at every fit instance so don't have information of weights from other fits
         self.model = self.build_model()
         self.model.compile(loss=self.loss, optimizer=self.optimizer, metrics=self.metrics)
-        return self.model.fit(X, Y, epochs=self.epochs, batch_size=self.batch_size, verbose=self.verbose,
+        return self.model.fit(X, Y, epochs=self.epochs, batch_size=self.batch_size, verbose=False,
                               validation_split=self.validation_split, shuffle=self.shuffle)
 
     def predict(self, X):
@@ -236,7 +236,10 @@ class EnsembleRegressor():
             model = self.model[i]
 
             # do bootstrapping given the validation data
-            bootstrap_idxs = random.choices(idxs, k=self.num_samples)
+            if self.num_samples < 1:
+                bootstrap_idxs = random.choices(idxs, k=self.num_samples)
+            else:
+                bootstrap_idxs = random.choices(idxs, k=len(X))
             bootstrap_X = X[bootstrap_idxs]
             bootstrap_Y = Y[bootstrap_idxs]
             if 1 == len(bootstrap_X.shape):
