@@ -2182,7 +2182,8 @@ def plot_real_vs_predicted_error(y_true, savepath, model, do_weighted, data_test
     fig, ax = make_fig_ax(aspect_ratio=0.5, x_align=0.65)
 
     ax.scatter(bin_values[0:10], rms_residual_values[0:10], s=100, color='blue', alpha=0.7)
-    ax.scatter(bin_values[10:], rms_residual_values[10:], s=100, color='red', alpha=0.7)
+    #ax.scatter(bin_values[10:], rms_residual_values[10:], s=100, color='red', alpha=0.7)
+    ax.scatter(bin_values[10:], rms_residual_values[10:], s=100, color='blue', alpha=0.7)
 
     ax.set_xlabel(str(model_type) + ' model errors / dataset stdev', fontsize=12)
     ax.set_ylabel('RMS Absolute residuals\n / dataset stdev', fontsize=12)
@@ -2206,6 +2207,16 @@ def plot_real_vs_predicted_error(y_true, savepath, model, do_weighted, data_test
     rms_residual_values_copy = np.delete(rms_residual_values_copy, nans)
     num_values_per_bin_copy = np.delete(num_values_per_bin_copy, nans)
 
+    rel_zeros = []
+    for idx, i in enumerate(reversed(num_values_per_bin_copy)):
+        if 0 != i:
+            break
+        else:
+            rel_zeros.append(len(num_values_per_bin_copy) - 1 - idx)
+    bin_values_copy = np.delete(bin_values_copy, rel_zeros)
+    rms_residual_values_copy = np.delete(rms_residual_values_copy, rel_zeros)
+    num_values_per_bin_copy = np.delete(num_values_per_bin_copy, rel_zeros)
+
     if not rms_residual_values_copy.size:
         print("---WARNING: ALL ERRORS TOO LARGE FOR PLOTTING---")
     else:
@@ -2226,26 +2237,26 @@ def plot_real_vs_predicted_error(y_true, savepath, model, do_weighted, data_test
         r2 = r2_score(rms_residual_values_copy, yfit)
         intercept = linear.intercept_
 
-        ax.text(0.02, 1.2, 'intercept slope = %3.2f ' % slope_int, fontsize=12, fontdict={'color': 'r'})
-        ax.text(0.02, 1.1, 'intercept R$^2$ = %3.2f ' % r2_int, fontsize=12, fontdict={'color': 'r'})
-        ax.text(0.02, 1.0, 'slope = %3.2f ' % slope, fontsize=12, fontdict={'color': 'k'})
-        ax.text(0.02, 0.9, 'R$^2$ = %3.2f ' % r2, fontsize=12, fontdict={'color': 'k'})
+        ax.text(0.02, 0.95, 'intercept slope = %3.2f ' % slope_int, fontsize=12, fontdict={'color': 'r'}, transform=ax.transAxes)
+        ax.text(0.02, 0.9, 'intercept R$^2$ = %3.2f ' % r2_int, fontsize=12, fontdict={'color': 'r'}, transform=ax.transAxes)
+        ax.text(0.02, 0.85, 'slope = %3.2f ' % slope, fontsize=12, fontdict={'color': 'k'}, transform=ax.transAxes)
+        ax.text(0.02, 0.8, 'R$^2$ = %3.2f ' % r2, fontsize=12, fontdict={'color': 'k'}, transform=ax.transAxes)
 
     divider = make_axes_locatable(ax)
     axbarx = divider.append_axes("top", 1.2, pad=0.12, sharex=ax)
 
-    axbarx.bar(x=bin_values, height=num_values_per_bin, width=0.05276488, color='blue', edgecolor='black',
+    axbarx.bar(x=bin_values_copy, height=num_values_per_bin_copy, width=0.05276488, color='blue', edgecolor='black',
                alpha=0.7)
     axbarx.tick_params(labelsize=10, axis='y')
     axbarx.tick_params(labelsize=0, axis='x')
     axbarx.set_ylabel('Counts', fontsize=12)
 
     total_samples = sum(num_values_per_bin)
-    axbarx.text(0.95, round(0.67 * max(num_values_per_bin)), 'Total counts = ' + str(total_samples), fontsize=12)
+    axbarx.text(0.7, 0.5, 'Total counts = ' + str(total_samples), fontsize=12, transform=axbarx.transAxes)
 
-    ax.set_ylim(bottom=0, top=1.3)
-    axbarx.set_ylim(bottom=0, top=max(num_values_per_bin) + 50)
-    ax.set_xlim(left=0, right=1.6)
+    #ax.set_ylim(bottom=0, top=1.3)
+    axbarx.set_ylim(bottom=0, top=max(num_values_per_bin_copy) + 50)
+    #ax.set_xlim(left=0, right=1.6)
 
     fig.savefig(
         os.path.join(savepath.split('.png')[0], str(model_type) + '_residuals_vs_modelerror_' + str(data_test_type) + '.png'),

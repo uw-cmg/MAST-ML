@@ -237,9 +237,9 @@ class EnsembleRegressor():
 
             # do bootstrapping given the validation data
             if self.num_samples < 1:
-                bootstrap_idxs = random.choices(idxs, k=self.num_samples)
-            else:
                 bootstrap_idxs = random.choices(idxs, k=len(X))
+            else:
+                bootstrap_idxs = random.choices(idxs, k=self.num_samples)
             bootstrap_X = X[bootstrap_idxs]
             bootstrap_Y = Y[bootstrap_idxs]
             if 1 == len(bootstrap_X.shape):
@@ -301,7 +301,7 @@ class EnsembleRegressor():
                     print("bad estimator mae: {}".format(maes[i]))
                     print("mean mae (for ref):")
                     print(np.mean(maes))
-                    np.savetxt(self.path + "\\{}_{}_bootstrapped_dataset.csv".format(self.fold, i), self.bootstrapped_datasets[i], delimiter=",")
+                    np.savetxt(self.path + "/{}_{}_bootstrapped_dataset.csv".format(self.fold, i), self.bootstrapped_datasets[i], delimiter=",")
                     bad_idxs.append(i)
 
             if len(bad_idxs) == self.n_estimators:
