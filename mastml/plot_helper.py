@@ -291,17 +291,17 @@ def make_error_plots(run, path, is_classification, do_weighted, label, model, tr
         plot_cumulative_normalized_error(y_test_true, y_test_pred, join(path, title+'.png'), model, rf_error_method,
                                          rf_error_percentile, X=test_X, Xtrain=train_X, Xtest=test_X)
 
-        title = 'test_relative_normalized_error'
-        plot_relative_normalized_error(y_test_true, y_test_pred, join(path, title+'.png'), model, rf_error_method,
-                                         rf_error_percentile, X=test_X, Xtrain=train_X, Xtest=test_X)
-
-        title = 'test_relative_cumulative_normalized_error'
-        plot_relative_cumulative_normalized_error(y_test_true, y_test_pred, join(path, title+'.png'), model, rf_error_method,
-                                         rf_error_percentile, X=test_X, Xtrain=train_X, Xtest=test_X)
-
         # HERE, add your RMS residual vs. error plot function
         if model.__class__.__name__ in ['RandomForestRegressor', 'ExtraTreesRegressor', 'GaussianProcessRegressor',
                                         'GradientBoostingRegressor', 'EnsembleRegressor']:
+            title = 'test_relative_normalized_error'
+            plot_relative_normalized_error(y_test_true, y_test_pred, join(path, title+'.png'), model, rf_error_method,
+                                             rf_error_percentile, X=test_X, Xtrain=train_X, Xtest=test_X)
+
+            title = 'test_relative_cumulative_normalized_error'
+            plot_relative_cumulative_normalized_error(y_test_true, y_test_pred, join(path, title+'.png'), model, rf_error_method,
+                                             rf_error_percentile, X=test_X, Xtrain=train_X, Xtest=test_X)
+
             y_all_data = np.concatenate([y_test_true, y_train_true])
             plot_path = os.path.join(path.split('.png')[0], str(model.__class__.__name__) + '_residuals_vs_modelerror_test.png')
             plot_real_vs_predicted_error(y_all_data, path, plot_path, model, do_weighted, data_test_type='test')
@@ -316,6 +316,14 @@ def make_error_plots(run, path, is_classification, do_weighted, label, model, tr
             
             if model.__class__.__name__ in ['RandomForestRegressor', 'ExtraTreesRegressor', 'GaussianProcessRegressor',
                                             'GradientBoostingRegressor', 'EnsembleRegressor']:
+                title = 'validation_relative_normalized_error'
+                plot_relative_normalized_error(y_validation_true, y_validation_pred, join(path, title+'.png'), model, rf_error_method,
+                                                 rf_error_percentile, X=validation_X, Xtrain=train_X, Xtest=test_X)
+
+                title = 'validation_relative_cumulative_normalized_error'
+                plot_relative_cumulative_normalized_error(y_validation_true, y_validation_pred, join(path, title+'.png'), model, 
+                        rf_error_method, rf_error_percentile, X=validation_X, Xtrain=train_X, Xtest=test_X)
+
                 y_all_data = np.concatenate([y_test_true, y_train_true])
                 plot_path = os.path.join(path.split('.png')[0], str(model.__class__.__name__) + '_residuals_vs_modelerror_validation.png')
                 plot_real_vs_predicted_error(y_all_data, path, plot_path, model, do_weighted, data_test_type='validation')
@@ -1796,7 +1804,6 @@ def plot_relative_normalized_error(y_true, y_pred, savepath, model, rf_error_met
     maxx_one = 1
     minn_one = -1
 
-    # TODO fix for non-error-plot case
     err_avg = [(abs(e1)+abs(e2))/2 for e1, e2 in zip(err_up, err_down)]
     err_avg = np.asarray(err_avg)
     err_avg[err_avg==0.0] = 0.0001
@@ -2048,7 +2055,6 @@ def plot_average_relative_normalized_error(y_true, y_pred, savepath, has_model_e
     if nans.size:
         err_avg[nans] = 0.0
 
-    # TODO fix for non-error-plot case
     err_avg = np.asarray(err_avg)
     err_avg[err_avg==0.0] = 0.0001
     err_avg = err_avg.tolist()

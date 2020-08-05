@@ -182,7 +182,7 @@ class KerasRegressor():
         # Need to rebuild and re-compile model at every fit instance so don't have information of weights from other fits
         self.model = self.build_model()
         self.model.compile(loss=self.loss, optimizer=self.optimizer, metrics=self.metrics)
-        return self.model.fit(X, Y, epochs=self.epochs, batch_size=self.batch_size, verbose=False,
+        return self.model.fit(X, Y, epochs=self.epochs, batch_size=self.batch_size, verbose=self.verbose,
                               validation_split=self.validation_split, shuffle=self.shuffle)
 
     def predict(self, X):
