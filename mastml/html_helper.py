@@ -85,7 +85,7 @@ def make_html(outdir):
 
             # find the split_0 split_1 etc bs stuff
             for fname in os.listdir(combo):
-                if fname.startswith('split_'):
+                if fname.startswith('split_') and not fname.endswith('ipynb'):
                     show_combo(join(combo, fname), outdir)
 
     with open(join(outdir, 'index.html'), 'w') as f:

@@ -1105,10 +1105,11 @@ def mastml_run(conf_path, data_path, outdir):
                                                                  err_avg=average_error_values)
             # Here- plot predicted vs real errors for all splits, only if using RF, GBR, GPR, or ET
             if model.__class__.__name__ in ['RandomForestRegressor', 'ExtraTreesRegressor', 'GradientBoostingRegressor', 'GaussianProcessRegressor', 'EnsembleRegressor']:
+                plot_path = os.path.join(main_path.split('.png')[0], str(model.__class__.__name__) + '_residuals_vs_modelerror_test.png')
                 if MiscSettings['unweighted_error_plots']:
-                    plot_helper.plot_real_vs_predicted_error(y_true, main_path, model, False, data_test_type='test')
+                    plot_helper.plot_real_vs_predicted_error(y_true, main_path, plot_path, model, False, data_test_type='test')
                 else:
-                    plot_helper.plot_real_vs_predicted_error(y_true, main_path, model, True, data_test_type='test')
+                    plot_helper.plot_real_vs_predicted_error(y_true, main_path, plot_path, model, True, data_test_type='test')
 
             if is_validation:
                 plot_helper.plot_average_cumulative_normalized_error(y_true=y_true_validation, y_pred=y_pred_validation,
@@ -1121,10 +1122,11 @@ def mastml_run(conf_path, data_path, outdir):
                 # Use y_true here because want to normalize to full training dataset stdev
                 if model.__class__.__name__ in ['RandomForestRegressor', 'ExtraTreesRegressor',
                                                 'GradientBoostingRegressor', 'GaussianProcessRegressor', 'EnsembleRegressor']:
+                    plot_path = os.path.join(main_path.split('.png')[0], str(model.__class__.__name__) + '_residuals_vs_modelerror_validation.png')
                     if MiscSettings['unweighted_error_plots']:
-                        plot_helper.plot_real_vs_predicted_error(y_true, main_path, model, False, data_test_type='test')
+                        plot_helper.plot_real_vs_predicted_error(y_true, main_path, plot_path, model, False, data_test_type='validation')
                     else:
-                        plot_helper.plot_real_vs_predicted_error(y_true, main_path, model, True, data_test_type='test')
+                        plot_helper.plot_real_vs_predicted_error(y_true, main_path, plot_path, model, True, data_test_type='validation')
 
             plot_helper.plot_average_normalized_error(y_true=y_true, y_pred=y_pred,
                                                       savepath=join(main_path,'test_normalized_error_average_allsplits.png'),

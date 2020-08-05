@@ -131,7 +131,7 @@ def ipynb_maker(plot_func):
                       plot_helper.nice_mean, plot_helper.nice_std, plot_helper.rounder, plot_helper._set_tick_labels,
                       plot_helper._set_tick_labels_different, plot_helper._nice_range_helper, plot_helper._nearest_pow_ten,
                       plot_helper._three_sigfigs, plot_helper._n_sigfigs, plot_helper._int_if_int, plot_helper._round_up,
-                      plot_helper.prediction_intervals]
+                      plot_helper.prediction_intervals, plot_helper.parse_error_data]
         func_strings = '\n\n'.join(inspect.getsource(func) for func in core_funcs)
 
         plot_func_string = inspect.getsource(plot_func)
@@ -303,7 +303,8 @@ def make_error_plots(run, path, is_classification, do_weighted, label, model, tr
         if model.__class__.__name__ in ['RandomForestRegressor', 'ExtraTreesRegressor', 'GaussianProcessRegressor',
                                         'GradientBoostingRegressor', 'EnsembleRegressor']:
             y_all_data = np.concatenate([y_test_true, y_train_true])
-            plot_real_vs_predicted_error(y_all_data, path, model, do_weighted, data_test_type='test')
+            plot_path = os.path.join(path.split('.png')[0], str(model.__class__.__name__) + '_residuals_vs_modelerror_test.png')
+            plot_real_vs_predicted_error(y_all_data, path, plot_path, model, do_weighted, data_test_type='test')
 
         if is_validation:
             title = 'validation_cumulative_normalized_error'
@@ -316,7 +317,8 @@ def make_error_plots(run, path, is_classification, do_weighted, label, model, tr
             if model.__class__.__name__ in ['RandomForestRegressor', 'ExtraTreesRegressor', 'GaussianProcessRegressor',
                                             'GradientBoostingRegressor', 'EnsembleRegressor']:
                 y_all_data = np.concatenate([y_test_true, y_train_true])
-                plot_real_vs_predicted_error(y_all_data, path, model, do_weighted, data_test_type='validation')
+                plot_path = os.path.join(path.split('.png')[0], str(model.__class__.__name__) + '_residuals_vs_modelerror_validation.png')
+                plot_real_vs_predicted_error(y_all_data, path, plot_path, model, do_weighted, data_test_type='validation')
 
 @ipynb_maker
 def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False, title='Confusion matrix', cmap=plt.cm.Blues):
@@ -1636,6 +1638,7 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, rf_error_m
     fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
     return
 
+@ipynb_maker
 def plot_relative_cumulative_normalized_error(y_true, y_pred, savepath, model, rf_error_method, rf_error_percentile, X=None,
                                      Xtrain=None, Xtest=None):
     """
@@ -1924,6 +1927,7 @@ def plot_average_cumulative_normalized_error(y_true, y_pred, savepath, has_model
     fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
     return
 
+@ipynb_maker
 def plot_average_relative_cumulative_normalized_error(y_true, y_pred, savepath, has_model_errors, err_avg=None):
     """
     Method to plot the cumulative normalized residual errors of a model prediction
@@ -2156,10 +2160,11 @@ def plot_average_normalized_error(y_true, y_pred, savepath, has_model_errors, er
     fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
     return
 
-def plot_real_vs_predicted_error(y_true, savepath, model, do_weighted, data_test_type):
+@ipynb_maker
+def plot_real_vs_predicted_error(y_true, savefolder, savepath, model, do_weighted, data_test_type):
 
     bin_values, rms_residual_values, num_values_per_bin = parse_error_data(dataset_stdev=np.std(y_true),
-                                                                          path_to_test=savepath,
+                                                                          path_to_test=savefolder,
                                                                            data_test_type=data_test_type)
 
     model_name = model.__class__.__name__
@@ -2237,10 +2242,10 @@ def plot_real_vs_predicted_error(y_true, savepath, model, do_weighted, data_test
         r2 = r2_score(rms_residual_values_copy, yfit)
         intercept = linear.intercept_
 
-        ax.text(0.02, 0.95, 'intercept slope = %3.2f ' % slope_int, fontsize=12, fontdict={'color': 'r'}, transform=ax.transAxes)
-        ax.text(0.02, 0.9, 'intercept R$^2$ = %3.2f ' % r2_int, fontsize=12, fontdict={'color': 'r'}, transform=ax.transAxes)
-        ax.text(0.02, 0.85, 'slope = %3.2f ' % slope, fontsize=12, fontdict={'color': 'k'}, transform=ax.transAxes)
-        ax.text(0.02, 0.8, 'R$^2$ = %3.2f ' % r2, fontsize=12, fontdict={'color': 'k'}, transform=ax.transAxes)
+        ax.text(0.02, 0.925, 'intercept slope = %3.2f ' % slope_int, fontsize=12, fontdict={'color': 'r'}, transform=ax.transAxes)
+        ax.text(0.02, 0.85, 'intercept R$^2$ = %3.2f ' % r2_int, fontsize=12, fontdict={'color': 'r'}, transform=ax.transAxes)
+        ax.text(0.02, 0.775, 'slope = %3.2f ' % slope, fontsize=12, fontdict={'color': 'k'}, transform=ax.transAxes)
+        ax.text(0.02, 0.7, 'R$^2$ = %3.2f ' % r2, fontsize=12, fontdict={'color': 'k'}, transform=ax.transAxes)
 
     divider = make_axes_locatable(ax)
     axbarx = divider.append_axes("top", 1.2, pad=0.12, sharex=ax)
@@ -2252,15 +2257,13 @@ def plot_real_vs_predicted_error(y_true, savepath, model, do_weighted, data_test
     axbarx.set_ylabel('Counts', fontsize=12)
 
     total_samples = sum(num_values_per_bin)
-    axbarx.text(0.7, 0.5, 'Total counts = ' + str(total_samples), fontsize=12, transform=axbarx.transAxes)
+    axbarx.text(0.6, 0.5, 'Total counts = ' + str(total_samples), fontsize=12, transform=axbarx.transAxes)
 
     #ax.set_ylim(bottom=0, top=1.3)
     axbarx.set_ylim(bottom=0, top=max(num_values_per_bin_copy) + 50)
     #ax.set_xlim(left=0, right=1.6)
 
-    fig.savefig(
-        os.path.join(savepath.split('.png')[0], str(model_type) + '_residuals_vs_modelerror_' + str(data_test_type) + '.png'),
-        dpi=300, bbox_inches='tight')
+    fig.savefig(savepath, dpi=300, bbox_inches='tight')
 
     data_dict = {"Slope (Intercept)": slope_int,
                  "R2 (Intercept)": r2_int,
@@ -2269,7 +2272,7 @@ def plot_real_vs_predicted_error(y_true, savepath, model, do_weighted, data_test
                  "Intercept": intercept}
 
     df = pd.DataFrame().from_dict(data=data_dict)
-    df.to_csv(os.path.join(savepath, 'trendline_stuff_'+str(data_test_type)+'.csv'))
+    df.to_csv(os.path.join(savefolder, 'trendline_stuff_'+str(data_test_type)+'.csv'))
 
     return
 
