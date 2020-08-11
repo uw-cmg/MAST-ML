@@ -257,7 +257,7 @@ def make_train_test_plots(run, path, is_classification, label, model, train_X, t
                                  join(path, title+'.png'), test_metrics,
                                  title=title, label=label)
 
-def make_error_plots(run, path, is_classification, do_weighted, label, model, train_X, test_X, rf_error_method, 
+def make_error_plots(run, path, is_classification, do_weighted, num_error_bins, last_error_bin, label, model, train_X, test_X, rf_error_method,
                      rf_error_percentile, is_validation, validation_column_name, validation_X, groups=None):
 
     y_train_true, y_train_pred, y_test_true = \
@@ -304,7 +304,7 @@ def make_error_plots(run, path, is_classification, do_weighted, label, model, tr
 
             y_all_data = np.concatenate([y_test_true, y_train_true])
             plot_path = os.path.join(path.split('.png')[0], str(model.__class__.__name__) + '_residuals_vs_modelerror_test.png')
-            plot_real_vs_predicted_error(y_all_data, path, plot_path, model, do_weighted, data_test_type='test')
+            plot_real_vs_predicted_error(y_all_data, path, plot_path, model, do_weighted, num_error_bins, last_error_bin, data_test_type='test')
 
         if is_validation:
             title = 'validation_cumulative_normalized_error'
@@ -326,7 +326,7 @@ def make_error_plots(run, path, is_classification, do_weighted, label, model, tr
 
                 y_all_data = np.concatenate([y_test_true, y_train_true])
                 plot_path = os.path.join(path.split('.png')[0], str(model.__class__.__name__) + '_residuals_vs_modelerror_validation.png')
-                plot_real_vs_predicted_error(y_all_data, path, plot_path, model, do_weighted, data_test_type='validation')
+                plot_real_vs_predicted_error(y_all_data, path, plot_path, model, do_weighted, num_error_bins, last_error_bin, data_test_type='validation')
 
 @ipynb_maker
 def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False, title='Confusion matrix', cmap=plt.cm.Blues):
@@ -1477,6 +1477,11 @@ def plot_normalized_error(y_true, y_pred, savepath, model, rf_error_method, rf_e
         has_model_errors = True
         err_down, err_up, nan_indices, indices_TF = prediction_intervals(model, X, rf_error_method=rf_error_method,
                                                 rf_error_percentile=rf_error_percentile, Xtrain=Xtrain, Xtest=Xtest)
+        if nan_indices[0].size:
+            print("nans detected in errors, relevant data indices are logged in your results directory") #TODO how to log this? or is this ok?
+            nans_dict = {"data indices": nan_indices}
+            nans_df = pd.DataFrame().from_dict(data=nans_dict)
+            nans_df.to_csv(savepath.split('.png')[0]+'_nans_info.csv')
 
     # Correct for nan indices being present
     if has_model_errors:
@@ -2167,11 +2172,13 @@ def plot_average_normalized_error(y_true, y_pred, savepath, has_model_errors, er
     return
 
 @ipynb_maker
-def plot_real_vs_predicted_error(y_true, savefolder, savepath, model, do_weighted, data_test_type):
+def plot_real_vs_predicted_error(y_true, savefolder, savepath, model, do_weighted, num_error_bins, last_error_bin, data_test_type):
 
     bin_values, rms_residual_values, num_values_per_bin = parse_error_data(dataset_stdev=np.std(y_true),
                                                                           path_to_test=savefolder,
-                                                                           data_test_type=data_test_type)
+                                                                           data_test_type=data_test_type,
+                                                                           num_error_bins=num_error_bins,
+                                                                           last_error_bin=last_error_bin)
 
     model_name = model.__class__.__name__
     if model_name == 'RandomForestRegressor':
@@ -2282,7 +2289,7 @@ def plot_real_vs_predicted_error(y_true, savefolder, savepath, model, do_weighte
 
     return
 
-def parse_error_data(dataset_stdev, path_to_test, data_test_type):
+def parse_error_data(dataset_stdev, path_to_test, data_test_type, num_error_bins, last_error_bin):
     if data_test_type not in ['test', 'validation']:
         print('Error: data_test_type must be one of "test" or "validation"')
         exit()
@@ -2322,8 +2329,16 @@ def parse_error_data(dataset_stdev, path_to_test, data_test_type):
 
     erroravg_reduced_sorted, squaredresiduals_reduced_sorted = (list(t) for t in zip(*sorted(zip(erroravg_all_reduced, squaredmodelresiduals_all_reduced))))
 
-    bin_values = [0.05, 0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95, 1.05, 1.15, 1.25, 1.35, 1.45, 1.55]
-    bin_delta = 0.05
+    if num_error_bins <= 0:
+        bin_values = [0.05, 0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95, 1.05, 1.15, 1.25, 1.35, 1.45, 1.55]
+        bin_delta = 0.05
+    else:
+        if last_error_bin <= 0:
+            last_error_bin = 1.55
+        bin_delta = (float(last_error_bin) / num_error_bins) / 2.
+        bin_values = np.arange(0, last_error_bin, (bin_delta * 2.))
+        bin_values = bin_values + bin_delta
+        bin_values = bin_values.tolist()
 
     over_count = 0
     over_vals = []
@@ -2336,11 +2351,11 @@ def parse_error_data(dataset_stdev, path_to_test, data_test_type):
         med_over_val = statistics.median(over_vals)
         if med_over_val <= max(bin_values) * 2.0:
             # just add another bin and put everthing in there
-            bin_values.append(1.65)
+            bin_values.append(max(bin_values) + (bin_delta * 2.0))
         else:
             # extend histogram
             max_over_val = max(over_vals)
-            extra_bin_values = np.arange(1.65, max_over_val+1.0, 0.05)
+            extra_bin_values = np.arange(max(bin_values) + (bin_delta * 2.0), max_over_val+(bin_delta * 2.0), bin_delta)
             bin_values = np.concatenate([bin_values, extra_bin_values])
 
     rms_residual_values = list()
@@ -2350,7 +2365,7 @@ def parse_error_data(dataset_stdev, path_to_test, data_test_type):
         bin_indices = list()
         bin_residuals = list()
         for i, val in enumerate(erroravg_reduced_sorted):
-            if val > bin_value-bin_delta:
+            if val >= bin_value-bin_delta:
                 if bin_value == bin_values[len(bin_values)-1]:
                     bin_indices.append(i)
                 else:

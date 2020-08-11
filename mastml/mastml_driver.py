@@ -929,7 +929,7 @@ def mastml_run(conf_path, data_path, outdir):
             if MiscSettings['plot_error_plots']:
                 if is_validation:
                     if MiscSettings['unweighted_error_plots']:
-                        plot_helper.make_error_plots(split_result, path, is_classification, False,
+                        plot_helper.make_error_plots(split_result, path, is_classification, False, float(MiscSettings['num_error_bins']), float(MiscSettings['last_error_bin']),
                                                      label=y.name, model=model, train_X=train_X, test_X=test_X,
                                                      rf_error_method=MiscSettings['rf_error_method'],
                                                      rf_error_percentile=MiscSettings['rf_error_percentile'],
@@ -938,7 +938,7 @@ def mastml_run(conf_path, data_path, outdir):
                                                      validation_X = validation_X_forpred,
                                                      groups=grouping_data)
                     else:
-                        plot_helper.make_error_plots(split_result, path, is_classification, True,
+                        plot_helper.make_error_plots(split_result, path, is_classification, True, float(MiscSettings['num_error_bins']), float(MiscSettings['last_error_bin']),
                                                      label=y.name, model=model, train_X=train_X, test_X=test_X,
                                                      rf_error_method=MiscSettings['rf_error_method'],
                                                      rf_error_percentile=MiscSettings['rf_error_percentile'],
@@ -948,7 +948,7 @@ def mastml_run(conf_path, data_path, outdir):
                                                      groups=grouping_data)
                 else:
                     if MiscSettings['unweighted_error_plots']:
-                        plot_helper.make_error_plots(split_result, path, is_classification, False,
+                        plot_helper.make_error_plots(split_result, path, is_classification, False, float(MiscSettings['num_error_bins']), float(MiscSettings['last_error_bin']),
                                                      label=y.name, model=model, train_X=train_X, test_X=test_X,
                                                      rf_error_method=MiscSettings['rf_error_method'],
                                                      rf_error_percentile=MiscSettings['rf_error_percentile'],
@@ -957,7 +957,7 @@ def mastml_run(conf_path, data_path, outdir):
                                                      validation_X= None,
                                                      groups=grouping_data)
                     else:
-                        plot_helper.make_error_plots(split_result, path, is_classification, True,
+                        plot_helper.make_error_plots(split_result, path, is_classification, True, float(MiscSettings['num_error_bins']), float(MiscSettings['last_error_bin']),
                                                      label=y.name, model=model, train_X=train_X, test_X=test_X,
                                                      rf_error_method=MiscSettings['rf_error_method'],
                                                      rf_error_percentile=MiscSettings['rf_error_percentile'],
@@ -1107,9 +1107,9 @@ def mastml_run(conf_path, data_path, outdir):
             if model.__class__.__name__ in ['RandomForestRegressor', 'ExtraTreesRegressor', 'GradientBoostingRegressor', 'GaussianProcessRegressor', 'EnsembleRegressor']:
                 plot_path = os.path.join(main_path.split('.png')[0], str(model.__class__.__name__) + '_residuals_vs_modelerror_test.png')
                 if MiscSettings['unweighted_error_plots']:
-                    plot_helper.plot_real_vs_predicted_error(y_true, main_path, plot_path, model, False, data_test_type='test')
+                    plot_helper.plot_real_vs_predicted_error(y_true, main_path, plot_path, model, False, float(MiscSettings['num_error_bins']), float(MiscSettings['last_error_bin']), data_test_type='test')
                 else:
-                    plot_helper.plot_real_vs_predicted_error(y_true, main_path, plot_path, model, True, data_test_type='test')
+                    plot_helper.plot_real_vs_predicted_error(y_true, main_path, plot_path, model, True, float(MiscSettings['num_error_bins']), float(MiscSettings['last_error_bin']), data_test_type='test')
 
             if is_validation:
                 plot_helper.plot_average_cumulative_normalized_error(y_true=y_true_validation, y_pred=y_pred_validation,
@@ -1124,9 +1124,9 @@ def mastml_run(conf_path, data_path, outdir):
                                                 'GradientBoostingRegressor', 'GaussianProcessRegressor', 'EnsembleRegressor']:
                     plot_path = os.path.join(main_path.split('.png')[0], str(model.__class__.__name__) + '_residuals_vs_modelerror_validation.png')
                     if MiscSettings['unweighted_error_plots']:
-                        plot_helper.plot_real_vs_predicted_error(y_true, main_path, plot_path, model, False, data_test_type='validation')
+                        plot_helper.plot_real_vs_predicted_error(y_true, main_path, plot_path, model, False, float(MiscSettings['num_error_bins']), float(MiscSettings['last_error_bin']), data_test_type='validation')
                     else:
-                        plot_helper.plot_real_vs_predicted_error(y_true, main_path, plot_path, model, True, data_test_type='validation')
+                        plot_helper.plot_real_vs_predicted_error(y_true, main_path, plot_path, model, True, float(MiscSettings['num_error_bins']), float(MiscSettings['last_error_bin']), data_test_type='validation')
 
             plot_helper.plot_average_normalized_error(y_true=y_true, y_pred=y_pred,
                                                       savepath=join(main_path,'test_normalized_error_average_allsplits.png'),
