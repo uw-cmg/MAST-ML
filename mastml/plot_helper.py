@@ -2263,7 +2263,7 @@ def plot_real_vs_predicted_error(y_true, savefolder, savepath, model, do_weighte
     divider = make_axes_locatable(ax)
     axbarx = divider.append_axes("top", 1.2, pad=0.12, sharex=ax)
 
-    axbarx.bar(x=bin_values_copy, height=num_values_per_bin_copy, width=0.05276488, color='blue', edgecolor='black',
+    axbarx.bar(x=bin_values_copy, height=num_values_per_bin_copy, width=bin_values[1]-bin_values[0], color='blue', edgecolor='black',
                alpha=0.7)
     axbarx.tick_params(labelsize=10, axis='y')
     axbarx.tick_params(labelsize=0, axis='x')
