@@ -195,7 +195,63 @@ class KerasRegressor():
 # NOTE: in order to use this, other models for the custom ensemble must be defined 
 #       in the conf file with "_ensemble" somewhere in the name
 class EnsembleRegressor():
-    def __init__(self, n_estimators, num_samples, model_list, num_models):
+    """
+    Class that creates a machine learning model utilizing an ensemble of other machine learning models as a prediction mechanism.
+
+    Args:
+
+        num_samples: (int), how many samples to use per bootstrap sample. If nonpositive, defaults to the full amount of training data per cross-validation
+
+        model_list: (string array), list of models to use in the ensemble
+
+        num_models: (int array), list of how many models to use corresponding to the model at each index
+
+    Methods:
+
+        build_models: Expands the model_list to list the correct number of each model
+
+            Returns:
+
+                (string array), array of names matching models
+
+        setup: sets relevant parameters for a new cross-validation split or experimental run
+
+            Args:
+
+                path: (string), path to split folder for saving outlier datasets
+
+        fit: Constructs possible predicted values based on y data
+
+            Args:
+
+                X: (numpy array), array of X data
+
+                Y: (numpy array), array of y data
+
+        predict: Provides predicted model values based on X features
+
+            Args:
+
+                X: (numpy array), array of X features
+
+                return_std: (bool), whether to return predicted errors
+
+            Returns:
+
+                (numpy array), prediction array where all values are predicted from each X data point
+
+        stats_check_models: Analyzes predictions of models in the ensemble and marks or removes failed models
+
+            Args:
+
+                Y: (numpy array), array of Y data
+
+            Returns:
+
+                (numpy array), prediction array where failed model predictions are removed and predictions are re-calculated
+
+    """
+    def __init__(self, num_samples, model_list, num_models):
         self.model_list = model_list # should be list of strings
         self.num_models = num_models # how many of each of the specified models should be included in the ensemble
         self.n_estimators = sum(self.num_models)
@@ -236,7 +292,10 @@ class EnsembleRegressor():
             model = self.model[i]
 
             # do bootstrapping given the validation data
-            bootstrap_idxs = random.choices(idxs, k=self.num_samples)
+            if self.num_samples < 1:
+                bootstrap_idxs = random.choices(idxs, k=len(X))
+            else:
+                bootstrap_idxs = random.choices(idxs, k=self.num_samples)
             bootstrap_X = X[bootstrap_idxs]
             bootstrap_Y = Y[bootstrap_idxs]
             if 1 == len(bootstrap_X.shape):
@@ -276,7 +335,7 @@ class EnsembleRegressor():
         return np.asarray(means)
 
     # check for failed fits, warn users, and re-calculate
-    def stats_check_models(self, X, Y):
+    def stats_check_models(self, Y):
         if self.n_estimators > 10:
             maes = []
             for i in range(self.n_estimators):
@@ -298,7 +357,7 @@ class EnsembleRegressor():
                     print("bad estimator mae: {}".format(maes[i]))
                     print("mean mae (for ref):")
                     print(np.mean(maes))
-                    np.savetxt(self.path + "\\{}_{}_bootstrapped_dataset.csv".format(self.fold, i), self.bootstrapped_datasets[i], delimiter=",")
+                    np.savetxt(self.path + "/{}_{}_bootstrapped_dataset.csv".format(self.fold, i), self.bootstrapped_datasets[i], delimiter=",")
                     bad_idxs.append(i)
 
             if len(bad_idxs) == self.n_estimators:

@@ -131,7 +131,7 @@ def ipynb_maker(plot_func):
                       plot_helper.nice_mean, plot_helper.nice_std, plot_helper.rounder, plot_helper._set_tick_labels,
                       plot_helper._set_tick_labels_different, plot_helper._nice_range_helper, plot_helper._nearest_pow_ten,
                       plot_helper._three_sigfigs, plot_helper._n_sigfigs, plot_helper._int_if_int, plot_helper._round_up,
-                      plot_helper.prediction_intervals]
+                      plot_helper.prediction_intervals, plot_helper.parse_error_data]
         func_strings = '\n\n'.join(inspect.getsource(func) for func in core_funcs)
 
         plot_func_string = inspect.getsource(plot_func)
@@ -257,8 +257,8 @@ def make_train_test_plots(run, path, is_classification, label, model, train_X, t
                                  join(path, title+'.png'), test_metrics,
                                  title=title, label=label)
 
-def make_error_plots(run, path, is_classification, label, model, train_X, test_X, rf_error_method, rf_error_percentile,
-                     is_validation, validation_column_name, validation_X, groups=None):
+def make_error_plots(run, path, is_classification, do_weighted, num_error_bins, last_error_bin, label, model, train_X, test_X, rf_error_method,
+                     rf_error_percentile, is_validation, validation_column_name, validation_X, groups=None):
 
     y_train_true, y_train_pred, y_test_true = \
         run['y_train_true'], run['y_train_pred'], run['y_test_true']
@@ -294,8 +294,17 @@ def make_error_plots(run, path, is_classification, label, model, train_X, test_X
         # HERE, add your RMS residual vs. error plot function
         if model.__class__.__name__ in ['RandomForestRegressor', 'ExtraTreesRegressor', 'GaussianProcessRegressor',
                                         'GradientBoostingRegressor', 'EnsembleRegressor']:
+            title = 'test_relative_normalized_error'
+            plot_relative_normalized_error(y_test_true, y_test_pred, join(path, title+'.png'), model, rf_error_method,
+                                             rf_error_percentile, X=test_X, Xtrain=train_X, Xtest=test_X)
+
+            title = 'test_relative_cumulative_normalized_error'
+            plot_relative_cumulative_normalized_error(y_test_true, y_test_pred, join(path, title+'.png'), model, rf_error_method,
+                                             rf_error_percentile, X=test_X, Xtrain=train_X, Xtest=test_X)
+
             y_all_data = np.concatenate([y_test_true, y_train_true])
-            plot_real_vs_predicted_error(y_all_data, path, model, data_test_type='test')
+            plot_path = os.path.join(path.split('.png')[0], str(model.__class__.__name__) + '_residuals_vs_modelerror_test.png')
+            plot_real_vs_predicted_error(y_all_data, path, plot_path, model, do_weighted, num_error_bins, last_error_bin, data_test_type='test')
 
         if is_validation:
             title = 'validation_cumulative_normalized_error'
@@ -307,8 +316,17 @@ def make_error_plots(run, path, is_classification, label, model, train_X, test_X
             
             if model.__class__.__name__ in ['RandomForestRegressor', 'ExtraTreesRegressor', 'GaussianProcessRegressor',
                                             'GradientBoostingRegressor', 'EnsembleRegressor']:
+                title = 'validation_relative_normalized_error'
+                plot_relative_normalized_error(y_validation_true, y_validation_pred, join(path, title+'.png'), model, rf_error_method,
+                                                 rf_error_percentile, X=validation_X, Xtrain=train_X, Xtest=test_X)
+
+                title = 'validation_relative_cumulative_normalized_error'
+                plot_relative_cumulative_normalized_error(y_validation_true, y_validation_pred, join(path, title+'.png'), model, 
+                        rf_error_method, rf_error_percentile, X=validation_X, Xtrain=train_X, Xtest=test_X)
+
                 y_all_data = np.concatenate([y_test_true, y_train_true])
-                plot_real_vs_predicted_error(y_all_data, path, model, data_test_type='validation')
+                plot_path = os.path.join(path.split('.png')[0], str(model.__class__.__name__) + '_residuals_vs_modelerror_validation.png')
+                plot_real_vs_predicted_error(y_all_data, path, plot_path, model, do_weighted, num_error_bins, last_error_bin, data_test_type='validation')
 
 @ipynb_maker
 def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False, title='Confusion matrix', cmap=plt.cm.Blues):
@@ -1298,6 +1316,10 @@ def prediction_intervals(model, X, rf_error_method, rf_error_percentile, Xtrain,
 
         X: (numpy array), array of X features
 
+        rf_error_method: (string), which error method to use (stdev, jackknife, etc.)
+
+        rf_error_percentile: (int), percentile of errors to be used in confidence interval calculations
+
         method: (str), type of error bar to formulate (e.g. "stdev" is standard deviation of predicted errors, "confint"
         is error bar as confidence interval
 
@@ -1435,6 +1457,10 @@ def plot_normalized_error(y_true, y_pred, savepath, model, rf_error_method, rf_e
 
         model: (scikit-learn model/estimator object), a scikit-learn model object
 
+        rf_error_method: (string), which error method to use (stdev, jackknife, etc.)
+
+        rf_error_percentile: (int), percentile of errors to be used in confidence interval calculations
+
         X: (numpy array), array of X features
 
         avg_stats: (dict), dict of calculated average metrics over all CV splits
@@ -1459,6 +1485,11 @@ def plot_normalized_error(y_true, y_pred, savepath, model, rf_error_method, rf_e
         has_model_errors = True
         err_down, err_up, nan_indices, indices_TF = prediction_intervals(model, X, rf_error_method=rf_error_method,
                                                 rf_error_percentile=rf_error_percentile, Xtrain=Xtrain, Xtest=Xtest)
+        if nan_indices[0].size:
+            print("nans detected in errors, relevant data indices are logged in your results directory") #TODO how to log this? or is this ok?
+            nans_dict = {"data indices": nan_indices}
+            nans_df = pd.DataFrame().from_dict(data=nans_dict)
+            nans_df.to_csv(savepath.split('.png')[0]+'_nans_info.csv')
 
     # Correct for nan indices being present
     if has_model_errors:
@@ -1526,6 +1557,10 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, rf_error_m
         savepath: (str), path to save the plotted cumulative normalized error plot
 
         model: (scikit-learn model/estimator object), a scikit-learn model object
+
+        rf_error_method: (string), which error method to use (stdev, jackknife, etc.)
+
+        rf_error_percentile: (int), percentile of errors to be used in confidence interval calculations
 
         X: (numpy array), array of X features
 
@@ -1629,6 +1664,207 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, rf_error_m
     return
 
 @ipynb_maker
+def plot_relative_cumulative_normalized_error(y_true, y_pred, savepath, model, rf_error_method, rf_error_percentile, X=None,
+                                     Xtrain=None, Xtest=None):
+    """
+    Method to plot the relative (predicted errors / analytical Gaussian) cumulative normalized residual errors of a model prediction
+
+    Args:
+
+        y_true: (numpy array), array containing the true y data values
+
+        y_pred: (numpy array), array containing the predicted y data values
+
+        savepath: (str), path to save the plotted cumulative normalized error plot
+
+        model: (scikit-learn model/estimator object), a scikit-learn model object
+
+        rf_error_method: (string), which error method to use (stdev, jackknife, etc.)
+
+        rf_error_percentile: (int), percentile of errors to be used in confidence interval calculations
+
+        X: (numpy array), array of X features
+
+        avg_stats: (dict), dict of calculated average metrics over all CV splits
+
+    Returns:
+
+        None
+
+    """
+
+    # Here: if model is random forest or Gaussian process, get real error bars. Else, just residuals
+    model_name = model.__class__.__name__
+    models_with_error_predictions = ['RandomForestRegressor', 'GaussianProcessRegressor', 'GradientBoostingRegressor', 'EnsembleRegressor']
+    has_model_errors = False
+
+    y_pred_ = y_pred
+    y_true_ = y_true
+
+    if model_name in models_with_error_predictions:
+        has_model_errors = True
+        err_down, err_up, nan_indices, indices_TF = prediction_intervals(model, X, rf_error_method=rf_error_method,
+                                                    rf_error_percentile=rf_error_percentile,  Xtrain=Xtrain, Xtest=Xtest)
+
+    # Need to remove NaN's before plotting. These will be present when doing validation runs. Note NaN's only show up in y_pred_
+    # Correct for nan indices being present
+    if has_model_errors:
+        y_pred_ = y_pred_[indices_TF]
+        y_true_ = y_true_[indices_TF]
+
+    y_true_ = y_true_[~np.isnan(y_pred_)]
+    y_pred_ = y_pred_[~np.isnan(y_pred_)]
+
+    x_align = 0.64
+    fig, ax = make_fig_ax(x_align=x_align)
+
+    err_avg = [(abs(e1)+abs(e2))/2 for e1, e2 in zip(err_up, err_down)]
+    err_avg = np.asarray(err_avg)
+    err_avg[err_avg==0.0] = 0.0001
+    err_avg = err_avg.tolist()
+    model_errors = abs((y_true_-y_pred_)/err_avg)
+
+    analytic_gau = np.random.normal(0, 1, 10000)
+    analytic_gau = abs(analytic_gau)
+    analytic_gau = np.concatenate((analytic_gau, model_errors))
+    n_analytic = np.arange(1, len(analytic_gau) + 1) / np.float(len(analytic_gau))
+    X_analytic = np.sort(analytic_gau)
+    residuals = y_true_-y_pred_
+    normalized_residuals = abs((y_true_-y_pred_)/np.std(y_true_-y_pred_))
+    n_residuals = np.arange(1, len(normalized_residuals) + 1) / np.float(len(normalized_residuals))
+    X_residuals = np.sort(normalized_residuals) #r"$\mathrm{Predicted \/ Value}, \mathit{eV}$"
+    ax.set_xlabel(r"$\mathrm{x}/\mathit{\sigma}$", fontsize=18)
+    ax.set_ylabel("Fraction", fontsize=18)
+    ax.set_xlim([0, 3])
+
+    n_errors = np.arange(1, len(model_errors) + 1) / np.float(len(model_errors))
+    X_errors = np.sort(model_errors)
+    vals = []
+    for i in np.sort(model_errors):
+        idx = np.where(X_analytic == i)
+        vals.append(n_analytic[idx][0])
+    n_rel = n_errors / np.asarray(vals)
+    X_rel = X_errors
+    ax.step(X_rel, n_rel, linewidth=3, color='black', label="Relative Errors")
+    # Save data to csv file
+    data_dict = {"Y True": y_true, "Y Pred": y_pred, "Analytical Gaussian values": analytic_gau, "Analytical Gaussian (sorted, blue data)": X_analytic,
+                 "model residuals": residuals,
+                 "Model normalized residuals": normalized_residuals, "Model Residuals (sorted, green data)": X_residuals,
+                 "error_bars_up": err_up, "error_bars_down": err_down,
+                 "Model error values (r value: (ytrue-ypred)/(model error avg))": model_errors,
+                 "Model errors (sorted, purple values)": X_errors,
+                 "Model relative errors (sorted, black values)": X_rel}
+    # Save this way to avoid issue with different array sizes in data_dict
+    df = pd.DataFrame.from_dict(data_dict, orient='index')
+    df = df.transpose()
+    df.to_csv(savepath.split('.png')[0]+'.csv', index=False)
+
+    ax.legend(loc=0, fontsize=14, frameon=False)
+    fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
+    return
+
+@ipynb_maker
+def plot_relative_normalized_error(y_true, y_pred, savepath, model, rf_error_method, rf_error_percentile, X=None,
+                                     Xtrain=None, Xtest=None):
+    """
+    Method to plot the relative (predicted errors / analytical Gaussian) r / N (error dist / normal dist)
+
+    Args:
+
+        y_true: (numpy array), array containing the true y data values
+
+        y_pred: (numpy array), array containing the predicted y data values
+
+        savepath: (str), path to save the plotted cumulative normalized error plot
+
+        model: (scikit-learn model/estimator object), a scikit-learn model object
+
+        rf_error_method: (string), which error method to use (stdev, jackknife, etc.)
+
+        rf_error_percentile: (int), percentile of errors to be used in confidence interval calculations
+
+        X: (numpy array), array of X features
+
+        avg_stats: (dict), dict of calculated average metrics over all CV splits
+
+    Returns:
+
+        None
+
+    """
+
+    path = os.path.dirname(savepath)
+    # Here: if model is random forest or Gaussian process, get real error bars. Else, just residuals
+    model_name = model.__class__.__name__
+    # TODO: also add support for Gradient Boosted Regressor
+    models_with_error_predictions = ['RandomForestRegressor', 'GaussianProcessRegressor', 'GradientBoostingRegressor', 'EnsembleRegressor']
+    has_model_errors = False
+
+    y_pred_ = y_pred
+    y_true_ = y_true
+
+    if model_name in models_with_error_predictions:
+        has_model_errors = True
+        err_down, err_up, nan_indices, indices_TF = prediction_intervals(model, X, rf_error_method=rf_error_method,
+                                                rf_error_percentile=rf_error_percentile, Xtrain=Xtrain, Xtest=Xtest)
+
+    # Correct for nan indices being present
+    if has_model_errors:
+        y_pred_ = y_pred_[indices_TF]
+        y_true_ = y_true_[indices_TF]
+
+    x_align = 0.64
+    fig, ax = make_fig_ax(x_align=x_align)
+    mu = 0
+    sigma = 1
+    residuals = (y_true_ - y_pred_)
+    normalized_residuals = (y_true_-y_pred_)/np.std(y_true_-y_pred_)
+    density_residuals = gaussian_kde(normalized_residuals)
+    x_three = np.linspace(mu - 3 * sigma, mu + 3 * sigma, y_true_.shape[0])
+    x_one = np.linspace(mu - 1 * sigma, mu + 1 * sigma, y_true_.shape[0])
+    yeah_vals_three = norm.pdf(x_three, mu, sigma)
+    yeah_vals_one = norm.pdf(x_one, mu, sigma)
+    maxx_three = 3
+    minn_three = -3
+    maxx_one = 1
+    minn_one = -1
+
+    err_avg = [(abs(e1)+abs(e2))/2 for e1, e2 in zip(err_up, err_down)]
+    err_avg = np.asarray(err_avg)
+    err_avg[err_avg==0.0] = 0.0001
+    err_avg = err_avg.tolist()
+    model_errors = (y_true_-y_pred_)/err_avg
+    density_errors = gaussian_kde(model_errors)
+    rel_vals_three = density_errors(x_three) / yeah_vals_three
+    rel_vals_one = density_errors(x_one) / yeah_vals_one
+    maxy_three = max(rel_vals_three)
+    miny_three = min(rel_vals_three)
+    maxy_one = max(rel_vals_one)
+    miny_one = min(rel_vals_one)
+    ax.plot(x_three, rel_vals_three, linewidth=4, color='black', label="Relative Errors")
+    # Save data to csv file
+    data_dict = {"Y True": y_true, "Y Pred": y_pred, "Plotted x values": x_three, "error_bars_up": err_up,
+                 "error_bars_down": err_down, "error_avg": err_avg,
+                 "analytical gaussian": norm.pdf(x_three, mu, sigma),
+                 "model residuals": residuals,
+                 "model normalized residuals": density_residuals(x_three),
+                 "model errors": density_errors(x_three),
+                 "relative model errors (plotted y black values)": rel_vals_three}
+    pd.DataFrame(data_dict).to_csv(savepath.split('.png')[0]+'.csv')
+
+    ax.legend(loc=0, fontsize=12, frameon=False)
+    ax.set_xlabel(r"$\mathrm{x}/\mathit{\sigma}$", fontsize=18)
+    ax.set_ylabel("Relative probability density", fontsize=18)
+    fig.savefig(savepath+"three.png", dpi=DPI, bbox_inches='tight')
+    ax.clear()
+    ax.plot(x_one, rel_vals_one, linewidth=4, color='black', label="Relative Errors")
+    ax.legend(loc=0, fontsize=12, frameon=False)
+    ax.set_xlabel(r"$\mathrm{x}/\mathit{\sigma}$", fontsize=18)
+    ax.set_ylabel("Relative probability density", fontsize=18)
+    fig.savefig(savepath+"one.png", dpi=DPI, bbox_inches='tight')
+    return
+
+@ipynb_maker
 def plot_average_cumulative_normalized_error(y_true, y_pred, savepath, has_model_errors, err_avg=None):
     """
     Method to plot the cumulative normalized residual errors of a model prediction
@@ -1641,11 +1877,9 @@ def plot_average_cumulative_normalized_error(y_true, y_pred, savepath, has_model
 
         savepath: (str), path to save the plotted cumulative normalized error plot
 
-        model: (scikit-learn model/estimator object), a scikit-learn model object
+        has_model_errors: (bool), model used has predicted errors
 
-        X: (numpy array), array of X features
-
-        avg_stats: (dict), dict of calculated average metrics over all CV splits
+        err_avg: (numpy array), array containing average predicted errors
 
     Returns:
 
@@ -1724,6 +1958,158 @@ def plot_average_cumulative_normalized_error(y_true, y_pred, savepath, has_model
     return
 
 @ipynb_maker
+def plot_average_relative_cumulative_normalized_error(y_true, y_pred, savepath, has_model_errors, err_avg=None):
+    """
+    Method to plot the relative (predicted errors / analytical Gaussian) cumulative normalized residual errors of a model prediction
+
+    Args:
+
+        y_true: (numpy array), array containing the true y data values
+
+        y_pred: (numpy array), array containing the predicted y data values
+
+        savepath: (str), path to save the plotted cumulative normalized error plot
+
+        has_model_errors: (bool), model used has predicted errors
+
+        err_avg: (numpy array), array containing average predicted errors
+
+    Returns:
+
+        None
+
+    """
+
+    x_align = 0.64
+    fig, ax = make_fig_ax(x_align=x_align)
+
+    err_avg = np.asarray(err_avg)
+    err_avg[err_avg==0.0] = 0.0001
+    err_avg = err_avg.tolist()
+    model_errors = abs((y_true-y_pred)/err_avg)
+    model_errors = model_errors[~np.isnan(model_errors)]
+
+    analytic_gau = np.random.normal(0, 1, 10000)
+    analytic_gau = abs(analytic_gau)
+    analytic_gau = np.concatenate((analytic_gau, model_errors))
+    n_analytic = np.arange(1, len(analytic_gau) + 1) / np.float(len(analytic_gau))
+    X_analytic = np.sort(analytic_gau)
+    residuals = y_true-y_pred
+    residuals = residuals[~np.isnan(residuals)]
+    normalized_residuals = abs((y_true-y_pred)/np.std(y_true-y_pred))
+    n_residuals = np.arange(1, len(normalized_residuals) + 1) / np.float(len(normalized_residuals))
+    X_residuals = np.sort(normalized_residuals) #r"$\mathrm{Predicted \/ Value}, \mathit{eV}$"
+    ax.set_xlabel(r"$\mathrm{x}/\mathit{\sigma}$", fontsize=18)
+    ax.set_ylabel("Fraction", fontsize=18)
+    ax.set_xlim([0, 3])
+
+    n_errors = np.arange(1, len(model_errors) + 1) / np.float(len(model_errors))
+    X_errors = np.sort(model_errors)
+    vals = []
+    for i in np.sort(model_errors):
+        idx = np.where(X_analytic == i)
+        vals.append(n_analytic[idx][0])
+    n_rel = n_errors / np.asarray(vals)
+    X_rel = X_errors
+    ax.step(X_rel, n_rel, linewidth=3, color='black', label="Relative Errors")
+    # Save data to csv file
+    data_dict = {"Y True": y_true, "Y Pred": y_pred, "Analytical Gaussian values": analytic_gau,
+                 "Analytical Gaussian (sorted, blue data)": X_analytic,
+                 "model residuals": residuals,
+                 "Model normalized residuals": normalized_residuals, "Model Residuals (sorted, green data)": X_residuals,
+                 "Model error values (r value: (ytrue-ypred)/(model error avg))": model_errors,
+                 "Model errors (sorted, purple values)": X_errors,
+                 "Model relative errors (sorted, black values)": X_rel}
+    # Save this way to avoid issue with different array sizes in data_dict
+    df = pd.DataFrame.from_dict(data_dict, orient='index')
+    df = df.transpose()
+    df.to_csv(savepath.split('.png')[0]+'.csv', index=False)
+
+    ax.legend(loc=0, fontsize=14, frameon=False)
+    ax.set_ylim(bottom=0.0, top=3.0)
+    fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
+    return
+
+@ipynb_maker
+def plot_average_relative_normalized_error(y_true, y_pred, savepath, has_model_errors, err_avg=None):
+    """
+    Method to plot the relative (predicted errors / analytica Gaussian) r / N (error dist / normal dist)
+
+    Args:
+
+        y_true: (numpy array), array containing the true y data values
+
+        y_pred: (numpy array), array containing the predicted y data values
+
+        savepath: (str), path to save the plotted cumulative normalized error plot
+
+        has_model_errors: (bool), model used has predicted errors
+
+        err_avg: (numpy array), array containing average predicted errors
+
+    Returns:
+
+        None
+
+    """
+    x_align = 0.64
+    fig, ax = make_fig_ax(x_align=x_align)
+    mu = 0
+    sigma = 1
+    residuals = y_true - y_pred
+    residuals = residuals[~np.isnan(residuals)]
+    normalized_residuals = (y_true-y_pred)/np.std(y_true-y_pred)
+    density_residuals = gaussian_kde(normalized_residuals)
+    x_three = np.linspace(mu - 3 * sigma, mu + 3 * sigma, y_true.shape[0])
+    x_one = np.linspace(mu - 1 * sigma, mu + 1 * sigma, y_true.shape[0])
+    yeah_vals_three = norm.pdf(x_three, mu, sigma)
+    yeah_vals_one = norm.pdf(x_one, mu, sigma)
+    maxx_three = 3
+    minn_three = -3
+    maxx_one = 1
+    minn_one = -1
+
+    nans = np.argwhere(np.isnan(err_avg)).tolist()
+    nans = np.squeeze(nans)
+    if nans.size:
+        err_avg[nans] = 0.0
+
+    err_avg = np.asarray(err_avg)
+    err_avg[err_avg==0.0] = 0.0001
+    err_avg = err_avg.tolist()
+    model_errors = (y_true-y_pred)/err_avg
+    model_errors = model_errors[~np.isnan(model_errors)]
+    density_errors = gaussian_kde(model_errors)
+    rel_vals_three = density_errors(x_three) / yeah_vals_three
+    rel_vals_one = density_errors(x_one) / yeah_vals_one
+    maxy_three = max(rel_vals_three)
+    miny_three = min(rel_vals_three)
+    maxy_one = max(rel_vals_one)
+    miny_one = min(rel_vals_one)
+    ax.plot(x_three, rel_vals_three, linewidth=4, color='black', label="Relative Errors")
+    # Save data to csv file
+    data_dict = {"Y True": y_true, "Y Pred": y_pred, "Plotted x values": x_three, "Model errors": err_avg,
+                 "analytical gaussian": norm.pdf(x_three, mu, sigma),
+                 "model residuals": residuals,
+                 "model normalized residuals": density_residuals(x_three),
+                 "model errors": density_errors(x_three),
+                 "relative model errors (plotted y black values)": rel_vals_three}
+    pd.DataFrame(data_dict).to_csv(savepath.split('.png')[0]+'.csv')
+
+    ax.legend(loc=0, fontsize=12, frameon=False)
+    ax.set_xlabel(r"$\mathrm{x}/\mathit{\sigma}$", fontsize=18)
+    ax.set_ylabel("Relative probability density", fontsize=18)
+    fig.savefig(savepath+"three.png", dpi=DPI, bbox_inches='tight')
+    ax.clear()
+    ax.plot(x_one, rel_vals_one, linewidth=4, color='black', label="Relative Errors")
+    ax.legend(loc=0, fontsize=12, frameon=False)
+    ax.set_xlabel(r"$\mathrm{x}/\mathit{\sigma}$", fontsize=18)
+    ax.set_ylabel("Relative probability density", fontsize=18)
+    fig.savefig(savepath+"one.png", dpi=DPI, bbox_inches='tight')
+
+    return
+
+@ipynb_maker
 def plot_average_normalized_error(y_true, y_pred, savepath, has_model_errors, err_avg=None):
     """
     Method to plot the normalized residual errors of a model prediction
@@ -1736,11 +2122,9 @@ def plot_average_normalized_error(y_true, y_pred, savepath, has_model_errors, er
 
         savepath: (str), path to save the plotted normalized error plot
 
-        model: (scikit-learn model/estimator object), a scikit-learn model object
+        has_model_errors: (bool), model used has predicted errors
 
-        X: (numpy array), array of X features
-
-        avg_stats: (dict), dict of calculated average metrics over all CV splits
+        err_avg: (numpy array), array containing average predicted errors
 
     Returns:
 
@@ -1799,11 +2183,40 @@ def plot_average_normalized_error(y_true, y_pred, savepath, has_model_errors, er
     fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
     return
 
-def plot_real_vs_predicted_error(y_true, savepath, model, data_test_type):
+@ipynb_maker
+def plot_real_vs_predicted_error(y_true, savefolder, savepath, model, do_weighted, num_error_bins, last_error_bin, data_test_type):
+    """
+    Method to plot residuals vs predicted errors
+
+    Args:
+
+        y_true: (numpy array), array containing the true y data values
+
+        savefolder: (str), path to save folder for plots, data, etc.
+
+        savepath: (str), path to save the plotted normalized error plot
+
+        model: (scikit-learn model object), a scikit-learn/mastml model estimator
+
+        do_weighted: (bool), whether or not to use weighting in error plot trendlines
+
+        num_error_bins: (int), how many error bins to use in error plot
+
+        last_error_bin: (float), value of last error bin
+
+        data_test_type: (str), type of prediction run (test or validation)
+
+    Returns:
+
+        None
+
+    """
 
     bin_values, rms_residual_values, num_values_per_bin = parse_error_data(dataset_stdev=np.std(y_true),
-                                                                          path_to_test=savepath,
-                                                                           data_test_type=data_test_type)
+                                                                          path_to_test=savefolder,
+                                                                           data_test_type=data_test_type,
+                                                                           num_error_bins=num_error_bins,
+                                                                           last_error_bin=last_error_bin)
 
     model_name = model.__class__.__name__
     if model_name == 'RandomForestRegressor':
@@ -1825,7 +2238,8 @@ def plot_real_vs_predicted_error(y_true, savepath, model, data_test_type):
     fig, ax = make_fig_ax(aspect_ratio=0.5, x_align=0.65)
 
     ax.scatter(bin_values[0:10], rms_residual_values[0:10], s=100, color='blue', alpha=0.7)
-    ax.scatter(bin_values[10:], rms_residual_values[10:], s=100, color='red', alpha=0.7)
+    #ax.scatter(bin_values[10:], rms_residual_values[10:], s=100, color='red', alpha=0.7)
+    ax.scatter(bin_values[10:], rms_residual_values[10:], s=100, color='blue', alpha=0.7)
 
     ax.set_xlabel(str(model_type) + ' model errors / dataset stdev', fontsize=12)
     ax.set_ylabel('RMS Absolute residuals\n / dataset stdev', fontsize=12)
@@ -1843,49 +2257,31 @@ def plot_real_vs_predicted_error(y_true, savepath, model, data_test_type):
     bin_values_copy[:] = bin_values
     rms_residual_values_copy = np.empty_like(rms_residual_values)
     rms_residual_values_copy[:] = rms_residual_values
+    num_values_per_bin_copy = np.empty_like(num_values_per_bin)
+    num_values_per_bin_copy[:] = num_values_per_bin
     bin_values_copy = np.delete(bin_values_copy, nans)
     rms_residual_values_copy = np.delete(rms_residual_values_copy, nans)
+    num_values_per_bin_copy = np.delete(num_values_per_bin_copy, nans)
 
-    # BEGIN OLD CODE
-    # --------------
-    #lowval = 0
-    #if len(nans) > 0:
-    #    if nans[0][0] == 0:
-    #        nans = nans[1:]
-    #        lowval = 1
-    #        if len(nans) > 0:
-    #            if nans[0][0] == 1:
-    #                nans = nans[1:]
-    #                lowval = 2
-    #                if len(nans) > 0:
-    #                    if nans[0][0] == 2:
-    #                        nans = nans[1:]
-    #                        lowval = 3
-    #                        if len(nans) > 0:
-    #                            if nans[0][0] == 3:
-    #                                nans = nans[1:]
-    #                                lowval = 4
-
-    #try:
-    #    val = min(nans)[0]
-    #except ValueError:
-    #    val = 10
-    #if val > 10:
-    #    val = 10
-
-    #linear.fit(np.array(bin_values[lowval:val]).reshape(-1, 1), rms_residual_values[lowval:val])
-
-    #yfit = linear.predict(np.array(bin_values[lowval:val]).reshape(-1, 1))
-    #ax.plot(bin_values[lowval:val], yfit, 'k--', linewidth=2)
-    #slope = linear.coef_
-    #r2 = r2_score(rms_residual_values[lowval:val], yfit)
-    # --------------
+    rel_zeros = []
+    for idx, i in enumerate(reversed(num_values_per_bin_copy)):
+        if 0 != i:
+            break
+        else:
+            rel_zeros.append(len(num_values_per_bin_copy) - 1 - idx)
+    bin_values_copy = np.delete(bin_values_copy, rel_zeros)
+    rms_residual_values_copy = np.delete(rms_residual_values_copy, rel_zeros)
+    num_values_per_bin_copy = np.delete(num_values_per_bin_copy, rel_zeros)
 
     if not rms_residual_values_copy.size:
         print("---WARNING: ALL ERRORS TOO LARGE FOR PLOTTING---")
     else:
-        linear_int.fit(np.array(bin_values_copy).reshape(-1, 1), rms_residual_values_copy)
-        linear.fit(np.array(bin_values_copy).reshape(-1, 1), rms_residual_values_copy)
+        if do_weighted:
+            linear_int.fit(np.array(bin_values_copy).reshape(-1, 1), rms_residual_values_copy, num_values_per_bin_copy)
+            linear.fit(np.array(bin_values_copy).reshape(-1, 1), rms_residual_values_copy, num_values_per_bin_copy)
+        else:
+            linear_int.fit(np.array(bin_values_copy).reshape(-1, 1), rms_residual_values_copy)
+            linear.fit(np.array(bin_values_copy).reshape(-1, 1), rms_residual_values_copy)
 
         yfit_int = linear_int.predict(np.array(bin_values_copy).reshape(-1, 1))
         yfit = linear.predict(np.array(bin_values_copy).reshape(-1, 1))
@@ -1895,35 +2291,67 @@ def plot_real_vs_predicted_error(y_true, savepath, model, data_test_type):
         r2_int = r2_score(rms_residual_values_copy, yfit_int)
         slope = linear.coef_
         r2 = r2_score(rms_residual_values_copy, yfit)
+        intercept = linear.intercept_
 
-        ax.text(0.02, 1.2, 'intercept slope = %3.2f ' % slope_int, fontsize=12, fontdict={'color': 'r'})
-        ax.text(0.02, 1.1, 'intercept R$^2$ = %3.2f ' % r2_int, fontsize=12, fontdict={'color': 'r'})
-        ax.text(0.02, 1.0, 'slope = %3.2f ' % slope, fontsize=12, fontdict={'color': 'k'})
-        ax.text(0.02, 0.9, 'R$^2$ = %3.2f ' % r2, fontsize=12, fontdict={'color': 'k'})
+        ax.text(0.02, 0.925, 'intercept slope = %3.2f ' % slope_int, fontsize=12, fontdict={'color': 'r'}, transform=ax.transAxes)
+        ax.text(0.02, 0.85, 'intercept R$^2$ = %3.2f ' % r2_int, fontsize=12, fontdict={'color': 'r'}, transform=ax.transAxes)
+        ax.text(0.02, 0.775, 'slope = %3.2f ' % slope, fontsize=12, fontdict={'color': 'k'}, transform=ax.transAxes)
+        ax.text(0.02, 0.7, 'R$^2$ = %3.2f ' % r2, fontsize=12, fontdict={'color': 'k'}, transform=ax.transAxes)
 
     divider = make_axes_locatable(ax)
     axbarx = divider.append_axes("top", 1.2, pad=0.12, sharex=ax)
 
-    axbarx.bar(x=bin_values, height=num_values_per_bin, width=0.05276488, color='blue', edgecolor='black',
+    axbarx.bar(x=bin_values_copy, height=num_values_per_bin_copy, width=bin_values[1]-bin_values[0], color='blue', edgecolor='black',
                alpha=0.7)
     axbarx.tick_params(labelsize=10, axis='y')
     axbarx.tick_params(labelsize=0, axis='x')
     axbarx.set_ylabel('Counts', fontsize=12)
 
     total_samples = sum(num_values_per_bin)
-    axbarx.text(0.95, round(0.67 * max(num_values_per_bin)), 'Total counts = ' + str(total_samples), fontsize=12)
+    axbarx.text(0.6, 0.5, 'Total counts = ' + str(total_samples), fontsize=12, transform=axbarx.transAxes)
 
-    ax.set_ylim(bottom=0, top=max(1.3, max(rms_residual_values)))
-    axbarx.set_ylim(bottom=0, top=max(num_values_per_bin) + 50)
-    ax.set_xlim(left=0, right=max(max(bin_values_copy) + 0.05, 1.6))
+    #ax.set_ylim(bottom=0, top=1.3)
+    axbarx.set_ylim(bottom=0, top=max(num_values_per_bin_copy) + 50)
+    #ax.set_xlim(left=0, right=1.6)
 
-    fig.savefig(
-        os.path.join(savepath.split('.png')[0], str(model_type) + '_residuals_vs_modelerror_' + str(data_test_type) + '.png'),
-        dpi=300, bbox_inches='tight')
+    fig.savefig(savepath, dpi=300, bbox_inches='tight')
+
+    data_dict = {"Slope (Intercept)": slope_int,
+                 "R2 (Intercept)": r2_int,
+                 "Slope": slope,
+                 "R2": r2,
+                 "Intercept": intercept}
+
+    df = pd.DataFrame().from_dict(data=data_dict)
+    df.to_csv(os.path.join(savefolder, 'trendline_stuff_'+str(data_test_type)+'.csv'))
 
     return
 
-def parse_error_data(dataset_stdev, path_to_test, data_test_type):
+def parse_error_data(dataset_stdev, path_to_test, data_test_type, num_error_bins, last_error_bin):
+    """
+    Method to get error binning information from residuals and predicted error data
+
+    Args:
+
+        dataset_stdev: (float), standard deviation of true y values
+
+        path_to_test: (str), folder containing saved data and error data
+
+        data_test_type: (str), type of prediction run (test or validation)
+
+        num_error_bins: (int), how many error bins to use in error plot
+
+        last_error_bin: (float), value of last error bin
+
+    Returns:
+
+        bin_values: (numpy array), array of values indicating the centers of bins for residual binning
+
+        rms_residual_values: (numpy array), array of RMSE values to be binned
+
+        num_values_per_bin: (numpy array), number of binned RMSE values for each bin
+
+    """
     if data_test_type not in ['test', 'validation']:
         print('Error: data_test_type must be one of "test" or "validation"')
         exit()
@@ -1963,8 +2391,16 @@ def parse_error_data(dataset_stdev, path_to_test, data_test_type):
 
     erroravg_reduced_sorted, squaredresiduals_reduced_sorted = (list(t) for t in zip(*sorted(zip(erroravg_all_reduced, squaredmodelresiduals_all_reduced))))
 
-    bin_values = [0.05, 0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95, 1.05, 1.15, 1.25, 1.35, 1.45, 1.55]
-    bin_delta = 0.05
+    if num_error_bins <= 0:
+        bin_values = [0.05, 0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95, 1.05, 1.15, 1.25, 1.35, 1.45, 1.55]
+        bin_delta = 0.05
+    else:
+        if last_error_bin <= 0:
+            last_error_bin = 1.55
+        bin_delta = (float(last_error_bin) / num_error_bins) / 2.
+        bin_values = np.arange(0, last_error_bin, (bin_delta * 2.))
+        bin_values = bin_values + bin_delta
+        bin_values = bin_values.tolist()
 
     over_count = 0
     over_vals = []
@@ -1977,11 +2413,11 @@ def parse_error_data(dataset_stdev, path_to_test, data_test_type):
         med_over_val = statistics.median(over_vals)
         if med_over_val <= max(bin_values) * 2.0:
             # just add another bin and put everthing in there
-            bin_values.append(1.65)
+            bin_values.append(max(bin_values) + (bin_delta * 2.0))
         else:
             # extend histogram
             max_over_val = max(over_vals)
-            extra_bin_values = np.arange(1.65, max_over_val+1.0, 0.05)
+            extra_bin_values = np.arange(max(bin_values) + (bin_delta * 2.0), max_over_val+(bin_delta * 2.0), bin_delta)
             bin_values = np.concatenate([bin_values, extra_bin_values])
 
     rms_residual_values = list()
@@ -1991,7 +2427,7 @@ def parse_error_data(dataset_stdev, path_to_test, data_test_type):
         bin_indices = list()
         bin_residuals = list()
         for i, val in enumerate(erroravg_reduced_sorted):
-            if val > bin_value-bin_delta:
+            if val >= bin_value-bin_delta:
                 if bin_value == bin_values[len(bin_values)-1]:
                     bin_indices.append(i)
                 else:

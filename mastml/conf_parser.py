@@ -204,7 +204,7 @@ def parse_conf_file(filepath, from_dict=False):
 
     def check_and_boolify_plot_settings():
         default_false = ['plot_each_feature_vs_target', 'rf_error_method', 'rf_error_percentile',
-                         'normalize_target_feature']
+                         'normalize_target_feature','unweighted_error_plots','num_error_bins','last_error_bin']
         default_true = ['plot_target_histogram', 'plot_train_test_plots', 'plot_predicted_vs_true', 'plot_error_plots',
                          'plot_predicted_vs_true_average', 'plot_best_worst_per_point']
         all_settings = default_false + default_true
