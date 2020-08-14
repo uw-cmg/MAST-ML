@@ -1316,6 +1316,10 @@ def prediction_intervals(model, X, rf_error_method, rf_error_percentile, Xtrain,
 
         X: (numpy array), array of X features
 
+        rf_error_method: (string), which error method to use (stdev, jackknife, etc.)
+
+        rf_error_percentile: (int), percentile of errors to be used in confidence interval calculations
+
         method: (str), type of error bar to formulate (e.g. "stdev" is standard deviation of predicted errors, "confint"
         is error bar as confidence interval
 
@@ -1453,6 +1457,10 @@ def plot_normalized_error(y_true, y_pred, savepath, model, rf_error_method, rf_e
 
         model: (scikit-learn model/estimator object), a scikit-learn model object
 
+        rf_error_method: (string), which error method to use (stdev, jackknife, etc.)
+
+        rf_error_percentile: (int), percentile of errors to be used in confidence interval calculations
+
         X: (numpy array), array of X features
 
         avg_stats: (dict), dict of calculated average metrics over all CV splits
@@ -1549,6 +1557,10 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, rf_error_m
         savepath: (str), path to save the plotted cumulative normalized error plot
 
         model: (scikit-learn model/estimator object), a scikit-learn model object
+
+        rf_error_method: (string), which error method to use (stdev, jackknife, etc.)
+
+        rf_error_percentile: (int), percentile of errors to be used in confidence interval calculations
 
         X: (numpy array), array of X features
 
@@ -1655,7 +1667,7 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, rf_error_m
 def plot_relative_cumulative_normalized_error(y_true, y_pred, savepath, model, rf_error_method, rf_error_percentile, X=None,
                                      Xtrain=None, Xtest=None):
     """
-    Method to plot the cumulative normalized residual errors of a model prediction
+    Method to plot the relative (predicted errors / analytical Gaussian) cumulative normalized residual errors of a model prediction
 
     Args:
 
@@ -1666,6 +1678,10 @@ def plot_relative_cumulative_normalized_error(y_true, y_pred, savepath, model, r
         savepath: (str), path to save the plotted cumulative normalized error plot
 
         model: (scikit-learn model/estimator object), a scikit-learn model object
+
+        rf_error_method: (string), which error method to use (stdev, jackknife, etc.)
+
+        rf_error_percentile: (int), percentile of errors to be used in confidence interval calculations
 
         X: (numpy array), array of X features
 
@@ -1751,7 +1767,7 @@ def plot_relative_cumulative_normalized_error(y_true, y_pred, savepath, model, r
 def plot_relative_normalized_error(y_true, y_pred, savepath, model, rf_error_method, rf_error_percentile, X=None,
                                      Xtrain=None, Xtest=None):
     """
-    Method to plot the r / N (error dist / normal dist)
+    Method to plot the relative (predicted errors / analytical Gaussian) r / N (error dist / normal dist)
 
     Args:
 
@@ -1762,6 +1778,10 @@ def plot_relative_normalized_error(y_true, y_pred, savepath, model, rf_error_met
         savepath: (str), path to save the plotted cumulative normalized error plot
 
         model: (scikit-learn model/estimator object), a scikit-learn model object
+
+        rf_error_method: (string), which error method to use (stdev, jackknife, etc.)
+
+        rf_error_percentile: (int), percentile of errors to be used in confidence interval calculations
 
         X: (numpy array), array of X features
 
@@ -1857,11 +1877,9 @@ def plot_average_cumulative_normalized_error(y_true, y_pred, savepath, has_model
 
         savepath: (str), path to save the plotted cumulative normalized error plot
 
-        model: (scikit-learn model/estimator object), a scikit-learn model object
+        has_model_errors: (bool), model used has predicted errors
 
-        X: (numpy array), array of X features
-
-        avg_stats: (dict), dict of calculated average metrics over all CV splits
+        err_avg: (numpy array), array containing average predicted errors
 
     Returns:
 
@@ -1942,7 +1960,7 @@ def plot_average_cumulative_normalized_error(y_true, y_pred, savepath, has_model
 @ipynb_maker
 def plot_average_relative_cumulative_normalized_error(y_true, y_pred, savepath, has_model_errors, err_avg=None):
     """
-    Method to plot the cumulative normalized residual errors of a model prediction
+    Method to plot the relative (predicted errors / analytical Gaussian) cumulative normalized residual errors of a model prediction
 
     Args:
 
@@ -1952,11 +1970,9 @@ def plot_average_relative_cumulative_normalized_error(y_true, y_pred, savepath, 
 
         savepath: (str), path to save the plotted cumulative normalized error plot
 
-        model: (scikit-learn model/estimator object), a scikit-learn model object
+        has_model_errors: (bool), model used has predicted errors
 
-        X: (numpy array), array of X features
-
-        avg_stats: (dict), dict of calculated average metrics over all CV splits
+        err_avg: (numpy array), array containing average predicted errors
 
     Returns:
 
@@ -2017,7 +2033,7 @@ def plot_average_relative_cumulative_normalized_error(y_true, y_pred, savepath, 
 @ipynb_maker
 def plot_average_relative_normalized_error(y_true, y_pred, savepath, has_model_errors, err_avg=None):
     """
-    Method to plot the r / N (error dist / normal dist)
+    Method to plot the relative (predicted errors / analytica Gaussian) r / N (error dist / normal dist)
 
     Args:
 
@@ -2027,11 +2043,9 @@ def plot_average_relative_normalized_error(y_true, y_pred, savepath, has_model_e
 
         savepath: (str), path to save the plotted cumulative normalized error plot
 
-        model: (scikit-learn model/estimator object), a scikit-learn model object
+        has_model_errors: (bool), model used has predicted errors
 
-        X: (numpy array), array of X features
-
-        avg_stats: (dict), dict of calculated average metrics over all CV splits
+        err_avg: (numpy array), array containing average predicted errors
 
     Returns:
 
@@ -2108,11 +2122,9 @@ def plot_average_normalized_error(y_true, y_pred, savepath, has_model_errors, er
 
         savepath: (str), path to save the plotted normalized error plot
 
-        model: (scikit-learn model/estimator object), a scikit-learn model object
+        has_model_errors: (bool), model used has predicted errors
 
-        X: (numpy array), array of X features
-
-        avg_stats: (dict), dict of calculated average metrics over all CV splits
+        err_avg: (numpy array), array containing average predicted errors
 
     Returns:
 
@@ -2173,6 +2185,32 @@ def plot_average_normalized_error(y_true, y_pred, savepath, has_model_errors, er
 
 @ipynb_maker
 def plot_real_vs_predicted_error(y_true, savefolder, savepath, model, do_weighted, num_error_bins, last_error_bin, data_test_type):
+    """
+    Method to plot residuals vs predicted errors
+
+    Args:
+
+        y_true: (numpy array), array containing the true y data values
+
+        savefolder: (str), path to save folder for plots, data, etc.
+
+        savepath: (str), path to save the plotted normalized error plot
+
+        model: (scikit-learn model object), a scikit-learn/mastml model estimator
+
+        do_weighted: (bool), whether or not to use weighting in error plot trendlines
+
+        num_error_bins: (int), how many error bins to use in error plot
+
+        last_error_bin: (float), value of last error bin
+
+        data_test_type: (str), type of prediction run (test or validation)
+
+    Returns:
+
+        None
+
+    """
 
     bin_values, rms_residual_values, num_values_per_bin = parse_error_data(dataset_stdev=np.std(y_true),
                                                                           path_to_test=savefolder,
@@ -2290,6 +2328,30 @@ def plot_real_vs_predicted_error(y_true, savefolder, savepath, model, do_weighte
     return
 
 def parse_error_data(dataset_stdev, path_to_test, data_test_type, num_error_bins, last_error_bin):
+    """
+    Method to get error binning information from residuals and predicted error data
+
+    Args:
+
+        dataset_stdev: (float), standard deviation of true y values
+
+        path_to_test: (str), folder containing saved data and error data
+
+        data_test_type: (str), type of prediction run (test or validation)
+
+        num_error_bins: (int), how many error bins to use in error plot
+
+        last_error_bin: (float), value of last error bin
+
+    Returns:
+
+        bin_values: (numpy array), array of values indicating the centers of bins for residual binning
+
+        rms_residual_values: (numpy array), array of RMSE values to be binned
+
+        num_values_per_bin: (numpy array), number of binned RMSE values for each bin
+
+    """
     if data_test_type not in ['test', 'validation']:
         print('Error: data_test_type must be one of "test" or "validation"')
         exit()
