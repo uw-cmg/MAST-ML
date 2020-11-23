@@ -1,6 +1,8 @@
 ****************************************
-Feature Selectors
+Code Documentation: Feature Selectors
 ****************************************
 
-.. automodule:: feature_selectors
+.. automodapi:: mastml.legos.feature_selectors
    :members:
+   :undoc-members:
+   :show-inheritance:

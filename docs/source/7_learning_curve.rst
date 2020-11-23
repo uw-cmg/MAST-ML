@@ -1,6 +1,8 @@
 ****************************************
-Learning curve
+Code Documentation: Learning curve
 ****************************************
 
-.. automodule:: learning_curve
+.. automodapi:: mastml.learning_curve
    :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,6 +1,8 @@
 ****************************************
-Utility Legos
+Code Documentation: Utility Legos
 ****************************************
 
-.. automodule:: util_legos
+.. automodapi:: mastml.legos.util_legos
    :members:
+   :undoc-members:
+   :show-inheritance:

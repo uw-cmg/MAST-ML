@@ -20,10 +20,11 @@ University of Kentucky contributors:
 
 * Luke Harold Miles
 * Robert Max Williams
+* Prof. Raphael Finkel
 
 MAST-ML documentation:
 
-An overview of code documentation and tutorials for getting started with MAST-ML can be found `here <https://htmlpreview.github.io/?https://github.com/uw-cmg/MAST-ML/blob/dev_Ryan_2018-10-29/docs/build/html/index.html>`_
+An overview of code documentation and tutorials for getting started with MAST-ML can be found `here <https://mastmldocs.readthedocs.io/en/latest/>`_
 
 **Funding**
 
@@ -35,5 +36,6 @@ A journal publication for MAST-ML is in preparation and is expected to be publis
 
 **Code Repository**
 
-MAST-ML is freely available via `Github <https://github.com/uw-cmg/MAST-ML/tree/dev_Ryan_2018-10-29>`_
+MAST-ML is freely available via `Github <https://github.com/uw-cmg/MAST-ML>`_
 
+git clone --single-branch master https://github.com/uw-cmg/MAST-ML

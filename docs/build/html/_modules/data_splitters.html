@@ -26,6 +26,7 @@
 
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
 
@@ -110,6 +111,7 @@
 <li class="toctree-l4"><a class="reference internal" href="../0_2_windows_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="../0_2_windows_installation.html#windows-10-install-step-by-step-guide-credit-joe-kern">Windows 10 install: step-by-step guide (credit Joe Kern)</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../0_3_startup.html">Startup</a><ul>
@@ -131,12 +133,13 @@
 <li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#feature-selection">Feature Selection</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#data-splits">Data Splits</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#models">Models</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#plot-settings">Plot Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../1_mastml_inputfile.html#misc-settings">Misc Settings</a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../2_mastml_overview.html">MAST-ML overview slides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../2_running_mastml_nanohub.html">Running MAST-ML on Nanohub</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../2_mastml_tutorial.html">MAST-ML tutorial</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_introduction.html">Introduction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_firstrun.html">Your first MAST-ML run</a></li>
@@ -150,24 +153,304 @@
 <li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_prediction.html">Predicting values for new, extrapolated data</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../3_code_documentation.html">MAST-ML Code Documentation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../3_metrics.html">Metrics</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../4_conf_parser.html">Configuration file parser</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../5_data_cleaner.html">Data cleaner</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../6_data_loader.html">Data loader</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../7_learning_curve.html">Learning curve</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../8_clusterers.html">Clusterers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../9_data_splitters.html">Data splitters</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../10_utils.html">Utils</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../11_mastml_driver.html">MAST-ML Driver</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../12_plot_helper.html">Plot Helper</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../13_html_helper.html">HTML Helper</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../14_feature_selectors.html">Feature Selectors</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../15_feature_normalizers.html">Feature Normalizers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../16_randomizers.html">Randomizers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../17_model_finder.html">Model Finder</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../18_util_legos.html">Utility Legos</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../19_feature_generators.html">Feature Generators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../3_metrics.html">Metrics</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../3_metrics.html#module-mastml.metrics">mastml.metrics Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../3_metrics.html#functions">Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.metrics.adjusted_r2_score.html">adjusted_r2_score</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.metrics.check_and_fetch_names.html">check_and_fetch_names</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.metrics.r2_score_fitted.html">r2_score_fitted</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.metrics.r2_score_noint.html">r2_score_noint</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.metrics.rmse_over_stdev.html">rmse_over_stdev</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.metrics.root_mean_squared_error.html">root_mean_squared_error</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../4_conf_parser.html">Configuration file parser</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../4_conf_parser.html#module-mastml.conf_parser">mastml.conf_parser Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../4_conf_parser.html#functions">Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.conf_parser.fix_types.html">fix_types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.conf_parser.mybool.html">mybool</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.conf_parser.parse_conf_file.html">parse_conf_file</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../5_data_cleaner.html">Data cleaner</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../5_data_cleaner.html#module-mastml.data_cleaner">mastml.data_cleaner Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../5_data_cleaner.html#functions">Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.data_cleaner.columns_with_strings.html">columns_with_strings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.data_cleaner.flag_outliers.html">flag_outliers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.data_cleaner.imputation.html">imputation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.data_cleaner.remove.html">remove</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../5_data_cleaner.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.data_cleaner.PPCA.html">PPCA</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../5_data_cleaner.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../6_data_loader.html">Data loader</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../6_data_loader.html#module-mastml.data_loader">mastml.data_loader Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../6_data_loader.html#functions">Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.data_loader.load_data.html">load_data</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../7_learning_curve.html">Learning curve</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../7_learning_curve.html#module-mastml.learning_curve">mastml.learning_curve Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../7_learning_curve.html#functions">Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.learning_curve.feature_learning_curve.html">feature_learning_curve</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.learning_curve.sample_learning_curve.html">sample_learning_curve</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../8_clusterers.html">Clusterers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../8_clusterers.html#module-mastml.legos.clusterers">mastml.legos.clusterers Module</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../9_data_splitters.html">Data splitters</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../9_data_splitters.html#module-mastml.legos.data_splitters">mastml.legos.data_splitters Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../9_data_splitters.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.legos.data_splitters.Bootstrap.html">Bootstrap</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.legos.data_splitters.JustEachGroup.html">JustEachGroup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.legos.data_splitters.LeaveCloseCompositionsOut.html">LeaveCloseCompositionsOut</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.legos.data_splitters.LeaveOutPercent.html">LeaveOutPercent</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.legos.data_splitters.NoSplit.html">NoSplit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.legos.data_splitters.SplittersUnion.html">SplittersUnion</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../9_data_splitters.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../10_utils.html">Utils</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../10_utils.html#module-mastml.utils">mastml.utils Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../10_utils.html#functions">Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.utils.activate_logging.html">activate_logging</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.utils.log_header.html">log_header</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.utils.nice_range.html">nice_range</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.utils.verbosalize_logger.html">verbosalize_logger</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../10_utils.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.utils.BetweenFilter.html">BetweenFilter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.utils.ConfError.html">ConfError</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.utils.FileNotFoundError.html">FileNotFoundError</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.utils.FiletypeError.html">FiletypeError</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.utils.InvalidConfParameters.html">InvalidConfParameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.utils.InvalidConfSection.html">InvalidConfSection</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.utils.InvalidConfSubSection.html">InvalidConfSubSection</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.utils.InvalidModel.html">InvalidModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.utils.InvalidValue.html">InvalidValue</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.utils.MastError.html">MastError</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.utils.MissingColumnError.html">MissingColumnError</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../10_utils.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../11_mastml_driver.html">MAST-ML Driver</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../11_mastml_driver.html#module-mastml.mastml_driver">mastml.mastml_driver Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../11_mastml_driver.html#functions">Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.mastml_driver.check_paths.html">check_paths</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.mastml_driver.get_commandline_args.html">get_commandline_args</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.mastml_driver.main.html">main</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.mastml_driver.mastml_run.html">mastml_run</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../12_plot_helper.html">Plot Helper</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../12_plot_helper.html#module-mastml.plot_helper">mastml.plot_helper Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../12_plot_helper.html#functions">Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.calc_inbag_modified.html">calc_inbag_modified</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.get_divisor.html">get_divisor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.get_histogram_bins.html">get_histogram_bins</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.ipynb_maker.html">ipynb_maker</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.make_axis_same.html">make_axis_same</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.make_error_plots.html">make_error_plots</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.make_fig_ax.html">make_fig_ax</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.make_fig_ax_square.html">make_fig_ax_square</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.make_train_test_plots.html">make_train_test_plots</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.nice_mean.html">nice_mean</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.nice_names.html">nice_names</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.nice_range.html">nice_range</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.nice_std.html">nice_std</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.parse_error_data.html">parse_error_data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.plot_1d_heatmap.html">plot_1d_heatmap</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.plot_2d_heatmap.html">plot_2d_heatmap</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.plot_3d_heatmap.html">plot_3d_heatmap</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.plot_average_cumulative_normalized_error.html">plot_average_cumulative_normalized_error</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.plot_average_normalized_error.html">plot_average_normalized_error</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.plot_best_worst_per_point.html">plot_best_worst_per_point</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.plot_best_worst_split.html">plot_best_worst_split</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.plot_confusion_matrix.html">plot_confusion_matrix</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.plot_cumulative_normalized_error.html">plot_cumulative_normalized_error</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.plot_keras_history.html">plot_keras_history</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.plot_learning_curve.html">plot_learning_curve</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.plot_learning_curve_convergence.html">plot_learning_curve_convergence</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.plot_metric_vs_group.html">plot_metric_vs_group</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.plot_metric_vs_group_size.html">plot_metric_vs_group_size</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.plot_normalized_error.html">plot_normalized_error</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.plot_precision_recall_curve.html">plot_precision_recall_curve</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.plot_predicted_vs_true.html">plot_predicted_vs_true</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.plot_predicted_vs_true_bars.html">plot_predicted_vs_true_bars</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.plot_real_vs_predicted_error.html">plot_real_vs_predicted_error</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.plot_residuals_histogram.html">plot_residuals_histogram</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.plot_roc_curve.html">plot_roc_curve</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.plot_scatter.html">plot_scatter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.plot_stats.html">plot_stats</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.plot_target_histogram.html">plot_target_histogram</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.prediction_intervals.html">prediction_intervals</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.random_forest_error_modified.html">random_forest_error_modified</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.recursive_max.html">recursive_max</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.recursive_max_and_min.html">recursive_max_and_min</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.recursive_min.html">recursive_min</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.round_down.html">round_down</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.round_up.html">round_up</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.rounder.html">rounder</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.stat_to_string.html">stat_to_string</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.plot_helper.trim_array.html">trim_array</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../13_html_helper.html">HTML Helper</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../13_html_helper.html#module-mastml.html_helper">mastml.html_helper Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../13_html_helper.html#functions">Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.html_helper.is_test_image.html">is_test_image</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.html_helper.is_train_image.html">is_train_image</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.html_helper.make_html.html">make_html</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.html_helper.make_image.html">make_image</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.html_helper.make_link.html">make_link</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.html_helper.show_combo.html">show_combo</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.html_helper.simple_section.html">simple_section</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../14_feature_selectors.html">Feature Selectors</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../14_feature_selectors.html#module-mastml.legos.feature_selectors">mastml.legos.feature_selectors Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../14_feature_selectors.html#functions">Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.legos.feature_selectors.dataframify_new_column_names.html">dataframify_new_column_names</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.legos.feature_selectors.dataframify_selector.html">dataframify_selector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.legos.feature_selectors.fitify_just_use_values.html">fitify_just_use_values</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../14_feature_selectors.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.legos.feature_selectors.EnsembleModelFeatureSelector.html">EnsembleModelFeatureSelector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.legos.feature_selectors.MASTMLFeatureSelector.html">MASTMLFeatureSelector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.legos.feature_selectors.PearsonSelector.html">PearsonSelector</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../14_feature_selectors.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../15_feature_normalizers.html">Feature Normalizers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../15_feature_normalizers.html#module-mastml.legos.feature_normalizers">mastml.legos.feature_normalizers Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../15_feature_normalizers.html#functions">Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.legos.feature_normalizers.dataframify.html">dataframify</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../15_feature_normalizers.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.legos.feature_normalizers.MeanStdevScaler.html">MeanStdevScaler</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../15_feature_normalizers.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../16_randomizers.html">Randomizers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../16_randomizers.html#module-mastml.legos.randomizers">mastml.legos.randomizers Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../16_randomizers.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.legos.randomizers.Randomizer.html">Randomizer</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../16_randomizers.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../17_model_finder.html">Model Finder</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../17_model_finder.html#module-mastml.legos.model_finder">mastml.legos.model_finder Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../17_model_finder.html#functions">Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.legos.model_finder.check_models_mixed.html">check_models_mixed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.legos.model_finder.find_model.html">find_model</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../17_model_finder.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.legos.model_finder.AlwaysFive.html">AlwaysFive</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.legos.model_finder.EnsembleRegressor.html">EnsembleRegressor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.legos.model_finder.KerasRegressor.html">KerasRegressor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.legos.model_finder.ModelImport.html">ModelImport</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.legos.model_finder.RandomGuesser.html">RandomGuesser</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../17_model_finder.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../18_util_legos.html">Utility Legos</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../18_util_legos.html#module-mastml.legos.util_legos">mastml.legos.util_legos Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../18_util_legos.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.legos.util_legos.DataFrameFeatureUnion.html">DataFrameFeatureUnion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.legos.util_legos.DoNothing.html">DoNothing</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../18_util_legos.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../19_feature_generators.html">Feature Generators</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../19_feature_generators.html#module-mastml.legos.feature_generators">mastml.legos.feature_generators Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../19_feature_generators.html#functions">Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.legos.feature_generators.clean_dataframe.html">clean_dataframe</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../19_feature_generators.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.legos.feature_generators.ContainsElement.html">ContainsElement</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.legos.feature_generators.DataframeUtilities.html">DataframeUtilities</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.legos.feature_generators.Magpie.html">Magpie</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.legos.feature_generators.MagpieFeatureGeneration.html">MagpieFeatureGeneration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.legos.feature_generators.MaterialsProject.html">MaterialsProject</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.legos.feature_generators.MaterialsProjectFeatureGeneration.html">MaterialsProjectFeatureGeneration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.legos.feature_generators.Matminer.html">Matminer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.legos.feature_generators.NoGenerate.html">NoGenerate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/mastml.legos.feature_generators.PolynomialFeatures.html">PolynomialFeatures</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../19_feature_generators.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -247,6 +530,10 @@
 <span class="kn">import</span> <span class="nn">sklearn.model_selection</span> <span class="k">as</span> <span class="nn">ms</span>
 <span class="kn">from</span> <span class="nn">matminer.featurizers.composition</span> <span class="k">import</span> <span class="n">ElementFraction</span>
 <span class="kn">from</span> <span class="nn">pymatgen</span> <span class="k">import</span> <span class="n">Composition</span>
+
+<span class="kn">from</span> <span class="nn">math</span> <span class="k">import</span> <span class="n">ceil</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">sklearn.utils</span> <span class="k">import</span> <span class="n">check_random_state</span>
 
 <div class="viewcode-block" id="SplittersUnion"><a class="viewcode-back" href="../9_data_splitters.html#data_splitters.SplittersUnion">[docs]</a><span class="k">class</span> <span class="nc">SplittersUnion</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -392,7 +679,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">dist_threshold</span> <span class="o">=</span> <span class="n">dist_threshold</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nn_kwargs</span> <span class="o">=</span> <span class="n">nn_kwargs</span>
 
-    <span class="k">def</span> <span class="nf">split</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="LeaveCloseCompositionsOut.split"><a class="viewcode-back" href="../9_data_splitters.html#data_splitters.LeaveCloseCompositionsOut.split">[docs]</a>    <span class="k">def</span> <span class="nf">split</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
         <span class="c1"># Generate the composition vectors</span>
         <span class="n">frac_computer</span> <span class="o">=</span> <span class="n">ElementFraction</span><span class="p">()</span>
@@ -414,10 +701,10 @@
             <span class="c1"># Get the training set as &quot;not these points&quot;</span>
             <span class="n">train_inds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">setdiff1d</span><span class="p">(</span><span class="n">all_inds</span><span class="p">,</span> <span class="n">too_close</span><span class="p">)</span>
 
-            <span class="k">yield</span> <span class="n">train_inds</span><span class="p">,</span> <span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">yield</span> <span class="n">train_inds</span><span class="p">,</span> <span class="p">[</span><span class="n">i</span><span class="p">]</span></div>
 
-    <span class="k">def</span> <span class="nf">get_n_splits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">)</span></div>
+<div class="viewcode-block" id="LeaveCloseCompositionsOut.get_n_splits"><a class="viewcode-back" href="../9_data_splitters.html#data_splitters.LeaveCloseCompositionsOut.get_n_splits">[docs]</a>    <span class="k">def</span> <span class="nf">get_n_splits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">)</span></div></div>
 
 <div class="viewcode-block" id="LeaveOutPercent"><a class="viewcode-back" href="../9_data_splitters.html#data_splitters.LeaveOutPercent">[docs]</a><span class="k">class</span> <span class="nc">LeaveOutPercent</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -463,8 +750,150 @@
             <span class="n">split</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">trains</span><span class="p">,</span> <span class="n">tests</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">split</span></div>
 
+<span class="c1"># Note: Bootstrap taken directly from sklearn Github (https://github.com/scikit-learn/scikit-learn/blob/0.11.X/sklearn/cross_validation.py)</span>
+<span class="c1"># which was necessary as it was later removed from more recent sklearn releases</span>
+<div class="viewcode-block" id="Bootstrap"><a class="viewcode-back" href="../9_data_splitters.html#data_splitters.Bootstrap">[docs]</a><span class="k">class</span> <span class="nc">Bootstrap</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Random sampling with replacement cross-validation iterator</span>
+<span class="sd">    Provides train/test indices to split data in train test sets</span>
+<span class="sd">    while resampling the input n_bootstraps times: each time a new</span>
+<span class="sd">    random split of the data is performed and then samples are drawn</span>
+<span class="sd">    (with replacement) on each side of the split to build the training</span>
+<span class="sd">    and test sets.</span>
+<span class="sd">    Note: contrary to other cross-validation strategies, bootstrapping</span>
+<span class="sd">    will allow some samples to occur several times in each splits. However</span>
+<span class="sd">    a sample that occurs in the train split will never occur in the test</span>
+<span class="sd">    split and vice-versa.</span>
+<span class="sd">    If you want each sample to occur at most once you should probably</span>
+<span class="sd">    use ShuffleSplit cross validation instead.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n : int</span>
+<span class="sd">        Total number of elements in the dataset.</span>
+<span class="sd">    n_bootstraps : int (default is 3)</span>
+<span class="sd">        Number of bootstrapping iterations</span>
+<span class="sd">    train_size : int or float (default is 0.5)</span>
+<span class="sd">        If int, number of samples to include in the training split</span>
+<span class="sd">        (should be smaller than the total number of samples passed</span>
+<span class="sd">        in the dataset).</span>
+<span class="sd">        If float, should be between 0.0 and 1.0 and represent the</span>
+<span class="sd">        proportion of the dataset to include in the train split.</span>
+<span class="sd">    test_size : int or float or None (default is None)</span>
+<span class="sd">        If int, number of samples to include in the training set</span>
+<span class="sd">        (should be smaller than the total number of samples passed</span>
+<span class="sd">        in the dataset).</span>
+<span class="sd">        If float, should be between 0.0 and 1.0 and represent the</span>
+<span class="sd">        proportion of the dataset to include in the test split.</span>
+<span class="sd">        If None, n_test is set as the complement of n_train.</span>
+<span class="sd">    random_state : int or RandomState</span>
+<span class="sd">        Pseudo number generator state used for random sampling.</span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    #&gt;&gt;&gt; from sklearn import cross_validation</span>
+<span class="sd">    #&gt;&gt;&gt; bs = cross_validation.Bootstrap(9, random_state=0)</span>
+<span class="sd">    #&gt;&gt;&gt; len(bs)</span>
+<span class="sd">    3</span>
+<span class="sd">    #&gt;&gt;&gt; print bs</span>
+<span class="sd">    Bootstrap(9, n_bootstraps=3, train_size=5, test_size=4, random_state=0)</span>
+<span class="sd">    #&gt;&gt;&gt; for train_index, test_index in bs:</span>
+<span class="sd">    ...    print &quot;TRAIN:&quot;, train_index, &quot;TEST:&quot;, test_index</span>
+<span class="sd">    ...</span>
+<span class="sd">    TRAIN: [1 8 7 7 8] TEST: [0 3 0 5]</span>
+<span class="sd">    TRAIN: [5 4 2 4 2] TEST: [6 7 1 0]</span>
+<span class="sd">    TRAIN: [4 7 0 1 1] TEST: [5 3 6 5]</span>
+<span class="sd">    See also</span>
+<span class="sd">    --------</span>
+<span class="sd">    ShuffleSplit: cross validation using random permutations.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Static marker to be able to introspect the CV type</span>
+    <span class="n">indices</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">n_bootstraps</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">train_size</span><span class="o">=.</span><span class="mi">5</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">n_train</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_test</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="n">n</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_bootstraps</span> <span class="o">=</span> <span class="n">n_bootstraps</span>
+        <span class="k">if</span> <span class="n">n_train</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">train_size</span> <span class="o">=</span> <span class="n">n_train</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s2">&quot;n_train is deprecated in 0.11 and scheduled for &quot;</span>
+                <span class="s2">&quot;removal in 0.12, use train_size instead&quot;</span><span class="p">,</span>
+                <span class="ne">DeprecationWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">n_test</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">test_size</span> <span class="o">=</span> <span class="n">n_test</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s2">&quot;n_test is deprecated in 0.11 and scheduled for &quot;</span>
+                <span class="s2">&quot;removal in 0.12, use test_size instead&quot;</span><span class="p">,</span>
+                <span class="ne">DeprecationWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">train_size</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">and</span> <span class="n">train_size</span> <span class="o">&gt;=</span> <span class="mf">0.0</span>
+                            <span class="ow">and</span> <span class="n">train_size</span> <span class="o">&lt;=</span> <span class="mf">1.0</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">train_size</span> <span class="o">=</span> <span class="n">ceil</span><span class="p">(</span><span class="n">train_size</span> <span class="o">*</span> <span class="n">n</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">train_size</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">train_size</span> <span class="o">=</span> <span class="n">train_size</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid value for train_size: </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span>
+                             <span class="n">train_size</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_size</span> <span class="o">&gt;</span> <span class="n">n</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;train_size=</span><span class="si">%d</span><span class="s2"> should not be larger than n=</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span>
+                             <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">train_size</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">test_size</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">and</span> <span class="n">test_size</span> <span class="o">&gt;=</span> <span class="mf">0.0</span>
+                    <span class="ow">and</span> <span class="n">test_size</span> <span class="o">&lt;=</span> <span class="mf">1.0</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">test_size</span> <span class="o">=</span> <span class="n">ceil</span><span class="p">(</span><span class="n">test_size</span> <span class="o">*</span> <span class="n">n</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">test_size</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">test_size</span> <span class="o">=</span> <span class="n">test_size</span>
+        <span class="k">elif</span> <span class="n">test_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">test_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_size</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid value for test_size: </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">test_size</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_size</span> <span class="o">&gt;</span> <span class="n">n</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;test_size=</span><span class="si">%d</span><span class="s2"> should not be larger than n=</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span>
+                             <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">test_size</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
+
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">rng</span> <span class="o">=</span> <span class="n">check_random_state</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_bootstraps</span><span class="p">):</span>
+            <span class="c1"># random partition</span>
+            <span class="n">permutation</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
+            <span class="n">ind_train</span> <span class="o">=</span> <span class="n">permutation</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">train_size</span><span class="p">]</span>
+            <span class="n">ind_test</span> <span class="o">=</span> <span class="n">permutation</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">train_size</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">train_size</span>
+                                   <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_size</span><span class="p">]</span>
+
+            <span class="c1"># bootstrap in each split individually</span>
+            <span class="n">train</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_size</span><span class="p">,</span>
+                                <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">train_size</span><span class="p">,))</span>
+            <span class="n">test</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_size</span><span class="p">,</span>
+                                <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">test_size</span><span class="p">,))</span>
+            <span class="k">yield</span> <span class="n">ind_train</span><span class="p">[</span><span class="n">train</span><span class="p">],</span> <span class="n">ind_test</span><span class="p">[</span><span class="n">test</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">(</span><span class="si">%d</span><span class="s1">, n_bootstraps=</span><span class="si">%d</span><span class="s1">, train_size=</span><span class="si">%d</span><span class="s1">, test_size=</span><span class="si">%d</span><span class="s1">, &#39;</span>
+                <span class="s1">&#39;random_state=</span><span class="si">%d</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">n_bootstraps</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">train_size</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">test_size</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">,</span>
+                <span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_bootstraps</span>
+
+    <span class="k">def</span> <span class="nf">get_n_splits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__len__</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">split</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">split</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">trains</span><span class="p">,</span> <span class="n">tests</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="n">split</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">trains</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">tests</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))</span>
+        <span class="k">return</span> <span class="n">split</span></div>
+
 <span class="n">name_to_constructor</span> <span class="o">=</span> <span class="p">{</span>
     <span class="c1"># sklearn splitters:</span>
+    <span class="s1">&#39;Bootstrap&#39;</span><span class="p">:</span> <span class="n">Bootstrap</span><span class="p">,</span>
     <span class="s1">&#39;GroupKFold&#39;</span><span class="p">:</span> <span class="n">ms</span><span class="o">.</span><span class="n">GroupKFold</span><span class="p">,</span>
     <span class="s1">&#39;GroupShuffleSplit&#39;</span><span class="p">:</span> <span class="n">ms</span><span class="o">.</span><span class="n">GroupShuffleSplit</span><span class="p">,</span>
     <span class="s1">&#39;KFold&#39;</span><span class="p">:</span> <span class="n">ms</span><span class="o">.</span><span class="n">KFold</span><span class="p">,</span>
@@ -520,20 +949,12 @@
 
     
     
-      <script type="text/javascript">
-          var DOCUMENTATION_OPTIONS = {
-              URL_ROOT:'../',
-              VERSION:'2.0',
-              LANGUAGE:'None',
-              COLLAPSE_INDEX:false,
-              FILE_SUFFIX:'.html',
-              HAS_SOURCE:  true,
-              SOURCELINK_SUFFIX: '.txt'
-          };
-      </script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
 
   

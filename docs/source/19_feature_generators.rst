@@ -1,6 +1,8 @@
 ****************************************
-Feature Generators
+Code Documentation: Feature Generators
 ****************************************
 
-.. automodule:: feature_generators
+.. automodapi:: mastml.legos.feature_generators
    :members:
+   :undoc-members:
+   :show-inheritance:

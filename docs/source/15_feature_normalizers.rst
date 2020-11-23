@@ -1,6 +1,8 @@
 ****************************************
-Feature Normalizers
+Code Documentation: Feature Normalizers
 ****************************************
 
-.. automodule:: feature_normalizers
+.. automodapi:: mastml.legos.feature_normalizers
    :members:
+   :undoc-members:
+   :show-inheritance:

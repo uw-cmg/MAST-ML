@@ -15,6 +15,16 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.decomposition import PCA
 import sklearn.feature_selection as fs
 from mlxtend.feature_selection import SequentialFeatureSelector
+import os, logging
+
+## XIYU's import for PearsonSelector
+import copy
+from numpy import cov
+import xlsxwriter
+from scipy.stats import pearsonr
+##
+
+log = logging.getLogger('mastml')
 
 from mastml.legos import util_legos
 
@@ -107,28 +117,166 @@ for constructor in name_to_constructor.values():
     constructor.old_transform = constructor.transform
     constructor.transform = dataframify_selector(constructor.transform)
 
-# TODO: Not used anymore, now uses util_legos.DoNothing
-"""
-class PassThrough(BaseEstimator, TransformerMixin):
 
+class EnsembleModelFeatureSelector(object):
 
-    def __init__(self, features):
-        print(features)
-        print(type(features))
-        exit()
+    def __init__(self, estimator, k_features):
+        self.estimator = estimator
+        self.k_features = k_features
+        # Check that a correct model was passed in
+        self._check_model()
+        self.selected_features = list()
 
-        if not isinstance(features, list):
-            features = [features]
-        self.features = features
+    def _check_model(self):
+        if self.estimator.__class__.__name__ not in ['RandomForestRegressor', 'ExtraTreesRegressor', 'GradientBoostingRegressor']:
+            raise ValueError('Models used in EnsembleModelFeatureSelector must be one of RandomForestRegressor, ExtraTreesRegressor, GradientBoostingRegressor')
+        return
 
-    def fit(self, df, y=None):
-        for feature in self.features:
-            if feature not in df.columns:
-                raise Exception(f"Specified feature '{feature}' to PassThrough not present in data file.")
+    def fit(self, X, y=None):
+        feature_importances = self.estimator.fit(X, y).feature_importances_
+        feature_importance_dict = dict()
+        for col, f in zip(X.columns.tolist(), feature_importances):
+            feature_importance_dict[col] = f
+        feature_importances_sorted = sorted(((f, col) for col, f in feature_importance_dict.items()), reverse=True)
+        sorted_features_list = [f[1] for f in feature_importances_sorted]
+        self.selected_features = sorted_features_list[0:self.k_features]
+        return self
 
-    def transform(self, df):
-        return df[self.features]
-"""
+    def transform(self, X):
+        df = X[self.selected_features]
+        return df
+
+class PearsonSelector(object):
+    def __init__(self, threshold_between_features, threshold_with_target, remove_highly_correlated_features, k_features):
+        self.threshold_between_features = threshold_between_features
+        self.threshold_with_target = threshold_with_target
+        self.remove_highly_correlated_features = remove_highly_correlated_features
+        self.k_features = k_features
+        self.selected_features = list()
+
+    def fit(self, X, savepath, y=None, Xgroups=None):
+        df = X
+        df_features = df.columns.tolist()
+        n_col = df.shape[1]
+
+        if self.remove_highly_correlated_features == True:
+            array_data = list()
+
+            for i in range(n_col):
+                col_data = df.iloc[:, i]
+                col = list()
+                for j in range(n_col):
+                    row_data = df.iloc[:, j]
+                    corr, _ = pearsonr(row_data, col_data)  # Pearson Correlation
+                    col.append(corr)
+                array_data.append(col)
+
+            array_df = pd.DataFrame(array_data, index=df_features[:n_col], columns=df_features[:n_col])
+
+            array_df.to_excel(os.path.join(savepath, 'Full_correlation_matrix.xlsx'))
+
+            #### Print features highly-correlated to each other into excel
+            hcorr = dict()
+            highly_correlated_features = list()
+            for i in range(len(array_df.iloc[0, :])):  # This includes all the data in the array_df
+                # feature1 = array_df.iloc[:, i] # This does not work because feature1 is not the col name but a list of values
+                feature1 = array_df.columns[i]
+                for j in range(len(array_df.iloc[0, :])):  # This includes all the data in the array_df
+                    # feature2 = array_df.iloc[:, j] # This does not work because feature2 is not the col name but a list of values
+                    feature2 = array_df.columns[j]
+                    if abs(array_df.iloc[i - 1, j - 1]) >= np.float64(self.threshold_between_features):
+                        if i != j:  # Ignore diagonal features
+                            if not (feature2, feature1) in hcorr:  # Ignore the same correlations
+                                hcorr[(feature1, feature2)] = array_df.iloc[i - 1, j - 1]
+                                highly_correlated_features.append(feature2)
+
+            hcorr_df = pd.DataFrame(hcorr, index=["Corr"])
+            hcorr_df.to_excel(os.path.join(savepath, 'Highly_correlated_features.xlsx'))
+
+            highly_correlated_features = list(np.unique(np.array(highly_correlated_features)))
+
+            #### Print the removed features and the new smaller dataframe with features removed
+            # Deep copy the original dataframe
+            removed_features_df = copy.deepcopy(X)
+            new_df = copy.deepcopy(X)
+
+            # Drop the features that can be removed
+            all_features = list(new_df.columns)
+            removed_features = list()
+            for feature in all_features:
+                if feature not in highly_correlated_features:
+                    removed_features.append(feature)
+                    new_df = new_df.drop(columns=feature)
+
+            # Print the highly correlated features that were removed
+            for feature in all_features:
+                if feature not in removed_features:
+                    removed_features_df = removed_features_df.drop(columns=feature)
+            removed_features_df.to_excel(os.path.join(savepath, "Highly_correlated_features_removed.xlsx"),
+                                         index=False)
+
+            # Define self.selected_features
+            remaining_features = list(new_df.columns)
+        else:
+            remaining_features = list(df.columns)
+
+        # Compute Pearson correlations between each feature and target feature
+        all_corrs = {}
+        for i in range(len(remaining_features)):
+            feature_name = df.columns[i]
+            feature_data = df.iloc[:, i]
+            corr, _ = pearsonr(y, feature_data)
+            all_corrs[feature_name] = corr
+        all_corrs = abs(pd.Series(all_corrs))
+
+        self.selected_features = list(all_corrs[all_corrs > self.threshold_with_target].sort_values(
+                                                ascending=False).keys())
+
+        # Sometimes the specificed threshold is too high. Make it lower until at least 1 feature is selected
+        while len(self.selected_features) < self.k_features:
+            log.debug('WARNING: Pearson selector threshold was too high to result in selecting any features, lowering threshold to get specified feature number')
+            self.threshold_with_target -= 0.05
+            self.selected_features = list(all_corrs[all_corrs > self.threshold_with_target].sort_values(
+                ascending=False).keys())
+            if len(self.selected_features) == n_col:
+                log.debug('WARNING: Pearson selector reduce the threshold such that all features were included')
+                break
+            log.debug('Pearson selector selected features with an adjusted threshold value')
+        if len(self.selected_features) > self.k_features:
+            self.selected_features = list(all_corrs[all_corrs > self.threshold_with_target].sort_values(ascending=False).keys())[:self.k_features]
+
+        # Create a Pandas Excel writer using XlsxWriter as the engine.
+        writer = pd.ExcelWriter(os.path.join(savepath, 'Features_highly_correlated_with_target.xlsx'), engine='xlsxwriter')
+
+        # Create the dataframe displaying the highly correlated features and the Pearson Correlations
+        hcorr_with_target_df = pd.DataFrame(all_corrs,
+                                            index=list(all_corrs[all_corrs > self.threshold_with_target].sort_values(
+                                                ascending=False).keys()),
+                                            columns=["Pearson Correlation (absolute value)"])
+        hcorr_with_target_df.to_excel(writer, sheet_name='Sheet1', index=True)
+        hcorr_with_target_features = list(hcorr_with_target_df.index)
+
+        # Create dataframe containing the highly correlated features
+        all_features = list(df.columns)
+        for feature in all_features:
+            if not feature in hcorr_with_target_features:
+                df = df.drop(columns=feature)
+
+        # Reorder the dataframe by columns (by their correlation to the target feature)
+        df = df.reindex(columns=hcorr_with_target_features)
+
+        # Print the dataframe to a spreadsheet
+        df.to_excel(writer, sheet_name='Sheet2',
+                    index=False)  # From left to right, the strength of correlation decreases.
+
+        # Close the Pandas Excel writer and output the Excel file.
+        writer.save()
+
+        return self
+
+    def transform(self, X):
+        dataframe = X[self.selected_features]
+        return dataframe
 
 class MASTMLFeatureSelector(object):
     """
@@ -141,6 +289,9 @@ class MASTMLFeatureSelector(object):
         n_features_to_select: (int), the number of features to select
 
         cv: (scikit-learn cross-validation object), a scikit-learn cross-validation object
+
+        manually_selected_features: (list), a list of features manually set by the user. The feature selector will first
+        start from this list of features and sequentially add features until n_features_to_select is met.
 
     Methods:
 
@@ -170,17 +321,18 @@ class MASTMLFeatureSelector(object):
 
     """
 
-    def __init__(self, estimator, n_features_to_select, cv):
+    def __init__(self, estimator, n_features_to_select, cv, manually_selected_features=list()):
         self.estimator = estimator
         self.n_features_to_select = n_features_to_select
         self.cv = cv
+        self.manually_selected_features = manually_selected_features
+        self.selected_feature_names = self.manually_selected_features
 
-    def fit(self, X, y, Xgroups=None):
+    def fit(self, X, y, savepath, Xgroups=None):
         if Xgroups.shape[0] == 0:
             xgroups = np.zeros(len(y))
             Xgroups = pd.DataFrame(xgroups)
 
-        self.selected_feature_names = list()
         selected_feature_avg_rmses = list()
         selected_feature_std_rmses = list()
         basic_forward_selection_dict = dict()
@@ -189,6 +341,9 @@ class MASTMLFeatureSelector(object):
         if self.n_features_to_select >= len(x_features):
             self.n_features_to_select = len(x_features)
         while num_features_selected < self.n_features_to_select:
+            log.info('On number of features selected')
+            log.info(str(num_features_selected))
+
             # Catch pandas warnings here
             with warnings.catch_warnings():
                 warnings.simplefilter('ignore')
@@ -196,6 +351,9 @@ class MASTMLFeatureSelector(object):
                 top_feature_name, top_feature_avg_rmse, top_feature_std_rmse = self._choose_top_feature(ranked_features=ranked_features)
 
             self.selected_feature_names.append(top_feature_name)
+            if len(self.selected_feature_names) > 0:
+                log.info('selected features')
+                log.info(self.selected_feature_names)
             selected_feature_avg_rmses.append(top_feature_avg_rmse)
             selected_feature_std_rmses.append(top_feature_std_rmse)
 
@@ -208,6 +366,8 @@ class MASTMLFeatureSelector(object):
                 'Avg RMSE using top features'] = top_feature_avg_rmse
             basic_forward_selection_dict[str(num_features_selected)][
                 'Stdev RMSE using top features'] = top_feature_std_rmse
+            # Save for every loop of selecting features
+            pd.DataFrame(basic_forward_selection_dict).to_csv(os.path.join(savepath,'MASTMLFeatureSelector_data_feature_'+str(num_features_selected)+'.csv'))
             num_features_selected += 1
         basic_forward_selection_dict[str(self.n_features_to_select - 1)][
             'Full feature set Names'] = self.selected_feature_names
@@ -217,6 +377,7 @@ class MASTMLFeatureSelector(object):
             'Full feature set Stdev RMSEs'] = selected_feature_std_rmses
         #self._plot_featureselected_learningcurve(selected_feature_avg_rmses=selected_feature_avg_rmses,
         #                                         selected_feature_std_rmses=selected_feature_std_rmses)
+
         return self
 
     def transform(self, X):
@@ -233,14 +394,15 @@ class MASTMLFeatureSelector(object):
         for col in X.columns:
             if col not in self.selected_feature_names:
                 X_ = X.loc[:, self.selected_feature_names]
-                X_ = np.array(pd.concat([X_, X[col]],axis=1))
+                X__ = X.loc[:, col]
+                X_ = np.array(pd.concat([X_, X__], axis=1))
+
                 for trains, tests in self.cv.split(X_, y, groups):
                     self.estimator.fit(X_[trains], y[trains])
-                    #predict_trains = self.estimator.predict(X_[trains])
                     predict_tests = self.estimator.predict(X_[tests])
-                    #trains_metrics.append(root_mean_squared_error(y[trains], predict_trains))
                     tests_metrics.append(root_mean_squared_error(y[tests], predict_tests))
                 avg_rmse = np.mean(tests_metrics)
+
                 std_rmse = np.std(tests_metrics)
                 ranked_features[col] = {"avg_rmse": avg_rmse, "std_rmse": std_rmse}
         return ranked_features
@@ -279,25 +441,6 @@ class MASTMLFeatureSelector(object):
         X_selected = X.loc[:, selected_feature_names]
         return X_selected
 
-    # TODO: Not used anymore
-    #def _plot_featureselected_learningcurve(self, selected_feature_avg_rmses, selected_feature_std_rmses):
-    #    from matplotlib import pyplot as plt
-    #    plt.figure()
-    #    plt.title('Basic forward selection learning curve')
-    #    plt.grid()
-    #    #savedir = self.configdict['General Setup']['save_path']
-    #    Xdata = np.linspace(start=1, stop=self.n_features_to_select, num=5).tolist()
-    #    ydata = selected_feature_avg_rmses
-    #    yspread = selected_feature_std_rmses
-    #    plt.plot(Xdata, ydata, '-o', color='r', label='Avg RMSE 10 tests 5-fold CV')
-    #    plt.fill_between(Xdata, np.array(ydata) - np.array(yspread),
-    #                     np.array(ydata) + np.array(yspread), alpha=0.1,
-    #                     color="r")
-    #    plt.xlabel("Number of features")
-    #    plt.ylabel("RMSE")
-    #    plt.legend(loc="best")
-    #    plt.savefig(savedir + "/" + "basic_forward_selection_learning_curve_featurenumber.png", dpi=250)
-    #    return
 
 # Include Principal Component Analysis
 PCA.transform = dataframify_new_column_names(PCA.transform, 'pca_')
@@ -315,4 +458,6 @@ name_to_constructor.update({
     'PCA': PCA,
     'SequentialFeatureSelector': SequentialFeatureSelector,
     'MASTMLFeatureSelector' : MASTMLFeatureSelector,
+    'PearsonSelector': PearsonSelector,
+    'EnsembleModelFeatureSelector': EnsembleModelFeatureSelector
 })

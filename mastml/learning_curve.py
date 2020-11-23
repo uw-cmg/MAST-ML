@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import warnings
 import logging
+import os
 
 from sklearn.model_selection import learning_curve
 from sklearn.feature_selection import f_regression
@@ -66,7 +67,7 @@ def sample_learning_curve(X, y, estimator, cv, scoring, Xgroups=None):
 
     return train_sizes, train_mean, test_mean, train_stdev, test_stdev
 
-def feature_learning_curve(X, y, estimator, cv, scoring, selector_name, n_features_to_select=None, Xgroups=None):
+def feature_learning_curve(X, y, estimator, cv, scoring, selector_name, savepath, n_features_to_select=None, Xgroups=None):
     """
     Method that calculates data used to plot a feature learning curve, e.g. the RMSE of a cross-validation routine using a
     specified model and a given number of features
@@ -112,12 +113,15 @@ def feature_learning_curve(X, y, estimator, cv, scoring, selector_name, n_featur
         n_features_to_select = X.shape[1].tolist()
     train_sizes = range(n_features_to_select)
     train_sizes = [1+f for f in train_sizes]
+    features_selected = list()
+    n_features = list()
     for feature in train_sizes:
+        n_features.append(feature)
         if selector_name == 'RFE':
             log.warning("Using RFE as feature selector does not support a custom CV or grouping scheme. Your learning"
                         "curve will be generated properly, but will not use the custom CV or grouping scheme")
             try:
-                Xnew = fs.name_to_constructor[selector_name](estimator, feature+1).fit(X, y).transform(X)
+                Xnew = fs.name_to_constructor[selector_name](estimator, feature).fit(X, y).transform(X)
             except RuntimeError:
                 log.error("You have specified an estimator for RFE that does not have a coef_ or feature_importances_ attribute. "
                           "Acceptable models to use with RFE include: LinearRegression, Lasso, SVR, DecisionTreeRegressor, "
@@ -125,22 +129,24 @@ def feature_learning_curve(X, y, estimator, cv, scoring, selector_name, n_featur
         elif selector_name == 'SelectKBest':
             log.warning("Using SelectKBest as feature selector does not support a custom estimator model, CV or grouping scheme. "
                         "Your learning curve will be generated properly, but will not use the custom model, CV or grouping scheme")
-            Xnew = fs.name_to_constructor[selector_name](f_regression, feature+1).fit(X, y).transform(X)
+            Xnew = fs.name_to_constructor[selector_name](f_regression, feature).fit(X, y).transform(X)
         elif selector_name == 'MASTMLFeatureSelector':
-            Xnew = fs.name_to_constructor[selector_name](estimator, feature+1, cv).fit(X, y, pd.DataFrame(Xgroups)).transform(X)
+            Xnew = fs.name_to_constructor[selector_name](estimator, feature, cv).fit(X, y, pd.DataFrame(Xgroups)).transform(X)
         elif selector_name == 'SequentialFeatureSelector':
             log.warning("Using SequentialFeatureSelector as feature selector does not support a custom CV or grouping scheme. "
                         "Your learning curve will be generated properly, but will not use the custom CV or grouping scheme")
-            Xnew = fs.name_to_constructor[selector_name](estimator, feature+1).fit(pd.DataFrame(X), pd.DataFrame(y)).transform(X)
+            Xnew = fs.name_to_constructor[selector_name](estimator, feature).fit(pd.DataFrame(X), pd.DataFrame(y)).transform(X)
         elif selector_name == None:
             log.warning("A selector name for learning curve calculation was not found. Defaulting to using the "
                         "MASTMLFeatureSelector for learning curve")
-            Xnew = fs.name_to_constructor["MASTMLFeatureSelector"](estimator, feature+1, cv).fit(X, y, pd.DataFrame(Xgroups)).transform(X)
+            Xnew = fs.name_to_constructor["MASTMLFeatureSelector"](estimator, feature, cv).fit(X, y, pd.DataFrame(Xgroups)).transform(X)
         else:
             log.error("You have specified an invalid selector_name for learning curve. Either leave blank to use the default"
                       " MASTMLFeatureSelector or use one of SelectKBest, RFE, SequentialFeatureSelector, MASTMLFeatureSelector")
             exit()
         # Need to use arrays to avoid indexing issues when leaving out validation data
+        features_selected.append(Xnew.columns.tolist())
+
         Xnew = np.array(Xnew)
         y = np.array(y)
         Xgroups = np.array(Xgroups)
@@ -158,4 +164,8 @@ def feature_learning_curve(X, y, estimator, cv, scoring, selector_name, n_featur
         train_stdev.append(np.std(list(train_scores.values())))
         test_mean.append(np.mean(list(test_scores.values())))
         test_stdev.append(np.std(list(test_scores.values())))
+
+    datadict = {"n_features": n_features, "features selected": features_selected}
+    pd.DataFrame().from_dict(data=datadict).to_csv(os.path.join(savepath, 'features_selected_in_learning_curve.csv'))
+
     return np.array(train_sizes), np.array(train_mean), np.array(test_mean), np.array(train_stdev), np.array(test_stdev)

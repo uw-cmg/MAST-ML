@@ -2,6 +2,9 @@
 
 MAST-ML is an open-source Python package designed to broaden and accelerate the use of machine learning in materials science research
 
+<a href='https://mastmldocs.readthedocs.io/en/latest/?badge=latest'>
+    <img src='https://readthedocs.org/projects/mastmldocs/badge/?version=latest' alt='Documentation Status' />
+</a>
 
 ## Contributors
 
@@ -15,12 +18,14 @@ University of Wisconsin-Madison Computational Materials Group:
 University of Kentucky contributors:
 * Luke Harold Miles
 * Robert Max Williams
+* Matthew Turner
+* Prof. Raphael Finkel
 
 ## MAST-ML documentation
 * An overview of code documentation and tutorials for getting started with MAST-ML can be found here:
 
 ```
-https://htmlpreview.github.io/?https://github.com/uw-cmg/MAST-ML/blob/dev_Ryan_2018-10-29/docs/build/html/index.html
+https://mastmldocs.readthedocs.io/en/latest/
 ```
 
 ## Funding
@@ -30,7 +35,13 @@ This work was and is funded by the National Science Foundation (NSF) SI2 award N
 
 ## Citing MAST-ML
 
-A journal publication for MAST-ML is in preparation and is expected to be published in Computational Materials Science by mid-2019.
+
+If you find MAST-ML useful, please cite the following publication:
+
+Jacobs, R., Mayeshiba, T., Afflerbach, B., Miles, L., Williams, M., Turner, M., Finkel, R., Morgan, D.,
+"The Materials Simulation Toolkit for Machine Learning (MAST-ML): An automated open source toolkit to accelerate data-
+driven materials research", Computational Materials Science 175 (2020), 109544. https://doi.org/10.1016/j.commatsci.2020.109544
+
 
 
 ## Code Repository
@@ -38,5 +49,13 @@ A journal publication for MAST-ML is in preparation and is expected to be publis
 MAST-ML is freely available via Github: 
 
 ```
-https://github.com/uw-cmg/MAST-ML/tree/dev_Ryan_2018-10-29
+https://github.com/uw-cmg/MAST-ML
+
+git clone https://github.com/uw-cmg/MAST-ML
+```
+
+MAST-ML can also be installed via pip:
+
+```
+pip install mastml
 ```

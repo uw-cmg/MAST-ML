@@ -23,20 +23,20 @@ Example::
 
     [GeneralSetup]
         input_features = feature_1, feature_2, etc. or "Auto"
-        target_feature = target_feature
+        input_target = target_feature
         randomizer = False
         metrics = root_mean_squared_error, mean_absolute_error, etc. or "Auto"
-        not_input_features = additional_feature_1, additional_feature_2
-        grouping_feature = grouping_feature_1
-        validation_columns = validation_feature_1
+        input_other = additional_feature_1, additional_feature_2
+        input_grouping = grouping_feature_1
+        input_testdata = validation_feature_1
 
 * **input_features** List of input X features
-* **target_feature** Target y feature
+* **input_target** Target y feature
 * **randomizer** Whether or not to randomize y feature data
 * **metrics** Which metrics to evaluate model fits
-* **not_input_features** Additional features that are not to be fitted on (i.e. not X features)
-* **grouping_feature** Feature names that provide information on data grouping
-* **validation_columns** Feature name that designates whether data will be used for validation (set rows as 1 or 0 in csv file)
+* **input_other** Additional features that are not to be fitted on (i.e. not X features)
+* **input_grouping** Feature names that provide information on data grouping
+* **input_test** Feature name that designates whether data will be used for validation (set rows as 1 or 0 in csv file)
 
 =============
 Data Cleaning
@@ -114,6 +114,7 @@ Example::
     [FeatureGeneration]
         [[Magpie]]
             composition_feature = Material Compositions
+            feature_types = composition_avg, arithmetic_avg, max, min, difference, elements
         [[MaterialsProject]]
             composition_feature = Material Compositions
             api_key = my_api_key
@@ -131,6 +132,7 @@ Example::
             include_bias=True
 
 * **composition_feature** Name of column in csv file containing material compositions
+* **feature_types** Types of elemental features to output. If None is specified, all features are output. Note "elements" refers to properties of constituent elements
 * **api_key** Your API key to access the Materials Project or Citrine. Register for your account at Materials Project: https://materialsproject.org or at Citrine: https://citrination.com
 * **all_elements** For ContainsElement, whether or not to scan all data rows to assess all elements present in data set
 * **element** For ContainsElement, name of element of interest. Ignored if all_elements = True
@@ -296,6 +298,18 @@ Example::
         # from the [[KMeans]] routine present in the [Clustering] section.
         [[LeaveOneGroupOut_kmeans]]
             grouping_column = KMeans
+        [[LeaveCloseCompositionsOut]]
+            # Set the distance threshold in composition space
+            dist_threshold=0.1
+        [[Bootstrap]]
+            # Data set size
+            n = 378
+            # Number of bootstrap resamplings to perform
+            n_bootstraps = 10
+            # Training set size
+            train_size = 303
+            # Validation/test set size
+            test_size = 75
 
 =========
 Models
@@ -365,6 +379,10 @@ Example::
             criterion = mse
             min_samples_leaf = 1
             min_samples_split = 2
+        [[XGBoostClassifier]]
+	    [[XGBoostRegressor]]
+            n_estimators = 100
+            objective = reg:squarederror
 
         # Kernel ridge and linear methods
 
@@ -434,6 +452,37 @@ Example::
             alpha = 0.0001
             batch_size = auto
             learning_rate = constant
+        [[KerasRegressor]]
+            [[[Layer1]]]
+                 layer_type = Dense
+                 neuron_num= 100
+                 input_dim= 287   #typically equal to n_features
+                 kernel_initializer= random_normal
+                 activation=relu
+            [[[Layer2]]]
+                 layer_type = Dense
+                 neuron_num= 50
+                 kernel_initializer= random_normal
+                 activation=relu
+            [[[Layer3]]]
+                 layer_type = Dense
+                 neuron_num= 25
+                 kernel_initializer= random_normal
+                 activation=relu
+            [[[Layer4]]]
+                 layer_type = Dense
+                 neuron_num= 1
+                 kernel_initializer= random_normal
+                 activation=linear
+            [[[FitParams]]]
+                 epochs=20
+                 batch_size=25
+                 loss = mean_squared_error
+                 optimizer = adam
+                 metrics = mse
+                 verbose=1
+                 shuffle = True
+                 #validation_split = 0.2
 
         # Support vector machine methods
 
@@ -489,25 +538,32 @@ Example::
             min_samples_leaf = 1
 
 =================
-Plot Settings
+Misc Settings
 =================
-This section controls which types of plots MAST-ML will write to the results directory.
+This section controls which types of plots MAST-ML will write to the results directory and other miscellaneous settings.
 
 Example::
 
-    [PlotSettings]
-        target_histogram = True
-        train_test_plots = True
-        predicted_vs_true = True
-        predicted_vs_true_bars = True
-        best_worst_per_point = True
-        feature_vs_target = False
-        average_normalized_errors = True
 
-* **target_histogram** Whether or not to output target data histograms
-* **train_test_plots** Whether or not to output parity plots within each CV split
-* **predicted_vs_true** Whether or not to output summarized parity plots
-* **predicted_vs_true_bars** Whether or not to output averaged parity plots
-* **best_worst_per_point** Whether or not to output parity plot showing best and worst split per point
-* **feature_vs_target** Whether or not to show plots of target feature as a function of each individual input feature
-* **average_normalized_errors** Whether or not to show the average plots of the normalized errors
+    [MiscSettings]
+        plot_target_histogram = True
+        plot_train_test_plots = True
+        plot_predicted_vs_true = True
+        plot_predicted_vs_true_average = True
+        plot_best_worst_per_point = True
+        plot_each_feature_vs_target = False
+        plot_error_plots = True
+        rf_error_method = stdev
+        rf_error_percentile = 95
+        normalize_target_feature = False
+
+* **plot_target_histogram** Whether or not to output target data histograms
+* **plot_train_test_plots** Whether or not to output parity plots within each CV split
+* **plot_predicted_vs_true** Whether or not to output summarized parity plots
+* **plot_predicted_vs_true_average** Whether or not to output averaged parity plots
+* **plot_best_worst_per_point** Whether or not to output parity plot showing best and worst split per point
+* **plot_each_feature_vs_target** Whether or not to show plots of target feature as a function of each individual input feature
+* **plot_error_method** Whether or not to show the individual and average plots of the normalized errors
+* **rf_error_method** If using random forest, whether to calculate error bars with stdev or confidence intervals (confint)
+* **rf_error_percentile** If using confint above, the confidence interval to use to calculate the error bars
+* **normalize_target_feature** Whether or not to normalize the target feature values

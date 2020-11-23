@@ -7,6 +7,9 @@ import pandas as pd
 import numpy as np
 import os
 from mastml import utils
+import logging
+
+log = logging.getLogger('mastml')
 
 class HyperOptUtils():
     """
@@ -64,13 +67,24 @@ class HyperOptUtils():
         self.param_values = param_values
 
     def _search_space_generator(self, params):
+
         params_ = dict()
         for param_name, param_vals in params.items():
+            dtype = param_vals[4]
             try:
                 if param_vals[3] == "lin":
-                    params_[param_name] = np.linspace(float(param_vals[0]), float(param_vals[1]), num=int(param_vals[2]))
+                    params_[param_name] = np.linspace(float(param_vals[0]), float(param_vals[1]), num=int(param_vals[2]), dtype=dtype)
                 elif param_vals[3] == "log":
-                    params_[param_name] = np.logspace(float(param_vals[0]), float(param_vals[1]), num=int(param_vals[2]))
+                    params_[param_name] = np.logspace(float(param_vals[0]), float(param_vals[1]), num=int(param_vals[2]), dtype=dtype)
+                elif (param_vals[-1] == 'manual') and (param_vals[-2] == 'int'):
+                    params_[param_name] = list(map(lambda i: int(i), param_vals[:-2]))
+                elif (param_vals[-1] == 'manual') and (param_vals[-2] == 'float'):
+                    params_[param_name] = list(map(lambda i: float(i), param_vals[:-2]))
+                elif (param_vals[-1] == 'manual') and (param_vals[-2] == 'str'):
+                    params_[param_name] = list(map(lambda i: str(i), param_vals[:-2]))  # To be explicit
+                else:
+                    log.error('You must specify either lin or log scaling or manual values for GridSearch')
+                    exit()
             except:
                 params_[param_name] = param_vals
         return params_
@@ -94,8 +108,10 @@ class HyperOptUtils():
             for name, value_string in zip(self.param_names.split(';'), self.param_values.split(';')):
                 param_dict[name] = value_string
         except:
-            utils.MastError('Error: An error occurred when trying to parse the hyperparam input values.'
-                            ' Please check your input file for errors.')
+            log.error('Error: An error occurred when trying to parse the hyperparam input values.'
+                            ' Please check your input file for errors. Remember values need to be delimited by semicolons')
+            exit()
+
         # Clean spaces in names and value strings
         param_dict_ = dict()
         for name, value_string in param_dict.items():
@@ -134,46 +150,52 @@ class HyperOptUtils():
         # Construct prior distribution for Bayesian search
         for param_name, param_val in param_dict.items():
             param_val_split = param_val
-            #param_val_split = param_val.split(' ')
-
-            is_int = False
             is_str = False
+            is_int = False
             is_float = False
-            if '.' in param_val_split[0][:]:
-                is_float = True
-            else:
-                # Could be string, but will differentiate that below
+            if param_val_split[-1] == 'int':
                 is_int = True
+            elif param_val_split[-1] == 'float':
+                is_float = True
+            elif param_val_split[-1] == 'str':
+                is_str = True
+            else:
+                print('An error occurred with parsing your param_dict for hyperparam optimization. You must choose one of'
+                      '[int, float, str] as second to last entry for Bayesian Search')
 
-            if is_int is True:
-                try:
-                    start = int(param_val_split[0])
-                    end = int(param_val_split[1])
-                except ValueError:
-                    # Found a string
-                    is_int = False
-                    is_str = True
-
-            prior = str(param_val_split[-1])
+            prior = str(param_val_split[-2])
             if prior == 'log':
                 prior = 'log-uniform'
                 # If someone specifies log spacing, assume they mean to have floats and not ints for linear spacing, and
                 # override is_int = True from above
-                is_float = True
-                is_int = False
-                start = float(10**(float(param_val_split[0])))
-                end = float(10**(float(param_val_split[1])))
-            elif prior == 'lin':
+                if is_float is True:
+                    start = float(10**(float(param_val_split[0])))
+                    end = float(10**(float(param_val_split[1])))
+                elif is_int is True:
+                    start = int(param_val_split[0])
+                    end = int(param_val_split[1])
+            if prior == 'lin':
                 prior = 'uniform'
 
             if is_int is True:
+                start = int(param_val_split[0])
+                end = int(param_val_split[1])
                 param_val_ = Integer(start, end)
             elif is_float is True:
+                if prior == 'uniform':
+                    start = float(param_val_split[0])
+                    end = float(param_val_split[1])
+                elif prior == 'log-uniform':
+                    start = float(10**(float(param_val_split[0])))
+                    end = float(10**(float(param_val_split[1])))
                 param_val_ = Real(start, end, prior=prior)
             elif is_str is True:
-                param_val_ = Categorical(param_val_split)
+                param_val_ = Categorical([s for s in param_val_split if s not in ['int', 'float', 'str', 'lin', 'log']])
             else:
-                raise utils.InvalidValue('Your hyperparam input values were not parsed correctly. Please check your input file')
+                log.error('Your hyperparam input values were not parsed correctly, possibly due to unreasonable value choices'
+                          '(e.g. negative values when only positive values make sense). Please check your input file and '
+                          're-run MAST-ML.')
+                exit()
 
             param_dict_[param_name] = param_val_
 
@@ -215,13 +237,14 @@ class GridSearch(HyperOptUtils):
         _estimator_name : returns string of estimator name
 
     """
-    def __init__(self, estimator, cv, param_names, param_values, scoring=None):
+    def __init__(self, estimator, cv, param_names, param_values, scoring=None, n_jobs=1):
         super(GridSearch, self).__init__(param_names=param_names, param_values=param_values)
         self.estimator = estimator
         self.cv = cv
         self.param_names = param_names
         self.param_values = param_values
         self.scoring = scoring
+        self.n_jobs = int(n_jobs)
 
     def fit(self, X, y, savepath=None, refit=True, iid=True):
         rst = dict()
@@ -237,14 +260,15 @@ class GridSearch(HyperOptUtils):
             self.cv = ms.RepeatedKFold()
 
         model = GridSearchCV(self.estimator, param_dict, scoring=self.scoring, cv=self.cv, refit=refit,
-                             iid=iid)
+                             iid=iid, n_jobs=self.n_jobs, verbose=2)
 
         try:
             rst[estimator_name] = model.fit(X, y)
         except:
-            raise utils.MastError('Hyperparameter optimization failed, likely due to inappropriate domain of values to optimze'
+            log.error('Hyperparameter optimization failed, likely due to inappropriate domain of values to optimize'
                                ' one or more parameters over. Please check your input file and the sklearn docs for the mode'
                                ' you are optimizing for the domain of correct values')
+            exit()
 
         best_estimator = rst[estimator_name].best_estimator_
 
@@ -292,7 +316,7 @@ class RandomizedSearch(HyperOptUtils):
             _estimator_name : returns string of estimator name
 
         """
-    def __init__(self, estimator, cv, param_names, param_values, scoring=None, n_iter=10):
+    def __init__(self, estimator, cv, param_names, param_values, scoring=None, n_iter=50, n_jobs=1):
         super(RandomizedSearch, self).__init__(param_names=param_names, param_values=param_values)
         self.estimator = estimator
         self.cv = cv
@@ -300,6 +324,7 @@ class RandomizedSearch(HyperOptUtils):
         self.param_values = param_values
         self.scoring = scoring
         self.n_iter = int(n_iter)
+        self.n_jobs = int(n_jobs)
 
     def fit(self, X, y, savepath=None, refit=True):
         rst = dict()
@@ -313,14 +338,16 @@ class RandomizedSearch(HyperOptUtils):
         if self.cv is None:
             self.cv = ms.RepeatedKFold()
 
-        model = RandomizedSearchCV(self.estimator, param_dict, n_iter=self.n_iter, scoring=self.scoring, cv=self.cv, refit=refit)
+        model = RandomizedSearchCV(self.estimator, param_dict, n_iter=self.n_iter, scoring=self.scoring, cv=self.cv,
+                                   refit=refit, n_jobs=self.n_jobs, verbose=2)
 
         try:
             rst[estimator_name] = model.fit(X, y)
         except:
-            raise utils.MastError('Hyperparameter optimization failed, likely due to inappropriate domain of values to optimze'
+            log.error('Hyperparameter optimization failed, likely due to inappropriate domain of values to optimize'
                                ' one or more parameters over. Please check your input file and the sklearn docs for the mode'
                                ' you are optimizing for the domain of correct values')
+            exit()
 
         best_estimator = rst[estimator_name].best_estimator_
 
@@ -368,7 +395,7 @@ class BayesianSearch(HyperOptUtils):
         _estimator_name : returns string of estimator name
     """
 
-    def __init__(self, estimator, cv, param_names, param_values, scoring=None, n_iter=10):
+    def __init__(self, estimator, cv, param_names, param_values, scoring=None, n_iter=50, n_jobs=1):
         super(BayesianSearch, self).__init__(param_names=param_names, param_values=param_values)
         self.estimator = estimator
         self.cv = cv
@@ -376,6 +403,7 @@ class BayesianSearch(HyperOptUtils):
         self.param_values = param_values
         self.scoring = scoring
         self.n_iter = int(n_iter)
+        self.n_jobs = int(n_jobs)
 
     def fit(self, X, y, savepath=None, refit=True):
         rst = dict()
@@ -390,14 +418,15 @@ class BayesianSearch(HyperOptUtils):
             self.cv = ms.RepeatedKFold()
 
         model = BayesSearchCV(estimator=self.estimator, search_spaces=param_dict, n_iter=self.n_iter,
-                              scoring=self.scoring, cv=self.cv, refit=refit)
+                              scoring=self.scoring, cv=self.cv, refit=refit, n_jobs=self.n_jobs, verbose=2)
 
         try:
             rst[estimator_name] = model.fit(X, y)
         except:
-            raise utils.MastError('Hyperparameter optimization failed, likely due to inappropriate domain of values to optimze'
+            log.error('Hyperparameter optimization failed, likely due to inappropriate domain of values to optimize'
                                ' one or more parameters over. Please check your input file and the sklearn docs for the mode'
                                ' you are optimizing for the domain of correct values')
+            exit()
 
         best_estimator = rst[estimator_name].best_estimator_
 

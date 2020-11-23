@@ -1,6 +1,8 @@
-**************************
-Metrics
-**************************
+****************************
+Code Documentation: Metrics
+****************************
 
-.. automodule:: metrics
+.. automodapi:: mastml.metrics
    :members:
+   :undoc-members:
+   :show-inheritance:

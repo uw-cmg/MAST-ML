@@ -1,6 +1,8 @@
 ****************************************
-Data splitters
+Code Documentation: Data splitters
 ****************************************
 
-.. automodule:: data_splitters
+.. automodapi:: mastml.legos.data_splitters
    :members:
+   :undoc-members:
+   :show-inheritance:

@@ -37,6 +37,7 @@ regression_metrics = {
     'mean_squared_error':     (False, sm.mean_squared_error),
     'mean_squared_log_error': (False, sm.mean_squared_log_error),
     'median_absolute_error':  (False, sm.median_absolute_error),
+    'R2': (True, sm.r2_score)
 }
 
 def r2_score_noint(y_true, y_pred):
@@ -57,7 +58,7 @@ def r2_score_noint(y_true, y_pred):
     return lr.score(y_true, y_pred)
 regression_metrics['R2_noint'] = (True, r2_score_noint)
 
-def r2_score(y_true, y_pred):
+def r2_score_fitted(y_true, y_pred):
     """
     Method that calculates the R^2 value
 
@@ -73,7 +74,7 @@ def r2_score(y_true, y_pred):
     y_true = np.array(y_true).reshape(-1,1) # turn it from an n-vector to nx1-matrix
     lr.fit(y_true, y_pred)
     return lr.score(y_true, y_pred)
-regression_metrics['R2'] = (True, r2_score)
+regression_metrics['R2_fitted'] = (True, r2_score_fitted)
 
 def root_mean_squared_error(y_true, y_pred):
     """

@@ -137,6 +137,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../2_mastml_overview.html">MAST-ML overview slides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../2_running_mastml_nanohub.html">Running MAST-ML on Nanohub</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../2_mastml_tutorial.html">MAST-ML tutorial</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_introduction.html">Introduction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../2_mastml_tutorial_firstrun.html">Your first MAST-ML run</a></li>
@@ -234,10 +235,8 @@
             
   <h1>Source code for metrics</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">This module contains constructors for different model score metrics. Most model metrics are obtained from scikit-learn,</span>
-<span class="sd">while others are custom variations.</span>
-
-<span class="sd">The full list of score functions in scikit-learn can be found at: http://scikit-learn.org/stable/modules/model_evaluation.html</span>
+<span class="sd">A collection of functions which take a y_correct vector and y_predicted vector</span>
+<span class="sd">and give some score of them, such as the accuracy or the root mean squared error</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -245,6 +244,7 @@
 <span class="kn">import</span> <span class="nn">sklearn.metrics</span> <span class="k">as</span> <span class="nn">sm</span>
 <span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="k">import</span> <span class="n">LinearRegression</span> <span class="c1"># for r2_score_noint</span>
 
+<span class="c1"># list of score functions: http://scikit-learn.org/stable/modules/model_evaluation.html</span>
 <span class="n">classification_metrics</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;accuracy&#39;</span><span class="p">:</span>           <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">sm</span><span class="o">.</span><span class="n">accuracy_score</span><span class="p">),</span>
     <span class="s1">&#39;f1_binary&#39;</span><span class="p">:</span>          <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">yt</span><span class="p">,</span> <span class="n">yp</span><span class="p">:</span> <span class="n">sm</span><span class="o">.</span><span class="n">f1_score</span><span class="p">(</span><span class="n">yt</span><span class="p">,</span> <span class="n">yp</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;binary&#39;</span><span class="p">)),</span>
@@ -275,17 +275,7 @@
 <span class="p">}</span>
 
 <div class="viewcode-block" id="r2_score_noint"><a class="viewcode-back" href="../3_metrics.html#metrics.r2_score_noint">[docs]</a><span class="k">def</span> <span class="nf">r2_score_noint</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Method that calculates the R^2 value without fitting the y-intercept</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        y_true: (numpy array), array of true y data values</span>
-<span class="sd">        y_pred: (numpy array), array of predicted y data values</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        (float): score of R^2 with no y-intercept</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="s2">&quot; Get the R^2 coefficient without intercept &quot;</span>
     <span class="n">lr</span> <span class="o">=</span> <span class="n">LinearRegression</span><span class="p">(</span><span class="n">fit_intercept</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">y_true</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># turn it from an n-vector to nx1-matrix</span>
     <span class="n">lr</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
@@ -293,74 +283,27 @@
 <span class="n">regression_metrics</span><span class="p">[</span><span class="s1">&#39;R2_noint&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">r2_score_noint</span><span class="p">)</span>
 
 <div class="viewcode-block" id="r2_score"><a class="viewcode-back" href="../3_metrics.html#metrics.r2_score">[docs]</a><span class="k">def</span> <span class="nf">r2_score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Method that calculates the R^2 value</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        y_true: (numpy array), array of true y data values</span>
-<span class="sd">        y_pred: (numpy array), array of predicted y data values</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        (float): score of R^2</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="s2">&quot; Get the R^2 coefficient with intercept &quot;</span>
     <span class="n">lr</span> <span class="o">=</span> <span class="n">LinearRegression</span><span class="p">(</span><span class="n">fit_intercept</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">y_true</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># turn it from an n-vector to nx1-matrix</span>
     <span class="n">lr</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">lr</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span></div>
 <span class="n">regression_metrics</span><span class="p">[</span><span class="s1">&#39;R2&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">r2_score</span><span class="p">)</span>
 
-<div class="viewcode-block" id="root_mean_squared_error"><a class="viewcode-back" href="../3_metrics.html#metrics.root_mean_squared_error">[docs]</a><span class="k">def</span> <span class="nf">root_mean_squared_error</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Method that calculates the root mean squared error (RMSE)</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        y_true: (numpy array), array of true y data values</span>
-<span class="sd">        y_pred: (numpy array), array of predicted y data values</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        (float): score of RMSE</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">sm</span><span class="o">.</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span></div>
+<span class="k">def</span> <span class="nf">root_mean_squared_error</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">sm</span><span class="o">.</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span>
 <span class="n">regression_metrics</span><span class="p">[</span><span class="s1">&#39;root_mean_squared_error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">root_mean_squared_error</span><span class="p">)</span>
 
-<span class="c1"># TODO: consider two rmse/stdev metrics: one that uses stdev of full data set, and one that uses stdev of data per split</span>
-<div class="viewcode-block" id="rmse_over_stdev"><a class="viewcode-back" href="../3_metrics.html#metrics.rmse_over_stdev">[docs]</a><span class="k">def</span> <span class="nf">rmse_over_stdev</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">train_y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Method that calculates the root mean squared error (RMSE) of a set of data, divided by the standard deviation of</span>
-<span class="sd">    the training data set.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        y_true: (numpy array), array of true y data values</span>
-<span class="sd">        y_pred: (numpy array), array of predicted y data values</span>
-<span class="sd">        train_y: (numpy array), array of training y data values</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        (float): score of RMSE divided by standard deviation of training data</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="k">def</span> <span class="nf">rmse_over_stdev</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">train_y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">train_y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">stdev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">train_y</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">stdev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span>
     <span class="n">rmse</span> <span class="o">=</span> <span class="n">root_mean_squared_error</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">rmse</span> <span class="o">/</span> <span class="n">stdev</span></div>
+    <span class="k">return</span> <span class="n">rmse</span> <span class="o">/</span> <span class="n">stdev</span>
 <span class="n">regression_metrics</span><span class="p">[</span><span class="s1">&#39;rmse_over_stdev&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">rmse_over_stdev</span><span class="p">)</span>
 
-<div class="viewcode-block" id="adjusted_r2_score"><a class="viewcode-back" href="../3_metrics.html#metrics.adjusted_r2_score">[docs]</a><span class="k">def</span> <span class="nf">adjusted_r2_score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">n_features</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Method that calculates the adjusted R^2 value</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        y_true: (numpy array), array of true y data values</span>
-<span class="sd">        y_pred: (numpy array), array of predicted y data values</span>
-<span class="sd">        n_features: (int), number of features used in the fit</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        (float): score of adjusted R^2</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="k">def</span> <span class="nf">adjusted_r2_score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">n_features</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="n">r2</span> <span class="o">=</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
     <span class="c1"># n is sample size</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span>
@@ -371,8 +314,8 @@
     <span class="k">except</span><span class="p">:</span>
         <span class="c1"># No n_features given, just output NaN</span>
         <span class="n">r2_score_adj</span> <span class="o">=</span> <span class="s1">&#39;NaN&#39;</span>
-    <span class="k">return</span> <span class="n">r2_score_adj</span></div>
-<span class="n">regression_metrics</span><span class="p">[</span><span class="s1">&#39;R2_adjusted&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">adjusted_r2_score</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">r2_score_adj</span>
+<span class="n">regression_metrics</span><span class="p">[</span><span class="s1">&#39;R2_adjusted&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">adjusted_r2_score</span><span class="p">)</span>
 
 <span class="n">classification_score_funcs</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;chi2&#39;</span><span class="p">:</span> <span class="n">fs</span><span class="o">.</span><span class="n">chi2</span><span class="p">,</span> <span class="c1"># Compute chi-squared stats between each non-negative feature and class.</span>
@@ -419,18 +362,6 @@
 <span class="p">}</span>
 
 <div class="viewcode-block" id="check_and_fetch_names"><a class="viewcode-back" href="../3_metrics.html#metrics.check_and_fetch_names">[docs]</a><span class="k">def</span> <span class="nf">check_and_fetch_names</span><span class="p">(</span><span class="n">metric_names</span><span class="p">,</span> <span class="n">is_classification</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Method that checks whether chosen metrics to evaluate models are appropriate for user-specified models (e.g.</span>
-<span class="sd">    classification vs. regression models)</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        metric_names: (numpy array), array of true y data values</span>
-<span class="sd">        is_classification: (bool), whether the task is a classification task</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        functions (dict): dict containing the appropriate metric objects (e.g. classification vs. regression metrics)</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
     <span class="s2">&quot; Ensures all metrics are appropriate for task &quot;</span>
     <span class="n">task</span> <span class="o">=</span> <span class="s1">&#39;classification&#39;</span> <span class="k">if</span> <span class="n">is_classification</span> <span class="k">else</span> <span class="s1">&#39;regression&#39;</span>
     <span class="n">metrics_dict</span> <span class="o">=</span> <span class="n">classification_metrics</span> <span class="k">if</span> <span class="n">is_classification</span> <span class="k">else</span> <span class="n">regression_metrics</span>

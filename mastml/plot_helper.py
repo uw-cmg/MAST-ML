@@ -8,7 +8,9 @@ tweaking plots for a presentation or publication).
 """
 
 import math
+import statistics
 import os
+import copy
 import pandas as pd
 import itertools
 import warnings
@@ -16,6 +18,11 @@ import logging
 from collections import Iterable
 from os.path import join
 from collections import OrderedDict
+from math import log, floor, ceil
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score
+from sklearn.ensemble._forest import _generate_sample_indices, _get_n_samples_bootstrap
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 # Ignore the harmless warning about the gelsd driver on mac.
 warnings.filterwarnings(action="ignore", module="scipy",
@@ -32,14 +39,13 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure, figaspect
 from matplotlib.animation import FuncAnimation
 from matplotlib.font_manager import FontProperties
-import matplotlib.mlab as mlab
-from scipy.stats import gaussian_kde
+from scipy.stats import gaussian_kde, norm
 from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
 
 # Needed imports for ipynb_maker
-from mastml.utils import nice_range
-from mastml.metrics import nice_names
+#from mastml.utils import nice_range
+#from mastml.metrics import nice_names
 
 import inspect
 import textwrap
@@ -49,17 +55,21 @@ import nbformat
 
 from functools import wraps
 
+import forestci as fci
+from forestci.calibration import calibrateEB
+import copy
+
 matplotlib.rc('font', size=18, family='sans-serif') # set all font to bigger
 matplotlib.rc('figure', autolayout=True) # turn on autolayout
 
 # adding dpi as a constant global so it can be changed later
 DPI = 250
 
-log = logging.getLogger() # only used inside ipynb_maker I guess
+#logger = logging.getLogger() # only used inside ipynb_maker I guess
 
 # HEADERENDER don't delete this line, it's used by ipynb maker
 
-log = logging.getLogger('mastml') # the real logger
+logger = logging.getLogger('mastml') # the real logger
 
 def ipynb_maker(plot_func):
     """
@@ -116,7 +126,12 @@ def ipynb_maker(plot_func):
                     break
                 header += line
 
-        core_funcs = [plot_helper.stat_to_string, plot_helper.plot_stats, plot_helper.make_fig_ax]
+        core_funcs = [plot_helper.stat_to_string, plot_helper.plot_stats, plot_helper.make_fig_ax,
+                      plot_helper.get_histogram_bins, plot_helper.nice_names, plot_helper.nice_range,
+                      plot_helper.nice_mean, plot_helper.nice_std, plot_helper.rounder, plot_helper._set_tick_labels,
+                      plot_helper._set_tick_labels_different, plot_helper._nice_range_helper, plot_helper._nearest_pow_ten,
+                      plot_helper._three_sigfigs, plot_helper._n_sigfigs, plot_helper._int_if_int, plot_helper._round_up,
+                      plot_helper.prediction_intervals]
         func_strings = '\n\n'.join(inspect.getsource(func) for func in core_funcs)
 
         plot_func_string = inspect.getsource(plot_func)
@@ -138,10 +153,15 @@ def ipynb_maker(plot_func):
         args_block = ("from numpy import array\n" +
                       "from collections import OrderedDict\n" +
                       "from io import StringIO\n" +
+                    "from sklearn.gaussian_process import GaussianProcessRegressor  # Need for error plots\n" +
+                    "from sklearn.gaussian_process.kernels import *  # Need for error plots\n" +
+                    "from sklearn.ensemble import RandomForestRegressor  # Need for error plots\n" +
                       '\n'.join(arg_assignments))
         arg_names = ', '.join(arg_names)
 
         if knows_savepath:
+            if '.png' not in basename:
+                basename += '.png'
             main = textwrap.dedent(f"""\
                 import pandas as pd
                 from IPython.display import Image, display
@@ -154,7 +174,7 @@ def ipynb_maker(plot_func):
                 import pandas as pd
                 from IPython.display import Image, display
 
-                plot_paths = plot_predicted_vs_true(train_triple, test_triple, outdir)
+                plot_paths = plot_predicted_vs_true(train_quad, test_quad, outdir, label)
                 for plot_path in plot_paths:
                     display(Image(filename=plot_path))
             """)
@@ -228,18 +248,6 @@ def make_train_test_plots(run, path, is_classification, label, model, train_X, t
                           (y_test_true,  y_test_pred,  test_metrics, test_groups), 
                           path, label=label)
 
-        title = 'train_normalized_error'
-        plot_normalized_error(y_train_true, y_train_pred, join(path, title+'.png'), model, train_X)
-
-        title = 'test_normalized_error'
-        plot_normalized_error(y_test_true, y_test_pred, join(path, title+'.png'), model, test_X)
-
-        title = 'train_cumulative_normalized_error'
-        plot_cumulative_normalized_error(y_train_true, y_train_pred, join(path, title+'.png'), model, train_X)
-
-        title = 'test_cumulative_normalized_error'
-        plot_cumulative_normalized_error(y_test_true, y_test_pred, join(path, title+'.png'), model, test_X)
-
         title = 'train_residuals_histogram'
         plot_residuals_histogram(y_train_true, y_train_pred,
                                  join(path, title+'.png'), train_metrics,
@@ -248,6 +256,59 @@ def make_train_test_plots(run, path, is_classification, label, model, train_X, t
         plot_residuals_histogram(y_test_true,  y_test_pred,
                                  join(path, title+'.png'), test_metrics,
                                  title=title, label=label)
+
+def make_error_plots(run, path, is_classification, label, model, train_X, test_X, rf_error_method, rf_error_percentile,
+                     is_validation, validation_column_name, validation_X, groups=None):
+
+    y_train_true, y_train_pred, y_test_true = \
+        run['y_train_true'], run['y_train_pred'], run['y_test_true']
+    y_test_pred, train_metrics, test_metrics = \
+        run['y_test_pred'], run['train_metrics'], run['test_metrics']
+    train_groups, test_groups = run['train_groups'], run['test_groups']
+    if is_validation:
+        y_validation_pred, y_validation_true, prediction_metrics = \
+            run['y_validation_pred'+'_'+str(validation_column_name)], \
+            run['y_validation_true'+'_'+str(validation_column_name)], \
+            run['prediction_metrics']
+
+    if is_classification:
+        logger.debug('There is no error distribution plotting for classification problems, just passing through...')
+    else: # is_regression
+
+        #title = 'train_normalized_error'
+        #plot_normalized_error(y_train_true, y_train_pred, join(path, title+'.png'), model, error_method, percentile,
+        # X=train_X, Xtrain=train_X, Xtest=test_X)
+
+        title = 'test_normalized_error'
+        plot_normalized_error(y_test_true, y_test_pred, join(path, title+'.png'), model, rf_error_method,
+                              rf_error_percentile, X=test_X, Xtrain=train_X, Xtest=test_X)
+
+        #title = 'train_cumulative_normalized_error'
+        #plot_cumulative_normalized_error(y_train_true, y_train_pred, join(path, title+'.png'), model, error_method,
+        # percentile, X=train_X, Xtrain=train_X, Xtest=test_X)
+
+        title = 'test_cumulative_normalized_error'
+        plot_cumulative_normalized_error(y_test_true, y_test_pred, join(path, title+'.png'), model, rf_error_method,
+                                         rf_error_percentile, X=test_X, Xtrain=train_X, Xtest=test_X)
+
+        # HERE, add your RMS residual vs. error plot function
+        if model.__class__.__name__ in ['RandomForestRegressor', 'ExtraTreesRegressor', 'GaussianProcessRegressor',
+                                        'GradientBoostingRegressor', 'EnsembleRegressor']:
+            y_all_data = np.concatenate([y_test_true, y_train_true])
+            plot_real_vs_predicted_error(y_all_data, path, model, data_test_type='test')
+
+        if is_validation:
+            title = 'validation_cumulative_normalized_error'
+            plot_cumulative_normalized_error(y_validation_true, y_validation_pred, join(path, title+'.png'), model, rf_error_method,
+                                             rf_error_percentile, X=validation_X, Xtrain=train_X, Xtest=test_X)
+            title = 'validation_normalized_error'
+            plot_normalized_error(y_validation_true, y_validation_pred, join(path, title + '.png'), model, rf_error_method,
+                                  rf_error_percentile, X=validation_X, Xtrain=train_X, Xtest=test_X)
+            
+            if model.__class__.__name__ in ['RandomForestRegressor', 'ExtraTreesRegressor', 'GaussianProcessRegressor',
+                                            'GradientBoostingRegressor', 'EnsembleRegressor']:
+                y_all_data = np.concatenate([y_test_true, y_train_true])
+                plot_real_vs_predicted_error(y_all_data, path, model, data_test_type='validation')
 
 @ipynb_maker
 def plot_confusion_matrix(y_true, y_pred, savepath, stats, normalize=False, title='Confusion matrix', cmap=plt.cm.Blues):
@@ -495,8 +556,11 @@ def plot_target_histogram(y_df, savepath, title='target histogram', label='targe
     num_bins = get_histogram_bins(y_df=y_df)
 
     # do the actual plotting
-    ax.hist(y_df, bins=num_bins, color='b', edgecolor='k')#, histtype='stepfilled')
-
+    try:
+        ax.hist(y_df, bins=num_bins, color='b', edgecolor='k')#, histtype='stepfilled')
+    except:
+        print('Could not plot target histgram')
+        return
     # normal text stuff
     ax.set_xlabel('Value of '+label, fontsize=16)
     ax.set_ylabel('Number of occurences', fontsize=16)
@@ -542,15 +606,16 @@ def plot_predicted_vs_true(train_quad, test_quad, outdir, label):
 
     # make diagonal line from absolute min to absolute max of any data point
     # using round because Ryan did - but won't that ruin small numbers??? TODO this
-    max1 = max(y_train_true.max(), y_train_pred.max(),
-               y_test_true.max(), y_test_pred.max())
-    min1 = min(y_train_true.min(), y_train_pred.min(),
-               y_test_true.min(), y_test_pred.min())
+    #max1 = max(y_train_true.max(), y_train_pred.max(),
+    #           y_test_true.max(), y_test_pred.max())
+    max1 = max(y_train_true.max(), y_test_true.max())
+    #min1 = min(y_train_true.min(), y_train_pred.min(),
+    #           y_test_true.min(), y_test_pred.min())
+    min1 = min(y_train_true.min(), y_test_true.min())
     max1 = round(float(max1), rounder(max1-min1))
     min1 = round(float(min1), rounder(max1-min1))
     for y_true, y_pred, stats, groups, title_addon in \
             (train_quad+('train',), test_quad+('test',)):
-
         # make fig and ax, use x_align when placing text so things don't overlap
         x_align=0.64
         fig, ax = make_fig_ax(x_align=x_align)
@@ -569,19 +634,29 @@ def plot_predicted_vs_true(train_quad, test_quad, outdir, label):
         else:
             handles = dict()
             unique_groups = np.unique(np.concatenate((train_groups, test_groups), axis=0))
-            log.debug(' '*12 + 'unique groups: ' +str(list(unique_groups)))
+            unique_groups_train = np.unique(train_groups)
+            unique_groups_test = np.unique(test_groups)
+            #logger.debug(' '*12 + 'unique groups: ' +str(list(unique_groups)))
             colors = ['blue', 'red', 'green', 'purple', 'orange', 'black']
             markers = ['o', 'v', '^', 's', 'p', 'h', 'D', '*', 'X', '<', '>', 'P']
             colorcount = markercount = 0
             for groupcount, group in enumerate(unique_groups):
                 mask = groups == group
-                log.debug(' '*12 + f'{group} group_percent = {np.count_nonzero(mask) / len(groups)}')
+                #logger.debug(' '*12 + f'{group} group_percent = {np.count_nonzero(mask) / len(groups)}')
                 handles[group] = ax.scatter(y_true[mask], y_pred[mask], label=group, color=colors[colorcount],
                                             marker=markers[markercount], s=100, alpha=0.7)
                 colorcount += 1
                 if colorcount % len(colors) == 0:
                     markercount += 1
                     colorcount = 0
+            if title_addon == 'train':
+                to_delete = [k for k in handles.keys() if k not in unique_groups_train]
+                for k in to_delete:
+                    del handles[k]
+            elif title_addon == 'test':
+                to_delete = [k for k in handles.keys() if k not in unique_groups_test]
+                for k in to_delete:
+                    del handles[k]
             ax.legend(handles.values(), handles.keys(), loc='lower right', fontsize=12)
 
         # set axis labels
@@ -593,6 +668,8 @@ def plot_predicted_vs_true(train_quad, test_quad, outdir, label):
         filename = 'predicted_vs_true_'+ title_addon + '.png'
         filenames.append(filename)
         fig.savefig(join(outdir, filename), dpi=DPI, bbox_inches='tight')
+        df = pd.DataFrame({'y_pred': y_pred, 'y_true': y_true})
+        df.to_csv(join(outdir, 'predicted_vs_true_' + title_addon + '.csv'))
 
     return filenames
 
@@ -655,7 +732,42 @@ def plot_scatter(x, y, savepath, groups=None, xlabel='x', label='target data'):
 
     ax.set_xlabel(xlabel, fontsize=16)
     ax.set_ylabel('Value of '+label, fontsize=16)
+    #ax.set_xticklabels(rotation=45)
     fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
+
+def plot_keras_history(model_history, savepath, plot_type):
+    # Set image aspect ratio:
+    fig, ax = make_fig_ax()
+    keys = model_history.history.keys()
+    for k in keys:
+        if 'loss' not in k and 'val' not in k:
+            metric = k
+    accuracy = model_history.history[str(metric)]
+    loss = model_history.history['loss']
+
+    if plot_type == 'accuracy':
+        ax.plot(accuracy, label='training '+str(metric))
+        ax.set_ylabel(str(metric)+' (Accuracy)', fontsize=16)
+        try:
+            validation_accuracy = model_history.history['val_'+str(metric)]
+            ax.plot(validation_accuracy, label='validation '+str(metric))
+        except:
+            pass
+    if plot_type == 'loss':
+        ax.plot(loss, label='training loss')
+        ax.set_ylabel(str(metric)+' (Loss)', fontsize=16)
+        try:
+            validation_loss = model_history.history['val_loss']
+            ax.plot(validation_loss, label='validation loss')
+        except:
+            pass
+    ax.legend(loc='upper right', fontsize=12)
+
+    #_set_tick_labels_different(ax, max_tick_x, min_tick_x, max_tick_y, min_tick_y)
+    ax.set_xlabel('Epochs', fontsize=16)
+
+    fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
+    return
 
 @ipynb_maker
 def plot_best_worst_split(y_true, best_run, worst_run, savepath,
@@ -717,7 +829,13 @@ def plot_best_worst_split(y_true, best_run, worst_run, savepath,
     plot_stats(fig, best_stats, x_align=x_align, y_align=0.90)
     plot_stats(fig, worst_stats, x_align=x_align, y_align=0.60)
 
-    fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
+    fig.savefig(savepath + '.png', dpi=DPI, bbox_inches='tight')
+
+    df_best = pd.DataFrame({'best run pred': best_run['y_test_pred'], 'best run true': best_run['y_test_true']})
+    df_worst = pd.DataFrame({'worst run pred': worst_run['y_test_pred'], 'worst run true': worst_run['y_test_true']})
+
+    df_best.to_csv(savepath + '_best.csv')
+    df_worst.to_csv(savepath + '_worst.csv')
 
 @ipynb_maker
 def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
@@ -799,11 +917,16 @@ def plot_best_worst_per_point(y_true, y_pred_list, savepath, metrics_dict,
     plot_stats(fig, worst_stats, x_align=x_align, y_align=0.73, fontsize=10)
     plot_stats(fig, best_stats, x_align=x_align, y_align=0.95, fontsize=10)
 
-    fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
+    fig.savefig(savepath + '.png', dpi=DPI, bbox_inches='tight')
+
+    df = pd.DataFrame({'y true': new_y_true,
+                       'best per point': bests,
+                       'worst per point': worsts})
+    df.to_csv(savepath + '.csv')
 
 @ipynb_maker
 def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
-                                savepath, title='best worst with bars', label='target_value'):
+                                savepath, title='best worst with bars', label='target_value', groups=None):
     """
     Method to calculate parity plot (predicted vs. true) of average predictions, averaged over all CV splits, with error
 
@@ -856,13 +979,38 @@ def plot_predicted_vs_true_bars(y_true, y_pred_list, avg_stats,
     #print(maxx, minn, rounder(maxx - minn))
     _set_tick_labels(ax, maxx, minn)
 
-    ax.errorbar(y_true, means, yerr=standard_errors, fmt='o', markerfacecolor='blue', markeredgecolor='black', markersize=10,
+    if groups is None:
+        ax.errorbar(y_true, means, yerr=standard_errors, fmt='o', markerfacecolor='blue', markeredgecolor='black', markersize=10,
                 alpha=0.7, capsize=3)
+    else:
+        colors = ['blue', 'red', 'green', 'purple', 'orange', 'black']
+        markers = ['o', 'v', '^', 's', 'p', 'h', 'D', '*', 'X', '<', '>', 'P']
+        colorcount = markercount = 0
+        handles = dict()
+        unique_groups = np.unique(groups)
+        for groupcount, group in enumerate(unique_groups):
+            mask = groups == group
+            # logger.debug(' '*12 + f'{group} group_percent = {np.count_nonzero(mask) / len(groups)}')
+            handles[group] = ax.errorbar(y_true[mask], np.array(means)[mask], yerr=np.array(standard_errors)[mask],
+                                         marker=markers[markercount], markerfacecolor=colors[colorcount],
+                                         markeredgecolor=colors[colorcount], ecolor=colors[colorcount],
+                                         markersize=10, alpha=0.7, capsize=3, fmt='o')
+            colorcount += 1
+            if colorcount % len(colors) == 0:
+                markercount += 1
+                colorcount = 0
+        ax.legend(handles.values(), handles.keys(), loc='lower right', fontsize=10)
 
     plot_stats(fig, avg_stats, x_align=x_align, y_align=0.90)
 
-    fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
+    fig.savefig(savepath + '.png', dpi=DPI, bbox_inches='tight')
 
+    df = pd.DataFrame({'y true': y_true,
+                       'average predicted values': means,
+                       'error bar values': standard_errors})
+    df.to_csv(savepath + '.csv')
+
+@ipynb_maker
 def plot_metric_vs_group(metric, groups, stats, avg_stats, savepath):
     """
     Method to plot the value of a particular calculated metric (e.g. RMSE, R^2, etc) for each data group
@@ -905,6 +1053,7 @@ def plot_metric_vs_group(metric, groups, stats, avg_stats, savepath):
     fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
     return
 
+@ipynb_maker
 def plot_metric_vs_group_size(metric, groups, stats, avg_stats, savepath):
     """
     Method to plot the value of a particular calculated metric (e.g. RMSE, R^2, etc) as a function of the size of each group.
@@ -955,7 +1104,185 @@ def plot_metric_vs_group_size(metric, groups, stats, avg_stats, savepath):
     fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
     return
 
-def prediction_intervals(model, X, percentile=68):
+# Credit to: http://contrib.scikit-learn.org/forest-confidence-interval/_modules/forestci/forestci.html
+def calc_inbag_modified(n_samples, forest, is_ensemble):
+    """
+    Derive samples used to create trees in scikit-learn RandomForest objects.
+
+    Recovers the samples in each tree from the random state of that tree using
+    :func:`forest._generate_sample_indices`.
+
+    Parameters
+    ----------
+    n_samples : int
+        The number of samples used to fit the scikit-learn RandomForest object.
+
+    forest : RandomForest
+        Regressor or Classifier object that is already fit by scikit-learn.
+
+    Returns
+    -------
+    Array that records how many times a data point was placed in a tree.
+    Columns are individual trees. Rows are the number of times a sample was
+    used in a tree.
+    """
+
+    if not forest.bootstrap:
+        e_s = "Cannot calculate the inbag from a forest that has "
+        e_s = " bootstrap=False"
+        raise ValueError(e_s)
+
+    n_trees = forest.n_estimators
+    inbag = np.zeros((n_samples, n_trees))
+    sample_idx = []
+    n_samples_bootstrap = _get_n_samples_bootstrap(
+        #n_samples, forest.max_samples
+        n_samples, n_samples
+    )
+
+    for t_idx in range(n_trees):
+        if not is_ensemble:
+            sample_idx.append(
+                _generate_sample_indices(forest.estimators_[t_idx].random_state,
+                                         n_samples, n_samples_bootstrap))
+            inbag[:, t_idx] = np.bincount(sample_idx[-1], minlength=n_samples)
+        else:
+            sample_idx = forest.bootstrapped_idxs[t_idx]
+            inbag[:, t_idx] = np.bincount(sample_idx, minlength=n_samples)
+
+    return inbag
+
+# Credit to: http://contrib.scikit-learn.org/forest-confidence-interval/_modules/forestci/forestci.html
+def random_forest_error_modified(forest, is_ensemble, X_train, X_test, basic_IJ=False,inbag=None,
+                        calibrate=True, memory_constrained=False,
+                        memory_limit=None):
+    """
+    Calculate error bars from scikit-learn RandomForest estimators.
+
+    RandomForest is a regressor or classifier object
+    this variance can be used to plot error bars for RandomForest objects
+
+    Parameters
+    ----------
+    forest : RandomForest
+        Regressor or Classifier object.
+
+    X_train : ndarray
+        An array with shape (n_train_sample, n_features). The design matrix for
+        training data.
+
+    X_test : ndarray
+        An array with shape (n_test_sample, n_features). The design matrix
+        for testing data
+        
+    basic_IJ : boolean, optional
+        Return the value of basic infinitesimal jackknife or Monte Carlo 
+        corrected infinitesimal jackknife.
+
+    inbag : ndarray, optional
+        The inbag matrix that fit the data. If set to `None` (default) it
+        will be inferred from the forest. However, this only works for trees
+        for which bootstrapping was set to `True`. That is, if sampling was
+        done with replacement. Otherwise, users need to provide their own
+        inbag matrix.
+
+    calibrate: boolean, optional
+        Whether to apply calibration to mitigate Monte Carlo noise.
+        Some variance estimates may be negative due to Monte Carlo effects if
+        the number of trees in the forest is too small. To use calibration,
+        Default: True
+
+    memory_constrained: boolean, optional
+        Whether or not there is a restriction on memory. If False, it is
+        assumed that a ndarry of shape (n_train_sample,n_test_sample) fits
+        in main memory. Setting to True can actually provide a speed up if
+        memory_limit is tuned to the optimal range.
+
+    memory_limit: int, optional.
+        An upper bound for how much memory the itermediate matrices will take
+        up in Megabytes. This must be provided if memory_constrained=True.
+
+    Returns
+    -------
+    An array with the unbiased sampling variance (V_IJ_unbiased)
+    for a RandomForest object.
+
+    See Also
+    ----------
+    :func:`calc_inbag`
+
+    Notes
+    -----
+    The calculation of error is based on the infinitesimal jackknife variance,
+    as described in [Wager2014]_ and is a Python implementation of the R code
+    provided at: https://github.com/swager/randomForestCI
+
+    .. [Wager2014] S. Wager, T. Hastie, B. Efron. "Confidence Intervals for
+       Random Forests: The Jackknife and the Infinitesimal Jackknife", Journal
+       of Machine Learning Research vol. 15, pp. 1625-1651, 2014.
+    """
+    if inbag is None:
+        inbag = calc_inbag_modified(X_train.shape[0], forest, is_ensemble)
+
+    if not is_ensemble:
+        pred = np.array([tree.predict(X_test) for tree in forest]).T
+    else:
+        pred = np.array([tree.predict(X_test) for tree in forest.model]).T
+        pred = pred[0]
+    pred_mean = np.mean(pred, 0)
+    pred_centered = pred - pred_mean
+    n_trees = forest.n_estimators
+    V_IJ = fci._core_computation(X_train, X_test, inbag, pred_centered, n_trees,
+                             memory_constrained, memory_limit)
+    V_IJ_unbiased = fci._bias_correction(V_IJ, inbag, pred_centered, n_trees)
+
+    # Correct for cases where resampling is done without replacement:
+    if np.max(inbag) == 1:
+        variance_inflation = 1 / (1 - np.mean(inbag)) ** 2
+        V_IJ_unbiased *= variance_inflation
+
+    if basic_IJ:
+        return V_IJ
+
+    if not calibrate:
+        return V_IJ_unbiased
+
+    if V_IJ_unbiased.shape[0] <= 20:
+        print("No calibration with n_samples <= 20")
+        return V_IJ_unbiased
+    if calibrate:
+
+        calibration_ratio = 2
+        n_sample = np.ceil(n_trees / calibration_ratio)
+        new_forest = copy.deepcopy(forest) # NOTE may need to do explicitly this for EnsembleRegressor -> update: doesn't seem to cause any issues
+        if not is_ensemble:
+            new_forest.estimators_ =\
+                np.random.permutation(new_forest.estimators_)[:int(n_sample)]
+        else:
+            new_forest.model =\
+                np.random.permutation(new_forest.model)[:int(n_sample)]
+        new_forest.n_estimators = int(n_sample)
+
+        #results_ss = fci.random_forest_error(new_forest, X_train, X_test,
+        #                                 calibrate=False,
+        #                                 memory_constrained=memory_constrained,
+        #                                 memory_limit=memory_limit)
+        results_ss = random_forest_error_modified(new_forest, is_ensemble, X_train, X_test,
+                                         calibrate=False,
+                                         memory_constrained=memory_constrained,
+                                         memory_limit=memory_limit)
+        # Use this second set of variance estimates
+        # to estimate scale of Monte Carlo noise
+        sigma2_ss = np.mean((results_ss - V_IJ_unbiased)**2)
+        delta = n_sample / n_trees
+        sigma2 = (delta**2 + (1 - delta)**2) / (2 * (1 - delta)**2) * sigma2_ss
+
+        # Use Monte Carlo noise scale estimate for empirical Bayes calibration
+        V_IJ_calibrated = fci.calibration.calibrateEB(V_IJ_unbiased, sigma2)
+
+        return V_IJ_calibrated
+
+def prediction_intervals(model, X, rf_error_method, rf_error_percentile, Xtrain, Xtest):
     """
     Method to calculate prediction intervals when using Random Forest and Gaussian Process regression models.
 
@@ -966,6 +1293,9 @@ def prediction_intervals(model, X, percentile=68):
         model: (scikit-learn model/estimator object), a scikit-learn model object
 
         X: (numpy array), array of X features
+
+        method: (str), type of error bar to formulate (e.g. "stdev" is standard deviation of predicted errors, "confint"
+        is error bar as confidence interval
 
         percentile: (int), percentile for which to form error bars
 
@@ -979,30 +1309,115 @@ def prediction_intervals(model, X, percentile=68):
 
     err_down = list()
     err_up = list()
+    nan_indices = list()
+    indices_TF = list()
     X_aslist = X.values.tolist()
-    if model.__class__.__name__=='RandomForestRegressor':
-        for x in range(len(X_aslist)):
-            preds = list()
-            for pred in model.estimators_:
-                preds.append(pred.predict(np.array(X_aslist[x]).reshape(1,-1))[0])
-        e_down = np.percentile(preds, (100 - percentile) / 2.)
-        e_up = np.percentile(preds, 100 - (100 - percentile) / 2.)
+    if model.__class__.__name__ in ['RandomForestRegressor', 'GradientBoostingRegressor', 'ExtraTreesRegressor', 'EnsembleRegressor']:
 
-        if e_up == 0.0:
-            e_up = 10 ** 10
-        if e_down == 0.0:
-            e_down = 10 ** 10
-        err_down.append(e_down)
-        err_up.append(e_up)
+        if rf_error_method == 'jackknife_calibrated':
+            if 'EnsembleRegressor' in model.__class__.__name__:
+                rf_variances = random_forest_error_modified(model, True, X_train=Xtrain, X_test=Xtest, basic_IJ=False, calibrate=True)
+            else:
+                rf_variances = random_forest_error_modified(model, False, X_train=Xtrain, X_test=Xtest, basic_IJ=False, calibrate=True)
+            rf_stdevs = np.sqrt(rf_variances)
+            nan_indices = np.where(np.isnan(rf_stdevs))
+            nan_indices_sorted = np.array(sorted(nan_indices[0], reverse=True))
+            for i, val in enumerate(list(rf_stdevs)):
+                if i in nan_indices_sorted:
+                    indices_TF.append(False)
+                else:
+                    indices_TF.append(True)
+            rf_stdevs = rf_stdevs[~np.isnan(rf_stdevs)]
+            err_up = err_down = rf_stdevs
+        elif rf_error_method == 'jackknife_uncalibrated':
+            if 'EnsembleRegressor' in model.__class__.__name__:
+                rf_variances = random_forest_error_modified(model, True, X_train=Xtrain, X_test=Xtest, basic_IJ=False, calibrate=False)
+            else:
+                rf_variances = random_forest_error_modified(model, False, X_train=Xtrain, X_test=Xtest, basic_IJ=False, calibrate=False)
+            rf_stdevs = np.sqrt(rf_variances)
+            nan_indices = np.where(np.isnan(rf_stdevs))
+            nan_indices_sorted = np.array(sorted(nan_indices[0], reverse=True))
+            for i, val in enumerate(list(rf_stdevs)):
+                if i in nan_indices_sorted:
+                    indices_TF.append(False)
+                else:
+                    indices_TF.append(True)
+            rf_stdevs = rf_stdevs[~np.isnan(rf_stdevs)]
+            err_up = err_down = rf_stdevs
+        elif rf_error_method == 'jackknife_basic':
+            if 'EnsembleRegressor' in model.__class__.__name__:
+                rf_variances = random_forest_error_modified(model, True, X_train=Xtrain, X_test=Xtest, basic_IJ=True, calibrate=False)
+            else:
+                rf_variances = random_forest_error_modified(model, False, X_train=Xtrain, X_test=Xtest, basic_IJ=True, calibrate=False)
+            rf_stdevs = np.sqrt(rf_variances)
+            nan_indices = np.where(np.isnan(rf_stdevs))
+            nan_indices_sorted = np.array(sorted(nan_indices[0], reverse=True))
+            for i, val in enumerate(list(rf_stdevs)):
+                if i in nan_indices_sorted:
+                    indices_TF.append(False)
+                else:
+                    indices_TF.append(True)
+            rf_stdevs = rf_stdevs[~np.isnan(rf_stdevs)]
+            err_up = err_down = rf_stdevs
 
-    elif model.__class__.__name__=='GaussianProcessRegressor':
+        else:
+            for x in range(len(X_aslist)):
+                preds = list()
+                if model.__class__.__name__ == 'RandomForestRegressor':
+                    for pred in model.estimators_:
+                        preds.append(pred.predict(np.array(X_aslist[x]).reshape(1,-1))[0])
+                elif model.__class__.__name__ == 'GradientBoostingRegressor':
+                    for pred in model.estimators_.tolist():
+                        preds.append(pred[0].predict(np.array(X_aslist[x]).reshape(1,-1))[0])
+                elif model.__class__.__name__ == 'EnsembleRegressor':
+                    for pred in model.model:
+                        preds.append(pred.predict(np.array(X_aslist[x]).reshape(1,-1))[0])
+                if rf_error_method == 'confint':
+                    #e_down = np.percentile(preds, (100 - int(rf_error_percentile)) / 2.)
+                    #e_up = np.percentile(preds, 100 - (100 - int(rf_error_percentile)) / 2.)
+                    e_down = np.percentile(preds, float(rf_error_percentile))
+                    e_up = np.percentile(preds, float(rf_error_percentile))
+
+                elif rf_error_method == 'stdev':
+                    e_down = np.std(preds)
+                    e_up = np.std(preds)
+                elif rf_error_method == 'False' or rf_error_method is False:
+                    # basically default to stdev
+                    e_down = np.std(preds)
+                    e_up = np.std(preds)
+                else:
+                    raise ValueError('rf_error_method must be one of ["stdev", "confint", "jackknife_basic", "jackknife_calibrated", "jackknife_uncalibrated"]')
+                #if e_up == 0.0:
+                #    e_up = 10 ** 10
+                #if e_down == 0.0:
+                #    e_down = 10 ** 10
+                err_down.append(e_down)
+                err_up.append(e_up)
+            nan_indices = np.where(np.isnan(err_up))
+            nan_indices_sorted = np.array(sorted(nan_indices[0], reverse=True))
+            for i, val in enumerate(list(err_up)):
+                if i in nan_indices_sorted:
+                    indices_TF.append(False)
+                else:
+                    indices_TF.append(True)
+
+    if model.__class__.__name__=='GaussianProcessRegressor':
         preds = model.predict(X, return_std=True)[1] # Get the stdev model error from the predictions of GPR
         err_up = preds
         err_down = preds
+        nan_indices = np.where(np.isnan(err_up))
+        nan_indices_sorted = np.array(sorted(nan_indices[0], reverse=True))
+        for i, val in enumerate(list(err_up)):
+            if i in nan_indices_sorted:
+                indices_TF.append(False)
+            else:
+                indices_TF.append(True)
 
-    return err_down, err_up
+    return err_down, err_up, nan_indices, np.array(indices_TF)
 
-def plot_normalized_error(y_true, y_pred, savepath, model, X=None, avg_stats=None):
+@ipynb_maker
+def plot_normalized_error(y_true, y_pred, savepath, model, rf_error_method, rf_error_percentile, X=None, Xtrain=None,
+                          Xtest=None):
     """
     Method to plot the normalized residual errors of a model prediction
 
@@ -1030,121 +1445,60 @@ def plot_normalized_error(y_true, y_pred, savepath, model, X=None, avg_stats=Non
     # Here: if model is random forest or Gaussian process, get real error bars. Else, just residuals
     model_name = model.__class__.__name__
     # TODO: also add support for Gradient Boosted Regressor
-    models_with_error_predictions = ['RandomForestRegressor', 'GaussianProcessRegressor']
+    models_with_error_predictions = ['RandomForestRegressor', 'GaussianProcessRegressor', 'GradientBoostingRegressor', 'EnsembleRegressor']
     has_model_errors = False
+
+    y_pred_ = y_pred
+    y_true_ = y_true
+
     if model_name in models_with_error_predictions:
         has_model_errors = True
-        if not avg_stats:
-            err_down, err_up = prediction_intervals(model, X, percentile=68)
+        err_down, err_up, nan_indices, indices_TF = prediction_intervals(model, X, rf_error_method=rf_error_method,
+                                                rf_error_percentile=rf_error_percentile, Xtrain=Xtrain, Xtest=Xtest)
 
-    if avg_stats:
-        y_pred_ = np.array([nice_mean(y_p) for y_p in y_pred])
-        y_true_ = y_true
-    else:
-        y_pred_ = y_pred
-        y_true_ = y_true
-
-    #Need to remove NaN's before plotting. These will be present when doing validation runs. Note NaN's only show up in y_pred_
-    y_true_ = y_true_[~np.isnan(y_pred_)]
-    y_pred_ = y_pred_[~np.isnan(y_pred_)]
+    # Correct for nan indices being present
+    if has_model_errors:
+        y_pred_ = y_pred_[indices_TF]
+        y_true_ = y_true_[indices_TF]
 
     x_align = 0.64
     fig, ax = make_fig_ax(x_align=x_align)
     mu = 0
     sigma = 1
-    residuals = (y_true_-y_pred_)/np.std(y_true_-y_pred_)
-    density_residuals = gaussian_kde(residuals)
+    residuals = (y_true_ - y_pred_)
+    normalized_residuals = (y_true_-y_pred_)/np.std(y_true_-y_pred_)
+    density_residuals = gaussian_kde(normalized_residuals)
     x = np.linspace(mu - 5 * sigma, mu + 5 * sigma, y_true_.shape[0])
-    ax.plot(x, mlab.normpdf(x, mu, sigma), linewidth=4, color='blue', label="Analytical Gaussian")
+    ax.plot(x, norm.pdf(x, mu, sigma), linewidth=4, color='blue', label="Analytical Gaussian")
     ax.plot(x, density_residuals(x), linewidth=4, color='green', label="Model Residuals")
     maxx = 5
     minn = -5
-    maxy = max(max(density_residuals(x)), max(mlab.normpdf(x, mu, sigma)))
-    miny = min(min(density_residuals(x)), min(mlab.normpdf(x, mu, sigma)))
-    if not avg_stats:
-        if has_model_errors:
-            err_avg = [(abs(e1)+abs(e2))/2 for e1, e2 in zip(err_up, err_down)]
-            model_errors = (y_true_-y_pred_)/err_avg
-            density_errors = gaussian_kde(model_errors)
-            ax.plot(x, density_errors(x), linewidth=4, color='purple', label="Model Errors")
-            maxy = max(max(density_residuals(x)), max(mlab.normpdf(x, mu, sigma)), max(density_errors(x)))
-            miny = min(min(density_residuals(x)), min(mlab.normpdf(x, mu, sigma)), min(density_errors(x)))
-            # Save data to csv file
-            data_dict = {"x values": x, "analytical gaussian": mlab.normpdf(x, mu, sigma),
-                         "model residuals": density_residuals(x), "model errors": density_errors(x)}
-            pd.DataFrame(data_dict).to_csv(savepath.split('.png')[0]+'.csv')
-        else:
-            # Save data to csv file
-            data_dict = {"x values": x, "analytical gaussian": mlab.normpdf(x, mu, sigma),
-                         "model residuals": density_residuals(x)}
-            pd.DataFrame(data_dict).to_csv(savepath.split('.png')[0]+'.csv')
-    if avg_stats:
-        if has_model_errors:
-            # Need to loop over all splits in directory and import saved model errors from csv files
-            dirs = [d[0] for d in os.walk(path)]
-            # Remove base directory from list
-            del dirs[0]
-            # Should only use average errors of test data since predictions are made using test data
-            test_err_dfs = list()
-            for dir in dirs:
-                test_err_dfs.append(np.array(pd.read_csv(os.path.join(dir, 'test_normalized_error.csv')).loc[:, 'model errors']))
 
-            ###############################
-            # Resize arrays here
-            #TODO: revisit this to make work and clean up
-
-            max_length = 0
-            for df in test_err_dfs:
-                print(df.shape[0])
-                if df.shape[0] > max_length:
-                    max_length = df.shape[0]
-            #print('Max length')
-            test_err_dfs_ = list()
-            for df in test_err_dfs:
-                if df.shape[0] < max_length:
-                    df_ = np.append(df, np.repeat(np.nan, max_length-df.shape[0]))
-                    test_err_dfs_.append(df_)
-                else:
-                    test_err_dfs_.append(df)
-            test_err_dfs = test_err_dfs_
-            #for df in test_err_dfs:
-                #print(df.shape[0])
-            ###############################
-            #test_err_dfs = trim_array(test_err_dfs)
-
-            # Need to do per-row averaging due to arrays of different lengths (and NaN values)
-            """
-            def apply_mean(arr):
-                mean_list = list()
-                print('DOING APPLY MEAN')
-                length = 0
-                print('array list size')
-                print(arr.shape)
-                print(arr[0])
-                for row in arr:
-                    print(row)
-                    if ~np.isnan(row):
-                        length += 1
-                    print('counting length')
-                    print(length)
-                    mean_list.append(sum(row)/length)
-                return np.array(mean_list)
-            """
-
-            #for df in test_err_dfs:
-            #mean_arr = apply_mean(test_err_dfs)
-            #print('MEAN ARRAY')
-            #print(mean_arr)
-            #print(mean_arr.shape)
-            #print(test_err_dfs)
-            avg_test_model_errors = np.nanmean(test_err_dfs, axis=0)
-            #print(avg_test_model_errors.shape)
-            #exit()
-            x_reduced = np.linspace(mu - 5 * sigma, mu + 5 * sigma, avg_test_model_errors.shape[0])
-            #density_errors_average = gaussian_kde(avg_test_model_errors)
-            ax.plot(x_reduced, avg_test_model_errors, linewidth=4, color='purple', label="Model Errors")
-            #print(x_reduced)
-            #print(avg_test_model_errors)
+    if has_model_errors:
+        err_avg = [(abs(e1)+abs(e2))/2 for e1, e2 in zip(err_up, err_down)]
+        err_avg = np.asarray(err_avg)
+        err_avg[err_avg==0.0] = 0.0001
+        err_avg = err_avg.tolist()
+        model_errors = (y_true_-y_pred_)/err_avg
+        density_errors = gaussian_kde(model_errors)
+        maxy = max(max(density_residuals(x)), max(norm.pdf(x, mu, sigma)), max(density_errors(x)))
+        miny = min(min(density_residuals(x)), min(norm.pdf(x, mu, sigma)), max(density_errors(x)))
+        ax.plot(x, density_errors(x), linewidth=4, color='purple', label="Model Errors")
+        # Save data to csv file
+        data_dict = {"Y True": y_true_, "Y Pred": y_pred_, "Plotted x values": x, "error_bars_up": err_up,
+                     "error_bars_down": err_down, "error_avg": err_avg,
+                     "analytical gaussian (plotted y blue values)": norm.pdf(x, mu, sigma),
+                     "model residuals": residuals,
+                     "model normalized residuals (plotted y green values)": density_residuals(x),
+                     "model errors (plotted y purple values)": density_errors(x)}
+        pd.DataFrame(data_dict).to_csv(savepath.split('.png')[0]+'.csv')
+    else:
+        # Save data to csv file
+        data_dict = {"Y True": y_true, "Y Pred": y_pred, "x values": x, "analytical gaussian": norm.pdf(x, mu, sigma),
+                    "model residuals": density_residuals(x)}
+        pd.DataFrame(data_dict).to_csv(savepath.split('.png')[0]+'.csv')
+        maxy = max(max(density_residuals(x)), max(norm.pdf(x, mu, sigma)))
+        miny = min(min(density_residuals(x)), min(norm.pdf(x, mu, sigma)))
 
     ax.legend(loc=0, fontsize=12, frameon=False)
     ax.set_xlabel(r"$\mathrm{x}/\mathit{\sigma}$", fontsize=18)
@@ -1153,7 +1507,9 @@ def plot_normalized_error(y_true, y_pred, savepath, model, X=None, avg_stats=Non
     fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
     return
 
-def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, X=None, avg_stats=None):
+@ipynb_maker
+def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, rf_error_method, rf_error_percentile, X=None,
+                                     Xtrain=None, Xtest=None):
     """
     Method to plot the cumulative normalized residual errors of a model prediction
 
@@ -1177,25 +1533,25 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, X=None, av
 
     """
 
-    path = os.path.dirname(savepath)
     # Here: if model is random forest or Gaussian process, get real error bars. Else, just residuals
     model_name = model.__class__.__name__
-    # TODO: also add support for Gradient Boosted Regressor
-    models_with_error_predictions = ['RandomForestRegressor', 'GaussianProcessRegressor']
+    models_with_error_predictions = ['RandomForestRegressor', 'GaussianProcessRegressor', 'GradientBoostingRegressor', 'EnsembleRegressor']
     has_model_errors = False
+
+    y_pred_ = y_pred
+    y_true_ = y_true
+
     if model_name in models_with_error_predictions:
         has_model_errors = True
-        if not avg_stats:
-            err_down, err_up = prediction_intervals(model, X, percentile=68)
+        err_down, err_up, nan_indices, indices_TF = prediction_intervals(model, X, rf_error_method=rf_error_method,
+                                                    rf_error_percentile=rf_error_percentile,  Xtrain=Xtrain, Xtest=Xtest)
 
-    if avg_stats:
-        y_pred_ = np.array([nice_mean(y_p) for y_p in y_pred])
-        y_true_ = y_true
-    else:
-        y_pred_ = y_pred
-        y_true_ = y_true
+    # Need to remove NaN's before plotting. These will be present when doing validation runs. Note NaN's only show up in y_pred_
+    # Correct for nan indices being present
+    if has_model_errors:
+        y_pred_ = y_pred_[indices_TF]
+        y_true_ = y_true_[indices_TF]
 
-    #Need to remove NaN's before plotting. These will be present when doing validation runs. Note NaN's only show up in y_pred_
     y_true_ = y_true_[~np.isnan(y_pred_)]
     y_pred_ = y_pred_[~np.isnan(y_pred_)]
 
@@ -1206,106 +1562,44 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, X=None, av
     analytic_gau = abs(analytic_gau)
     n_analytic = np.arange(1, len(analytic_gau) + 1) / np.float(len(analytic_gau))
     X_analytic = np.sort(analytic_gau)
-    residuals = abs((y_true_-y_pred_)/np.std(y_true_-y_pred_))
-    n_residuals = np.arange(1, len(residuals) + 1) / np.float(len(residuals))
-    X_residuals = np.sort(residuals) #r"$\mathrm{Predicted \/ Value}, \mathit{eV}$"
+    residuals = y_true_-y_pred_
+    normalized_residuals = abs((y_true_-y_pred_)/np.std(y_true_-y_pred_))
+    n_residuals = np.arange(1, len(normalized_residuals) + 1) / np.float(len(normalized_residuals))
+    X_residuals = np.sort(normalized_residuals) #r"$\mathrm{Predicted \/ Value}, \mathit{eV}$"
     ax.set_xlabel(r"$\mathrm{x}/\mathit{\sigma}$", fontsize=18)
     ax.set_ylabel("Fraction", fontsize=18)
     ax.step(X_residuals, n_residuals, linewidth=3, color='green', label="Model Residuals")
     ax.step(X_analytic, n_analytic, linewidth=3, color='blue', label="Analytical Gaussian")
+    ax.set_xlim([0, 5])
 
-    if not avg_stats:
-        if has_model_errors:
-            err_avg = [(abs(e1)+abs(e2))/2 for e1, e2 in zip(err_up, err_down)]
-            model_errors = abs((y_true_-y_pred_)/err_avg)
-            #print('TRUE')
-            #print(y_true_)
-            #print('PRED')
-            #print(y_pred_)
-            #print('RESIDUAL')
-            #print(y_pred_-y_true_)
-            #print('ERRORS FROM MODEL')
-            #print(err_avg)
-            #print('ERROR TO PLOT')
-            #print(model_errors)
-            n_errors = np.arange(1, len(model_errors) + 1) / np.float(len(model_errors))
-            X_errors = np.sort(model_errors)
-            ax.step(X_errors, n_errors, linewidth=3, color='purple', label="Model Errors")
-            # Save data to csv file
-            data_dict = {"x analytical": X_analytic, "analytical gaussian": n_analytic, "x residuals": X_residuals,
-                         "model residuals": n_residuals, "x errors": X_errors, "model errors": err_avg}
-            # Save this way to avoid issue with different array sizes in data_dict
-            df = pd.DataFrame.from_dict(data_dict, orient='index')
-            df = df.transpose()
-            df.to_csv(savepath.split('.png')[0]+'.csv', index=False)
-        else:
-            # Save data to csv file
-            data_dict = {"x analytical": X_analytic, "analytical gaussian": n_analytic, "x residuals": X_residuals,
-                         "model residuals": n_residuals}
-            # Save this way to avoid issue with different array sizes in data_dict
-            df = pd.DataFrame.from_dict(data_dict, orient='index')
-            df = df.transpose()
-            df.to_csv(savepath.split('.png')[0]+'.csv', index=False)
-    if avg_stats:
-        if has_model_errors:
-            # Need to loop over all splits in directory and import saved model errors from csv files
-            dirs = [d[0] for d in os.walk(path)]
-            # Remove base directory from list
-            del dirs[0]
-            # Should only use average errors of test data since predictions are made using test data
-            test_err_dfs = list()
-            X_errors_dfs = list()
-            for dir in dirs:
-                test_err_dfs.append(np.array(pd.read_csv(os.path.join(dir,'test_cumulative_normalized_error.csv')).loc[:, 'model errors']))
-                X_errors_dfs.append(np.array(pd.read_csv(os.path.join(dir,'test_cumulative_normalized_error.csv')).loc[:, 'x errors']))
-
-            ###############################
-            # Resize arrays here
-            # TODO: revisit this to make work and clean up
-            max_length = 0
-            for df in test_err_dfs:
-                #print(df.shape[0])
-                if df.shape[0] > max_length:
-                    max_length = df.shape[0]
-            #print('Max length')
-            test_err_dfs_ = list()
-            for df in test_err_dfs:
-                if df.shape[0] < max_length:
-                    df_ = np.append(df, np.repeat(np.nan, max_length - df.shape[0]))
-                    test_err_dfs_.append(df_)
-                else:
-                    test_err_dfs_.append(df)
-            test_err_dfs = test_err_dfs_
-            #for df in test_err_dfs:
-                #print(df.shape[0])
-            ###############################
-            ###############################
-            # Resize arrays here
-
-            #max_length = 0
-            #for df in X_errors_dfs:
-            #    print(df.shape[0])
-            #    if df.shape[0] > max_length:
-            #        max_length = df.shape[0]
-            #print('Max length')
-            #X_errors_dfs_ = list()
-            #for df in X_errors_dfs:
-            #    if df.shape[0] < max_length:
-            #        df_ = np.append(df, np.repeat(np.nan, max_length - df.shape[0]))
-            #        X_errors_dfs_.append(df_)
-            #    else:
-            #        X_errors_dfs_.append(df)
-            #X_errors_dfs = X_errors_dfs_
-            #for df in X_errors_dfs:
-            #    print(df.shape[0])
-            ###############################
-            #test_err_dfs = trim_array(test_err_dfs)
-            #X_errors_dfs = trim_array(X_errors_dfs)
-            avg_test_model_errors = np.nanmean(test_err_dfs, axis=0)
-            n_errors_avg = np.arange(1, len(avg_test_model_errors) + 1) / np.float(len(avg_test_model_errors))
-            #avg_X_errors = np.nanmean(X_errors_dfs, axis=0)
-            avg_X_errors = np.sort(avg_test_model_errors)
-            ax.step(avg_X_errors, n_errors_avg, linewidth=4, color='purple', label="Model Errors")
+    if has_model_errors:
+        err_avg = [(abs(e1)+abs(e2))/2 for e1, e2 in zip(err_up, err_down)]
+        err_avg = np.asarray(err_avg)
+        err_avg[err_avg==0.0] = 0.0001
+        err_avg = err_avg.tolist()
+        model_errors = abs((y_true_-y_pred_)/err_avg)
+        n_errors = np.arange(1, len(model_errors) + 1) / np.float(len(model_errors))
+        X_errors = np.sort(model_errors)
+        ax.step(X_errors, n_errors, linewidth=3, color='purple', label="Model Errors")
+        # Save data to csv file
+        data_dict = {"Y True": y_true, "Y Pred": y_pred, "Analytical Gaussian values": analytic_gau, "Analytical Gaussian (sorted, blue data)": X_analytic,
+                     "model residuals": residuals,
+                     "Model normalized residuals": normalized_residuals, "Model Residuals (sorted, green data)": X_residuals,
+                     "error_bars_up": err_up, "error_bars_down": err_down,
+                     "Model error values (r value: (ytrue-ypred)/(model error avg))": model_errors,
+                     "Model errors (sorted, purple values)": X_errors}
+        # Save this way to avoid issue with different array sizes in data_dict
+        df = pd.DataFrame.from_dict(data_dict, orient='index')
+        df = df.transpose()
+        df.to_csv(savepath.split('.png')[0]+'.csv', index=False)
+    else:
+        # Save data to csv file
+        data_dict = {"Y True": y_true, "Y Pred": y_pred, "x analytical": X_analytic, "analytical gaussian": n_analytic, "x residuals": X_residuals,
+                     "model residuals": n_residuals}
+        # Save this way to avoid issue with different array sizes in data_dict
+        df = pd.DataFrame.from_dict(data_dict, orient='index')
+        df = df.transpose()
+        df.to_csv(savepath.split('.png')[0]+'.csv', index=False)
 
     ax.legend(loc=0, fontsize=14, frameon=False)
     xlabels = np.linspace(2, 3, 3)
@@ -1314,24 +1608,414 @@ def plot_cumulative_normalized_error(y_true, y_pred, savepath, model, X=None, av
     axin.step(X_residuals, n_residuals, linewidth=3, color='green', label="Model Residuals")
     axin.step(X_analytic, n_analytic, linewidth=3, color='blue', label="Analytical Gaussian")
     if has_model_errors:
-        if not avg_stats:
-            axin.step(X_errors, n_errors, linewidth=3, color='purple', label="Model Errors")
-        if avg_stats:
-            axin.step(avg_X_errors, avg_test_model_errors, linewidth=3, color='purple', label="Model Errors")
-    axin.set_xticklabels(xlabels, fontsize=8)
+        axin.step(X_errors, n_errors, linewidth=3, color='purple', label="Model Errors")
+    axin.set_xticklabels(xlabels, fontsize=8, rotation=90)
     axin.set_yticklabels(ylabels, fontsize=8)
-    axin.set_xlim(2, 3)
-    axin.set_ylim(0.9, 1)
+    axin.set_xlim([2, 3])
+    axin.set_ylim([0.9, 1])
 
     maxx = 5
     minn = 0
-    maxy = 1
+    maxy = 1.1
     miny = 0
     _set_tick_labels_different(ax, maxx, minn, maxy, miny)
 
     mark_inset(ax, axin, loc1=1, loc2=2)
     fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
     return
+
+@ipynb_maker
+def plot_average_cumulative_normalized_error(y_true, y_pred, savepath, has_model_errors, err_avg=None):
+    """
+    Method to plot the cumulative normalized residual errors of a model prediction
+
+    Args:
+
+        y_true: (numpy array), array containing the true y data values
+
+        y_pred: (numpy array), array containing the predicted y data values
+
+        savepath: (str), path to save the plotted cumulative normalized error plot
+
+        model: (scikit-learn model/estimator object), a scikit-learn model object
+
+        X: (numpy array), array of X features
+
+        avg_stats: (dict), dict of calculated average metrics over all CV splits
+
+    Returns:
+
+        None
+
+    """
+
+    x_align = 0.64
+    fig, ax = make_fig_ax(x_align=x_align)
+
+    analytic_gau = np.random.normal(0, 1, 10000)
+    analytic_gau = abs(analytic_gau)
+    n_analytic = np.arange(1, len(analytic_gau) + 1) / np.float(len(analytic_gau))
+    X_analytic = np.sort(analytic_gau)
+    residuals = y_true-y_pred
+    residuals = residuals[~np.isnan(residuals)]
+    normalized_residuals = abs((y_true-y_pred)/np.std(y_true-y_pred))
+    n_residuals = np.arange(1, len(normalized_residuals) + 1) / np.float(len(normalized_residuals))
+    X_residuals = np.sort(normalized_residuals) #r"$\mathrm{Predicted \/ Value}, \mathit{eV}$"
+    ax.set_xlabel(r"$\mathrm{x}/\mathit{\sigma}$", fontsize=18)
+    ax.set_ylabel("Fraction", fontsize=18)
+    ax.step(X_residuals, n_residuals, linewidth=3, color='green', label="Model Residuals")
+    ax.step(X_analytic, n_analytic, linewidth=3, color='blue', label="Analytical Gaussian")
+    ax.set_xlim([0, 5])
+
+    if has_model_errors:
+        err_avg = np.asarray(err_avg)
+        err_avg[err_avg==0.0] = 0.0001
+        err_avg = err_avg.tolist()
+        model_errors = abs((y_true-y_pred)/err_avg)
+        model_errors = model_errors[~np.isnan(model_errors)]
+        n_errors = np.arange(1, len(model_errors) + 1) / np.float(len(model_errors))
+        X_errors = np.sort(model_errors)
+        ax.step(X_errors, n_errors, linewidth=3, color='purple', label="Model Errors")
+        # Save data to csv file
+        data_dict = {"Y True": y_true, "Y Pred": y_pred, "Analytical Gaussian values": analytic_gau,
+                     "Analytical Gaussian (sorted, blue data)": X_analytic,
+                     "model residuals": residuals,
+                     "Model normalized residuals": normalized_residuals, "Model Residuals (sorted, green data)": X_residuals,
+                     "Model error values (r value: (ytrue-ypred)/(model error avg))": model_errors,
+                     "Model errors (sorted, purple values)": X_errors}
+        # Save this way to avoid issue with different array sizes in data_dict
+        df = pd.DataFrame.from_dict(data_dict, orient='index')
+        df = df.transpose()
+        df.to_csv(savepath.split('.png')[0]+'.csv', index=False)
+    else:
+        # Save data to csv file
+        data_dict = {"Y True": y_true, "Y Pred": y_pred, "x analytical": X_analytic, "analytical gaussian": n_analytic,
+                     "x residuals": X_residuals, "model residuals": n_residuals}
+        # Save this way to avoid issue with different array sizes in data_dict
+        df = pd.DataFrame.from_dict(data_dict, orient='index')
+        df = df.transpose()
+        df.to_csv(savepath.split('.png')[0]+'.csv', index=False)
+
+    ax.legend(loc=0, fontsize=14, frameon=False)
+    xlabels = np.linspace(2, 3, 3)
+    ylabels = np.linspace(0.9, 1, 2)
+    axin = zoomed_inset_axes(ax, 2.5, loc=7)
+    axin.step(X_residuals, n_residuals, linewidth=3, color='green', label="Model Residuals")
+    axin.step(X_analytic, n_analytic, linewidth=3, color='blue', label="Analytical Gaussian")
+    if has_model_errors:
+        axin.step(X_errors, n_errors, linewidth=3, color='purple', label="Model Errors")
+    axin.set_xticklabels(xlabels, fontsize=8, rotation=90)
+    axin.set_yticklabels(ylabels, fontsize=8)
+    axin.set_xlim([2, 3])
+    axin.set_ylim([0.9, 1])
+
+    maxx = 5
+    minn = 0
+    maxy = 1.1
+    miny = 0
+    _set_tick_labels_different(ax, maxx, minn, maxy, miny)
+
+    mark_inset(ax, axin, loc1=1, loc2=2)
+    fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
+    return
+
+@ipynb_maker
+def plot_average_normalized_error(y_true, y_pred, savepath, has_model_errors, err_avg=None):
+    """
+    Method to plot the normalized residual errors of a model prediction
+
+    Args:
+
+        y_true: (numpy array), array containing the true y data values
+
+        y_pred: (numpy array), array containing the predicted y data values
+
+        savepath: (str), path to save the plotted normalized error plot
+
+        model: (scikit-learn model/estimator object), a scikit-learn model object
+
+        X: (numpy array), array of X features
+
+        avg_stats: (dict), dict of calculated average metrics over all CV splits
+
+    Returns:
+
+        None
+
+    """
+
+    x_align = 0.64
+    fig, ax = make_fig_ax(x_align=x_align)
+    mu = 0
+    sigma = 1
+    residuals = y_true - y_pred
+    residuals = residuals[~np.isnan(residuals)]
+    normalized_residuals = (y_true-y_pred)/np.std(y_true-y_pred)
+    density_residuals = gaussian_kde(normalized_residuals)
+    x = np.linspace(mu - 5 * sigma, mu + 5 * sigma, y_true.shape[0])
+    ax.plot(x, norm.pdf(x, mu, sigma), linewidth=4, color='blue', label="Analytical Gaussian")
+    ax.plot(x, density_residuals(x), linewidth=4, color='green', label="Model Residuals")
+    maxx = 5
+    minn = -5
+
+    if has_model_errors:
+        nans = np.argwhere(np.isnan(err_avg)).tolist()
+        nans = np.squeeze(nans)
+        if nans.size:
+            err_avg[nans] = 0.0
+
+        err_avg = np.asarray(err_avg)
+        err_avg[err_avg==0.0] = 0.0001
+        err_avg = err_avg.tolist()
+        model_errors = (y_true-y_pred)/err_avg
+        model_errors = model_errors[~np.isnan(model_errors)]
+        density_errors = gaussian_kde(model_errors)
+        maxy = max(max(density_residuals(x)), max(norm.pdf(x, mu, sigma)), max(density_errors(x)))
+        miny = min(min(density_residuals(x)), min(norm.pdf(x, mu, sigma)), min(density_errors(x)))
+        ax.plot(x, density_errors(x), linewidth=4, color='purple', label="Model Errors")
+        # Save data to csv file
+        data_dict = {"Y True": y_true, "Y Pred": y_pred, "Plotted x values": x, "Model errors": err_avg,
+                     "analytical gaussian (plotted y blue values)": norm.pdf(x, mu, sigma),
+                     "model residuals": residuals,
+                     "model normalized residuals (plotted y green values)": density_residuals(x),
+                     "model errors (plotted y purple values)": density_errors(x)}
+        pd.DataFrame(data_dict).to_csv(savepath.split('.png')[0]+'.csv')
+    else:
+        # Save data to csv file
+        data_dict = {"Y True": y_true, "Y Pred": y_pred, "x values": x, "analytical gaussian": norm.pdf(x, mu, sigma),
+                    "model residuals": density_residuals(x)}
+        pd.DataFrame(data_dict).to_csv(savepath.split('.png')[0]+'.csv')
+        maxy = max(max(density_residuals(x)), max(norm.pdf(x, mu, sigma)))
+        miny = min(min(density_residuals(x)), min(norm.pdf(x, mu, sigma)))
+
+    ax.legend(loc=0, fontsize=12, frameon=False)
+    ax.set_xlabel(r"$\mathrm{x}/\mathit{\sigma}$", fontsize=18)
+    ax.set_ylabel("Probability density", fontsize=18)
+    _set_tick_labels_different(ax, maxx, minn, maxy, miny)
+    fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
+    return
+
+def plot_real_vs_predicted_error(y_true, savepath, model, data_test_type):
+
+    bin_values, rms_residual_values, num_values_per_bin = parse_error_data(dataset_stdev=np.std(y_true),
+                                                                          path_to_test=savepath,
+                                                                           data_test_type=data_test_type)
+
+    model_name = model.__class__.__name__
+    if model_name == 'RandomForestRegressor':
+        model_type = 'RF'
+    elif model_name == 'GradientBoostingRegressor':
+        model_type = 'GBR'
+    elif model_name == 'ExtraTreesRegressor':
+        model_type = 'ET'
+    elif model_name == 'GaussianProcessRegressor':
+        model_type = 'GPR'
+    elif model_name == 'EnsembleRegressor':
+        model_type = 'ER'
+
+    if data_test_type not in ['test', 'validation']:
+        print('Error: data_test_type must be one of "test" or "validation"')
+        exit()
+
+    # Make RF error plot
+    fig, ax = make_fig_ax(aspect_ratio=0.5, x_align=0.65)
+
+    ax.scatter(bin_values[0:10], rms_residual_values[0:10], s=100, color='blue', alpha=0.7)
+    ax.scatter(bin_values[10:], rms_residual_values[10:], s=100, color='red', alpha=0.7)
+
+    ax.set_xlabel(str(model_type) + ' model errors / dataset stdev', fontsize=12)
+    ax.set_ylabel('RMS Absolute residuals\n / dataset stdev', fontsize=12)
+    ax.tick_params(labelsize=10)
+
+    linear_int = LinearRegression(fit_intercept=False)
+    linear = LinearRegression(fit_intercept=True)
+    # Fit just blue circle data
+    # Find nan entries
+    nans = np.argwhere(np.isnan(rms_residual_values)).tolist()
+
+    # use nans (which are indices) to delete relevant parts of bin_values and 
+    # rms_residual_values as they can't be used to fit anyway
+    bin_values_copy = np.empty_like(bin_values)
+    bin_values_copy[:] = bin_values
+    rms_residual_values_copy = np.empty_like(rms_residual_values)
+    rms_residual_values_copy[:] = rms_residual_values
+    bin_values_copy = np.delete(bin_values_copy, nans)
+    rms_residual_values_copy = np.delete(rms_residual_values_copy, nans)
+
+    # BEGIN OLD CODE
+    # --------------
+    #lowval = 0
+    #if len(nans) > 0:
+    #    if nans[0][0] == 0:
+    #        nans = nans[1:]
+    #        lowval = 1
+    #        if len(nans) > 0:
+    #            if nans[0][0] == 1:
+    #                nans = nans[1:]
+    #                lowval = 2
+    #                if len(nans) > 0:
+    #                    if nans[0][0] == 2:
+    #                        nans = nans[1:]
+    #                        lowval = 3
+    #                        if len(nans) > 0:
+    #                            if nans[0][0] == 3:
+    #                                nans = nans[1:]
+    #                                lowval = 4
+
+    #try:
+    #    val = min(nans)[0]
+    #except ValueError:
+    #    val = 10
+    #if val > 10:
+    #    val = 10
+
+    #linear.fit(np.array(bin_values[lowval:val]).reshape(-1, 1), rms_residual_values[lowval:val])
+
+    #yfit = linear.predict(np.array(bin_values[lowval:val]).reshape(-1, 1))
+    #ax.plot(bin_values[lowval:val], yfit, 'k--', linewidth=2)
+    #slope = linear.coef_
+    #r2 = r2_score(rms_residual_values[lowval:val], yfit)
+    # --------------
+
+    if not rms_residual_values_copy.size:
+        print("---WARNING: ALL ERRORS TOO LARGE FOR PLOTTING---")
+    else:
+        linear_int.fit(np.array(bin_values_copy).reshape(-1, 1), rms_residual_values_copy)
+        linear.fit(np.array(bin_values_copy).reshape(-1, 1), rms_residual_values_copy)
+
+        yfit_int = linear_int.predict(np.array(bin_values_copy).reshape(-1, 1))
+        yfit = linear.predict(np.array(bin_values_copy).reshape(-1, 1))
+        ax.plot(bin_values_copy, yfit_int, 'r--', linewidth=2)
+        ax.plot(bin_values_copy, yfit, 'k--', linewidth=2)
+        slope_int = linear_int.coef_
+        r2_int = r2_score(rms_residual_values_copy, yfit_int)
+        slope = linear.coef_
+        r2 = r2_score(rms_residual_values_copy, yfit)
+
+        ax.text(0.02, 1.2, 'intercept slope = %3.2f ' % slope_int, fontsize=12, fontdict={'color': 'r'})
+        ax.text(0.02, 1.1, 'intercept R$^2$ = %3.2f ' % r2_int, fontsize=12, fontdict={'color': 'r'})
+        ax.text(0.02, 1.0, 'slope = %3.2f ' % slope, fontsize=12, fontdict={'color': 'k'})
+        ax.text(0.02, 0.9, 'R$^2$ = %3.2f ' % r2, fontsize=12, fontdict={'color': 'k'})
+
+    divider = make_axes_locatable(ax)
+    axbarx = divider.append_axes("top", 1.2, pad=0.12, sharex=ax)
+
+    axbarx.bar(x=bin_values, height=num_values_per_bin, width=0.05276488, color='blue', edgecolor='black',
+               alpha=0.7)
+    axbarx.tick_params(labelsize=10, axis='y')
+    axbarx.tick_params(labelsize=0, axis='x')
+    axbarx.set_ylabel('Counts', fontsize=12)
+
+    total_samples = sum(num_values_per_bin)
+    axbarx.text(0.95, round(0.67 * max(num_values_per_bin)), 'Total counts = ' + str(total_samples), fontsize=12)
+
+    ax.set_ylim(bottom=0, top=max(1.3, max(rms_residual_values)))
+    axbarx.set_ylim(bottom=0, top=max(num_values_per_bin) + 50)
+    ax.set_xlim(left=0, right=max(max(bin_values_copy) + 0.05, 1.6))
+
+    fig.savefig(
+        os.path.join(savepath.split('.png')[0], str(model_type) + '_residuals_vs_modelerror_' + str(data_test_type) + '.png'),
+        dpi=300, bbox_inches='tight')
+
+    return
+
+def parse_error_data(dataset_stdev, path_to_test, data_test_type):
+    if data_test_type not in ['test', 'validation']:
+        print('Error: data_test_type must be one of "test" or "validation"')
+        exit()
+    dfs_ytrue = list()
+    dfs_ypred = list()
+    dfs_erroravg = list()
+    dfs_modelresiduals = list()
+    files_to_parse = list()
+    splits = list()
+
+    for folder, subfolders, files in os.walk(path_to_test):
+        if 'split' in folder:
+            splits.append(folder)
+
+    for path in splits:
+        if os.path.exists(os.path.join(path, str(data_test_type)+'_normalized_error.csv')):
+            files_to_parse.append(os.path.join(path, str(data_test_type)+'_normalized_error.csv'))
+
+    for file in files_to_parse:
+        df = pd.read_csv(file)
+        dfs_ytrue.append(np.array(df['Y True']))
+        dfs_ypred.append(np.array(df['Y Pred']))
+        dfs_erroravg.append(np.array(df['error_avg']))
+        dfs_modelresiduals.append(np.array(df['model residuals']))
+
+    ytrue_all = np.concatenate(dfs_ytrue).ravel()
+    ypred_all = np.concatenate(dfs_ypred).ravel()
+
+    erroravg_all = np.concatenate(dfs_erroravg).ravel().tolist()
+    modelresiduals_all = np.concatenate(dfs_modelresiduals).ravel().tolist()
+    absmodelresiduals_all = [abs(i) for i in modelresiduals_all]
+    squaredmodelresiduals_all = [i**2 for i in absmodelresiduals_all]
+
+    erroravg_all_reduced = [i/dataset_stdev for i in erroravg_all]
+    # Need to square the dataset_stdev here since these are squared residuals
+    squaredmodelresiduals_all_reduced = [i/dataset_stdev**2 for i in squaredmodelresiduals_all]
+
+    erroravg_reduced_sorted, squaredresiduals_reduced_sorted = (list(t) for t in zip(*sorted(zip(erroravg_all_reduced, squaredmodelresiduals_all_reduced))))
+
+    bin_values = [0.05, 0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95, 1.05, 1.15, 1.25, 1.35, 1.45, 1.55]
+    bin_delta = 0.05
+
+    over_count = 0
+    over_vals = []
+    for e in erroravg_reduced_sorted:
+        if e > (max(bin_values) + bin_delta):
+            over_count += 1
+            over_vals.append(e)
+
+    if len(over_vals):
+        med_over_val = statistics.median(over_vals)
+        if med_over_val <= max(bin_values) * 2.0:
+            # just add another bin and put everthing in there
+            bin_values.append(1.65)
+        else:
+            # extend histogram
+            max_over_val = max(over_vals)
+            extra_bin_values = np.arange(1.65, max_over_val+1.0, 0.05)
+            bin_values = np.concatenate([bin_values, extra_bin_values])
+
+    rms_residual_values = list()
+    num_values_per_bin = list()
+
+    for bin_value in bin_values:
+        bin_indices = list()
+        bin_residuals = list()
+        for i, val in enumerate(erroravg_reduced_sorted):
+            if val > bin_value-bin_delta:
+                if bin_value == bin_values[len(bin_values)-1]:
+                    bin_indices.append(i)
+                else:
+                    if val < bin_value+bin_delta:
+                        bin_indices.append(i)
+        for i in bin_indices:
+            bin_residuals.append(squaredresiduals_reduced_sorted[i])
+        rms_residual_values.append(np.sqrt(np.mean(bin_residuals)))
+        num_values_per_bin.append(len(bin_indices))
+
+    data_dict = {"Y True": ytrue_all,
+                 "Y Pred": ypred_all,
+                 "Model Residuals": modelresiduals_all,
+                 "Abs Model Residuals": absmodelresiduals_all,
+                 "Squared Model Resiuals": squaredmodelresiduals_all,
+                 "Squared Model Residuals / dataset stdev": squaredmodelresiduals_all_reduced,
+                 "Model errors": erroravg_all,
+                 "Model errors / dataset stdev": erroravg_all_reduced,
+                 "Model errors / dataset stdev (sorted)": erroravg_reduced_sorted,
+                 "Squared Model Residuals / dataset stdev (sorted)": squaredresiduals_reduced_sorted,
+                 "Bin values (Model errors / dataset stdev)": bin_values,
+                 "Model RMS absolute residuals in each bin": rms_residual_values,
+                 "Number of values in each bin": num_values_per_bin}
+
+    df = pd.DataFrame().from_dict(data=data_dict, orient='index').transpose()
+    df.to_excel(os.path.join(path_to_test, 'ModelErrorAnalysis_'+str(data_test_type)+'.xlsx'))
+
+    return bin_values, rms_residual_values, num_values_per_bin
 
 def plot_1d_heatmap(xs, heats, savepath, xlabel='x', heatlabel='heats'):
     """
@@ -1362,7 +2046,6 @@ def plot_1d_heatmap(xs, heats, savepath, xlabel='x', heatlabel='heats'):
     # Escape from error of passing tuples when optimizing neural net
     except TypeError:
         pass
-
 
 def plot_2d_heatmap(xs, ys, heats, savepath,
                     xlabel='x', ylabel='y', heatlabel='heat'):
@@ -1456,6 +2139,7 @@ def plot_3d_heatmap(xs, ys, zs, heats, savepath,
     #anim.save(savepath+'.mp4', fps=5, extra_args=['-vcodec', 'libx264'])
     anim.save(savepath+'.gif', fps=5, dpi=80, writer='imagemagick')
 
+@ipynb_maker
 def plot_learning_curve(train_sizes, train_mean, test_mean, train_stdev, test_stdev, score_name, learning_curve_type, savepath='data_learning_curve'):
     """
     Method used to plot both data and feature learning curves
@@ -1515,7 +2199,7 @@ def plot_learning_curve(train_sizes, train_mean, test_mean, train_stdev, test_st
     h2 = ax.plot(train_sizes, test_mean, '-o', color='red', markersize=10, alpha=0.7)[0]
     ax.fill_between(train_sizes, test_mean-test_stdev, test_mean+test_stdev,
                      alpha=0.1, color='red')
-    ax.legend([h1, h2], ['train score', 'test score'], loc='center right', fontsize=12)
+    ax.legend([h1, h2], ['train score', 'validation score'], loc='center right', fontsize=12)
     if learning_curve_type == 'sample_learning_curve':
         ax.set_xlabel('Number of training data points', fontsize=16)
     elif learning_curve_type == 'feature_learning_curve':
@@ -1530,8 +2214,13 @@ def plot_learning_curve(train_sizes, train_mean, test_mean, train_stdev, test_st
                            pd.DataFrame(test_mean), pd.DataFrame(test_stdev)], 1)
     df_concat.columns = ['train_sizes', 'train_mean', 'train_stdev', 'test_mean', 'test_stdev']
     df_concat.to_csv(savepath+'.csv')
-    plot_learning_curve_convergence(train_sizes, test_mean, score_name, learning_curve_type, savepath)
+    try:
+        plot_learning_curve_convergence(train_sizes, test_mean, score_name, learning_curve_type, savepath)
+    except IndexError:
+        logger.error('MASTML encountered an error while trying to plot the learning curve convergences plots, likely due to '
+                  'insufficient data')
 
+@ipynb_maker
 def plot_learning_curve_convergence(train_sizes, test_mean, score_name, learning_curve_type, savepath):
     """
     Method used to plot both the convergence of data and feature learning curves as a function of amount of data or features
@@ -1593,6 +2282,12 @@ def plot_learning_curve_convergence(train_sizes, test_mean, score_name, learning
     ax.set_xlabel('Learning curve step', fontsize=16)
     ax.set_ylabel('Change in '+score_name, fontsize=16)
     fig.savefig(savepath+'_convergence'+'.png', dpi=DPI, bbox_inches='tight')
+
+    datadict = {"Steps": np.array(steps), "Slopes": np.array(slopes),
+                "Steps moving average": np.squeeze(np.array(steps_moving_average)),
+                "Slopes moving average": np.squeeze(np.array(slopes_moving_average))}
+
+    pd.DataFrame().from_dict(data=datadict).to_csv(savepath+'_convergence.csv')
 
     if learning_curve_type == 'feature_learning_curve':
         # First, set number optimal features to all features in case stopping criteria not met
@@ -1698,7 +2393,7 @@ def get_histogram_bins(y_df):
         num_bins = 10
     return num_bins
 
-def stat_to_string(name, value):
+def stat_to_string(name, value, nice_names):
     """
     Method that converts a metric object into a string for displaying on a plot
 
@@ -1758,7 +2453,7 @@ def plot_stats(fig, stats, x_align=0.65, y_align=0.90, font_dict=dict(), fontsiz
 
     """
 
-    stat_str = '\n'.join(stat_to_string(name, value)
+    stat_str = '\n'.join(stat_to_string(name, value, nice_names=nice_names())
                            for name,value in stats.items())
 
     fig.text(x_align, y_align, stat_str,
@@ -2072,7 +2767,12 @@ def _set_tick_labels_different(ax, max_tick_x, min_tick_x, max_tick_y, min_tick_
     ticklabels_x = [str(tick) for tick in tickvals_x]
     ticklabels_y = [str(tick) for tick in tickvals_y]
 
-    ax.set_xticklabels(labels=ticklabels_x, fontsize=14)
+    rotation = 0
+    # Look at length of x tick labels to see if may be possibly crowded. If so, rotate labels
+    tick_length = len(str(tickvals_x[1]))
+    if tick_length >= 4:
+        rotation = 45
+    ax.set_xticklabels(labels=ticklabels_x, fontsize=14, rotation=rotation)
     ax.set_yticklabels(labels=ticklabels_y, fontsize=14)
 
 def _clean_tick_labels(tickvals, delta):
@@ -2099,3 +2799,230 @@ def _clean_tick_labels(tickvals, delta):
     else:
         tickvals_clean = tickvals
     return tickvals_clean
+
+## Math utilities to aid plot_helper to make ranges
+
+def nice_range(lower, upper):
+    """
+    Method to create a range of values, including the specified start and end points, with nicely spaced intervals
+
+    Args:
+
+        lower: (float or int), lower bound of range to create
+
+        upper: (float or int), upper bound of range to create
+
+    Returns:
+
+        (list), list of numerical values in established range
+
+    """
+
+    flipped = 1 # set to -1 for inverted
+
+    # Case for validation where nan is passed in
+    if np.isnan(lower):
+        lower = 0
+    if np.isnan(upper):
+        upper = 0.1
+
+    if upper < lower:
+        upper, lower = lower, upper
+        flipped = -1
+    return [_int_if_int(x) for x in _nice_range_helper(lower, upper)][::flipped]
+
+def _nice_range_helper(lower, upper):
+    """
+    Method to help make a better range of axis ticks
+
+    Args:
+
+        lower: (float), lower value of axis ticks
+
+        upper: (float), upper value of axis ticks
+
+    Returns:
+
+        upper: (float), modified upper tick value fixed based on set of axis ticks
+
+    """
+    steps = 8
+    diff = abs(lower - upper)
+
+    # special case where lower and upper are the same
+    if diff == 0:
+        return [lower,]
+
+    # the exact step needed
+    step = diff / steps
+
+    # a rough estimate of best step
+    step = _nearest_pow_ten(step) # whole decimal increments
+
+    # tune in one the best step size
+    factors = [0.1, 0.2, 0.5, 1, 2, 5, 10]
+
+    # use this to minimize how far we are from ideal step size
+    def best_one(steps_factor):
+        steps_count, factor = steps_factor
+        return abs(steps_count - steps)
+    n_steps, best_factor = min([(diff / (step * f), f) for f in factors], key = best_one)
+
+    #print('should see n steps', ceil(n_steps + 2))
+    # multiply in the optimal factor for getting as close to ten steps as we can
+    step = step * best_factor
+
+    # make the bounds look nice
+    lower = _three_sigfigs(lower)
+    upper = _three_sigfigs(upper)
+
+    start = _round_up(lower, step)
+
+    # prepare for iteration
+    x = start # pointless init
+    i = 0
+
+    # itereate until we reach upper
+    while x < upper - step:
+        x = start + i * step
+        yield _three_sigfigs(x) # using sigfigs because of floating point error
+        i += 1
+
+    # finish off with ending bound
+    yield upper
+
+def _three_sigfigs(x):
+    """
+    Method invoking special case of _n_sigfigs to return 3 sig figs
+
+    Args:
+
+        x: (float), an axis tick number
+
+    Returns:
+
+        (float), number of sig figs (always 3)
+
+    """
+    return _n_sigfigs(x, 3)
+
+def _n_sigfigs(x, n):
+    """
+    Method to return number of sig figs to use for axis ticks
+
+    Args:
+
+        x: (float), an axis tick number
+
+    Returns:
+
+        (float), number of sig figs
+
+    """
+    sign = 1
+    if x == 0:
+        return 0
+    if x < 0: # case for negatives
+        x = -x
+        sign = -1
+    if x < 1:
+        base = n - round(log(x, 10))
+    else:
+        base = (n-1) - round(log(x, 10))
+    return sign * round(x, base)
+
+def _nearest_pow_ten(x):
+    """
+    Method to return the nearest power of ten for an axis tick value
+
+    Args:
+
+        x: (float), an axis tick number
+
+    Returns:
+
+        (float), nearest power of ten of x
+
+    """
+    sign = 1
+    if x == 0:
+        return 0
+    if x < 0: # case for negatives
+        x = -x
+        sign = -1
+    return sign*10**ceil(log(x, 10))
+
+def _int_if_int(x):
+    """
+    Method to return integer mapped value of x
+
+    Args:
+
+        x: (float or int), a number
+
+    Returns:
+
+        x: (float), value of x mapped as integer
+
+    """
+    if int(x) == x:
+        return int(x)
+    return x
+
+def _round_up(x, inc):
+    """
+    Method to round up the value of x
+
+    Args:
+
+        x: (float or int), a number
+
+        inc: (float), an increment for axis ticks
+
+    Returns:
+
+        (float), value of x rounded up
+
+    """
+    sign = 1
+    if x < 0: # case for negative
+        x = -x
+        sign = -1
+
+    return sign * inc * ceil(x / inc)
+
+def nice_names():
+    nice_names = {
+    # classification:
+    'accuracy': 'Accuracy',
+    'f1_binary': '$F_1$',
+    'f1_macro': 'f1_macro',
+    'f1_micro': 'f1_micro',
+    'f1_samples': 'f1_samples',
+    'f1_weighted': 'f1_weighted',
+    'log_loss': 'log_loss',
+    'precision_binary': 'Precision',
+    'precision_macro': 'prec_macro',
+    'precision_micro': 'prec_micro',
+    'precision_samples': 'prec_samples',
+    'precision_weighted': 'prec_weighted',
+    'recall_binary': 'Recall',
+    'recall_macro': 'rcl_macro',
+    'recall_micro': 'rcl_micro',
+    'recall_samples': 'rcl_samples',
+    'recall_weighted': 'rcl_weighted',
+    'roc_auc': 'ROC_AUC',
+    # regression:
+    'explained_variance': 'expl_var',
+    'mean_absolute_error': 'MAE',
+    'mean_squared_error': 'MSE',
+    'mean_squared_log_error': 'MSLE',
+    'median_absolute_error': 'MedAE',
+    'root_mean_squared_error': 'RMSE',
+    'rmse_over_stdev': r'RMSE/$\sigma_y$',
+    'R2': '$R^2$',
+    'R2_noint': '$R^2_{noint}$',
+    'R2_adjusted': '$R^2_{adjusted}$',
+    'R2_fitted': '$R^2_{fitted}$'
+    }
+    return nice_names

@@ -1,6 +1,8 @@
 ****************************************
-Randomizers
+Code Documentation: Randomizers
 ****************************************
 
-.. automodule:: randomizers
+.. automodapi:: mastml.legos.randomizers
    :members:
+   :undoc-members:
+   :show-inheritance:

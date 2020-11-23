@@ -1,7 +1,10 @@
-**************************
-Data cleaner
-**************************
+********************************
+Code Documentation: Data cleaner
+********************************
 
-.. automodule:: data_cleaner
+.. automodapi:: mastml.data_cleaner
    :members:
+   :undoc-members:
+   :show-inheritance:
+
 

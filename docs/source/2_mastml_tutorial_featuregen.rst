@@ -20,6 +20,7 @@ Example::
     [FeatureGeneration]
         [[Magpie]]
             composition_feature = Solute element
+            feature_types = composition_avg, arithmetic_avg, max, min, difference, elements
 
     [FeatureNormalization]
         [[StandardScaler]]

@@ -12,21 +12,24 @@ from mastml.legos import feature_selectors, model_finder
 
 log = logging.getLogger('mastml')
 
-def parse_conf_file(filepath):
+def parse_conf_file(filepath, from_dict=False):
     """
     Method that accepts the filepath of an input configuration file and returns its parsed dictionary
 
     Args:
-        filepath: (str), path to config file
+        filepath: (str), path to config file, or a dict of config values directly
 
     Returns:
         conf: (dict): dictionary parsed from config file
 
     """
 
-    conf = ConfigObj(filepath)
+    if from_dict == False:
+        conf = ConfigObj(filepath)
+    else:
+        conf = filepath # The filepath in this case is an actual dictionary of values used as the config fiel
 
-    main_sections = ['GeneralSetup', 'DataSplits', 'Models', 'LearningCurve', 'DataCleaning', 'HyperOpt']
+    main_sections = ['GeneralSetup', 'DataSplits', 'Models', 'LearningCurve', 'DataCleaning', 'HyperOpt', 'ModelHosting']
     feature_sections = ['FeatureGeneration', 'Clustering',
                         'FeatureNormalization', 'FeatureSelection']
     feature_section_dicts = [conf[name] for name in feature_sections if name in conf]
@@ -38,7 +41,7 @@ def parse_conf_file(filepath):
     set_required_sections_to_empty()
 
     def check_unknown_sections():
-        all_sections = main_sections + feature_sections + ['PlotSettings']
+        all_sections = main_sections + feature_sections + ['MiscSettings']
         for section_name in conf:
             if section_name not in all_sections:
                 raise Exception(f'[{section_name}] is not a valid section!'
@@ -54,7 +57,10 @@ def parse_conf_file(filepath):
     verify_subsection_only_sections()
 
     def parameter_dict_type_check_and_cast():
-        parameter_dicts = conf['Models'].values() + conf['DataSplits'].values()
+        parameter_dicts = list()
+        parameter_dicts.extend(conf['Models'].values())
+        parameter_dicts.extend(conf['DataSplits'].values())
+        #parameter_dicts = conf['Models'].values() + conf['DataSplits'].values()
         for feature_section in feature_section_dicts:
             parameter_dicts.extend(feature_section.values())
 
@@ -62,8 +68,9 @@ def parse_conf_file(filepath):
             for name, value in parameter_dict.items():
                 # Does this parameter-only section include a subsection?
                 if isinstance(value, dict):
-                    raise utils.InvalidConfSubSection(
-                            f"Subsection in parameter-only section: {key}")
+                    continue
+                    #raise utils.InvalidConfSubSection(
+                    #        f"Subsection in parameter-only section: {key}")
                 # cast the strings to their respective types
                 parameter_dict[name] = fix_types(value)
     parameter_dict_type_check_and_cast()
@@ -88,8 +95,10 @@ def parse_conf_file(filepath):
     GS = conf['GeneralSetup']
 
     def check_general_setup_settings_are_valid():
-        all_settings =  ['input_features', 'target_feature', 'metrics',
-                         'randomizer', 'validation_columns', 'not_input_features', 'grouping_feature']
+        #all_settings =  ['input_features', 'target_feature', 'metrics',
+        #                 'randomizer', 'validation_columns', 'not_input_features', 'grouping_feature']
+        all_settings =  ['input_features', 'input_target', 'metrics',
+                         'randomizer', 'input_testdata', 'input_other', 'input_grouping']
         for name in GS:
             if name not in all_settings:
                 raise utils.InvalidConfParameters(
@@ -97,8 +106,8 @@ def parse_conf_file(filepath):
                         f"Valid GeneralSetup options are: {all_settings}")
     check_general_setup_settings_are_valid()
 
-    if 'grouping_feature' not in GS:
-        GS['grouping_feature'] = None
+    if 'input_grouping' not in GS:
+        GS['input_grouping'] = None
 
     # Find grouping features and 'not_input_features' to blacklist out of X (see data loader)
     def collect_grouping_features():
@@ -109,26 +118,26 @@ def parse_conf_file(filepath):
                 SS = conf[section][subsection]
                 if not isinstance(SS, dict):
                     continue
-                if 'grouping_column' in SS.keys():
-                    logging.debug('found grouping_feature: ' + SS['grouping_column'])
-                    yield SS['grouping_column']
+                if 'input_grouping' in SS.keys():
+                    logging.debug('found input_grouping feature: ' + SS['input_grouping'])
+                    yield SS['input_grouping']
     # Issue here where if clusters are automatically generated, new column is made but isn't in intitial df, even though
     # listed as grouping_feature. Here, just have to remember to put grouping_feature names in not_input_features
     #feature_blacklist = list(collect_grouping_features())
     feature_blacklist = list()
     # default not_input_features to a list
-    if 'not_input_features' not in GS:
-        GS['not_input_features'] = list()
+    if 'input_other' not in GS:
+        GS['input_other'] = list()
     else:
-        if type(GS['not_input_features']) is str:
+        if type(GS['input_other']) is str:
             new_list = list()
-            new_list.append(GS['not_input_features'])
-            GS['not_input_features'] = new_list
-        elif type(GS['not_input_features']) is list:
+            new_list.append(GS['input_other'])
+            GS['input_other'] = new_list
+        elif type(GS['input_other']) is list:
             pass
 
     # and add the discovered ones to the list
-    GS['not_input_features'] += feature_blacklist
+    GS['input_other'] += feature_blacklist
     #GS['not_input_features'] = [f for f in feature_blacklist if f not in GS['not_input_features']]
 
     def set_randomizer_setting():
@@ -140,7 +149,7 @@ def parse_conf_file(filepath):
 
 
     def set_default_features():
-        for name in ['input_features', 'target_feature']:
+        for name in ['input_features', 'input_target']:
             if (name not in GS) or (GS[name] == 'Auto'):
                 GS[name] = None
     set_default_features()
@@ -194,28 +203,29 @@ def parse_conf_file(filepath):
     make_long_name_short_name_pairs()
 
     def check_and_boolify_plot_settings():
-        default_false = ['feature_vs_target']
-        default_true = ['target_histogram', 'train_test_plots', 'predicted_vs_true',
-                         'predicted_vs_true_bars', 'best_worst_per_point', 'average_normalized_errors',
-                         'average_cumulative_normalized_errors']
+        default_false = ['plot_each_feature_vs_target', 'rf_error_method', 'rf_error_percentile',
+                         'normalize_target_feature']
+        default_true = ['plot_target_histogram', 'plot_train_test_plots', 'plot_predicted_vs_true', 'plot_error_plots',
+                         'plot_predicted_vs_true_average', 'plot_best_worst_per_point']
         all_settings = default_false + default_true
-        if 'PlotSettings' not in conf:
-            conf['PlotSettings'] = dict()
-        PS = conf['PlotSettings']
-        for name, value in PS.items():
+        if 'MiscSettings' not in conf:
+            conf['MiscSettings'] = dict()
+        MS = conf['MiscSettings']
+        for name, value in MS.items():
             if name not in all_settings:
-                raise utils.InvalidConfParameters(f"[PlotSettings] parameter '{name}' is unknown")
+                raise utils.InvalidConfParameters(f"[MiscSettings] parameter '{name}' is unknown")
             try:
-                PS[name] = mybool(value)
+                MS[name] = mybool(value)
             except ValueError:
-                raise utils.InvalidConfParameters(
-                    f"[PlotSettings] parameter '{name}' must be a boolean")
+                pass
+            #    raise utils.InvalidConfParameters(
+            #        f"[PlotSettings] parameter '{name}' must be a boolean")
         for name in default_false:
-            if name not in PS:
-                PS[name] = False
+            if name not in MS:
+                MS[name] = False
         for name in default_true:
-            if name not in PS:
-                PS[name] = True
+            if name not in MS:
+                MS[name] = True
     check_and_boolify_plot_settings()
 
     # TODO: remove?

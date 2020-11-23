@@ -1,8 +1,11 @@
 ****************************************
-Plot Helper
+Code Documentation: Plot Helper
 ****************************************
 
-.. automodule:: plot_helper
+.. automodapi:: mastml.plot_helper
    :members:
    :private-members:
+   :undoc-members:
+   :show-inheritance:
+
 

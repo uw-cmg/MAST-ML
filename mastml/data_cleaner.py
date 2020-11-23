@@ -5,12 +5,46 @@ The data_cleaner module is used to clean missing or NaN values from pandas dataf
 import pandas as pd
 import numpy as np
 import logging
-from sklearn.preprocessing import Imputer
+from sklearn.impute import SimpleImputer as Imputer
 
 import os
 from scipy.linalg import orth
 
 log = logging.getLogger('mastml')
+
+def flag_outliers(df, conf_not_input_features, savepath, n_stdevs=3):
+    """
+    Method that scans values in each X feature matrix column and flags values that are larger than 3 standard deviations
+    from the average of that column value. The index and column values of potentially problematic points are listed and
+    written to an output file.
+
+    Args:
+        df: (dataframe), pandas dataframe containing data
+
+    Returns:
+        None, just writes results to file
+
+    """
+    n_rows = df.shape[0]
+    outlier_dict = dict()
+    for col in df.columns:
+        outlier_rows = list()
+        outlier_vals = list()
+        if col not in conf_not_input_features:
+            avg = np.average(df[col])
+            stdev = np.std(df[col])
+            for row in range(n_rows):
+                if df[col].iloc[row] > avg + n_stdevs*stdev:
+                    outlier_rows.append(row)
+                    outlier_vals.append(df[col].iloc[row])
+                elif df[col].iloc[row] < avg - n_stdevs*stdev:
+                    outlier_rows.append(row)
+                    outlier_vals.append(df[col].iloc[row])
+                else:
+                    pass
+        outlier_dict[col] = (outlier_rows, outlier_vals)
+    pd.DataFrame().from_dict(data=outlier_dict,orient='index', columns=['Indices', 'Values']).to_excel(os.path.join(savepath,'data_potential_outliers.xlsx'))
+    return
 
 def remove(df, axis):
     """
@@ -24,12 +58,10 @@ def remove(df, axis):
         df: (dataframe): dataframe with NaN or missing values removed
 
     """
-    # TODO: add cleaning for y data (remove rows, and need to remove rows from other df's as well
-    #df_nan = df[pd.isnull(df)]
-    #nan_indices = df_nan.index
-    #print(nan_indices)
+    df_nan = df[pd.isnull(df)]
+    nan_indices = df_nan.index
     df = df.dropna(axis=axis, how='any')
-    return df
+    return df, nan_indices
 
 def imputation(df, strategy, cols_to_leave_out=None):
     """
@@ -48,13 +80,15 @@ def imputation(df, strategy, cols_to_leave_out=None):
     if cols_to_leave_out is None:
         df_imputed = pd.DataFrame(Imputer(missing_values='NaN', strategy=strategy, axis=0).fit_transform(df))
     else:
-        df_imputed = pd.DataFrame(Imputer(missing_values='NaN', strategy=strategy, axis=0).fit_transform(df.drop(cols_to_leave_out, axis=1)))
+        df_include = df.drop(cols_to_leave_out, axis=1)
+        df_hold_out = df.drop([c for c in df.columns if c not in cols_to_leave_out], axis=1)
+        df_imputed = pd.DataFrame(Imputer(missing_values='NaN', strategy=strategy, axis=0).fit_transform(df_include), columns=df_include.columns)
     # Need to join the imputed dataframe with the columns containing strings that were held out
     if cols_to_leave_out is None:
         df = df_imputed
     else:
-        df = pd.concat([df_imputed, df[cols_to_leave_out]], axis=1)
-    df.columns = col_names
+        df = pd.concat([df_hold_out, df_imputed], axis=1)
+        col_names = df.columns.tolist()
     return df
 
 def ppca(df, cols_to_leave_out=None):
