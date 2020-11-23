@@ -67,6 +67,7 @@ class HyperOptUtils():
         self.param_values = param_values
 
     def _search_space_generator(self, params):
+
         params_ = dict()
         for param_name, param_vals in params.items():
             dtype = param_vals[4]
@@ -75,8 +76,14 @@ class HyperOptUtils():
                     params_[param_name] = np.linspace(float(param_vals[0]), float(param_vals[1]), num=int(param_vals[2]), dtype=dtype)
                 elif param_vals[3] == "log":
                     params_[param_name] = np.logspace(float(param_vals[0]), float(param_vals[1]), num=int(param_vals[2]), dtype=dtype)
+                elif (param_vals[-1] == 'manual') and (param_vals[-2] == 'int'):
+                    params_[param_name] = list(map(lambda i: int(i), param_vals[:-2]))
+                elif (param_vals[-1] == 'manual') and (param_vals[-2] == 'float'):
+                    params_[param_name] = list(map(lambda i: float(i), param_vals[:-2]))
+                elif (param_vals[-1] == 'manual') and (param_vals[-2] == 'str'):
+                    params_[param_name] = list(map(lambda i: str(i), param_vals[:-2]))  # To be explicit
                 else:
-                    log.error('You must specify either lin or log scaling for GridSearch')
+                    log.error('You must specify either lin or log scaling or manual values for GridSearch')
                     exit()
             except:
                 params_[param_name] = param_vals
