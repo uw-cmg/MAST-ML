@@ -50,7 +50,7 @@ setup(
         "duecredit",
         "et_xmlfile",
         "folium>=0.2.1",
-        "forestci>=0.4.1",
+        #"forestci>=0.4.1",
         #"forest-confidence-interval @ https://api.github.com/repos/scikit-learn-contrib/forest-confidence-interval/tarball/",
         #"git+https://github.com/scikit-learn-contrib/forest-confidence-interval#egg=forestci",
         #"forestci @ git+ssh://git@github.com/scikit-learn-contrib/forest-confidence-interval@master#egg=forestci",
@@ -68,7 +68,7 @@ setup(
         "jwt",
         "keras>=2.2.4",
         "kiwisolver>=1.0.1",
-        "matminer<=0.5.5",
+        "matminer>=0.5.5",
         "matplotlib>=3.1.1",
         "mdf_forge>=0.6.1J",
         "mdf-toolbox>=0.5.7",
@@ -77,7 +77,7 @@ setup(
         "nbformat",
         "networkx>=2.1",
         "nose>=1.3.7",
-        "numpy<=1.18.4", #>=1.16.2
+        "numpy>=1.18.4", #>=1.16.2
         "openpyxl",
         "packaging",
         "palettable>=3.1.1",
@@ -88,7 +88,7 @@ setup(
         "psutil>=5.5.1",
         "py>=1.5.0",
         "PyDispatcher>=2.0.5",
-        "pymatgen<=2020.1.10", #2019.1.24
+        "pymatgen>=2020.1.10", #2019.1.24
         "pymongo>=3.6.1",
         "pyparsing>=2.2.0",
         "pypif>=2.1.0",
@@ -99,9 +99,9 @@ setup(
         "requests>=2.24.0",
         "retrying",
         "ruamel.yaml>=0.15.42",
-        "scikit-learn<=0.23.2",  #0.24.0 breaks implementation of forestci package
+        "scikit-learn>=0.23.2",  #0.24.0 breaks implementation of forestci package
         "scikit-optimize>=0.5.2",
-        "scipy<=1.4.1", #>=1.5.0
+        "scipy>=1.4.1", #>=1.5.0
         "six>=1.11.0",
         "spglib>=1.10.3.65",
         "sphinx-automodapi",

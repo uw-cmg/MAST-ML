@@ -55,8 +55,8 @@ import nbformat
 
 from functools import wraps
 
-import forestci as fci
-from forestci.calibration import calibrateEB
+#import forestci as fci
+#from forestci.calibration import calibrateEB
 import copy
 
 matplotlib.rc('font', size=18, family='sans-serif') # set all font to bigger
@@ -1104,6 +1104,8 @@ def plot_metric_vs_group_size(metric, groups, stats, avg_stats, savepath):
     fig.savefig(savepath, dpi=DPI, bbox_inches='tight')
     return
 
+'''
+
 # Credit to: http://contrib.scikit-learn.org/forest-confidence-interval/_modules/forestci/forestci.html
 def calc_inbag_modified(n_samples, forest, is_ensemble):
     """
@@ -1281,6 +1283,7 @@ def random_forest_error_modified(forest, is_ensemble, X_train, X_test, basic_IJ=
         V_IJ_calibrated = fci.calibration.calibrateEB(V_IJ_unbiased, sigma2)
 
         return V_IJ_calibrated
+'''
 
 def prediction_intervals(model, X, rf_error_method, rf_error_percentile, Xtrain, Xtest):
     """
@@ -1313,6 +1316,9 @@ def prediction_intervals(model, X, rf_error_method, rf_error_percentile, Xtrain,
     indices_TF = list()
     X_aslist = X.values.tolist()
     if model.__class__.__name__ in ['RandomForestRegressor', 'GradientBoostingRegressor', 'ExtraTreesRegressor', 'EnsembleRegressor']:
+
+        '''
+        
 
         if rf_error_method == 'jackknife_calibrated':
             if 'EnsembleRegressor' in model.__class__.__name__:
@@ -1361,45 +1367,48 @@ def prediction_intervals(model, X, rf_error_method, rf_error_percentile, Xtrain,
             err_up = err_down = rf_stdevs
 
         else:
-            for x in range(len(X_aslist)):
-                preds = list()
-                if model.__class__.__name__ == 'RandomForestRegressor':
-                    for pred in model.estimators_:
-                        preds.append(pred.predict(np.array(X_aslist[x]).reshape(1,-1))[0])
-                elif model.__class__.__name__ == 'GradientBoostingRegressor':
-                    for pred in model.estimators_.tolist():
-                        preds.append(pred[0].predict(np.array(X_aslist[x]).reshape(1,-1))[0])
-                elif model.__class__.__name__ == 'EnsembleRegressor':
-                    for pred in model.model:
-                        preds.append(pred.predict(np.array(X_aslist[x]).reshape(1,-1))[0])
-                if rf_error_method == 'confint':
-                    #e_down = np.percentile(preds, (100 - int(rf_error_percentile)) / 2.)
-                    #e_up = np.percentile(preds, 100 - (100 - int(rf_error_percentile)) / 2.)
-                    e_down = np.percentile(preds, float(rf_error_percentile))
-                    e_up = np.percentile(preds, float(rf_error_percentile))
+        '''
+        for x in range(len(X_aslist)):
+            preds = list()
+            if model.__class__.__name__ == 'RandomForestRegressor':
+                for pred in model.estimators_:
+                    preds.append(pred.predict(np.array(X_aslist[x]).reshape(1,-1))[0])
+            elif model.__class__.__name__ == 'GradientBoostingRegressor':
+                for pred in model.estimators_.tolist():
+                    preds.append(pred[0].predict(np.array(X_aslist[x]).reshape(1,-1))[0])
+            elif model.__class__.__name__ == 'EnsembleRegressor':
+                for pred in model.model:
+                    preds.append(pred.predict(np.array(X_aslist[x]).reshape(1,-1))[0])
+            if rf_error_method == 'confint':
+                #e_down = np.percentile(preds, (100 - int(rf_error_percentile)) / 2.)
+                #e_up = np.percentile(preds, 100 - (100 - int(rf_error_percentile)) / 2.)
+                e_down = np.percentile(preds, float(rf_error_percentile))
+                e_up = np.percentile(preds, float(rf_error_percentile))
 
-                elif rf_error_method == 'stdev':
-                    e_down = np.std(preds)
-                    e_up = np.std(preds)
-                elif rf_error_method == 'False' or rf_error_method is False:
-                    # basically default to stdev
-                    e_down = np.std(preds)
-                    e_up = np.std(preds)
-                else:
-                    raise ValueError('rf_error_method must be one of ["stdev", "confint", "jackknife_basic", "jackknife_calibrated", "jackknife_uncalibrated"]')
-                #if e_up == 0.0:
-                #    e_up = 10 ** 10
-                #if e_down == 0.0:
-                #    e_down = 10 ** 10
-                err_down.append(e_down)
-                err_up.append(e_up)
-            nan_indices = np.where(np.isnan(err_up))
-            nan_indices_sorted = np.array(sorted(nan_indices[0], reverse=True))
-            for i, val in enumerate(list(err_up)):
-                if i in nan_indices_sorted:
-                    indices_TF.append(False)
-                else:
-                    indices_TF.append(True)
+            elif rf_error_method == 'stdev':
+                e_down = np.std(preds)
+                e_up = np.std(preds)
+            elif rf_error_method == 'False' or rf_error_method is False:
+                # basically default to stdev
+                e_down = np.std(preds)
+                e_up = np.std(preds)
+            else:
+                #raise ValueError('rf_error_method must be one of ["stdev", "confint", "jackknife_basic", "jackknife_calibrated", "jackknife_uncalibrated"]')
+                raise ValueError('rf_error_method must be one of ["stdev", "confint"]')
+
+            #if e_up == 0.0:
+            #    e_up = 10 ** 10
+            #if e_down == 0.0:
+            #    e_down = 10 ** 10
+            err_down.append(e_down)
+            err_up.append(e_up)
+        nan_indices = np.where(np.isnan(err_up))
+        nan_indices_sorted = np.array(sorted(nan_indices[0], reverse=True))
+        for i, val in enumerate(list(err_up)):
+            if i in nan_indices_sorted:
+                indices_TF.append(False)
+            else:
+                indices_TF.append(True)
 
     if model.__class__.__name__=='GaussianProcessRegressor':
         preds = model.predict(X, return_std=True)[1] # Get the stdev model error from the predictions of GPR
