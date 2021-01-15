@@ -13,16 +13,14 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import PolynomialFeatures as SklearnPolynomialFeatures
 
-import pymatgen
 from pymatgen import Element, Composition
 from pymatgen.ext.matproj import MPRester
+from pymatgen.io.vasp.inputs import Poscar
 
 # matminer class imports
 import inspect # used to get a dictionary of classes in a module
 from matminer.featurizers import structure as struc
-from pymatgen.io.vasp.inputs import Poscar
-import mastml
-from mastml import utils
+
 from matminer.data_retrieval.retrieve_Citrine import CitrineDataRetrieval
 from matminer.data_retrieval.retrieve_MP import MPDataRetrieval
 from matminer.data_retrieval.retrieve_MDF import MDFDataRetrieval
@@ -147,7 +145,7 @@ class ContainsElement(BaseEstimator, TransformerMixin):
         something crazy like "contains {element}" and "does not contain {element}" if you really
         wanted.
         """
-        comp = pymatgen.Composition(comp)
+        comp = Composition(comp)
         count = comp[self.element]
         return int(count != 0)
 
@@ -155,7 +153,7 @@ class ContainsElement(BaseEstimator, TransformerMixin):
         elements = list()
         df_trans = pd.DataFrame()
         for comp in compositions.values:
-            comp = pymatgen.Composition(comp)
+            comp = Composition(comp)
             for element in comp.elements:
                 if element not in elements:
                     elements.append(element)
