@@ -50,7 +50,8 @@ setup(
         "duecredit",
         "et_xmlfile",
         "folium>=0.2.1",
-        "forestci>=0.4.1",
+        #"forestci>=0.4.1",
+        "forest-confidence-interval @ https://api.github.com/repos/scikit-learn-contrib/forest-confidence-interval/tarball/",
         "future>=0.18.2",
         "globus_nexus_client",
         "globus_sdk",
@@ -85,7 +86,7 @@ setup(
         "psutil>=5.5.1",
         "py>=1.5.0",
         "PyDispatcher>=2.0.5",
-        "pymatgen>=2019.1.24",
+        "pymatgen>=2019.1.24", #2019.1.24
         "pymongo>=3.6.1",
         "pyparsing>=2.2.0",
         "pypif>=2.1.0",
@@ -96,7 +97,7 @@ setup(
         "requests>=2.24.0",
         "retrying",
         "ruamel.yaml>=0.15.42",
-        "scikit-learn==0.23.2", #0.24.0 breaks some existing imports
+        "scikit-learn>=0.24.0", #0.24.0 breaks implementation of forestci package
         "scikit-optimize>=0.5.2",
         "scipy>=1.5.0",
         "six>=1.11.0",
