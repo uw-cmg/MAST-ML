@@ -36,15 +36,15 @@ setup(
         "aflow",
         "atomicwrites",
         "attrs>=17.4.0",
-        "certifi>=2018.4.16",
+        "certifi>=2020.12.05", #2018.4.16
         "chardet>=3.0.4",
         "citeproc-py>=0.4",
-        "citrination-client>=4.6.0",
+        "citrination-client>=6.5.1", #4.6.0
         "configobj>=5.0.6",
         "cryptography",
         "cycler>=0.10.0",
-        "Cython>=0.29.13",
-        "decorator>=4.3.0",
+        "Cython>=0.29.20", #0.29.13
+        "decorator>=4.4.1", #4.3.0
         "dlhub_sdk>=0.9.4",
         "dominate>=2.3.5",
         "duecredit",
@@ -96,7 +96,7 @@ setup(
         "requests>=2.24.0",
         "retrying",
         "ruamel.yaml>=0.15.42",
-        "scikit-learn>=0.23.1",
+        "scikit-learn==0.23.2", #0.24.0 breaks some existing imports
         "scikit-optimize>=0.5.2",
         "scipy>=1.5.0",
         "six>=1.11.0",
