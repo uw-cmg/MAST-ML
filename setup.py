@@ -99,7 +99,7 @@ setup(
         "requests>=2.24.0",
         "retrying",
         "ruamel.yaml>=0.15.42",
-        "scikit-learn==0.23.2", #0.24.0 breaks implementation of forestci package
+        "scikit-learn==0.23.2",  #0.24.0 breaks implementation of forestci package
         "scikit-optimize>=0.5.2",
         "scipy>=1.5.0",
         "six>=1.11.0",
@@ -116,7 +116,7 @@ setup(
         #"xgboost",
         "xlrd",
         "zipp"],
-    #dependency_links=["git+ssh://git@github.com/scikit-learn-contrib/forest-confidence-interval@master#egg=forestci"],
+     #dependency_links=["git+ssh://git@github.com/scikit-learn-contrib/forest-confidence-interval@master#egg=forestci"],
     author="MAST Development Team, University of Wisconsin-Madison Computational Materials Group",
     author_email="ddmorgan@wisc.edu",
     url="https://github.com/uw-cmg/MAST-ML",
