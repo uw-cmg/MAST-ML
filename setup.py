@@ -77,7 +77,7 @@ setup(
         "nbformat",
         "networkx>=2.1",
         "nose>=1.3.7",
-        "numpy>=1.18.4", #>=1.16.2
+        #"numpy>=1.18.4", #>=1.16.2
         "openpyxl",
         "packaging",
         "palettable>=3.1.1",
