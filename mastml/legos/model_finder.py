@@ -7,7 +7,7 @@ import warnings
 import inspect
 
 import sklearn.base
-import sklearn.utils.testing
+import sklearn.utils
 import joblib
 import numpy as np
 import os
@@ -34,7 +34,7 @@ from scipy import stats
 
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=DeprecationWarning)
-    name_to_constructor = dict(sklearn.utils.testing.all_estimators())
+    name_to_constructor = dict(sklearn.utils.all_estimators())
 
 class AlwaysFive(sklearn.base.RegressorMixin):
     """
