@@ -77,7 +77,7 @@ setup(
         "nbformat",
         "networkx>=2.1",
         "nose>=1.3.7",
-        "numpy>=1.16.2",
+        "numpy<=1.18.4", #>=1.16.2
         "openpyxl",
         "packaging",
         "palettable>=3.1.1",
@@ -101,7 +101,7 @@ setup(
         "ruamel.yaml>=0.15.42",
         "scikit-learn==0.23.2",  #0.24.0 breaks implementation of forestci package
         "scikit-optimize>=0.5.2",
-        "scipy>=1.5.0",
+        "scipy<=1.4.1", #>=1.5.0
         "six>=1.11.0",
         "spglib>=1.10.3.65",
         "sphinx-automodapi",
