@@ -48,6 +48,7 @@ setup(
         "scikit-learn", #>=0.23.1
         "scikit-optimize", #>=0.5.2
         "scipy", #>=1.2.1,
+        "sphinx-automodapi",
         ],
     author="MAST Development Team, University of Wisconsin-Madison Computational Materials Group",
     author_email="ddmorgan@wisc.edu",
