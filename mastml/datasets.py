@@ -3,7 +3,11 @@ import pandas as pd
 import os
 import numpy as np
 from mdf_forge import Forge
-from figshare.figshare.figshare import Figshare
+try:
+    from figshare.figshare.figshare import Figshare
+except:
+    print('To import data from figshare, manually install figshare via git clone of '
+          'git clone https://github.com/cognoma/figshare.git')
 from pprint import pprint
 
 from sklearn.impute import SimpleImputer

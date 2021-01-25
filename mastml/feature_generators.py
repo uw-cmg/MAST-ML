@@ -4,7 +4,6 @@ This module contains a collection of classes for generating input features to fi
 
 import multiprocessing
 import os
-import logging
 import re
 
 import numpy as np
@@ -21,8 +20,7 @@ from pymatgen.ext.matproj import MPRester
 import inspect # used to get a dictionary of classes in a module
 from matminer.featurizers import structure as struc
 from pymatgen.io.vasp.inputs import Poscar
-import mastml
-from mastml import utils
+
 from matminer.data_retrieval.retrieve_Citrine import CitrineDataRetrieval
 from matminer.data_retrieval.retrieve_MP import MPDataRetrieval
 from matminer.data_retrieval.retrieve_MDF import MDFDataRetrieval
@@ -32,8 +30,6 @@ from matminer.data_retrieval.retrieve_AFLOW import AFLOWDataRetrieval
 # locate path to directory containing AtomicNumber.table, AtomicRadii.table AtomicVolume.table, etc
 # (needs to do it the hard way becuase python -m sets cwd to wherever python is ran from)
 import mastml
-from mastml import utils
-log = logging.getLogger('mastml')
 
 from datetime import datetime
 
@@ -140,7 +136,7 @@ class ElementalFeatureGenerator(BaseGenerator):
         if '[' in compositions_raw[0]:
             if ']' in compositions_raw[0]:
                 has_sublattices = True
-                log.info('MAGPIE feature generation found brackets in material compositions denoting specific sublattices!')
+                #log.info('MAGPIE feature generation found brackets in material compositions denoting specific sublattices!')
                 # Parse raw composition strings with brackets to denote compositions of different sublattices
                 site_dict_list = list()
                 for comp in compositions_raw:
@@ -168,7 +164,7 @@ class ElementalFeatureGenerator(BaseGenerator):
             compositions = compositions_raw
 
         if len(compositions) < 1:
-            raise utils.MissingColumnError('Error! No material compositions column found in your input data file. To use this feature generation routine, you must supply a material composition for each data point')
+            raise ValueError('Error! No material compositions column found in your input data file. To use this feature generation routine, you must supply a material composition for each data point')
 
         # Add the column of combined material compositions into the dataframe
         self.df[self.composition_feature] = compositions
@@ -580,7 +576,7 @@ class ElementalFeatureGenerator(BaseGenerator):
                 magpiedata_difference_site2site3 = {}
 
             else:
-                log.error('MASTML currently only supports up to 3 sublattices to generate site-specific MAGPIE features. '
+                print('MASTML currently only supports up to 3 sublattices to generate site-specific MAGPIE features. '
                           'Please reduce number of sublattices an re-run MASTML.')
 
         # Initialize feature values to all be 0, because need to dynamically update them with weighted values in next loop.
@@ -1332,14 +1328,14 @@ def clean_dataframe(df):
     df = df.dropna(axis=0, how='all')
     lost_count = before_count - df.shape[0]
     if lost_count > 0:
-        log.warning(f'Dropping {lost_count}/{before_count} rows for being totally empty')
+        print(f'Dropping {lost_count}/{before_count} rows for being totally empty')
 
     # drop columns with any empty cells
     before_count = df.shape[1]
     df = df.select_dtypes(['number']).dropna(axis=1)
     lost_count = before_count - df.shape[1]
     if lost_count > 0:
-        log.warning(f'Dropping {lost_count}/{before_count} generated columns due to missing values')
+        print(f'Dropping {lost_count}/{before_count} generated columns due to missing values')
     return df
 
 class MaterialsProjectFeatureGeneration(object):
@@ -1374,7 +1370,7 @@ class MaterialsProjectFeatureGeneration(object):
         try:
             compositions = self.dataframe[self.composition_feature]
         except KeyError as e:
-            raise utils.MissingColumnError(f'No column named {self.composition_feature} in csv file')
+            raise ValueError(f'No column named {self.composition_feature} in csv file')
 
         mpdata_dict_composition = {}
 
@@ -1446,10 +1442,10 @@ class MaterialsProjectFeatureGeneration(object):
                 else:
                     structure_data_dict_condensed[prop] = ''
 
-        if all(val == '' for _, val in structure_data_dict_condensed.items()):
-            log.warning(f'No data found for composition "{composition}" using materials project')
-        else:
-            log.info(f'MAterials Project Feature Generation {composition} {structure_data_dict_condensed}')
+        #if all(val == '' for _, val in structure_data_dict_condensed.items()):
+        #    log.warning(f'No data found for composition "{composition}" using materials project')
+        #else:
+        #    log.info(f'MAterials Project Feature Generation {composition} {structure_data_dict_condensed}')
         return structure_data_dict_condensed
 
 class DataframeUtilities(object):

@@ -8,21 +8,11 @@ tweaking plots for a presentation or publication).
 """
 
 import math
-import statistics
 import os
-import copy
 import pandas as pd
-import itertools
 import warnings
-import logging
 from collections import Iterable
-from os.path import join
-from collections import OrderedDict
 from math import log, floor, ceil
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import r2_score
-from sklearn.ensemble._forest import _generate_sample_indices, _get_n_samples_bootstrap
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 # Ignore the harmless warning about the gelsd driver on mac.
 warnings.filterwarnings(action="ignore", module="scipy",
@@ -31,7 +21,6 @@ warnings.filterwarnings(action="ignore", module="scipy",
 warnings.filterwarnings(action="ignore")
 
 import numpy as np
-from sklearn.metrics import confusion_matrix, roc_curve, auc, precision_recall_curve
 
 from mastml.metrics import Metrics
 
@@ -39,23 +28,7 @@ import matplotlib
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure, figaspect
-from matplotlib.animation import FuncAnimation
 from matplotlib.font_manager import FontProperties
-from scipy.stats import gaussian_kde, norm
-from mpl_toolkits.axes_grid1.inset_locator import mark_inset
-from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
-
-import inspect
-import textwrap
-from pandas import DataFrame, Series
-
-import nbformat
-
-from functools import wraps
-
-import forestci as fci
-from forestci.calibration import calibrateEB
-import copy
 
 matplotlib.rc('font', size=18, family='sans-serif') # set all font to bigger
 matplotlib.rc('figure', autolayout=True) # turn on autolayout
