@@ -10,8 +10,14 @@ import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.neighbors import NearestNeighbors
 import sklearn.model_selection as ms
-from matminer.featurizers.composition import ElementFraction
-from pymatgen import Composition
+try:
+    from matminer.featurizers.composition import ElementFraction
+except:
+    print('Error with importing matminer, try re-installing and try again')
+try:
+    from pymatgen import Composition
+except:
+    print('Error with importing pymatgen, try re-installing and try again')
 
 from math import ceil
 import warnings

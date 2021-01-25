@@ -13,19 +13,24 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import PolynomialFeatures as SklearnPolynomialFeatures
 
-from pymatgen import Element, Composition
-from pymatgen.ext.matproj import MPRester
-from pymatgen.io.vasp.inputs import Poscar
+try:
+    from pymatgen import Element, Composition
+    from pymatgen.ext.matproj import MPRester
+    from pymatgen.io.vasp.inputs import Poscar
+except:
+    print('Error with importing pymatgen, try re-installing and try again')
 
 # matminer class imports
 import inspect # used to get a dictionary of classes in a module
-from matminer.featurizers import structure as struc
-
-from matminer.data_retrieval.retrieve_Citrine import CitrineDataRetrieval
-from matminer.data_retrieval.retrieve_MP import MPDataRetrieval
-from matminer.data_retrieval.retrieve_MDF import MDFDataRetrieval
-from matminer.data_retrieval.retrieve_MPDS import MPDSDataRetrieval
-from matminer.data_retrieval.retrieve_AFLOW import AFLOWDataRetrieval
+try:
+    from matminer.featurizers import structure as struc
+    from matminer.data_retrieval.retrieve_Citrine import CitrineDataRetrieval
+    from matminer.data_retrieval.retrieve_MP import MPDataRetrieval
+    from matminer.data_retrieval.retrieve_MDF import MDFDataRetrieval
+    from matminer.data_retrieval.retrieve_MPDS import MPDSDataRetrieval
+    from matminer.data_retrieval.retrieve_AFLOW import AFLOWDataRetrieval
+except:
+    print('Error with importing matminer, try re-installing and try again')
 
 # locate path to directory containing AtomicNumber.table, AtomicRadii.table AtomicVolume.table, etc
 # (needs to do it the hard way becuase python -m sets cwd to wherever python is ran from)
