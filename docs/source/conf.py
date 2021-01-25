@@ -20,11 +20,15 @@
 import os
 import sys
 #os.system('pip install sphinx-automodapi pandas scikit-learn dominate')
-os.system('pip install aflow atomicwrites attrs certifi chardet citeproc-py citrination-client configobj cryptography cycler Cython decorator dlhub_sdk dominate duecredit folium forestci future globus_nexus_client globus_sdk httplib2 idna imageio imgaug importlib-metadata ipython-genutils jdcal jsonschema jwt keras kiwisolver matminer matplotlib mdf_forge	mdf-toolbox mlxtend monty nbformat networkx nose numpy openpyxl packaging palettable pandas pint plotly pluggy psutil py PyDispatcher pymatgen pymongo pyparsing pypif pytest python-dateutil pytz pyyaml requests retrying	ruamel.yaml scikit-learn scikit-optimize scipy six spglib sphinx-automodapi sympy tabulate tensorflow tqdm traitlets urllib3 wcwidth xlrd xlsxwriter zipp')
+#Don't need this??
+#os.system('pip install aflow atomicwrites attrs certifi chardet citeproc-py citrination-client configobj cryptography cycler Cython decorator dlhub_sdk dominate duecredit folium forestci future globus_nexus_client globus_sdk httplib2 idna imageio imgaug importlib-metadata ipython-genutils jdcal jsonschema jwt keras kiwisolver matminer matplotlib mdf_forge	mdf-toolbox mlxtend monty nbformat networkx nose numpy openpyxl packaging palettable pandas pint plotly pluggy psutil py PyDispatcher pymatgen pymongo pyparsing pypif pytest python-dateutil pytz pyyaml requests retrying	ruamel.yaml scikit-learn scikit-optimize scipy six spglib sphinx-automodapi sympy tabulate tensorflow tqdm traitlets urllib3 wcwidth xlrd xlsxwriter zipp')
 #import sphinx_automodapi
 sys.path.insert(0, os.path.abspath('../../'))
 sys.path.insert(0, os.path.abspath('../../mastml'))
-sys.path.insert(0, os.path.abspath('../../mastml/legos'))
+#sys.path.insert(0, os.path.abspath('../../mastml/legos'))
+
+os.system('python ../../setup.py install')
+
 #sys.path.insert(0, '/Users/ryanjacobs/PycharmProjects/MAST-ML/mastml/')
 #sys.path.insert(0, '/Users/ryanjacobs/PycharmProjects/MAST-ML/mastml/legos')
 # -- General configuration ------------------------------------------------
