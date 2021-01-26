@@ -8,7 +8,6 @@ MAST-ML is an open-source Python package designed to broaden and accelerate the 
 
 <a href="https://badge.fury.io/py/mastml"><img src="https://badge.fury.io/py/mastml.svg" alt="PyPI version" height="18"></a>
 
-[![Github All Releases](https://img.shields.io/github/downloads/uw-cmg/mastml/total.svg)]
 
 ## Contributors
 
