@@ -127,7 +127,7 @@ def adjusted_r2_score(y_true, y_pred, n_features=None):
         (float): score of adjusted R^2
 
     """
-    r2 = r2_score(y_true, y_pred)
+    r2 = sm.r2_score(y_true, y_pred)
     # n is sample size
     n = len(y_true)
     # p is number of features
