@@ -15,16 +15,11 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.decomposition import PCA
 import sklearn.feature_selection as fs
 from mlxtend.feature_selection import SequentialFeatureSelector
-import os, logging
+import os
 
-## XIYU's import for PearsonSelector
 import copy
-from numpy import cov
-import xlsxwriter
 from scipy.stats import pearsonr
-##
 
-from mastml.legos import util_legos
 
 def dataframify_selector(transform):
     """
@@ -285,14 +280,14 @@ class PearsonSelector(object):
 
         # Sometimes the specificed threshold is too high. Make it lower until at least 1 feature is selected
         while len(self.selected_features) < self.k_features:
-            log.debug('WARNING: Pearson selector threshold was too high to result in selecting any features, lowering threshold to get specified feature number')
+            print('WARNING: Pearson selector threshold was too high to result in selecting any features, lowering threshold to get specified feature number')
             self.threshold_with_target -= 0.05
             self.selected_features = list(all_corrs[all_corrs > self.threshold_with_target].sort_values(
                 ascending=False).keys())
             if len(self.selected_features) == n_col:
-                log.debug('WARNING: Pearson selector reduce the threshold such that all features were included')
+                print('WARNING: Pearson selector reduce the threshold such that all features were included')
                 break
-            log.debug('Pearson selector selected features with an adjusted threshold value')
+            print('Pearson selector selected features with an adjusted threshold value')
         if len(self.selected_features) > self.k_features:
             self.selected_features = list(all_corrs[all_corrs > self.threshold_with_target].sort_values(ascending=False).keys())[:self.k_features]
 
@@ -392,8 +387,8 @@ class MASTMLFeatureSelector(object):
         if self.n_features_to_select >= len(x_features):
             self.n_features_to_select = len(x_features)
         while num_features_selected < self.n_features_to_select:
-            log.info('On number of features selected')
-            log.info(str(num_features_selected))
+            print('On number of features selected')
+            print(str(num_features_selected))
 
             # Catch pandas warnings here
             with warnings.catch_warnings():
@@ -403,8 +398,8 @@ class MASTMLFeatureSelector(object):
 
             self.selected_feature_names.append(top_feature_name)
             if len(self.selected_feature_names) > 0:
-                log.info('selected features')
-                log.info(self.selected_feature_names)
+                print('selected features')
+                print(self.selected_feature_names)
             selected_feature_avg_rmses.append(top_feature_avg_rmse)
             selected_feature_std_rmses.append(top_feature_std_rmse)
 
@@ -505,7 +500,6 @@ name_to_constructor['SequentialFeatureSelector'] = SequentialFeatureSelector
 # Custom selectors don't need to be dataframified
 name_to_constructor.update({
     #'PassThrough': PassThrough,
-    'DoNothing': util_legos.DoNothing,
     'PCA': PCA,
     'SequentialFeatureSelector': SequentialFeatureSelector,
     'MASTMLFeatureSelector' : MASTMLFeatureSelector,
