@@ -42,7 +42,7 @@ which differs from the default path of '/tests/conf/' and '/tests/csv/'.
 
 :download:`example_input.conf <example_input.conf>`
 
-:download:`example_data.csv <example_data.csv>`
+:download:`example_data.xlsx <example_data.xlsx>`
 
 Shown below is the Run_MASTML.ipynb notebook file. The first block imports MASTML, and doesn't need to be changed.
 The second block specifies the path to find the conf file ("conf" line) and the data file ("csv" line). The "output"

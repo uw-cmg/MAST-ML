@@ -17,7 +17,7 @@ Welcome to MAterials Simulation Toolkit for Machine Learning (MAST-ML)'s documen
 
    2_mastml_overview.rst
 
-   2_running_mastml_nanohub.rst
+   2_running_mastml_colab.rst
 
    2_mastml_tutorial.rst
 

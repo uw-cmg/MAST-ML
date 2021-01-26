@@ -8,17 +8,17 @@ Locate the examples folder
 
 In the installed MASTML directory, navigate to the ``tests`` folder.
 
-Under tests/conf, The file ``example_input.conf`` will use the ``example_data.csv`` data file located in tests/csv to run an example.
+Under tests/conf, The file ``example_input.conf`` will use the ``example_data.xlsx`` data file located in tests/csv to run an example.
 
 ========================
 Run the MASTML command
 ========================
 
-The format is ``python3 -m mastml.mastml_driver <path to config file> <path to data CSV file> -o <path to results folder>``
+The format is ``python3 -m mastml.mastml_driver <path to config file> <path to data .xlsx file> -o <path to results folder>``
 
 For example, to conduct the test run above, while in the MASTML install directory::
 
-    python3 -m mastml.mastml_driver tests/conf/example_input.conf tests/csv/example_data.csv -o results/example_results
+    python3 -m mastml.mastml_driver tests/conf/example_input.conf tests/csv/example_data.xlsx -o results/example_results
 
 This is a terminal command.
 For Windows, assuming setup has been followed

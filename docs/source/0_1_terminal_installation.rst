@@ -15,12 +15,9 @@ Create a conda environment
 
 Create an environment::
 
-    conda create --name TEST_ML numpy scipy matplotlib pandas pymongo configobj nbformat scikit-learn
-    source activate TEST_ML
-    conda install --channel matsci pymatgen
-
-(may also be the "materials" channel for pymatgen)
-(may also need conda create --name TEST_ML python=3.5 numpy scipy...etc. if pymatgen requires python 3.5)
+    conda create --name MAST_ML python=3.7
+    conda activate MAST_ML
+    pip install mastml
 
 -----------------------------
 Set up Juptyer notebooks

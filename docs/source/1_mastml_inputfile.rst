@@ -16,7 +16,7 @@ Input file sections
 General Setup
 =============
 The "GeneralSetup" section of the input file allows the user to specify an assortment of basic MAST-ML parameters, ranging
-from which column names in the CSV file to use as features for fitting (i.e. X data) or to fit to (i.e. y data), as well
+from which column names in the .xlsx file to use as features for fitting (i.e. X data) or to fit to (i.e. y data), as well
 as which metrics to employ in fitting a model, among other things.
 
 Example::
@@ -32,7 +32,7 @@ Example::
 
 * **input_features** List of input X features
 * **input_target** Target y feature
-* **randomizer** Whether or not to randomize y feature data
+* **randomizer** Whether or not to randomize y feature data. Useful for establishing a null "baseline" test
 * **metrics** Which metrics to evaluate model fits
 * **input_other** Additional features that are not to be fitted on (i.e. not X features)
 * **input_grouping** Feature names that provide information on data grouping
@@ -114,7 +114,7 @@ Example::
     [FeatureGeneration]
         [[Magpie]]
             composition_feature = Material Compositions
-            feature_types = composition_avg, arithmetic_avg, max, min, difference, elements
+            feature_types = composition_avg, arithmetic_avg, max, min, difference
         [[MaterialsProject]]
             composition_feature = Material Compositions
             api_key = my_api_key
@@ -236,6 +236,22 @@ Example::
             estimator = KernelRidge_selectMASTML
             n_features_to_select = 5
             cv = LeaveOneGroupOut_selectMASTML
+            # Any features you want to keep from the start, then use these to subsequently do forward selection
+            manually_selected_features = myfeature_1, myfeature_2
+        [[EnsembleModelFeatureSelector]]
+            # A scikit-learn model/estimator. Needs to have estimator feature ranking. The name needs to match an entry in the [Models] section.
+            estimator = RandomForestRegressor_selectEnsemble
+            # number of features to select
+            k_features = 5
+        [[PearsonSelector]]
+            # threshold for removal of redundant features
+            threshold_between_features = 0.9
+            # threshold for removal of features not sufficiently correlated with target
+            threshold_with_target = 0.8
+            # whether to remove features that are highly correlated with each other (i.e. redundant)
+            remove_highly_correlated_features = True
+            # number of features to select
+            k_features = 5
 
 * **estimator**  A scikit-learn model/estimator. The name needs to match an entry in the [Models] section. Note this model will be removed from the [Models] list after the learning curve is generated.
 * **n_features_to_select** The max number of features to select
@@ -379,6 +395,11 @@ Example::
             criterion = mse
             min_samples_leaf = 1
             min_samples_split = 2
+        # Here, an example of another instance of RandomForestRegressor, this one being used based by the [[EnsembleFeatureSelector]]
+        # method from the [FeatureSelection] section.
+        [[RandomForestRegressor_selectEnsemble]]
+            n_estimators = 100
+            criterion = mse
         [[XGBoostClassifier]]
 	    [[XGBoostRegressor]]
             n_estimators = 100

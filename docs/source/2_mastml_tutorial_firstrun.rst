@@ -11,10 +11,10 @@ Example::
 
     [GeneralSetup]
         input_features = Auto
-        input_target = Reduced barrier (eV)
+        input_target = Scaled activation energy (eV)
         randomizer = False
         metrics = Auto
-        input_other = Host element, Solute element, predict_Pt
+        input_other = Material composition, Host element, Solute element, predict_Pt
 
 The General Setup section contains high-level control about how your input data file is parsed. Additional details of
 each parameter can be found in the MAST-ML Input File section in this documentation. Briefly, setting "input_features" to
@@ -32,7 +32,7 @@ with the path to put all results files and folders.
 
 Example::
 
-    python3 -m mastml.mastml_driver tests/conf/example_input.conf tests/csv/example_data.csv -o results/mastml_tutorial
+    python3 -m mastml.mastml_driver tests/conf/example_input.conf tests/csv/example_data.xlsx -o results/mastml_tutorial
 
 
 The second way is to run MAST-ML through a Jupyter notebook by importing mastml and running the mastml_driver main()

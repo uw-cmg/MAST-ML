@@ -38,6 +38,8 @@ Jacobs, R., Mayeshiba, T., Afflerbach, B., Miles, L., Williams, M., Turner, M., 
 
 **Code Repository**
 
-MAST-ML is freely available via `Github <https://github.com/uw-cmg/MAST-ML>`_
+MAST-ML is available on PyPi: pip install mastml
+
+MAST-ML is available on `Github <https://github.com/uw-cmg/MAST-ML>`
 
 git clone --single-branch master https://github.com/uw-cmg/MAST-ML

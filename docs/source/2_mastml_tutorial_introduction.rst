@@ -3,7 +3,7 @@ Introduction
 *************************
 
 This document provides step-by-step tutorials of conducting and analyzing different MAST-ML runs. For this tutorial,
-we will be using the dataset example_data.csv in the tests/csv/ folder and input file example_input.conf in tests/conf/.
+we will be using the dataset example_data.xlsx in the tests/csv/ folder and input file example_input.conf in tests/conf/.
 
 MAST-ML requires two files to run: The first is the text-based input file (.conf extension). This file contains all of
 the key settings for MAST-ML, for example, which models to fit and how to normalize your input feature matrix. The
@@ -20,7 +20,7 @@ input file section:
 
 The data contained in the example_data.csv file consist of a previously selected matrix of X features created from
 combinations of elemental properties, for example the average atomic radius of the elements in the material. The y data
-values used for fitting are listed in the "Reduced barrier (eV)" column, and are DFT-calculated migration barriers of
+values used for fitting are listed in the "Scaled activation energy (eV)" column, and are DFT-calculated migration barriers of
 dilute solute diffusion, referenced to the host system. For example, the value of Ag solute diffusing through a Ag host
 is set to zero. The "Host element" and "Solute element" columns denote which species comprise the corresponding reduced
 migration barrier.
