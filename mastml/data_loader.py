@@ -38,7 +38,10 @@ def load_data(file_path, input_features=None, input_target=None, input_grouping=
     try:
         df = pd.read_csv(file_path)
     except:
-        df = pd.read_excel(file_path)
+        try:
+            df = pd.read_excel(file_path)
+        except:
+            df = pd.read_excel(file_path, engine='openpyxl')
 
     # Assign default values to input_features and target_feature;
     if input_features is None and input_target is None: # input is first n-1 and target is just n
