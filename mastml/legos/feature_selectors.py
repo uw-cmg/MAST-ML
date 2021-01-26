@@ -119,7 +119,41 @@ for constructor in name_to_constructor.values():
 
 
 class EnsembleModelFeatureSelector(object):
+    """
+    Class custom-written for MAST-ML to conduct selection of features with ensemble model feature importances
 
+    Args:
+
+        estimator: (scikit-learn model/estimator object), a scikit-learn model/estimator
+
+        k_features: (int), the number of features to select
+
+    Methods:
+
+        fit: performs feature selection
+
+            Args:
+
+                X: (dataframe), dataframe of X features
+
+                y: (dataframe), dataframe of y data
+
+
+            Returns:
+
+                None
+
+        transform: performs the transform to generate output of only selected features
+
+            Args:
+
+                X: (dataframe), dataframe of X features
+
+            Returns:
+
+                dataframe: (dataframe), dataframe of selected X features
+
+    """
     def __init__(self, estimator, k_features):
         self.estimator = estimator
         self.k_features = k_features
@@ -147,6 +181,49 @@ class EnsembleModelFeatureSelector(object):
         return df
 
 class PearsonSelector(object):
+    """
+    Class custom-written for MAST-ML to conduct selection of features based on Pearson correlation coefficent between
+    features and target. Can also be used for dimensionality reduction by removing redundant features highly correlated
+    with each other.
+
+    Args:
+
+        threshold_between_features: (float), the threshold to decide whether redundant features are removed. Should be
+        a decimal value between 0 and 1. Only used if remove_highly_correlated_features is True
+
+        threshold_with_target: (float), the threshold to decide whether a given feature is sufficiently correlated with
+        the target feature and thus kept as a selected feature. Should be a decimal value between 0 and 1.
+
+        remove_highly_correlated_features: (bool), whether to remove features highly correlated with each other
+
+        k_features: (int), the number of features to select
+
+    Methods:
+
+        fit: performs feature selection
+
+            Args:
+
+                X: (dataframe), dataframe of X features
+
+                y: (dataframe), dataframe of y data
+
+
+            Returns:
+
+                None
+
+        transform: performs the transform to generate output of only selected features
+
+            Args:
+
+                X: (dataframe), dataframe of X features
+
+            Returns:
+
+                dataframe: (dataframe), dataframe of selected X features
+
+    """
     def __init__(self, threshold_between_features, threshold_with_target, remove_highly_correlated_features, k_features):
         self.threshold_between_features = threshold_between_features
         self.threshold_with_target = threshold_with_target
