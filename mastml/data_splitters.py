@@ -11,29 +11,101 @@ import os
 import pandas as pd
 from datetime import datetime
 import copy
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.neighbors import NearestNeighbors
-import sklearn.model_selection as ms
-from matminer.featurizers.composition import ElementFraction
-from pymatgen import Composition
-
-from math import ceil
-import warnings
-from sklearn.utils import check_random_state
-
 import sklearn
 import inspect
 from pprint import pprint
 import joblib
+from math import ceil
+import warnings
+
+from matminer.featurizers.composition import ElementFraction
+from pymatgen import Composition
+
+import sklearn.model_selection as ms
+from sklearn.utils import check_random_state
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.neighbors import NearestNeighbors
 
 from mastml.plots import Histogram, Scatter
 from mastml.feature_selectors import NoSelect
 
 class BaseSplitter(ms.BaseCrossValidator):
-    '''
+    """
+    Class functioning as a base splitter with methods for organizing output and evaluating any mastml data splitter
 
+    Args:
+        splitter (mastml.data_splitters object): a mastml.data_splitters object, e.g. mastml.data_splitters.SklearnDataSplitter
+        kwargs : key word arguments for the sklearn.model_selection object, e.g. n_splits=5 for KFold()
 
-    '''
+    Methods:
+        split_asframe: method to perform split into train indices and test indices, but return as dataframes
+
+            Args:
+                X: (pd.DataFrame), dataframe of X features
+                y: (pd.Series), series of y target data
+                groups: (pd.Series), series of group designations
+
+            Returns:
+                X_splits: (list), list of dataframes for X splits
+                y_splits: (list), list of dataframes for y splits
+
+        evaluate: main method to evaluate a sequence of models, selectors, and hyperparameter optimizers, build directories
+            and perform analysis and output plots.
+
+            Args:
+                X: (pd.DataFrame), dataframe of X features
+                y: (pd.Series), series of y target data
+                models: (list), list containing masmtl.models instances
+                groups: (pd.Series), series of group designations
+                hyperopt: (list), list containing mastml.hyperopt instances
+                selectors: (list), list containing mastml.feature_selectors instances
+                savepath: (str), string containing main savepath to construct splits for saving output
+
+            Returns:
+                None
+
+        _evaluate_split: method to evaluate a single data split, i.e. fit model, predict test data, and perform some
+            plots and analysis.
+
+            Args:
+                X_train: (pd.DataFrame), dataframe of X training features
+                X_test: (pd.DataFrame), dataframe of X test features
+                y_train: (pd.Series), series of y training features
+                y_test: (pd.Series), series of y test features
+                model: (mastml.models instance), an estimator for fitting data
+                splitpath: (str), string denoting the split path in the save directory
+
+            Returns:
+                None
+
+        _save_split_data: method to save the X and y split data to excel files
+
+            Args:
+                df: (pd.DataFrame), dataframe of X or y data to save to file
+                filename: (str), string denoting the filename, e.g. 'Xtest'
+                savepath: (str), string denoting the save path of the file
+                columns: (list), list of dataframe column names, e.g. X feature names
+
+            Returns:
+                None
+
+        _collect_data: method to collect all Xtrain/Xtest/ytrain/ytest data into single series over many splits (directories)
+
+            Args:
+                filename: (str), string denoting the filename, e.g. 'Xtest'
+                savepath: (str), string denoting the save path of the file
+
+            Returns:
+                data: (list), list containing flattened array of all data of a given type over many splits, e.g. all ypred data
+
+        help: method to output key information on class use, e.g. methods and parameters
+
+            Args:
+                None
+
+            Returns:
+                None, but outputs help to screen
+    """
     def __init__(self):
         super(BaseSplitter, self).__init__()
         self.splitter = self.__class__.__name__
@@ -202,9 +274,6 @@ class BaseSplitter(ms.BaseCrossValidator):
         for d in dirs:
             data.append(np.array(pd.read_excel(os.path.join(savepath, os.path.join(d, filename)+'.xlsx'))[filename]))
         data = pd.Series(np.concatenate(data).ravel())
-        #data = pd.DataFrame(np.concatenate(data).ravel())
-        #data = pd.DataFrame(np.concatenate(data).ravel()).squeeze()
-        #data = np.concatenate(data).ravel()
         return data
 
     def help(self):
@@ -219,10 +288,40 @@ class BaseSplitter(ms.BaseCrossValidator):
         return
 
 class SklearnDataSplitter(BaseSplitter):
-    '''
+    """
+    Class to wrap any scikit-learn based data splitter, e.g. KFold
 
+    Args:
+        splitter (sklearn.model_selection object): a sklearn.model_selection object, e.g. sklearn.model_selection.KFold()
+        kwargs : key word arguments for the sklearn.model_selection object, e.g. n_splits=5 for KFold()
 
-    '''
+    Methods:
+        get_n_splits: method to calculate the number of splits to perform
+
+            Args:
+                None
+
+            Returns:
+                (int), number of train/test splits
+
+        split: method to perform split into train indices and test indices
+
+            Args:
+                X: (numpy array), array of X features
+
+            Returns:
+                (numpy array), array of train and test indices
+
+        _setup_savedir: method to create a savedir based on the provided model, splitter, selector names and datetime
+
+            Args:
+                model: (mastml.models.SklearnModel or other estimator object), an estimator, e.g. KernelRidge
+                selector: (mastml.feature_selectors or other selector object), a selector, e.g. EnsembleModelFeatureSelector
+                savepath: (str), string designating the savepath
+
+            Returns:
+                splitdir: (str), string containing the new subdirectory to save results to
+    """
     def __init__(self, splitter, **kwargs):
         super(SklearnDataSplitter, self).__init__()
         self.splitter = getattr(sklearn.model_selection, splitter)(**kwargs)
