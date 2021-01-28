@@ -1,25 +1,24 @@
-import sklearn.datasets
+
 import pandas as pd
 import os
 import numpy as np
+from pprint import pprint
+from collections import Counter
+import shutil
+from datetime import datetime
+
+from sklearn.impute import SimpleImputer
+from scipy.linalg import orth
+import sklearn.datasets
 from mdf_forge import Forge
+
+from mastml.plots import Histogram
+
 try:
     from figshare.figshare.figshare import Figshare
 except:
     print('To import data from figshare, manually install figshare via git clone of '
           'git clone https://github.com/cognoma/figshare.git')
-from pprint import pprint
-
-from sklearn.impute import SimpleImputer
-
-from scipy.linalg import orth
-
-from collections import Counter
-import shutil
-
-from mastml.plots import Histogram
-
-from datetime import datetime
 
 class SklearnDatasets():
     '''
@@ -158,25 +157,72 @@ class FoundryDatasets():
         return
 
 class DataCleaning():
-    '''
+    """
+    Class to perform various data cleaning operations, such as imputation or NaN removal
 
+    Args:
+        None
 
-    '''
+    Methods:
+        remove: Method that removes a full column or row of data values if one column or row contains NaN or is blank
+
+            Args:
+                X: (pd.DataFrame), dataframe containing X data
+                y: (pd.Series), series containing y data
+                axis: (int), whether to remove rows (axis=0) or columns (axis=1)
+
+            Returns:
+                X: (pd.DataFrame): dataframe of cleaned X data
+                y: (pd.Series): series of cleaned y data
+
+        imputation: Method that imputes values to the missing places based on the median, mean, etc. of the data in the column
+
+            Args:
+                X: (pd.DataFrame), dataframe containing X data
+                y: (pd.Series), series containing y data
+                strategy: (str), method of imputation, e.g. median, mean, etc.
+
+            Returns:
+                X: (pd.DataFrame): dataframe of cleaned X data
+                y: (pd.Series): series of cleaned y data
+
+        ppca: Method that imputes data using principal component analysis to interpolate missing values
+
+            Args:
+                X: (pd.DataFrame), dataframe containing X data
+                y: (pd.Series), series containing y data
+
+            Returns:
+                X: (pd.DataFrame): dataframe of cleaned X data
+                y: (pd.Series): series of cleaned y data
+
+        evaluate: main method to evaluate initial data analysis routines (e.g. flag outliers), perform data cleaning and
+            save output to folder.
+
+            Args:
+                X: (pd.DataFrame), dataframe containing X data
+                y: (pd.Series), series containing y data
+                method: (str), data cleaning method name, must be one of 'remove', 'imputation' or 'ppca'
+                savepath: (str), string containing the savepath information
+                kwargs: additional keyword arguments needed for the remove, imputation or ppca methods
+
+            Returns:
+                X: (pd.DataFrame): dataframe of cleaned X data
+                y: (pd.Series): series of cleaned y data
+
+        _setup_savedir: method to create a savedir based on the provided model, splitter, selector names and datetime
+
+            Args:
+                savepath: (str), string designating the savepath
+
+            Returns:
+                splitdir: (str), string containing the new subdirectory to save results to
+
+    """
     def __init__(self):
         pass
 
     def remove(self, X, y, axis):
-        """
-        Method that removes a full column or row of data values if one column or row contains NaN or is blank
-
-        Args:
-            df: (dataframe), pandas dataframe containing data
-            axis: (int), whether to remove rows (axis=0) or columns (axis=1)
-
-        Returns:
-            df: (dataframe): dataframe with NaN or missing values removed
-
-        """
         df = pd.concat([X, y], axis=1)
         target = y.name
         df = df.dropna(axis=axis, how='any')
@@ -185,18 +231,6 @@ class DataCleaning():
         return X, y
 
     def imputation(self, X, y, strategy):
-        """
-        Method that imputes values to the missing places based on the median, mean, etc. of the data in the column
-
-        Args:
-            df: (dataframe), pandas dataframe containing data
-            strategy: (str), method of imputation, e.g. median, mean, etc.
-            cols_to_leave_out: (list), list of column indices to not include in imputation
-
-        Returns:
-            df: (dataframe): dataframe with NaN or missing values resolved via imputation
-
-        """
         df = pd.concat([X, y], axis=1)
         columns = df.columns.tolist()
         df = pd.DataFrame(SimpleImputer(missing_values=np.nan, strategy=strategy).fit_transform(df), columns=columns)
@@ -206,17 +240,6 @@ class DataCleaning():
         return X, y
 
     def ppca(self, X, y):
-        """
-        Method that performs a recursive PCA routine to use PCA of known columns to fill in missing values in particular column
-
-        Args:
-            df: (dataframe), pandas dataframe containing data
-            cols_to_leave_out: (list), list of column indices to not include in imputation
-
-        Returns:
-            df: (dataframe): dataframe with NaN or missing values resolved via imputation
-
-        """
         df = pd.concat([X, y], axis=1)
         target = y.name
         columns = df.columns.tolist()
@@ -231,9 +254,6 @@ class DataCleaning():
         return X, y
 
     def evaluate(self, X, y, method, savepath=None, **kwargs):
-        '''
-        cleaner : 'remove', 'imputation', 'ppca'
-        '''
         if not savepath:
             savepath = os.getcwd()
         splitdir = self._setup_savedir(savepath=savepath)
@@ -265,25 +285,40 @@ class DataCleaning():
         return splitdir
 
 class DataUtilities():
-    '''
+    """
+    Class that contains some basic data analysis utilities, such as flagging columns that contain problematic string
+    entries, or flagging potential outlier values based on threshold values
 
+    Args:
+        None
 
-    '''
+    Methods:
 
+        flag_outliers: Method that scans values in each X feature matrix column and flags values that are larger than
+            X standard deviations from the average of that column value. The index and column values of potentially
+            problematic points are listed and written to an output file.
+
+            Args:
+                X: (pd.DataFrame), dataframe containing X data
+                y: (pd.Series), series containing y data
+                savepath: (str), string containing the save path directory
+                n_stdevs: (int), number of standard deviations to use as threshold value
+
+            Returns:
+                None
+
+        flag_columns_with_strings: Method that ascertains which columns in data contain string entries
+
+            Args:
+                X: (pd.DataFrame), dataframe containing X data
+                y: (pd.Series), series containing y data
+                savepath: (str), string containing the save path directory
+
+            Returns:
+                None
+    """
     @classmethod
     def flag_outliers(cls, X, y, savepath, n_stdevs=3):
-        """
-        Method that scans values in each X feature matrix column and flags values that are larger than 3 standard deviations
-        from the average of that column value. The index and column values of potentially problematic points are listed and
-        written to an output file.
-
-        Args:
-            df: (dataframe), pandas dataframe containing data
-
-        Returns:
-            None, just writes results to file
-
-        """
         df = pd.concat([X, y], axis=1)
         n_rows = df.shape[0]
         outlier_dict = dict()
@@ -320,23 +355,12 @@ class DataUtilities():
 
     @classmethod
     def flag_columns_with_strings(cls, X, y, savepath):
-        """
-        Method that ascertains which columns in data contain string entries
-
-        Args:
-            df: (dataframe), pandas dataframe containing data
-
-        Returns:
-            str_columns: (list), list containing indices of columns containing strings
-
-        """
         df = pd.concat([X, y], axis=1)
         str_summary = pd.DataFrame(df.applymap(type).eq(str).any())
         str_columns = str_summary.index[str_summary[0] == True].tolist()
         d = {'columns with strings': str_columns}
         pd.DataFrame().from_dict(data=d).to_excel(os.path.join(savepath, 'data_columns_with_strings.xlsx'))
         return
-
 
 class PPCA():
     """
