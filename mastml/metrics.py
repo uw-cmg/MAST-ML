@@ -11,10 +11,41 @@ import sklearn.metrics as sm
 from sklearn.linear_model import LinearRegression
 
 class Metrics():
-    '''
+    """
+    Class containing access to a wide range of metrics from scikit-learn and a number of MAST-ML custom-written metrics
 
+    Args:
+        metrics_list: (list), list of strings of metric names to use
+        metrics_type: (str), one of 'regression' or 'classification': whether to use set of common regression/classifier metrics
 
-    '''
+    Methods:
+
+        evaluate: main method to evaluate the specified metrics and the provided true and pred data
+
+            Args:
+                y_true: (pd.Series), series of true y data
+                y_pred: (pd.Series), series of predicted y data
+
+            Returns:
+                stats_dict: (dict), dictionary of calculated statistics for each metric
+
+        _get_metrics: builds the metrics dict of metric names : metric instances based on the metrics specified in metrics_list
+
+            Args:
+                None
+
+            Returns:
+                None
+
+        _metric_zoo: method to retrieve full dict of metric names : metric instance pairs
+
+            Args:
+                None
+
+            Returns:
+                all_metrics (dict), dictionary of all metric names and instances
+
+    """
     def __init__(self, metrics_list, metrics_type='regression'):
         self.metrics_list = metrics_list
         self.metrics_type = metrics_type
@@ -76,6 +107,7 @@ class Metrics():
                         }
         return all_metrics
 
+#TODO: update and test these using pandas series as input
 def r2_score_noint(y_true, y_pred):
     """
     Method that calculates the R^2 value without fitting the y-intercept
@@ -158,7 +190,7 @@ def adjusted_r2_score(y_true, y_pred, n_features=None):
         (float): score of adjusted R^2
 
     """
-    r2 = r2_score(y_true, y_pred)
+    r2 = sm.r2_score(y_true, y_pred)
     # n is sample size
     n = len(y_true)
     # p is number of features
