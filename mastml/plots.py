@@ -10,17 +10,9 @@ tweaking plots for a presentation or publication).
 import math
 import os
 import pandas as pd
-import warnings
+import numpy as np
 from collections import Iterable
 from math import log, floor, ceil
-
-# Ignore the harmless warning about the gelsd driver on mac.
-warnings.filterwarnings(action="ignore", module="scipy",
-                        message="^internal gelsd")
-# Ignore matplotlib deprecation warning (set as all warnings for now)
-warnings.filterwarnings(action="ignore")
-
-import numpy as np
 
 from mastml.metrics import Metrics
 
@@ -37,10 +29,37 @@ matplotlib.rc('figure', autolayout=True) # turn on autolayout
 DPI = 250
 
 class Scatter():
-    '''
+    """
+    Class to generate scatter plots, such as parity plots showing true vs. predicted data values
 
+    Args:
+        None
 
-    '''
+    Methods:
+
+        plot_predicted_vs_true: method to plot a parity plot
+
+            Args:
+
+                y_true: (pd.Series), series of true y data
+
+                y_pred: (pd.Series), series of predicted y data
+
+                savepath: (str), string denoting the save path for the figure image
+
+                file_name: (str), string denoting the character of the file name, e.g. train vs. test
+
+                x_label: (str), string denoting the true and predicted property name
+
+                metrics_list: (list), list of strings of metric names to evaluate and include on the figure
+
+                groups: (pd.Series), series of group designations
+
+                show_figure: (bool), whether or not to show the figure output (e.g. when using Jupyter notebook)
+
+            Returns:
+                None
+    """
     @classmethod
     def plot_predicted_vs_true(cls, y_true, y_pred, savepath, file_name, x_label, metrics_list=None, groups=None, show_figure=False):
         # Make the dataframe/array 1D if it isn't
@@ -99,19 +118,61 @@ class Scatter():
             plt.close()
         return
 
-
 class Histogram():
-    '''
+    """
+    Class to generate histogram plots, such as histograms of residual values
 
+    Args:
+        None
 
-    '''
+    Methods:
 
+        plot_histogram: method to plot a basic histogram of supplied data
+
+            Args:
+
+                df: (pd.DataFrame), dataframe or series of data to plot as a histogram
+
+                savepath: (str), string denoting the save path for the figure image
+
+                file_name: (str), string denoting the character of the file name, e.g. train vs. test
+
+                x_label: (str), string denoting the  property name
+
+                show_figure: (bool), whether or not to show the figure output (e.g. when using Jupyter notebook)
+
+            Returns:
+                None
+
+        plot_residuals_histogram: method to plot a histogram of residual values
+
+            Args:
+
+                y_true: (pd.Series), series of true y data
+
+                y_pred: (pd.Series), series of predicted y data
+
+                savepath: (str), string denoting the save path for the figure image
+
+                file_name: (str), string denoting the character of the file name, e.g. train vs. test
+
+                show_figure: (bool), whether or not to show the figure output (e.g. when using Jupyter notebook)
+
+            Returns:
+                None
+
+        _get_histogram_bins: Method to obtain the number of bins to use when plotting a histogram
+
+            Args:
+
+                df: (pandas Series or numpy array), array of y data used to construct histogram
+
+            Returns:
+
+                num_bins: (int), the number of bins to use when plotting a histogram
+    """
     @classmethod
     def plot_histogram(cls, df, savepath, file_name, x_label, show_figure=False):
-        """
-
-
-        """
         # Make the dataframe 1D if it isn't
         df = check_dimensions(df)
 
@@ -155,18 +216,6 @@ class Histogram():
 
     @classmethod
     def _get_histogram_bins(cls, df):
-        """
-        Method to obtain the number of bins to use when plotting a histogram
-
-        Args:
-
-            y_df: (pandas Series or numpy array), array of y data used to construct histogram
-
-        Returns:
-
-            num_bins: (int), the number of bins to use when plotting a histogram
-
-        """
 
         bin_dividers = np.linspace(df.shape[0], 0.05*df.shape[0], df.shape[0])
         bin_list = list()
@@ -189,6 +238,18 @@ class Histogram():
 ### Helpers:
 
 def check_dimensions(y):
+    """
+    Method to check the dimensions of supplied data. Plotters need data to be 1D and often data is passed in as 2D
+
+    Args:
+
+        y: (numpy array or pd.DataFrame), array or dataframe of data used for plotting
+
+    Returns:
+
+        y: (pd.Series), series that is now 1D
+
+    """
     if len(y.shape) > 1:
         if type(y) == pd.core.frame.DataFrame:
             y = pd.DataFrame.squeeze(y)
