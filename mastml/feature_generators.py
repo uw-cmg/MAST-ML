@@ -5,9 +5,10 @@ This module contains a collection of classes for generating input features to fi
 import multiprocessing
 import os
 import re
-
+import inspect
 import numpy as np
 import pandas as pd
+from datetime import datetime
 
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import PolynomialFeatures as SklearnPolynomialFeatures
@@ -15,12 +16,11 @@ from sklearn.preprocessing import PolynomialFeatures as SklearnPolynomialFeature
 import pymatgen
 from pymatgen import Element, Composition
 from pymatgen.ext.matproj import MPRester
-
-# matminer class imports
-import inspect # used to get a dictionary of classes in a module
-from matminer.featurizers import structure as struc
 from pymatgen.io.vasp.inputs import Poscar
 
+# matminer class imports
+ # used to get a dictionary of classes in a module
+from matminer.featurizers import structure as struc
 from matminer.data_retrieval.retrieve_Citrine import CitrineDataRetrieval
 from matminer.data_retrieval.retrieve_MP import MPDataRetrieval
 from matminer.data_retrieval.retrieve_MDF import MDFDataRetrieval
@@ -30,8 +30,6 @@ from matminer.data_retrieval.retrieve_AFLOW import AFLOWDataRetrieval
 # locate path to directory containing AtomicNumber.table, AtomicRadii.table AtomicVolume.table, etc
 # (needs to do it the hard way becuase python -m sets cwd to wherever python is ran from)
 import mastml
-
-from datetime import datetime
 
 MAGPIE_DATA_PATH = os.path.join(mastml.__path__[0], 'magpie')
 
@@ -1298,14 +1296,6 @@ class NoGenerate(BaseEstimator, TransformerMixin):
     def transform(self, X):
         return pd.DataFrame(index=X.index)
 
-#name_to_constructor = {
-#    'DoNothing': NoGenerate,
-#    'PolynomialFeatures': PolynomialFeatures,
-#    'Magpie': Magpie,
-#    'Matminer': Matminer,
-#    'MaterialsProject': MaterialsProject,
-#    'ContainsElement': ContainsElement,
-#    }
 
 def clean_dataframe(df):
     """
