@@ -6,17 +6,60 @@ import sklearn
 import pandas as pd
 import os
 import numpy as np
-from sklearn.base import BaseEstimator, TransformerMixin
 from pprint import pprint
 import inspect
 from datetime import datetime
 import joblib
 
+from sklearn.base import BaseEstimator, TransformerMixin
+
 class SklearnPreprocessor(BaseEstimator, TransformerMixin):
-    '''
+    """
+    Class to wrap any scikit-learn preprocessor, e.g. StandardScaler
 
+    Args:
+        preprocessor (str): name of a sklearn.preprocessor object, e.g. StandardScaler
+        kwargs : key word arguments for the sklearn.preprocessor object
 
-    '''
+    Methods:
+
+        fit_transform: method that fits the data to the preprocessor, then transforms it to the preprocessed data
+
+            Args:
+                X: (pd.DataFrame), dataframe of X features
+                y: (pd.Series), series of y target data
+
+            Returns:
+                Transformed data (pd.DataFrame or numpy array based on self.as_frame)
+
+        evaluate: main method to evaluate a preprocessor, build directory and save data output
+
+            Args:
+                X: (pd.DataFrame), dataframe of X features
+                y: (pd.Series), series of y target data
+                savepath: (str), string containing main savepath to construct splits for saving output
+
+            Returns:
+                Xnew (pd.DataFrame or numpy array), dataframe or array of the preprocessed X features
+
+        help: method to output key information on class use, e.g. methods and parameters
+
+            Args:
+                None
+
+            Returns:
+                None, but outputs help to screen
+
+        _setup_savedir: method to create a savedir based on the provided model, splitter, selector names and datetime
+
+            Args:
+                model: (mastml.models.SklearnModel or other estimator object), an estimator, e.g. KernelRidge
+                selector: (mastml.feature_selectors or other selector object), a selector, e.g. EnsembleModelFeatureSelector
+                savepath: (str), string designating the savepath
+
+            Returns:
+                splitdir: (str), string containing the new subdirectory to save results to
+    """
     def __init__(self, preprocessor, as_frame=False, **kwargs):
         super(SklearnPreprocessor, self).__init__()
         self.preprocessor = getattr(sklearn.preprocessing, preprocessor)(**kwargs)
