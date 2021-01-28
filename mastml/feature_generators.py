@@ -2,10 +2,8 @@
 This module contains a collection of classes for generating input features to fit machine learning models to.
 """
 
-import multiprocessing
 import os
 import re
-import inspect
 import numpy as np
 import pandas as pd
 from datetime import datetime
@@ -16,28 +14,51 @@ from sklearn.preprocessing import PolynomialFeatures as SklearnPolynomialFeature
 import pymatgen
 from pymatgen import Element, Composition
 from pymatgen.ext.matproj import MPRester
-from pymatgen.io.vasp.inputs import Poscar
-
-# matminer class imports
- # used to get a dictionary of classes in a module
-from matminer.featurizers import structure as struc
-from matminer.data_retrieval.retrieve_Citrine import CitrineDataRetrieval
-from matminer.data_retrieval.retrieve_MP import MPDataRetrieval
-from matminer.data_retrieval.retrieve_MDF import MDFDataRetrieval
-from matminer.data_retrieval.retrieve_MPDS import MPDSDataRetrieval
-from matminer.data_retrieval.retrieve_AFLOW import AFLOWDataRetrieval
 
 # locate path to directory containing AtomicNumber.table, AtomicRadii.table AtomicVolume.table, etc
 # (needs to do it the hard way becuase python -m sets cwd to wherever python is ran from)
 import mastml
-
 MAGPIE_DATA_PATH = os.path.join(mastml.__path__[0], 'magpie')
 
 class BaseGenerator(BaseEstimator, TransformerMixin):
-    '''
+    """
+    Class functioning as a base generator to support directory organization and evaluating different feature generators
 
-    '''
+    Args:
 
+        None
+
+    Methods:
+
+        evaluate: main method to run feature generators on supplied data, and save to file
+
+            Args:
+
+                X: (pd.DataFrame), dataframe of X data containing features and composition string information
+
+                y: (pd.Series), series of y target data
+
+                savepath: (str) string denoting the main save path directory
+
+            Returns:
+
+                X: (pd.DataFrame), dataframe of X features containing newly generated features
+
+                y: (pd.Series), series of y target data
+
+        _setup_savedir: method to set up a save directory for the generated dataset
+
+            Args:
+
+                generator: mastml.feature_generators instance, e.g. ElementalFeatureGenerator
+
+                savepath: (str) string denoting the main save path directory
+
+            Returns:
+
+                splitdir: (str) string of the split directory where generated feature data is saved
+
+    """
     def __init__(self):
         pass
 
@@ -65,30 +86,34 @@ class BaseGenerator(BaseEstimator, TransformerMixin):
 
 class ElementalFeatureGenerator(BaseGenerator):
     """
-    Class that wraps MagpieFeatureGeneration, giving it scikit-learn structure
+    Class that is used to create elemental-based features from material composition strings
 
     Args:
 
         composition_feature: (str), string denoting a chemical composition to generate elemental features from
 
+        feature_types: (list), list of strings denoting which elemental feature types to include in the final feature matrix.
+
     Methods:
 
         fit: pass through, copies input columns as pre-generated features
 
-        Args:
+            Args:
 
-            df: (dataframe), input dataframe containing X and y data
+                X: (pd.DataFrame), input dataframe containing X data
 
-        transform: generate Magpie features
+                y: (pd.Series), series containing y data
 
-        Args:
+        transform: generate the elemental feature matrix from composition strings
 
-            df: (dataframe), input dataframe containing X and y data
+            Args:
 
-        Returns:
+                None.
 
-            df: (dataframe), output dataframe containing generated features, original features and y data
+            Returns:
 
+                X: (dataframe), output dataframe containing generated features
+                y: (series), output y data as series
     """
 
     def __init__(self, composition_feature, feature_types=None):
@@ -105,7 +130,7 @@ class ElementalFeatureGenerator(BaseGenerator):
         self.original_features = self.df.columns
         return self
 
-    def transform(self, X):
+    def transform(self, X=None):
 
         df = self.generate_magpie_features()
 
@@ -113,10 +138,10 @@ class ElementalFeatureGenerator(BaseGenerator):
         df = df.drop(self.original_features, axis=1)
 
         # delete missing values, generation makes a lot of garbage.
-        df = clean_dataframe(df)
+        df = DataframeUtilities().clean_dataframe(df)
         df = df.select_dtypes(['number']).dropna(axis=1)
 
-        # here: remove constant columns
+        # TODO: remove constant columns ??
         #
         #
 
@@ -943,6 +968,7 @@ class ElementalFeatureGenerator(BaseGenerator):
 
         return element_list, atoms_per_formula_unit
 
+# TODO: update this and below classes to conform to new mastml i/o
 class PolynomialFeatures(BaseEstimator, TransformerMixin):
     """
     Class to generate polynomial features using scikit-learn's polynomial features method
@@ -1102,7 +1128,6 @@ class MaterialsProject(BaseEstimator, TransformerMixin):
 
     """
 
-
     def __init__(self, composition_feature, api_key):
         self.composition_feature = composition_feature
         self.api_key = api_key
@@ -1113,233 +1138,30 @@ class MaterialsProject(BaseEstimator, TransformerMixin):
 
     def transform(self, df):
         # make materials project api call (uses internet)
-        mpg = MaterialsProjectFeatureGeneration(df.copy(), self.api_key, self.composition_feature)
-        df = mpg.generate_materialsproject_features()
+        df = self.generate_materialsproject_features(df=df)
 
         df = df.drop(self.original_features, axis=1)
         # delete missing values, generation makes a lot of garbage.
-        df = clean_dataframe(df)
+        df = DataframeUtilities().clean_dataframe(df)
         assert self.composition_feature not in df.columns
         return df
 
-class Matminer(BaseEstimator, TransformerMixin):
-    """
-    Class to generate structural features from matminer structure module
-    Args:
-        structural_features: the structure feature(s) the user wants to instantiate and generate
-        structure_col: the dataframe column that contains the pymatgen structure object. Matminer needs a pymatgen
-        structure object in order to instantiate the structural feature
-    Methods:
-        fit: pass through, needed to maintain scikit-learn class structure
-        Args:
-            df: (dataframe), dataframe of input x and y data
-        transform: main method that iterates through rows of dataframe to create pymatgen structure objects for
-        matminer routines. Iterates through list of structural features from conf file and instantiates each structure;
-        drops unused dataframe columns and returns the generated features dataframe
-        Args:
-            df: (dataframe), dataframe containing the path of file to create pymatgen structure object which is under the structure_col
-            column
-        Returns:
-            (dataframe), the generated features dataframe
-    """
-
-    def __init__(self, structural_features, structure_col):  # _instantiate only needs this
-        # assuming dataframe is coming in with a column 'Structure' with coords.
-        # where do I need to raise errors
-        if type(structural_features) is str:
-            structural_features = [structural_features]
-
-        structural_features = structural_features  # structural feature is now cast as a list
-        self.structural_features = structural_features  # structural feature field of class
-        self.structure_col = structure_col
-
-    def fit(self, df, y=None):
-        return self
-
-    def transform(self, df, y=None):
-        # iterate through dataframe rows
-        for i, rows in df.iterrows():
-            f = Poscar.from_file(df.at[i, self.structure_col])
-            structure = f.structure  # create pymatgen structure object
-            df.at[i, self.structure_col] = structure  # replace path with structure object
-
-        # iterate through structural_features list
-        for struc_feat in range(len(self.structural_features)):
-            # nested loop to check structural_features list item against matminer structures list
-            for feature_name in inspect.getmembers(struc, inspect.isclass):
-                # if structural feature item is a match
-                if feature_name[0] == self.structural_features[struc_feat]:
-                    sf = getattr(struc, self.structural_features[struc_feat])()  # instantiates the structure featurizer
-                    df = sf.fit_featurize_dataframe(df, self.structure_col)  # fit_featurize_dataframe() works for all
-                    # updates dataframe if the structural feature happens to be the GlobalSymmetryFeatures
-                    if self.structural_features[struc_feat] == 'GlobalSymmetryFeatures':
-                        df = df.drop('crystal_system', axis=1)
-                        df['is_centrosymmetric'].replace(True, 1, inplace=True)
-                        df['is_centrosymmetric'].replace(False, 0, inplace=True)
-
-                    break  # structure feature was found for this iteration, repeat
-
-        # drop unused dataframe columns for rest of application
-        df = df.drop(self.structure_col, axis=1)
-        df = df.drop('Material', axis=1)
-        return df  # return generated dataframe
-
-    def retrieve_mp(self, criteria, properties=["band_gap", "volume", "density", "formation_energy_per_atom"],
-                    index_mpid=True, api_key=None):
-        """
-        Gets data from MP in a dataframe format. See api_link for more details.
-        Args:
-            criteria (dict): (str/dict) see MPRester.query() for a description of this
-                    parameter. String examples: "mp-1234", "Fe2O3", "Li-Fe-O',
-                    "\\*2O3". Dict example: {"band_gap": {"$gt": 1}}
-            properties ([str]): (list) see MPRester.query() for a description of this
-                    parameter. Example: ["formula", "formation_energy_per_atom"]
-            plus: "structure", "initial_structure", "final_structure",
-                  "bandstructure" (line mode), "bandstructure_uniform",
-                  "phonon_bandstructure", "phonon_ddb", "phonon_bandstructure",
-                  "phonon_dos". Note that for a long list of compounds, it may
-                   take a long time to retrieve some of these objects.
-            index_mpid (bool): (bool) Whether to set the materials_id as the dataframe
-                    index.
-            api_key: (str) Your Materials Project API key, or None if you've
-                set up your pymatgen config.
-        Returns (pandas.Dataframe): containing results
-        notes/bugs: works pretty great, API easy to use and accurate. What to fix for
-                    dataframe integration into mastml?
-        """
-        mp_df = MPDataRetrieval(api_key).get_dataframe(criteria, properties, index_mpid)
-        mp_df = mp_df.loc[mp_df['formation_energy_per_atom'].idxmin(), :].to_frame().transpose().reset_index().drop(
-            'index', axis=1)
-
-        return mp_df
-
-    def retrieve_citrine(self, criteria, properties, common_fields, secondary_fields, print_properties_options,
-                         api_key):
-        """
-        Gets a Pandas dataframe object from data retrieved from
-        the Citrine API.
-        Args:
-            criteria (dict): see get_data method for supported keys except
-                    prop; prop should be included in properties.
-            properties ([str]): requested properties/fields/columns.
-                    For example, ["Seebeck coefficient", "Band gap"]. If unsure
-                    about the exact words, capitalization, etc try something like
-                    ["gap"] and "max_results": 3 and print_properties_options=True
-                    to see the exact options for this field
-            common_fields ([str]): fields that are common to all the requested
-                    properties. Common example can be "chemicalFormula". Look for
-                    suggested common fields after a quick query for more info
-            secondary_fields (bool): if True, fields not included in properties
-                    may be added to the output (e.g. references). Recommended only
-                    if len(properties)==1'
-            print_properties_options (bool): whether to print available options
-                    for "properties" and "common_fields" arguments.
-            api_key: (str) Your Citrine API key, or None if
-                    you've set the CITRINE_KEY environment variable
-        return: (object) Pandas dataframe object containing the results
-        notes/bugs: criteria needs a dictionary, not specified in get_data() as mentioned,
-                    and example on documentation webpage does not work. What to fix for
-                    dataframe integration into mastml?
-        """
-
-        citrine_df = CitrineDataRetrieval(api_key).get_dataframe(criteria, properties, common_fields, secondary_fields,
-                                                                 print_properties_options)
-        return citrine_df
-
-    def retrieve_MDF(self, criteria, anonymous=False, properties=None, unwind_arrays=True):
-        mdf_df = MDFDataRetrieval(anonymous).get_dataframe(criteria, properties, unwind_arrays)
-        return mdf_df
-
-    def retrieve_MPDS(self, criteria, properties=None, api_key=None, endpoint=None):
-        mpds_df = MPDSDataRetrieval(api_key, endpoint).get_dataframe(criteria, properties)
-        return mpds_df
-
-    def retrieve_AFLOW(self, criteria, properties, files=None, request_size=10000, request_limit=0, index_auid=True):
-        aflow_df = AFLOWDataRetrieval().get_dataframe(criteria, properties, files, request_size, index_auid)
-        return aflow_df
-
-def clean_dataframe(df):
-    """
-    Method to clean dataframes after feature generation has occurred, to remove columns that have a single missing or
-    NaN value, or remove a row that is fully empty
-
-    Args:
-
-        df: (dataframe), a post feature generation dataframe that needs cleaning
-
-    Returns:
-
-        df: (dataframe), the cleaned dataframe
-
-    """
-    df = df.apply(pd.to_numeric, errors='coerce') # convert non-number to NaN
-
-    # warn on empty rows
-    before_count = df.shape[0]
-    df = df.dropna(axis=0, how='all')
-    lost_count = before_count - df.shape[0]
-    if lost_count > 0:
-        print(f'Dropping {lost_count}/{before_count} rows for being totally empty')
-
-    # drop columns with any empty cells
-    before_count = df.shape[1]
-    df = df.select_dtypes(['number']).dropna(axis=1)
-    lost_count = before_count - df.shape[1]
-    if lost_count > 0:
-        print(f'Dropping {lost_count}/{before_count} generated columns due to missing values')
-    return df
-
-class MaterialsProjectFeatureGeneration(object):
-    """
-    Class to generate new features using Materials Project data and dataframe containing material compositions
-    Datarame must have a column named "Material compositions".
-
-    Args:
-        dataframe: (dataframe), dataframe containing x and y data and feature names
-
-        mapi_key: (str), string denoting your Materials Project API key
-
-        composition_feature: (str), string denoting a chemical composition to generate elemental features from
-
-    Methods:
-
-        generate_materialsproject_features : generates materials project feature set based on compositions in dataframe
-
-            Args:
-
-                None
-
-            Returns:
-                dataframe: (dataframe), dataframe containing materials project feature set
-    """
-    def __init__(self, dataframe, mapi_key, composition_feature):
-        self.dataframe = dataframe
-        self.mapi_key = mapi_key
-        self.composition_feature = composition_feature
-
-    def generate_materialsproject_features(self):
+    def generate_materialsproject_features(self, df):
         try:
-            compositions = self.dataframe[self.composition_feature]
+            compositions = df[self.composition_feature]
         except KeyError as e:
             raise ValueError(f'No column named {self.composition_feature} in csv file')
 
         mpdata_dict_composition = {}
 
-        # before: 11 hits for a total of ~6 seconds
-        #for composition in compositions:
-        #    composition_data_mp = self._get_data_from_materials_project(composition=composition)
-        #    mpdata_dict_composition[composition] = composition_data_mp
-        # after: 2.5 seconds!!!
-        pool = multiprocessing.Pool(processes=20)
-        #comp_data_mp = pool.map(self._get_data_from_materials_project, compositions)
         comp_data_mp = map(self._get_data_from_materials_project, compositions)
 
         mpdata_dict_composition.update(dict(zip(compositions, comp_data_mp)))
 
-        dataframe = self.dataframe
+        dataframe = df
         dataframe_mp = pd.DataFrame.from_dict(data=mpdata_dict_composition, orient='index')
         # Need to reorder compositions in new dataframe to match input dataframe
-        dataframe_mp = dataframe_mp.reindex(self.dataframe[self.composition_feature].tolist())
+        dataframe_mp = dataframe_mp.reindex(df[self.composition_feature].tolist())
         # Need to make compositions the first column, instead of the row names
         dataframe_mp.index.name = self.composition_feature
         dataframe_mp.reset_index(inplace=True)
@@ -1347,11 +1169,10 @@ class MaterialsProjectFeatureGeneration(object):
         del dataframe_mp[self.composition_feature]
         # Merge magpie feature dataframe with originally supplied dataframe
         dataframe = DataframeUtilities().merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_mp)
-
         return dataframe
 
     def _get_data_from_materials_project(self, composition):
-        mprester = MPRester(self.mapi_key)
+        mprester = MPRester(self.api_key)
         structure_data_list = mprester.get_data(chemsys_formula_id=composition)
 
         # Sort structures by stability (i.e. E above hull), and only return most stable compound data
@@ -1393,10 +1214,6 @@ class MaterialsProjectFeatureGeneration(object):
                 else:
                     structure_data_dict_condensed[prop] = ''
 
-        #if all(val == '' for _, val in structure_data_dict_condensed.items()):
-        #    log.warning(f'No data found for composition "{composition}" using materials project')
-        #else:
-        #    log.info(f'MAterials Project Feature Generation {composition} {structure_data_dict_condensed}')
         return structure_data_dict_condensed
 
 class DataframeUtilities(object):
@@ -1408,6 +1225,17 @@ class DataframeUtilities(object):
         None
 
     Methods:
+
+        clean_dataframe : Method to clean dataframes after feature generation has occurred, to remove columns that
+            have a single missing or NaN value, or remove a row that is fully empty
+
+        Args:
+
+            df: (dataframe), a post feature generation dataframe that needs cleaning
+
+        Returns:
+
+            df: (dataframe), the cleaned dataframe
 
         merge_dataframe_columns : merge two dataframes by concatenating the column names (duplicate columns omitted)
 
@@ -1502,6 +1330,25 @@ class DataframeUtilities(object):
                 fname: (str), name of file dataframe stats saved to
 
     """
+    @classmethod
+    def clean_dataframe(cls, df):
+        df = df.apply(pd.to_numeric, errors='coerce')  # convert non-number to NaN
+
+        # warn on empty rows
+        before_count = df.shape[0]
+        df = df.dropna(axis=0, how='all')
+        lost_count = before_count - df.shape[0]
+        if lost_count > 0:
+            print(f'Dropping {lost_count}/{before_count} rows for being totally empty')
+
+        # drop columns with any empty cells
+        before_count = df.shape[1]
+        df = df.select_dtypes(['number']).dropna(axis=1)
+        lost_count = before_count - df.shape[1]
+        if lost_count > 0:
+            print(f'Dropping {lost_count}/{before_count} generated columns due to missing values')
+        return df
+
     @classmethod
     def merge_dataframe_columns(cls, dataframe1, dataframe2):
         dataframe = pd.concat([dataframe1, dataframe2], axis=1, join='outer')
