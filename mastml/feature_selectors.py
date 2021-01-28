@@ -8,18 +8,19 @@ http://scikit-learn.org/stable/modules/classes.html#module-sklearn.feature_selec
 from functools import wraps
 import warnings
 import numpy as np
-from mastml.metrics import root_mean_squared_error
-
 import pandas as pd
+import os
+import copy
+
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.decomposition import PCA
 import sklearn.feature_selection as fs
-from mlxtend.feature_selection import SequentialFeatureSelector
-import os
 
-import copy
+from mlxtend.feature_selection import SequentialFeatureSelector
+
 from scipy.stats import pearsonr
 
+from mastml.metrics import root_mean_squared_error
 
 def dataframify_selector(transform):
     """
@@ -82,6 +83,8 @@ def fitify_just_use_values(fit):
     def new_fit(self, X_df, y_df):
         return fit(self, X_df.values, y_df.values)
     return new_fit
+
+#TODO: need to clean this up and add ScikitlearnSelector wrapper. Will also include SequentialFeatureSelector in latest sklearn version
 
 score_func_selectors = {
     'GenericUnivariateSelect': fs.GenericUnivariateSelect, # Univariate feature selector with configurable strategy.
@@ -154,7 +157,41 @@ class NoSelect(BaseEstimator, TransformerMixin):
         return X_select
 
 class EnsembleModelFeatureSelector():
+    """
+    Class custom-written for MAST-ML to conduct selection of features with ensemble model feature importances
 
+    Args:
+
+        model: (mastml.models object), a MAST-ML compatiable model
+
+        k_features: (int), the number of features to select
+
+    Methods:
+
+        fit: performs feature selection
+
+            Args:
+
+                X: (dataframe), dataframe of X features
+
+                y: (dataframe), dataframe of y data
+
+
+            Returns:
+
+                None
+
+        transform: performs the transform to generate output of only selected features
+
+            Args:
+
+                X: (dataframe), dataframe of X features
+
+            Returns:
+
+                dataframe: (dataframe), dataframe of selected X features
+
+    """
     def __init__(self, model, k_features):
         self.model = model
         self.k_features = k_features
@@ -192,7 +229,50 @@ class EnsembleModelFeatureSelector():
         X_select = self.transform(X=X)
         return X_select
 
-class PearsonSelector(object):
+class PearsonSelector():
+    """
+    Class custom-written for MAST-ML to conduct selection of features based on Pearson correlation coefficent between
+    features and target. Can also be used for dimensionality reduction by removing redundant features highly correlated
+    with each other.
+
+    Args:
+
+        threshold_between_features: (float), the threshold to decide whether redundant features are removed. Should be
+        a decimal value between 0 and 1. Only used if remove_highly_correlated_features is True
+
+        threshold_with_target: (float), the threshold to decide whether a given feature is sufficiently correlated with
+        the target feature and thus kept as a selected feature. Should be a decimal value between 0 and 1.
+
+        remove_highly_correlated_features: (bool), whether to remove features highly correlated with each other
+
+        k_features: (int), the number of features to select
+
+    Methods:
+
+        fit: performs feature selection
+
+            Args:
+
+                X: (dataframe), dataframe of X features
+
+                y: (dataframe), dataframe of y data
+
+
+            Returns:
+
+                None
+
+        transform: performs the transform to generate output of only selected features
+
+            Args:
+
+                X: (dataframe), dataframe of X features
+
+            Returns:
+
+                dataframe: (dataframe), dataframe of selected X features
+
+    """
     def __init__(self, threshold_between_features, threshold_with_target, remove_highly_correlated_features, k_features):
         self.threshold_between_features = threshold_between_features
         self.threshold_with_target = threshold_with_target
@@ -324,7 +404,7 @@ class PearsonSelector(object):
         dataframe = X[self.selected_features]
         return dataframe
 
-class MASTMLFeatureSelector(object):
+class MASTMLFeatureSelector():
     """
     Class custom-written for MAST-ML to conduct forward selection of features with flexible model and cv scheme
 
