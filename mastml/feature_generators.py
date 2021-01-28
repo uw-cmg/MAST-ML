@@ -1258,45 +1258,6 @@ class Matminer(BaseEstimator, TransformerMixin):
         aflow_df = AFLOWDataRetrieval().get_dataframe(criteria, properties, files, request_size, index_auid)
         return aflow_df
 
-class NoGenerate(BaseEstimator, TransformerMixin):
-    """
-    Class for having a "null" transform where the output is the same as the input. Needed by MAST-ML as a placeholder if
-    certain workflow aspects are not performed.
-
-    Args:
-
-        None
-
-    Methods:
-
-        fit: does nothing, just returns object instance. Needed to maintain same structure as scikit-learn classes
-
-        Args:
-
-            X: (dataframe), dataframe of X features
-
-        transform: passes the input back out, in this case the array of X features
-
-        Args:
-
-            X: (dataframe), dataframe of X features
-
-        Returns:
-
-            (dataframe), dataframe of X features
-
-    """
-
-    def __init__(self):
-        pass
-
-    def fit(self, X, y=None):
-        return self
-
-    def transform(self, X):
-        return pd.DataFrame(index=X.index)
-
-
 def clean_dataframe(df):
     """
     Method to clean dataframes after feature generation has occurred, to remove columns that have a single missing or
