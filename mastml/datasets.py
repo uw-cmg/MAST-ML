@@ -21,10 +21,34 @@ except:
           'git clone https://github.com/cognoma/figshare.git')
 
 class SklearnDatasets():
-    '''
+    """
+    Class wrapping the sklearn.datasets funcionality for easy import of toy datasets from sklearn. Added some changes
+    to make all datasets operate more consistently, e.g. boston housing data
 
-    '''
-    def __init__(self, return_X_y=False, as_frame=False, n_class=None):
+    Args:
+
+        return_X_y: (bool), whether to return X, y data as (X, y) tuple (should be true for easiest use in MASTML)
+        as_frame: (bool), whether to return X, y data as pandas dataframe objects
+        n_class: (int), number of classes (only applies to load_digits method)
+
+    Methods:
+
+        load_boston: Loads the Boston housing data (regression)
+
+        load_iris: Loads the flower iris data (classification)
+
+        load_diabetes: Loads the diabetes data set (regression)
+
+        load_digits: Loads the MNIST digits data set (classification)
+
+        load_linnerud: Loads the linnerud data set (regression)
+
+        load_wine: Loads the wine data set (classification)
+
+        load_breast_cancer: Loads the breast cancer data set (classification)
+
+    """
+    def __init__(self, return_X_y=True, as_frame=False, n_class=None):
         self.return_X_y = return_X_y
         self.as_frame = as_frame
         self.n_class = n_class
@@ -58,9 +82,43 @@ class SklearnDatasets():
         return sklearn.datasets.load_breast_cancer(return_X_y=self.return_X_y, as_frame=self.as_frame)
 
 class LocalDatasets():
-    '''
+    """
+    Class to handle import and organization of a dataset stored locally.
 
-    '''
+    Args:
+        file_path: (str), path to the data file to import
+        feature_names: (list), list of strings containing the X feature names
+        target: (str), string denoting the y data (target) name
+        extra_columns: (list), list of strings containing additional column names that are not features or target
+        as_frame: (bool), whether to return data as pandas dataframe (otherwise will be numpy array)
+
+    Methods:
+        _import: imports the data. Should be either .csv or .xlsx format
+
+            Args:
+                None
+
+            Returns:
+                df: (pd.DataFrame), pandas dataframe of full dataset
+
+        _get_features: Method to assess which columns below to target, feature_names
+
+            Args:
+                df: (pd.DataFrame), pandas dataframe of full dataset
+
+            Returns:
+                None
+
+        load_data: Method to import the data and ascertain which columns are features, target and extra based on provided
+            input.
+
+            Args:
+                None
+
+            Returns:
+                X: (pd.DataFrame or numpy array), dataframe or array of X data
+                y: (pd.DataFrame or numpy array), dataframe or array of y data
+    """
     def __init__(self, file_path, feature_names=None, target=None, extra_columns=None, as_frame=False):
         self.file_path = file_path
         self.feature_names = feature_names
@@ -75,7 +133,10 @@ class LocalDatasets():
         if ext == '.csv':
             df = pd.read_csv(self.file_path)
         elif ext == '.xlsx':
-            df = pd.read_excel(self.file_path)
+            try:
+                df = pd.read_excel(self.file_path)
+            except:
+                df = pd.read_excel(self.file_path, engine='openpyxl')
         else:
             raise ValueError('file_path must be .csv or .xlsx for data local data import')
         return df
@@ -110,13 +171,26 @@ class LocalDatasets():
         return np.array(X), np.array(y).ravel()
 
 class FigshareDatasets():
-    '''
-    To install:
-    git clone https://github.com/cognoma/figshare.git
+    """
+    Class to download datasets hosted on Figshare. To install: git clone https://github.com/cognoma/figshare.git
 
-    diffusion data article id: 7418492
+    Args:
+        None
 
-    '''
+    Methods:
+
+        download_data: downloads specified data from Figshare and saves to current directory
+
+            Args:
+
+                article_id: (int), the number denoting the Figshare article ID. Can be obtained from the URL to the
+                Figshare dataset
+
+                savepath: (str), string denoting the savepath of the MAST-ML run
+
+            Returns:
+                None
+    """
     def __init__(self):
         pass
 
@@ -128,9 +202,26 @@ class FigshareDatasets():
         return
 
 class FoundryDatasets():
-    '''
+    """
+    Class to download datasets hosted on Materials Data Facility
 
-    '''
+    Args:
+        no_local_server: (bool), whether or not the server is local. Set to True if running on e.g. Google Colab
+        anonymous: (bool), whether to use your MDF user or be anonymous. Some functionality may be disabled if True
+        test: (bool), whether to be in test mode. Some functionality may be disabled if True
+
+    Methods:
+
+        download_data: downloads specified data from MDF and saves to current directory
+
+            Args:
+                name: (str), name of the dataset to download
+                doi: (str), digital object identifier of the dataset to download
+                download: (bool), whether or not to download the full dataset
+
+            Returns:
+                None
+    """
     def __init__(self, no_local_server, anonymous, test):
         self.no_local_server = no_local_server
         self.anonymous = anonymous
