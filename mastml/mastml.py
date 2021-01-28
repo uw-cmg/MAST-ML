@@ -5,10 +5,73 @@ from collections import OrderedDict
 import json
 
 class Mastml():
-    '''
+    """
+    Main helper class to initialize mastml runs and create and manage run metadata
 
+    Args:
+        savepath: (str), string specifing the savepath name for the mastml run
+        mastml_metdata: (dict), dict of mastml metadata. If none, a new dict will be created
 
-    '''
+    Methods:
+
+        _initialize_run: initializes run by making new metadata file or updating existing one, and initializing the output
+            directory.
+
+            Args:
+                None
+
+            Returns:
+                None
+
+        _initialize_output: creates the output folder based on specified savepath and datetime information
+
+            Args:
+                None
+
+            Returns:
+                None
+
+        _initialize_metadata: creates a new metadata file and saves the savepath info to it
+
+            Args:
+                None
+
+            Returns:
+                None
+
+        _update_metadata: placeholder for updating the metadata file with new run information
+
+            Args:
+                None
+
+            Returns:
+                None
+
+        _save_mastml_metadata: saves the metadata dict as a json file
+
+            Args:
+                None
+
+            Returns:
+                None
+
+        get_savepath: returns the savepath
+
+            Args:
+                None
+
+            Returns:
+                string specifying the savepath of the mastml run
+
+        get_mastml_metadata: returns the metadata file
+
+            Args:
+                None
+
+            Returns:
+                mastml metadata object (ordered dict)
+
+    """
     def __init__(self, savepath, mastml_metadata=None):
         self.savepath = savepath
         self.mastml_metadata = mastml_metadata
@@ -57,7 +120,3 @@ class Mastml():
     @property
     def get_mastml_metadata(self):
         return self.mastml_metadata
-
-    def run(self, mastml_dict):
-        # Execute a mastml pipeline like in old mastml, but denser ???
-        return
