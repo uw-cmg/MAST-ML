@@ -9,18 +9,52 @@ import joblib
 import numpy as np
 from scipy import stats
 import sklearn.base
-import sklearn.utils.testing
-import xgboost as xgb
+import sklearn.utils
 import inspect
 from pprint import pprint
 
+try:
+    import xgboost as xgb
+except:
+    print('If you want to use XGBoost models, please manually install xgboost package')
+
 class SklearnModel():
-    '''
+    """
+    Class to wrap any sklearn estimator, and provide some new dataframe functionality
 
+    Args:
 
-    '''
+        model: (str), string denoting the name of an sklearn estimator object, e.g. KernelRidge
+        kwargs: keyword pairs of values to include for model, e.g. for KernelRidge can specify kernel, alpha, gamma values
+
+    Methods:
+
+        fit: method that fits the model parameters to the provided training data
+
+            Args:
+                X: (pd.DataFrame), dataframe of X features
+                y: (pd.Series), series of y target data
+            Returns:
+                fitted model
+
+        predict: method that evaluates model on new data to give predictions
+
+            Args:
+                X: (pd.DataFrame), dataframe of X features
+                as_frame: (bool), whether to return data as pandas dataframe (else numpy array)
+            Returns:
+                series or array of predicted values
+
+        help: method to output key information on class use, e.g. methods and parameters
+
+            Args:
+                None
+
+            Returns:
+                None, but outputs help to screen
+    """
     def __init__(self, model, **kwargs):
-        self.model = dict(sklearn.utils.testing.all_estimators())[model](**kwargs)
+        self.model = dict(sklearn.utils.all_estimators())[model](**kwargs)
 
     def fit(self, X, y):
         return self.model.fit(X, y)
@@ -42,6 +76,7 @@ class SklearnModel():
         pprint(self.model.__dict__)
         return
 
+#TODO: add the below models into new formulation
 # ref: https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.BaggingRegressor.html#sklearn.ensemble.BaggingRegressor
 # NOTE: in order to use this, other models for the custom ensemble must be defined 
 #       in the conf file with "_ensemble" somewhere in the name
