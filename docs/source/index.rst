@@ -11,6 +11,24 @@ Welcome to MAterials Simulation Toolkit for Machine Learning (MAST-ML)'s documen
 
    00_acknowledgements.rst
 
+   2_data_splitters.rst
+
+   3_datasets.rst
+
+   4_feature_generators.rst
+
+   5_feature_selectors.rst
+
+   6_mastml.rst
+
+   7_metrics.rst
+
+   8_models.rst
+
+   9_plots.rst
+
+   10_preprocessing.rst
+
 
 Indices and tables
 ==================
