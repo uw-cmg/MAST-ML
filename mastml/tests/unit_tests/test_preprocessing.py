@@ -25,7 +25,7 @@ class TestPreprocessor(unittest.TestCase):
 
     def tearDown(self):
         shutil.rmtree(self.preprocessor.splitdir)
-        pass
+        return
 
 if __name__=='__main__':
     unittest.main()
