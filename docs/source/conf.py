@@ -21,15 +21,9 @@ import os
 import sys
 os.system('pip install sphinx-automodapi')
 os.system('pip install citrination-client dlhub_sdk globus_nexus_client globus_sdk matminer matplotlib mdf_forge mdf-toolbox mlxtend numpy pandas pymatgen scikit-learn scikit-optimize scipy sphinx-automodapi')
-#import sphinx_automodapi
-sys.path.insert(0, os.path.abspath('../../'))
-sys.path.insert(0, os.path.abspath('../../mastml'))
-#sys.path.insert(0, os.path.abspath('../../mastml/legos'))
+sys.path.insert(0, os.path.abspath('../'))
+sys.path.insert(0, os.path.abspath('../..'))
 
-#os.system('python ../../setup.py install')
-
-#sys.path.insert(0, '/Users/ryanjacobs/PycharmProjects/MAST-ML/mastml/')
-#sys.path.insert(0, '/Users/ryanjacobs/PycharmProjects/MAST-ML/mastml/legos')
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -60,7 +54,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'MAterials Simulation Toolkit for Machine Learning (MAST-ML)'
-copyright = '2018, University of Wisconsin-Madison Computational Materials Group'
+copyright = '2018-2021, University of Wisconsin-Madison Computational Materials Group'
 author = 'University of Wisconsin-Madison Computational Materials Group'
 
 # The version info for the project you're documenting, acts as replacement for
