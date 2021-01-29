@@ -241,9 +241,9 @@ class ModelImport():
         return self.model.predict(X)
 
 # Optional to have xgboost working
-custom_models = {
-        'ModelImport': ModelImport,
-        'XGBRegressor': xgb.XGBRegressor,
-        'XGBClassifier': xgb.XGBClassifier,
-        'EnsembleRegressor': EnsembleRegressor
-    }
+#custom_models = {
+#        'ModelImport': ModelImport,
+#        'XGBRegressor': xgb.XGBRegressor,
+#        'XGBClassifier': xgb.XGBClassifier,
+#        'EnsembleRegressor': EnsembleRegressor
+#    }
