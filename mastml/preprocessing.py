@@ -2,7 +2,7 @@
 This module contains a collection of classes and methods for normalizing features. Also included is connection with
 scikit-learn methods. See http://scikit-learn.org/stable/modules/classes.html#module-sklearn.preprocessing for more info.
 """
-import sklearn
+import sklearn.preprocessing
 import pandas as pd
 import os
 import numpy as np
@@ -74,6 +74,7 @@ class SklearnPreprocessor(BaseEstimator, TransformerMixin):
         if not savepath:
             savepath = os.getcwd()
         splitdir = self._setup_savedir(savepath=savepath)
+        self.splitdir = splitdir
         if self.as_frame:
             Xnew = pd.DataFrame(self.preprocessor.fit_transform(X=X), columns=X.columns, index=X.index)
             Xnew.to_excel(os.path.join(splitdir, 'data_preprocessed.xlsx'))
