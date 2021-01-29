@@ -18,8 +18,12 @@ import joblib
 from math import ceil
 import warnings
 
-from matminer.featurizers.composition import ElementFraction
-from pymatgen import Composition
+try:
+    from matminer.featurizers.composition import ElementFraction
+    from pymatgen import Composition
+except:
+    # pass if fails for autodoc build
+    pass
 
 import sklearn.model_selection as ms
 from sklearn.utils import check_random_state

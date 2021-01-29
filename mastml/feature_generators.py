@@ -11,9 +11,13 @@ from datetime import datetime
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import PolynomialFeatures as SklearnPolynomialFeatures
 
-import pymatgen
-from pymatgen import Element, Composition
-from pymatgen.ext.matproj import MPRester
+try:
+    import pymatgen
+    from pymatgen import Element, Composition
+    from pymatgen.ext.matproj import MPRester
+except:
+    # pass if fails for autodoc build
+    pass
 
 # locate path to directory containing AtomicNumber.table, AtomicRadii.table AtomicVolume.table, etc
 # (needs to do it the hard way becuase python -m sets cwd to wherever python is ran from)
