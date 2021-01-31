@@ -33,6 +33,7 @@ from sklearn.neighbors import NearestNeighbors
 from mastml.plots import Histogram, Scatter
 from mastml.feature_selectors import NoSelect
 
+
 class BaseSplitter(ms.BaseCrossValidator):
     """
     Class functioning as a base splitter with methods for organizing output and evaluating any mastml data splitter
@@ -110,6 +111,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             Returns:
                 None, but outputs help to screen
     """
+
     def __init__(self):
         super(BaseSplitter, self).__init__()
         self.splitter = self.__class__.__name__
@@ -167,7 +169,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                     X_train = Xs[0]
                     X_test = Xs[1]
                     y_train = ys[0]
-                    #y_test = pd.DataFrame(np.array(ys[1]), columns=['y_test']) # Make it so the y_test and y_pred have same indices so can be subtracted to get residuals
+                    # y_test = pd.DataFrame(np.array(ys[1]), columns=['y_test']) # Make it so the y_test and y_pred have same indices so can be subtracted to get residuals
                     y_test = pd.Series(np.array(ys[1]).ravel(), name='y_test')  # Make it so the y_test and y_pred have same indices so can be subtracted to get residuals
                     # make the individual split directory
                     splitpath = os.path.join(splitdir, 'split_' + str(split_count))
@@ -254,7 +256,7 @@ class BaseSplitter(ms.BaseCrossValidator):
         now = datetime.now()
         dirname = model.model.__class__.__name__+'_'+self.splitter+'_'+selector.__class__.__name__
         dirname = f"{dirname}_{now.month:02d}_{now.day:02d}" \
-                        f"_{now.hour:02d}_{now.minute:02d}_{now.second:02d}"
+            f"_{now.hour:02d}_{now.minute:02d}_{now.second:02d}"
         if savepath == None:
             splitdir = os.getcwd()
         else:
@@ -276,7 +278,11 @@ class BaseSplitter(ms.BaseCrossValidator):
         dirs = [d for d in os.listdir(savepath) if 'split' in d]
         data = list()
         for d in dirs:
-            data.append(np.array(pd.read_excel(os.path.join(savepath, os.path.join(d, filename)+'.xlsx'))[filename]))
+            try:
+                data.append(np.array(pd.read_excel(os.path.join(savepath, os.path.join(d, filename)+'.xlsx'))[filename]))
+            except:
+                data.append(np.array(pd.read_excel(os.path.join(savepath, os.path.join(d, filename)+'.xlsx'),
+                                                   engine='openpyxl')[filename]))
         data = pd.Series(np.concatenate(data).ravel())
         return data
 
@@ -290,6 +296,7 @@ class BaseSplitter(ms.BaseCrossValidator):
         print('Class attributes for,', self.splitter)
         pprint(self.splitter.__dict__)
         return
+
 
 class SklearnDataSplitter(BaseSplitter):
     """
@@ -326,6 +333,7 @@ class SklearnDataSplitter(BaseSplitter):
             Returns:
                 splitdir: (str), string containing the new subdirectory to save results to
     """
+
     def __init__(self, splitter, **kwargs):
         super(SklearnDataSplitter, self).__init__()
         self.splitter = getattr(sklearn.model_selection, splitter)(**kwargs)
@@ -340,7 +348,7 @@ class SklearnDataSplitter(BaseSplitter):
         now = datetime.now()
         dirname = model.model.__class__.__name__+'_'+self.splitter.__class__.__name__+'_'+selector.__class__.__name__
         dirname = f"{dirname}_{now.month:02d}_{now.day:02d}" \
-                        f"_{now.hour:02d}_{now.minute:02d}_{now.second:02d}"
+            f"_{now.hour:02d}_{now.minute:02d}_{now.second:02d}"
         if savepath == None:
             splitdir = os.getcwd()
         else:
@@ -348,6 +356,7 @@ class SklearnDataSplitter(BaseSplitter):
         if not os.path.exists(splitdir):
             os.mkdir(splitdir)
         return splitdir
+
 
 class NoSplit(BaseSplitter):
     """
@@ -375,6 +384,7 @@ class NoSplit(BaseSplitter):
                 (numpy array), array of train and test indices (all data used as train and test for NoSplit)
 
     """
+
     def __init__(self):
         super(NoSplit, self).__init__()
 
@@ -386,6 +396,8 @@ class NoSplit(BaseSplitter):
         return [[indices, indices]]
 
 # TODO: add these to new methods
+
+
 class JustEachGroup(BaseEstimator, TransformerMixin):
     """
     Class to train the model on one group at a time and test it on the rest of the data
@@ -415,6 +427,7 @@ class JustEachGroup(BaseEstimator, TransformerMixin):
                 (numpy array), array of train and test indices
 
     """
+
     def __init__(self):
         pass
 
@@ -426,6 +439,7 @@ class JustEachGroup(BaseEstimator, TransformerMixin):
         #print('n_groups', n_groups)
         lpgo = ms.LeavePGroupsOut(n_groups=n_groups-1)
         return lpgo.split(X, y, groups)
+
 
 class LeaveCloseCompositionsOut(ms.BaseCrossValidator):
     """
@@ -479,6 +493,7 @@ class LeaveCloseCompositionsOut(ms.BaseCrossValidator):
     def get_n_splits(self, X=None, y=None, groups=None):
         return len(X)
 
+
 class LeaveOutPercent(BaseEstimator, TransformerMixin):
     """
     Class to train the model using a certain percentage of data as training data
@@ -508,6 +523,7 @@ class LeaveOutPercent(BaseEstimator, TransformerMixin):
                 (numpy array), array of train and test indices
 
     """
+
     def __init__(self, percent_leave_out=0.2, n_repeats=5):
         self.percent_leave_out = percent_leave_out
         self.n_repeats = n_repeats
@@ -522,6 +538,7 @@ class LeaveOutPercent(BaseEstimator, TransformerMixin):
             trains, tests = ms.train_test_split(indices, test_size=self.percent_leave_out, random_state=np.random.randint(1, 1000), shuffle=True)
             split.append((trains, tests))
         return split
+
 
 class Bootstrap(object):
     """
@@ -620,7 +637,7 @@ class Bootstrap(object):
             train = rng.randint(0, self.train_size,
                                 size=(self.train_size,))
             test = rng.randint(0, self.test_size,
-                                size=(self.test_size,))
+                               size=(self.test_size,))
             yield ind_train[train], ind_test[test]
 
     def __repr__(self):
