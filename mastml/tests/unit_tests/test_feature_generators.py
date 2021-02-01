@@ -26,9 +26,10 @@ class TestGenerators(unittest.TestCase):
         X = pd.DataFrame(np.random.uniform(low=0.0, high=100, size=(5, 10)))
         y = pd.Series(np.random.uniform(low=0.0, high=100, size=(5,)))
         generator = PolynomialFeatureGenerator(features=None, degree=2, include_bias=False)
-        generator.fit(df=X, y=y)
-        Xgenerated = generator.transform(df=X)
+        Xgenerated, y = generator.evaluate(X=X, y=y, savepath=os.getcwd())
         self.assertEqual(Xgenerated.shape, (5, 65))
+        self.assertTrue(os.path.exists(generator.splitdir))
+        shutil.rmtree(generator.splitdir)
         return
 
     def test_onehotelement(self):

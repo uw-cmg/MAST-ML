@@ -974,7 +974,7 @@ class ElementalFeatureGenerator(BaseGenerator):
         return element_list, atoms_per_formula_unit
 
 # TODO: update this and below classes to conform to new mastml i/o
-class PolynomialFeatureGenerator(BaseEstimator, TransformerMixin):
+class PolynomialFeatureGenerator(BaseGenerator, TransformerMixin):
     """
     Class to generate polynomial features using scikit-learn's polynomial features method
     More info at: http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html
@@ -1009,20 +1009,22 @@ class PolynomialFeatureGenerator(BaseEstimator, TransformerMixin):
 
     """
     def __init__(self, features=None, degree=2, interaction_only=False, include_bias=True):
+        super(PolynomialFeatureGenerator, self).__init__()
         self.features = features
         self.SPF = PolynomialFeatures(degree, interaction_only, include_bias)
 
-    def fit(self, df, y=None):
+    def fit(self, X, y=None):
+        self.y = y
         if self.features is None:
-            self.features = df.columns
-        array = df[self.features].values
+            self.features = X.columns
+        array = X[self.features].values
         self.SPF.fit(array)
         return self
 
-    def transform(self, df):
-        array = df[self.features].values
+    def transform(self, X):
+        array = X[self.features].values
         new_features = self.SPF.get_feature_names()
-        return pd.DataFrame(self.SPF.transform(array), columns=new_features)
+        return pd.DataFrame(self.SPF.transform(array), columns=new_features), self.y
 
 class OneHotElementEncoder(BaseEstimator, TransformerMixin):
     """
