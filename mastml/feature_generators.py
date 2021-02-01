@@ -95,9 +95,11 @@ class ElementalFeatureGenerator(BaseGenerator):
 
     Args:
 
-        composition_feature: (str), string denoting a chemical composition to generate elemental features from
+        composition_df: (pd.DataFrame), dataframe containing vector of chemical compositions (strings) to generate elemental features from
 
         feature_types: (list), list of strings denoting which elemental feature types to include in the final feature matrix.
+
+        remove_constant_columns: (bool), whether to remove constant columns from the generated feature set
 
     Methods:
 
@@ -121,10 +123,11 @@ class ElementalFeatureGenerator(BaseGenerator):
                 y: (series), output y data as series
     """
 
-    def __init__(self, composition_feature, feature_types=None):
+    def __init__(self, composition_df, feature_types=None, remove_constant_columns=False):
         super(BaseGenerator, self).__init__()
-        self.composition_feature = composition_feature
+        self.composition_df = composition_df
         self.feature_types = feature_types
+        self.remove_constant_columns = remove_constant_columns
         if self.feature_types is None:
             self.feature_types = ['composition_avg', 'arithmetic_avg', 'max', 'min', 'difference']
 
@@ -140,17 +143,16 @@ class ElementalFeatureGenerator(BaseGenerator):
         df = self.generate_magpie_features()
 
         # remove original features. Don't necessarily want to do this?
-        df = df.drop(self.original_features, axis=1)
+        #df = df.drop(self.original_features, axis=1)
 
         # delete missing values, generation makes a lot of garbage.
         df = DataframeUtilities().clean_dataframe(df)
         df = df.select_dtypes(['number']).dropna(axis=1)
 
-        # TODO: remove constant columns ??
-        #
-        #
+        if self.remove_constant_columns is True:
+            df = DataframeUtilities().remove_constant_columns(dataframe=df)
 
-        assert self.composition_feature not in df.columns
+        #assert self.composition_df[self.composition_df.columns[0]] not in df.columns
         X = df[sorted(df.columns.tolist())]
         return X, self.y
 
@@ -158,7 +160,7 @@ class ElementalFeatureGenerator(BaseGenerator):
         # Replace empty composition fields with empty string instead of NaN
         self.df = self.df.fillna('')
 
-        compositions_raw = self.df[self.composition_feature].tolist()
+        compositions_raw = self.composition_df[self.composition_df.columns[0]].tolist()
         # Check first entry of comps to find [] for delimiting different sublattices
         has_sublattices = False
         if '[' in compositions_raw[0]:
@@ -195,7 +197,7 @@ class ElementalFeatureGenerator(BaseGenerator):
             raise ValueError('Error! No material compositions column found in your input data file. To use this feature generation routine, you must supply a material composition for each data point')
 
         # Add the column of combined material compositions into the dataframe
-        self.df[self.composition_feature] = compositions
+        self.composition_df[self.composition_df.columns[0]] = compositions
 
         # Assign each magpiedata feature set to appropriate composition name
         magpiedata_dict_composition_average = {}
@@ -521,9 +523,9 @@ class ElementalFeatureGenerator(BaseGenerator):
         for magpiedata_dict in magpiedata_dict_list_toinclude:
             df_magpie = pd.DataFrame.from_dict(data=magpiedata_dict, orient='index')
             # Need to reorder compositions in new dataframe to match input dataframe
-            df_magpie = df_magpie.reindex(self.df[self.composition_feature].tolist())
+            df_magpie = df_magpie.reindex(self.composition_df[self.composition_df.columns[0]].tolist())
             # Need to make compositions the first column, instead of the row names
-            df_magpie.index.name = self.composition_feature
+            df_magpie.index.name = self.composition_df.columns[0]
             df_magpie.reset_index(inplace=True)
             # Merge magpie feature dataframe with originally supplied dataframe
             df = DataframeUtilities().merge_dataframe_columns(dataframe1=df, dataframe2=df_magpie)
@@ -974,7 +976,7 @@ class ElementalFeatureGenerator(BaseGenerator):
         return element_list, atoms_per_formula_unit
 
 # TODO: update this and below classes to conform to new mastml i/o
-class PolynomialFeatureGenerator(BaseGenerator, TransformerMixin):
+class PolynomialFeatureGenerator(BaseGenerator):
     """
     Class to generate polynomial features using scikit-learn's polynomial features method
     More info at: http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html

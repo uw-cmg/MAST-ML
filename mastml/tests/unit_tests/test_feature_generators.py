@@ -12,12 +12,12 @@ from mastml.feature_generators import ElementalFeatureGenerator, PolynomialFeatu
 class TestGenerators(unittest.TestCase):
 
     def test_elemental(self):
-        X = {'composition': ['NaCl', 'Al2O3', 'Mg', 'SrTiO3', 'C']}
-        X = pd.DataFrame(X)
+        composition_df = pd.DataFrame({'composition': ['NaCl', 'Al2O3', 'Mg', 'SrTiO3', 'C']})
+        X = pd.DataFrame(np.random.uniform(low=0.0, high=100, size=(5,5)), columns=['0', '1', '2', '3', '4'])
         y = pd.Series(np.random.uniform(low=0.0, high=100, size=(5,)))
-        generator = ElementalFeatureGenerator(composition_feature='composition', feature_types='max')
+        generator = ElementalFeatureGenerator(composition_df=composition_df, feature_types='max')
         Xgenerated, y = generator.evaluate(X=X, y=y, savepath=os.getcwd())
-        self.assertEqual(Xgenerated.shape, (5, 87))
+        self.assertEqual(Xgenerated.shape, (5, 92))
         self.assertTrue(os.path.exists(os.path.join(generator.splitdir, 'generated_features.xlsx')))
         shutil.rmtree(generator.splitdir)
         return
