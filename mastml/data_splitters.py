@@ -483,7 +483,7 @@ class LeaveCloseCompositionsOut(ms.BaseCrossValidator):
     def get_n_splits(self, X=None, y=None, groups=None):
         return len(X)
 
-class LeaveOutPercent(BaseEstimator, TransformerMixin):
+class LeaveOutPercent(BaseSplitter):
     """
     Class to train the model using a certain percentage of data as training data
 
@@ -513,13 +513,14 @@ class LeaveOutPercent(BaseEstimator, TransformerMixin):
 
     """
     def __init__(self, percent_leave_out=0.2, n_repeats=5):
+        super(LeaveOutPercent, self).__init__()
         self.percent_leave_out = percent_leave_out
         self.n_repeats = n_repeats
 
     def get_n_splits(self, X=None, y=None, groups=None):
         return self.n_repeats
 
-    def split(self, X, y, groups=None):
+    def split(self, X, y=None, groups=None):
         indices = range(X.shape[0])
         split = list()
         for i in range(self.n_repeats):

@@ -12,6 +12,8 @@ from mastml.data_splitters import NoSplit, SklearnDataSplitter, LeaveCloseCompos
 from mastml.models import SklearnModel
 
 class TestSplitters(unittest.TestCase):
+    '''
+
 
     def test_nosplit(self):
         X = pd.DataFrame(np.random.uniform(low=0.0, high=100, size=(10, 10)))
@@ -52,12 +54,16 @@ class TestSplitters(unittest.TestCase):
         self.assertEqual(train_inds[0].tolist(), list(range(2, 11)))  # 1 is too close
         self.assertEqual(train_inds[1].tolist(), list(range(3, 11)))  # 0 and 2 are too close
         return
-
+    '''
     def test_leaveoutpercent(self):
         X = pd.DataFrame(np.random.uniform(low=0.0, high=100, size=(25, 10)))
         y = pd.Series(np.random.uniform(low=0.0, high=100, size=(25,)))
         splitter = LeaveOutPercent(percent_leave_out=0.20, n_repeats=5)
-        splits = splitter.split(X=X, y=y)
+        model = SklearnModel(model='LinearRegression')
+        splitter.evaluate(X=X, y=y, models=[model], groups=None)
+        for d in splitter.splitdirs:
+            self.assertTrue(os.path.exists(d))
+            shutil.rmtree(d)
         return
 
     def test_bootstrap(self):
