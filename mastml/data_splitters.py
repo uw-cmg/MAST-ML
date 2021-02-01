@@ -27,7 +27,6 @@ except:
 
 import sklearn.model_selection as ms
 from sklearn.utils import check_random_state
-from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.neighbors import NearestNeighbors
 
 from mastml.plots import Histogram, Scatter
@@ -386,7 +385,6 @@ class NoSplit(BaseSplitter):
         indices = np.arange(X.shape[0])
         return [[indices, indices]]
 
-# TODO: add these to new methods
 class JustEachGroup(BaseSplitter):
     """
     Class to train the model on one group at a time and test it on the rest of the data
@@ -430,7 +428,7 @@ class JustEachGroup(BaseSplitter):
             trains_tests.append((train_index, test_index))
         return trains_tests
 
-class LeaveCloseCompositionsOut(ms.BaseCrossValidator):
+class LeaveCloseCompositionsOut(BaseSplitter):
     """
     Leave-P-out where you exclude materials with compositions close to those the test set
 
@@ -442,16 +440,18 @@ class LeaveCloseCompositionsOut(ms.BaseCrossValidator):
     than the features.
 
     Args:
+        composition_df (pd.DataFrame): dataframe containing the vector of material compositions to analyze
         dist_threshold (float): Entries must be farther than this distance to be included in the
             training set
         nn_kwargs (dict): Keyword arguments for the scikit-learn NearestNeighbor class used
             to find nearest points
     """
 
-    def __init__(self, dist_threshold=0.1, nn_kwargs=None):
+    def __init__(self, composition_df, dist_threshold=0.1, nn_kwargs=None):
         super(LeaveCloseCompositionsOut, self).__init__()
         if nn_kwargs is None:
             nn_kwargs = {}
+        self.composition_df = composition_df
         self.dist_threshold = dist_threshold
         self.nn_kwargs = nn_kwargs
 
@@ -459,16 +459,17 @@ class LeaveCloseCompositionsOut(ms.BaseCrossValidator):
 
         # Generate the composition vectors
         frac_computer = ElementFraction()
-        elem_fracs = frac_computer.featurize_many(list(map(Composition, X)), pbar=False)
+        elem_fracs = frac_computer.featurize_many(list(map(Composition, self.composition_df[self.composition_df.columns[0]])), pbar=False)
 
         # Generate the nearest-neighbor lookup tool
         neigh = NearestNeighbors(**self.nn_kwargs)
         neigh.fit(elem_fracs)
 
         # Generate a list of all entries
-        all_inds = np.arange(0, len(X), 1)
+        all_inds = np.arange(0, self.composition_df.shape[0], 1)
 
         # Loop through each entry in X
+        trains_tests = list()
         for i, x in enumerate(elem_fracs):
 
             # Get all the entries within the threshold distance of the test point
@@ -476,8 +477,10 @@ class LeaveCloseCompositionsOut(ms.BaseCrossValidator):
 
             # Get the training set as "not these points"
             train_inds = np.setdiff1d(all_inds, too_close)
+            test_inds = np.setdiff1d(all_inds, train_inds)
 
-            yield train_inds, [i]
+            trains_tests.append((np.asarray(train_inds), np.asarray(test_inds)))
+        return trains_tests
 
     def get_n_splits(self, X=None, y=None, groups=None):
         return len(X)
