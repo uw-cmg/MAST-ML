@@ -9,7 +9,7 @@ import pandas as pd
 from datetime import datetime
 
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.preprocessing import PolynomialFeatures as SklearnPolynomialFeatures
+from sklearn.preprocessing import PolynomialFeatures
 
 try:
     import pymatgen
@@ -86,6 +86,7 @@ class BaseGenerator(BaseEstimator, TransformerMixin):
             splitdir = os.path.join(savepath, dirname)
         if not os.path.exists(splitdir):
             os.mkdir(splitdir)
+        self.splitdir = splitdir
         return splitdir
 
 class ElementalFeatureGenerator(BaseGenerator):
@@ -973,7 +974,7 @@ class ElementalFeatureGenerator(BaseGenerator):
         return element_list, atoms_per_formula_unit
 
 # TODO: update this and below classes to conform to new mastml i/o
-class PolynomialFeatures(BaseEstimator, TransformerMixin):
+class PolynomialFeatureGenerator(BaseEstimator, TransformerMixin):
     """
     Class to generate polynomial features using scikit-learn's polynomial features method
     More info at: http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html
@@ -1009,7 +1010,7 @@ class PolynomialFeatures(BaseEstimator, TransformerMixin):
     """
     def __init__(self, features=None, degree=2, interaction_only=False, include_bias=True):
         self.features = features
-        self.SPF = SklearnPolynomialFeatures(degree, interaction_only, include_bias)
+        self.SPF = PolynomialFeatures(degree, interaction_only, include_bias)
 
     def fit(self, df, y=None):
         if self.features is None:
@@ -1020,10 +1021,10 @@ class PolynomialFeatures(BaseEstimator, TransformerMixin):
 
     def transform(self, df):
         array = df[self.features].values
-        new_features = self.SPF.get_feature_names(self.features)
+        new_features = self.SPF.get_feature_names()
         return pd.DataFrame(self.SPF.transform(array), columns=new_features)
 
-class ContainsElement(BaseEstimator, TransformerMixin):
+class OneHotElementEncoder(BaseEstimator, TransformerMixin):
     """
     Class to generate new categorical features (i.e. values of 1 or 0) based on whether an input composition contains a
     certain designated element
@@ -1058,22 +1059,18 @@ class ContainsElement(BaseEstimator, TransformerMixin):
 
     """
 
-    def __init__(self, composition_feature, element, new_name, all_elements=False):
+    def __init__(self, composition_feature, remove_constant_columns=False):
         self.composition_feature = composition_feature
-        self.element = element
-        self.new_column_name = new_name #f'has_{self.element}'
-        self.all_elements = all_elements
+        self.remove_constant_columns = remove_constant_columns
 
     def fit(self, df, y=None):
         return self
 
     def transform(self, df, y=None):
         compositions = df[self.composition_feature]
-        if self.all_elements == False:
-            has_element = compositions.apply(self._contains_element)
-            df_trans = has_element.to_frame(name=self.new_column_name)
-        elif self.all_elements == True:
-            df_trans = self._contains_all_elements(compositions=compositions)
+        df_trans = self._contains_all_elements(compositions=compositions)
+        if self.remove_constant_columns is True:
+            df_trans = DataframeUtilities().remove_constant_columns(dataframe=df_trans)
         return df_trans
 
     def _contains_element(self, comp):
@@ -1411,3 +1408,10 @@ class DataframeUtilities(object):
         fname = configdict['General Setup']['save_path'] + "/" + 'input_data_statistics_'+data_path_name+'.csv'
         dataframe_stats.to_csv(fname, index=True)
         return fname
+
+    @classmethod
+    def remove_constant_columns(cls, dataframe):
+        nunique = dataframe.apply(pd.Series.nunique)
+        cols_to_drop = nunique[nunique == 1].index
+        dataframe = dataframe.drop(cols_to_drop, axis=1)
+        return dataframe
