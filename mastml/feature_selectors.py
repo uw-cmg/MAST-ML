@@ -275,10 +275,10 @@ class PearsonSelector():
                 dataframe: (dataframe), dataframe of selected X features
 
     """
-    def __init__(self, threshold_between_features, threshold_with_target, remove_highly_correlated_features, k_features):
+    def __init__(self, threshold_between_features, threshold_with_target, flag_highly_correlated_features, k_features):
         self.threshold_between_features = threshold_between_features
         self.threshold_with_target = threshold_with_target
-        self.remove_highly_correlated_features = remove_highly_correlated_features
+        self.flag_highly_correlated_features = flag_highly_correlated_features
         self.k_features = k_features
         self.selected_features = list()
 
@@ -287,7 +287,7 @@ class PearsonSelector():
         df_features = df.columns.tolist()
         n_col = df.shape[1]
 
-        if self.remove_highly_correlated_features == True:
+        if self.flag_highly_correlated_features == True:
             array_data = list()
 
             for i in range(n_col):
@@ -340,7 +340,7 @@ class PearsonSelector():
             for feature in all_features:
                 if feature not in removed_features:
                     removed_features_df = removed_features_df.drop(columns=feature)
-            removed_features_df.to_excel(os.path.join(savepath, "Highly_correlated_features_removed.xlsx"),
+            removed_features_df.to_excel(os.path.join(savepath, "Highly_correlated_features_flagged.xlsx"),
                                          index=False)
 
             # Define self.selected_features
@@ -373,32 +373,13 @@ class PearsonSelector():
         if len(self.selected_features) > self.k_features:
             self.selected_features = list(all_corrs[all_corrs > self.threshold_with_target].sort_values(ascending=False).keys())[:self.k_features]
 
-        # Create a Pandas Excel writer using XlsxWriter as the engine.
-        writer = pd.ExcelWriter(os.path.join(savepath, 'Features_highly_correlated_with_target.xlsx'), engine='xlsxwriter')
 
         # Create the dataframe displaying the highly correlated features and the Pearson Correlations
         hcorr_with_target_df = pd.DataFrame(all_corrs,
                                             index=list(all_corrs[all_corrs > self.threshold_with_target].sort_values(
                                                 ascending=False).keys()),
                                             columns=["Pearson Correlation (absolute value)"])
-        hcorr_with_target_df.to_excel(writer, sheet_name='Sheet1', index=True)
-        hcorr_with_target_features = list(hcorr_with_target_df.index)
-
-        # Create dataframe containing the highly correlated features
-        all_features = list(df.columns)
-        for feature in all_features:
-            if not feature in hcorr_with_target_features:
-                df = df.drop(columns=feature)
-
-        # Reorder the dataframe by columns (by their correlation to the target feature)
-        df = df.reindex(columns=hcorr_with_target_features)
-
-        # Print the dataframe to a spreadsheet
-        df.to_excel(writer, sheet_name='Sheet2',
-                    index=False)  # From left to right, the strength of correlation decreases.
-
-        # Close the Pandas Excel writer and output the Excel file.
-        writer.save()
+        hcorr_with_target_df.to_excel(os.path.join(savepath, 'Features_highly_correlated_with_target.xlsx'))
 
         return self
 
