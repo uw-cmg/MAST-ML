@@ -168,8 +168,7 @@ class BaseSplitter(ms.BaseCrossValidator):
 
                     X_train = Xs[0]
                     X_test = Xs[1]
-                    y_train = ys[0]
-                    #y_test = pd.DataFrame(np.array(ys[1]), columns=['y_test']) # Make it so the y_test and y_pred have same indices so can be subtracted to get residuals
+                    y_train = pd.Series(np.array(ys[0]).ravel(), name='y_train')
                     y_test = pd.Series(np.array(ys[1]).ravel(), name='y_test')  # Make it so the y_test and y_pred have same indices so can be subtracted to get residuals
                     # make the individual split directory
                     splitpath = os.path.join(splitdir, 'split_' + str(split_count))
@@ -528,7 +527,7 @@ class LeaveOutPercent(BaseSplitter):
             split.append((trains, tests))
         return split
 
-class Bootstrap(object):
+class Bootstrap(BaseSplitter):
     """
     # Note: Bootstrap taken directly from sklearn Github (https://github.com/scikit-learn/scikit-learn/blob/0.11.X/sklearn/cross_validation.py)
     # which was necessary as it was later removed from more recent sklearn releases
@@ -573,6 +572,7 @@ class Bootstrap(object):
 
     def __init__(self, n, n_bootstraps=3, train_size=.5, test_size=None,
                  n_train=None, n_test=None, random_state=0):
+        super(Bootstrap, self).__init__()
         self.n = n
         self.n_bootstraps = n_bootstraps
         if n_train is not None:
@@ -645,7 +645,7 @@ class Bootstrap(object):
     def get_n_splits(self, X=None, y=None, groups=None):
         return self.__len__()
 
-    def split(self, X, y, groups=None):
+    def split(self, X, y=None, groups=None):
         indices = range(X.shape[0])
         split = list()
         for trains, tests in self:
