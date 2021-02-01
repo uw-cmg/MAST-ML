@@ -1099,7 +1099,7 @@ class OneHotElementEncoder(BaseEstimator, TransformerMixin):
             df_trans[self.new_column_name] = has_element
         return df_trans
 
-class MaterialsProject(BaseEstimator, TransformerMixin):
+class MaterialsProjectFeatureGenerator(BaseEstimator, TransformerMixin):
     """
     Class that wraps MaterialsProjectFeatureGeneration, giving it scikit-learn structure
 
