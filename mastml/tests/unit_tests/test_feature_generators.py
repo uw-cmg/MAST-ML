@@ -10,6 +10,8 @@ from mastml.feature_generators import ElementalFeatureGenerator, PolynomialFeatu
     OneHotElementEncoder, MaterialsProjectFeatureGenerator
 
 class TestGenerators(unittest.TestCase):
+    '''
+
 
     def test_elemental(self):
         composition_df = pd.DataFrame({'composition': ['NaCl', 'Al2O3', 'Mg', 'SrTiO3', 'C']})
@@ -46,14 +48,16 @@ class TestGenerators(unittest.TestCase):
         self.assertTrue(os.path.exists(generator.splitdir))
         shutil.rmtree(generator.splitdir)
         return
-
+    '''
     def test_materialsproject(self):
-        X = {'composition': ['Al2O3', 'SrTiO3']}
-        X = pd.DataFrame(X)
+        composition_df = pd.DataFrame({'composition': ['Al2O3', 'SrTiO3']})
+        X = pd.DataFrame(np.random.uniform(low=0.0, high=100, size=(2,10)))
         y = pd.Series(np.random.uniform(low=0.0, high=100, size=(2,)))
-        generator = MaterialsProjectFeatureGenerator(composition_feature='composition', api_key='TtAHFCrZhQa7cwEy')
-        Xgenerated = generator.fit_transform(X=X, y=y)
-        self.assertEqual(Xgenerated.shape, (2,21))
+        generator = MaterialsProjectFeatureGenerator(composition_df=composition_df, api_key='TtAHFCrZhQa7cwEy')
+        Xgenerated, y = generator.evaluate(X=X, y=y, savepath=os.getcwd())
+        self.assertEqual(Xgenerated.shape, (2,31))
+        self.assertTrue(os.path.exists(generator.splitdir))
+        shutil.rmtree(generator.splitdir)
         return
 
 if __name__=='__main__':

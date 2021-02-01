@@ -1106,13 +1106,13 @@ class OneHotElementEncoder(BaseGenerator):
             df_trans[self.new_column_name] = has_element
         return df_trans
 
-class MaterialsProjectFeatureGenerator(BaseEstimator, TransformerMixin):
+class MaterialsProjectFeatureGenerator(BaseGenerator):
     """
     Class that wraps MaterialsProjectFeatureGeneration, giving it scikit-learn structure
 
     Args:
 
-        composition_feature: (str), string denoting a chemical composition to generate elemental features from
+        composition_df: (pd.DataFrame), dataframe containing vector of chemical compositions (strings) to generate elemental features from
 
         mapi_key: (str), string denoting your Materials Project API key
 
@@ -1136,27 +1136,30 @@ class MaterialsProjectFeatureGenerator(BaseEstimator, TransformerMixin):
 
     """
 
-    def __init__(self, composition_feature, api_key):
-        self.composition_feature = composition_feature
+    def __init__(self, composition_df, api_key):
+        super(MaterialsProjectFeatureGenerator, self).__init__()
+        self.composition_df = composition_df
         self.api_key = api_key
+        self.composition_feature = self.composition_df.columns[0]
 
-    def fit(self, df, y=None):
-        self.original_features = df.columns
+    def fit(self, X, y=None):
+        self.original_features = X.columns
+        self.y = y
         return self
 
-    def transform(self, df):
+    def transform(self, X):
         # make materials project api call (uses internet)
-        df = self.generate_materialsproject_features(df=df)
+        df = self.generate_materialsproject_features(X=X)
 
-        df = df.drop(self.original_features, axis=1)
+        #df = df.drop(self.original_features, axis=1)
         # delete missing values, generation makes a lot of garbage.
         df = DataframeUtilities().clean_dataframe(df)
-        assert self.composition_feature not in df.columns
-        return df
+        #assert self.composition_feature not in df.columns
+        return df, self.y
 
-    def generate_materialsproject_features(self, df):
+    def generate_materialsproject_features(self, X):
         try:
-            compositions = df[self.composition_feature]
+            compositions = self.composition_df[self.composition_feature]
         except KeyError as e:
             raise ValueError(f'No column named {self.composition_feature} in csv file')
 
@@ -1166,17 +1169,16 @@ class MaterialsProjectFeatureGenerator(BaseEstimator, TransformerMixin):
 
         mpdata_dict_composition.update(dict(zip(compositions, comp_data_mp)))
 
-        dataframe = df
         dataframe_mp = pd.DataFrame.from_dict(data=mpdata_dict_composition, orient='index')
         # Need to reorder compositions in new dataframe to match input dataframe
-        dataframe_mp = dataframe_mp.reindex(df[self.composition_feature].tolist())
+        dataframe_mp = dataframe_mp.reindex(self.composition_df[self.composition_feature].tolist())
         # Need to make compositions the first column, instead of the row names
         dataframe_mp.index.name = self.composition_feature
         dataframe_mp.reset_index(inplace=True)
         # Need to delete duplicate column before merging dataframes
         del dataframe_mp[self.composition_feature]
         # Merge magpie feature dataframe with originally supplied dataframe
-        dataframe = DataframeUtilities().merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_mp)
+        dataframe = DataframeUtilities().merge_dataframe_columns(dataframe1=X, dataframe2=dataframe_mp)
         return dataframe
 
     def _get_data_from_materials_project(self, composition):
