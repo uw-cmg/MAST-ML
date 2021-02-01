@@ -76,12 +76,16 @@ class TestSplitters(unittest.TestCase):
         return
 
     def test_justeachgroup(self):
-        X = {'composition': ['NaCl', 'Al2O3', 'Mg', 'SrTiO3', 'Al'],
-             'groups':['chloride', 'oxide', 'metal', 'oxide', 'metal']}
-        X = pd.DataFrame(X)
+        X = pd.DataFrame(np.random.uniform(low=0.0, high=100, size=(5,10)))
         y = pd.Series(np.random.uniform(low=0.0, high=100, size=(5,)))
+        groups = pd.DataFrame.from_dict({'groups':[0, 1, 1, 0, 1]})
+        X = pd.concat([X, groups], axis=1)
         splitter = JustEachGroup()
-        splits = splitter.split(X=X, y=y, groups=X['groups'])
+        model = SklearnModel(model='LinearRegression')
+        splitter.evaluate(X=X, y=y, models=[model], groups=X['groups'])
+        for d in splitter.splitdirs:
+            self.assertTrue(os.path.exists(d))
+            shutil.rmtree(d)
         return
 
 if __name__=='__main__':

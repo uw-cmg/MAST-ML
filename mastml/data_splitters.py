@@ -387,7 +387,7 @@ class NoSplit(BaseSplitter):
         return [[indices, indices]]
 
 # TODO: add these to new methods
-class JustEachGroup(BaseEstimator, TransformerMixin):
+class JustEachGroup(BaseSplitter):
     """
     Class to train the model on one group at a time and test it on the rest of the data
     This class wraps scikit-learn's LeavePGroupsOut with P set to n-1. More information is available at:
@@ -417,7 +417,7 @@ class JustEachGroup(BaseEstimator, TransformerMixin):
 
     """
     def __init__(self):
-        pass
+        super(JustEachGroup, self).__init__()
 
     def get_n_splits(self, X=None, y=None, groups=None):
         return np.unique(groups).shape[0]
