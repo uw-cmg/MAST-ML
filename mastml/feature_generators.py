@@ -1026,7 +1026,7 @@ class PolynomialFeatureGenerator(BaseGenerator, TransformerMixin):
         new_features = self.SPF.get_feature_names()
         return pd.DataFrame(self.SPF.transform(array), columns=new_features), self.y
 
-class OneHotElementEncoder(BaseEstimator, TransformerMixin):
+class OneHotElementEncoder(BaseGenerator):
     """
     Class to generate new categorical features (i.e. values of 1 or 0) based on whether an input composition contains a
     certain designated element
@@ -1061,19 +1061,22 @@ class OneHotElementEncoder(BaseEstimator, TransformerMixin):
 
     """
 
-    def __init__(self, composition_feature, remove_constant_columns=False):
-        self.composition_feature = composition_feature
+    def __init__(self, composition_df, remove_constant_columns=False):
+        super(OneHotElementEncoder, self).__init__()
+        self.composition_df = composition_df
         self.remove_constant_columns = remove_constant_columns
 
-    def fit(self, df, y=None):
+    def fit(self, X, y=None):
+        self.y = y
         return self
 
-    def transform(self, df, y=None):
-        compositions = df[self.composition_feature]
-        df_trans = self._contains_all_elements(compositions=compositions)
+    def transform(self, X, y=None):
+        compositions = self.composition_df[self.composition_df.columns[0]]
+        X_trans = self._contains_all_elements(compositions=compositions)
         if self.remove_constant_columns is True:
-            df_trans = DataframeUtilities().remove_constant_columns(dataframe=df_trans)
-        return df_trans
+            X_trans = DataframeUtilities().remove_constant_columns(dataframe=X_trans)
+        X_trans = pd.concat([X, X_trans], axis=1)
+        return X_trans, self.y
 
     def _contains_element(self, comp):
         """

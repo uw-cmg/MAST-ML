@@ -33,15 +33,18 @@ class TestGenerators(unittest.TestCase):
         return
 
     def test_onehotelement(self):
-        X = {'composition': ['Al2O3', 'SrTiO3']}
-        X = pd.DataFrame(X)
+        composition_df = pd.DataFrame({'composition': ['Al2O3', 'SrTiO3']})
+        X = pd.DataFrame(np.random.uniform(low=0.0, high=100, size=(2,10)))
         y = pd.Series(np.random.uniform(low=0.0, high=100, size=(2,)))
-        generator = OneHotElementEncoder(composition_feature='composition', remove_constant_columns=False)
-        Xgenerated = generator.fit_transform(X=X, y=y)
-        self.assertEqual(Xgenerated.shape, (2, 4))
-        generator = OneHotElementEncoder(composition_feature='composition', remove_constant_columns=True)
-        Xgenerated = generator.fit_transform(X=X, y=y)
-        self.assertEqual(Xgenerated.shape, (2, 3))
+        generator = OneHotElementEncoder(composition_df=composition_df, remove_constant_columns=False)
+        Xgenerated, y = generator.fit_transform(X=X, y=y)
+        self.assertEqual(Xgenerated.shape, (2, 14))
+        generator = OneHotElementEncoder(composition_df=composition_df, remove_constant_columns=True)
+        Xgenerated, y = generator.fit_transform(X=X, y=y)
+        self.assertEqual(Xgenerated.shape, (2, 13))
+        Xgenerated, y = generator.evaluate(X=X, y=y, savepath=os.getcwd())
+        self.assertTrue(os.path.exists(generator.splitdir))
+        shutil.rmtree(generator.splitdir)
         return
 
     def test_materialsproject(self):
