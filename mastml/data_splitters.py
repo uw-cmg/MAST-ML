@@ -147,10 +147,12 @@ class BaseSplitter(ms.BaseCrossValidator):
         if not savepath:
             savepath = os.getcwd()
 
+        self.splitdirs = list()
         for model in models:
 
             for selector in selectors:
                 splitdir = self._setup_savedir(model=model, selector=selector, savepath=savepath)
+                self.splitdirs.append(splitdir)
 
                 # Here loop over hyperopt methods if provided, include in save dir name above
                 #
@@ -423,9 +425,11 @@ class JustEachGroup(BaseEstimator, TransformerMixin):
 
     def split(self, X, y, groups):
         n_groups = self.get_n_splits(groups=groups)
-        #print('n_groups', n_groups)
         lpgo = ms.LeavePGroupsOut(n_groups=n_groups-1)
-        return lpgo.split(X, y, groups)
+        trains_tests = list()
+        for train_index, test_index in lpgo.split(X, y, groups):
+            trains_tests.append((train_index, test_index))
+        return trains_tests
 
 class LeaveCloseCompositionsOut(ms.BaseCrossValidator):
     """
