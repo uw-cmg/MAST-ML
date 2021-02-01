@@ -13,13 +13,12 @@ import joblib
 
 from sklearn.base import BaseEstimator, TransformerMixin
 
-class SklearnPreprocessor(BaseEstimator, TransformerMixin):
+class BasePreprocessor(BaseEstimator, TransformerMixin):
     """
-    Class to wrap any scikit-learn preprocessor, e.g. StandardScaler
+    Base class to provide new methods beyond sklearn fit_transform, such as dataframe support and directory management
 
     Args:
-        preprocessor (str): name of a sklearn.preprocessor object, e.g. StandardScaler
-        kwargs : key word arguments for the sklearn.preprocessor object
+        preprocessor : a sklearn.preprocessor object, e.g. StandardScaler or mastml.preprocessing object
 
     Methods:
 
@@ -60,9 +59,8 @@ class SklearnPreprocessor(BaseEstimator, TransformerMixin):
             Returns:
                 splitdir: (str), string containing the new subdirectory to save results to
     """
-    def __init__(self, preprocessor, as_frame=False, **kwargs):
-        super(SklearnPreprocessor, self).__init__()
-        self.preprocessor = getattr(sklearn.preprocessing, preprocessor)(**kwargs)
+    def __init__(self, preprocessor, as_frame=False):
+        self.preprocessor = preprocessor
         self.as_frame = as_frame
 
     def fit_transform(self, X, y=None, **fit_params):
@@ -110,9 +108,25 @@ class SklearnPreprocessor(BaseEstimator, TransformerMixin):
             os.mkdir(splitdir)
         return splitdir
 
+class SklearnPreprocessor(BasePreprocessor):
+    """
+    Class to wrap any scikit-learn preprocessor, e.g. StandardScaler
 
-# TODO: add this into new method
-class MeanStdevScaler(BaseEstimator, TransformerMixin):
+    Args:
+        preprocessor (str): name of a sklearn.preprocessor object, e.g. StandardScaler
+        as_frame (bool): whether to return data as a dataframe
+        kwargs : key word arguments for the sklearn.preprocessor object
+
+    Methods:
+
+        See documentation of BasePreprocessor
+    """
+    def __init__(self, preprocessor, as_frame=False, **kwargs):
+        super(SklearnPreprocessor, self).__init__(preprocessor=preprocessor)
+        self.preprocessor = getattr(sklearn.preprocessing, preprocessor)(**kwargs)
+        self.as_frame = as_frame
+
+class MeanStdevScaler(BasePreprocessor):
     """
     Class designed to normalize input data to a specified mean and standard deviation
 
@@ -156,31 +170,22 @@ class MeanStdevScaler(BaseEstimator, TransformerMixin):
 
     """
 
-    def __init__(self, features=None, mean=0, stdev=1):
-        self.features = features
+    def __init__(self, mean=0, stdev=1, as_frame=False):
+        super(MeanStdevScaler, self).__init__(preprocessor=self, as_frame=as_frame)
         self.mean = mean
         self.stdev = stdev
 
-    def fit(self, df, y=None):
-        if self.features is None:
-            self.features = df.columns
-        self.old_mean  = df[self.features].values.mean()
-        self.old_stdev = df[self.features].values.std()
-        return self
-
-    def transform(self, df):
-        array = df[self.features].values
-        array = ((array - self.old_mean) / self.old_stdev) * self.stdev + self.mean
-        same = df.drop(columns=self.features)
-        changed = pd.DataFrame(array, columns=self.features, index=df.index) # don't forget index!!
-        return pd.concat([same, changed], axis=1)
-
-    def inverse_transform(self, df):
-        array = df[self.features].values
-        array = ((array - self.mean) / self.stdev) * self.old_stdev + self.old_mean
-        same = df.drop(columns=self.features)
-        changed = pd.DataFrame(array, columns=self.features, index=df.index)
-        return pd.concat([same, changed], axis=1)
+    def fit_transform(self, X, y=None, **fit_params):
+        self.features = X.columns.tolist()
+        X_trans = list()
+        for feature in self.features:
+            array = X[feature].values
+            mean = X[feature].mean()
+            stdev = X[feature].std()
+            array = ((array - mean) / stdev) * self.stdev + self.mean
+            X_trans.append(array)
+        X_trans = pd.DataFrame(np.array(X_trans).T, columns=self.features, index=X.index)
+        return X_trans
 
 
 
