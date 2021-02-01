@@ -1,8 +1,39 @@
-from mastml.legos.data_splitters import LeaveCloseCompositionsOut
-from unittest import TestCase
+import unittest
+import pandas as pd
+import numpy as np
+import os
+import shutil
+import sys
 
+sys.path.insert(0, os.path.abspath('../../../'))
 
-class TestSplitters(TestCase):
+from mastml.data_splitters import NoSplit, SklearnDataSplitter, LeaveCloseCompositionsOut, LeaveOutPercent, \
+    Bootstrap, JustEachGroup
+from mastml.models import SklearnModel
+
+class TestSplitters(unittest.TestCase):
+
+    def test_nosplit(self):
+        X = pd.DataFrame(np.random.uniform(low=0.0, high=100, size=(10, 10)))
+        y = pd.Series(np.random.uniform(low=0.0, high=100, size=(10,)))
+        model = SklearnModel(model='LinearRegression')
+        splitter = NoSplit()
+        splitter.evaluate(X=X, y=y, models=[model], savepath=os.getcwd())
+        for d in splitter.splitdirs:
+            self.assertTrue(os.path.exists(d))
+            shutil.rmtree(d)
+        return
+
+    def test_sklearnsplitter(self):
+        X = pd.DataFrame(np.random.uniform(low=0.0, high=100, size=(10, 10)))
+        y = pd.Series(np.random.uniform(low=0.0, high=100, size=(10,)))
+        model = SklearnModel(model='LinearRegression')
+        splitter = SklearnDataSplitter(splitter='KFold', shuffle=True, n_splits=5)
+        splitter.evaluate(X=X, y=y, models=[model], savepath=os.getcwd())
+        for d in splitter.splitdirs:
+            self.assertTrue(os.path.exists(d))
+            shutil.rmtree(d)
+        return
 
     def test_close_comps(self):
         # Make entries at a 10% spacing
@@ -20,3 +51,30 @@ class TestSplitters(TestCase):
         train_inds, test_inds = zip(*splitter.split(X))
         self.assertEqual(train_inds[0].tolist(), list(range(2, 11)))  # 1 is too close
         self.assertEqual(train_inds[1].tolist(), list(range(3, 11)))  # 0 and 2 are too close
+        return
+
+    def test_leaveoutpercent(self):
+        X = pd.DataFrame(np.random.uniform(low=0.0, high=100, size=(25, 10)))
+        y = pd.Series(np.random.uniform(low=0.0, high=100, size=(25,)))
+        splitter = LeaveOutPercent(percent_leave_out=0.20, n_repeats=5)
+        splits = splitter.split(X=X, y=y)
+        return
+
+    def test_bootstrap(self):
+        X = pd.DataFrame(np.random.uniform(low=0.0, high=100, size=(25, 10)))
+        y = pd.Series(np.random.uniform(low=0.0, high=100, size=(25,)))
+        splitter = Bootstrap(n=25, n_bootstraps=3, train_size=0.5)
+        splits = splitter.split(X=X, y=y)
+        return
+
+    def test_justeachgroup(self):
+        X = {'composition': ['NaCl', 'Al2O3', 'Mg', 'SrTiO3', 'Al'],
+             'groups':['chloride', 'oxide', 'metal', 'oxide', 'metal']}
+        X = pd.DataFrame(X)
+        y = pd.Series(np.random.uniform(low=0.0, high=100, size=(5,)))
+        splitter = JustEachGroup()
+        splits = splitter.split(X=X, y=y, groups=X['groups'])
+        return
+
+if __name__=='__main__':
+    unittest.main()
