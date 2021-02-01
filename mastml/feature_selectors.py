@@ -15,6 +15,7 @@ import copy
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.decomposition import PCA
 import sklearn.feature_selection as fs
+from sklearn.model_selection import KFold
 
 from mlxtend.feature_selection import SequentialFeatureSelector
 
@@ -85,6 +86,7 @@ def fitify_just_use_values(fit):
     return new_fit
 
 #TODO: need to clean this up and add ScikitlearnSelector wrapper. Will also include SequentialFeatureSelector in latest sklearn version
+#TODO: update PearsonSelector and MASTMLFeatureSelector to conform to new style with evaluate() method
 
 score_func_selectors = {
     'GenericUnivariateSelect': fs.GenericUnivariateSelect, # Univariate feature selector with configurable strategy.
@@ -449,13 +451,16 @@ class MASTMLFeatureSelector():
 
     def __init__(self, estimator, n_features_to_select, cv, manually_selected_features=list()):
         self.estimator = estimator
-        self.n_features_to_select = n_features_to_select
-        self.cv = cv
+        if cv is None:
+            self.cv = KFold(shuffle=True, n_splits=5)
+        else:
+            self.cv = cv
         self.manually_selected_features = manually_selected_features
         self.selected_feature_names = self.manually_selected_features
+        self.n_features_to_select = n_features_to_select-len(self.manually_selected_features)
 
     def fit(self, X, y, savepath, Xgroups=None):
-        if Xgroups.shape[0] == 0:
+        if Xgroups is None:
             xgroups = np.zeros(len(y))
             Xgroups = pd.DataFrame(xgroups)
 
@@ -467,8 +472,6 @@ class MASTMLFeatureSelector():
         if self.n_features_to_select >= len(x_features):
             self.n_features_to_select = len(x_features)
         while num_features_selected < self.n_features_to_select:
-            print('On number of features selected')
-            print(str(num_features_selected))
 
             # Catch pandas warnings here
             with warnings.catch_warnings():
