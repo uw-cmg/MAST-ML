@@ -198,7 +198,10 @@ class FigshareDatasets():
         fs = Figshare()
         fs.retrieve_files_from_article(article_id)
         if savepath:
-            shutil.move(os.path.join(os.getcwd(), 'figshare_'+str(article_id)), savepath)
+            try:
+                shutil.move(os.path.join(os.getcwd(), 'figshare_'+str(article_id)), savepath)
+            except shutil.Error:
+                print('Warning: could not move downloaded data to specified savepath, maybe because savepath is the current working directory')
         return
 
 class FoundryDatasets():
@@ -348,6 +351,7 @@ class DataCleaning():
         if not savepath:
             savepath = os.getcwd()
         splitdir = self._setup_savedir(savepath=savepath)
+        self.splitdir = splitdir
         DataUtilities().flag_columns_with_strings(X=X, y=y, savepath=splitdir)
         DataUtilities().flag_outliers(X=X, y=y, savepath=splitdir, n_stdevs=3)
         df_orig = pd.concat([X, y], axis=1)
