@@ -9,7 +9,7 @@ import pandas as pd
 from datetime import datetime
 
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.preprocessing import PolynomialFeatures as SklearnPolynomialFeatures
+from sklearn.preprocessing import PolynomialFeatures
 
 try:
     import pymatgen
@@ -86,6 +86,7 @@ class BaseGenerator(BaseEstimator, TransformerMixin):
             splitdir = os.path.join(savepath, dirname)
         if not os.path.exists(splitdir):
             os.mkdir(splitdir)
+        self.splitdir = splitdir
         return splitdir
 
 class ElementalFeatureGenerator(BaseGenerator):
@@ -94,9 +95,11 @@ class ElementalFeatureGenerator(BaseGenerator):
 
     Args:
 
-        composition_feature: (str), string denoting a chemical composition to generate elemental features from
+        composition_df: (pd.DataFrame), dataframe containing vector of chemical compositions (strings) to generate elemental features from
 
         feature_types: (list), list of strings denoting which elemental feature types to include in the final feature matrix.
+
+        remove_constant_columns: (bool), whether to remove constant columns from the generated feature set
 
     Methods:
 
@@ -120,10 +123,11 @@ class ElementalFeatureGenerator(BaseGenerator):
                 y: (series), output y data as series
     """
 
-    def __init__(self, composition_feature, feature_types=None):
+    def __init__(self, composition_df, feature_types=None, remove_constant_columns=False):
         super(BaseGenerator, self).__init__()
-        self.composition_feature = composition_feature
+        self.composition_df = composition_df
         self.feature_types = feature_types
+        self.remove_constant_columns = remove_constant_columns
         if self.feature_types is None:
             self.feature_types = ['composition_avg', 'arithmetic_avg', 'max', 'min', 'difference']
 
@@ -139,17 +143,16 @@ class ElementalFeatureGenerator(BaseGenerator):
         df = self.generate_magpie_features()
 
         # remove original features. Don't necessarily want to do this?
-        df = df.drop(self.original_features, axis=1)
+        #df = df.drop(self.original_features, axis=1)
 
         # delete missing values, generation makes a lot of garbage.
         df = DataframeUtilities().clean_dataframe(df)
         df = df.select_dtypes(['number']).dropna(axis=1)
 
-        # TODO: remove constant columns ??
-        #
-        #
+        if self.remove_constant_columns is True:
+            df = DataframeUtilities().remove_constant_columns(dataframe=df)
 
-        assert self.composition_feature not in df.columns
+        #assert self.composition_df[self.composition_df.columns[0]] not in df.columns
         X = df[sorted(df.columns.tolist())]
         return X, self.y
 
@@ -157,7 +160,7 @@ class ElementalFeatureGenerator(BaseGenerator):
         # Replace empty composition fields with empty string instead of NaN
         self.df = self.df.fillna('')
 
-        compositions_raw = self.df[self.composition_feature].tolist()
+        compositions_raw = self.composition_df[self.composition_df.columns[0]].tolist()
         # Check first entry of comps to find [] for delimiting different sublattices
         has_sublattices = False
         if '[' in compositions_raw[0]:
@@ -194,7 +197,7 @@ class ElementalFeatureGenerator(BaseGenerator):
             raise ValueError('Error! No material compositions column found in your input data file. To use this feature generation routine, you must supply a material composition for each data point')
 
         # Add the column of combined material compositions into the dataframe
-        self.df[self.composition_feature] = compositions
+        self.composition_df[self.composition_df.columns[0]] = compositions
 
         # Assign each magpiedata feature set to appropriate composition name
         magpiedata_dict_composition_average = {}
@@ -520,9 +523,9 @@ class ElementalFeatureGenerator(BaseGenerator):
         for magpiedata_dict in magpiedata_dict_list_toinclude:
             df_magpie = pd.DataFrame.from_dict(data=magpiedata_dict, orient='index')
             # Need to reorder compositions in new dataframe to match input dataframe
-            df_magpie = df_magpie.reindex(self.df[self.composition_feature].tolist())
+            df_magpie = df_magpie.reindex(self.composition_df[self.composition_df.columns[0]].tolist())
             # Need to make compositions the first column, instead of the row names
-            df_magpie.index.name = self.composition_feature
+            df_magpie.index.name = self.composition_df.columns[0]
             df_magpie.reset_index(inplace=True)
             # Merge magpie feature dataframe with originally supplied dataframe
             df = DataframeUtilities().merge_dataframe_columns(dataframe1=df, dataframe2=df_magpie)
@@ -973,7 +976,7 @@ class ElementalFeatureGenerator(BaseGenerator):
         return element_list, atoms_per_formula_unit
 
 # TODO: update this and below classes to conform to new mastml i/o
-class PolynomialFeatures(BaseEstimator, TransformerMixin):
+class PolynomialFeatureGenerator(BaseGenerator):
     """
     Class to generate polynomial features using scikit-learn's polynomial features method
     More info at: http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html
@@ -1008,22 +1011,24 @@ class PolynomialFeatures(BaseEstimator, TransformerMixin):
 
     """
     def __init__(self, features=None, degree=2, interaction_only=False, include_bias=True):
+        super(PolynomialFeatureGenerator, self).__init__()
         self.features = features
-        self.SPF = SklearnPolynomialFeatures(degree, interaction_only, include_bias)
+        self.SPF = PolynomialFeatures(degree, interaction_only, include_bias)
 
-    def fit(self, df, y=None):
+    def fit(self, X, y=None):
+        self.y = y
         if self.features is None:
-            self.features = df.columns
-        array = df[self.features].values
+            self.features = X.columns
+        array = X[self.features].values
         self.SPF.fit(array)
         return self
 
-    def transform(self, df):
-        array = df[self.features].values
-        new_features = self.SPF.get_feature_names(self.features)
-        return pd.DataFrame(self.SPF.transform(array), columns=new_features)
+    def transform(self, X):
+        array = X[self.features].values
+        new_features = self.SPF.get_feature_names()
+        return pd.DataFrame(self.SPF.transform(array), columns=new_features), self.y
 
-class ContainsElement(BaseEstimator, TransformerMixin):
+class OneHotElementEncoder(BaseGenerator):
     """
     Class to generate new categorical features (i.e. values of 1 or 0) based on whether an input composition contains a
     certain designated element
@@ -1058,23 +1063,22 @@ class ContainsElement(BaseEstimator, TransformerMixin):
 
     """
 
-    def __init__(self, composition_feature, element, new_name, all_elements=False):
-        self.composition_feature = composition_feature
-        self.element = element
-        self.new_column_name = new_name #f'has_{self.element}'
-        self.all_elements = all_elements
+    def __init__(self, composition_df, remove_constant_columns=False):
+        super(OneHotElementEncoder, self).__init__()
+        self.composition_df = composition_df
+        self.remove_constant_columns = remove_constant_columns
 
-    def fit(self, df, y=None):
+    def fit(self, X, y=None):
+        self.y = y
         return self
 
-    def transform(self, df, y=None):
-        compositions = df[self.composition_feature]
-        if self.all_elements == False:
-            has_element = compositions.apply(self._contains_element)
-            df_trans = has_element.to_frame(name=self.new_column_name)
-        elif self.all_elements == True:
-            df_trans = self._contains_all_elements(compositions=compositions)
-        return df_trans
+    def transform(self, X, y=None):
+        compositions = self.composition_df[self.composition_df.columns[0]]
+        X_trans = self._contains_all_elements(compositions=compositions)
+        if self.remove_constant_columns is True:
+            X_trans = DataframeUtilities().remove_constant_columns(dataframe=X_trans)
+        X_trans = pd.concat([X, X_trans], axis=1)
+        return X_trans, self.y
 
     def _contains_element(self, comp):
         """
@@ -1102,13 +1106,13 @@ class ContainsElement(BaseEstimator, TransformerMixin):
             df_trans[self.new_column_name] = has_element
         return df_trans
 
-class MaterialsProject(BaseEstimator, TransformerMixin):
+class MaterialsProjectFeatureGenerator(BaseGenerator):
     """
     Class that wraps MaterialsProjectFeatureGeneration, giving it scikit-learn structure
 
     Args:
 
-        composition_feature: (str), string denoting a chemical composition to generate elemental features from
+        composition_df: (pd.DataFrame), dataframe containing vector of chemical compositions (strings) to generate elemental features from
 
         mapi_key: (str), string denoting your Materials Project API key
 
@@ -1132,27 +1136,30 @@ class MaterialsProject(BaseEstimator, TransformerMixin):
 
     """
 
-    def __init__(self, composition_feature, api_key):
-        self.composition_feature = composition_feature
+    def __init__(self, composition_df, api_key):
+        super(MaterialsProjectFeatureGenerator, self).__init__()
+        self.composition_df = composition_df
         self.api_key = api_key
+        self.composition_feature = self.composition_df.columns[0]
 
-    def fit(self, df, y=None):
-        self.original_features = df.columns
+    def fit(self, X, y=None):
+        self.original_features = X.columns
+        self.y = y
         return self
 
-    def transform(self, df):
+    def transform(self, X):
         # make materials project api call (uses internet)
-        df = self.generate_materialsproject_features(df=df)
+        df = self.generate_materialsproject_features(X=X)
 
-        df = df.drop(self.original_features, axis=1)
+        #df = df.drop(self.original_features, axis=1)
         # delete missing values, generation makes a lot of garbage.
         df = DataframeUtilities().clean_dataframe(df)
-        assert self.composition_feature not in df.columns
-        return df
+        #assert self.composition_feature not in df.columns
+        return df, self.y
 
-    def generate_materialsproject_features(self, df):
+    def generate_materialsproject_features(self, X):
         try:
-            compositions = df[self.composition_feature]
+            compositions = self.composition_df[self.composition_feature]
         except KeyError as e:
             raise ValueError(f'No column named {self.composition_feature} in csv file')
 
@@ -1162,17 +1169,16 @@ class MaterialsProject(BaseEstimator, TransformerMixin):
 
         mpdata_dict_composition.update(dict(zip(compositions, comp_data_mp)))
 
-        dataframe = df
         dataframe_mp = pd.DataFrame.from_dict(data=mpdata_dict_composition, orient='index')
         # Need to reorder compositions in new dataframe to match input dataframe
-        dataframe_mp = dataframe_mp.reindex(df[self.composition_feature].tolist())
+        dataframe_mp = dataframe_mp.reindex(self.composition_df[self.composition_feature].tolist())
         # Need to make compositions the first column, instead of the row names
         dataframe_mp.index.name = self.composition_feature
         dataframe_mp.reset_index(inplace=True)
         # Need to delete duplicate column before merging dataframes
         del dataframe_mp[self.composition_feature]
         # Merge magpie feature dataframe with originally supplied dataframe
-        dataframe = DataframeUtilities().merge_dataframe_columns(dataframe1=dataframe, dataframe2=dataframe_mp)
+        dataframe = DataframeUtilities().merge_dataframe_columns(dataframe1=X, dataframe2=dataframe_mp)
         return dataframe
 
     def _get_data_from_materials_project(self, composition):
@@ -1411,3 +1417,10 @@ class DataframeUtilities(object):
         fname = configdict['General Setup']['save_path'] + "/" + 'input_data_statistics_'+data_path_name+'.csv'
         dataframe_stats.to_csv(fname, index=True)
         return fname
+
+    @classmethod
+    def remove_constant_columns(cls, dataframe):
+        nunique = dataframe.apply(pd.Series.nunique)
+        cols_to_drop = nunique[nunique == 1].index
+        dataframe = dataframe.drop(cols_to_drop, axis=1)
+        return dataframe

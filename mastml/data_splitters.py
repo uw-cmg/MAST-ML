@@ -27,7 +27,6 @@ except:
 
 import sklearn.model_selection as ms
 from sklearn.utils import check_random_state
-from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.neighbors import NearestNeighbors
 
 from mastml.plots import Histogram, Scatter
@@ -149,10 +148,12 @@ class BaseSplitter(ms.BaseCrossValidator):
         if not savepath:
             savepath = os.getcwd()
 
+        self.splitdirs = list()
         for model in models:
 
             for selector in selectors:
                 splitdir = self._setup_savedir(model=model, selector=selector, savepath=savepath)
+                self.splitdirs.append(splitdir)
 
                 # Here loop over hyperopt methods if provided, include in save dir name above
                 #
@@ -168,8 +169,7 @@ class BaseSplitter(ms.BaseCrossValidator):
 
                     X_train = Xs[0]
                     X_test = Xs[1]
-                    y_train = ys[0]
-                    # y_test = pd.DataFrame(np.array(ys[1]), columns=['y_test']) # Make it so the y_test and y_pred have same indices so can be subtracted to get residuals
+                    y_train = pd.Series(np.array(ys[0]).ravel(), name='y_train')
                     y_test = pd.Series(np.array(ys[1]).ravel(), name='y_test')  # Make it so the y_test and y_pred have same indices so can be subtracted to get residuals
                     # make the individual split directory
                     splitpath = os.path.join(splitdir, 'split_' + str(split_count))
@@ -395,10 +395,8 @@ class NoSplit(BaseSplitter):
         indices = np.arange(X.shape[0])
         return [[indices, indices]]
 
-# TODO: add these to new methods
 
-
-class JustEachGroup(BaseEstimator, TransformerMixin):
+class JustEachGroup(BaseSplitter):
     """
     Class to train the model on one group at a time and test it on the rest of the data
     This class wraps scikit-learn's LeavePGroupsOut with P set to n-1. More information is available at:
@@ -429,19 +427,21 @@ class JustEachGroup(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self):
-        pass
+        super(JustEachGroup, self).__init__()
 
     def get_n_splits(self, X=None, y=None, groups=None):
         return np.unique(groups).shape[0]
 
     def split(self, X, y, groups):
         n_groups = self.get_n_splits(groups=groups)
-        #print('n_groups', n_groups)
         lpgo = ms.LeavePGroupsOut(n_groups=n_groups-1)
-        return lpgo.split(X, y, groups)
+        trains_tests = list()
+        for train_index, test_index in lpgo.split(X, y, groups):
+            trains_tests.append((train_index, test_index))
+        return trains_tests
 
 
-class LeaveCloseCompositionsOut(ms.BaseCrossValidator):
+class LeaveCloseCompositionsOut(BaseSplitter):
     """
     Leave-P-out where you exclude materials with compositions close to those the test set
 
@@ -453,16 +453,18 @@ class LeaveCloseCompositionsOut(ms.BaseCrossValidator):
     than the features.
 
     Args:
+        composition_df (pd.DataFrame): dataframe containing the vector of material compositions to analyze
         dist_threshold (float): Entries must be farther than this distance to be included in the
             training set
         nn_kwargs (dict): Keyword arguments for the scikit-learn NearestNeighbor class used
             to find nearest points
     """
 
-    def __init__(self, dist_threshold=0.1, nn_kwargs=None):
+    def __init__(self, composition_df, dist_threshold=0.1, nn_kwargs=None):
         super(LeaveCloseCompositionsOut, self).__init__()
         if nn_kwargs is None:
             nn_kwargs = {}
+        self.composition_df = composition_df
         self.dist_threshold = dist_threshold
         self.nn_kwargs = nn_kwargs
 
@@ -470,16 +472,17 @@ class LeaveCloseCompositionsOut(ms.BaseCrossValidator):
 
         # Generate the composition vectors
         frac_computer = ElementFraction()
-        elem_fracs = frac_computer.featurize_many(list(map(Composition, X)), pbar=False)
+        elem_fracs = frac_computer.featurize_many(list(map(Composition, self.composition_df[self.composition_df.columns[0]])), pbar=False)
 
         # Generate the nearest-neighbor lookup tool
         neigh = NearestNeighbors(**self.nn_kwargs)
         neigh.fit(elem_fracs)
 
         # Generate a list of all entries
-        all_inds = np.arange(0, len(X), 1)
+        all_inds = np.arange(0, self.composition_df.shape[0], 1)
 
         # Loop through each entry in X
+        trains_tests = list()
         for i, x in enumerate(elem_fracs):
 
             # Get all the entries within the threshold distance of the test point
@@ -487,14 +490,16 @@ class LeaveCloseCompositionsOut(ms.BaseCrossValidator):
 
             # Get the training set as "not these points"
             train_inds = np.setdiff1d(all_inds, too_close)
+            test_inds = np.setdiff1d(all_inds, train_inds)
 
-            yield train_inds, [i]
+            trains_tests.append((np.asarray(train_inds), np.asarray(test_inds)))
+        return trains_tests
 
     def get_n_splits(self, X=None, y=None, groups=None):
         return len(X)
 
 
-class LeaveOutPercent(BaseEstimator, TransformerMixin):
+class LeaveOutPercent(BaseSplitter):
     """
     Class to train the model using a certain percentage of data as training data
 
@@ -525,13 +530,14 @@ class LeaveOutPercent(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self, percent_leave_out=0.2, n_repeats=5):
+        super(LeaveOutPercent, self).__init__()
         self.percent_leave_out = percent_leave_out
         self.n_repeats = n_repeats
 
     def get_n_splits(self, X=None, y=None, groups=None):
         return self.n_repeats
 
-    def split(self, X, y, groups=None):
+    def split(self, X, y=None, groups=None):
         indices = range(X.shape[0])
         split = list()
         for i in range(self.n_repeats):
@@ -540,7 +546,7 @@ class LeaveOutPercent(BaseEstimator, TransformerMixin):
         return split
 
 
-class Bootstrap(object):
+class Bootstrap(BaseSplitter):
     """
     # Note: Bootstrap taken directly from sklearn Github (https://github.com/scikit-learn/scikit-learn/blob/0.11.X/sklearn/cross_validation.py)
     # which was necessary as it was later removed from more recent sklearn releases
@@ -585,6 +591,7 @@ class Bootstrap(object):
 
     def __init__(self, n, n_bootstraps=3, train_size=.5, test_size=None,
                  n_train=None, n_test=None, random_state=0):
+        super(Bootstrap, self).__init__()
         self.n = n
         self.n_bootstraps = n_bootstraps
         if n_train is not None:
@@ -657,7 +664,7 @@ class Bootstrap(object):
     def get_n_splits(self, X=None, y=None, groups=None):
         return self.__len__()
 
-    def split(self, X, y, groups=None):
+    def split(self, X, y=None, groups=None):
         indices = range(X.shape[0])
         split = list()
         for trains, tests in self:
