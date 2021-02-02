@@ -197,8 +197,18 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                    savepath=splitdir,
                                                    file_name='residual_histogram_train',
                                                    show_figure=False)
+                if groups is not None:
+                    Scatter.plot_predicted_vs_true(y_true=y_test_all,
+                                               y_pred=y_pred_all,
+                                               groups=groups,
+                                               savepath=splitdir,
+                                               file_name='parity_plot_allsplits_test_pergroup',
+                                               x_label='values',
+                                               metrics_list=metrics,
+                                               show_figure=False)
                 Scatter.plot_predicted_vs_true(y_true=y_test_all,
                                                y_pred=y_pred_all,
+                                               groups=None,
                                                savepath=splitdir,
                                                file_name='parity_plot_allsplits_test',
                                                x_label='values',
@@ -218,6 +228,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                   show_figure=False)
                 Scatter.plot_predicted_vs_true(y_true=y_train_all,
                                                y_pred=y_pred_train_all,
+                                               groups=None,
                                                savepath=splitdir,
                                                file_name='parity_plot_allsplits_train',
                                                x_label='values',
@@ -359,10 +370,10 @@ class SklearnDataSplitter(BaseSplitter):
         self.splitter = getattr(sklearn.model_selection, splitter)(**kwargs)
 
     def get_n_splits(self, X=None, y=None, groups=None):
-        return self.splitter.get_n_splits()
+        return self.splitter.get_n_splits(X, y , groups)
 
     def split(self, X, y=None, groups=None):
-        return self.splitter.split(X)
+        return self.splitter.split(X, y, groups)
 
     def _setup_savedir(self, model, selector, savepath):
         now = datetime.now()

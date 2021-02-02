@@ -119,11 +119,12 @@ class LocalDatasets():
                 X: (pd.DataFrame or numpy array), dataframe or array of X data
                 y: (pd.DataFrame or numpy array), dataframe or array of y data
     """
-    def __init__(self, file_path, feature_names=None, target=None, extra_columns=None, as_frame=False):
+    def __init__(self, file_path, feature_names=None, target=None, extra_columns=None, group_column=None, as_frame=False):
         self.file_path = file_path
         self.feature_names = feature_names
         self.target = target
         self.extra_columns = extra_columns
+        self.group_column = group_column
         self.as_frame = as_frame
         if self.extra_columns is None:
             self.extra_columns = list()
@@ -165,10 +166,19 @@ class LocalDatasets():
         self._get_features(df=df)
 
         X, y = df[self.feature_names], pd.DataFrame(df[self.target], columns=[self.target]).squeeze()
+        if self.group_column:
+            groups = df[self.group_column]
 
         if self.as_frame:
-            return X, y
-        return np.array(X), np.array(y).ravel()
+            if self.group_column:
+                return X, y, groups
+            else:
+                return X, y
+        else:
+            if self.group_column:
+                return np.array(X), np.array(y).ravel(), np.array(groups).ravel()
+            else:
+                return np.array(X), np.array(y).ravel()
 
 class FigshareDatasets():
     """
