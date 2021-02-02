@@ -81,7 +81,7 @@ class Metrics():
                             'r2_score': (True, sm.r2_score),
                             'r2_score_noint' : (True, r2_score_noint),
                             'r2_score_fitted' : (True, r2_score_fitted),
-                            'r2_score_adjusted' : (True, adjusted_r2_score),
+                            'r2_score_adjusted' : (True, r2_score_adjusted),
                             'root_mean_squared_error' : (False, root_mean_squared_error),
                             'rmse_over_stdev' : (False, rmse_over_stdev)
                             }
@@ -107,7 +107,6 @@ class Metrics():
                         }
         return all_metrics
 
-#TODO: update and test these using pandas series as input
 def r2_score_noint(y_true, y_pred):
     """
     Method that calculates the R^2 value without fitting the y-intercept
@@ -177,7 +176,7 @@ def rmse_over_stdev(y_true, y_pred, train_y=None):
     rmse = root_mean_squared_error(y_true, y_pred)
     return rmse / stdev
 
-def adjusted_r2_score(y_true, y_pred, n_features=None):
+def r2_score_adjusted(y_true, y_pred, n_features=None):
     """
     Method that calculates the adjusted R^2 value
 
@@ -192,7 +191,7 @@ def adjusted_r2_score(y_true, y_pred, n_features=None):
     """
     r2 = sm.r2_score(y_true, y_pred)
     # n is sample size
-    n = len(y_true)
+    n = np.array(y_true).shape[0]
     # p is number of features
     p = n_features
     try:

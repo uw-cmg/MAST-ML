@@ -122,7 +122,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             y_splits.append((y.iloc[train], y.iloc[test]))
         return X_splits, y_splits
 
-    def evaluate(self, X, y, models, groups=None, hyperopt=None, selectors=None, savepath=None):
+    def evaluate(self, X, y, models, groups=None, hyperopt=None, selectors=None, metrics=None, savepath=None):
         # Have option to evaluate hyperparams of model in each split
         # Have ability to do nesting here?
         # How to handle which plots to make?
@@ -178,7 +178,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                     X_train = selector.evaluate(X=X_train, y=y_train)
                     X_test = selector.evaluate(X=X_test, y=y_test)
 
-                    self._evaluate_split(X_train, X_test, y_train, y_test, model_orig, splitpath)
+                    self._evaluate_split(X_train, X_test, y_train, y_test, model_orig, metrics, splitpath)
                     split_count += 1
 
                 # At level of splitdir, do analysis over all splits (e.g. parity plot over all splits)
@@ -202,16 +202,18 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                savepath=splitdir,
                                                file_name='parity_plot_allsplits_test',
                                                x_label='values',
+                                               metrics_list=metrics,
                                                show_figure=False)
                 Scatter.plot_predicted_vs_true(y_true=y_train_all,
                                                y_pred=y_pred_train_all,
                                                savepath=splitdir,
                                                file_name='parity_plot_allsplits_train',
                                                x_label='values',
+                                               metrics_list=metrics,
                                                show_figure=False)
         return
 
-    def _evaluate_split(self, X_train, X_test, y_train, y_test, model, splitpath):
+    def _evaluate_split(self, X_train, X_test, y_train, y_test, model, metrics, splitpath):
         model.fit(X_train, y_train)
         y_pred = model.predict(X_test)
         y_pred_train = model.predict(X_train)
@@ -231,12 +233,14 @@ class BaseSplitter(ms.BaseCrossValidator):
                                        savepath=splitpath,
                                        file_name='parity_plot_test',
                                        x_label='values',
+                                       metrics_list=metrics,
                                        show_figure=False)
         Scatter.plot_predicted_vs_true(y_true=y_train,
                                        y_pred=y_pred_train,
                                        savepath=splitpath,
                                        file_name='parity_plot_train',
                                        x_label='values',
+                                       metrics_list=metrics,
                                        show_figure=False)
 
         self._save_split_data(df=X_train, filename='X_train', savepath=splitpath, columns=X_train.columns.values)
