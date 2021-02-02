@@ -549,8 +549,188 @@ class LeaveOutPercent(BaseSplitter):
 class LeaveOutTwinCV(BaseSplitter):
     """
     Class to remove data twins from the test data.
+
+    Args:
+        threshold: (int), the threshold at which two data points are considered twins
+        cv: A scikit-learn cross validation generator object to be used to create split # TODO idk if this is the same as "splitter" arg in SklearnDataSplitter
+        allow_twins_in_train: (boolean), true if the twins should be allowed in training data but removed from the test sets, false if twins should just be removed altogether
+
+    Methods:
+        get_n_splits: method to calculate the number of splits to perform across all splitters
+
+            Args:
+                X: (numpy array), array of X features
+                y: (numpy array), array of y data
+                groups: (numpy array), array of group labels
+
+            Returns:
+                (int), the number 1 always
+
+        split: method to perform split into train indices and test indices
+
+            Args:
+                X: (numpy array), array of X features
+                y: (numpy array), array of y data
+                groups: (numpy array), array of group labels
+
+            Returns:
+                (numpy array), array of train and test indices
     """
-    pass
+
+    def __init__(self, threshold, cv, allow_twins_in_train=True, **kwargs):
+        self.threshold = int(threshold)
+        if cv is None:
+            self.cv = ms.RepeatedKFold()
+        else:
+            # self.cv = cv
+            self.cv = getattr(sklearn.model_selection, cv)(**kwargs)
+        self.allow_twins_in_train = allow_twins_in_train
+
+    def _setup_savedir(self, model, selector, savepath):  # TODO stolen from SklearnDataSplitter
+        now = datetime.now()
+        dirname = model.model.__class__.__name__+'_'+self.cv.__class__.__name__+'_'+selector.__class__.__name__
+        dirname = f"{dirname}_{now.month:02d}_{now.day:02d}" \
+            f"_{now.hour:02d}_{now.minute:02d}_{now.second:02d}"
+        if savepath == None:
+            splitdir = os.getcwd()
+        else:
+            splitdir = os.path.join(savepath, dirname)
+        if not os.path.exists(splitdir):
+            os.mkdir(splitdir)
+        return splitdir
+
+    def get_n_splits(self, X=None, y=None, groups=None):
+        return 1
+
+    # TODO This is (mostly) just the old method copy and pasted, with depricated parts commented out
+    def split(self, X, y, X_noinput=None, path="/", groups=None):
+        # print(f"X{type(X)} y{type(y)}")
+        # intialize variables
+        distances = []
+        i = 0
+        j = 0
+        count = 0
+        # log = logging.getLogger('mastml')
+
+        # print("A")
+
+        # calculate distances between every combination of items in X
+        for a in X.T.iteritems():
+            for b in X.T.iteritems():
+                if j > i:
+                    diff = np.linalg.norm(a[1] - b[1])
+                    distances.append([diff, a[0], b[0]])
+                j += 1
+            i += 1
+            j = 0
+
+        # print("B")
+
+        # identifies the datapoints within the threshold
+        distances = sorted(distances, key=lambda x: x[0])
+
+        def find_nearest_index(array, value):
+            for idx, n in enumerate(array):
+                if (n[0] >= value):
+                    return idx
+            return 0
+        x = find_nearest_index(distances, self.threshold)
+        removed = distances[:x]
+
+        # print("C")
+
+        distances = pd.DataFrame(distances, columns=['dist', 'a', 'b'])
+
+        # Format data to be output as csv with previously removed data and other information
+        # removed_indices = []
+        # if (len(removed) != 0):
+        #     for i in removed:
+        #         if i[1] not in removed_indices:
+        #             removed_indices.append(i[1])
+        #         if i[2] not in removed_indices:
+        #             removed_indices.append(i[2])
+
+        # X_noinput = X_noinput.iloc[removed_indices]
+        # X_other_columns = X.iloc[removed_indices]
+
+        # if (self.allow_twins_in_train):
+        #     removed_x = pd.DataFrame(columns=X.columns)
+        #     empty_X_noinput = pd.DataFrame(columns=X_noinput.columns)
+        #     removed_x = pd.concat([removed_x, empty_X_noinput], axis=1)
+        # else:
+        #     removed_x = X.iloc[removed_indices]
+        #     removed_x = pd.concat([removed_x, X_noinput], axis=1)
+        # removed_y = y.iloc[removed_indices]
+        # removed_y = pd.concat([removed_y, X_noinput], axis=1)
+        # removed_y = pd.concat([removed_y, X_other_columns], axis=1)
+
+        # print("D")
+
+        # create X and y with twins removed
+        X_notwin = X.copy()
+        y_notwin = y.copy()
+
+        if not self.allow_twins_in_train:
+            # remove all twins in both X and y
+            if (len(removed) != 0):
+                for i in removed:
+                    if (i[1] in X_notwin.index):
+                        X_notwin = X_notwin.drop(i[1], inplace=False)
+                    if (i[2] in X_notwin.index):
+                        X_notwin = X_notwin.drop(i[2], inplace=False)
+                    if (i[1] in y_notwin.index):
+                        y_notwin = y_notwin.drop(i[1], inplace=False)
+                    if (i[2] in y_notwin.index):
+                        y_notwin = y_notwin.drop(i[2], inplace=False)
+
+        # print(f"splits_generator = {type(self.cv)}.split({type(X_notwin)}, {type(y_notwin)})")
+
+        # generate splits from chosen cv (cross validator)
+        splits_generator = self.cv.split(X_notwin, y_notwin)
+
+        # change splits into list form so it can be mutated
+        splits = list()
+        for split in splits_generator:
+            splits.append(list(split))
+
+        # print("E")
+
+        if self.allow_twins_in_train:
+            # remove from test sets
+            if (len(removed) != 0):
+                for split in splits:
+                    # orig_size = len(split[1])
+                    for i in removed:
+                        if (i[1] in split[1]):
+                            split[1] = [x for x in split[1] if x != i[1]]
+                    # log percentage removed
+                    # red_size = len(split[1])
+                    # log.info(f"{100 - (red_size / orig_size * 100)} percent of test data removed as twins")
+                    # if len(split[1]) == 0:
+                    #     raise utils.MastError(f"Twin removal removed all test data. Threshold was {self.threshold}, consider reducing this value.")
+        else:
+            # change the split's relative indices to old indices, because called split on data with indicies removed
+            old_index = X_notwin.index
+            for split in splits:
+                for idx, val in enumerate(split[0]):
+                    split[0][idx] = old_index[idx]
+                for idx, val in enumerate(split[1]):
+                    split[1][idx] = old_index[idx]
+
+        # print removed data to a csv
+        # def print_removed_to_csv(path):
+        #     os.mkdir(join(path, 'data_twins'))
+        #     # write other files
+        #     removed_x.to_csv(join(path, 'data_twins/removed_twins_X.csv'))
+        #     removed_y.to_csv(join(path, 'data_twins/removed_twins_y.csv'))
+        #     removed_x.describe().to_csv(join(path, 'data_twins/removed_twins_X_info.csv'))
+        #     removed_y.describe().to_csv(join(path, 'data_twins/removed_twins_y_info.csv'))
+        #     # make histogram
+        #     plot_helper.plot_data_twins_histogram(distances['dist'], path)
+
+        # print_removed_to_csv(path)
+
+        return splits
 
 
 class Bootstrap(BaseSplitter):
