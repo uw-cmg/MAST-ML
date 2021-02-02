@@ -210,6 +210,12 @@ class BaseSplitter(ms.BaseCrossValidator):
                                               x_label='values',
                                               metrics_list=metrics,
                                               show_figure=False)
+                Scatter.plot_best_worst_per_point(savepath=splitdir,
+                                                  file_name=None,
+                                                  data_type='test',
+                                                  x_label='values',
+                                                  metrics_list=metrics,
+                                                  show_figure=False)
                 Scatter.plot_predicted_vs_true(y_true=y_train_all,
                                                y_pred=y_pred_train_all,
                                                savepath=splitdir,
@@ -223,6 +229,12 @@ class BaseSplitter(ms.BaseCrossValidator):
                                               x_label='values',
                                               metrics_list=metrics,
                                               show_figure=False)
+                Scatter.plot_best_worst_per_point(savepath=splitdir,
+                                                  file_name=None,
+                                                  data_type='train',
+                                                  x_label='values',
+                                                  metrics_list=metrics,
+                                                  show_figure=False)
         return
 
     def _evaluate_split(self, X_train, X_test, y_train, y_test, model, metrics, splitpath):

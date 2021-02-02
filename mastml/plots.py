@@ -11,7 +11,7 @@ import math
 import os
 import pandas as pd
 import numpy as np
-from collections import Iterable
+from collections import Iterable, OrderedDict
 from math import log, floor, ceil
 
 from mastml.metrics import Metrics
@@ -186,6 +186,108 @@ class Scatter():
 
         # Save data to excel file and image
         fig.savefig(os.path.join(savepath, 'parity_plot_best_worst_split_'+str(data_type)+'.png'), dpi=DPI, bbox_inches='tight')
+        if show_figure == True:
+            plt.show()
+        else:
+            plt.close()
+        return
+
+    @classmethod
+    def plot_best_worst_per_point(cls, savepath, file_name, data_type, x_label, metrics_list, show_figure=False):
+        """
+        Method to create a parity plot (predicted vs. true values) of the set of best and worst CV scores for each
+
+        individual data point.
+
+        Args:
+
+            y_true: (numpy array), array of true y data
+
+            y_pred_list: (list), list of numpy arrays containing predicted y data for each CV split
+
+            savepath: (str), path to save plots to
+
+            metrics_dict: (dict), dict of scikit-learn metric objects to calculate score of predicted vs. true values
+
+            avg_stats: (dict), dict of calculated average metrics over all CV splits
+
+            title: (str), title of the best_worst_per_point plot
+
+            label: (str), label used for axis labeling
+
+        Returns:
+
+            None
+
+        """
+
+        # Get lists of all ytrue and ypred for each split
+        dirs = os.listdir(savepath)
+        splitdirs = [d for d in dirs if 'split_' in d and '.png' not in d]
+
+        y_true_list = list()
+        y_pred_list = list()
+        for splitdir in splitdirs:
+            y_true_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_'+str(data_type)+'.xlsx')))
+            if data_type == 'test':
+                y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred.xlsx')))
+            elif data_type == 'train':
+                y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred_train.xlsx')))
+
+        all_y_true = list()
+        all_y_pred = list()
+        all_abs_residuals = list()
+        for yt, y_pred in zip(y_true_list, y_pred_list):
+            yt = np.array(check_dimensions(yt))
+            y_pred = np.array(check_dimensions(y_pred))
+            abs_residuals = abs(yt-y_pred)
+            all_y_true.append(yt)
+            all_y_pred.append(y_pred)
+            all_abs_residuals.append(abs_residuals)
+        all_y_true_flat = np.array([item for sublist in all_y_true for item in sublist])
+        all_y_pred_flat = np.array([item for sublist in all_y_pred for item in sublist])
+        all_residuals_flat = np.array([item for sublist in all_abs_residuals for item in sublist])
+
+        y_true_unique = np.unique(all_y_true_flat)
+        bests = list()
+        worsts = list()
+        for yt in y_true_unique:
+            best = min(abs(all_y_pred_flat[np.where(all_y_true_flat==yt)] - all_y_true_flat[np.where(all_y_true_flat==yt)]))
+            worst = max(abs(all_y_pred_flat[np.where(all_y_true_flat==yt)] - all_y_true_flat[np.where(all_y_true_flat==yt)]))
+            bests.append(all_y_pred_flat[np.where(all_residuals_flat==best)])
+            worsts.append(all_y_pred_flat[np.where(all_residuals_flat==worst)])
+
+        stats_dict_best = Metrics(metrics_list=metrics_list).evaluate(y_true=y_true_unique, y_pred=bests)
+        stats_dict_worst = Metrics(metrics_list=metrics_list).evaluate(y_true=y_true_unique, y_pred=worsts)
+
+        fig, ax = make_fig_ax(x_align=0.65)
+
+        # gather max and min
+        max1 = max([max(y_true_unique), max(bests), max(worsts)])
+        min1 = min([min(y_true_unique), min(bests), min(worsts)])
+
+        # draw dashed horizontal line
+        ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
+
+        # set axis labels
+        ax.set_xlabel('True '+x_label, fontsize=16)
+        ax.set_ylabel('Predicted '+x_label, fontsize=16)
+
+        # set tick labels
+        maxx = round(float(max1), rounder(max1-min1))
+        minn = round(float(min1), rounder(max1-min1))
+        _set_tick_labels(ax, maxx, minn)
+
+        ax.scatter(y_true_unique, bests,  c='b',  alpha=0.7, label='best all points', edgecolor='darkblue', zorder=2, s=100)
+        ax.scatter(y_true_unique, worsts, c='r', alpha=0.7, label='worst all points', edgecolor='darkred', zorder=2, s=70)
+        ax.legend(loc='best', fontsize=12)
+
+        #plot_stats(fig, avg_stats, x_align=x_align, y_align=0.51, fontsize=10)
+        plot_stats(fig, stats_dict_best, x_align=0.65, y_align=0.90, font_dict={'fontsize':10, 'color':'b'})
+        plot_stats(fig, stats_dict_worst, x_align=0.65, y_align=0.50, font_dict={'fontsize':10, 'color':'r'})
+
+        # Save data to excel file and image
+        fig.savefig(os.path.join(savepath, 'parity_plot_best_worst_eachpoint_'+str(data_type)+'.png'), dpi=DPI, bbox_inches='tight')
         if show_figure == True:
             plt.show()
         else:
