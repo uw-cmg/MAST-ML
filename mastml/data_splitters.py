@@ -546,6 +546,13 @@ class LeaveOutPercent(BaseSplitter):
         return split
 
 
+class LeaveOutTwinCV(BaseSplitter):
+    """
+    Class to remove data twins from the test data.
+    """
+    pass
+
+
 class Bootstrap(BaseSplitter):
     """
     # Note: Bootstrap taken directly from sklearn Github (https://github.com/scikit-learn/scikit-learn/blob/0.11.X/sklearn/cross_validation.py)
