@@ -110,7 +110,9 @@ class Scatter():
 
         # Save data to excel file and image
         df = pd.DataFrame().from_dict(data={"y_true": y_true, "y_pred": y_pred})
+        df_stats = pd.DataFrame().from_records([stats_dict])
         df.to_excel(os.path.join(savepath, file_name + '.xlsx'))
+        df_stats.to_excel(os.path.join(savepath, file_name + '_stats_summary.xlsx'))
         fig.savefig(os.path.join(savepath, file_name + '.png'), dpi=DPI, bbox_inches='tight')
         if show_figure == True:
             plt.show()
