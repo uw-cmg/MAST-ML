@@ -61,7 +61,7 @@ class Scatter():
                 None
     """
     @classmethod
-    def plot_predicted_vs_true(cls, y_true, y_pred, savepath, file_name, x_label, metrics_list=None, groups=None, show_figure=False):
+    def plot_predicted_vs_true(cls, y_true, y_pred, savepath, file_name, data_type, x_label, metrics_list=None, groups=None, show_figure=False):
         # Make the dataframe/array 1D if it isn't
         y_true = check_dimensions(y_true)
         y_pred = check_dimensions(y_pred)
@@ -112,7 +112,7 @@ class Scatter():
         df = pd.DataFrame().from_dict(data={"y_true": y_true, "y_pred": y_pred})
         df_stats = pd.DataFrame().from_records([stats_dict])
         df.to_excel(os.path.join(savepath, file_name + '.xlsx'))
-        df_stats.to_excel(os.path.join(savepath, file_name + '_stats_summary.xlsx'), index=False)
+        df_stats.to_excel(os.path.join(savepath, data_type + '_stats_summary.xlsx'), index=False)
         fig.savefig(os.path.join(savepath, file_name + '.png'), dpi=DPI, bbox_inches='tight')
         if show_figure == True:
             plt.show()
@@ -121,13 +121,13 @@ class Scatter():
         return
 
     @classmethod
-    def plot_best_worst_split(cls, savepath, file_name, data_type, x_label, metrics_list, show_figure=False):
+    def plot_best_worst_split(cls, savepath, data_type, x_label, metrics_list, show_figure=False):
         dirs = os.listdir(savepath)
         splitdirs = [d for d in dirs if 'split_' in d and '.png' not in d]
 
         stats_files_dict = dict()
         for splitdir in splitdirs:
-            stats_files_dict[splitdir] = pd.read_excel(os.path.join(os.path.join(savepath, splitdir), file_name + '_stats_summary.xlsx')).to_dict('records')[0]
+            stats_files_dict[splitdir] = pd.read_excel(os.path.join(os.path.join(savepath, splitdir), data_type + '_stats_summary.xlsx')).to_dict('records')[0]
 
         # Find best/worst splits based on RMSE value
         rmse_best = 10**20
@@ -193,7 +193,7 @@ class Scatter():
         return
 
     @classmethod
-    def plot_best_worst_per_point(cls, savepath, file_name, data_type, x_label, metrics_list, show_figure=False):
+    def plot_best_worst_per_point(cls, savepath, data_type, x_label, metrics_list, show_figure=False):
         """
         Method to create a parity plot (predicted vs. true values) of the set of best and worst CV scores for each
 
@@ -292,6 +292,61 @@ class Scatter():
             plt.show()
         else:
             plt.close()
+        return
+
+    @classmethod
+    def plot_metric_vs_group(cls, savepath, data_type, show_figure):
+        """
+        Method to plot the value of a particular calculated metric (e.g. RMSE, R^2, etc) for each data group
+
+        Args:
+
+            savepath: (str), path to save plots to
+
+            data_type: (str), 'test' or 'train' to denote data type
+
+        Returns:
+
+            None
+
+        """
+        dirs = os.listdir(savepath)
+        splitdirs = [d for d in dirs if 'split_' in d and '.png' not in d]
+
+        stats_files_dict = dict()
+        groups = list()
+        for splitdir in splitdirs:
+            with open(os.path.join(os.path.join(savepath, splitdir), 'test_group.txt'), 'r') as f:
+                group = f.readlines()[0]
+                groups.append(group)
+            stats_files_dict[group] = pd.read_excel(os.path.join(os.path.join(savepath, splitdir), data_type + '_stats_summary.xlsx')).to_dict('records')[0]
+            metrics_list = list(stats_files_dict[group].keys())
+
+        for metric in metrics_list:
+            stats = list()
+            for group in groups:
+                stats.append(stats_files_dict[group][metric])
+
+            avg_stats = {metric : (np.mean(stats), np.std(stats))}
+
+            # make fig and ax, use x_align when placing text so things don't overlap
+            x_align = 0.64
+            fig, ax = make_fig_ax(x_align=x_align)
+
+            # do the actual plotting
+            ax.scatter(groups, stats, c='blue', alpha=0.7, edgecolor='darkblue', zorder=2, s=100)
+
+            # set axis labels
+            ax.set_xlabel('Group', fontsize=14)
+            ax.set_ylabel(metric, fontsize=14)
+            ax.set_xticklabels(labels=groups, fontsize=14)
+            plot_stats(fig, avg_stats, x_align=x_align, y_align=0.90)
+
+            fig.savefig(os.path.join(savepath, str(metric)+'_value_per_group_'+str(data_type)+'.png'), dpi=DPI, bbox_inches='tight')
+            if show_figure == True:
+                plt.show()
+            else:
+                plt.close()
         return
 
 class Histogram():
