@@ -22,6 +22,8 @@ from matplotlib import pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure, figaspect
 from matplotlib.font_manager import FontProperties
+from mpl_toolkits.axes_grid1.inset_locator import mark_inset
+from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
 
 matplotlib.rc('font', size=18, family='sans-serif') # set all font to bigger
 matplotlib.rc('figure', autolayout=True) # turn on autolayout
@@ -460,7 +462,9 @@ class Scatter():
         return
 
 class Error():
+    '''
 
+    '''
     @classmethod
     def plot_normalized_error(cls, y_true, y_pred, savepath, data_type, model, X=None, show_figure=False):
         """
@@ -548,6 +552,127 @@ class Error():
         ax.set_ylabel("Probability density", fontsize=18)
         _set_tick_labels_different(ax, maxx, minn, maxy, miny)
         fig.savefig(os.path.join(savepath, 'normalized_errors_'+str(data_type)+'.png'), dpi=DPI, bbox_inches='tight')
+        if show_figure is True:
+            plt.show()
+        else:
+            plt.close()
+        return
+
+    @classmethod
+    def plot_cumulative_normalized_error(cls, y_true, y_pred, savepath, data_type, model, X=None, show_figure=False):
+        """
+        Method to plot the cumulative normalized residual errors of a model prediction
+
+        Args:
+
+            y_true: (numpy array), array containing the true y data values
+
+            y_pred: (numpy array), array containing the predicted y data values
+
+            savepath: (str), path to save the plotted cumulative normalized error plot
+
+            model: (scikit-learn model/estimator object), a scikit-learn model object
+
+            X: (numpy array), array of X features
+
+            avg_stats: (dict), dict of calculated average metrics over all CV splits
+
+        Returns:
+
+            None
+
+        """
+
+        # Here: if model is random forest or Gaussian process, get real error bars. Else, just residuals
+        model_name = model.model.__class__.__name__
+        models_with_error_predictions = ['RandomForestRegressor', 'GaussianProcessRegressor',
+                                         'GradientBoostingRegressor', 'EnsembleRegressor']
+        has_model_errors = False
+
+        y_pred_ = y_pred
+        y_true_ = y_true
+
+        if model_name in models_with_error_predictions:
+            has_model_errors = True
+            err_down, err_up, nan_indices, indices_TF = cls.prediction_intervals(model=model, X=X)
+
+        # Need to remove NaN's before plotting. These will be present when doing validation runs. Note NaN's only show up in y_pred_
+        # Correct for nan indices being present
+        if has_model_errors:
+            y_pred_ = y_pred_[indices_TF]
+            y_true_ = y_true_[indices_TF]
+
+        y_true_ = y_true_[~np.isnan(y_pred_)]
+        y_pred_ = y_pred_[~np.isnan(y_pred_)]
+
+        x_align = 0.64
+        fig, ax = make_fig_ax(x_align=x_align)
+
+        analytic_gau = np.random.normal(0, 1, 10000)
+        analytic_gau = abs(analytic_gau)
+        n_analytic = np.arange(1, len(analytic_gau) + 1) / np.float(len(analytic_gau))
+        X_analytic = np.sort(analytic_gau)
+        residuals = y_true_ - y_pred_
+        normalized_residuals = abs((y_true_ - y_pred_) / np.std(y_true_ - y_pred_))
+        n_residuals = np.arange(1, len(normalized_residuals) + 1) / np.float(len(normalized_residuals))
+        X_residuals = np.sort(normalized_residuals)  # r"$\mathrm{Predicted \/ Value}, \mathit{eV}$"
+        ax.set_xlabel(r"$\mathrm{x}/\mathit{\sigma}$", fontsize=18)
+        ax.set_ylabel("Fraction", fontsize=18)
+        ax.step(X_residuals, n_residuals, linewidth=3, color='green', label="Model Residuals")
+        ax.step(X_analytic, n_analytic, linewidth=3, color='blue', label="Analytical Gaussian")
+        ax.set_xlim([0, 5])
+
+        if has_model_errors:
+            err_avg = [(abs(e1) + abs(e2)) / 2 for e1, e2 in zip(err_up, err_down)]
+            err_avg = np.asarray(err_avg)
+            err_avg[err_avg == 0.0] = 0.0001
+            err_avg = err_avg.tolist()
+            model_errors = abs((y_true_ - y_pred_) / err_avg)
+            n_errors = np.arange(1, len(model_errors) + 1) / np.float(len(model_errors))
+            X_errors = np.sort(model_errors)
+            ax.step(X_errors, n_errors, linewidth=3, color='purple', label="Model Errors")
+            # Save data to csv file
+            data_dict = {"Y True": y_true, "Y Pred": y_pred, "Analytical Gaussian values": analytic_gau,
+                         "Analytical Gaussian (sorted, blue data)": X_analytic,
+                         "model residuals": residuals,
+                         "Model normalized residuals": normalized_residuals,
+                         "Model Residuals (sorted, green data)": X_residuals,
+                         "error_bars_up": err_up, "error_bars_down": err_down,
+                         "Model error values (r value: (ytrue-ypred)/(model error avg))": model_errors,
+                         "Model errors (sorted, purple values)": X_errors}
+            # Save this way to avoid issue with different array sizes in data_dict
+            df = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in data_dict.items()]))
+            df.to_excel(os.path.join(savepath, 'cumulative_normalized_errors_'+str(data_type)+'.xlsx'), index=False)
+        else:
+            # Save data to csv file
+            data_dict = {"Y True": y_true, "Y Pred": y_pred, "x analytical": X_analytic,
+                         "analytical gaussian": n_analytic, "x residuals": X_residuals,
+                         "model residuals": n_residuals}
+            # Save this way to avoid issue with different array sizes in data_dict
+            df = pd.DataFrame(dict([ (k, pd.Series(v)) for k,v in data_dict.items() ]))
+            df.to_excel(os.path.join(savepath, 'cumulative_normalized_errors_'+str(data_type)+'.xlsx'), index=False)
+
+        ax.legend(loc=0, fontsize=14, frameon=False)
+        xlabels = np.linspace(2, 3, 3)
+        ylabels = np.linspace(0.9, 1, 2)
+        axin = zoomed_inset_axes(ax, 2.5, loc=7)
+        axin.step(X_residuals, n_residuals, linewidth=3, color='green', label="Model Residuals")
+        axin.step(X_analytic, n_analytic, linewidth=3, color='blue', label="Analytical Gaussian")
+        if has_model_errors:
+            axin.step(X_errors, n_errors, linewidth=3, color='purple', label="Model Errors")
+        axin.set_xticklabels(xlabels, fontsize=8, rotation=90)
+        axin.set_yticklabels(ylabels, fontsize=8)
+        axin.set_xlim([2, 3])
+        axin.set_ylim([0.9, 1])
+
+        maxx = 5
+        minn = 0
+        maxy = 1.1
+        miny = 0
+        _set_tick_labels_different(ax, maxx, minn, maxy, miny)
+
+        mark_inset(ax, axin, loc1=1, loc2=2)
+        fig.savefig(os.path.join(savepath, 'cumulative_normalized_errors_'+str(data_type)+'.png'), dpi=DPI, bbox_inches='tight')
         if show_figure is True:
             plt.show()
         else:

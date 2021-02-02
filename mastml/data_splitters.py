@@ -309,6 +309,20 @@ class BaseSplitter(ms.BaseCrossValidator):
                                     model=model,
                                     X=X_train,
                                     show_figure=False)
+        Error.plot_cumulative_normalized_error(y_true=y_test,
+                                    y_pred=y_pred,
+                                    savepath=splitpath,
+                                    data_type='test',
+                                    model=model,
+                                    X=X_test,
+                                    show_figure=False)
+        Error.plot_cumulative_normalized_error(y_true=y_train,
+                                    y_pred=y_pred_train,
+                                    savepath=splitpath,
+                                    data_type='train',
+                                    model=model,
+                                    X=X_train,
+                                    show_figure=False)
 
         self._save_split_data(df=X_train, filename='X_train', savepath=splitpath, columns=X_train.columns.values)
         self._save_split_data(df=X_test, filename='X_test', savepath=splitpath, columns=X_test.columns.values)
