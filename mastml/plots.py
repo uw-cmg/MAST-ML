@@ -112,8 +112,80 @@ class Scatter():
         df = pd.DataFrame().from_dict(data={"y_true": y_true, "y_pred": y_pred})
         df_stats = pd.DataFrame().from_records([stats_dict])
         df.to_excel(os.path.join(savepath, file_name + '.xlsx'))
-        df_stats.to_excel(os.path.join(savepath, file_name + '_stats_summary.xlsx'))
+        df_stats.to_excel(os.path.join(savepath, file_name + '_stats_summary.xlsx'), index=False)
         fig.savefig(os.path.join(savepath, file_name + '.png'), dpi=DPI, bbox_inches='tight')
+        if show_figure == True:
+            plt.show()
+        else:
+            plt.close()
+        return
+
+    @classmethod
+    def plot_best_worst_split(cls, savepath, file_name, data_type, x_label, metrics_list, show_figure=False):
+        dirs = os.listdir(savepath)
+        splitdirs = [d for d in dirs if 'split_' in d and '.png' not in d]
+
+        stats_files_dict = dict()
+        for splitdir in splitdirs:
+            stats_files_dict[splitdir] = pd.read_excel(os.path.join(os.path.join(savepath, splitdir), file_name + '_stats_summary.xlsx')).to_dict('records')[0]
+
+        # Find best/worst splits based on RMSE value
+        rmse_best = 10**20
+        rmse_worst = 0
+        for split, stats_dict in stats_files_dict.items():
+            if stats_dict['root_mean_squared_error'] < rmse_best:
+                best_split = split
+                rmse_best = stats_dict['root_mean_squared_error']
+            if stats_dict['root_mean_squared_error'] > rmse_worst:
+                worst_split = split
+                rmse_worst = stats_dict['root_mean_squared_error']
+        if data_type == 'test':
+            y_true_best = pd.read_excel(os.path.join(os.path.join(savepath, best_split), 'y_test.xlsx'))
+            y_pred_best = pd.read_excel(os.path.join(os.path.join(savepath, best_split), 'y_pred.xlsx'))
+            y_true_worst = pd.read_excel(os.path.join(os.path.join(savepath, worst_split), 'y_test.xlsx'))
+            y_pred_worst = pd.read_excel(os.path.join(os.path.join(savepath, worst_split), 'y_pred.xlsx'))
+        elif data_type == 'train':
+            y_true_best = pd.read_excel(os.path.join(os.path.join(savepath, best_split), 'y_train.xlsx'))
+            y_pred_best = pd.read_excel(os.path.join(os.path.join(savepath, best_split), 'y_pred_train.xlsx'))
+            y_true_worst = pd.read_excel(os.path.join(os.path.join(savepath, worst_split), 'y_train.xlsx'))
+            y_pred_worst = pd.read_excel(os.path.join(os.path.join(savepath, worst_split), 'y_pred_train.xlsx'))
+
+        # Make the dataframe/array 1D if it isn't
+        y_true_best = check_dimensions(y_true_best)
+        y_pred_best = check_dimensions(y_pred_best)
+        y_true_worst = check_dimensions(y_true_worst)
+        y_pred_worst = check_dimensions(y_pred_worst)
+
+        # Set image aspect ratio:
+        fig, ax = make_fig_ax()
+
+        # gather max and min
+        max1 = max(np.nanmax(y_true_best), np.nanmax(y_pred_best), np.nanmax(y_true_worst), np.nanmax(y_pred_worst))
+        min1 = min(np.nanmin(y_true_best), np.nanmin(y_pred_best), np.nanmin(y_true_worst), np.nanmin(y_pred_worst))
+
+        maxx = round(float(max1), rounder(max1 - min1))
+        minn = round(float(min1), rounder(max1 - min1))
+        _set_tick_labels(ax, maxx, minn)
+
+        ax.scatter(y_true_best, y_pred_best, c='b', edgecolor='darkblue', zorder=2, s=100, alpha=0.7, label='Best split')
+        ax.scatter(y_true_worst, y_pred_worst, c='r', edgecolor='darkred', zorder=2, s=100, alpha=0.7, label='Worst split')
+
+        ax.legend(loc='best')
+
+        # draw dashed horizontal line
+        ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
+
+        ax.set_xlabel('True '+ x_label, fontsize=14)
+        ax.set_ylabel('Predicted ' + x_label, fontsize=14)
+
+        stats_dict_best = Metrics(metrics_list=metrics_list).evaluate(y_true=y_true_best, y_pred=y_pred_best)
+        stats_dict_worst = Metrics(metrics_list=metrics_list).evaluate(y_true=y_true_worst, y_pred=y_pred_worst)
+
+        plot_stats(fig, stats_dict_best, x_align=0.65, y_align=0.90, font_dict={'fontsize':12, 'color':'blue'})
+        plot_stats(fig, stats_dict_worst, x_align=0.65, y_align=0.50, font_dict={'fontsize': 12, 'color': 'red'})
+
+        # Save data to excel file and image
+        fig.savefig(os.path.join(savepath, 'parity_plot_best_worst_split_'+str(data_type)+'.png'), dpi=DPI, bbox_inches='tight')
         if show_figure == True:
             plt.show()
         else:
