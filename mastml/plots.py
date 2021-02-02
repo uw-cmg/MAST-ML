@@ -13,6 +13,7 @@ import pandas as pd
 import numpy as np
 from collections import Iterable, OrderedDict
 from math import log, floor, ceil
+from scipy.stats import gaussian_kde, norm
 
 from mastml.metrics import Metrics
 
@@ -457,6 +458,225 @@ class Scatter():
             else:
                 plt.close()
         return
+
+class Error():
+
+    @classmethod
+    def plot_normalized_error(cls, y_true, y_pred, savepath, data_type, model, X=None, show_figure=False):
+        """
+        Method to plot the normalized residual errors of a model prediction
+
+        Args:
+
+            y_true: (numpy array), array containing the true y data values
+
+            y_pred: (numpy array), array containing the predicted y data values
+
+            savepath: (str), path to save the plotted normalized error plot
+
+            model: (scikit-learn model/estimator object), a scikit-learn model object
+
+            X: (numpy array), array of X features
+
+            avg_stats: (dict), dict of calculated average metrics over all CV splits
+
+        Returns:
+
+            None
+
+        """
+
+        # Here: if model is random forest or Gaussian process, get real error bars. Else, just residuals
+        model_name = model.model.__class__.__name__
+        models_with_error_predictions = ['RandomForestRegressor', 'GaussianProcessRegressor',
+                                         'GradientBoostingRegressor', 'EnsembleRegressor']
+        has_model_errors = False
+
+        y_pred_ = y_pred
+        y_true_ = y_true
+
+        if model_name in models_with_error_predictions:
+            has_model_errors = True
+            err_down, err_up, nan_indices, indices_TF = cls.prediction_intervals(model, X)
+        # Correct for nan indices being present
+        if has_model_errors:
+            y_pred_ = y_pred_[indices_TF]
+            y_true_ = y_true_[indices_TF]
+
+        x_align = 0.64
+        fig, ax = make_fig_ax(x_align=x_align)
+        mu = 0
+        sigma = 1
+        residuals = (y_true_ - y_pred_)
+        normalized_residuals = (y_true_ - y_pred_) / np.std(y_true_ - y_pred_)
+        density_residuals = gaussian_kde(normalized_residuals)
+        x = np.linspace(mu - 5 * sigma, mu + 5 * sigma, y_true_.shape[0])
+        ax.plot(x, norm.pdf(x, mu, sigma), linewidth=4, color='blue', label="Analytical Gaussian")
+        ax.plot(x, density_residuals(x), linewidth=4, color='green', label="Model Residuals")
+        maxx = 5
+        minn = -5
+
+        if has_model_errors:
+            err_avg = [(abs(e1) + abs(e2)) / 2 for e1, e2 in zip(err_up, err_down)]
+            err_avg = np.asarray(err_avg)
+            err_avg[err_avg == 0.0] = 0.0001
+            err_avg = err_avg.tolist()
+            model_errors = (y_true_ - y_pred_) / err_avg
+            density_errors = gaussian_kde(model_errors)
+            maxy = max(max(density_residuals(x)), max(norm.pdf(x, mu, sigma)), max(density_errors(x)))
+            miny = min(min(density_residuals(x)), min(norm.pdf(x, mu, sigma)), max(density_errors(x)))
+            ax.plot(x, density_errors(x), linewidth=4, color='purple', label="Model Errors")
+            # Save data to csv file
+            data_dict = {"Y True": y_true_, "Y Pred": y_pred_, "Plotted x values": x, "error_bars_up": err_up,
+                         "error_bars_down": err_down, "error_avg": err_avg,
+                         "analytical gaussian (plotted y blue values)": norm.pdf(x, mu, sigma),
+                         "model residuals": residuals,
+                         "model normalized residuals (plotted y green values)": density_residuals(x),
+                         "model errors (plotted y purple values)": density_errors(x)}
+            pd.DataFrame(data_dict).to_excel(os.path.join(savepath, 'error_data_'+str(data_type)+'.xlsx'))
+        else:
+            # Save data to csv file
+            data_dict = {"Y True": y_true, "Y Pred": y_pred, "x values": x,
+                         "analytical gaussian": norm.pdf(x, mu, sigma),
+                         "model residuals": density_residuals(x)}
+            pd.DataFrame(data_dict).to_excel(os.path.join(savepath, 'error_data_'+str(data_type)+'.xlsx'))
+            maxy = max(max(density_residuals(x)), max(norm.pdf(x, mu, sigma)))
+            miny = min(min(density_residuals(x)), min(norm.pdf(x, mu, sigma)))
+
+        ax.legend(loc=0, fontsize=12, frameon=False)
+        ax.set_xlabel(r"$\mathrm{x}/\mathit{\sigma}$", fontsize=18)
+        ax.set_ylabel("Probability density", fontsize=18)
+        _set_tick_labels_different(ax, maxx, minn, maxy, miny)
+        fig.savefig(os.path.join(savepath, 'normalized_errors_'+str(data_type)+'.png'), dpi=DPI, bbox_inches='tight')
+        if show_figure is True:
+            plt.show()
+        else:
+            plt.close()
+        return
+
+    @classmethod
+    def prediction_intervals(cls, model, X):
+        """
+        Method to calculate prediction intervals when using Random Forest and Gaussian Process regression models.
+
+        Prediction intervals for random forest adapted from https://blog.datadive.net/prediction-intervals-for-random-forests/
+
+        Args:
+
+            model: (scikit-learn model/estimator object), a scikit-learn model object
+
+            X: (numpy array), array of X features
+
+            method: (str), type of error bar to formulate (e.g. "stdev" is standard deviation of predicted errors, "confint"
+            is error bar as confidence interval
+
+            percentile: (float), percentile for which to form error bars
+
+        Returns:
+
+            err_up: (list), list of upper bounds of error bars for each data point
+
+            err_down: (list), list of lower bounds of error bars for each data point
+
+        """
+
+        err_down = list()
+        err_up = list()
+        nan_indices = list()
+        indices_TF = list()
+        X_aslist = X.values.tolist()
+        if model.model.__class__.__name__ in ['RandomForestRegressor', 'GradientBoostingRegressor', 'ExtraTreesRegressor',
+                                        'EnsembleRegressor']:
+
+            '''
+
+
+            if rf_error_method == 'jackknife_calibrated':
+                if 'EnsembleRegressor' in model.__class__.__name__:
+                    rf_variances = random_forest_error_modified(model, True, X_train=Xtrain, X_test=Xtest, basic_IJ=False, calibrate=True)
+                else:
+                    rf_variances = random_forest_error_modified(model, False, X_train=Xtrain, X_test=Xtest, basic_IJ=False, calibrate=True)
+                rf_stdevs = np.sqrt(rf_variances)
+                nan_indices = np.where(np.isnan(rf_stdevs))
+                nan_indices_sorted = np.array(sorted(nan_indices[0], reverse=True))
+                for i, val in enumerate(list(rf_stdevs)):
+                    if i in nan_indices_sorted:
+                        indices_TF.append(False)
+                    else:
+                        indices_TF.append(True)
+                rf_stdevs = rf_stdevs[~np.isnan(rf_stdevs)]
+                err_up = err_down = rf_stdevs
+            elif rf_error_method == 'jackknife_uncalibrated':
+                if 'EnsembleRegressor' in model.__class__.__name__:
+                    rf_variances = random_forest_error_modified(model, True, X_train=Xtrain, X_test=Xtest, basic_IJ=False, calibrate=False)
+                else:
+                    rf_variances = random_forest_error_modified(model, False, X_train=Xtrain, X_test=Xtest, basic_IJ=False, calibrate=False)
+                rf_stdevs = np.sqrt(rf_variances)
+                nan_indices = np.where(np.isnan(rf_stdevs))
+                nan_indices_sorted = np.array(sorted(nan_indices[0], reverse=True))
+                for i, val in enumerate(list(rf_stdevs)):
+                    if i in nan_indices_sorted:
+                        indices_TF.append(False)
+                    else:
+                        indices_TF.append(True)
+                rf_stdevs = rf_stdevs[~np.isnan(rf_stdevs)]
+                err_up = err_down = rf_stdevs
+            elif rf_error_method == 'jackknife_basic':
+                if 'EnsembleRegressor' in model.__class__.__name__:
+                    rf_variances = random_forest_error_modified(model, True, X_train=Xtrain, X_test=Xtest, basic_IJ=True, calibrate=False)
+                else:
+                    rf_variances = random_forest_error_modified(model, False, X_train=Xtrain, X_test=Xtest, basic_IJ=True, calibrate=False)
+                rf_stdevs = np.sqrt(rf_variances)
+                nan_indices = np.where(np.isnan(rf_stdevs))
+                nan_indices_sorted = np.array(sorted(nan_indices[0], reverse=True))
+                for i, val in enumerate(list(rf_stdevs)):
+                    if i in nan_indices_sorted:
+                        indices_TF.append(False)
+                    else:
+                        indices_TF.append(True)
+                rf_stdevs = rf_stdevs[~np.isnan(rf_stdevs)]
+                err_up = err_down = rf_stdevs
+
+            else:
+            '''
+            for x in range(len(X_aslist)):
+                preds = list()
+                if model.model.__class__.__name__ == 'RandomForestRegressor':
+                    for pred in model.model.estimators_:
+                        preds.append(pred.predict(np.array(X_aslist[x]).reshape(1, -1))[0])
+                elif model.model.__class__.__name__ == 'GradientBoostingRegressor':
+                    for pred in model.model.estimators_.tolist():
+                        preds.append(pred[0].predict(np.array(X_aslist[x]).reshape(1, -1))[0])
+                elif model.model.__class__.__name__ == 'EnsembleRegressor':
+                    for pred in model.model:
+                        preds.append(pred.predict(np.array(X_aslist[x]).reshape(1, -1))[0])
+
+                e_down = np.std(preds)
+                e_up = np.std(preds)
+                err_down.append(e_down)
+                err_up.append(e_up)
+
+            nan_indices = np.where(np.isnan(err_up))
+            nan_indices_sorted = np.array(sorted(nan_indices[0], reverse=True))
+            for i, val in enumerate(list(err_up)):
+                if i in nan_indices_sorted:
+                    indices_TF.append(False)
+                else:
+                    indices_TF.append(True)
+
+        if model.model.__class__.__name__ == 'GaussianProcessRegressor':
+            preds = model.predict(X, return_std=True)[1]  # Get the stdev model error from the predictions of GPR
+            err_up = preds
+            err_down = preds
+            nan_indices = np.where(np.isnan(err_up))
+            nan_indices_sorted = np.array(sorted(nan_indices[0], reverse=True))
+            for i, val in enumerate(list(err_up)):
+                if i in nan_indices_sorted:
+                    indices_TF.append(False)
+                else:
+                    indices_TF.append(True)
+
+        return err_down, err_up, nan_indices, np.array(indices_TF)
 
 class Histogram():
     """

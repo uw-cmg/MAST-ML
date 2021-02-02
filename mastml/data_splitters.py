@@ -29,7 +29,7 @@ import sklearn.model_selection as ms
 from sklearn.utils import check_random_state
 from sklearn.neighbors import NearestNeighbors
 
-from mastml.plots import Histogram, Scatter
+from mastml.plots import Histogram, Scatter, Error
 from mastml.feature_selectors import NoSelect
 
 class BaseSplitter(ms.BaseCrossValidator):
@@ -295,6 +295,20 @@ class BaseSplitter(ms.BaseCrossValidator):
                                        data_type='train',
                                        metrics_list=metrics,
                                        show_figure=False)
+        Error.plot_normalized_error(y_true=y_test,
+                                    y_pred=y_pred,
+                                    savepath=splitpath,
+                                    data_type='test',
+                                    model=model,
+                                    X=X_test,
+                                    show_figure=False)
+        Error.plot_normalized_error(y_true=y_train,
+                                    y_pred=y_pred_train,
+                                    savepath=splitpath,
+                                    data_type='train',
+                                    model=model,
+                                    X=X_train,
+                                    show_figure=False)
 
         self._save_split_data(df=X_train, filename='X_train', savepath=splitpath, columns=X_train.columns.values)
         self._save_split_data(df=X_test, filename='X_test', savepath=splitpath, columns=X_test.columns.values)
