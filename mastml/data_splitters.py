@@ -256,6 +256,12 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                   x_label='values',
                                                   metrics_list=metrics,
                                                   show_figure=False)
+                Scatter.plot_predicted_vs_true_bars(savepath=splitdir,
+                                                    data_type='test',
+                                                    x_label='values',
+                                                    groups=None,
+                                                    metrics_list=metrics,
+                                                    show_figure=False)
         return
 
     def _evaluate_split(self, X_train, X_test, y_train, y_test, model, metrics, group, splitpath):

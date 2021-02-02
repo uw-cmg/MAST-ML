@@ -295,6 +295,115 @@ class Scatter():
         return
 
     @classmethod
+    def plot_predicted_vs_true_bars(cls, savepath, x_label, data_type, metrics_list, groups=None, show_figure=False):
+        """
+        Method to calculate parity plot (predicted vs. true) of average predictions, averaged over all CV splits, with error
+
+        bars on each point corresponding to the standard deviation of the predicted values over all CV splits.
+
+        Args:
+
+            y_true: (numpy array), array of true y data
+
+            y_pred_list: (list), list of numpy arrays containing predicted y data for each CV split
+
+            avg_stats: (dict), dict of calculated average metrics over all CV splits
+
+            savepath: (str), path to save plots to
+
+            title: (str), title of the best_worst_per_point plot
+
+            label: (str), label used for axis labeling
+
+        Returns:
+
+            None
+
+        """
+
+        # Get lists of all ytrue and ypred for each split
+        dirs = os.listdir(savepath)
+        splitdirs = [d for d in dirs if 'split_' in d and '.png' not in d]
+
+        y_true_list = list()
+        y_pred_list = list()
+        for splitdir in splitdirs:
+            y_true_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_'+str(data_type)+'.xlsx')))
+            if data_type == 'test':
+                y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred.xlsx')))
+            elif data_type == 'train':
+                y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred_train.xlsx')))
+
+        all_y_true = list()
+        all_y_pred = list()
+        for yt, y_pred in zip(y_true_list, y_pred_list):
+            yt = np.array(check_dimensions(yt))
+            y_pred = np.array(check_dimensions(y_pred))
+            all_y_true.append(yt)
+            all_y_pred.append(y_pred)
+
+        df_all = pd.DataFrame({'all_y_true': np.array([item for sublist in all_y_true for item in sublist]),
+                            'all_y_pred': np.array([item for sublist in all_y_pred for item in sublist])})
+
+        df_all_grouped = df_all.groupby(df_all['all_y_true'], sort=False)
+        df_avg = df_all_grouped.mean()
+        df_std = df_all_grouped.std()
+
+        # make fig and ax, use x_align when placing text so things don't overlap
+        x_align = 0.64
+        fig, ax = make_fig_ax(x_align=x_align)
+
+        # gather max and min
+        max1 = max(np.nanmax(df_avg.index.values.tolist()), np.nanmax(df_avg['all_y_pred']))
+        min1 = min(np.nanmin(df_avg.index.values.tolist()), np.nanmin(df_avg['all_y_pred']))
+
+        # draw dashed horizontal line
+        ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
+
+        # set axis labels
+        ax.set_xlabel('True ' + x_label, fontsize=16)
+        ax.set_ylabel('Predicted ' + x_label, fontsize=16)
+
+        # set tick labels
+        _set_tick_labels(ax, max1, min1)
+
+        if groups is None:
+            ax.errorbar(df_avg.index.values.tolist(), df_avg['all_y_pred'], yerr=df_std['all_y_pred'], fmt='o', markerfacecolor='blue', markeredgecolor='black',
+                        markersize=10, alpha=0.7, capsize=3)
+        else:
+            colors = ['blue', 'red', 'green', 'purple', 'orange', 'black']
+            markers = ['o', 'v', '^', 's', 'p', 'h', 'D', '*', 'X', '<', '>', 'P']
+            colorcount = markercount = 0
+            handles = dict()
+            unique_groups = np.unique(groups)
+            for groupcount, group in enumerate(unique_groups):
+                mask = groups == group
+                handles[group] = ax.errorbar(df_avg.index.values.tolist()[mask], df_avg['all_y_pred'][mask], yerr=df_std['all_y_pred'][mask],
+                                             marker=markers[markercount], markerfacecolor=colors[colorcount],
+                                             markeredgecolor=colors[colorcount], ecolor=colors[colorcount],
+                                             markersize=10, alpha=0.7, capsize=3, fmt='o')
+                colorcount += 1
+                if colorcount % len(colors) == 0:
+                    markercount += 1
+                    colorcount = 0
+            ax.legend(handles.values(), handles.keys(), loc='best', fontsize=10)
+
+        avg_stats = Metrics(metrics_list=metrics_list).evaluate(y_true=df_avg.index.values.tolist(), y_pred=df_avg['all_y_pred'])
+        plot_stats(fig, avg_stats, x_align=x_align, y_align=0.90)
+
+        fig.savefig(os.path.join(savepath, 'parity_plot_allsplits_average.png'), dpi=DPI, bbox_inches='tight')
+
+        df = pd.DataFrame({'y true': df_avg.index.values.tolist(),
+                           'average predicted values': df_avg['all_y_pred'],
+                           'error bar values': df_std['all_y_pred']})
+        df.to_excel(os.path.join(savepath, 'parity_plot_allsplits_average.xlsx'))
+        if show_figure == True:
+            plt.show()
+        else:
+            plt.close()
+        return
+
+    @classmethod
     def plot_metric_vs_group(cls, savepath, data_type, show_figure):
         """
         Method to plot the value of a particular calculated metric (e.g. RMSE, R^2, etc) for each data group
