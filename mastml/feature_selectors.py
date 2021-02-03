@@ -115,7 +115,30 @@ for constructor in name_to_constructor.values():
     constructor.old_transform = constructor.transform
     constructor.transform = dataframify_selector(constructor.transform)
 
-class NoSelect(BaseEstimator, TransformerMixin):
+class BaseSelector(BaseEstimator, TransformerMixin):
+    '''
+
+
+    '''
+    def __init__(self):
+        pass
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X):
+        return X
+
+    def evaluate(self, X, y, savepath):
+        self.fit(X=X, y=y)
+        X_select = self.transform(X=X)
+        self.selected_features = X_select.columns.tolist()
+        with open(os.path.join(savepath, 'selected_features.txt'), 'w') as f:
+            for feature in self.selected_features:
+                f.write(feature+'\n')
+        return X_select
+
+class NoSelect(BaseSelector):
     """
     Class for having a "null" transform where the output is the same as the input. Needed by MAST-ML as a placeholder if
     certain workflow aspects are not performed.
@@ -145,20 +168,10 @@ class NoSelect(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self):
-        pass
+        super(NoSelect, self).__init__()
 
-    def fit(self, X, y=None):
-        return self
 
-    def transform(self, X):
-        return X
-
-    def evaluate(self, X, y=None):
-        self.fit(X=X, y=y)
-        X_select = self.transform(X=X)
-        return X_select
-
-class EnsembleModelFeatureSelector():
+class EnsembleModelFeatureSelector(BaseSelector):
     """
     Class custom-written for MAST-ML to conduct selection of features with ensemble model feature importances
 
@@ -194,9 +207,10 @@ class EnsembleModelFeatureSelector():
                 dataframe: (dataframe), dataframe of selected X features
 
     """
-    def __init__(self, model, k_features):
+    def __init__(self, model, n_features_to_select):
+        super(EnsembleModelFeatureSelector, self).__init__()
         self.model = model
-        self.k_features = k_features
+        self.n_features_to_select = n_features_to_select
         # Check that a correct model was passed in
         self._check_model()
         self.selected_features = list()
@@ -219,16 +233,11 @@ class EnsembleModelFeatureSelector():
             feature_importance_dict[col] = f
         feature_importances_sorted = sorted(((f, col) for col, f in feature_importance_dict.items()), reverse=True)
         sorted_features_list = [f[1] for f in feature_importances_sorted]
-        self.selected_features = sorted_features_list[0:self.k_features]
+        self.selected_features = sorted_features_list[0:self.n_features_to_select]
         return self
 
     def transform(self, X):
         X_select = X[self.selected_features]
-        return X_select
-
-    def evaluate(self, X, y=None):
-        self.fit(X=X, y=y)
-        X_select = self.transform(X=X)
         return X_select
 
 class PearsonSelector():
