@@ -123,7 +123,7 @@ class BaseSelector(BaseEstimator, TransformerMixin):
     def __init__(self):
         pass
 
-    def fit(self, X, y=None):
+    def fit(self, X, y):
         return self
 
     def transform(self, X):
@@ -136,6 +136,13 @@ class BaseSelector(BaseEstimator, TransformerMixin):
         with open(os.path.join(savepath, 'selected_features.txt'), 'w') as f:
             for feature in self.selected_features:
                 f.write(feature+'\n')
+        if self.__class__.__name__ == 'EnsembleModelFeatureSelector':
+            self.feature_importances_sorted.to_excel(os.path.join(savepath, 'EnsembleModelFeatureSelector_feature_importances.xlsx'))
+        if self.__class__.__name__ == 'PearsonSelector':
+            self.full_correlation_matrix.to_excel(os.path.join(savepath, 'PearsonSelector_fullcorrelationmatrix.xlsx'))
+            self.highly_correlated_features.to_excel(os.path.join(savepath, 'PearsonSelector_highlycorrelatedfeatures.xlsx'))
+            self.highly_correlated_features_flagged.to_excel(os.path.join(savepath, 'PearsonSelector_highlycorrelatedfeaturesflagged.xlsx'))
+            self.features_highly_correlated_with_target.to_excel(os.path.join(savepath, 'PearsonSelector_highlycorrelatedwithtarget.xlsx'))
         return X_select
 
 class NoSelect(BaseSelector):
@@ -169,7 +176,6 @@ class NoSelect(BaseSelector):
 
     def __init__(self):
         super(NoSelect, self).__init__()
-
 
 class EnsembleModelFeatureSelector(BaseSelector):
     """
@@ -226,12 +232,13 @@ class EnsembleModelFeatureSelector(BaseSelector):
                 raise ValueError('Models used in EnsembleModelFeatureSelector must be one of RandomForestRegressor, ExtraTreesRegressor, GradientBoostingRegressor')
         return
 
-    def fit(self, X, y=None):
+    def fit(self, X, y):
         feature_importances = self.model.fit(X, y).feature_importances_
         feature_importance_dict = dict()
         for col, f in zip(X.columns.tolist(), feature_importances):
             feature_importance_dict[col] = f
         feature_importances_sorted = sorted(((f, col) for col, f in feature_importance_dict.items()), reverse=True)
+        self.feature_importances_sorted = pd.DataFrame(feature_importances_sorted)
         sorted_features_list = [f[1] for f in feature_importances_sorted]
         self.selected_features = sorted_features_list[0:self.n_features_to_select]
         return self
@@ -240,7 +247,7 @@ class EnsembleModelFeatureSelector(BaseSelector):
         X_select = X[self.selected_features]
         return X_select
 
-class PearsonSelector():
+class PearsonSelector(BaseSelector):
     """
     Class custom-written for MAST-ML to conduct selection of features based on Pearson correlation coefficent between
     features and target. Can also be used for dimensionality reduction by removing redundant features highly correlated
@@ -284,14 +291,15 @@ class PearsonSelector():
                 dataframe: (dataframe), dataframe of selected X features
 
     """
-    def __init__(self, threshold_between_features, threshold_with_target, flag_highly_correlated_features, k_features):
+    def __init__(self, threshold_between_features, threshold_with_target, flag_highly_correlated_features, n_features_to_select):
+        super(PearsonSelector, self).__init__()
         self.threshold_between_features = threshold_between_features
         self.threshold_with_target = threshold_with_target
         self.flag_highly_correlated_features = flag_highly_correlated_features
-        self.k_features = k_features
+        self.n_features_to_select = n_features_to_select
         self.selected_features = list()
 
-    def fit(self, X, savepath, y=None, Xgroups=None):
+    def fit(self, X, y):
         df = X
         df_features = df.columns.tolist()
         n_col = df.shape[1]
@@ -310,7 +318,8 @@ class PearsonSelector():
 
             array_df = pd.DataFrame(array_data, index=df_features[:n_col], columns=df_features[:n_col])
 
-            array_df.to_excel(os.path.join(savepath, 'Full_correlation_matrix.xlsx'))
+            #array_df.to_excel(os.path.join(savepath, 'Full_correlation_matrix.xlsx'))
+            self.full_correlation_matrix = array_df
 
             #### Print features highly-correlated to each other into excel
             hcorr = dict()
@@ -328,7 +337,8 @@ class PearsonSelector():
                                 highly_correlated_features.append(feature2)
 
             hcorr_df = pd.DataFrame(hcorr, index=["Corr"])
-            hcorr_df.to_excel(os.path.join(savepath, 'Highly_correlated_features.xlsx'))
+            #hcorr_df.to_excel(os.path.join(savepath, 'Highly_correlated_features.xlsx'))
+            self.highly_correlated_features = hcorr_df
 
             highly_correlated_features = list(np.unique(np.array(highly_correlated_features)))
 
@@ -349,8 +359,9 @@ class PearsonSelector():
             for feature in all_features:
                 if feature not in removed_features:
                     removed_features_df = removed_features_df.drop(columns=feature)
-            removed_features_df.to_excel(os.path.join(savepath, "Highly_correlated_features_flagged.xlsx"),
-                                         index=False)
+            #removed_features_df.to_excel(os.path.join(savepath, "Highly_correlated_features_flagged.xlsx"),
+            #                             index=False)
+            self.highly_correlated_features_flagged = removed_features_df
 
             # Define self.selected_features
             remaining_features = list(new_df.columns)
@@ -370,7 +381,7 @@ class PearsonSelector():
                                                 ascending=False).keys())
 
         # Sometimes the specificed threshold is too high. Make it lower until at least 1 feature is selected
-        while len(self.selected_features) < self.k_features:
+        while len(self.selected_features) < self.n_features_to_select:
             print('WARNING: Pearson selector threshold was too high to result in selecting any features, lowering threshold to get specified feature number')
             self.threshold_with_target -= 0.05
             self.selected_features = list(all_corrs[all_corrs > self.threshold_with_target].sort_values(
@@ -379,8 +390,8 @@ class PearsonSelector():
                 print('WARNING: Pearson selector reduce the threshold such that all features were included')
                 break
             print('Pearson selector selected features with an adjusted threshold value')
-        if len(self.selected_features) > self.k_features:
-            self.selected_features = list(all_corrs[all_corrs > self.threshold_with_target].sort_values(ascending=False).keys())[:self.k_features]
+        if len(self.selected_features) > self.n_features_to_select:
+            self.selected_features = list(all_corrs[all_corrs > self.threshold_with_target].sort_values(ascending=False).keys())[:self.n_features_to_select]
 
 
         # Create the dataframe displaying the highly correlated features and the Pearson Correlations
@@ -388,13 +399,14 @@ class PearsonSelector():
                                             index=list(all_corrs[all_corrs > self.threshold_with_target].sort_values(
                                                 ascending=False).keys()),
                                             columns=["Pearson Correlation (absolute value)"])
-        hcorr_with_target_df.to_excel(os.path.join(savepath, 'Features_highly_correlated_with_target.xlsx'))
+        #hcorr_with_target_df.to_excel(os.path.join(savepath, 'Features_highly_correlated_with_target.xlsx'))
+        self.features_highly_correlated_with_target = hcorr_with_target_df
 
         return self
 
     def transform(self, X):
-        dataframe = X[self.selected_features]
-        return dataframe
+        X_select = X[self.selected_features]
+        return X_select
 
 class MASTMLFeatureSelector():
     """
