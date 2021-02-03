@@ -153,6 +153,16 @@ class BaseSplitter(ms.BaseCrossValidator):
         self.splitdirs = list()
         for model in models:
 
+            # See if the model used is amenable to uncertainty (error) analysis
+            if model.model.__class__.__name__ in ['RandomForestRegressor',
+                                                     'GradientBoostingRegressor',
+                                                     'GaussianProcessRegressor',
+                                                     'EnsembleRegressor',
+                                                     'ExtraTreesRegressor']:
+                has_model_errors = True
+            else:
+                has_model_errors = False
+
             for selector in selectors:
                 splitdir = self._setup_savedir(model=model, selector=selector, savepath=savepath)
                 self.splitdirs.append(splitdir)
@@ -186,7 +196,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                     else:
                         group = None
 
-                    self._evaluate_split(X_train, X_test, y_train, y_test, model_orig, metrics, plots, group, splitpath)
+                    self._evaluate_split(X_train, X_test, y_train, y_test, model_orig, metrics, plots, group, splitpath, has_model_errors)
                     split_count += 1
 
                 # At level of splitdir, do analysis over all splits (e.g. parity plot over all splits)
@@ -305,9 +315,18 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                         model=model,
                                                         show_figure=False,
                                                         average_values=True)
+                    if has_model_errors is True:
+                        Error.plot_real_vs_predicted_error(savepath=splitdir,
+                                                       model=model,
+                                                       data_type='test',
+                                                       show_figure=False)
+                        Error.plot_real_vs_predicted_error(savepath=splitdir,
+                                                       model=model,
+                                                       data_type='train',
+                                                       show_figure=False)
         return
 
-    def _evaluate_split(self, X_train, X_test, y_train, y_test, model, metrics, plots, group, splitpath):
+    def _evaluate_split(self, X_train, X_test, y_train, y_test, model, metrics, plots, group, splitpath, has_model_errors):
         model.fit(X_train, y_train)
         y_pred = model.predict(X_test)
         y_pred_train = model.predict(X_train)
@@ -369,6 +388,15 @@ class BaseSplitter(ms.BaseCrossValidator):
                                         model=model,
                                         X=X_train,
                                         show_figure=False)
+            if has_model_errors is True:
+                Error.plot_real_vs_predicted_error(savepath=splitpath,
+                                                   model=model,
+                                                   data_type='test',
+                                                   show_figure=False)
+                Error.plot_real_vs_predicted_error(savepath=splitpath,
+                                                   model=model,
+                                                   data_type='train',
+                                                   show_figure=False)
 
         self._save_split_data(df=X_train, filename='X_train', savepath=splitpath, columns=X_train.columns.values)
         self._save_split_data(df=X_test, filename='X_test', savepath=splitpath, columns=X_test.columns.values)
