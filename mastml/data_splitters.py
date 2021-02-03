@@ -126,10 +126,10 @@ class BaseSplitter(ms.BaseCrossValidator):
             test_inds.append(test)
         return X_splits, y_splits, train_inds, test_inds
 
-    def evaluate(self, X, y, models, groups=None, hyperopt=None, selectors=None, metrics=None, savepath=None):
+    def evaluate(self, X, y, models, groups=None, hyperopt=None, selectors=None, metrics=None,
+                 plots=['Histogram', 'Scatter', 'Error'], savepath=None):
         # Have option to evaluate hyperparams of model in each split
         # Have ability to do nesting here?
-        # How to handle which plots to make?
         # Carry data label name from metadata?
 
         X_splits, y_splits, train_inds, test_inds = self.split_asframe(X=X, y=y, groups=groups)
@@ -186,7 +186,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                     else:
                         group = None
 
-                    self._evaluate_split(X_train, X_test, y_train, y_test, model_orig, metrics, group, splitpath)
+                    self._evaluate_split(X_train, X_test, y_train, y_test, model_orig, metrics, plots, group, splitpath)
                     split_count += 1
 
                 # At level of splitdir, do analysis over all splits (e.g. parity plot over all splits)
@@ -195,154 +195,180 @@ class BaseSplitter(ms.BaseCrossValidator):
                 y_pred_all = self._collect_data(filename='y_pred', savepath=splitdir)
                 y_pred_train_all = self._collect_data(filename='y_pred_train', savepath=splitdir)
 
-                Histogram.plot_residuals_histogram(y_true=y_test_all,
+                if 'Histogram' in plots:
+                    Histogram.plot_residuals_histogram(y_true=y_test_all,
+                                                       y_pred=y_pred_all,
+                                                       savepath=splitdir,
+                                                       file_name='residual_histogram_test',
+                                                       show_figure=False)
+                    Histogram.plot_residuals_histogram(y_true=y_train_all,
+                                                       y_pred=y_pred_train_all,
+                                                       savepath=splitdir,
+                                                       file_name='residual_histogram_train',
+                                                       show_figure=False)
+                if 'Scatter' in plots:
+                    if groups is not None:
+                        Scatter.plot_predicted_vs_true(y_true=y_test_all,
                                                    y_pred=y_pred_all,
+                                                   groups=groups,
                                                    savepath=splitdir,
-                                                   file_name='residual_histogram_test',
+                                                   file_name='parity_plot_allsplits_test_pergroup',
+                                                       data_type='test',
+                                                   x_label='values',
+                                                   metrics_list=metrics,
                                                    show_figure=False)
-                Histogram.plot_residuals_histogram(y_true=y_train_all,
-                                                   y_pred=y_pred_train_all,
-                                                   savepath=splitdir,
-                                                   file_name='residual_histogram_train',
-                                                   show_figure=False)
-                if groups is not None:
+                        Scatter.plot_metric_vs_group(savepath=splitdir,
+                                                     data_type='test',
+                                                     show_figure=False)
                     Scatter.plot_predicted_vs_true(y_true=y_test_all,
-                                               y_pred=y_pred_all,
-                                               groups=groups,
-                                               savepath=splitdir,
-                                               file_name='parity_plot_allsplits_test_pergroup',
+                                                   y_pred=y_pred_all,
+                                                   groups=None,
+                                                   savepath=splitdir,
+                                                   file_name='parity_plot_allsplits_test',
                                                    data_type='test',
-                                               x_label='values',
-                                               metrics_list=metrics,
-                                               show_figure=False)
-                    Scatter.plot_metric_vs_group(savepath=splitdir,
-                                                 data_type='test',
-                                                 show_figure=False)
-                Scatter.plot_predicted_vs_true(y_true=y_test_all,
-                                               y_pred=y_pred_all,
-                                               groups=None,
-                                               savepath=splitdir,
-                                               file_name='parity_plot_allsplits_test',
-                                               data_type='test',
-                                               x_label='values',
-                                               metrics_list=metrics,
-                                               show_figure=False)
-                Scatter.plot_best_worst_split(savepath=splitdir,
-                                              data_type='test',
-                                              x_label='values',
-                                              metrics_list=metrics,
-                                              show_figure=False)
-                Scatter.plot_best_worst_per_point(savepath=splitdir,
+                                                   x_label='values',
+                                                   metrics_list=metrics,
+                                                   show_figure=False)
+                    Scatter.plot_best_worst_split(savepath=splitdir,
                                                   data_type='test',
                                                   x_label='values',
                                                   metrics_list=metrics,
                                                   show_figure=False)
-                Scatter.plot_predicted_vs_true(y_true=y_train_all,
-                                               y_pred=y_pred_train_all,
-                                               groups=None,
-                                               savepath=splitdir,
-                                               file_name='parity_plot_allsplits_train',
-                                               x_label='values',
-                                               data_type='train',
-                                               metrics_list=metrics,
-                                               show_figure=False)
-                Scatter.plot_best_worst_split(savepath=splitdir,
-                                              data_type='train',
-                                              x_label='values',
-                                              metrics_list=metrics,
-                                              show_figure=False)
-                Scatter.plot_best_worst_per_point(savepath=splitdir,
+                    Scatter.plot_best_worst_per_point(savepath=splitdir,
+                                                      data_type='test',
+                                                      x_label='values',
+                                                      metrics_list=metrics,
+                                                      show_figure=False)
+                    Scatter.plot_predicted_vs_true(y_true=y_train_all,
+                                                   y_pred=y_pred_train_all,
+                                                   groups=None,
+                                                   savepath=splitdir,
+                                                   file_name='parity_plot_allsplits_train',
+                                                   x_label='values',
+                                                   data_type='train',
+                                                   metrics_list=metrics,
+                                                   show_figure=False)
+                    Scatter.plot_best_worst_split(savepath=splitdir,
                                                   data_type='train',
                                                   x_label='values',
                                                   metrics_list=metrics,
                                                   show_figure=False)
-                Scatter.plot_predicted_vs_true_bars(savepath=splitdir,
-                                                    data_type='test',
-                                                    x_label='values',
-                                                    groups=None,
-                                                    metrics_list=metrics,
-                                                    show_figure=False)
-                Error.plot_normalized_error_allsplits(savepath=splitdir,
-                                                    data_type='test',
-                                                    model=model,
-                                                    show_figure=False,
-                                                    average_values=False)
-                Error.plot_normalized_error_allsplits(savepath=splitdir,
-                                                    data_type='train',
-                                                    model=model,
-                                                    show_figure=False,
-                                                    average_values=False)
-                Error.plot_normalized_error_allsplits(savepath=splitdir,
-                                                    data_type='test',
-                                                    model=model,
-                                                    show_figure=False,
-                                                    average_values=True)
-                Error.plot_normalized_error_allsplits(savepath=splitdir,
-                                                    data_type='train',
-                                                    model=model,
-                                                    show_figure=False,
-                                                    average_values=True)
+                    Scatter.plot_best_worst_per_point(savepath=splitdir,
+                                                      data_type='train',
+                                                      x_label='values',
+                                                      metrics_list=metrics,
+                                                      show_figure=False)
+                    Scatter.plot_predicted_vs_true_bars(savepath=splitdir,
+                                                        data_type='test',
+                                                        x_label='values',
+                                                        groups=None,
+                                                        metrics_list=metrics,
+                                                        show_figure=False)
+                if 'Error' in plots:
+                    Error.plot_normalized_error_allsplits(savepath=splitdir,
+                                                        data_type='test',
+                                                        model=model,
+                                                        show_figure=False,
+                                                        average_values=False)
+                    Error.plot_normalized_error_allsplits(savepath=splitdir,
+                                                        data_type='train',
+                                                        model=model,
+                                                        show_figure=False,
+                                                        average_values=False)
+                    Error.plot_normalized_error_allsplits(savepath=splitdir,
+                                                        data_type='test',
+                                                        model=model,
+                                                        show_figure=False,
+                                                        average_values=True)
+                    Error.plot_normalized_error_allsplits(savepath=splitdir,
+                                                        data_type='train',
+                                                        model=model,
+                                                        show_figure=False,
+                                                        average_values=True)
+                    Error.plot_cumulative_normalized_error_allsplits(savepath=splitdir,
+                                                        data_type='test',
+                                                        model=model,
+                                                        show_figure=False,
+                                                        average_values=False)
+                    Error.plot_cumulative_normalized_error_allsplits(savepath=splitdir,
+                                                        data_type='train',
+                                                        model=model,
+                                                        show_figure=False,
+                                                        average_values=False)
+                    Error.plot_cumulative_normalized_error_allsplits(savepath=splitdir,
+                                                        data_type='test',
+                                                        model=model,
+                                                        show_figure=False,
+                                                        average_values=True)
+                    Error.plot_cumulative_normalized_error_allsplits(savepath=splitdir,
+                                                        data_type='train',
+                                                        model=model,
+                                                        show_figure=False,
+                                                        average_values=True)
         return
 
-    def _evaluate_split(self, X_train, X_test, y_train, y_test, model, metrics, group, splitpath):
+    def _evaluate_split(self, X_train, X_test, y_train, y_test, model, metrics, plots, group, splitpath):
         model.fit(X_train, y_train)
         y_pred = model.predict(X_test)
         y_pred_train = model.predict(X_train)
 
-        Histogram.plot_residuals_histogram(y_true=y_test,
+        if 'Histogram' in plots:
+            Histogram.plot_residuals_histogram(y_true=y_test,
+                                               y_pred=y_pred,
+                                               savepath=splitpath,
+                                               file_name='residual_histogram_test',
+                                               show_figure=False)
+            Histogram.plot_residuals_histogram(y_true=y_train,
+                                               y_pred=y_pred_train,
+                                               savepath=splitpath,
+                                               file_name='residual_histogram_train',
+                                               show_figure=False)
+        if 'Scatter' in plots:
+            Scatter.plot_predicted_vs_true(y_true=y_test,
                                            y_pred=y_pred,
                                            savepath=splitpath,
-                                           file_name='residual_histogram_test',
+                                           file_name='parity_plot_test',
+                                           x_label='values',
+                                           data_type='test',
+                                           metrics_list=metrics,
                                            show_figure=False)
-        Histogram.plot_residuals_histogram(y_true=y_train,
+            Scatter.plot_predicted_vs_true(y_true=y_train,
                                            y_pred=y_pred_train,
                                            savepath=splitpath,
-                                           file_name='residual_histogram_train',
+                                           file_name='parity_plot_train',
+                                           x_label='values',
+                                           data_type='train',
+                                           metrics_list=metrics,
                                            show_figure=False)
-        Scatter.plot_predicted_vs_true(y_true=y_test,
-                                       y_pred=y_pred,
-                                       savepath=splitpath,
-                                       file_name='parity_plot_test',
-                                       x_label='values',
-                                       data_type='test',
-                                       metrics_list=metrics,
-                                       show_figure=False)
-        Scatter.plot_predicted_vs_true(y_true=y_train,
-                                       y_pred=y_pred_train,
-                                       savepath=splitpath,
-                                       file_name='parity_plot_train',
-                                       x_label='values',
-                                       data_type='train',
-                                       metrics_list=metrics,
-                                       show_figure=False)
-        Error.plot_normalized_error(y_true=y_test,
-                                    y_pred=y_pred,
-                                    savepath=splitpath,
-                                    data_type='test',
-                                    model=model,
-                                    X=X_test,
-                                    show_figure=False)
-        Error.plot_normalized_error(y_true=y_train,
-                                    y_pred=y_pred_train,
-                                    savepath=splitpath,
-                                    data_type='train',
-                                    model=model,
-                                    X=X_train,
-                                    show_figure=False)
-        Error.plot_cumulative_normalized_error(y_true=y_test,
-                                    y_pred=y_pred,
-                                    savepath=splitpath,
-                                    data_type='test',
-                                    model=model,
-                                    X=X_test,
-                                    show_figure=False)
-        Error.plot_cumulative_normalized_error(y_true=y_train,
-                                    y_pred=y_pred_train,
-                                    savepath=splitpath,
-                                    data_type='train',
-                                    model=model,
-                                    X=X_train,
-                                    show_figure=False)
+        if 'Error' in plots:
+            Error.plot_normalized_error(y_true=y_test,
+                                        y_pred=y_pred,
+                                        savepath=splitpath,
+                                        data_type='test',
+                                        model=model,
+                                        X=X_test,
+                                        show_figure=False)
+            Error.plot_normalized_error(y_true=y_train,
+                                        y_pred=y_pred_train,
+                                        savepath=splitpath,
+                                        data_type='train',
+                                        model=model,
+                                        X=X_train,
+                                        show_figure=False)
+            Error.plot_cumulative_normalized_error(y_true=y_test,
+                                        y_pred=y_pred,
+                                        savepath=splitpath,
+                                        data_type='test',
+                                        model=model,
+                                        X=X_test,
+                                        show_figure=False)
+            Error.plot_cumulative_normalized_error(y_true=y_train,
+                                        y_pred=y_pred_train,
+                                        savepath=splitpath,
+                                        data_type='train',
+                                        model=model,
+                                        X=X_train,
+                                        show_figure=False)
 
         self._save_split_data(df=X_train, filename='X_train', savepath=splitpath, columns=X_train.columns.values)
         self._save_split_data(df=X_test, filename='X_test', savepath=splitpath, columns=X_test.columns.values)
