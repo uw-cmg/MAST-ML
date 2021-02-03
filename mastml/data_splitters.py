@@ -170,6 +170,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                 split_count = 0
                 for Xs, ys, train_ind, test_ind in zip(X_splits, y_splits, train_inds, test_inds):
                     model_orig = copy.deepcopy(model)
+                    selector_orig = copy.deepcopy(selector)
 
                     # Here do new split of Xtrain, ytrain to Xtrain2, ytrain2, Xval, yval for nested CV ???
                     #
@@ -189,7 +190,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                     else:
                         group = None
 
-                    self._evaluate_split(X_train, X_test, y_train, y_test, model_orig, selector, hyperopt, metrics, plots, group,
+                    self._evaluate_split(X_train, X_test, y_train, y_test, model_orig, selector_orig, hyperopt, metrics, plots, group,
                                          splitpath, has_model_errors)
                     split_count += 1
 

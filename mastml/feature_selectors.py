@@ -86,7 +86,6 @@ def fitify_just_use_values(fit):
     return new_fit
 
 #TODO: need to clean this up and add ScikitlearnSelector wrapper. Will also include SequentialFeatureSelector in latest sklearn version
-#TODO: update PearsonSelector and MASTMLFeatureSelector to conform to new style with evaluate() method
 
 score_func_selectors = {
     'GenericUnivariateSelect': fs.GenericUnivariateSelect, # Univariate feature selector with configurable strategy.
@@ -143,6 +142,8 @@ class BaseSelector(BaseEstimator, TransformerMixin):
             self.highly_correlated_features.to_excel(os.path.join(savepath, 'PearsonSelector_highlycorrelatedfeatures.xlsx'))
             self.highly_correlated_features_flagged.to_excel(os.path.join(savepath, 'PearsonSelector_highlycorrelatedfeaturesflagged.xlsx'))
             self.features_highly_correlated_with_target.to_excel(os.path.join(savepath, 'PearsonSelector_highlycorrelatedwithtarget.xlsx'))
+        if self.__class__.__name__ == 'MASTMLFeatureSelector':
+            self.mastml_forward_selection_df.to_excel(os.path.join(savepath, 'MASTMLFeatureSelector_featureselection_data.xlsx'))
         return X_select
 
 class NoSelect(BaseSelector):
@@ -408,7 +409,7 @@ class PearsonSelector(BaseSelector):
         X_select = X[self.selected_features]
         return X_select
 
-class MASTMLFeatureSelector():
+class MASTMLFeatureSelector(BaseSelector):
     """
     Class custom-written for MAST-ML to conduct forward selection of features with flexible model and cv scheme
 
@@ -451,17 +452,18 @@ class MASTMLFeatureSelector():
 
     """
 
-    def __init__(self, estimator, n_features_to_select, cv, manually_selected_features=list()):
-        self.estimator = estimator
+    def __init__(self, model, n_features_to_select, cv=None, manually_selected_features=list()):
+        super(MASTMLFeatureSelector, self).__init__()
+        self.model = model
         if cv is None:
             self.cv = KFold(shuffle=True, n_splits=5)
         else:
             self.cv = cv
         self.manually_selected_features = manually_selected_features
-        self.selected_feature_names = self.manually_selected_features
+        self.selected_features = self.manually_selected_features
         self.n_features_to_select = n_features_to_select-len(self.manually_selected_features)
 
-    def fit(self, X, y, savepath, Xgroups=None):
+    def fit(self, X, y, Xgroups=None):
         if Xgroups is None:
             xgroups = np.zeros(len(y))
             Xgroups = pd.DataFrame(xgroups)
@@ -481,10 +483,10 @@ class MASTMLFeatureSelector():
                 ranked_features = self._rank_features(X=X, y=y, groups=Xgroups)
                 top_feature_name, top_feature_avg_rmse, top_feature_std_rmse = self._choose_top_feature(ranked_features=ranked_features)
 
-            self.selected_feature_names.append(top_feature_name)
-            if len(self.selected_feature_names) > 0:
-                print('selected features')
-                print(self.selected_feature_names)
+            self.selected_features.append(top_feature_name)
+            #if len(self.selected_feature_names) > 0:
+            #    print('selected features')
+            #    print(self.selected_feature_names)
             selected_feature_avg_rmses.append(top_feature_avg_rmse)
             selected_feature_std_rmses.append(top_feature_std_rmse)
 
@@ -498,10 +500,11 @@ class MASTMLFeatureSelector():
             basic_forward_selection_dict[str(num_features_selected)][
                 'Stdev RMSE using top features'] = top_feature_std_rmse
             # Save for every loop of selecting features
-            pd.DataFrame(basic_forward_selection_dict).to_csv(os.path.join(savepath,'MASTMLFeatureSelector_data_feature_'+str(num_features_selected)+'.csv'))
+            self.mastml_forward_selection_df = pd.DataFrame(basic_forward_selection_dict)
+            #pd.DataFrame(basic_forward_selection_dict).to_csv(os.path.join(savepath,'MASTMLFeatureSelector_data_feature_'+str(num_features_selected)+'.csv'))
             num_features_selected += 1
         basic_forward_selection_dict[str(self.n_features_to_select - 1)][
-            'Full feature set Names'] = self.selected_feature_names
+            'Full feature set Names'] = self.selected_features
         basic_forward_selection_dict[str(self.n_features_to_select - 1)][
             'Full feature set Avg RMSEs'] = selected_feature_avg_rmses
         basic_forward_selection_dict[str(self.n_features_to_select - 1)][
@@ -512,8 +515,8 @@ class MASTMLFeatureSelector():
         return self
 
     def transform(self, X):
-        dataframe = self._get_featureselected_dataframe(X=X, selected_feature_names=self.selected_feature_names)
-        return dataframe
+        X_select = self._get_featureselected_dataframe(X=X, selected_feature_names=self.selected_features)
+        return X_select
 
     def _rank_features(self, X, y, groups):
         y = np.array(y).reshape(-1, 1)
@@ -523,14 +526,14 @@ class MASTMLFeatureSelector():
         if groups is not None:
             groups = groups.iloc[:,0].tolist()
         for col in X.columns:
-            if col not in self.selected_feature_names:
-                X_ = X.loc[:, self.selected_feature_names]
+            if col not in self.selected_features:
+                X_ = X.loc[:, self.selected_features]
                 X__ = X.loc[:, col]
                 X_ = np.array(pd.concat([X_, X__], axis=1))
 
                 for trains, tests in self.cv.split(X_, y, groups):
-                    self.estimator.fit(X_[trains], y[trains])
-                    predict_tests = self.estimator.predict(X_[tests])
+                    self.model.fit(X_[trains], y[trains])
+                    predict_tests = self.model.predict(X_[tests])
                     tests_metrics.append(root_mean_squared_error(y[tests], predict_tests))
                 avg_rmse = np.mean(tests_metrics)
 
@@ -571,7 +574,6 @@ class MASTMLFeatureSelector():
         # Return dataframe containing only selected features
         X_selected = X.loc[:, selected_feature_names]
         return X_selected
-
 
 # Include Principal Component Analysis
 PCA.transform = dataframify_new_column_names(PCA.transform, 'pca_')
