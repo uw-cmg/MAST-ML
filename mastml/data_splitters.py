@@ -262,6 +262,26 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                     groups=None,
                                                     metrics_list=metrics,
                                                     show_figure=False)
+                Error.plot_normalized_error_allsplits(savepath=splitdir,
+                                                    data_type='test',
+                                                    model=model,
+                                                    show_figure=False,
+                                                    average_values=False)
+                Error.plot_normalized_error_allsplits(savepath=splitdir,
+                                                    data_type='train',
+                                                    model=model,
+                                                    show_figure=False,
+                                                    average_values=False)
+                Error.plot_normalized_error_allsplits(savepath=splitdir,
+                                                    data_type='test',
+                                                    model=model,
+                                                    show_figure=False,
+                                                    average_values=True)
+                Error.plot_normalized_error_allsplits(savepath=splitdir,
+                                                    data_type='train',
+                                                    model=model,
+                                                    show_figure=False,
+                                                    average_values=True)
         return
 
     def _evaluate_split(self, X_train, X_test, y_train, y_test, model, metrics, group, splitpath):

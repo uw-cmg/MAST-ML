@@ -28,6 +28,9 @@ from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
 matplotlib.rc('font', size=18, family='sans-serif') # set all font to bigger
 matplotlib.rc('figure', autolayout=True) # turn on autolayout
 
+import warnings
+warnings.filterwarnings(action="ignore")
+
 # adding dpi as a constant global so it can be changed later
 DPI = 250
 
@@ -552,6 +555,112 @@ class Error():
         ax.set_ylabel("Probability density", fontsize=18)
         _set_tick_labels_different(ax, maxx, minn, maxy, miny)
         fig.savefig(os.path.join(savepath, 'normalized_errors_'+str(data_type)+'.png'), dpi=DPI, bbox_inches='tight')
+        if show_figure is True:
+            plt.show()
+        else:
+            plt.close()
+        return
+
+    @classmethod
+    def plot_normalized_error_allsplits(cls, savepath, data_type, model, show_figure=False, average_values=False):
+        """
+        Method to plot the normalized residual errors of a model prediction
+
+        Args:
+
+            y_true: (numpy array), array containing the true y data values
+
+            y_pred: (numpy array), array containing the predicted y data values
+
+            savepath: (str), path to save the plotted normalized error plot
+
+            model: (scikit-learn model/estimator object), a scikit-learn model object
+
+            X: (numpy array), array of X features
+
+            avg_stats: (dict), dict of calculated average metrics over all CV splits
+
+        Returns:
+
+            None
+
+        """
+        # Here: if model is random forest or Gaussian process, get real error bars. Else, just residuals
+        model_name = model.model.__class__.__name__
+        models_with_error_predictions = ['RandomForestRegressor', 'GaussianProcessRegressor',
+                                         'GradientBoostingRegressor', 'EnsembleRegressor']
+        has_model_errors = False
+        if model_name in models_with_error_predictions:
+            has_model_errors = True
+
+        # Loop through split dirs and concatenate normalized error dataframes together
+        dirs = os.listdir(savepath)
+        splitdirs = [d for d in dirs if 'split_' in d and '.png' not in d]
+
+        normalized_error_dfs = list()
+        for splitdir in splitdirs:
+            normalized_error_dfs.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'error_data_'+str(data_type)+'.xlsx')))
+
+        normalized_error_dfs = pd.concat(normalized_error_dfs)
+        if average_values is True:
+            normalized_error_dfs = normalized_error_dfs.groupby('Y True').mean().reset_index()
+
+        y_true = normalized_error_dfs['Y True']
+        y_pred = normalized_error_dfs['Y Pred']
+        normalized_residuals = (y_true - y_pred) / np.std(y_true - y_pred)
+        x_align = 0.64
+        fig, ax = make_fig_ax(x_align=x_align)
+        mu = 0
+        sigma = 1
+        density_residuals = gaussian_kde(normalized_residuals)
+        x = np.linspace(mu - 5 * sigma, mu + 5 * sigma, y_true.shape[0])
+        ax.plot(x, norm.pdf(x, mu, sigma), linewidth=4, color='blue', label="Analytical Gaussian")
+        ax.plot(x, density_residuals(x), linewidth=4, color='green', label="Model Residuals")
+        maxx = 5
+        minn = -5
+
+        if has_model_errors:
+            err_up = normalized_error_dfs['error_bars_up']
+            err_down = normalized_error_dfs['error_bars_down']
+            err_avg = normalized_error_dfs['error_avg']
+            model_errors = (y_true - y_pred) / err_avg
+            residuals = normalized_error_dfs['model residuals']
+
+            density_errors = gaussian_kde(model_errors)
+            maxy = max(max(density_residuals(x)), max(norm.pdf(x, mu, sigma)), max(density_errors(x)))
+            miny = min(min(density_residuals(x)), min(norm.pdf(x, mu, sigma)), max(density_errors(x)))
+            ax.plot(x, density_errors(x), linewidth=4, color='purple', label="Model Errors")
+            # Save data to csv file
+            data_dict = {"Y True": y_true, "Y Pred": y_pred, "Plotted x values": x, "error_bars_up": err_up,
+                         "error_bars_down": err_down, "error_avg": err_avg,
+                         "analytical gaussian (plotted y blue values)": norm.pdf(x, mu, sigma),
+                         "model residuals": residuals,
+                         "model normalized residuals (plotted y green values)": density_residuals(x),
+                         "model errors (plotted y purple values)": density_errors(x)}
+            if average_values is True:
+                pd.DataFrame(data_dict).to_excel(os.path.join(savepath, 'error_data_'+str(data_type)+'_allsplits_averagepoints.xlsx'))
+            else:
+                pd.DataFrame(data_dict).to_excel(os.path.join(savepath, 'error_data_' + str(data_type) + '_allsplits_allpoints.xlsx'))
+        else:
+            # Save data to csv file
+            data_dict = {"Y True": y_true, "Y Pred": y_pred, "x values": x,
+                         "analytical gaussian": norm.pdf(x, mu, sigma),
+                         "model residuals": density_residuals(x)}
+            if average_values is True:
+                pd.DataFrame(data_dict).to_excel(os.path.join(savepath, 'error_data_'+str(data_type)+'_allsplits_averagepoints.xlsx'))
+            else:
+                pd.DataFrame(data_dict).to_excel(os.path.join(savepath, 'error_data_' + str(data_type) + '_allsplits_allpoints.xlsx'))
+                maxy = max(max(density_residuals(x)), max(norm.pdf(x, mu, sigma)))
+            miny = min(min(density_residuals(x)), min(norm.pdf(x, mu, sigma)))
+
+        ax.legend(loc=0, fontsize=12, frameon=False)
+        ax.set_xlabel(r"$\mathrm{x}/\mathit{\sigma}$", fontsize=18)
+        ax.set_ylabel("Probability density", fontsize=18)
+        _set_tick_labels_different(ax, maxx, minn, maxy, miny)
+        if average_values is True:
+            fig.savefig(os.path.join(savepath, 'normalized_errors_'+str(data_type)+'_allsplits_averagepoints.png'), dpi=DPI, bbox_inches='tight')
+        else:
+            fig.savefig(os.path.join(savepath, 'normalized_errors_' + str(data_type) + '_allsplits_allpoints.png'),dpi=DPI, bbox_inches='tight')
         if show_figure is True:
             plt.show()
         else:
