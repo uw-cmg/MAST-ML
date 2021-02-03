@@ -167,10 +167,6 @@ class BaseSplitter(ms.BaseCrossValidator):
                 splitdir = self._setup_savedir(model=model, selector=selector, savepath=savepath)
                 self.splitdirs.append(splitdir)
 
-                # Here loop over hyperopt methods if provided, include in save dir name above
-                #
-                #
-
                 split_count = 0
                 for Xs, ys, train_ind, test_ind in zip(X_splits, y_splits, train_inds, test_inds):
                     model_orig = copy.deepcopy(model)
@@ -188,15 +184,13 @@ class BaseSplitter(ms.BaseCrossValidator):
                     # make the feature selector directory for this split directory
                     os.mkdir(splitpath)
 
-                    # run selector to get new Xtrain, Xtest
-                    X_train = selector.evaluate(X=X_train, y=y_train)
-                    X_test = selector.evaluate(X=X_test, y=y_test)
                     if groups is not None:
                         group = np.unique(groups[test_ind])[0]
                     else:
                         group = None
 
-                    self._evaluate_split(X_train, X_test, y_train, y_test, model_orig, metrics, plots, group, splitpath, has_model_errors)
+                    self._evaluate_split(X_train, X_test, y_train, y_test, model_orig, selector, hyperopt, metrics, plots, group,
+                                         splitpath, has_model_errors)
                     split_count += 1
 
                 # At level of splitdir, do analysis over all splits (e.g. parity plot over all splits)
@@ -326,7 +320,17 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                        show_figure=False)
         return
 
-    def _evaluate_split(self, X_train, X_test, y_train, y_test, model, metrics, plots, group, splitpath, has_model_errors):
+    def _evaluate_split(self, X_train, X_test, y_train, y_test, model, selector, hyperopt, metrics, plots, group, splitpath, has_model_errors):
+
+        # run feature selector to get new Xtrain, Xtest
+        X_train = selector.evaluate(X=X_train, y=y_train, savepath=splitpath)
+        selected_features = selector.selected_features
+        X_test = X_test[selected_features]
+
+        # Here evaluate hyperopt instance, if provided, and get updated model instance
+        #
+        #
+
         model.fit(X_train, y_train)
         y_pred = model.predict(X_test)
         y_pred_train = model.predict(X_train)
