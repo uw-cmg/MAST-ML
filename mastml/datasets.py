@@ -169,14 +169,23 @@ class LocalDatasets():
         if self.group_column:
             groups = df[self.group_column]
 
+        if self.extra_columns:
+            X_extra = df[self.extra_columns]
+
         if self.as_frame:
             if self.group_column:
-                return X, y, groups
+                if self.extra_columns:
+                    return X, y, groups, X_extra
+                else:
+                    return X, y, groups
             else:
                 return X, y
         else:
             if self.group_column:
-                return np.array(X), np.array(y).ravel(), np.array(groups).ravel()
+                if self.extra_columns:
+                    return np.array(X), np.array(y).ravel(), np.array(groups).ravel(), np.array(X_extra)
+                else:
+                    return np.array(X), np.array(y).ravel(), np.array(groups).ravel()
             else:
                 return np.array(X), np.array(y).ravel()
 
