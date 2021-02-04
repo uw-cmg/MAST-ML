@@ -13,12 +13,14 @@ import sklearn.utils
 import inspect
 from pprint import pprint
 
+from sklearn.base import BaseEstimator, TransformerMixin
+
 try:
     import xgboost as xgb
 except:
     print('If you want to use XGBoost models, please manually install xgboost package')
 
-class SklearnModel():
+class SklearnModel(BaseEstimator, TransformerMixin):
     """
     Class to wrap any sklearn estimator, and provide some new dataframe functionality
 
@@ -64,6 +66,9 @@ class SklearnModel():
             return pd.DataFrame(self.model.predict(X), columns=['y_pred']).squeeze()
         else:
             return self.model.predict(X).ravel()
+
+    def get_params(self, deep=True):
+        return self.model.get_params(deep)
 
     def help(self):
         print('Documentation for', self.model)
