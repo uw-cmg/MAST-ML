@@ -126,7 +126,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             test_inds.append(test)
         return X_splits, y_splits, train_inds, test_inds
 
-    def evaluate(self, X, y, models, groups=None, hyperopts=None, selectors=None, metrics=None,
+    def evaluate(self, X, y, models, preprocessor=None, groups=None, hyperopts=None, selectors=None, metrics=None,
                  plots=['Histogram', 'Scatter', 'Error'], savepath=None):
         # Have option to evaluate hyperparams of model in each split
         # Have ability to do nesting here?
@@ -174,6 +174,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                 for Xs, ys, train_ind, test_ind in zip(X_splits, y_splits, train_inds, test_inds):
                     model_orig = copy.deepcopy(model)
                     selector_orig = copy.deepcopy(selector)
+                    preprocessor_orig = copy.deepcopy(preprocessor)
 
                     # Here do new split of Xtrain, ytrain to Xtrain2, ytrain2, Xval, yval for nested CV ???
                     #
@@ -193,7 +194,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                     else:
                         group = None
 
-                    self._evaluate_split(X_train, X_test, y_train, y_test, model_orig, selector_orig, hyperopt, metrics, plots, group,
+                    self._evaluate_split(X_train, X_test, y_train, y_test, model_orig, preprocessor_orig, selector_orig, hyperopt, metrics, plots, group,
                                          splitpath, has_model_errors)
                     split_count += 1
 
@@ -324,12 +325,29 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                        show_figure=False)
         return
 
-    def _evaluate_split(self, X_train, X_test, y_train, y_test, model, selector, hyperopt, metrics, plots, group, splitpath, has_model_errors):
+    def _evaluate_split(self, X_train, X_test, y_train, y_test, model, preprocessor, selector, hyperopt, metrics, plots, group, splitpath, has_model_errors):
+
+        X_train_orig = copy.deepcopy(X_train)
+        X_test_orig = copy.deepcopy(X_test)
+
+        preprocessor1 = copy.deepcopy(preprocessor)
+        preprocessor2 = copy.deepcopy(preprocessor)
+
+        # Preprocess the full split data
+        X_train = preprocessor1.evaluate(X_train, savepath=splitpath, file_name='train')
+        X_test = preprocessor1.evaluate(X_test, savepath=splitpath, file_name='test')
 
         # run feature selector to get new Xtrain, Xtest
         X_train = selector.evaluate(X=X_train, y=y_train, savepath=splitpath)
         selected_features = selector.selected_features
-        X_test = X_test[selected_features]
+
+        X_train = preprocessor2.evaluate(X_train_orig[selected_features], savepath=splitpath, file_name='train_selected')
+        X_test = preprocessor2.transform(X_test[selected_features])
+
+        self._save_split_data(df=X_train_orig[selected_features], filename='X_train', savepath=splitpath, columns=selected_features)
+        self._save_split_data(df=X_test_orig[selected_features], filename='X_test', savepath=splitpath, columns=selected_features)
+        self._save_split_data(df=y_train, filename='y_train', savepath=splitpath, columns='y_train')
+        self._save_split_data(df=y_test, filename='y_test', savepath=splitpath, columns='y_test')
 
         # Here evaluate hyperopt instance, if provided, and get updated model instance
         if hyperopt is not None:
@@ -338,6 +356,9 @@ class BaseSplitter(ms.BaseCrossValidator):
         model.fit(X_train, y_train)
         y_pred = model.predict(X_test)
         y_pred_train = model.predict(X_train)
+
+        self._save_split_data(df=y_pred, filename='y_pred', savepath=splitpath, columns='y_pred')
+        self._save_split_data(df=y_pred_train, filename='y_pred_train', savepath=splitpath, columns='y_pred_train')
 
         if 'Histogram' in plots:
             Histogram.plot_residuals_histogram(y_true=y_test,
@@ -405,13 +426,6 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                    model=model,
                                                    data_type='train',
                                                    show_figure=False)
-
-        self._save_split_data(df=X_train, filename='X_train', savepath=splitpath, columns=X_train.columns.values)
-        self._save_split_data(df=X_test, filename='X_test', savepath=splitpath, columns=X_test.columns.values)
-        self._save_split_data(df=y_train, filename='y_train', savepath=splitpath, columns='y_train')
-        self._save_split_data(df=y_test, filename='y_test', savepath=splitpath, columns='y_test')
-        self._save_split_data(df=y_pred, filename='y_pred', savepath=splitpath, columns='y_pred')
-        self._save_split_data(df=y_pred_train, filename='y_pred_train', savepath=splitpath, columns='y_pred_train')
 
         # Write the test group to a text file
         if group is not None:
