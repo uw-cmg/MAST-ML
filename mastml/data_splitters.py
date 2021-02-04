@@ -187,6 +187,9 @@ class BaseSplitter(ms.BaseCrossValidator):
                     if X_extra is not None:
                         X_extra_train = X_extra.loc[train_ind, :]
                         X_extra_test = X_extra.loc[test_ind, :]
+                    else:
+                        X_extra_train = None
+                        X_extra_test = None
                     # make the individual split directory
                     splitpath = os.path.join(splitdir, 'split_' + str(split_count))
                     # make the feature selector directory for this split directory
@@ -346,14 +349,15 @@ class BaseSplitter(ms.BaseCrossValidator):
         selected_features = selector.selected_features
 
         X_train = preprocessor2.evaluate(X_train_orig[selected_features], savepath=splitpath, file_name='train_selected')
-        X_test = preprocessor2.transform(X_test[selected_features])
+        X_test = preprocessor2.transform(X_test_orig[selected_features])
 
         self._save_split_data(df=X_train_orig[selected_features], filename='X_train', savepath=splitpath, columns=selected_features)
         self._save_split_data(df=X_test_orig[selected_features], filename='X_test', savepath=splitpath, columns=selected_features)
         self._save_split_data(df=y_train, filename='y_train', savepath=splitpath, columns='y_train')
         self._save_split_data(df=y_test, filename='y_test', savepath=splitpath, columns='y_test')
-        self._save_split_data(df=X_extra_train, filename='X_extra_train', savepath=splitpath, columns=X_extra_train.columns.tolist())
-        self._save_split_data(df=X_extra_test, filename='X_extra_test', savepath=splitpath, columns=X_extra_test.columns.tolist())
+        if X_extra_train is not None and X_extra_test is not None:
+            self._save_split_data(df=X_extra_train, filename='X_extra_train', savepath=splitpath, columns=X_extra_train.columns.tolist())
+            self._save_split_data(df=X_extra_test, filename='X_extra_test', savepath=splitpath, columns=X_extra_test.columns.tolist())
 
         # Here evaluate hyperopt instance, if provided, and get updated model instance
         if hyperopt is not None:
