@@ -126,7 +126,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             test_inds.append(test)
         return X_splits, y_splits, train_inds, test_inds
 
-    def evaluate(self, X, y, models, groups=None, hyperopt=None, selectors=None, metrics=None,
+    def evaluate(self, X, y, models, groups=None, hyperopts=None, selectors=None, metrics=None,
                  plots=['Histogram', 'Scatter', 'Error'], savepath=None):
         # Have option to evaluate hyperparams of model in each split
         # Have ability to do nesting here?
@@ -147,11 +147,14 @@ class BaseSplitter(ms.BaseCrossValidator):
             else:
                 selectors = list(selectors)
 
+        if hyperopts is None:
+            hyperopts = [None for l in models]
+
         if not savepath:
             savepath = os.getcwd()
 
         self.splitdirs = list()
-        for model in models:
+        for model, hyperopt in zip(models, hyperopts):
 
             # See if the model used is amenable to uncertainty (error) analysis
             if model.model.__class__.__name__ in ['RandomForestRegressor',
@@ -329,8 +332,8 @@ class BaseSplitter(ms.BaseCrossValidator):
         X_test = X_test[selected_features]
 
         # Here evaluate hyperopt instance, if provided, and get updated model instance
-        #
-        #
+        if hyperopt is not None:
+            model = hyperopt.fit(X=X_train, y=y_train, model=model, cv=5, savepath=splitpath)
 
         model.fit(X_train, y_train)
         y_pred = model.predict(X_test)
