@@ -12,107 +12,14 @@ import pandas as pd
 import os
 import copy
 
+import sklearn
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.decomposition import PCA
-import sklearn.feature_selection as fs
 from sklearn.model_selection import KFold
-
-from mlxtend.feature_selection import SequentialFeatureSelector
 
 from scipy.stats import pearsonr
 
 from mastml.metrics import root_mean_squared_error
 
-def dataframify_selector(transform):
-    """
-    Method which transforms output of scikit-learn feature selectors from array to dataframe. Enables preservation of column names.
-
-    Args:
-
-        transform: (function), a scikit-learn feature selector that has a transform method
-
-    Returns:
-
-        new_transform: (function), an amended version of the transform method that returns a dataframe
-
-    """
-
-    @wraps(transform)
-    def new_transform(self, df):
-        if isinstance(df, pd.DataFrame):
-            return df[df.columns[self.get_support(indices=True)]]
-        else: # just in case you try to use it with an array ;)
-            return df
-    return new_transform
-
-def dataframify_new_column_names(transform, name):
-    """
-    Method which transforms output of scikit-learn feature selectors to dataframe, and adds column names
-
-    Args:
-
-        transform: (function), a scikit-learn feature selector that has a transform method
-
-        name: (str), name of the feature selector
-
-    Returns:
-
-        new_transform: (function), an amended version of the transform method that returns a dataframe
-
-    """
-
-    def new_transform(self, df):
-        arr = transform(self, df.values)
-        labels = [name+str(i) for i in range(arr.shape[1])]
-        return pd.DataFrame(arr, columns=labels)
-    return new_transform
-
-def fitify_just_use_values(fit):
-    """
-    Method which enables a feature selector fit method to operate on dataframes
-
-    Args:
-
-        fit: (function), a scikit-learn feature selector object with a fit method
-
-    Returns:
-
-        new_fit: (function), an amended version of the fit method that uses dataframes as input
-
-    """
-
-    def new_fit(self, X_df, y_df):
-        return fit(self, X_df.values, y_df.values)
-    return new_fit
-
-#TODO: need to clean this up and add ScikitlearnSelector wrapper. Will also include SequentialFeatureSelector in latest sklearn version
-
-score_func_selectors = {
-    'GenericUnivariateSelect': fs.GenericUnivariateSelect, # Univariate feature selector with configurable strategy.
-    'SelectFdr': fs.SelectFdr, # Filter: Select the p-values for an estimated false discovery rate
-    'SelectFpr': fs.SelectFpr, # Filter: Select the pvalues below alpha based on a FPR test.
-    'SelectFwe': fs.SelectFwe, # Filter: Select the p-values corresponding to Family-wise error rate
-    'SelectKBest': fs.SelectKBest, # Select features according to the k highest scores.
-    'SelectPercentile': fs.SelectPercentile, # Select features according to a percentile of the highest scores.
-}
-
-model_selectors = { # feature selectors which take a model instance as first parameter
-    'RFE': fs.RFE, # Feature ranking with recursive feature elimination.
-    'RFECV': fs.RFECV, # Feature ranking with recursive feature elimination and cross-validated selection of the best number of features.
-    'SelectFromModel': fs.SelectFromModel, # Meta-transformer for selecting features based on importance weights.
-}
-
-other_selectors = {
-    'VarianceThreshold': fs.VarianceThreshold, # Feature selector that removes all low-variance features.
-}
-
-# Union together the above dicts for the primary export:
-name_to_constructor = dict(**score_func_selectors, **model_selectors, **other_selectors)
-
-# Modify all sklearn transform methods to return dataframes:
-for constructor in name_to_constructor.values():
-    constructor.old_transform = constructor.transform
-    constructor.transform = dataframify_selector(constructor.transform)
 
 class BaseSelector(BaseEstimator, TransformerMixin):
     '''
@@ -144,6 +51,33 @@ class BaseSelector(BaseEstimator, TransformerMixin):
             self.features_highly_correlated_with_target.to_excel(os.path.join(savepath, 'PearsonSelector_highlycorrelatedwithtarget.xlsx'))
         if self.__class__.__name__ == 'MASTMLFeatureSelector':
             self.mastml_forward_selection_df.to_excel(os.path.join(savepath, 'MASTMLFeatureSelector_featureselection_data.xlsx'))
+        return X_select
+
+class SklearnFeatureSelector(BaseSelector):
+    '''
+
+
+    '''
+    def __init__(self, selector, **kwargs):
+        super(SklearnFeatureSelector, self).__init__()
+        self.selector = getattr(sklearn.feature_selection, selector)(**kwargs)
+
+    def fit(self, X, y):
+        self.selector.fit(X, y)
+        return self
+
+    def transform(self, X):
+        X_select = pd.DataFrame(self.selector.transform(X))
+        original_cols = X.columns.tolist()
+        new_cols = X_select.columns.tolist()
+        new_cols_renamed = list()
+        for original_col in original_cols:
+            for new_col in new_cols:
+                # Need to compare as array because indicies are different
+                if np.array_equal(X[original_col].values, X_select[new_col].values):
+                    new_cols_renamed.append(original_col)
+
+        X_select.columns = new_cols_renamed
         return X_select
 
 class NoSelect(BaseSelector):
@@ -575,21 +509,4 @@ class MASTMLFeatureSelector(BaseSelector):
         X_selected = X.loc[:, selected_feature_names]
         return X_selected
 
-# Include Principal Component Analysis
-PCA.transform = dataframify_new_column_names(PCA.transform, 'pca_')
 
-# Include Sequential Forward Selector
-SequentialFeatureSelector.transform = dataframify_new_column_names(SequentialFeatureSelector.transform, 'sfs_')
-SequentialFeatureSelector.fit = fitify_just_use_values(SequentialFeatureSelector.fit)
-model_selectors['SequentialFeatureSelector'] = SequentialFeatureSelector
-name_to_constructor['SequentialFeatureSelector'] = SequentialFeatureSelector
-
-# Custom selectors don't need to be dataframified
-name_to_constructor.update({
-    #'PassThrough': PassThrough,
-    'PCA': PCA,
-    'SequentialFeatureSelector': SequentialFeatureSelector,
-    'MASTMLFeatureSelector' : MASTMLFeatureSelector,
-    'PearsonSelector': PearsonSelector,
-    'EnsembleModelFeatureSelector': EnsembleModelFeatureSelector
-})
