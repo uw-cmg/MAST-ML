@@ -127,7 +127,7 @@ class BaseSplitter(ms.BaseCrossValidator):
         return X_splits, y_splits, train_inds, test_inds
 
     def evaluate(self, X, y, models, preprocessor=None, groups=None, hyperopts=None, selectors=None, metrics=None,
-                 plots=['Histogram', 'Scatter', 'Error'], savepath=None):
+                 plots=['Histogram', 'Scatter', 'Error'], savepath=None, X_extra=None):
         # Have option to evaluate hyperparams of model in each split
         # Have ability to do nesting here?
         # Carry data label name from metadata?
@@ -184,6 +184,9 @@ class BaseSplitter(ms.BaseCrossValidator):
                     X_test = Xs[1]
                     y_train = pd.Series(np.array(ys[0]).ravel(), name='y_train')
                     y_test = pd.Series(np.array(ys[1]).ravel(), name='y_test')  # Make it so the y_test and y_pred have same indices so can be subtracted to get residuals
+                    if X_extra is not None:
+                        X_extra_train = X_extra.loc[train_ind, :]
+                        X_extra_test = X_extra.loc[test_ind, :]
                     # make the individual split directory
                     splitpath = os.path.join(splitdir, 'split_' + str(split_count))
                     # make the feature selector directory for this split directory
@@ -195,7 +198,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                         group = None
 
                     self._evaluate_split(X_train, X_test, y_train, y_test, model_orig, preprocessor_orig, selector_orig, hyperopt, metrics, plots, group,
-                                         splitpath, has_model_errors)
+                                         splitpath, has_model_errors, X_extra_train, X_extra_test)
                     split_count += 1
 
                 # At level of splitdir, do analysis over all splits (e.g. parity plot over all splits)
@@ -325,7 +328,8 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                        show_figure=False)
         return
 
-    def _evaluate_split(self, X_train, X_test, y_train, y_test, model, preprocessor, selector, hyperopt, metrics, plots, group, splitpath, has_model_errors):
+    def _evaluate_split(self, X_train, X_test, y_train, y_test, model, preprocessor, selector, hyperopt,
+                        metrics, plots, group, splitpath, has_model_errors, X_extra_train, X_extra_test):
 
         X_train_orig = copy.deepcopy(X_train)
         X_test_orig = copy.deepcopy(X_test)
@@ -348,6 +352,8 @@ class BaseSplitter(ms.BaseCrossValidator):
         self._save_split_data(df=X_test_orig[selected_features], filename='X_test', savepath=splitpath, columns=selected_features)
         self._save_split_data(df=y_train, filename='y_train', savepath=splitpath, columns='y_train')
         self._save_split_data(df=y_test, filename='y_test', savepath=splitpath, columns='y_test')
+        self._save_split_data(df=X_extra_train, filename='X_extra_train', savepath=splitpath, columns=X_extra_train.columns.tolist())
+        self._save_split_data(df=X_extra_test, filename='X_extra_test', savepath=splitpath, columns=X_extra_test.columns.tolist())
 
         # Here evaluate hyperopt instance, if provided, and get updated model instance
         if hyperopt is not None:
