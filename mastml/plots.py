@@ -905,7 +905,8 @@ class Error():
         return
 
     @classmethod
-    def plot_real_vs_predicted_error(cls, savepath, model, data_type, show_figure=False, recalibrate_errors=False):
+    def plot_real_vs_predicted_error(cls, savepath, model, data_type, show_figure=False, recalibrate_errors=False,
+                                     well_sampled_fraction=0.025):
 
         bin_values, rms_residual_values, num_values_per_bin = ErrorUtils()._parse_error_data(savepath=savepath,
                                                                                             data_type=data_type,
@@ -930,15 +931,6 @@ class Error():
         # Make RF error plot
         fig, ax = make_fig_ax(aspect_ratio=0.5, x_align=0.65)
 
-        #ax.scatter(bin_values[0:10], rms_residual_values[0:10], s=100, color='blue', alpha=0.7)
-        #ax.scatter(bin_values[10:], rms_residual_values[10:], s=100, color='red', alpha=0.7)
-        ax.scatter(bin_values, rms_residual_values, s=100, color='blue', alpha=0.7)
-
-        ax.set_xlabel(str(model_type) + ' model errors / dataset stdev', fontsize=12)
-        ax.set_ylabel('RMS Absolute residuals\n / dataset stdev', fontsize=12)
-        ax.tick_params(labelsize=10)
-
-        linear_int = LinearRegression(fit_intercept=False)
         linear = LinearRegression(fit_intercept=True)
         # Fit just blue circle data
         # Find nan entries
@@ -955,27 +947,39 @@ class Error():
 
         num_values_per_bin_copy = np.array(num_values_per_bin)[np.array(num_values_per_bin) != 0]
 
+        # Only examine the bins that are well-sampled, i.e. have number of data points in them above a given threshold
+        well_sampled_number = round(well_sampled_fraction*np.sum(num_values_per_bin_copy))
+        rms_residual_values_wellsampled = rms_residual_values_copy[np.where(num_values_per_bin_copy > well_sampled_number)]
+        bin_values_wellsampled = bin_values_copy[np.where(num_values_per_bin_copy>well_sampled_number)]
+        num_values_per_bin_wellsampled = num_values_per_bin_copy[np.where(num_values_per_bin_copy>well_sampled_number)]
+        rms_residual_values_poorlysampled = rms_residual_values_copy[np.where(num_values_per_bin_copy <= well_sampled_number)]
+        bin_values_poorlysampled = bin_values_copy[np.where(num_values_per_bin_copy<=well_sampled_number)]
+        num_values_per_bin_poorlysampled = num_values_per_bin_copy[np.where(num_values_per_bin_copy<=well_sampled_number)]
+
+        ax.scatter(bin_values_wellsampled, rms_residual_values_wellsampled, s=100, color='blue', alpha=0.7)
+        ax.scatter(bin_values_poorlysampled, rms_residual_values_poorlysampled, s=100, edgecolor='blue', alpha=0.7)
+
+        ax.set_xlabel(str(model_type) + ' model errors / dataset stdev', fontsize=12)
+        ax.set_ylabel('RMS Absolute residuals\n / dataset stdev', fontsize=12)
+        ax.tick_params(labelsize=10)
+
         if not rms_residual_values_copy.size:
             print("---WARNING: ALL ERRORS TOO LARGE FOR PLOTTING---")
             exit()
         else:
-            linear_int.fit(np.array(bin_values_copy).reshape(-1, 1), rms_residual_values_copy, sample_weight=num_values_per_bin_copy)
-            linear.fit(np.array(bin_values_copy).reshape(-1, 1), rms_residual_values_copy, sample_weight=num_values_per_bin_copy)
+            linear.fit(np.array(bin_values_wellsampled).reshape(-1, 1), rms_residual_values_wellsampled,
+                       sample_weight=num_values_per_bin_wellsampled)
 
-            yfit_int = linear_int.predict(np.array(bin_values_copy).reshape(-1, 1))
-            yfit = linear.predict(np.array(bin_values_copy).reshape(-1, 1))
-            ax.plot(bin_values_copy, yfit_int, 'r--', linewidth=2)
-            ax.plot(bin_values_copy, yfit, 'k--', linewidth=2)
-            slope_int = linear_int.coef_
-            r2_int = r2_score(rms_residual_values_copy, yfit_int)
+            yfit = linear.predict(np.array(bin_values_wellsampled).reshape(-1, 1))
+            ax.plot(bin_values_wellsampled, yfit, 'k--', linewidth=2)
             slope = linear.coef_
-            r2 = r2_score(rms_residual_values_copy, yfit)
+            intercept = linear.intercept_
+            r2 = r2_score(rms_residual_values_wellsampled, yfit)
 
         divider = make_axes_locatable(ax)
         axbarx = divider.append_axes("top", 1.2, pad=0.12, sharex=ax)
 
-        axbarx.bar(x=bin_values, height=num_values_per_bin, width=0.05276488, color='blue', edgecolor='black',
-                   alpha=0.7)
+        axbarx.bar(x=bin_values, height=num_values_per_bin, width=0.05276488, color='blue', edgecolor='black', alpha=0.7)
         axbarx.tick_params(labelsize=10, axis='y')
         axbarx.tick_params(labelsize=0, axis='x')
         axbarx.set_ylabel('Counts', fontsize=12)
@@ -989,10 +993,9 @@ class Error():
         axbarx.set_ylim(bottom=0, top=max(num_values_per_bin) + 50)
         ax.set_xlim(left=0, right=xmax)
 
-        ax.text(0.02, 0.9*ymax, 'zero intercept slope = %3.2f ' % slope_int, fontdict={'fontsize': 10, 'color': 'r'})
-        ax.text(0.02, 0.8*ymax, 'zero intercept R$^2$ = %3.2f ' % r2_int, fontdict={'fontsize': 10, 'color': 'r'})
-        ax.text(0.02, 0.7*ymax, 'slope = %3.2f ' % slope, fontdict={'fontsize': 10, 'color': 'k'})
-        ax.text(0.02, 0.6*ymax, 'R$^2$ = %3.2f ' % r2, fontdict={'fontsize': 10, 'color': 'k'})
+        ax.text(0.02, 0.9*ymax, 'R$^2$ = %3.2f ' % r2, fontdict={'fontsize': 10, 'color': 'k'})
+        ax.text(0.02, 0.8*ymax, 'slope = %3.2f ' % slope, fontdict={'fontsize': 10, 'color': 'k'})
+        ax.text(0.02, 0.7*ymax, 'intercept = %3.2f ' % intercept, fontdict={'fontsize': 10, 'color': 'k'})
 
         # Plot y = x line as reference point
         maxx = max(xmax, ymax)
