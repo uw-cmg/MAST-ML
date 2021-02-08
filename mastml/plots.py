@@ -474,7 +474,7 @@ class Error():
 
     '''
     @classmethod
-    def plot_normalized_error(cls, y_true, y_pred, savepath, data_type, model, X=None, show_figure=False):
+    def plot_normalized_error(cls, y_true, y_pred, savepath, data_type, model, has_model_errors, X=None, show_figure=False):
         """
         Method to plot the normalized residual errors of a model prediction
 
@@ -498,20 +498,12 @@ class Error():
 
         """
 
-        # Here: if model is random forest or Gaussian process, get real error bars. Else, just residuals
-        model_name = model.model.__class__.__name__
-        models_with_error_predictions = ['RandomForestRegressor', 'GaussianProcessRegressor',
-                                         'GradientBoostingRegressor', 'EnsembleRegressor']
-        has_model_errors = False
-
         y_pred_ = y_pred
         y_true_ = y_true
 
-        if model_name in models_with_error_predictions:
-            has_model_errors = True
-            err_down, err_up, nan_indices, indices_TF = cls._prediction_intervals(model, X)
         # Correct for nan indices being present
         if has_model_errors:
+            err_down, err_up, nan_indices, indices_TF = cls._prediction_intervals(model, X)
             y_pred_ = y_pred_[indices_TF]
             y_true_ = y_true_[indices_TF]
 
@@ -567,7 +559,7 @@ class Error():
         return
 
     @classmethod
-    def plot_normalized_error_allsplits(cls, savepath, data_type, model, show_figure=False, average_values=False):
+    def plot_normalized_error_allsplits(cls, savepath, data_type, model, has_model_errors, show_figure=False, average_values=False):
         """
         Method to plot the normalized residual errors of a model prediction
 
@@ -590,13 +582,6 @@ class Error():
             None
 
         """
-        # Here: if model is random forest or Gaussian process, get real error bars. Else, just residuals
-        model_name = model.model.__class__.__name__
-        models_with_error_predictions = ['RandomForestRegressor', 'GaussianProcessRegressor',
-                                         'GradientBoostingRegressor', 'EnsembleRegressor']
-        has_model_errors = False
-        if model_name in models_with_error_predictions:
-            has_model_errors = True
 
         # Loop through split dirs and concatenate normalized error dataframes together
         dirs = os.listdir(savepath)
@@ -674,7 +659,7 @@ class Error():
         return
 
     @classmethod
-    def plot_cumulative_normalized_error(cls, y_true, y_pred, savepath, data_type, model, X=None, show_figure=False):
+    def plot_cumulative_normalized_error(cls, y_true, y_pred, savepath, data_type, model, has_model_errors, X=None, show_figure=False):
         """
         Method to plot the cumulative normalized residual errors of a model prediction
 
@@ -698,22 +683,13 @@ class Error():
 
         """
 
-        # Here: if model is random forest or Gaussian process, get real error bars. Else, just residuals
-        model_name = model.model.__class__.__name__
-        models_with_error_predictions = ['RandomForestRegressor', 'GaussianProcessRegressor',
-                                         'GradientBoostingRegressor', 'EnsembleRegressor']
-        has_model_errors = False
-
         y_pred_ = y_pred
         y_true_ = y_true
-
-        if model_name in models_with_error_predictions:
-            has_model_errors = True
-            err_down, err_up, nan_indices, indices_TF = cls._prediction_intervals(model=model, X=X)
 
         # Need to remove NaN's before plotting. These will be present when doing validation runs. Note NaN's only show up in y_pred_
         # Correct for nan indices being present
         if has_model_errors:
+            err_down, err_up, nan_indices, indices_TF = cls._prediction_intervals(model=model, X=X)
             y_pred_ = y_pred_[indices_TF]
             y_true_ = y_true_[indices_TF]
 
@@ -796,7 +772,7 @@ class Error():
         return
 
     @classmethod
-    def plot_cumulative_normalized_error_allsplits(cls, savepath, data_type, model, show_figure=False, average_values=False):
+    def plot_cumulative_normalized_error_allsplits(cls, savepath, data_type, model, has_model_errors, show_figure=False, average_values=False):
         """
         Method to plot the cumulative normalized residual errors of a model prediction
 
@@ -819,14 +795,6 @@ class Error():
             None
 
         """
-
-        # Here: if model is random forest or Gaussian process, get real error bars. Else, just residuals
-        model_name = model.model.__class__.__name__
-        models_with_error_predictions = ['RandomForestRegressor', 'GaussianProcessRegressor',
-                                         'GradientBoostingRegressor', 'EnsembleRegressor']
-        has_model_errors = False
-        if model_name in models_with_error_predictions:
-            has_model_errors = True
 
         # Loop through split dirs and concatenate normalized error dataframes together
         dirs = os.listdir(savepath)
@@ -950,8 +918,8 @@ class Error():
             model_type = 'ET'
         elif model_name == 'GaussianProcessRegressor':
             model_type = 'GPR'
-        elif model_name == 'EnsembleRegressor':
-            model_type = 'ER'
+        elif model_name == 'BaggingRegressor':
+            model_type = 'BR'
 
         if data_type not in ['train', 'test', 'validation']:
             print('Error: data_test_type must be one of "train", "test" or "validation"')
@@ -1172,7 +1140,7 @@ class Error():
         indices_TF = list()
         X_aslist = X.values.tolist()
         if model.model.__class__.__name__ in ['RandomForestRegressor', 'GradientBoostingRegressor', 'ExtraTreesRegressor',
-                                        'EnsembleRegressor']:
+                                        'BaggingRegressor']:
 
             '''
 
@@ -1228,6 +1196,9 @@ class Error():
             for x in range(len(X_aslist)):
                 preds = list()
                 if model.model.__class__.__name__ == 'RandomForestRegressor':
+                    for pred in model.model.estimators_:
+                        preds.append(pred.predict(np.array(X_aslist[x]).reshape(1, -1))[0])
+                elif model.model.__class__.__name__ == 'BaggingRegressor':
                     for pred in model.model.estimators_:
                         preds.append(pred.predict(np.array(X_aslist[x]).reshape(1, -1))[0])
                 elif model.model.__class__.__name__ == 'GradientBoostingRegressor':
