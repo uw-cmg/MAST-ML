@@ -329,14 +329,22 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                                     show_figure=False,
                                                                     average_values=True)
                     if has_model_errors is True:
+                        # TODO: add ability to recalibrate the error plots here.
                         Error.plot_real_vs_predicted_error(savepath=splitdir,
-                                                       model=model,
-                                                       data_type='test',
-                                                       show_figure=False)
+                                                            model=model,
+                                                            data_type='test',
+                                                            show_figure=False,
+                                                           recalibrate_errors=False)
                         Error.plot_real_vs_predicted_error(savepath=splitdir,
-                                                       model=model,
-                                                       data_type='train',
-                                                       show_figure=False)
+                                                            model=model,
+                                                            data_type='test',
+                                                            show_figure=False,
+                                                           recalibrate_errors=True)
+                        Error.plot_real_vs_predicted_error(savepath=splitdir,
+                                                            model=model,
+                                                            data_type='train',
+                                                            show_figure=False,
+                                                           recalibrate_errors=False)
         return
 
     def _evaluate_split(self, X_train, X_test, y_train, y_test, model, preprocessor, selector, hyperopt,
