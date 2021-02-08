@@ -10,6 +10,7 @@ import numpy as np
 from scipy import stats
 import sklearn.base
 import sklearn.utils
+from sklearn.ensemble import BaggingRegressor
 import inspect
 from pprint import pprint
 
@@ -81,10 +82,36 @@ class SklearnModel(BaseEstimator, TransformerMixin):
         pprint(self.model.__dict__)
         return
 
+
+class EnsembleModel(BaseEstimator, TransformerMixin):
+    '''
+
+    '''
+    def __init__(self, model, n_estimators, **kwargs):
+        super(EnsembleModel, self).__init__()
+        model = dict(sklearn.utils.all_estimators())[model](**kwargs)
+        self.n_estimators = n_estimators
+        self.model = BaggingRegressor(base_estimator=model, n_estimators=self.n_estimators)
+        self.base_estimator_ = model.__class__.__name__
+
+    def fit(self, X, y):
+        return self.model.fit(X, y)
+
+    def predict(self, X, as_frame=True):
+        if as_frame == True:
+            return pd.DataFrame(self.model.predict(X), columns=['y_pred']).squeeze()
+        else:
+            return self.model.predict(X).ravel()
+
+    def get_params(self, deep=True):
+        return self.model.get_params(deep)
+
 #TODO: add the below models into new formulation
 # ref: https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.BaggingRegressor.html#sklearn.ensemble.BaggingRegressor
 # NOTE: in order to use this, other models for the custom ensemble must be defined 
 #       in the conf file with "_ensemble" somewhere in the name
+
+'''
 class EnsembleRegressor():
     def __init__(self, n_estimators, num_samples, model_list, num_models):
         self.model_list = model_list # should be list of strings
@@ -202,6 +229,7 @@ class EnsembleRegressor():
             y_preds.append(np.mean(x_i))
 
         return np.asarray(y_preds)
+'''
 
 class ModelImport():
     """
