@@ -160,7 +160,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             if model.model.__class__.__name__ in ['RandomForestRegressor',
                                                      'GradientBoostingRegressor',
                                                      'GaussianProcessRegressor',
-                                                     'EnsembleRegressor',
+                                                     'BaggingRegressor',
                                                      'ExtraTreesRegressor']:
                 has_model_errors = True
             else:
@@ -283,43 +283,51 @@ class BaseSplitter(ms.BaseCrossValidator):
                     Error.plot_normalized_error_allsplits(savepath=splitdir,
                                                         data_type='test',
                                                         model=model,
+                                                          has_model_errors=has_model_errors,
                                                         show_figure=False,
                                                         average_values=False)
                     Error.plot_normalized_error_allsplits(savepath=splitdir,
                                                         data_type='train',
                                                         model=model,
+                                                          has_model_errors=has_model_errors,
                                                         show_figure=False,
                                                         average_values=False)
                     Error.plot_normalized_error_allsplits(savepath=splitdir,
                                                         data_type='test',
                                                         model=model,
+                                                          has_model_errors=has_model_errors,
                                                         show_figure=False,
                                                         average_values=True)
                     Error.plot_normalized_error_allsplits(savepath=splitdir,
                                                         data_type='train',
                                                         model=model,
+                                                          has_model_errors=has_model_errors,
                                                         show_figure=False,
                                                         average_values=True)
                     Error.plot_cumulative_normalized_error_allsplits(savepath=splitdir,
-                                                        data_type='test',
-                                                        model=model,
-                                                        show_figure=False,
-                                                        average_values=False)
+                                                                    data_type='test',
+                                                                    model=model,
+                                                                     has_model_errors=has_model_errors,
+                                                                    show_figure=False,
+                                                                    average_values=False)
                     Error.plot_cumulative_normalized_error_allsplits(savepath=splitdir,
-                                                        data_type='train',
-                                                        model=model,
-                                                        show_figure=False,
-                                                        average_values=False)
+                                                                    data_type='train',
+                                                                    model=model,
+                                                                     has_model_errors=has_model_errors,
+                                                                    show_figure=False,
+                                                                    average_values=False)
                     Error.plot_cumulative_normalized_error_allsplits(savepath=splitdir,
-                                                        data_type='test',
-                                                        model=model,
-                                                        show_figure=False,
-                                                        average_values=True)
+                                                                    data_type='test',
+                                                                    model=model,
+                                                                     has_model_errors=has_model_errors,
+                                                                    show_figure=False,
+                                                                    average_values=True)
                     Error.plot_cumulative_normalized_error_allsplits(savepath=splitdir,
-                                                        data_type='train',
-                                                        model=model,
-                                                        show_figure=False,
-                                                        average_values=True)
+                                                                    data_type='train',
+                                                                    model=model,
+                                                                     has_model_errors=has_model_errors,
+                                                                    show_figure=False,
+                                                                    average_values=True)
                     if has_model_errors is True:
                         Error.plot_real_vs_predicted_error(savepath=splitdir,
                                                        model=model,
@@ -404,6 +412,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                                         savepath=splitpath,
                                         data_type='test',
                                         model=model,
+                                        has_model_errors=has_model_errors,
                                         X=X_test,
                                         show_figure=False)
             Error.plot_normalized_error(y_true=y_train,
@@ -411,22 +420,25 @@ class BaseSplitter(ms.BaseCrossValidator):
                                         savepath=splitpath,
                                         data_type='train',
                                         model=model,
+                                        has_model_errors=has_model_errors,
                                         X=X_train,
                                         show_figure=False)
             Error.plot_cumulative_normalized_error(y_true=y_test,
-                                        y_pred=y_pred,
-                                        savepath=splitpath,
-                                        data_type='test',
-                                        model=model,
-                                        X=X_test,
-                                        show_figure=False)
+                                                    y_pred=y_pred,
+                                                    savepath=splitpath,
+                                                    data_type='test',
+                                                    model=model,
+                                                   has_model_errors=has_model_errors,
+                                                    X=X_test,
+                                                    show_figure=False)
             Error.plot_cumulative_normalized_error(y_true=y_train,
-                                        y_pred=y_pred_train,
-                                        savepath=splitpath,
-                                        data_type='train',
-                                        model=model,
-                                        X=X_train,
-                                        show_figure=False)
+                                                    y_pred=y_pred_train,
+                                                    savepath=splitpath,
+                                                    data_type='train',
+                                                    model=model,
+                                                   has_model_errors=has_model_errors,
+                                                    X=X_train,
+                                                    show_figure=False)
             if has_model_errors is True:
                 Error.plot_real_vs_predicted_error(savepath=splitpath,
                                                    model=model,
@@ -448,7 +460,7 @@ class BaseSplitter(ms.BaseCrossValidator):
 
     def _setup_savedir(self, model, selector, savepath):
         now = datetime.now()
-        dirname = model.model.__class__.__name__+'_'+self.splitter+'_'+selector.__class__.__name__
+        dirname = model.model.__class__.__name__+'_'+self.splitter.__class__.__name__+'_'+selector.__class__.__name__
         dirname = f"{dirname}_{now.month:02d}_{now.day:02d}" \
                         f"_{now.hour:02d}_{now.minute:02d}_{now.second:02d}"
         if savepath == None:
@@ -534,7 +546,10 @@ class SklearnDataSplitter(BaseSplitter):
 
     def _setup_savedir(self, model, selector, savepath):
         now = datetime.now()
-        dirname = model.model.__class__.__name__+'_'+self.splitter.__class__.__name__+'_'+selector.__class__.__name__
+        if model.model.__class__.__name__ == 'BaggingRegressor':
+            dirname = model.model.__class__.__name__ + '_' + model.base_estimator_ + '_' + self.splitter.__class__.__name__ + '_' + selector.__class__.__name__
+        else:
+            dirname = model.model.__class__.__name__+'_'+self.splitter.__class__.__name__+'_'+selector.__class__.__name__
         dirname = f"{dirname}_{now.month:02d}_{now.day:02d}" \
                         f"_{now.hour:02d}_{now.minute:02d}_{now.second:02d}"
         if savepath == None:
