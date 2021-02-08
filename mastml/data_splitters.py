@@ -344,6 +344,11 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                                              residuals=residuals,
                                                                              dataset_stdev=dataset_stdev,
                                                                                 show_figure=False)
+                        Error.plot_rstat_uncal_cal_overlay(savepath=splitdir,
+                                                           data_type='test',
+                                                           residuals=residuals,
+                                                           model_errors=model_errors,
+                                                           show_figure=False)
                         model_errors, residuals, ytrue_all, ypred_all, dataset_stdev = ErrorUtils()._collect_error_data(
                             savepath=splitdir,
                             data_type='train')

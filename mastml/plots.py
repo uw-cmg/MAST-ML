@@ -944,6 +944,43 @@ class Error():
         return
 
     @classmethod
+    def plot_rstat_uncal_cal_overlay(cls, savepath, data_type, residuals, model_errors, show_figure=False):
+
+        model_errors_uncal = model_errors
+        model_errors_cal = ErrorUtils()._recalibrate_errors(model_errors=model_errors, residuals=residuals)
+
+        # Eliminate model errors with value 0, so that the ratios can be calculated
+        zero_indices = []
+        for i in range(0, len(model_errors)):
+            if model_errors[i] == 0:
+                zero_indices.append(i)
+        residuals = np.delete(residuals, zero_indices)
+        model_errors_uncal = np.delete(model_errors_uncal, zero_indices)
+        model_errors_cal = np.delete(model_errors_cal, zero_indices)
+
+        # make data for gaussian plot
+        gaussian_x = np.linspace(-5, 5, 1000)
+        # create plot
+        x_align = 0.64
+        fig, ax = make_fig_ax(x_align=x_align)
+        ax.set_xlabel('residuals / model error estimates')
+        ax.set_ylabel('relative counts')
+        ax.hist(residuals/model_errors_uncal, bins=30, color='gray', edgecolor='black', density=True, alpha=0.4)
+        ax.hist(residuals/model_errors_cal, bins=30, color='blue', edgecolor='black', density=True, alpha=0.4)
+        ax.plot(gaussian_x, stats.norm.pdf(gaussian_x, 0, 1), label='Gaussian mu: 0 std: 1', color='orange')
+        ax.text(0.05, 0.9, 'mean = %.3f' % (np.mean(residuals / model_errors_uncal)), transform=ax.transAxes, fontdict={'fontsize':10, 'color':'gray'})
+        ax.text(0.05, 0.85, 'std = %.3f' % (np.std(residuals / model_errors_uncal)), transform=ax.transAxes, fontdict={'fontsize':10, 'color':'gray'})
+        ax.text(0.05, 0.8, 'mean = %.3f' % (np.mean(residuals / model_errors_cal)), transform=ax.transAxes, fontdict={'fontsize':10, 'color':'blue'})
+        ax.text(0.05, 0.75, 'std = %.3f' % (np.std(residuals / model_errors_cal)), transform=ax.transAxes, fontdict={'fontsize':10, 'color':'blue'})
+        fig.savefig(os.path.join(savepath, 'rstat_histogram_'+str(data_type)+'_uncal_cal_overlay.png'), dpi=DPI, bbox_inches='tight')
+
+        if show_figure is True:
+            plt.show()
+        else:
+            plt.close()
+        return
+
+    @classmethod
     def plot_real_vs_predicted_error(cls, savepath, model, data_type, model_errors, residuals, dataset_stdev,
                                      show_figure=False, recalibrate_errors=False, well_sampled_fraction=0.025):
 
