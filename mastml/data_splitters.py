@@ -31,6 +31,7 @@ from sklearn.neighbors import NearestNeighbors
 
 from mastml.plots import Histogram, Scatter, Error
 from mastml.feature_selectors import NoSelect
+from mastml.error_analysis import ErrorUtils
 
 class BaseSplitter(ms.BaseCrossValidator):
     """
@@ -292,18 +293,6 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                           has_model_errors=has_model_errors,
                                                         show_figure=False,
                                                         average_values=False)
-                    Error.plot_normalized_error_allsplits(savepath=splitdir,
-                                                        data_type='test',
-                                                        model=model,
-                                                          has_model_errors=has_model_errors,
-                                                        show_figure=False,
-                                                        average_values=True)
-                    Error.plot_normalized_error_allsplits(savepath=splitdir,
-                                                        data_type='train',
-                                                        model=model,
-                                                          has_model_errors=has_model_errors,
-                                                        show_figure=False,
-                                                        average_values=True)
                     Error.plot_cumulative_normalized_error_allsplits(savepath=splitdir,
                                                                     data_type='test',
                                                                     model=model,
@@ -316,32 +305,53 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                                      has_model_errors=has_model_errors,
                                                                     show_figure=False,
                                                                     average_values=False)
-                    Error.plot_cumulative_normalized_error_allsplits(savepath=splitdir,
-                                                                    data_type='test',
-                                                                    model=model,
-                                                                     has_model_errors=has_model_errors,
-                                                                    show_figure=False,
-                                                                    average_values=True)
-                    Error.plot_cumulative_normalized_error_allsplits(savepath=splitdir,
-                                                                    data_type='train',
-                                                                    model=model,
-                                                                     has_model_errors=has_model_errors,
-                                                                    show_figure=False,
-                                                                    average_values=True)
                     if has_model_errors is True:
+                        model_errors, residuals, ytrue_all, ypred_all, dataset_stdev = ErrorUtils()._collect_error_data(
+                            savepath=splitdir,
+                            data_type='test')
+                        Error.plot_rstat(savepath=splitdir,
+                                         data_type='test',
+                                         model_errors=model_errors,
+                                         residuals=residuals,
+                                         show_figure=False,
+                                         recalibrate_errors=False)
+                        Error.plot_rstat(savepath=splitdir,
+                                         data_type='test',
+                                         model_errors=model_errors,
+                                         residuals=residuals,
+                                         show_figure=False,
+                                         recalibrate_errors=True)
                         Error.plot_real_vs_predicted_error(savepath=splitdir,
                                                             model=model,
                                                             data_type='test',
+                                                           model_errors=model_errors,
+                                                           residuals=residuals,
+                                                           dataset_stdev=dataset_stdev,
                                                             show_figure=False,
                                                            recalibrate_errors=False)
                         Error.plot_real_vs_predicted_error(savepath=splitdir,
                                                             model=model,
                                                             data_type='test',
+                                                           model_errors=model_errors,
+                                                           residuals=residuals,
+                                                           dataset_stdev=dataset_stdev,
                                                             show_figure=False,
                                                            recalibrate_errors=True)
+                        model_errors, residuals, ytrue_all, ypred_all, dataset_stdev = ErrorUtils()._collect_error_data(
+                            savepath=splitdir,
+                            data_type='train')
+                        Error.plot_rstat(savepath=splitdir,
+                                         data_type='train',
+                                         model_errors=model_errors,
+                                         residuals=residuals,
+                                         show_figure=False,
+                                         recalibrate_errors=False)
                         Error.plot_real_vs_predicted_error(savepath=splitdir,
                                                             model=model,
                                                             data_type='train',
+                                                           model_errors=model_errors,
+                                                           residuals=residuals,
+                                                           dataset_stdev=dataset_stdev,
                                                             show_figure=False,
                                                            recalibrate_errors=False)
         return
@@ -447,13 +457,33 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                     X=X_train,
                                                     show_figure=False)
             if has_model_errors is True:
+                model_errors, residuals, ytrue_all, ypred_all, dataset_stdev = ErrorUtils()._collect_error_data(savepath=splitpath,
+                                                                                                                data_type='test')
+                Error.plot_rstat(savepath=splitpath,
+                                 data_type='test',
+                                 model_errors=model_errors,
+                                 residuals=residuals,
+                                 show_figure=False)
                 Error.plot_real_vs_predicted_error(savepath=splitpath,
                                                    model=model,
                                                    data_type='test',
+                                                   model_errors=model_errors,
+                                                   residuals=residuals,
+                                                   dataset_stdev=dataset_stdev,
                                                    show_figure=False)
+                model_errors, residuals, ytrue_all, ypred_all, dataset_stdev = ErrorUtils()._collect_error_data(savepath=splitpath,
+                                                                                                                data_type='train')
+                Error.plot_rstat(savepath=splitpath,
+                                 data_type='train',
+                                 model_errors=model_errors,
+                                 residuals=residuals,
+                                 show_figure=False)
                 Error.plot_real_vs_predicted_error(savepath=splitpath,
                                                    model=model,
                                                    data_type='train',
+                                                   model_errors=model_errors,
+                                                   residuals=residuals,
+                                                   dataset_stdev=dataset_stdev,
                                                    show_figure=False)
 
         # Write the test group to a text file

@@ -11,7 +11,7 @@ class ErrorUtils():
 
     '''
     @classmethod
-    def _parse_error_data(cls, savepath, data_type, recalibrate_errors=False):
+    def _collect_error_data(cls, savepath, data_type):
         if data_type not in ['train', 'test', 'validation']:
             print('Error: data_test_type must be one of "train", "test" or "validation"')
             exit()
@@ -43,82 +43,78 @@ class ErrorUtils():
 
         dataset_stdev = np.std(np.unique(ytrue_all))
 
-        erroravg_all = np.concatenate(dfs_erroravg).ravel().tolist()
-        modelresiduals_all = np.concatenate(dfs_modelresiduals).ravel().tolist()
+        model_errors = np.concatenate(dfs_erroravg).ravel().tolist()
+        residuals = np.concatenate(dfs_modelresiduals).ravel().tolist()
+
+        return model_errors, residuals, ytrue_all, ypred_all, dataset_stdev
+
+    @classmethod
+    def _recalibrate_errors(cls, model_errors, residuals):
+        corrector = CorrectionFactors(residuals=residuals, model_errors=model_errors)
+        a, b = corrector.nll()
+        # shift the model errors by the correction factor
+        model_errors = list(a * np.array(model_errors) + b)
+        return model_errors
+
+    @classmethod
+    def _parse_error_data(cls, model_errors, residuals, dataset_stdev, recalibrate_errors=False, number_of_bins=15):
+
+        #TODO: does this happen before or after recalibration ??
+        # Normalize the residuals and model errors by dataset stdev
+        model_errors = model_errors/dataset_stdev
+        residuals = residuals/dataset_stdev
 
         if recalibrate_errors == True:
-            corrector = CorrectionFactors(residuals=modelresiduals_all, model_errors=erroravg_all)
-            a, b = corrector.nll()
-            # shift the model errors by the correction factor
-            erroravg_all = list(a*np.array(erroravg_all) + b)
+            model_errors = cls._recalibrate_errors(model_errors, residuals)
 
-        absmodelresiduals_all = [abs(i) for i in modelresiduals_all]
-        squaredmodelresiduals_all = [i ** 2 for i in absmodelresiduals_all]
+        abs_res = abs(residuals)
 
-        erroravg_all_reduced = [i / dataset_stdev for i in erroravg_all]
-        # Need to square the dataset_stdev here since these are squared residuals
-        squaredmodelresiduals_all_reduced = [i / dataset_stdev ** 2 for i in squaredmodelresiduals_all]
+        # check to see if number of bins should increase, and increase it if so
+        model_errors_sorted = np.sort(model_errors)
+        ninety_percentile = int(len(model_errors_sorted) * 0.9)
+        ninety_percentile_range = model_errors_sorted[ninety_percentile] - np.amin(model_errors)
+        total_range = np.amax(model_errors) - np.amin(model_errors)
+        number_of_bins = number_of_bins
+        if ninety_percentile_range / total_range < 5 / number_of_bins:
+            number_of_bins = int(5 * total_range / ninety_percentile_range)
 
-        erroravg_reduced_sorted, squaredresiduals_reduced_sorted = (list(t) for t in zip(
-            *sorted(zip(erroravg_all_reduced, squaredmodelresiduals_all_reduced))))
+        # Set bins for calculating RMS
+        upperbound = np.amax(model_errors)
+        lowerbound = np.amin(model_errors)
+        bins = np.linspace(lowerbound, upperbound, number_of_bins, endpoint=False)
 
-        bin_values = [0.05, 0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95, 1.05, 1.15, 1.25, 1.35, 1.45, 1.55]
-        bin_delta = 0.05
+        # Create a vector determining bin of each data point
+        digitized = np.digitize(model_errors, bins)
 
-        over_count = 0
-        over_vals = []
-        for e in erroravg_reduced_sorted:
-            if e > (max(bin_values) + bin_delta):
-                over_count += 1
-                over_vals.append(e)
+        # Record which bins contain data (to avoid trying to do calculations on empty bins)
+        bins_present = []
+        for i in range(1, number_of_bins + 1):
+            if i in digitized:
+                bins_present.append(i)
 
-        if len(over_vals):
-            med_over_val = statistics.median(over_vals)
-            if med_over_val <= max(bin_values) * 2.0:
-                # just add another bin and put everything in there
-                bin_values.append(1.65)
-            else:
-                # extend histogram
-                max_over_val = max(over_vals)
-                extra_bin_values = np.arange(1.65, max_over_val + 1.0, 0.05)
-                bin_values = np.concatenate([bin_values, extra_bin_values])
+        # Create array of weights based on counts in each bin
+        weights = []
+        for i in range(1, number_of_bins + 1):
+            if i in digitized:
+                weights.append(np.count_nonzero(digitized == i))
 
-        rms_residual_values = list()
-        num_values_per_bin = list()
+        # Calculate RMS of the absolute residuals
+        RMS_abs_res = [np.sqrt((abs_res[digitized == bins_present[i]] ** 2).mean()) for i in
+                       range(0, len(bins_present))]
 
-        for bin_value in bin_values:
-            bin_indices = list()
-            bin_residuals = list()
-            for i, val in enumerate(erroravg_reduced_sorted):
-                if val > bin_value - bin_delta:
-                    if bin_value == bin_values[len(bin_values) - 1]:
-                        bin_indices.append(i)
-                    else:
-                        if val < bin_value + bin_delta:
-                            bin_indices.append(i)
-            for i in bin_indices:
-                bin_residuals.append(squaredresiduals_reduced_sorted[i])
-            rms_residual_values.append(np.sqrt(np.mean(bin_residuals)))
-            num_values_per_bin.append(len(bin_indices))
+        # Set the x-values to the midpoint of each bin
+        bin_width = bins[1] - bins[0]
+        binned_model_errors = np.zeros(len(bins_present))
+        for i in range(0, len(bins_present)):
+            curr_bin = bins_present[i]
+            binned_model_errors[i] = bins[curr_bin - 1] + bin_width / 2
 
-        data_dict = {"Y True": ytrue_all,
-                     "Y Pred": ypred_all,
-                     "Model Residuals": modelresiduals_all,
-                     "Abs Model Residuals": absmodelresiduals_all,
-                     "Squared Model Resiuals": squaredmodelresiduals_all,
-                     "Squared Model Residuals / dataset stdev": squaredmodelresiduals_all_reduced,
-                     "Model errors": erroravg_all,
-                     "Model errors / dataset stdev": erroravg_all_reduced,
-                     "Model errors / dataset stdev (sorted)": erroravg_reduced_sorted,
-                     "Squared Model Residuals / dataset stdev (sorted)": squaredresiduals_reduced_sorted,
-                     "Bin values (Model errors / dataset stdev)": bin_values,
-                     "Model RMS absolute residuals in each bin": rms_residual_values,
-                     "Number of values in each bin": num_values_per_bin}
+        #TODO this is temporary
+        bin_values = binned_model_errors
+        rms_residual_values = RMS_abs_res
+        num_values_per_bin = weights
 
-        df = pd.DataFrame().from_dict(data=data_dict, orient='index').transpose()
-        df.to_excel(os.path.join(savepath, 'ResidualsvsModelError_' + str(data_type) + '.xlsx'))
-
-        return bin_values, rms_residual_values, num_values_per_bin
+        return bin_values, rms_residual_values, num_values_per_bin, number_of_bins
 
     @classmethod
     def _prediction_intervals(cls, model, X):

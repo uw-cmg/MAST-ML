@@ -14,6 +14,7 @@ import numpy as np
 from collections import Iterable, OrderedDict
 from math import log, floor, ceil
 from scipy.stats import gaussian_kde, norm
+import scipy.stats as stats
 import statistics
 
 from sklearn.linear_model import LinearRegression
@@ -905,12 +906,51 @@ class Error():
         return
 
     @classmethod
-    def plot_real_vs_predicted_error(cls, savepath, model, data_type, show_figure=False, recalibrate_errors=False,
-                                     well_sampled_fraction=0.025):
+    def plot_rstat(cls, savepath, data_type, residuals, model_errors, show_figure=False, recalibrate_errors=False):
 
-        bin_values, rms_residual_values, num_values_per_bin = ErrorUtils()._parse_error_data(savepath=savepath,
-                                                                                            data_type=data_type,
-                                                                                             recalibrate_errors=recalibrate_errors)
+        if recalibrate_errors == True:
+            model_errors = ErrorUtils()._recalibrate_errors(model_errors, residuals)
+
+        # Eliminate model errors with value 0, so that the ratios can be calculated
+        zero_indices = []
+        for i in range(0, len(model_errors)):
+            if model_errors[i] == 0:
+                zero_indices.append(i)
+        residuals = np.delete(residuals, zero_indices)
+        model_errors = np.delete(model_errors, zero_indices)
+        # make data for gaussian plot
+        gaussian_x = np.linspace(-5, 5, 1000)
+        # create plot
+        x_align = 0.64
+        fig, ax = make_fig_ax(x_align=x_align)
+        ax.set_xlabel('residuals / model error estimates')
+        ax.set_ylabel('relative counts')
+        ax.hist(residuals/model_errors, bins=30, color='blue', edgecolor='black', density=True)
+        ax.plot(gaussian_x, stats.norm.pdf(gaussian_x, 0, 1), label='Gaussian mu: 0 std: 1', color='orange')
+        ax.text(0.05, 0.9, 'mean = %.3f' % (np.mean(residuals / model_errors)), transform=ax.transAxes)
+        ax.text(0.05, 0.85, 'std = %.3f' % (np.std(residuals / model_errors)), transform=ax.transAxes)
+
+        if recalibrate_errors == False:
+            calibrate = 'uncalibrated'
+        if recalibrate_errors == True:
+            calibrate = 'calibrated'
+
+        fig.savefig(os.path.join(savepath, 'rstat_histogram_'+str(data_type)+'_'+calibrate+'.png'), dpi=DPI, bbox_inches='tight')
+
+        if show_figure is True:
+            plt.show()
+        else:
+            plt.close()
+        return
+
+    @classmethod
+    def plot_real_vs_predicted_error(cls, savepath, model, data_type, model_errors, residuals, dataset_stdev,
+                                     show_figure=False, recalibrate_errors=False, well_sampled_fraction=0.025):
+
+        bin_values, rms_residual_values, num_values_per_bin, number_of_bins = ErrorUtils()._parse_error_data(model_errors=model_errors,
+                                                                                                                   residuals=residuals,
+                                                                                                                   dataset_stdev=dataset_stdev,
+                                                                                            recalibrate_errors=recalibrate_errors)
 
         model_name = model.model.__class__.__name__
         if model_name == 'RandomForestRegressor':
@@ -956,8 +996,8 @@ class Error():
         bin_values_poorlysampled = bin_values_copy[np.where(num_values_per_bin_copy<=well_sampled_number)]
         num_values_per_bin_poorlysampled = num_values_per_bin_copy[np.where(num_values_per_bin_copy<=well_sampled_number)]
 
-        ax.scatter(bin_values_wellsampled, rms_residual_values_wellsampled, s=100, color='blue', alpha=0.7)
-        ax.scatter(bin_values_poorlysampled, rms_residual_values_poorlysampled, s=100, edgecolor='blue', alpha=0.7)
+        ax.scatter(bin_values_wellsampled, rms_residual_values_wellsampled, s=80, color='blue', alpha=0.7)
+        ax.scatter(bin_values_poorlysampled, rms_residual_values_poorlysampled, s=80, edgecolor='blue', alpha=0.7)
 
         ax.set_xlabel(str(model_type) + ' model errors / dataset stdev', fontsize=12)
         ax.set_ylabel('RMS Absolute residuals\n / dataset stdev', fontsize=12)
@@ -979,7 +1019,7 @@ class Error():
         divider = make_axes_locatable(ax)
         axbarx = divider.append_axes("top", 1.2, pad=0.12, sharex=ax)
 
-        axbarx.bar(x=bin_values, height=num_values_per_bin, width=0.05276488, color='blue', edgecolor='black', alpha=0.7)
+        axbarx.bar(x=bin_values, height=num_values_per_bin, width=bin_values[1]-bin_values[0], color='blue', edgecolor='black', alpha=0.7)
         axbarx.tick_params(labelsize=10, axis='y')
         axbarx.tick_params(labelsize=0, axis='x')
         axbarx.set_ylabel('Counts', fontsize=12)
