@@ -53,7 +53,7 @@ class ErrorUtils():
         a, b = corrector.nll()
         # shift the model errors by the correction factor
         model_errors = list(a * np.array(model_errors) + b)
-        return model_errors
+        return model_errors, a, b
 
     @classmethod
     def _parse_error_data(cls, model_errors, residuals, dataset_stdev, recalibrate_errors=False, number_of_bins=15):
@@ -64,7 +64,7 @@ class ErrorUtils():
         residuals = residuals/dataset_stdev
 
         if recalibrate_errors == True:
-            model_errors = cls._recalibrate_errors(model_errors, residuals)
+            model_errors, a, b = cls._recalibrate_errors(model_errors, residuals)
 
         abs_res = abs(residuals)
 

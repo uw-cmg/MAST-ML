@@ -909,7 +909,7 @@ class Error():
     def plot_rstat(cls, savepath, data_type, residuals, model_errors, show_figure=False, recalibrate_errors=False):
 
         if recalibrate_errors == True:
-            model_errors = ErrorUtils()._recalibrate_errors(model_errors, residuals)
+            model_errors, a, b = ErrorUtils()._recalibrate_errors(model_errors, residuals)
 
         # Eliminate model errors with value 0, so that the ratios can be calculated
         zero_indices = []
@@ -947,7 +947,11 @@ class Error():
     def plot_rstat_uncal_cal_overlay(cls, savepath, data_type, residuals, model_errors, show_figure=False):
 
         model_errors_uncal = model_errors
-        model_errors_cal = ErrorUtils()._recalibrate_errors(model_errors=model_errors, residuals=residuals)
+        model_errors_cal, a, b = ErrorUtils()._recalibrate_errors(model_errors=model_errors, residuals=residuals)
+
+        # Write the recalibration values to file
+        recal_df = pd.DataFrame({'slope (a)': a, 'intercept (b)': b}, index=[0])
+        recal_df.to_excel(os.path.join(savepath, 'recalibration_parameters.xlsx'))
 
         # Eliminate model errors with value 0, so that the ratios can be calculated
         zero_indices = []
