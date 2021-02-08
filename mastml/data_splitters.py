@@ -329,7 +329,6 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                                     show_figure=False,
                                                                     average_values=True)
                     if has_model_errors is True:
-                        # TODO: add ability to recalibrate the error plots here.
                         Error.plot_real_vs_predicted_error(savepath=splitdir,
                                                             model=model,
                                                             data_type='test',
