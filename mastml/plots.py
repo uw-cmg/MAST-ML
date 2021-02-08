@@ -1056,6 +1056,126 @@ class Error():
 
         return
 
+    @classmethod
+    def plot_real_vs_predicted_error_uncal_cal_overlay(cls, savepath, model, data_type, model_errors, residuals, dataset_stdev,
+                                     show_figure=False, well_sampled_fraction=0.025):
+
+        bin_values_uncal, rms_residual_values_uncal, num_values_per_bin_uncal, number_of_bins_uncal = ErrorUtils()._parse_error_data(model_errors=model_errors,
+                                                                                                                   residuals=residuals,
+                                                                                                                   dataset_stdev=dataset_stdev,
+                                                                                                                    recalibrate_errors=False)
+
+        bin_values_cal, rms_residual_values_cal, num_values_per_bin_cal, number_of_bins_cal = ErrorUtils()._parse_error_data(model_errors=model_errors,
+                                                                                                                   residuals=residuals,
+                                                                                                                   dataset_stdev=dataset_stdev,
+                                                                                                                    recalibrate_errors=True)
+
+
+        model_name = model.model.__class__.__name__
+        if model_name == 'RandomForestRegressor':
+            model_type = 'RF'
+        elif model_name == 'GradientBoostingRegressor':
+            model_type = 'GBR'
+        elif model_name == 'ExtraTreesRegressor':
+            model_type = 'ET'
+        elif model_name == 'GaussianProcessRegressor':
+            model_type = 'GPR'
+        elif model_name == 'BaggingRegressor':
+            model_type = 'BR'
+
+        if data_type not in ['train', 'test', 'validation']:
+            print('Error: data_test_type must be one of "train", "test" or "validation"')
+            exit()
+
+        # Make RF error plot
+        fig, ax = make_fig_ax(aspect_ratio=0.5, x_align=0.65)
+
+        linear_uncal = LinearRegression(fit_intercept=True)
+        linear_cal = LinearRegression(fit_intercept=True)
+
+        # Only examine the bins that are well-sampled, i.e. have number of data points in them above a given threshold
+        well_sampled_number_uncal = round(well_sampled_fraction*np.sum(num_values_per_bin_uncal))
+        rms_residual_values_wellsampled_uncal = rms_residual_values_uncal[np.where(num_values_per_bin_uncal > well_sampled_number_uncal)[0]]
+        bin_values_wellsampled_uncal = bin_values_uncal[np.where(num_values_per_bin_uncal>well_sampled_number_uncal)[0]]
+        num_values_per_bin_wellsampled_uncal = num_values_per_bin_uncal[np.where(num_values_per_bin_uncal>well_sampled_number_uncal)[0]]
+        rms_residual_values_poorlysampled_uncal = rms_residual_values_uncal[np.where(num_values_per_bin_uncal <= well_sampled_number_uncal)[0]]
+        bin_values_poorlysampled_uncal = bin_values_uncal[np.where(num_values_per_bin_uncal<=well_sampled_number_uncal)[0]]
+        num_values_per_bin_poorlysampled_uncal = num_values_per_bin_uncal[np.where(num_values_per_bin_uncal<=well_sampled_number_uncal)[0]]
+
+        well_sampled_number_cal = round(well_sampled_fraction*np.sum(num_values_per_bin_cal))
+        rms_residual_values_wellsampled_cal = rms_residual_values_cal[np.where(num_values_per_bin_cal > well_sampled_number_cal)[0]]
+        bin_values_wellsampled_cal = bin_values_cal[np.where(num_values_per_bin_cal>well_sampled_number_cal)]
+        num_values_per_bin_wellsampled_cal = num_values_per_bin_cal[np.where(num_values_per_bin_cal>well_sampled_number_cal)[0]]
+        rms_residual_values_poorlysampled_cal = rms_residual_values_cal[np.where(num_values_per_bin_cal <= well_sampled_number_cal)[0]]
+        bin_values_poorlysampled_cal = bin_values_cal[np.where(num_values_per_bin_cal<=well_sampled_number_cal)[0]]
+        num_values_per_bin_poorlysampled_cal = num_values_per_bin_cal[np.where(num_values_per_bin_cal<=well_sampled_number_cal)[0]]
+
+        ax.scatter(bin_values_wellsampled_uncal, rms_residual_values_wellsampled_uncal, s=80, color='gray', edgecolor='gray', alpha=0.7, label='uncalibrated')
+        ax.scatter(bin_values_poorlysampled_uncal, rms_residual_values_poorlysampled_uncal, s=80, color='gray', edgecolor='gray', alpha=0.3)
+
+        ax.scatter(bin_values_wellsampled_cal, rms_residual_values_wellsampled_cal, s=80, color='blue', edgecolor='blue', alpha=0.7, label='calibrated')
+        ax.scatter(bin_values_poorlysampled_cal, rms_residual_values_poorlysampled_cal, s=80, color='blue', edgecolor='blue', alpha=0.3)
+
+        ax.set_xlabel(str(model_type) + ' model errors / dataset stdev', fontsize=12)
+        ax.set_ylabel('RMS Absolute residuals\n / dataset stdev', fontsize=12)
+        ax.tick_params(labelsize=10)
+
+        linear_uncal.fit(np.array(bin_values_wellsampled_uncal).reshape(-1, 1), rms_residual_values_wellsampled_uncal,
+                       sample_weight=num_values_per_bin_wellsampled_uncal)
+        yfit_uncal = linear_uncal.predict(np.array(bin_values_wellsampled_uncal).reshape(-1, 1))
+        ax.plot(bin_values_wellsampled_uncal, yfit_uncal, 'gray', linewidth=2)
+        slope_uncal = linear_uncal.coef_
+        intercept_uncal = linear_uncal.intercept_
+        r2_uncal = r2_score(rms_residual_values_wellsampled_uncal, yfit_uncal)
+
+        linear_cal.fit(np.array(bin_values_wellsampled_cal).reshape(-1, 1), rms_residual_values_wellsampled_cal,
+                       sample_weight=num_values_per_bin_wellsampled_cal)
+        yfit_cal = linear_cal.predict(np.array(bin_values_wellsampled_cal).reshape(-1, 1))
+        ax.plot(bin_values_wellsampled_cal, yfit_cal, 'blue', linewidth=2)
+        slope_cal = linear_cal.coef_
+        intercept_cal = linear_cal.intercept_
+        r2_cal = r2_score(rms_residual_values_wellsampled_cal, yfit_cal)
+
+        divider = make_axes_locatable(ax)
+        axbarx = divider.append_axes("top", 1.2, pad=0.12, sharex=ax)
+
+        axbarx.bar(x=bin_values_uncal, height=num_values_per_bin_uncal, width=bin_values_uncal[1]-bin_values_uncal[0],
+                   color='gray', edgecolor='gray', alpha=0.3)
+        axbarx.bar(x=bin_values_cal, height=num_values_per_bin_cal, width=bin_values_cal[1] - bin_values_cal[0],
+                   color='blue', edgecolor='blue', alpha=0.3)
+        axbarx.tick_params(labelsize=10, axis='y')
+        axbarx.tick_params(labelsize=0, axis='x')
+        axbarx.set_ylabel('Counts', fontsize=12)
+
+        xmax = max(max(bin_values_uncal) + 0.05, 1.6)
+        ymax = max(1.3, max(rms_residual_values_uncal))
+        ax.set_ylim(bottom=0, top=ymax)
+        axbarx.set_ylim(bottom=0, top=max(num_values_per_bin_uncal) + 50)
+        ax.set_xlim(left=0, right=xmax)
+
+        ax.text(0.02, 0.9*ymax, 'R$^2$ = %3.2f ' % r2_uncal, fontdict={'fontsize': 8, 'color': 'gray'})
+        ax.text(0.02, 0.8*ymax, 'slope = %3.2f ' % slope_uncal, fontdict={'fontsize': 8, 'color': 'gray'})
+        ax.text(0.02, 0.7*ymax, 'intercept = %3.2f ' % intercept_uncal, fontdict={'fontsize': 8, 'color': 'gray'})
+        ax.text(0.02, 0.6*ymax, 'R$^2$ = %3.2f ' % r2_cal, fontdict={'fontsize': 8, 'color': 'blue'})
+        ax.text(0.02, 0.5*ymax, 'slope = %3.2f ' % slope_cal, fontdict={'fontsize': 8, 'color': 'blue'})
+        ax.text(0.02, 0.4*ymax, 'intercept = %3.2f ' % intercept_cal, fontdict={'fontsize': 8, 'color': 'blue'})
+
+        # Plot y = x line as reference point
+        maxx = max(xmax, ymax)
+        ax.plot([0, maxx], [0, maxx], 'k--', lw=2, color='red', alpha=0.5)
+
+        ax.legend(loc='lower right', fontsize=8)
+
+        fig.savefig(os.path.join(savepath, str(model_type) + '_residuals_vs_modelerror_' + str(data_type) + '_uncal_cal_overlay.png'),
+            dpi=300, bbox_inches='tight')
+
+        if show_figure is True:
+            plt.show()
+        else:
+            plt.close()
+
+        return
+
 class Histogram():
     """
     Class to generate histogram plots, such as histograms of residual values

@@ -110,9 +110,9 @@ class ErrorUtils():
             binned_model_errors[i] = bins[curr_bin - 1] + bin_width / 2
 
         #TODO this is temporary
-        bin_values = binned_model_errors
-        rms_residual_values = RMS_abs_res
-        num_values_per_bin = weights
+        bin_values = np.array(binned_model_errors)
+        rms_residual_values = np.array(RMS_abs_res)
+        num_values_per_bin = np.array(weights)
 
         return bin_values, rms_residual_values, num_values_per_bin, number_of_bins
 

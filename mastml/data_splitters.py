@@ -337,6 +337,13 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                            dataset_stdev=dataset_stdev,
                                                             show_figure=False,
                                                            recalibrate_errors=True)
+                        Error.plot_real_vs_predicted_error_uncal_cal_overlay(savepath=splitdir,
+                                                                             model=model,
+                                                                             data_type='test',
+                                                                             model_errors=model_errors,
+                                                                             residuals=residuals,
+                                                                             dataset_stdev=dataset_stdev,
+                                                                                show_figure=False)
                         model_errors, residuals, ytrue_all, ypred_all, dataset_stdev = ErrorUtils()._collect_error_data(
                             savepath=splitdir,
                             data_type='train')
