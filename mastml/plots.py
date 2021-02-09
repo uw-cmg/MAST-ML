@@ -123,9 +123,9 @@ class Scatter():
 
         # Save data to excel file and image
         df = pd.DataFrame().from_dict(data={"y_true": y_true, "y_pred": y_pred})
-        df_stats = pd.DataFrame().from_records([stats_dict])
-        df.to_excel(os.path.join(savepath, file_name + '.xlsx'))
-        df_stats.to_excel(os.path.join(savepath, data_type + '_stats_summary.xlsx'), index=False)
+        #df_stats = pd.DataFrame().from_records([stats_dict])
+        #df.to_excel(os.path.join(savepath, file_name + '.xlsx'))
+        #df_stats.to_excel(os.path.join(savepath, data_type + '_stats_summary.xlsx'), index=False)
         fig.savefig(os.path.join(savepath, file_name + '.png'), dpi=DPI, bbox_inches='tight')
         if show_figure == True:
             plt.show()
@@ -951,7 +951,7 @@ class Error():
 
         # Write the recalibration values to file
         recal_df = pd.DataFrame({'slope (a)': a, 'intercept (b)': b}, index=[0])
-        recal_df.to_excel(os.path.join(savepath, 'recalibration_parameters.xlsx'))
+        recal_df.to_excel(os.path.join(savepath, 'recalibration_parameters.xlsx'), index=False)
 
         # Eliminate model errors with value 0, so that the ratios can be calculated
         zero_indices = []

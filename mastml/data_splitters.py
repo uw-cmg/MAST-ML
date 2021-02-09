@@ -17,6 +17,7 @@ from pprint import pprint
 import joblib
 from math import ceil
 import warnings
+import shutil
 
 try:
     from matminer.featurizers.composition import ElementFraction
@@ -141,7 +142,6 @@ class BaseSplitter(ms.BaseCrossValidator):
 
         print('LEAVE OUT INDS')
         print(len(leaveout_inds))
-        print(leaveout_inds[0])
 
         if type(models) == list:
             pass
@@ -210,7 +210,15 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                   plots,
                                                   has_model_errors)
                         split_outer_count += 1
+
                         #TODO Here need to find best model and evaluate left out data
+                        best_split = self._get_best_split(savepath=splitdir)
+                        # Copy the best model, selected features and preprocessor to this outer directory
+                        best_pkl = [i for i in os.listdir(best_split) if '.pkl' in i]
+                        for pkl in best_pkl:
+                            shutil.copy(os.path.join(best_split, pkl), splitdir)
+                        shutil.copy(os.path.join(best_split, 'selected_features.txt'), splitdir)
+
                     #TODO ??? Here once all outer loops done need to get average recalibration params and make full error plots
 
                 else:
@@ -231,6 +239,13 @@ class BaseSplitter(ms.BaseCrossValidator):
                                               metrics,
                                               plots,
                                               has_model_errors)
+
+                    best_split = self._get_best_split(savepath=splitdir)
+                    # Copy the best model, selected features and preprocessor to this outer directory
+                    best_pkl = [i for i in os.listdir(best_split) if '.pkl' in i]
+                    for pkl in best_pkl:
+                        shutil.copy(os.path.join(best_split, pkl), splitdir)
+                    shutil.copy(os.path.join(best_split, 'selected_features.txt'), splitdir)
         return
 
     def _evaluate_split_sets(self, X_splits, y_splits, train_inds, test_inds, model, selector, preprocessor,
@@ -262,7 +277,6 @@ class BaseSplitter(ms.BaseCrossValidator):
             splitpath = os.path.join(splitdir, 'split_' + str(split_count))
             os.mkdir(splitpath)
 
-            # TODO: add the left out data to evaluate split so it is predicted in each split
             self._evaluate_split(X_train, X_test, y_train, y_test, model_orig, preprocessor_orig, selector_orig,
                                  hyperopt, metrics, plots, group,
                                  splitpath, has_model_errors, X_extra_train, X_extra_test)
@@ -470,7 +484,12 @@ class BaseSplitter(ms.BaseCrossValidator):
         self._save_split_data(df=y_pred_train, filename='y_pred_train', savepath=splitpath, columns='y_pred_train')
 
         # Save summary stats data for this split
-        #mae =
+        stats_dict = Metrics(metrics_list=metrics).evaluate(y_true=y_test, y_pred=y_pred)
+        df_stats = pd.DataFrame().from_records([stats_dict])
+        df_stats.to_excel(os.path.join(splitpath, 'test_stats_summary.xlsx'), index=False)
+        stats_dict_train = Metrics(metrics_list=metrics).evaluate(y_true=y_train, y_pred=y_pred_train)
+        df_stats_train = pd.DataFrame().from_records([stats_dict_train])
+        df_stats_train.to_excel(os.path.join(splitpath, 'train_stats_summary.xlsx'), index=False)
 
         if 'Histogram' in plots:
             Histogram.plot_residuals_histogram(y_true=y_test,
@@ -601,6 +620,23 @@ class BaseSplitter(ms.BaseCrossValidator):
             data.append(np.array(pd.read_excel(os.path.join(savepath, os.path.join(d, filename)+'.xlsx'))[filename]))
         data = pd.Series(np.concatenate(data).ravel())
         return data
+
+    def _get_best_split(self, savepath):
+        dirs = os.listdir(savepath)
+        splitdirs = [d for d in dirs if 'split_' in d and '.png' not in d]
+
+        stats_files_dict = dict()
+        for splitdir in splitdirs:
+            stats_files_dict[os.path.join(savepath, splitdir)] = pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'test_stats_summary.xlsx')).to_dict('records')[0]
+
+        # Find best/worst splits based on RMSE value
+        rmse_best = 10**20
+        for split, stats_dict in stats_files_dict.items():
+            if stats_dict['root_mean_squared_error'] < rmse_best:
+                best_split = split
+                rmse_best = stats_dict['root_mean_squared_error']
+
+        return best_split
 
     def help(self):
         print('Documentation for', self.splitter)
