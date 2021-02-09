@@ -346,6 +346,8 @@ class Scatter():
                 y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred.xlsx')))
             elif data_type == 'train':
                 y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred_train.xlsx')))
+            elif data_type == 'leaveout':
+                y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred_leaveout.xlsx')))
 
         all_y_true = list()
         all_y_pred = list()
@@ -561,7 +563,7 @@ class Error():
         return
 
     @classmethod
-    def plot_normalized_error_allsplits(cls, savepath, data_type, model, has_model_errors, show_figure=False, average_values=False):
+    def plot_normalized_error_allsplits(cls, savepath, data_type, has_model_errors, show_figure=False, average_values=False):
         """
         Method to plot the normalized residual errors of a model prediction
 
@@ -774,7 +776,7 @@ class Error():
         return
 
     @classmethod
-    def plot_cumulative_normalized_error_allsplits(cls, savepath, data_type, model, has_model_errors, show_figure=False, average_values=False):
+    def plot_cumulative_normalized_error_allsplits(cls, savepath, data_type, has_model_errors, show_figure=False, average_values=False):
         """
         Method to plot the cumulative normalized residual errors of a model prediction
 
@@ -906,10 +908,15 @@ class Error():
         return
 
     @classmethod
-    def plot_rstat(cls, savepath, data_type, residuals, model_errors, show_figure=False, recalibrate_errors=False):
+    def plot_rstat(cls, savepath, data_type, residuals, model_errors, show_figure=False, recalibrate_errors=False, recalibrate_dict=dict()):
 
         if recalibrate_errors == True:
-            model_errors, a, b = ErrorUtils()._recalibrate_errors(model_errors, residuals)
+            if len(recalibrate_dict.keys()) == 0:
+                model_errors, a, b = ErrorUtils()._recalibrate_errors(model_errors, residuals)
+            else:
+                a = recalibrate_dict['a']
+                b = recalibrate_dict['b']
+                model_errors = a*np.array(model_errors) + b
 
         # Eliminate model errors with value 0, so that the ratios can be calculated
         zero_indices = []
@@ -944,10 +951,15 @@ class Error():
         return
 
     @classmethod
-    def plot_rstat_uncal_cal_overlay(cls, savepath, data_type, residuals, model_errors, show_figure=False):
+    def plot_rstat_uncal_cal_overlay(cls, savepath, data_type, residuals, model_errors, show_figure=False, recalibrate_dict=dict()):
 
         model_errors_uncal = model_errors
-        model_errors_cal, a, b = ErrorUtils()._recalibrate_errors(model_errors=model_errors, residuals=residuals)
+        if len(recalibrate_dict.keys()) == 0:
+            model_errors_cal, a, b = ErrorUtils()._recalibrate_errors(model_errors=model_errors, residuals=residuals)
+        else:
+            a = recalibrate_dict['a']
+            b = recalibrate_dict['b']
+            model_errors_cal = a*np.array(model_errors_uncal) + b
 
         # Write the recalibration values to file
         recal_df = pd.DataFrame({'slope (a)': a, 'intercept (b)': b}, index=[0])
@@ -986,12 +998,13 @@ class Error():
 
     @classmethod
     def plot_real_vs_predicted_error(cls, savepath, model, data_type, model_errors, residuals, dataset_stdev,
-                                     show_figure=False, recalibrate_errors=False, well_sampled_fraction=0.025):
+                                     show_figure=False, recalibrate_errors=False, well_sampled_fraction=0.025, recalibrate_dict=dict()):
 
         bin_values, rms_residual_values, num_values_per_bin, number_of_bins = ErrorUtils()._parse_error_data(model_errors=model_errors,
                                                                                                                    residuals=residuals,
                                                                                                                    dataset_stdev=dataset_stdev,
-                                                                                            recalibrate_errors=recalibrate_errors)
+                                                                                            recalibrate_errors=recalibrate_errors,
+                                                                                                             recalibrate_dict=recalibrate_dict)
 
         model_name = model.model.__class__.__name__
         if model_name == 'RandomForestRegressor':
@@ -1005,8 +1018,8 @@ class Error():
         elif model_name == 'BaggingRegressor':
             model_type = 'BR'
 
-        if data_type not in ['train', 'test', 'validation']:
-            print('Error: data_test_type must be one of "train", "test" or "validation"')
+        if data_type not in ['train', 'test', 'leaveout']:
+            print('Error: data_test_type must be one of "train", "test" or "leaveout"')
             exit()
 
         # Make RF error plot
@@ -1099,7 +1112,7 @@ class Error():
 
     @classmethod
     def plot_real_vs_predicted_error_uncal_cal_overlay(cls, savepath, model, data_type, model_errors, residuals, dataset_stdev,
-                                     show_figure=False, well_sampled_fraction=0.025):
+                                     show_figure=False, well_sampled_fraction=0.025, recalibrate_dict=dict()):
 
         bin_values_uncal, rms_residual_values_uncal, num_values_per_bin_uncal, number_of_bins_uncal = ErrorUtils()._parse_error_data(model_errors=model_errors,
                                                                                                                    residuals=residuals,
@@ -1109,7 +1122,8 @@ class Error():
         bin_values_cal, rms_residual_values_cal, num_values_per_bin_cal, number_of_bins_cal = ErrorUtils()._parse_error_data(model_errors=model_errors,
                                                                                                                    residuals=residuals,
                                                                                                                    dataset_stdev=dataset_stdev,
-                                                                                                                    recalibrate_errors=True)
+                                                                                                                    recalibrate_errors=True,
+                                                                                                                    recalibrate_dict=recalibrate_dict)
 
 
         model_name = model.model.__class__.__name__
@@ -1124,8 +1138,8 @@ class Error():
         elif model_name == 'BaggingRegressor':
             model_type = 'BR'
 
-        if data_type not in ['train', 'test', 'validation']:
-            print('Error: data_test_type must be one of "train", "test" or "validation"')
+        if data_type not in ['train', 'test', 'leaveout']:
+            print('Error: data_test_type must be one of "train", "test" or "leaveout"')
             exit()
 
         # Make RF error plot

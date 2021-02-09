@@ -11,8 +11,8 @@ class ErrorUtils():
     '''
     @classmethod
     def _collect_error_data(cls, savepath, data_type):
-        if data_type not in ['train', 'test', 'validation']:
-            print('Error: data_test_type must be one of "train", "test" or "validation"')
+        if data_type not in ['train', 'test', 'leaveout']:
+            print('Error: data_test_type must be one of "train", "test" or "leaveout"')
             exit()
 
         dfs_ytrue = list()
@@ -56,7 +56,8 @@ class ErrorUtils():
         return model_errors, a, b
 
     @classmethod
-    def _parse_error_data(cls, model_errors, residuals, dataset_stdev, recalibrate_errors=False, number_of_bins=15):
+    def _parse_error_data(cls, model_errors, residuals, dataset_stdev, recalibrate_errors=False, recalibrate_dict=dict(),
+                          number_of_bins=15):
 
         #TODO: does this happen before or after recalibration ??
         # Normalize the residuals and model errors by dataset stdev
@@ -64,7 +65,12 @@ class ErrorUtils():
         residuals = residuals/dataset_stdev
 
         if recalibrate_errors == True:
-            model_errors, a, b = cls._recalibrate_errors(model_errors, residuals)
+            if len(recalibrate_dict.keys()) == 0:
+                model_errors, a, b = cls._recalibrate_errors(model_errors, residuals)
+            else:
+                a = recalibrate_dict['a']
+                b = recalibrate_dict['b']
+                model_errors = a*np.array(model_errors) + b
 
         abs_res = abs(residuals)
 
