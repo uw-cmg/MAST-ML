@@ -119,15 +119,19 @@ class LocalDatasets():
                 X: (pd.DataFrame or numpy array), dataframe or array of X data
                 y: (pd.DataFrame or numpy array), dataframe or array of y data
     """
-    def __init__(self, file_path, feature_names=None, target=None, extra_columns=None, group_column=None, as_frame=False):
+    def __init__(self, file_path, feature_names=None, target=None, extra_columns=None, group_column=None,
+                 testdata_columns=None, as_frame=False):
         self.file_path = file_path
         self.feature_names = feature_names
         self.target = target
         self.extra_columns = extra_columns
         self.group_column = group_column
+        self.testdata_columns = testdata_columns
         self.as_frame = as_frame
         if self.extra_columns is None:
             self.extra_columns = list()
+        if self.testdata_columns is None:
+            self.testdata_columns = list()
 
     def _import(self):
         fname, ext = os.path.splitext(self.file_path)
@@ -146,11 +150,11 @@ class LocalDatasets():
         if self.feature_names is None and self.target is None:
             print('WARNING: feature_names and target are not specified. Assuming last column is target value and remaining columns are features')
             self.target = df.columns[-1]
-            self.feature_names = [col for col in df.columns if col not in [self.extra_columns, self.target]]
+            self.feature_names = [col for col in df.columns if col not in [self.extra_columns, self.target, self.testdata_columns]]
         elif self.feature_names is None:  # input is all the features except the target feature
             print('WARNING: feature_names not specified but target was specified. Assuming all columns except target and extra columns are features')
             cols = [col for col in df.columns if col != self.target]
-            self.feature_names = [col for col in cols if col not in self.extra_columns]
+            self.feature_names = [col for col in cols if col not in self.extra_columns and col not in self.testdata_columns]
         elif self.target is None:  # target is the last non-input feature
             for col in df.columns[::-1]:
                 if col not in self.feature_names:
@@ -172,10 +176,18 @@ class LocalDatasets():
         if self.extra_columns:
             X_extra = df[self.extra_columns]
 
+        if self.testdata_columns:
+            X_testdata = list()
+            for col in self.testdata_columns:
+                X_testdata.append(np.array(df.loc[df[col] == 1].index).ravel())
+
         if self.as_frame:
             if self.group_column:
                 if self.extra_columns:
-                    return X, y, groups, X_extra
+                    if self.testdata_columns:
+                        return X, y, groups, X_extra, X_testdata
+                    else:
+                        return X, y, groups, X_extra
                 else:
                     return X, y, groups
             else:
@@ -183,7 +195,10 @@ class LocalDatasets():
         else:
             if self.group_column:
                 if self.extra_columns:
-                    return np.array(X), np.array(y).ravel(), np.array(groups).ravel(), np.array(X_extra)
+                    if self.testdata_columns:
+                        return np.array(X), np.array(y).ravel(), np.array(groups).ravel(), np.array(X_extra), np.array(X_testdata)
+                    else:
+                        return np.array(X), np.array(y).ravel(), np.array(groups).ravel(), np.array(X_extra)
                 else:
                     return np.array(X), np.array(y).ravel(), np.array(groups).ravel()
             else:
