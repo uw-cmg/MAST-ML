@@ -90,6 +90,9 @@ class LocalDatasets():
         feature_names: (list), list of strings containing the X feature names
         target: (str), string denoting the y data (target) name
         extra_columns: (list), list of strings containing additional column names that are not features or target
+        group_column: (str), string denoting the name of an input column to be used to group data
+        testdata_columns: (list), list of strings containing column names denoting sets of left-out data. Entries should
+            be marked with a 0 (not left out) or 1 (left out)
         as_frame: (bool), whether to return data as pandas dataframe (otherwise will be numpy array)
 
     Methods:
@@ -118,6 +121,9 @@ class LocalDatasets():
             Returns:
                 X: (pd.DataFrame or numpy array), dataframe or array of X data
                 y: (pd.DataFrame or numpy array), dataframe or array of y data
+                groups: (pd.Series or numpy array), Series or array denoting user-specified groups of data
+                X_extra: (pd.DataFrame or numpy array), dataframe or array of extra data not used in fitting (e.g. references, compositions, other notes)
+                X_testdata: (list), list of arrays denoting indices of left-out data sets
     """
     def __init__(self, file_path, feature_names=None, target=None, extra_columns=None, group_column=None,
                  testdata_columns=None, as_frame=False):
