@@ -34,15 +34,13 @@ from mastml.plots import Histogram, Scatter, Error
 from mastml.feature_selectors import NoSelect
 from mastml.error_analysis import ErrorUtils
 from mastml.metrics import Metrics
-from mastml.models import ModelImport
 
 class BaseSplitter(ms.BaseCrossValidator):
     """
     Class functioning as a base splitter with methods for organizing output and evaluating any mastml data splitter
 
-    Args:
+    Attributes:
         splitter (mastml.data_splitters object): a mastml.data_splitters object, e.g. mastml.data_splitters.SklearnDataSplitter
-        kwargs : key word arguments for the sklearn.model_selection object, e.g. n_splits=5 for KFold()
 
     Methods:
         split_asframe: method to perform split into train indices and test indices, but return as dataframes
@@ -62,11 +60,39 @@ class BaseSplitter(ms.BaseCrossValidator):
             Args:
                 X: (pd.DataFrame), dataframe of X features
                 y: (pd.Series), series of y target data
-                models: (list), list containing masmtl.models instances
+                models: (list), list containing mastml.models instances
+                preprocessor: (mastml.preprocessor), mastml.preprocessor object to normalize the training data in each split.
                 groups: (pd.Series), series of group designations
-                hyperopt: (list), list containing mastml.hyperopt instances
+                hyperopts: (list), list containing mastml.hyperopt instances. One for each provided model is needed.
                 selectors: (list), list containing mastml.feature_selectors instances
+                metrics: (list), list of metric names to evaluate true vs. pred data in each split
+                plots: (list), list of names denoting which types of plots to make. Valid names are 'Scatter', 'Error', and 'Histogram'
                 savepath: (str), string containing main savepath to construct splits for saving output
+                X_extra: (pd.DataFrame), dataframe of extra X data not used in model fitting
+                leaveout_inds: (list), list of arrays containing indices of data to be held out and evaluated using best model from set of train/validation splits
+                nested_CV: (bool), whether to perform nested cross-validation. The nesting is done using the same splitter object as self.splitter
+
+            Returns:
+                None
+
+        _evaluate_split_sets: method to evaluate a set of train/test splits. At the end of the split set, the left-out data
+            (if any) is evaluated using the best model from the train/test splits.
+
+            Args:
+                X_splits: (list), list of dataframes for X splits
+                y_splits: (list), list of dataframes for y splits
+                train_inds: (list), list of arrays of indices denoting the training data
+                test_inds: (list), list of arrays of indices denoting the testing data
+                model: (mastml.models instance), an estimator for fitting data
+                selector: (mastml.selector), a feature selector to select features in each split
+                preprocessor: (mastml.preprocessor), mastml.preprocessor object to normalize the training data in each split.
+                X_extra: (pd.DataFrame), dataframe of extra X data not used in model fitting
+                groups: (pd.Series), series of group designations
+                splitdir: (str), string denoting the split path in the save directory
+                hyperopt: (mastml.hyperopt), mastml.hyperopt instance to perform model hyperparameter optimization in each split
+                metrics: (list), list of metric names to evaluate true vs. pred data in each split
+                plots: (list), list of names denoting which types of plots to make. Valid names are 'Scatter', 'Error', and 'Histogram'
+                has_model_errors: (bool), whether the model used has error bars (uncertainty quantification)
 
             Returns:
                 None
@@ -80,7 +106,16 @@ class BaseSplitter(ms.BaseCrossValidator):
                 y_train: (pd.Series), series of y training features
                 y_test: (pd.Series), series of y test features
                 model: (mastml.models instance), an estimator for fitting data
-                splitpath: (str), string denoting the split path in the save directory
+                preprocessor: (mastml.preprocessor), mastml.preprocessor object to normalize the training data in each split.
+                selector: (mastml.selector), a feature selector to select features in each split
+                hyperopt: (mastml.hyperopt), mastml.hyperopt instance to perform model hyperparameter optimization in each split
+                metrics: (list), list of metric names to evaluate true vs. pred data in each split
+                plots: (list), list of names denoting which types of plots to make. Valid names are 'Scatter', 'Error', and 'Histogram'
+                group: (str), string denoting the test group, if applicable
+                splitpath:(str), string denoting the split path in the save directory
+                has_model_errors: (bool), whether the model used has error bars (uncertainty quantification)
+                X_extra_train: (pd.DataFrame), dataframe of the extra X data of the training split (not used in fit)
+                X_extra_test: (pd.DataFrame), dataframe of the extra X data of the testing split (not used in fit)
 
             Returns:
                 None
@@ -104,6 +139,27 @@ class BaseSplitter(ms.BaseCrossValidator):
 
             Returns:
                 data: (list), list containing flattened array of all data of a given type over many splits, e.g. all ypred data
+
+        _get_best_split: method to find the best performing model in a set of train/test splits
+
+            Args:
+                savepath: (str), string denoting the save path of the file
+                model: (mastml.models instance), an estimator for fitting data
+                preprocessor: (mastml.preprocessor), mastml.preprocessor object to normalize the training data in each split.
+
+            Returns:
+                best_split_dict: (dict), dictionary containing the path locations of the best model and corresponding
+                    preprocessor and selected feature list
+
+        _get_average_recalibration_params: method to get the average and standard deviation of the recalibration factors
+            in all train/test CV sets
+
+            Args:
+                savepath: (str), string denoting the save path of the file
+
+            Returns:
+                recalibrate_avg_dict: (dict): dictionary of average recalibration parameters
+                recalibrate_stdev_dict: (dict): dictionary of stdev of recalibration parameters
 
         help: method to output key information on class use, e.g. methods and parameters
 
@@ -140,9 +196,6 @@ class BaseSplitter(ms.BaseCrossValidator):
             leaveout_inds = [i for i in test_inds]
             if len(leaveout_inds_orig) > 0:
                 leaveout_inds.append(i for i in leaveout_inds_orig)
-
-        print('LEAVE OUT INDS')
-        print(len(leaveout_inds))
 
         if type(models) == list:
             pass
@@ -223,6 +276,8 @@ class BaseSplitter(ms.BaseCrossValidator):
                         # Load in the best model, preprocessor and evaluate the left-out data stats
                         best_model = joblib.load(best_split_dict['model'])
                         preprocessor = joblib.load(best_split_dict['preprocessor'])
+
+                        #TODO: need to use selected feature list to downselect X_leaveout
                         X_leaveout_preprocessed = preprocessor.transform(X=X_leaveout)
                         y_pred_leaveout = best_model.predict(X=X_leaveout_preprocessed)
                         stats_dict_leaveout = Metrics(metrics_list=metrics).evaluate(y_true=y_leaveout,
@@ -378,7 +433,6 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                                recalibrate_dict=recalibrate_avg_dict)
 
                 else:
-                    print('NO LEAVE OUT SETS')
                     X_splits, y_splits, train_inds, test_inds = self.split_asframe(X=X, y=y, groups=groups)
 
                     self._evaluate_split_sets(X_splits,
