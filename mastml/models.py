@@ -4,7 +4,6 @@ error handling functions
 """
 
 import pandas as pd
-import joblib
 import sklearn.base
 import sklearn.utils
 from sklearn.ensemble import BaggingRegressor
@@ -103,46 +102,3 @@ class EnsembleModel(BaseEstimator, TransformerMixin):
 
     def get_params(self, deep=True):
         return self.model.get_params(deep)
-
-class ModelImport(BaseEstimator, TransformerMixin):
-    """
-    Class used to import pickled models from previous machine learning fits
-
-    Args:
-
-        model_path (str): string designating the path to load the saved .pkl model file
-
-    Methods:
-
-        fit: Does nothing, present for compatibility purposes
-
-            Args:
-
-                X: Nonetype
-
-                y: Nonetype
-
-                groups: Nonetype
-
-        predict: Provides predicted model values based on X features
-
-            Args:
-
-                X: (numpy array), array of X features
-
-            Returns:
-
-                (numpy array), prediction array using imported model
-
-    """
-    def __init__(self, model_path):
-        super(ModelImport, self).__init__()
-        self.model_path = model_path
-        self.model = joblib.load(self.model_path)
-
-    def fit(self, X=None, y=None, groups=None):
-        """ Only here for compatibility """
-        return
-
-    def predict(self, X):
-        return self.model.predict(X)
