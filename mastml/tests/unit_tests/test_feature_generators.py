@@ -10,8 +10,6 @@ from mastml.feature_generators import ElementalFeatureGenerator, PolynomialFeatu
     OneHotElementEncoder, MaterialsProjectFeatureGenerator
 
 class TestGenerators(unittest.TestCase):
-    '''
-
 
     def test_elemental(self):
         composition_df = pd.DataFrame({'composition': ['NaCl', 'Al2O3', 'Mg', 'SrTiO3', 'C']})
@@ -48,7 +46,7 @@ class TestGenerators(unittest.TestCase):
         self.assertTrue(os.path.exists(generator.splitdir))
         shutil.rmtree(generator.splitdir)
         return
-    '''
+
     def test_materialsproject(self):
         composition_df = pd.DataFrame({'composition': ['Al2O3', 'SrTiO3']})
         X = pd.DataFrame(np.random.uniform(low=0.0, high=100, size=(2,10)))
