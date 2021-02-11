@@ -8,7 +8,6 @@ sys.path.insert(0, os.path.abspath('../../../'))
 
 from mastml.datasets import SklearnDatasets, LocalDatasets, FigshareDatasets, FoundryDatasets, DataCleaning
 
-
 class TestDatasets(unittest.TestCase):
 
     def test_sklearn(self):
@@ -67,7 +66,6 @@ class TestDataCleaning(unittest.TestCase):
         self.assertTrue(os.path.exists(cleaner.splitdir))
         shutil.rmtree(cleaner.splitdir)
         return
-
 
 if __name__=='__main__':
     unittest.main()
