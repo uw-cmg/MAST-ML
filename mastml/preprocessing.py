@@ -93,6 +93,7 @@ class BasePreprocessor(BaseEstimator, TransformerMixin):
 
         # Save the fitted preprocessor, will be needed for DLHub upload later on
         joblib.dump(self, os.path.join(savepath, str(self.preprocessor.__class__.__name__) + ".pkl"))
+        self.savepath = savepath
         return Xnew
 
     def help(self):
