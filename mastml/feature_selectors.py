@@ -5,7 +5,6 @@ selectors. More information on scikit-learn feature selectors is available at:
 http://scikit-learn.org/stable/modules/classes.html#module-sklearn.feature_selection
 """
 
-from functools import wraps
 import warnings
 import numpy as np
 import pandas as pd
@@ -41,7 +40,7 @@ class BaseSelector(BaseEstimator, TransformerMixin):
         self.selected_features = X_select.columns.tolist()
         with open(os.path.join(savepath, 'selected_features.txt'), 'w') as f:
             for feature in self.selected_features:
-                f.write(feature+'\n')
+                f.write(str(feature)+'\n')
         if self.__class__.__name__ == 'EnsembleModelFeatureSelector':
             self.feature_importances_sorted.to_excel(os.path.join(savepath, 'EnsembleModelFeatureSelector_feature_importances.xlsx'))
         if self.__class__.__name__ == 'PearsonSelector':
@@ -85,27 +84,7 @@ class NoSelect(BaseSelector):
     Class for having a "null" transform where the output is the same as the input. Needed by MAST-ML as a placeholder if
     certain workflow aspects are not performed.
 
-    Args:
-
-        None
-
-    Methods:
-
-        fit: does nothing, just returns object instance. Needed to maintain same structure as scikit-learn classes
-
-        Args:
-
-            X: (numpy array), array of X features
-
-        transform: passes the input back out, in this case the array of X features
-
-        Args:
-
-            X: (numpy array), array of X features
-
-        Returns:
-
-            X: (numpy array), array of X features
+    See BaseSelector for information on args and methods
 
     """
 
@@ -118,9 +97,9 @@ class EnsembleModelFeatureSelector(BaseSelector):
 
     Args:
 
-        model: (mastml.models object), a MAST-ML compatiable model
+        model: (mastml.models object), a MAST-ML compatable model
 
-        k_features: (int), the number of features to select
+        n_features_to_select: (int), the number of features to select
 
     Methods:
 
@@ -198,7 +177,7 @@ class PearsonSelector(BaseSelector):
 
         remove_highly_correlated_features: (bool), whether to remove features highly correlated with each other
 
-        k_features: (int), the number of features to select
+        n_features_to_select: (int), the number of features to select
 
     Methods:
 
