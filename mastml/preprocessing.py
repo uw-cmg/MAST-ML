@@ -138,6 +138,27 @@ class SklearnPreprocessor(BasePreprocessor):
         self.preprocessor = getattr(sklearn.preprocessing, preprocessor)(**kwargs)
         self.as_frame = as_frame
 
+class NoPreprocessor(BasePreprocessor):
+    '''
+
+    '''
+    def __init__(self, preprocessor=None, as_frame=False):
+        super(NoPreprocessor, self).__init__(preprocessor=self)
+        self.as_frame = as_frame
+
+    def fit(self, X):
+        return X
+
+    def transform(self, X):
+        if self.as_frame:
+            return pd.DataFrame(X, columns=X.columns, index=X.index)
+        return X
+
+    def fit_transform(self, X, y=None, **fit_params):
+        if self.as_frame:
+            return pd.DataFrame(X, columns=X.columns, index=X.index)
+        return X
+
 class MeanStdevScaler(BasePreprocessor):
     """
     Class designed to normalize input data to a specified mean and standard deviation
