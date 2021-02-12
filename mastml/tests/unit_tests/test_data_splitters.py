@@ -18,7 +18,7 @@ class TestSplitters(unittest.TestCase):
         y = pd.Series(np.random.uniform(low=0.0, high=100, size=(10,)))
         model = SklearnModel(model='LinearRegression')
         splitter = NoSplit()
-        splitter.evaluate(X=X, y=y, models=[model], savepath=os.getcwd())
+        splitter.evaluate(X=X, y=y, models=[model], savepath=os.getcwd(), plots=list())
         for d in splitter.splitdirs:
             self.assertTrue(os.path.exists(d))
             shutil.rmtree(d)
@@ -29,7 +29,7 @@ class TestSplitters(unittest.TestCase):
         y = pd.Series(np.random.uniform(low=0.0, high=100, size=(10,)))
         model = SklearnModel(model='LinearRegression')
         splitter = SklearnDataSplitter(splitter='KFold', shuffle=True, n_splits=5)
-        splitter.evaluate(X=X, y=y, models=[model], savepath=os.getcwd())
+        splitter.evaluate(X=X, y=y, models=[model], savepath=os.getcwd(), plots=list())
         for d in splitter.splitdirs:
             self.assertTrue(os.path.exists(d))
             shutil.rmtree(d)
@@ -45,7 +45,7 @@ class TestSplitters(unittest.TestCase):
         splitter = LeaveCloseCompositionsOut(composition_df=composition_df, dist_threshold=0.5)
 
         model = SklearnModel(model='LinearRegression')
-        splitter.evaluate(X=X, y=y, models=[model])
+        splitter.evaluate(X=X, y=y, models=[model], savepath=os.getcwd(), plots=list())
         for d in splitter.splitdirs:
             self.assertTrue(os.path.exists(d))
             shutil.rmtree(d)
@@ -56,7 +56,7 @@ class TestSplitters(unittest.TestCase):
         y = pd.Series(np.random.uniform(low=0.0, high=100, size=(25,)))
         splitter = LeaveOutPercent(percent_leave_out=0.20, n_repeats=5)
         model = SklearnModel(model='LinearRegression')
-        splitter.evaluate(X=X, y=y, models=[model], groups=None)
+        splitter.evaluate(X=X, y=y, models=[model], groups=None, savepath=os.getcwd(), plots=list())
         for d in splitter.splitdirs:
             self.assertTrue(os.path.exists(d))
             shutil.rmtree(d)
@@ -67,7 +67,7 @@ class TestSplitters(unittest.TestCase):
         y = pd.Series(np.random.uniform(low=0.0, high=100, size=(25,)))
         splitter = Bootstrap(n=25, n_bootstraps=3, train_size=0.5)
         model = SklearnModel(model='LinearRegression')
-        splitter.evaluate(X=X, y=y, models=[model], groups=None)
+        splitter.evaluate(X=X, y=y, models=[model], groups=None, savepath=os.getcwd(), plots=list())
         for d in splitter.splitdirs:
             self.assertTrue(os.path.exists(d))
             shutil.rmtree(d)
@@ -80,7 +80,7 @@ class TestSplitters(unittest.TestCase):
         X = pd.concat([X, groups], axis=1)
         splitter = JustEachGroup()
         model = SklearnModel(model='LinearRegression')
-        splitter.evaluate(X=X, y=y, models=[model], groups=X['groups'])
+        splitter.evaluate(X=X, y=y, models=[model], groups=X['groups'], savepath=os.getcwd(), plots=list())
         for d in splitter.splitdirs:
             self.assertTrue(os.path.exists(d))
             shutil.rmtree(d)

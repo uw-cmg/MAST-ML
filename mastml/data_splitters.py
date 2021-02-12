@@ -34,6 +34,7 @@ from mastml.plots import Histogram, Scatter, Error
 from mastml.feature_selectors import NoSelect
 from mastml.error_analysis import ErrorUtils
 from mastml.metrics import Metrics
+from mastml.preprocessing import NoPreprocessor
 
 class BaseSplitter(ms.BaseCrossValidator):
     """
@@ -187,7 +188,8 @@ class BaseSplitter(ms.BaseCrossValidator):
         return X_splits, y_splits, train_inds, test_inds
 
     def evaluate(self, X, y, models, preprocessor=None, groups=None, hyperopts=None, selectors=None, metrics=None,
-                 plots=['Histogram', 'Scatter', 'Error'], savepath=None, X_extra=None, leaveout_inds=list(list()), nested_CV=False):
+                 plots=['Histogram', 'Scatter', 'Error'], savepath=None, X_extra=None, leaveout_inds=list(list()),
+                 best_run_metric=None, nested_CV=False):
 
         if nested_CV == True:
             # Get set of X_leaveout, y_leaveout for testing. Append them to user-specified X_leaveout tests
@@ -210,6 +212,15 @@ class BaseSplitter(ms.BaseCrossValidator):
             else:
                 selectors = list(selectors)
 
+        if preprocessor is None:
+            preprocessor = NoPreprocessor()
+
+        if metrics is None:
+            metrics =['mean_absolute_error']
+
+        if best_run_metric is None:
+            best_run_metric = metrics[0]
+
         if hyperopts is None:
             hyperopts = [None for l in models]
 
@@ -230,7 +241,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                 has_model_errors = False
 
             for selector in selectors:
-                splitdir = self._setup_savedir(model=model, selector=selector, savepath=savepath)
+                splitdir = self._setup_savedir(model=model, selector=selector, preprocessor=preprocessor, savepath=savepath)
                 self.splitdirs.append(splitdir)
 
                 split_outer_count = 0
@@ -267,7 +278,8 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                   has_model_errors)
                         split_outer_count += 1
 
-                        best_split_dict = self._get_best_split(savepath=splitouterpath, model=model, preprocessor=preprocessor)
+                        best_split_dict = self._get_best_split(savepath=splitouterpath, model=model,
+                                                               preprocessor=preprocessor, best_run_metric=best_run_metric)
                         # Copy the best model, selected features and preprocessor to this outer directory
                         shutil.copy(best_split_dict['preprocessor'], splitouterpath)
                         shutil.copy(best_split_dict['model'], splitouterpath)
@@ -451,7 +463,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                                               has_model_errors)
 
                     best_split_dict = self._get_best_split(savepath=splitdir, model=model,
-                                                           preprocessor=preprocessor)
+                                                           preprocessor=preprocessor, best_run_metric=best_run_metric)
                     # Copy the best model, selected features and preprocessor to this outer directory
                     shutil.copy(best_split_dict['preprocessor'], splitdir)
                     shutil.copy(best_split_dict['model'], splitdir)
@@ -791,15 +803,15 @@ class BaseSplitter(ms.BaseCrossValidator):
         # Write the test group to a text file
         if group is not None:
             with open(os.path.join(splitpath,'test_group.txt'), 'w') as f:
-                f.write(group)
+                f.write(str(group))
 
         # Save the fitted model, will be needed for DLHub upload later on
         joblib.dump(model, os.path.join(splitpath, str(model.model.__class__.__name__) + ".pkl"))
         return
 
-    def _setup_savedir(self, model, selector, savepath):
+    def _setup_savedir(self, model, selector, preprocessor, savepath):
         now = datetime.now()
-        dirname = model.model.__class__.__name__+'_'+self.splitter.__class__.__name__+'_'+selector.__class__.__name__
+        dirname = model.model.__class__.__name__+'_'+self.__class__.__name__+'_'+preprocessor.__class__.__name__+'_'+selector.__class__.__name__
         dirname = f"{dirname}_{now.month:02d}_{now.day:02d}" \
                         f"_{now.hour:02d}_{now.minute:02d}_{now.second:02d}"
         if savepath == None:
@@ -827,7 +839,7 @@ class BaseSplitter(ms.BaseCrossValidator):
         data = pd.Series(np.concatenate(data).ravel())
         return data
 
-    def _get_best_split(self, savepath, model, preprocessor):
+    def _get_best_split(self, savepath, model, preprocessor, best_run_metric):
         dirs = os.listdir(savepath)
         splitdirs = [d for d in dirs if 'split_' in d and '.png' not in d]
 
@@ -838,9 +850,9 @@ class BaseSplitter(ms.BaseCrossValidator):
         # Find best/worst splits based on RMSE value
         rmse_best = 10**20
         for split, stats_dict in stats_files_dict.items():
-            if stats_dict['root_mean_squared_error'] < rmse_best:
+            if stats_dict[best_run_metric] < rmse_best:
                 best_split = split
-                rmse_best = stats_dict['root_mean_squared_error']
+                rmse_best = stats_dict[best_run_metric]
 
         # Get the preprocessor, model, and features for the best split
         best_split_dict = dict()
@@ -927,12 +939,12 @@ class SklearnDataSplitter(BaseSplitter):
     def split(self, X, y=None, groups=None):
         return self.splitter.split(X, y, groups)
 
-    def _setup_savedir(self, model, selector, savepath):
+    def _setup_savedir(self, model, selector, preprocessor, savepath):
         now = datetime.now()
         if model.model.__class__.__name__ == 'BaggingRegressor':
-            dirname = model.model.__class__.__name__ + '_' + model.base_estimator_ + '_' + self.splitter.__class__.__name__ + '_' + selector.__class__.__name__
+            dirname = model.model.__class__.__name__ + '_' + model.base_estimator_ + '_' + self.splitter.__class__.__name__ + '_' +preprocessor.__class__.__name__+'_'+ selector.__class__.__name__
         else:
-            dirname = model.model.__class__.__name__+'_'+self.splitter.__class__.__name__+'_'+selector.__class__.__name__
+            dirname = model.model.__class__.__name__+'_'+self.splitter.__class__.__name__+'_'+preprocessor.__class__.__name__+'_'+selector.__class__.__name__
         dirname = f"{dirname}_{now.month:02d}_{now.day:02d}" \
                         f"_{now.hour:02d}_{now.minute:02d}_{now.second:02d}"
         if savepath == None:
