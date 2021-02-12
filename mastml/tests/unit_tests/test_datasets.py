@@ -6,7 +6,7 @@ import sys
 import shutil
 sys.path.insert(0, os.path.abspath('../../../'))
 
-from mastml.datasets import SklearnDatasets, LocalDatasets, FigshareDatasets, FoundryDatasets, DataCleaning
+from mastml.datasets import SklearnDatasets, LocalDatasets, FoundryDatasets, DataCleaning
 
 class TestDatasets(unittest.TestCase):
 
@@ -28,10 +28,12 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(linnerudX.shape, (20,3))
         return
 
+    '''
     def test_figshare(self):
         FigshareDatasets().download_data(article_id='7418492', savepath=os.getcwd())
         self.assertTrue(os.path.exists('figshare_7418492'))
         return
+    '''
 
     def test_local(self):
         target = 'E_regression.1'
