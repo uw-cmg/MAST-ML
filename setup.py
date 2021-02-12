@@ -43,6 +43,7 @@ setup(
         "mdf-toolbox", #>=0.5.5
         "mlxtend",
         "numpy", #>=1.16.2
+        "openpyxl",
         "pandas", #>=0.24.2
         "pymatgen", #>=2019.1.24
         "scikit-learn", #>=0.23.1
