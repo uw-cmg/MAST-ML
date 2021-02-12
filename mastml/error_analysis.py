@@ -4,6 +4,11 @@ import pandas as pd
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
 from scipy.optimize import minimize
+try:
+    from forestci import random_forest_error
+except:
+    print('To install latest forestci compatabilty with scikit-learn>=0.24, run '
+          'pip install git+git://github.com/scikit-learn-contrib/forest-confidence-interval.git')
 
 class ErrorUtils():
     '''
@@ -15,11 +20,12 @@ class ErrorUtils():
             print('Error: data_test_type must be one of "train", "test" or "leaveout"')
             exit()
 
+        dfs_error = list()
+        dfs_residuals = list()
         dfs_ytrue = list()
-        dfs_ypred = list()
-        dfs_erroravg = list()
-        dfs_modelresiduals = list()
-        files_to_parse = list()
+        residuals_files_to_parse = list()
+        error_files_to_parse = list()
+        ytrue_files_to_parse = list()
 
         splits = list()
         for folder, subfolders, files in os.walk(savepath):
@@ -27,25 +33,32 @@ class ErrorUtils():
                 splits.append(folder)
 
         for path in splits:
-            if os.path.exists(os.path.join(path, 'normalized_error_data_' + str(data_type) + '.xlsx')):
-                files_to_parse.append(os.path.join(path, 'normalized_error_data_' + str(data_type) + '.xlsx'))
+            if os.path.exists(os.path.join(path, 'model_errors_'+str(data_type)+'.xlsx')):
+                error_files_to_parse.append(os.path.join(path, 'model_errors_' + str(data_type) + '.xlsx'))
+            if os.path.exists(os.path.join(path, 'residuals_' + str(data_type) + '.xlsx')):
+                residuals_files_to_parse.append(os.path.join(path, 'residuals_' + str(data_type) + '.xlsx'))
+            if os.path.exists(os.path.join(path, 'y_train.xlsx')):
+                ytrue_files_to_parse.append(os.path.join(path, 'y_train.xlsx'))
 
-        for file in files_to_parse:
+        for file in residuals_files_to_parse:
             df = pd.read_excel(file)
-            dfs_ytrue.append(np.array(df['Y True']))
-            dfs_ypred.append(np.array(df['Y Pred']))
-            dfs_erroravg.append(np.array(df['error_avg']))
-            dfs_modelresiduals.append(np.array(df['model residuals']))
+            dfs_residuals.append(np.array(df['residuals']))
+
+        for file in error_files_to_parse:
+            df = pd.read_excel(file)
+            dfs_error.append(np.array(df['model_errors']))
+
+        for file in ytrue_files_to_parse:
+            df = pd.read_excel(file)
+            dfs_ytrue.append(np.array(df['y_train']))
 
         ytrue_all = np.concatenate(dfs_ytrue).ravel()
-        ypred_all = np.concatenate(dfs_ypred).ravel()
-
         dataset_stdev = np.std(np.unique(ytrue_all))
 
-        model_errors = np.concatenate(dfs_erroravg).ravel().tolist()
-        residuals = np.concatenate(dfs_modelresiduals).ravel().tolist()
+        model_errors = np.concatenate(dfs_error).ravel().tolist()
+        residuals = np.concatenate(dfs_residuals).ravel().tolist()
 
-        return model_errors, residuals, ytrue_all, ypred_all, dataset_stdev
+        return model_errors, residuals, dataset_stdev
 
     @classmethod
     def _recalibrate_errors(cls, model_errors, residuals):
@@ -59,7 +72,6 @@ class ErrorUtils():
     def _parse_error_data(cls, model_errors, residuals, dataset_stdev, recalibrate_errors=False, recalibrate_dict=dict(),
                           number_of_bins=15):
 
-        #TODO: does this happen before or after recalibration ??
         # Normalize the residuals and model errors by dataset stdev
         model_errors = model_errors/dataset_stdev
         residuals = residuals/dataset_stdev
@@ -122,7 +134,7 @@ class ErrorUtils():
         return bin_values, rms_residual_values, num_values_per_bin, number_of_bins
 
     @classmethod
-    def _prediction_intervals(cls, model, X):
+    def _get_model_errors(cls, model, X, X_train, X_test):
         """
         Method to calculate prediction intervals when using Random Forest and Gaussian Process regression models.
 
@@ -206,6 +218,9 @@ class ErrorUtils():
     
             else:
             '''
+
+            #TODO: HERE add forestci method back in
+
             for x in range(len(X_aslist)):
                 preds = list()
                 if model.model.__class__.__name__ == 'RandomForestRegressor':
@@ -246,7 +261,10 @@ class ErrorUtils():
                 else:
                     indices_TF.append(True)
 
-        return err_down, err_up, nan_indices, np.array(indices_TF)
+        model_errors = (np.array(err_up)+np.array(err_down))/2
+        model_errors = pd.Series(model_errors, name='model_errors')
+
+        return model_errors
 
 class CorrectionFactors():
     '''
