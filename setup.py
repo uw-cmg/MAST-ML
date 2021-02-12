@@ -28,8 +28,8 @@ except EnvironmentError:
 
 setup(
     name="mastml",
-    packages=['mastml', 'mastml.magpie', 'mastml.tests.conf', 'mastml.tests.csv'],
-    package_data={'mastml.magpie': ["*.*"], 'mastml.tests': ["*.*"], 'mastml.tests.conf' : ["example_input.conf", "MASTML_fullinputfile.conf"], 'mastml.tests.csv' : ["example_data.xlsx"]},
+    packages=['mastml', 'mastml.magpie', 'mastml.tests.unit_tests'],
+    package_data={'mastml.magpie': ["*.*"], 'mastml.tests.unit_tests': ["*.*"]},
     include_package_data = True,
     version=verstr,
     install_requires=[
