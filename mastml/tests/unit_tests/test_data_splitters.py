@@ -87,18 +87,31 @@ class TestSplitters(unittest.TestCase):
         return
 
     def test_leaveoutwincv(self):
-        # implemented = False
-        # self.assertTrue(implemented)
-
         X = pd.DataFrame(np.random.uniform(low=0.0, high=100, size=(25, 10)))
         y = pd.Series(np.random.uniform(low=0.0, high=100, size=(25,)))
-        splitter = LeaveOutTwinCV(1)
+        splitter = LeaveOutTwinCV(threshold=1)
         model = SklearnModel(model='LinearRegression')
         splitter.evaluate(X=X, y=y, models=[model], groups=None)
+        # it seems the only assert here is that some output exists?
         for d in splitter.splitdirs:
             self.assertTrue(os.path.exists(d))
             shutil.rmtree(d)
+
+        # trivial case, every datapoint is a twin
+
+        self.assertTrue(False)
+
+        # case 1/4 of data is exact twin
+
+        # case one exact twin exists
+
+        # case data spread to threshold x - 1/2 exist within threshold y (test exact, then different threshold)
         return
+
+    def create_test_suite():
+        suite = unittest.TestSuite()
+        suite.addTest(TestSplitters('test_leaveoutwincv'))
+        return suite
 
 
 if __name__ == '__main__':
