@@ -292,7 +292,9 @@ class BaseSplitter(ms.BaseCrossValidator):
                         best_model = joblib.load(best_split_dict['model'])
                         preprocessor = joblib.load(best_split_dict['preprocessor'])
 
-                        #TODO: need to use selected feature list to downselect X_leaveout
+                        with open(os.path.join(splitouterpath, 'selected_features.txt')) as f:
+                            selected_features = [line.rstrip() for line in f]
+                        X_leaveout = X_leaveout[selected_features]
                         X_leaveout_preprocessed = preprocessor.transform(X=X_leaveout)
                         y_pred_leaveout = best_model.predict(X=X_leaveout_preprocessed)
                         stats_dict_leaveout = Metrics(metrics_list=metrics).evaluate(y_true=y_leaveout,
