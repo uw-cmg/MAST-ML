@@ -1,4 +1,5 @@
 import os
+import sys
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LinearRegression
@@ -134,7 +135,7 @@ class ErrorUtils():
         return bin_values, rms_residual_values, num_values_per_bin, number_of_bins
 
     @classmethod
-    def _get_model_errors(cls, model, X, X_train, X_test):
+    def _get_model_errors(cls, model, X, X_train, X_test, error_method='stdev_weak_learners'):
         """
         Method to calculate prediction intervals when using Random Forest and Gaussian Process regression models.
 
@@ -167,87 +168,45 @@ class ErrorUtils():
         if model.model.__class__.__name__ in ['RandomForestRegressor', 'GradientBoostingRegressor', 'ExtraTreesRegressor',
                                               'BaggingRegressor']:
 
-            '''
-    
-    
-            if rf_error_method == 'jackknife_calibrated':
-                if 'EnsembleRegressor' in model.__class__.__name__:
-                    rf_variances = random_forest_error_modified(model, True, X_train=Xtrain, X_test=Xtest, basic_IJ=False, calibrate=True)
-                else:
-                    rf_variances = random_forest_error_modified(model, False, X_train=Xtrain, X_test=Xtest, basic_IJ=False, calibrate=True)
-                rf_stdevs = np.sqrt(rf_variances)
-                nan_indices = np.where(np.isnan(rf_stdevs))
+            if error_method == 'jackknife_after_bootstrap':
+                model_errors_var = random_forest_error(forest=model.model, X_test=X_test, X_train=X_train)
+                # Wager method returns the variance. Take sqrt to turn into stdev
+                model_errors = np.sqrt(model_errors_var)
+
+            elif error_method == 'stdev_weak_learners':
+                for x in range(len(X_aslist)):
+                    preds = list()
+                    if model.model.__class__.__name__ == 'RandomForestRegressor':
+                        for pred in model.model.estimators_:
+                            preds.append(pred.predict(np.array(X_aslist[x]).reshape(1, -1))[0])
+                    elif model.model.__class__.__name__ == 'BaggingRegressor':
+                        for pred in model.model.estimators_:
+                            preds.append(pred.predict(np.array(X_aslist[x]).reshape(1, -1))[0])
+                    elif model.model.__class__.__name__ == 'GradientBoostingRegressor':
+                        for pred in model.model.estimators_.tolist():
+                            preds.append(pred[0].predict(np.array(X_aslist[x]).reshape(1, -1))[0])
+                    elif model.model.__class__.__name__ == 'EnsembleRegressor':
+                        for pred in model.model:
+                            preds.append(pred.predict(np.array(X_aslist[x]).reshape(1, -1))[0])
+
+                    e_down = np.std(preds)
+                    e_up = np.std(preds)
+                    err_down.append(e_down)
+                    err_up.append(e_up)
+
+                nan_indices = np.where(np.isnan(err_up))
                 nan_indices_sorted = np.array(sorted(nan_indices[0], reverse=True))
-                for i, val in enumerate(list(rf_stdevs)):
+                for i, val in enumerate(list(err_up)):
                     if i in nan_indices_sorted:
                         indices_TF.append(False)
                     else:
                         indices_TF.append(True)
-                rf_stdevs = rf_stdevs[~np.isnan(rf_stdevs)]
-                err_up = err_down = rf_stdevs
-            elif rf_error_method == 'jackknife_uncalibrated':
-                if 'EnsembleRegressor' in model.__class__.__name__:
-                    rf_variances = random_forest_error_modified(model, True, X_train=Xtrain, X_test=Xtest, basic_IJ=False, calibrate=False)
-                else:
-                    rf_variances = random_forest_error_modified(model, False, X_train=Xtrain, X_test=Xtest, basic_IJ=False, calibrate=False)
-                rf_stdevs = np.sqrt(rf_variances)
-                nan_indices = np.where(np.isnan(rf_stdevs))
-                nan_indices_sorted = np.array(sorted(nan_indices[0], reverse=True))
-                for i, val in enumerate(list(rf_stdevs)):
-                    if i in nan_indices_sorted:
-                        indices_TF.append(False)
-                    else:
-                        indices_TF.append(True)
-                rf_stdevs = rf_stdevs[~np.isnan(rf_stdevs)]
-                err_up = err_down = rf_stdevs
-            elif rf_error_method == 'jackknife_basic':
-                if 'EnsembleRegressor' in model.__class__.__name__:
-                    rf_variances = random_forest_error_modified(model, True, X_train=Xtrain, X_test=Xtest, basic_IJ=True, calibrate=False)
-                else:
-                    rf_variances = random_forest_error_modified(model, False, X_train=Xtrain, X_test=Xtest, basic_IJ=True, calibrate=False)
-                rf_stdevs = np.sqrt(rf_variances)
-                nan_indices = np.where(np.isnan(rf_stdevs))
-                nan_indices_sorted = np.array(sorted(nan_indices[0], reverse=True))
-                for i, val in enumerate(list(rf_stdevs)):
-                    if i in nan_indices_sorted:
-                        indices_TF.append(False)
-                    else:
-                        indices_TF.append(True)
-                rf_stdevs = rf_stdevs[~np.isnan(rf_stdevs)]
-                err_up = err_down = rf_stdevs
-    
+
+                model_errors = (np.array(err_up) + np.array(err_down)) / 2
+
             else:
-            '''
-
-            #TODO: HERE add forestci method back in
-
-            for x in range(len(X_aslist)):
-                preds = list()
-                if model.model.__class__.__name__ == 'RandomForestRegressor':
-                    for pred in model.model.estimators_:
-                        preds.append(pred.predict(np.array(X_aslist[x]).reshape(1, -1))[0])
-                elif model.model.__class__.__name__ == 'BaggingRegressor':
-                    for pred in model.model.estimators_:
-                        preds.append(pred.predict(np.array(X_aslist[x]).reshape(1, -1))[0])
-                elif model.model.__class__.__name__ == 'GradientBoostingRegressor':
-                    for pred in model.model.estimators_.tolist():
-                        preds.append(pred[0].predict(np.array(X_aslist[x]).reshape(1, -1))[0])
-                elif model.model.__class__.__name__ == 'EnsembleRegressor':
-                    for pred in model.model:
-                        preds.append(pred.predict(np.array(X_aslist[x]).reshape(1, -1))[0])
-
-                e_down = np.std(preds)
-                e_up = np.std(preds)
-                err_down.append(e_down)
-                err_up.append(e_up)
-
-            nan_indices = np.where(np.isnan(err_up))
-            nan_indices_sorted = np.array(sorted(nan_indices[0], reverse=True))
-            for i, val in enumerate(list(err_up)):
-                if i in nan_indices_sorted:
-                    indices_TF.append(False)
-                else:
-                    indices_TF.append(True)
+                print('ERROR: error_method must be one of "stdev_weak_learners" or "jackknife_after_bootstrap"')
+                sys.exit()
 
         if model.model.__class__.__name__ == 'GaussianProcessRegressor':
             preds = model.predict(X, return_std=True)[1]  # Get the stdev model error from the predictions of GPR
@@ -261,7 +220,6 @@ class ErrorUtils():
                 else:
                     indices_TF.append(True)
 
-        model_errors = (np.array(err_up)+np.array(err_down))/2
         model_errors = pd.Series(model_errors, name='model_errors')
 
         return model_errors
