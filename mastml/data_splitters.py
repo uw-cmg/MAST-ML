@@ -30,7 +30,7 @@ import sklearn.model_selection as ms
 from sklearn.utils import check_random_state
 from sklearn.neighbors import NearestNeighbors
 
-from mastml.plots import Histogram, Scatter, Error, make_plots
+from mastml.plots import make_plots
 from mastml.feature_selectors import NoSelect
 from mastml.error_analysis import ErrorUtils
 from mastml.metrics import Metrics
@@ -189,7 +189,7 @@ class BaseSplitter(ms.BaseCrossValidator):
 
     def evaluate(self, X, y, models, preprocessor=None, groups=None, hyperopts=None, selectors=None, metrics=None,
                  plots=['Histogram', 'Scatter', 'Error'], savepath=None, X_extra=None, leaveout_inds=list(list()),
-                 best_run_metric=None, nested_CV=False, error_method='stdev_weak_learners', recalibrate_errors=True):
+                 best_run_metric=None, nested_CV=False, error_method='stdev_weak_learners', recalibrate_errors=False):
 
         if nested_CV == True:
             # Get set of X_leaveout, y_leaveout for testing. Append them to user-specified X_leaveout tests
@@ -239,6 +239,10 @@ class BaseSplitter(ms.BaseCrossValidator):
                 has_model_errors = True
             else:
                 has_model_errors = False
+                if recalibrate_errors is True:
+                    print('Warning: you have selected to recalibrate errors using a model that does not support '
+                          'error estimation. Automatically changing to set recalibrate_errors = False')
+                    recalibrate_errors = False
 
             for selector in selectors:
                 splitdir = self._setup_savedir(model=model, selector=selector, preprocessor=preprocessor, savepath=savepath)
@@ -350,80 +354,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                                    show_figure=False,
                                    recalibrate_errors=recalibrate_errors,
                                    model_errors_cal=model_errors_leaveout_cal)
-                        '''
-                        if 'Histogram' in plots:
-                            Histogram.plot_residuals_histogram(y_true=y_leaveout,
-                                                               y_pred=y_pred_leaveout,
-                                                               savepath=splitouterpath,
-                                                               file_name='residual_histogram_leftoutdata',
-                                                               show_figure=False)
-                        if 'Scatter' in plots:
-                            Scatter.plot_predicted_vs_true(y_true=y_leaveout,
-                                                           y_pred=y_pred_leaveout,
-                                                           savepath=splitouterpath,
-                                                           file_name='parity_plot_leftoutdata',
-                                                           x_label='values',
-                                                           data_type='leaveout',
-                                                           metrics_list=metrics,
-                                                           show_figure=False)
-                        if 'Error' in plots:
-                            Error.plot_normalized_error(residuals=residuals_leaveout,
-                                                        savepath=splitouterpath,
-                                                        data_type='leaveout',
-                                                        model_errors=model_errors_leaveout,
-                                                        show_figure=False)
-                            Error.plot_cumulative_normalized_error(residuals=residuals_leaveout,
-                                                                    savepath=splitouterpath,
-                                                                    data_type='leaveout',
-                                                                    model_errors=model_errors_leaveout,
-                                                                    show_figure=False)
-                            if has_model_errors is True:
-                                recalibrate_dict = self._get_recalibration_params(savepath=splitouterpath)
-                                Error.plot_rstat(savepath=splitouterpath,
-                                                 data_type='leaveout',
-                                                 model_errors=model_errors_leaveout,
-                                                 residuals=residuals_leaveout,
-                                                 show_figure=False,
-                                                 recalibrate_errors=False)
-                                Error.plot_rstat(savepath=splitouterpath,
-                                                 data_type='leaveout',
-                                                 model_errors=model_errors_leaveout,
-                                                 residuals=residuals_leaveout,
-                                                 show_figure=False,
-                                                 recalibrate_errors=True,
-                                                 recalibrate_dict=recalibrate_dict)
-                                Error.plot_real_vs_predicted_error(savepath=splitouterpath,
-                                                                   model=best_model,
-                                                                   data_type='leaveout',
-                                                                   model_errors=model_errors_leaveout,
-                                                                   residuals=residuals_leaveout,
-                                                                   dataset_stdev=dataset_stdev,
-                                                                   show_figure=False,
-                                                                   recalibrate_errors=False)
-                                Error.plot_real_vs_predicted_error(savepath=splitouterpath,
-                                                                   model=best_model,
-                                                                   data_type='leaveout',
-                                                                   model_errors=model_errors_leaveout,
-                                                                   residuals=residuals_leaveout,
-                                                                   dataset_stdev=dataset_stdev,
-                                                                   show_figure=False,
-                                                                   recalibrate_errors=True,
-                                                                   recalibrate_dict=recalibrate_dict)
-                                Error.plot_real_vs_predicted_error_uncal_cal_overlay(savepath=splitouterpath,
-                                                                                     model=model,
-                                                                                     data_type='leaveout',
-                                                                                     model_errors=model_errors_leaveout,
-                                                                                     residuals=residuals_leaveout,
-                                                                                     dataset_stdev=dataset_stdev,
-                                                                                     show_figure=False,
-                                                                                     recalibrate_dict=recalibrate_dict)
-                                Error.plot_rstat_uncal_cal_overlay(savepath=splitouterpath,
-                                                                   data_type='leaveout',
-                                                                   residuals=residuals_leaveout,
-                                                                   model_errors=model_errors_leaveout,
-                                                                   show_figure=False,
-                                                                   recalibrate_dict=recalibrate_dict)
-                        '''
+
                     # At level of splitdir, do analysis over all splits (e.g. parity plot over all splits)
                     y_leaveout_all = self._collect_data(filename='y_leaveout', savepath=splitdir)
                     y_pred_leaveout_all = self._collect_data(filename='y_pred_leaveout', savepath=splitdir)
@@ -464,112 +395,6 @@ class BaseSplitter(ms.BaseCrossValidator):
                                show_figure=False,
                                recalibrate_errors=recalibrate_errors,
                                model_errors_cal=model_errors_leaveout_all_calibrated)
-
-                    # Also get the overall calibrated errors by using model errors calibrated by each subset of recalibration
-                    # parameters, instead of just using average values on all model errors
-                    #Error.plot_real_vs_predicted_error(savepath=splitdir,
-                    #                                   model=model,
-                    #                                   data_type='leaveout_recaleachsplit',
-                    #                                   model_errors=model_errors_leaveout_all_calibrated,
-                    #                                   residuals=residuals_leaveout_all,
-                    #                                   dataset_stdev=dataset_stdev,
-                    #                                   show_figure=False,
-                    #                                   recalibrate_errors=False,
-                    #                                   recalibrate_dict=dict())
-                    #Error.plot_real_vs_predicted_error_uncal_cal_overlay(savepath=savepath,
-                    #                                                     model=model,
-                    #                                                     data_type=data_type,
-                    #                                                     model_errors=model_errors,
-                    #                                                     residuals=residuals,
-                    #                                                     dataset_stdev=dataset_stdev,
-                    #                                                     show_figure=False,
-                    #                                                     recalibrate_dict=recalibrate_dict)
-
-                    '''
-                    if 'Histogram' in plots:
-                        Histogram.plot_residuals_histogram(y_true=pd.Series(np.array(y_leaveout_all)),
-                                                           y_pred=pd.Series(np.array(y_pred_leaveout_all)),
-                                                           savepath=splitdir,
-                                                           file_name='residual_histogram_leaveoutdata',
-                                                           show_figure=False)
-                    if 'Scatter' in plots:
-                        Scatter.plot_predicted_vs_true(y_true=y_leaveout_all,
-                                                       y_pred=y_pred_leaveout_all,
-                                                       groups=None,
-                                                       savepath=splitdir,
-                                                       file_name='parity_plot_allsplits_leaveout',
-                                                       data_type='leaveout',
-                                                       x_label='values',
-                                                       metrics_list=metrics,
-                                                       show_figure=False)
-                        Scatter.plot_predicted_vs_true_bars(savepath=splitdir,
-                                                            data_type='leaveout',
-                                                            x_label='values',
-                                                            groups=None,
-                                                            metrics_list=metrics,
-                                                            show_figure=False)
-                    if 'Error' in plots:
-                        Error.plot_normalized_error(residuals=residuals_leaveout_all,
-                                                    savepath=splitdir,
-                                                    data_type='leaveout',
-                                                    model_errors=model_errors_leaveout_all,
-                                                    show_figure=False)
-                        Error.plot_cumulative_normalized_error(residuals=residuals_leaveout_all,
-                                                                savepath=splitdir,
-                                                                data_type='leaveout',
-                                                                model_errors=model_errors_leaveout_all,
-                                                                show_figure=False)
-                        if has_model_errors is True:
-                            dataset_stdev = np.std(y)
-
-                            # Get the average recalibration factors from each subset
-                            recalibrate_avg_dict, recalibrate_stdev_dict = self._get_average_recalibration_params(savepath=splitdir)
-
-                            Error.plot_rstat(savepath=splitdir,
-                                             data_type='leaveout',
-                                             model_errors=model_errors_leaveout_all,
-                                             residuals=residuals_leaveout_all,
-                                             show_figure=False,
-                                             recalibrate_errors=False)
-                            Error.plot_rstat(savepath=splitdir,
-                                             data_type='leaveout',
-                                             model_errors=model_errors_leaveout_all,
-                                             residuals=residuals_leaveout_all,
-                                             show_figure=False,
-                                             recalibrate_errors=True,
-                                             recalibrate_dict=recalibrate_avg_dict)
-                            Error.plot_real_vs_predicted_error(savepath=splitdir,
-                                                               model=model,
-                                                               data_type='leaveout',
-                                                               model_errors=model_errors_leaveout_all,
-                                                               residuals=residuals_leaveout_all,
-                                                               dataset_stdev=dataset_stdev,
-                                                               show_figure=False,
-                                                               recalibrate_errors=False)
-                            Error.plot_real_vs_predicted_error(savepath=splitdir,
-                                                               model=model,
-                                                               data_type='leaveout',
-                                                               model_errors=model_errors_leaveout_all,
-                                                               residuals=residuals_leaveout_all,
-                                                               dataset_stdev=dataset_stdev,
-                                                               show_figure=False,
-                                                               recalibrate_errors=True,
-                                                                recalibrate_dict = recalibrate_avg_dict)
-                            Error.plot_real_vs_predicted_error_uncal_cal_overlay(savepath=splitdir,
-                                                                                 model=model,
-                                                                                 data_type='leaveout',
-                                                                                 model_errors=model_errors_leaveout_all,
-                                                                                 residuals=residuals_leaveout_all,
-                                                                                 dataset_stdev=dataset_stdev,
-                                                                                 show_figure=False,
-                                                                                 recalibrate_dict=recalibrate_avg_dict)
-                            Error.plot_rstat_uncal_cal_overlay(savepath=splitdir,
-                                                               data_type='leaveout',
-                                                               residuals=residuals_leaveout_all,
-                                                               model_errors=model_errors_leaveout_all,
-                                                               show_figure=False,
-                                                               recalibrate_dict=recalibrate_avg_dict)                    
-                    '''
 
                 else:
                     X_splits, y_splits, train_inds, test_inds = self.split_asframe(X=X, y=y, groups=groups)
@@ -713,155 +538,6 @@ class BaseSplitter(ms.BaseCrossValidator):
                    recalibrate_errors=recalibrate_errors,
                    model_errors_cal=model_errors_train_all_cal)
 
-        '''
-        if 'Histogram' in plots:
-            Histogram.plot_residuals_histogram(y_true=y_test_all,
-                                               y_pred=y_pred_all,
-                                               savepath=splitdir,
-                                               file_name='residual_histogram_test',
-                                               show_figure=False)
-            Histogram.plot_residuals_histogram(y_true=y_train_all,
-                                               y_pred=y_pred_train_all,
-                                               savepath=splitdir,
-                                               file_name='residual_histogram_train',
-                                               show_figure=False)
-        if 'Scatter' in plots:
-            if groups is not None:
-                Scatter.plot_predicted_vs_true(y_true=y_test_all,
-                                               y_pred=y_pred_all,
-                                               groups=groups,
-                                               savepath=splitdir,
-                                               file_name='parity_plot_allsplits_test_pergroup',
-                                               data_type='test',
-                                               x_label='values',
-                                               metrics_list=metrics,
-                                               show_figure=False)
-                Scatter.plot_metric_vs_group(savepath=splitdir,
-                                             data_type='test',
-                                             show_figure=False)
-            Scatter.plot_predicted_vs_true(y_true=y_test_all,
-                                           y_pred=y_pred_all,
-                                           groups=None,
-                                           savepath=splitdir,
-                                           file_name='parity_plot_allsplits_test',
-                                           data_type='test',
-                                           x_label='values',
-                                           metrics_list=metrics,
-                                           show_figure=False)
-            Scatter.plot_best_worst_split(savepath=splitdir,
-                                          data_type='test',
-                                          x_label='values',
-                                          metrics_list=metrics,
-                                          show_figure=False)
-            Scatter.plot_best_worst_per_point(savepath=splitdir,
-                                              data_type='test',
-                                              x_label='values',
-                                              metrics_list=metrics,
-                                              show_figure=False)
-            Scatter.plot_predicted_vs_true(y_true=y_train_all,
-                                           y_pred=y_pred_train_all,
-                                           groups=None,
-                                           savepath=splitdir,
-                                           file_name='parity_plot_allsplits_train',
-                                           x_label='values',
-                                           data_type='train',
-                                           metrics_list=metrics,
-                                           show_figure=False)
-            Scatter.plot_best_worst_split(savepath=splitdir,
-                                          data_type='train',
-                                          x_label='values',
-                                          metrics_list=metrics,
-                                          show_figure=False)
-            Scatter.plot_best_worst_per_point(savepath=splitdir,
-                                              data_type='train',
-                                              x_label='values',
-                                              metrics_list=metrics,
-                                              show_figure=False)
-            Scatter.plot_predicted_vs_true_bars(savepath=splitdir,
-                                                data_type='test',
-                                                x_label='values',
-                                                groups=None,
-                                                metrics_list=metrics,
-                                                show_figure=False)
-        if 'Error' in plots:
-            Error.plot_normalized_error(residuals=residuals_test_all,
-                                        savepath=splitdir,
-                                         data_type='test',
-                                        model_errors=model_errors_test_all,
-                                        show_figure=False)
-            Error.plot_normalized_error(residuals=residuals_train_all,
-                                        savepath=splitdir,
-                                         data_type='train',
-                                        model_errors=model_errors_train_all,
-                                        show_figure=False)
-            Error.plot_cumulative_normalized_error(residuals=residuals_test_all,
-                                                    savepath=splitdir,
-                                                    data_type='test',
-                                                    model_errors=model_errors_test_all,
-                                                    show_figure=False)
-            Error.plot_cumulative_normalized_error(residuals=residuals_train_all,
-                                                    savepath=splitdir,
-                                                    data_type='train',
-                                                    model_errors=model_errors_train_all,
-                                                    show_figure=False)
-            if has_model_errors is True:
-                dataset_stdev = np.std(np.unique(y_train_all))
-                Error.plot_rstat(savepath=splitdir,
-                                 data_type='test',
-                                 model_errors=model_errors_test_all,
-                                 residuals=residuals_test_all,
-                                 show_figure=False,
-                                 recalibrate_errors=False)
-                Error.plot_rstat(savepath=splitdir,
-                                 data_type='test',
-                                 model_errors=model_errors_test_all,
-                                 residuals=residuals_test_all,
-                                 show_figure=False,
-                                 recalibrate_errors=True)
-                Error.plot_real_vs_predicted_error(savepath=splitdir,
-                                                   model=model,
-                                                   data_type='test',
-                                                   model_errors=model_errors_test_all,
-                                                   residuals=residuals_test_all,
-                                                   dataset_stdev=dataset_stdev,
-                                                   show_figure=False,
-                                                   recalibrate_errors=False)
-                Error.plot_real_vs_predicted_error(savepath=splitdir,
-                                                   model=model,
-                                                   data_type='test',
-                                                   model_errors=model_errors_test_all,
-                                                   residuals=residuals_test_all,
-                                                   dataset_stdev=dataset_stdev,
-                                                   show_figure=False,
-                                                   recalibrate_errors=True)
-                Error.plot_real_vs_predicted_error_uncal_cal_overlay(savepath=splitdir,
-                                                                     model=model,
-                                                                     data_type='test',
-                                                                     model_errors=model_errors_test_all,
-                                                                     residuals=residuals_test_all,
-                                                                     dataset_stdev=dataset_stdev,
-                                                                     show_figure=False)
-                Error.plot_rstat_uncal_cal_overlay(savepath=splitdir,
-                                                   data_type='test',
-                                                   residuals=residuals_test_all,
-                                                   model_errors=model_errors_test_all,
-                                                   show_figure=False)
-                Error.plot_rstat(savepath=splitdir,
-                                 data_type='train',
-                                 model_errors=model_errors_train_all,
-                                 residuals=residuals_train_all,
-                                 show_figure=False,
-                                 recalibrate_errors=False)
-                Error.plot_real_vs_predicted_error(savepath=splitdir,
-                                                   model=model,
-                                                   data_type='train',
-                                                   model_errors=model_errors_train_all,
-                                                   residuals=residuals_train_all,
-                                                   dataset_stdev=dataset_stdev,
-                                                   show_figure=False,
-                                                   recalibrate_errors=False)
-        '''
-
     def _evaluate_split(self, X_train, X_test, y_train, y_test, model, preprocessor, selector, hyperopt,
                         metrics, plots, group, splitpath, has_model_errors, X_extra_train, X_extra_test,
                         error_method):
@@ -963,84 +639,6 @@ class BaseSplitter(ms.BaseCrossValidator):
                    savepath=splitpath,
                    show_figure=False,
                    recalibrate_errors=False)
-
-        '''
-        if 'Histogram' in plots:
-            Histogram.plot_residuals_histogram(y_true=y_test,
-                                               y_pred=y_pred,
-                                               savepath=splitpath,
-                                               file_name='residual_histogram_test',
-                                               show_figure=False)
-            Histogram.plot_residuals_histogram(y_true=y_train,
-                                               y_pred=y_pred_train,
-                                               savepath=splitpath,
-                                               file_name='residual_histogram_train',
-                                               show_figure=False)
-        if 'Scatter' in plots:
-            Scatter.plot_predicted_vs_true(y_true=y_test,
-                                           y_pred=y_pred,
-                                           savepath=splitpath,
-                                           file_name='parity_plot_test',
-                                           x_label='values',
-                                           data_type='test',
-                                           metrics_list=metrics,
-                                           show_figure=False)
-            Scatter.plot_predicted_vs_true(y_true=y_train,
-                                           y_pred=y_pred_train,
-                                           savepath=splitpath,
-                                           file_name='parity_plot_train',
-                                           x_label='values',
-                                           data_type='train',
-                                           metrics_list=metrics,
-                                           show_figure=False)
-        if 'Error' in plots:
-            Error.plot_normalized_error(residuals=residuals_test,
-                                        savepath=splitpath,
-                                        data_type='test',
-                                        model_errors=model_errors_test,
-                                        show_figure=False)
-            Error.plot_normalized_error(residuals=residuals_train,
-                                        savepath=splitpath,
-                                        data_type='train',
-                                        model_errors=model_errors_train,
-                                        show_figure=False)
-            Error.plot_cumulative_normalized_error(residuals=residuals_test,
-                                                    savepath=splitpath,
-                                                    data_type='test',
-                                                    model_errors=model_errors_test,
-                                                    show_figure=False)
-            Error.plot_cumulative_normalized_error(residuals=residuals_train,
-                                                    savepath=splitpath,
-                                                    data_type='train',
-                                                    model_errors=model_errors_train,
-                                                    show_figure=False)
-            if has_model_errors is True:
-                dataset_stdev = np.std(y_train)
-                Error.plot_rstat(savepath=splitpath,
-                                 data_type='test',
-                                 model_errors=model_errors_test,
-                                 residuals=residuals_test,
-                                 show_figure=False)
-                Error.plot_real_vs_predicted_error(savepath=splitpath,
-                                                   model=model,
-                                                   data_type='test',
-                                                   model_errors=model_errors_test,
-                                                   residuals=residuals_test,
-                                                   dataset_stdev=dataset_stdev,
-                                                   show_figure=False)
-                Error.plot_rstat(savepath=splitpath,
-                                 data_type='train',
-                                 model_errors=model_errors_train,
-                                 residuals=residuals_train,
-                                 show_figure=False)
-                Error.plot_real_vs_predicted_error(savepath=splitpath,
-                                                   model=model,
-                                                   data_type='train',
-                                                   model_errors=model_errors_train,
-                                                   residuals=residuals_train,
-                                                   dataset_stdev=dataset_stdev,
-                                                   show_figure=False)
-        '''
 
         # Write the test group to a text file
         if group is not None:

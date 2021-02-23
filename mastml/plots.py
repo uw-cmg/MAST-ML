@@ -809,12 +809,6 @@ class Error():
             ax.plot(bin_values_copy, yfit, 'k--', linewidth=2)
             r2 = r2_score(rms_residual_values_copy, yfit, sample_weight=num_values_per_bin_copy)
 
-            #linear.fit(np.array(bin_values_wellsampled).reshape(-1, 1), rms_residual_values_wellsampled,
-            #           sample_weight=num_values_per_bin_wellsampled)
-            #yfit = linear.predict(np.array(bin_values_wellsampled).reshape(-1, 1))
-            #ax.plot(bin_values_wellsampled, yfit, 'k--', linewidth=2)
-            #r2 = r2_score(rms_residual_values_wellsampled, yfit)
-
             slope = linear.coef_
             intercept = linear.intercept_
 
@@ -922,11 +916,6 @@ class Error():
         ax.tick_params(labelsize=10)
 
         # Fit the line to all data, including the poorly sampled data, and weight data points by number of samples per bin
-        #linear_uncal.fit(np.array(bin_values_wellsampled_uncal).reshape(-1, 1), rms_residual_values_wellsampled_uncal,
-        #               sample_weight=num_values_per_bin_wellsampled_uncal)
-        #yfit_uncal = linear_uncal.predict(np.array(bin_values_wellsampled_uncal).reshape(-1, 1))
-        #ax.plot(bin_values_wellsampled_uncal, yfit_uncal, 'gray', linewidth=2)
-        #r2_uncal = r2_score(rms_residual_values_wellsampled_uncal, yfit_uncal)
         linear_uncal.fit(np.array(bin_values_uncal).reshape(-1, 1), rms_residual_values_uncal,
                        sample_weight=num_values_per_bin_uncal)
         yfit_uncal = linear_uncal.predict(np.array(bin_values_uncal).reshape(-1, 1))
@@ -937,11 +926,6 @@ class Error():
         intercept_uncal = linear_uncal.intercept_
 
         # Fit the line to all data, including the poorly sampled data, and weight data points by number of samples per bin
-        #linear_cal.fit(np.array(bin_values_wellsampled_cal).reshape(-1, 1), rms_residual_values_wellsampled_cal,
-        #               sample_weight=num_values_per_bin_wellsampled_cal)
-        #yfit_cal = linear_cal.predict(np.array(bin_values_wellsampled_cal).reshape(-1, 1))
-        #ax.plot(bin_values_wellsampled_cal, yfit_cal, 'blue', linewidth=2)
-        #r2_cal = r2_score(rms_residual_values_wellsampled_cal, yfit_cal)
         linear_cal.fit(np.array(bin_values_cal).reshape(-1, 1), rms_residual_values_cal,
                        sample_weight=num_values_per_bin_cal)
         yfit_cal = linear_cal.predict(np.array(bin_values_cal).reshape(-1, 1))

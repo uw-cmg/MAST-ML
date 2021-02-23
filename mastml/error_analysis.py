@@ -76,14 +76,6 @@ class ErrorUtils():
         model_errors = model_errors/dataset_stdev
         residuals = residuals/dataset_stdev
 
-        #if recalibrate_errors == True:
-        #    if len(recalibrate_dict.keys()) == 0:
-        #        model_errors, a, b = cls._recalibrate_errors(model_errors, residuals)
-        #    else:
-        #        a = recalibrate_dict['a']
-        #        b = recalibrate_dict['b']
-        #        model_errors = a*np.array(model_errors) + b
-
         abs_res = abs(residuals)
 
         # check to see if number of bins should increase, and increase it if so
