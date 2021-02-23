@@ -66,24 +66,23 @@ class ErrorUtils():
         corrector = CorrectionFactors(residuals=residuals, model_errors=model_errors)
         a, b = corrector.nll()
         # shift the model errors by the correction factor
-        model_errors = list(a * np.array(model_errors) + b)
+        model_errors = pd.Series(a * np.array(model_errors) + b, name='model_errors')
         return model_errors, a, b
 
     @classmethod
-    def _parse_error_data(cls, model_errors, residuals, dataset_stdev, recalibrate_errors=False, recalibrate_dict=dict(),
-                          number_of_bins=15):
+    def _parse_error_data(cls, model_errors, residuals, dataset_stdev, number_of_bins=15):
 
         # Normalize the residuals and model errors by dataset stdev
         model_errors = model_errors/dataset_stdev
         residuals = residuals/dataset_stdev
 
-        if recalibrate_errors == True:
-            if len(recalibrate_dict.keys()) == 0:
-                model_errors, a, b = cls._recalibrate_errors(model_errors, residuals)
-            else:
-                a = recalibrate_dict['a']
-                b = recalibrate_dict['b']
-                model_errors = a*np.array(model_errors) + b
+        #if recalibrate_errors == True:
+        #    if len(recalibrate_dict.keys()) == 0:
+        #        model_errors, a, b = cls._recalibrate_errors(model_errors, residuals)
+        #    else:
+        #        a = recalibrate_dict['a']
+        #        b = recalibrate_dict['b']
+        #        model_errors = a*np.array(model_errors) + b
 
         abs_res = abs(residuals)
 

@@ -30,7 +30,7 @@ import sklearn.model_selection as ms
 from sklearn.utils import check_random_state
 from sklearn.neighbors import NearestNeighbors
 
-from mastml.plots import Histogram, Scatter, Error
+from mastml.plots import Histogram, Scatter, Error, make_plots
 from mastml.feature_selectors import NoSelect
 from mastml.error_analysis import ErrorUtils
 from mastml.metrics import Metrics
@@ -189,7 +189,7 @@ class BaseSplitter(ms.BaseCrossValidator):
 
     def evaluate(self, X, y, models, preprocessor=None, groups=None, hyperopts=None, selectors=None, metrics=None,
                  plots=['Histogram', 'Scatter', 'Error'], savepath=None, X_extra=None, leaveout_inds=list(list()),
-                 best_run_metric=None, nested_CV=False, error_method='stdev_weak_learners'):
+                 best_run_metric=None, nested_CV=False, error_method='stdev_weak_learners', recalibrate_errors=True):
 
         if nested_CV == True:
             # Get set of X_leaveout, y_leaveout for testing. Append them to user-specified X_leaveout tests
@@ -279,7 +279,8 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                   metrics,
                                                   plots,
                                                   has_model_errors,
-                                                  error_method)
+                                                  error_method,
+                                                  recalibrate_errors)
                         split_outer_count += 1
 
                         best_split_dict = self._get_best_split(savepath=splitouterpath, model=model,
@@ -326,6 +327,30 @@ class BaseSplitter(ms.BaseCrossValidator):
                         residuals_leaveout = y_pred_leaveout-y_leaveout
                         self._save_split_data(df=residuals_leaveout, filename='residuals_leaveout', savepath=splitouterpath, columns='residuals')
 
+                        if recalibrate_errors is True:
+                            recalibrate_dict = self._get_recalibration_params(savepath=splitouterpath,
+                                                                          data_type='test')
+                            model_errors_leaveout_cal = recalibrate_dict['a']*model_errors_leaveout+recalibrate_dict['b']
+                            self._save_split_data(df=model_errors_leaveout_cal, filename='model_errors_leaveout_calibrated',
+                                              savepath=splitouterpath, columns='model_errors')
+                        else:
+                            model_errors_leaveout_cal = None
+
+                        make_plots(plots=plots,
+                                   y_true=y_leaveout,
+                                   y_pred=y_pred_leaveout,
+                                   data_type='leaveout',
+                                   dataset_stdev=dataset_stdev,
+                                   has_model_errors=has_model_errors,
+                                   metrics=metrics,
+                                   model=model,
+                                   model_errors=model_errors_leaveout,
+                                   residuals=residuals_leaveout,
+                                   savepath=splitouterpath,
+                                   show_figure=False,
+                                   recalibrate_errors=recalibrate_errors,
+                                   model_errors_cal=model_errors_leaveout_cal)
+                        '''
                         if 'Histogram' in plots:
                             Histogram.plot_residuals_histogram(y_true=y_leaveout,
                                                                y_pred=y_pred_leaveout,
@@ -398,16 +423,69 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                                    model_errors=model_errors_leaveout,
                                                                    show_figure=False,
                                                                    recalibrate_dict=recalibrate_dict)
-
+                        '''
                     # At level of splitdir, do analysis over all splits (e.g. parity plot over all splits)
                     y_leaveout_all = self._collect_data(filename='y_leaveout', savepath=splitdir)
                     y_pred_leaveout_all = self._collect_data(filename='y_pred_leaveout', savepath=splitdir)
                     residuals_leaveout_all = self._collect_data(filename='residuals_leaveout', savepath=splitdir)
+
+                    # Remake the Series so that indices are sequential (needed for math)
+                    y_leaveout_all = pd.Series(np.array(y_leaveout_all))
+                    y_pred_leaveout_all = pd.Series(np.array(y_pred_leaveout_all))
+
                     if has_model_errors is True:
                         model_errors_leaveout_all = self._collect_data(filename='model_errors_leaveout', savepath=splitdir)
+                        model_errors_leaveout_all_calibrated = self._collect_data(filename='model_errors_leaveout_calibrated', savepath=splitdir)
+                        self._save_split_data(df=model_errors_leaveout_all, filename='model_errors_leaveout', savepath=splitdir, columns='model_errors')
                     else:
                         model_errors_leaveout_all = None
+                        model_errors_leaveout_all_calibrated = None
 
+                    # Gather the recalibration dicts from each split set and save average and stdev of recalibrations
+                    if has_model_errors is True and recalibrate_errors is True:
+                        recalibrate_avg_dict, recalibrate_stdev_dict = self._get_average_recalibration_params(savepath=splitdir,
+                                                                                                              data_type='test')
+                        pd.DataFrame(recalibrate_avg_dict, index=[0]).to_excel(os.path.join(splitdir, 'recalibration_parameters_average_test.xlsx'))
+                        pd.DataFrame(recalibrate_stdev_dict, index=[0]).to_excel(os.path.join(splitdir, 'recalibration_parameters_stdev_test.xlsx'))
+
+                    # Make all leaveout data plots
+                    dataset_stdev = np.std(y)
+                    make_plots(plots=plots,
+                               y_true=y_leaveout_all,
+                               y_pred=y_pred_leaveout_all,
+                               data_type='leaveout',
+                               dataset_stdev=dataset_stdev,
+                               has_model_errors=has_model_errors,
+                               metrics=metrics,
+                               model=model,
+                               model_errors=model_errors_leaveout_all,
+                               residuals=residuals_leaveout_all,
+                               savepath=splitdir,
+                               show_figure=False,
+                               recalibrate_errors=recalibrate_errors,
+                               model_errors_cal=model_errors_leaveout_all_calibrated)
+
+                    # Also get the overall calibrated errors by using model errors calibrated by each subset of recalibration
+                    # parameters, instead of just using average values on all model errors
+                    #Error.plot_real_vs_predicted_error(savepath=splitdir,
+                    #                                   model=model,
+                    #                                   data_type='leaveout_recaleachsplit',
+                    #                                   model_errors=model_errors_leaveout_all_calibrated,
+                    #                                   residuals=residuals_leaveout_all,
+                    #                                   dataset_stdev=dataset_stdev,
+                    #                                   show_figure=False,
+                    #                                   recalibrate_errors=False,
+                    #                                   recalibrate_dict=dict())
+                    #Error.plot_real_vs_predicted_error_uncal_cal_overlay(savepath=savepath,
+                    #                                                     model=model,
+                    #                                                     data_type=data_type,
+                    #                                                     model_errors=model_errors,
+                    #                                                     residuals=residuals,
+                    #                                                     dataset_stdev=dataset_stdev,
+                    #                                                     show_figure=False,
+                    #                                                     recalibrate_dict=recalibrate_dict)
+
+                    '''
                     if 'Histogram' in plots:
                         Histogram.plot_residuals_histogram(y_true=pd.Series(np.array(y_leaveout_all)),
                                                            y_pred=pd.Series(np.array(y_pred_leaveout_all)),
@@ -490,7 +568,8 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                                residuals=residuals_leaveout_all,
                                                                model_errors=model_errors_leaveout_all,
                                                                show_figure=False,
-                                                               recalibrate_dict=recalibrate_avg_dict)
+                                                               recalibrate_dict=recalibrate_avg_dict)                    
+                    '''
 
                 else:
                     X_splits, y_splits, train_inds, test_inds = self.split_asframe(X=X, y=y, groups=groups)
@@ -509,7 +588,8 @@ class BaseSplitter(ms.BaseCrossValidator):
                                               metrics,
                                               plots,
                                               has_model_errors,
-                                              error_method)
+                                              error_method,
+                                              recalibrate_errors)
 
                     best_split_dict = self._get_best_split(savepath=splitdir, model=model,
                                                            preprocessor=preprocessor, best_run_metric=best_run_metric)
@@ -520,7 +600,8 @@ class BaseSplitter(ms.BaseCrossValidator):
         return
 
     def _evaluate_split_sets(self, X_splits, y_splits, train_inds, test_inds, model, selector, preprocessor,
-                             X_extra, groups, splitdir, hyperopt, metrics, plots, has_model_errors, error_method):
+                             X_extra, groups, splitdir, hyperopt, metrics, plots, has_model_errors, error_method,
+                             recalibrate_errors):
         split_count = 0
         for Xs, ys, train_ind, test_ind in zip(X_splits, y_splits, train_inds, test_inds):
             model_orig = copy.deepcopy(model)
@@ -564,10 +645,75 @@ class BaseSplitter(ms.BaseCrossValidator):
         if has_model_errors is True:
             model_errors_test_all = self._collect_data(filename='model_errors_test', savepath=splitdir)
             model_errors_train_all = self._collect_data(filename='model_errors_train', savepath=splitdir)
+            # Save all the uncalibrated model errors data
+            self._save_split_data(df=model_errors_test_all, filename='model_errors_test', savepath=splitdir,
+                                  columns='model_errors')
+            self._save_split_data(df=model_errors_train_all, filename='model_errors_train', savepath=splitdir,
+                                  columns='model_errors')
         else:
             model_errors_test_all = None
             model_errors_train_all = None
 
+
+        if recalibrate_errors is True:
+            model_errors_test_all_cal, a, b = ErrorUtils()._recalibrate_errors(model_errors=model_errors_test_all, residuals=residuals_test_all)
+
+            # Write the recalibration values to file
+            recal_df = pd.DataFrame({'slope (a)': a, 'intercept (b)': b}, index=[0])
+            recal_df.to_excel(os.path.join(splitdir, 'recalibration_parameters_'+str('test')+'.xlsx'), index=False)
+
+            # Write the calibrated model errors to file
+            self._save_split_data(df=model_errors_test_all_cal, filename='model_errors_test_calibrated', savepath=splitdir, columns='model_errors')
+
+            model_errors_train_all_cal, a, b = ErrorUtils()._recalibrate_errors(model_errors=model_errors_train_all,
+                                                                               residuals=residuals_train_all)
+
+            # Write the recalibration values to file
+            recal_df = pd.DataFrame({'slope (a)': a, 'intercept (b)': b}, index=[0])
+            recal_df.to_excel(os.path.join(splitdir, 'recalibration_parameters_' + str('train') + '.xlsx'), index=False)
+
+            # Write the calibrated model errors to file
+            self._save_split_data(df=model_errors_train_all_cal, filename='model_errors_train_calibrated', savepath=splitdir,
+                                  columns='model_errors')
+        else:
+            model_errors_test_all_cal = None
+            model_errors_train_all_cal = None
+
+        # Make all test data plots
+        dataset_stdev = np.std(np.unique(y_train_all))
+        make_plots(plots=plots,
+                   y_true=y_test_all,
+                   y_pred=y_pred_all,
+                   data_type='test',
+                   dataset_stdev=dataset_stdev,
+                   has_model_errors=has_model_errors,
+                   metrics=metrics,
+                   model=model,
+                   model_errors=model_errors_test_all,
+                   residuals=residuals_test_all,
+                   savepath=splitdir,
+                   show_figure=False,
+                   recalibrate_errors=recalibrate_errors,
+                   model_errors_cal=model_errors_test_all_cal)
+
+        # Make all train data plots
+        dataset_stdev = np.std(np.unique(y_train_all))
+        make_plots(plots=plots,
+                   y_true=y_train_all,
+                   y_pred=y_pred_train_all,
+                   data_type='train',
+                   dataset_stdev=dataset_stdev,
+                   has_model_errors=has_model_errors,
+                   metrics=metrics,
+                   model=model,
+                   model_errors=model_errors_train_all,
+                   residuals=residuals_train_all,
+                   savepath=splitdir,
+                   show_figure=False,
+                   recalibrate_errors=recalibrate_errors,
+                   model_errors_cal=model_errors_train_all_cal)
+
+        '''
         if 'Histogram' in plots:
             Histogram.plot_residuals_histogram(y_true=y_test_all,
                                                y_pred=y_pred_all,
@@ -714,6 +860,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                    dataset_stdev=dataset_stdev,
                                                    show_figure=False,
                                                    recalibrate_errors=False)
+        '''
 
     def _evaluate_split(self, X_train, X_test, y_train, y_test, model, preprocessor, selector, hyperopt,
                         metrics, plots, group, splitpath, has_model_errors, X_extra_train, X_extra_test,
@@ -785,6 +932,39 @@ class BaseSplitter(ms.BaseCrossValidator):
         df_stats_train = pd.DataFrame().from_records([stats_dict_train])
         df_stats_train.to_excel(os.path.join(splitpath, 'train_stats_summary.xlsx'), index=False)
 
+        # Make all test data plots
+        dataset_stdev = np.std(y_train)
+        make_plots(plots=plots,
+                   y_true=y_test,
+                   y_pred=y_pred,
+                   data_type='test',
+                   dataset_stdev=dataset_stdev,
+                   has_model_errors=has_model_errors,
+                   metrics=metrics,
+                   model=model,
+                   model_errors=model_errors_test,
+                   residuals=residuals_test,
+                   savepath=splitpath,
+                   show_figure=False,
+                   recalibrate_errors=False)
+
+        # Make all train data plots
+        dataset_stdev = np.std(y_train)
+        make_plots(plots=plots,
+                   y_true=y_train,
+                   y_pred=y_pred_train,
+                   data_type='train',
+                   dataset_stdev=dataset_stdev,
+                   has_model_errors=has_model_errors,
+                   metrics=metrics,
+                   model=model,
+                   model_errors=model_errors_train,
+                   residuals=residuals_train,
+                   savepath=splitpath,
+                   show_figure=False,
+                   recalibrate_errors=False)
+
+        '''
         if 'Histogram' in plots:
             Histogram.plot_residuals_histogram(y_true=y_test,
                                                y_pred=y_pred,
@@ -860,6 +1040,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                    residuals=residuals_train,
                                                    dataset_stdev=dataset_stdev,
                                                    show_figure=False)
+        '''
 
         # Write the test group to a text file
         if group is not None:
@@ -937,22 +1118,23 @@ class BaseSplitter(ms.BaseCrossValidator):
 
         return best_split_dict
 
-    def _get_average_recalibration_params(self, savepath):
+    def _get_average_recalibration_params(self, savepath, data_type):
         dirs = os.listdir(savepath)
         splitdirs = [d for d in dirs if 'split_' in d and '.png' not in d]
 
         recalibrate_a_vals = list()
         recalibrate_b_vals = list()
         for splitdir in splitdirs:
-            recalibrate_dict = pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'recalibration_parameters.xlsx')).to_dict('records')[0]
+            recalibrate_dict = pd.read_excel(os.path.join(os.path.join(savepath, splitdir),
+                                                          'recalibration_parameters_'+str(data_type)+'.xlsx')).to_dict('records')[0]
             recalibrate_a_vals.append(recalibrate_dict['slope (a)'])
             recalibrate_b_vals.append(recalibrate_dict['intercept (b)'])
         recalibrate_avg_dict = {'a': np.mean(recalibrate_a_vals), 'b': np.mean(recalibrate_b_vals)}
         recalibrate_stdev_dict = {'a': np.std(recalibrate_a_vals), 'b': np.std(recalibrate_b_vals)}
         return recalibrate_avg_dict, recalibrate_stdev_dict
 
-    def _get_recalibration_params(self, savepath):
-        recalibrate_dict = pd.read_excel(os.path.join(savepath, 'recalibration_parameters.xlsx')).to_dict('records')[0]
+    def _get_recalibration_params(self, savepath, data_type):
+        recalibrate_dict = pd.read_excel(os.path.join(savepath, 'recalibration_parameters_'+str(data_type)+'.xlsx')).to_dict('records')[0]
         recalibrate_dict_ = dict()
         recalibrate_dict_['a']=recalibrate_dict['slope (a)']
         recalibrate_dict_['b']=recalibrate_dict['intercept (b)']

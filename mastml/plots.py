@@ -646,15 +646,15 @@ class Error():
         return
 
     @classmethod
-    def plot_rstat(cls, savepath, data_type, residuals, model_errors, show_figure=False, recalibrate_errors=False, recalibrate_dict=dict()):
+    def plot_rstat(cls, savepath, data_type, residuals, model_errors, show_figure=False, is_calibrated=False):
 
-        if recalibrate_errors == True:
-            if len(recalibrate_dict.keys()) == 0:
-                model_errors, a, b = ErrorUtils()._recalibrate_errors(model_errors, residuals)
-            else:
-                a = recalibrate_dict['a']
-                b = recalibrate_dict['b']
-                model_errors = a*np.array(model_errors) + b
+        #if recalibrate_errors == True:
+        #    if len(recalibrate_dict.keys()) == 0:
+        #        model_errors, a, b = ErrorUtils()._recalibrate_errors(model_errors, residuals)
+        #    else:
+        #        a = recalibrate_dict['a']
+        #        b = recalibrate_dict['b']
+        #        model_errors = a*np.array(model_errors) + b
 
         # Eliminate model errors with value 0, so that the ratios can be calculated
         zero_indices = []
@@ -675,9 +675,9 @@ class Error():
         ax.text(0.05, 0.9, 'mean = %.3f' % (np.mean(residuals / model_errors)), transform=ax.transAxes)
         ax.text(0.05, 0.85, 'std = %.3f' % (np.std(residuals / model_errors)), transform=ax.transAxes)
 
-        if recalibrate_errors == False:
+        if is_calibrated == False:
             calibrate = 'uncalibrated'
-        if recalibrate_errors == True:
+        if is_calibrated == True:
             calibrate = 'calibrated'
 
         fig.savefig(os.path.join(savepath, 'rstat_histogram_'+str(data_type)+'_'+calibrate+'.png'), dpi=DPI, bbox_inches='tight')
@@ -689,19 +689,24 @@ class Error():
         return
 
     @classmethod
-    def plot_rstat_uncal_cal_overlay(cls, savepath, data_type, residuals, model_errors, show_figure=False, recalibrate_dict=dict()):
+    def plot_rstat_uncal_cal_overlay(cls, savepath, data_type, residuals, model_errors, model_errors_cal,
+                                     show_figure=False):
 
-        model_errors_uncal = model_errors
-        if len(recalibrate_dict.keys()) == 0:
-            model_errors_cal, a, b = ErrorUtils()._recalibrate_errors(model_errors=model_errors, residuals=residuals)
-        else:
-            a = recalibrate_dict['a']
-            b = recalibrate_dict['b']
-            model_errors_cal = a*np.array(model_errors_uncal) + b
+        #model_errors_uncal = model_errors
+        #if len(recalibrate_dict.keys()) == 0:
+        #    model_errors_cal, a, b = ErrorUtils()._recalibrate_errors(model_errors=model_errors, residuals=residuals)
+        #else:
+        #    a = recalibrate_dict['a']
+        #    b = recalibrate_dict['b']
+        #    model_errors_cal = a*np.array(model_errors_uncal) + b
 
         # Write the recalibration values to file
-        recal_df = pd.DataFrame({'slope (a)': a, 'intercept (b)': b}, index=[0])
-        recal_df.to_excel(os.path.join(savepath, 'recalibration_parameters.xlsx'), index=False)
+        #recal_df = pd.DataFrame({'slope (a)': a, 'intercept (b)': b}, index=[0])
+        #recal_df.to_excel(os.path.join(savepath, 'recalibration_parameters_'+str(data_type)+'.xlsx'), index=False)
+
+        # Write the calibrated model errors to file
+        #df = pd.Series(model_errors_cal, name='model_errors')
+        #df.to_excel(os.path.join(savepath, 'model_errors_'+str(data_type)+'_calibrated') + '.xlsx', index=False)
 
         # Eliminate model errors with value 0, so that the ratios can be calculated
         zero_indices = []
@@ -709,7 +714,7 @@ class Error():
             if model_errors[i] == 0:
                 zero_indices.append(i)
         residuals = np.delete(residuals, zero_indices)
-        model_errors_uncal = np.delete(model_errors_uncal, zero_indices)
+        model_errors = np.delete(model_errors, zero_indices)
         model_errors_cal = np.delete(model_errors_cal, zero_indices)
 
         # make data for gaussian plot
@@ -719,11 +724,11 @@ class Error():
         fig, ax = make_fig_ax(x_align=x_align)
         ax.set_xlabel('residuals / model error estimates')
         ax.set_ylabel('relative counts')
-        ax.hist(residuals/model_errors_uncal, bins=30, color='gray', edgecolor='black', density=True, alpha=0.4)
+        ax.hist(residuals/model_errors, bins=30, color='gray', edgecolor='black', density=True, alpha=0.4)
         ax.hist(residuals/model_errors_cal, bins=30, color='blue', edgecolor='black', density=True, alpha=0.4)
         ax.plot(gaussian_x, stats.norm.pdf(gaussian_x, 0, 1), label='Gaussian mu: 0 std: 1', color='orange')
-        ax.text(0.05, 0.9, 'mean = %.3f' % (np.mean(residuals / model_errors_uncal)), transform=ax.transAxes, fontdict={'fontsize':10, 'color':'gray'})
-        ax.text(0.05, 0.85, 'std = %.3f' % (np.std(residuals / model_errors_uncal)), transform=ax.transAxes, fontdict={'fontsize':10, 'color':'gray'})
+        ax.text(0.05, 0.9, 'mean = %.3f' % (np.mean(residuals / model_errors)), transform=ax.transAxes, fontdict={'fontsize':10, 'color':'gray'})
+        ax.text(0.05, 0.85, 'std = %.3f' % (np.std(residuals / model_errors)), transform=ax.transAxes, fontdict={'fontsize':10, 'color':'gray'})
         ax.text(0.05, 0.8, 'mean = %.3f' % (np.mean(residuals / model_errors_cal)), transform=ax.transAxes, fontdict={'fontsize':10, 'color':'blue'})
         ax.text(0.05, 0.75, 'std = %.3f' % (np.std(residuals / model_errors_cal)), transform=ax.transAxes, fontdict={'fontsize':10, 'color':'blue'})
         fig.savefig(os.path.join(savepath, 'rstat_histogram_'+str(data_type)+'_uncal_cal_overlay.png'), dpi=DPI, bbox_inches='tight')
@@ -736,13 +741,11 @@ class Error():
 
     @classmethod
     def plot_real_vs_predicted_error(cls, savepath, model, data_type, model_errors, residuals, dataset_stdev,
-                                     show_figure=False, recalibrate_errors=False, well_sampled_fraction=0.025, recalibrate_dict=dict()):
+                                     show_figure=False, is_calibrated=False, well_sampled_fraction=0.025):
 
         bin_values, rms_residual_values, num_values_per_bin, number_of_bins = ErrorUtils()._parse_error_data(model_errors=model_errors,
-                                                                                                                   residuals=residuals,
-                                                                                                                   dataset_stdev=dataset_stdev,
-                                                                                            recalibrate_errors=recalibrate_errors,
-                                                                                                             recalibrate_dict=recalibrate_dict)
+                                                                                                            residuals=residuals,
+                                                                                                            dataset_stdev=dataset_stdev)
 
         model_name = model.model.__class__.__name__
         if model_name == 'RandomForestRegressor':
@@ -799,14 +802,21 @@ class Error():
             print("---WARNING: ALL ERRORS TOO LARGE FOR PLOTTING---")
             exit()
         else:
-            linear.fit(np.array(bin_values_wellsampled).reshape(-1, 1), rms_residual_values_wellsampled,
-                       sample_weight=num_values_per_bin_wellsampled)
+            # Fit the line to all data, including the poorly sampled data, and weight data points by number of samples per bin
+            linear.fit(np.array(bin_values_copy).reshape(-1, 1), rms_residual_values_copy,
+                       sample_weight=num_values_per_bin_copy)
+            yfit = linear.predict(np.array(bin_values_copy).reshape(-1, 1))
+            ax.plot(bin_values_copy, yfit, 'k--', linewidth=2)
+            r2 = r2_score(rms_residual_values_copy, yfit, sample_weight=num_values_per_bin_copy)
 
-            yfit = linear.predict(np.array(bin_values_wellsampled).reshape(-1, 1))
-            ax.plot(bin_values_wellsampled, yfit, 'k--', linewidth=2)
+            #linear.fit(np.array(bin_values_wellsampled).reshape(-1, 1), rms_residual_values_wellsampled,
+            #           sample_weight=num_values_per_bin_wellsampled)
+            #yfit = linear.predict(np.array(bin_values_wellsampled).reshape(-1, 1))
+            #ax.plot(bin_values_wellsampled, yfit, 'k--', linewidth=2)
+            #r2 = r2_score(rms_residual_values_wellsampled, yfit)
+
             slope = linear.coef_
             intercept = linear.intercept_
-            r2 = r2_score(rms_residual_values_wellsampled, yfit)
 
         divider = make_axes_locatable(ax)
         axbarx = divider.append_axes("top", 1.2, pad=0.12, sharex=ax)
@@ -833,9 +843,9 @@ class Error():
         maxx = max(xmax, ymax)
         ax.plot([0, maxx], [0, maxx], 'k--', lw=2, zorder=1, color='gray', alpha=0.5)
 
-        if recalibrate_errors == False:
+        if is_calibrated == False:
             calibrate = 'uncalibrated'
-        if recalibrate_errors == True:
+        if is_calibrated == True:
             calibrate = 'calibrated'
 
         fig.savefig(os.path.join(savepath, str(model_type) + '_residuals_vs_modelerror_' + str(data_type) + '_' + calibrate + '.png'),
@@ -849,19 +859,17 @@ class Error():
         return
 
     @classmethod
-    def plot_real_vs_predicted_error_uncal_cal_overlay(cls, savepath, model, data_type, model_errors, residuals, dataset_stdev,
-                                     show_figure=False, well_sampled_fraction=0.025, recalibrate_dict=dict()):
+    def plot_real_vs_predicted_error_uncal_cal_overlay(cls, savepath, model, data_type, model_errors, model_errors_cal,
+                                                       residuals, dataset_stdev, show_figure=False,
+                                                       well_sampled_fraction=0.025):
 
         bin_values_uncal, rms_residual_values_uncal, num_values_per_bin_uncal, number_of_bins_uncal = ErrorUtils()._parse_error_data(model_errors=model_errors,
                                                                                                                    residuals=residuals,
-                                                                                                                   dataset_stdev=dataset_stdev,
-                                                                                                                    recalibrate_errors=False)
+                                                                                                                   dataset_stdev=dataset_stdev)
 
-        bin_values_cal, rms_residual_values_cal, num_values_per_bin_cal, number_of_bins_cal = ErrorUtils()._parse_error_data(model_errors=model_errors,
+        bin_values_cal, rms_residual_values_cal, num_values_per_bin_cal, number_of_bins_cal = ErrorUtils()._parse_error_data(model_errors=model_errors_cal,
                                                                                                                    residuals=residuals,
-                                                                                                                   dataset_stdev=dataset_stdev,
-                                                                                                                    recalibrate_errors=True,
-                                                                                                                    recalibrate_dict=recalibrate_dict)
+                                                                                                                   dataset_stdev=dataset_stdev)
 
 
         model_name = model.model.__class__.__name__
@@ -913,21 +921,35 @@ class Error():
         ax.set_ylabel('RMS Absolute residuals\n / dataset stdev', fontsize=12)
         ax.tick_params(labelsize=10)
 
-        linear_uncal.fit(np.array(bin_values_wellsampled_uncal).reshape(-1, 1), rms_residual_values_wellsampled_uncal,
-                       sample_weight=num_values_per_bin_wellsampled_uncal)
-        yfit_uncal = linear_uncal.predict(np.array(bin_values_wellsampled_uncal).reshape(-1, 1))
-        ax.plot(bin_values_wellsampled_uncal, yfit_uncal, 'gray', linewidth=2)
+        # Fit the line to all data, including the poorly sampled data, and weight data points by number of samples per bin
+        #linear_uncal.fit(np.array(bin_values_wellsampled_uncal).reshape(-1, 1), rms_residual_values_wellsampled_uncal,
+        #               sample_weight=num_values_per_bin_wellsampled_uncal)
+        #yfit_uncal = linear_uncal.predict(np.array(bin_values_wellsampled_uncal).reshape(-1, 1))
+        #ax.plot(bin_values_wellsampled_uncal, yfit_uncal, 'gray', linewidth=2)
+        #r2_uncal = r2_score(rms_residual_values_wellsampled_uncal, yfit_uncal)
+        linear_uncal.fit(np.array(bin_values_uncal).reshape(-1, 1), rms_residual_values_uncal,
+                       sample_weight=num_values_per_bin_uncal)
+        yfit_uncal = linear_uncal.predict(np.array(bin_values_uncal).reshape(-1, 1))
+        ax.plot(bin_values_uncal, yfit_uncal, 'gray', linewidth=2)
+        r2_uncal = r2_score(rms_residual_values_uncal, yfit_uncal, sample_weight=num_values_per_bin_uncal)
+
         slope_uncal = linear_uncal.coef_
         intercept_uncal = linear_uncal.intercept_
-        r2_uncal = r2_score(rms_residual_values_wellsampled_uncal, yfit_uncal)
 
-        linear_cal.fit(np.array(bin_values_wellsampled_cal).reshape(-1, 1), rms_residual_values_wellsampled_cal,
-                       sample_weight=num_values_per_bin_wellsampled_cal)
-        yfit_cal = linear_cal.predict(np.array(bin_values_wellsampled_cal).reshape(-1, 1))
-        ax.plot(bin_values_wellsampled_cal, yfit_cal, 'blue', linewidth=2)
+        # Fit the line to all data, including the poorly sampled data, and weight data points by number of samples per bin
+        #linear_cal.fit(np.array(bin_values_wellsampled_cal).reshape(-1, 1), rms_residual_values_wellsampled_cal,
+        #               sample_weight=num_values_per_bin_wellsampled_cal)
+        #yfit_cal = linear_cal.predict(np.array(bin_values_wellsampled_cal).reshape(-1, 1))
+        #ax.plot(bin_values_wellsampled_cal, yfit_cal, 'blue', linewidth=2)
+        #r2_cal = r2_score(rms_residual_values_wellsampled_cal, yfit_cal)
+        linear_cal.fit(np.array(bin_values_cal).reshape(-1, 1), rms_residual_values_cal,
+                       sample_weight=num_values_per_bin_cal)
+        yfit_cal = linear_cal.predict(np.array(bin_values_cal).reshape(-1, 1))
+        ax.plot(bin_values_cal, yfit_cal, 'blue', linewidth=2)
+        r2_cal = r2_score(rms_residual_values_cal, yfit_cal, sample_weight=num_values_per_bin_cal)
+
         slope_cal = linear_cal.coef_
         intercept_cal = linear_cal.intercept_
-        r2_cal = r2_score(rms_residual_values_wellsampled_cal, yfit_cal)
 
         divider = make_axes_locatable(ax)
         axbarx = divider.append_axes("top", 1.2, pad=0.12, sharex=ax)
@@ -1087,6 +1109,80 @@ class Histogram():
 
 
 ### Helpers:
+
+def make_plots(plots, y_true, y_pred, dataset_stdev, metrics, model, residuals, model_errors, has_model_errors,
+               savepath, data_type, show_figure=False, recalibrate_errors=False, model_errors_cal=None):
+    if 'Histogram' in plots:
+        Histogram.plot_residuals_histogram(y_true=y_true,
+                                           y_pred=y_pred,
+                                           savepath=savepath,
+                                           file_name='residual_histogram_'+str(data_type),
+                                           show_figure=show_figure)
+    if 'Scatter' in plots:
+        Scatter.plot_predicted_vs_true(y_true=y_true,
+                                       y_pred=y_pred,
+                                       savepath=savepath,
+                                       file_name='parity_plot_'+str(data_type),
+                                       x_label='values',
+                                       data_type=data_type,
+                                       metrics_list=metrics,
+                                       show_figure=show_figure)
+    if 'Error' in plots:
+        Error.plot_normalized_error(residuals=residuals,
+                                    savepath=savepath,
+                                    data_type=data_type,
+                                    model_errors=model_errors,
+                                    show_figure=show_figure)
+        Error.plot_cumulative_normalized_error(residuals=residuals,
+                                               savepath=savepath,
+                                               data_type=data_type,
+                                               model_errors=model_errors,
+                                               show_figure=show_figure)
+        if has_model_errors is True:
+            Error.plot_rstat(savepath=savepath,
+                             data_type=data_type,
+                             model_errors=model_errors,
+                             residuals=residuals,
+                             show_figure=show_figure,
+                             is_calibrated=False)
+            Error.plot_real_vs_predicted_error(savepath=savepath,
+                                               model=model,
+                                               data_type=data_type,
+                                               model_errors=model_errors,
+                                               residuals=residuals,
+                                               dataset_stdev=dataset_stdev,
+                                               show_figure=show_figure,
+                                               is_calibrated=False)
+            if recalibrate_errors is True:
+                Error.plot_rstat(savepath=savepath,
+                                 data_type=data_type,
+                                 residuals=residuals,
+                                 model_errors=model_errors_cal,
+                                 show_figure=show_figure,
+                                 is_calibrated=True)
+                Error.plot_rstat_uncal_cal_overlay(savepath=savepath,
+                                                    data_type=data_type,
+                                                    residuals=residuals,
+                                                    model_errors=model_errors,
+                                                   model_errors_cal=model_errors_cal,
+                                                    show_figure=False)
+                Error.plot_real_vs_predicted_error(savepath=savepath,
+                                                    model=model,
+                                                    data_type=data_type,
+                                                   residuals=residuals,
+                                                    model_errors=model_errors_cal,
+                                                    dataset_stdev=dataset_stdev,
+                                                    show_figure=show_figure,
+                                                    is_calibrated=True)
+                Error.plot_real_vs_predicted_error_uncal_cal_overlay(savepath=savepath,
+                                                                    model=model,
+                                                                    data_type=data_type,
+                                                                    model_errors=model_errors,
+                                                                     model_errors_cal=model_errors_cal,
+                                                                    residuals=residuals,
+                                                                    dataset_stdev=dataset_stdev,
+                                                                    show_figure=False)
+    return
 
 def check_dimensions(y):
     """
