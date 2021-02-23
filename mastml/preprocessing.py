@@ -140,7 +140,10 @@ class SklearnPreprocessor(BasePreprocessor):
 
 class NoPreprocessor(BasePreprocessor):
     '''
+    Class for having a "null" transform where the output is the same as the input. Needed by MAST-ML as a placeholder if
+    certain workflow aspects are not performed.
 
+    See BasePreprocessor for information on args and methods
     '''
     def __init__(self, preprocessor=None, as_frame=False):
         super(NoPreprocessor, self).__init__(preprocessor=self)
