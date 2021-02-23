@@ -189,7 +189,8 @@ class BaseSplitter(ms.BaseCrossValidator):
 
     def evaluate(self, X, y, models, preprocessor=None, groups=None, hyperopts=None, selectors=None, metrics=None,
                  plots=['Histogram', 'Scatter', 'Error'], savepath=None, X_extra=None, leaveout_inds=list(list()),
-                 best_run_metric=None, nested_CV=False, error_method='stdev_weak_learners', recalibrate_errors=False):
+                 best_run_metric=None, nested_CV=False, error_method='stdev_weak_learners', recalibrate_errors=False,
+                 verbosity=1):
 
         if nested_CV == True:
             # Get set of X_leaveout, y_leaveout for testing. Append them to user-specified X_leaveout tests
@@ -284,7 +285,8 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                   plots,
                                                   has_model_errors,
                                                   error_method,
-                                                  recalibrate_errors)
+                                                  recalibrate_errors,
+                                                  verbosity=verbosity)
                         split_outer_count += 1
 
                         best_split_dict = self._get_best_split(savepath=splitouterpath, model=model,
@@ -340,20 +342,21 @@ class BaseSplitter(ms.BaseCrossValidator):
                         else:
                             model_errors_leaveout_cal = None
 
-                        make_plots(plots=plots,
-                                   y_true=y_leaveout,
-                                   y_pred=y_pred_leaveout,
-                                   data_type='leaveout',
-                                   dataset_stdev=dataset_stdev,
-                                   has_model_errors=has_model_errors,
-                                   metrics=metrics,
-                                   model=model,
-                                   model_errors=model_errors_leaveout,
-                                   residuals=residuals_leaveout,
-                                   savepath=splitouterpath,
-                                   show_figure=False,
-                                   recalibrate_errors=recalibrate_errors,
-                                   model_errors_cal=model_errors_leaveout_cal)
+                        if verbosity > 0:
+                            make_plots(plots=plots,
+                                       y_true=y_leaveout,
+                                       y_pred=y_pred_leaveout,
+                                       data_type='leaveout',
+                                       dataset_stdev=dataset_stdev,
+                                       has_model_errors=has_model_errors,
+                                       metrics=metrics,
+                                       model=model,
+                                       model_errors=model_errors_leaveout,
+                                       residuals=residuals_leaveout,
+                                       savepath=splitouterpath,
+                                       show_figure=False,
+                                       recalibrate_errors=recalibrate_errors,
+                                       model_errors_cal=model_errors_leaveout_cal)
 
                     # At level of splitdir, do analysis over all splits (e.g. parity plot over all splits)
                     y_leaveout_all = self._collect_data(filename='y_leaveout', savepath=splitdir)
@@ -381,20 +384,21 @@ class BaseSplitter(ms.BaseCrossValidator):
 
                     # Make all leaveout data plots
                     dataset_stdev = np.std(y)
-                    make_plots(plots=plots,
-                               y_true=y_leaveout_all,
-                               y_pred=y_pred_leaveout_all,
-                               data_type='leaveout',
-                               dataset_stdev=dataset_stdev,
-                               has_model_errors=has_model_errors,
-                               metrics=metrics,
-                               model=model,
-                               model_errors=model_errors_leaveout_all,
-                               residuals=residuals_leaveout_all,
-                               savepath=splitdir,
-                               show_figure=False,
-                               recalibrate_errors=recalibrate_errors,
-                               model_errors_cal=model_errors_leaveout_all_calibrated)
+                    if verbosity > 0:
+                        make_plots(plots=plots,
+                                   y_true=y_leaveout_all,
+                                   y_pred=y_pred_leaveout_all,
+                                   data_type='leaveout',
+                                   dataset_stdev=dataset_stdev,
+                                   has_model_errors=has_model_errors,
+                                   metrics=metrics,
+                                   model=model,
+                                   model_errors=model_errors_leaveout_all,
+                                   residuals=residuals_leaveout_all,
+                                   savepath=splitdir,
+                                   show_figure=False,
+                                   recalibrate_errors=recalibrate_errors,
+                                   model_errors_cal=model_errors_leaveout_all_calibrated)
 
                 else:
                     X_splits, y_splits, train_inds, test_inds = self.split_asframe(X=X, y=y, groups=groups)
@@ -414,7 +418,8 @@ class BaseSplitter(ms.BaseCrossValidator):
                                               plots,
                                               has_model_errors,
                                               error_method,
-                                              recalibrate_errors)
+                                              recalibrate_errors,
+                                              verbosity=verbosity)
 
                     best_split_dict = self._get_best_split(savepath=splitdir, model=model,
                                                            preprocessor=preprocessor, best_run_metric=best_run_metric)
@@ -426,7 +431,7 @@ class BaseSplitter(ms.BaseCrossValidator):
 
     def _evaluate_split_sets(self, X_splits, y_splits, train_inds, test_inds, model, selector, preprocessor,
                              X_extra, groups, splitdir, hyperopt, metrics, plots, has_model_errors, error_method,
-                             recalibrate_errors):
+                             recalibrate_errors, verbosity):
         split_count = 0
         for Xs, ys, train_ind, test_ind in zip(X_splits, y_splits, train_inds, test_inds):
             model_orig = copy.deepcopy(model)
@@ -456,7 +461,7 @@ class BaseSplitter(ms.BaseCrossValidator):
 
             self._evaluate_split(X_train, X_test, y_train, y_test, model_orig, preprocessor_orig, selector_orig,
                                  hyperopt, metrics, plots, group,
-                                 splitpath, has_model_errors, X_extra_train, X_extra_test, error_method)
+                                 splitpath, has_model_errors, X_extra_train, X_extra_test, error_method, verbosity)
             split_count += 1
 
         # At level of splitdir, do analysis over all splits (e.g. parity plot over all splits)
@@ -506,41 +511,43 @@ class BaseSplitter(ms.BaseCrossValidator):
 
         # Make all test data plots
         dataset_stdev = np.std(np.unique(y_train_all))
-        make_plots(plots=plots,
-                   y_true=y_test_all,
-                   y_pred=y_pred_all,
-                   data_type='test',
-                   dataset_stdev=dataset_stdev,
-                   has_model_errors=has_model_errors,
-                   metrics=metrics,
-                   model=model,
-                   model_errors=model_errors_test_all,
-                   residuals=residuals_test_all,
-                   savepath=splitdir,
-                   show_figure=False,
-                   recalibrate_errors=recalibrate_errors,
-                   model_errors_cal=model_errors_test_all_cal)
+        if verbosity > 1:
+            make_plots(plots=plots,
+                       y_true=y_test_all,
+                       y_pred=y_pred_all,
+                       data_type='test',
+                       dataset_stdev=dataset_stdev,
+                       has_model_errors=has_model_errors,
+                       metrics=metrics,
+                       model=model,
+                       model_errors=model_errors_test_all,
+                       residuals=residuals_test_all,
+                       savepath=splitdir,
+                       show_figure=False,
+                       recalibrate_errors=recalibrate_errors,
+                       model_errors_cal=model_errors_test_all_cal)
 
         # Make all train data plots
         dataset_stdev = np.std(np.unique(y_train_all))
-        make_plots(plots=plots,
-                   y_true=y_train_all,
-                   y_pred=y_pred_train_all,
-                   data_type='train',
-                   dataset_stdev=dataset_stdev,
-                   has_model_errors=has_model_errors,
-                   metrics=metrics,
-                   model=model,
-                   model_errors=model_errors_train_all,
-                   residuals=residuals_train_all,
-                   savepath=splitdir,
-                   show_figure=False,
-                   recalibrate_errors=recalibrate_errors,
-                   model_errors_cal=model_errors_train_all_cal)
+        if verbosity > 1:
+            make_plots(plots=plots,
+                       y_true=y_train_all,
+                       y_pred=y_pred_train_all,
+                       data_type='train',
+                       dataset_stdev=dataset_stdev,
+                       has_model_errors=has_model_errors,
+                       metrics=metrics,
+                       model=model,
+                       model_errors=model_errors_train_all,
+                       residuals=residuals_train_all,
+                       savepath=splitdir,
+                       show_figure=False,
+                       recalibrate_errors=recalibrate_errors,
+                       model_errors_cal=model_errors_train_all_cal)
 
     def _evaluate_split(self, X_train, X_test, y_train, y_test, model, preprocessor, selector, hyperopt,
                         metrics, plots, group, splitpath, has_model_errors, X_extra_train, X_extra_test,
-                        error_method):
+                        error_method, verbosity):
 
         X_train_orig = copy.deepcopy(X_train)
         X_test_orig = copy.deepcopy(X_test)
@@ -610,35 +617,37 @@ class BaseSplitter(ms.BaseCrossValidator):
 
         # Make all test data plots
         dataset_stdev = np.std(y_train)
-        make_plots(plots=plots,
-                   y_true=y_test,
-                   y_pred=y_pred,
-                   data_type='test',
-                   dataset_stdev=dataset_stdev,
-                   has_model_errors=has_model_errors,
-                   metrics=metrics,
-                   model=model,
-                   model_errors=model_errors_test,
-                   residuals=residuals_test,
-                   savepath=splitpath,
-                   show_figure=False,
-                   recalibrate_errors=False)
+        if verbosity > 2:
+            make_plots(plots=plots,
+                       y_true=y_test,
+                       y_pred=y_pred,
+                       data_type='test',
+                       dataset_stdev=dataset_stdev,
+                       has_model_errors=has_model_errors,
+                       metrics=metrics,
+                       model=model,
+                       model_errors=model_errors_test,
+                       residuals=residuals_test,
+                       savepath=splitpath,
+                       show_figure=False,
+                       recalibrate_errors=False)
 
         # Make all train data plots
         dataset_stdev = np.std(y_train)
-        make_plots(plots=plots,
-                   y_true=y_train,
-                   y_pred=y_pred_train,
-                   data_type='train',
-                   dataset_stdev=dataset_stdev,
-                   has_model_errors=has_model_errors,
-                   metrics=metrics,
-                   model=model,
-                   model_errors=model_errors_train,
-                   residuals=residuals_train,
-                   savepath=splitpath,
-                   show_figure=False,
-                   recalibrate_errors=False)
+        if verbosity > 2:
+            make_plots(plots=plots,
+                       y_true=y_train,
+                       y_pred=y_pred_train,
+                       data_type='train',
+                       dataset_stdev=dataset_stdev,
+                       has_model_errors=has_model_errors,
+                       metrics=metrics,
+                       model=model,
+                       model_errors=model_errors_train,
+                       residuals=residuals_train,
+                       savepath=splitpath,
+                       show_figure=False,
+                       recalibrate_errors=False)
 
         # Write the test group to a text file
         if group is not None:
