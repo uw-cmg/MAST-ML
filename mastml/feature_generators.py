@@ -7,9 +7,10 @@ import re
 import numpy as np
 import pandas as pd
 from datetime import datetime
+from copy import copy
 
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.preprocessing import PolynomialFeatures
+from sklearn.preprocessing import PolynomialFeatures, OneHotEncoder
 
 try:
     import pymatgen
@@ -67,11 +68,14 @@ class BaseGenerator(BaseEstimator, TransformerMixin):
         pass
 
     def evaluate(self, X, y, savepath=None):
+        X_orig = copy(X)
         if not savepath:
             savepath = os.getcwd()
         X, y = self.fit_transform(X=X, y=y)
         splitdir = self._setup_savedir(generator=self, savepath=savepath)
-        df = pd.concat([X, y], axis=1)
+        # Join the originally provided feature set with the new feature set
+        X = pd.concat([X_orig, X], axis=1)
+        df = pd.concat([X_orig, X, y], axis=1)
         df.to_excel(os.path.join(splitdir, 'generated_features.xlsx'), index=False)
         return X, y
 
@@ -153,8 +157,8 @@ class ElementalFeatureGenerator(BaseGenerator):
             df = DataframeUtilities().remove_constant_columns(dataframe=df)
 
         #assert self.composition_df[self.composition_df.columns[0]] not in df.columns
-        X = df[sorted(df.columns.tolist())]
-        return X, self.y
+        df = df[sorted(df.columns.tolist())]
+        return df, self.y
 
     def generate_magpie_features(self):
         # Replace empty composition fields with empty string instead of NaN
@@ -1027,6 +1031,64 @@ class PolynomialFeatureGenerator(BaseGenerator):
         new_features = self.SPF.get_feature_names()
         return pd.DataFrame(self.SPF.transform(array), columns=new_features), self.y
 
+class OneHotGroupGenerator(BaseGenerator):
+    """
+    Class to generate one-hot encoded values from a list of categories using scikit-learn's one hot encoder method
+    More info at: https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.OneHotEncoder.html
+
+    Args:
+
+        groups: (pd.Series): pandas Series of group (category) names
+
+        remove_constant_columns: (bool), whether to remove constant columns from the generated feature set
+
+    Methods:
+
+        fit: pass through, copies input columns as pre-generated features
+
+            Args:
+
+                X: (pd.DataFrame), input dataframe containing X data
+
+                y: (pd.Series), series containing y data
+
+        transform: generate the one-hot encoded features. There will be n columns made, where n = number of unique categories in groups
+
+            Args:
+
+                None.
+
+            Returns:
+
+                df: (dataframe), output dataframe containing generated features
+                y: (series), output y data as series
+
+    """
+
+    def __init__(self, groups, remove_constant_columns=False):
+        super(BaseGenerator, self).__init__()
+        self.groups = groups
+        self.remove_constant_columns = remove_constant_columns
+
+    def fit(self, X, y=None):
+        self.X = X
+        self.y = y
+        self.original_features = self.X.columns
+        return self
+
+    def transform(self, X=None):
+        enc = OneHotEncoder()
+        enc.fit(X=np.array(self.groups).reshape(-1, 1))
+        groups_trans = enc.transform(X=np.array(self.groups).reshape(-1, 1)).toarray()
+        col_name = self.groups.name
+        column_names = [str(col_name) + '_' + str(n) for n in range(groups_trans.shape[1])]
+        df = pd.DataFrame(groups_trans, columns=column_names)
+
+        if self.remove_constant_columns is True:
+            df = DataframeUtilities().remove_constant_columns(dataframe=df)
+
+        return df, self.y
+
 class OneHotElementEncoder(BaseGenerator):
     """
     Class to generate new categorical features (i.e. values of 1 or 0) based on whether an input composition contains a
@@ -1076,7 +1138,7 @@ class OneHotElementEncoder(BaseGenerator):
         X_trans = self._contains_all_elements(compositions=compositions)
         if self.remove_constant_columns is True:
             X_trans = DataframeUtilities().remove_constant_columns(dataframe=X_trans)
-        X_trans = pd.concat([X, X_trans], axis=1)
+        #X_trans = pd.concat([X, X_trans], axis=1)
         return X_trans, self.y
 
     def _contains_element(self, comp):
@@ -1177,8 +1239,8 @@ class MaterialsProjectFeatureGenerator(BaseGenerator):
         # Need to delete duplicate column before merging dataframes
         del dataframe_mp[self.composition_feature]
         # Merge magpie feature dataframe with originally supplied dataframe
-        dataframe = DataframeUtilities().merge_dataframe_columns(dataframe1=X, dataframe2=dataframe_mp)
-        return dataframe
+        #dataframe = DataframeUtilities().merge_dataframe_columns(dataframe1=X, dataframe2=dataframe_mp)
+        return dataframe_mp
 
     def _get_data_from_materials_project(self, composition):
         mprester = MPRester(self.api_key)

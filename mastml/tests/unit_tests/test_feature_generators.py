@@ -7,7 +7,7 @@ import shutil
 sys.path.insert(0, os.path.abspath('../../../'))
 
 from mastml.feature_generators import ElementalFeatureGenerator, PolynomialFeatureGenerator, \
-    OneHotElementEncoder, MaterialsProjectFeatureGenerator
+    OneHotElementEncoder, MaterialsProjectFeatureGenerator, OneHotGroupGenerator
 
 class TestGenerators(unittest.TestCase):
 
@@ -28,6 +28,17 @@ class TestGenerators(unittest.TestCase):
         generator = PolynomialFeatureGenerator(features=None, degree=2, include_bias=False)
         Xgenerated, y = generator.evaluate(X=X, y=y, savepath=os.getcwd())
         self.assertEqual(Xgenerated.shape, (5, 65))
+        self.assertTrue(os.path.exists(generator.splitdir))
+        shutil.rmtree(generator.splitdir)
+        return
+
+    def test_onehotgroup(self):
+        X = pd.DataFrame(np.random.uniform(low=0.0, high=100, size=(5, 10)))
+        y = pd.Series(np.random.uniform(low=0.0, high=100, size=(5,)))
+        groups = pd.Series(['group1', 'group2' ,'group3', 'group1', 'group2'], name='group')
+        generator = OneHotGroupGenerator(groups=groups)
+        Xgenerated, y = generator.evaluate(X=X, y=y, savepath=os.getcwd())
+        self.assertEqual(Xgenerated.shape, (5, 13))
         self.assertTrue(os.path.exists(generator.splitdir))
         shutil.rmtree(generator.splitdir)
         return
