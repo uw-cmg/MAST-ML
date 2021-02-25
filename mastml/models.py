@@ -7,8 +7,11 @@ import pandas as pd
 import sklearn.base
 import sklearn.utils
 from sklearn.ensemble import BaggingRegressor
+from sklearn.gaussian_process import GaussianProcessRegressor
 import inspect
 from pprint import pprint
+import numpy as np
+import re
 
 from sklearn.base import BaseEstimator, TransformerMixin
 
@@ -58,6 +61,11 @@ class SklearnModel(BaseEstimator, TransformerMixin):
     def __init__(self, model, **kwargs):
         if model == 'XGBoostRegressor':
             self.model = xgboost.XGBRegressor(**kwargs)
+        elif model == 'GaussianProcessRegressor':
+            kernel = kwargs['kernel']
+            kernel = _make_gpr_kernel(kernel_string=kernel)
+            del kwargs['kernel']
+            self.model = GaussianProcessRegressor(kernel=kernel, **kwargs)
         else:
             self.model = dict(sklearn.utils.all_estimators())[model](**kwargs)
 
@@ -106,3 +114,56 @@ class EnsembleModel(BaseEstimator, TransformerMixin):
 
     def get_params(self, deep=True):
         return self.model.get_params(deep)
+
+
+def _make_gpr_kernel(kernel_string):
+    kernel_list = ['WhiteKernel', 'RBF', 'ConstantKernel', 'Matern', 'RationalQuadratic', 'ExpSineSquared', 'DotProduct']
+    kernel_operators = ['+', '*', '-']
+    # Parse kernel_string to identify kernel types and any kernel operations to combine kernels
+    kernel_types_asstr = list()
+    kernel_types_ascls = list()
+    kernel_operators_used = list()
+
+    for s in kernel_string[:]:
+        if s in kernel_operators:
+            kernel_operators_used.append(s)
+
+    # Do case for single kernel, no operators
+    if len(kernel_operators_used) == 0:
+        kernel_types_asstr.append(kernel_string)
+    else:
+        # New method, using re
+        unique_operators = np.unique(kernel_operators_used).tolist()
+        unique_operators_asstr = '['
+        for i in unique_operators:
+            unique_operators_asstr += str(i)
+        unique_operators_asstr += ']'
+        kernel_types_asstr = re.split(unique_operators_asstr, kernel_string)
+
+    for kernel in kernel_types_asstr:
+        kernel_ = getattr(sklearn.gaussian_process.kernels, kernel)
+        kernel_types_ascls.append(kernel_())
+
+    # Case for single kernel
+    if len(kernel_types_ascls) == 1:
+        kernel = kernel_types_ascls[0]
+
+    kernel_count = 0
+    for i, operator in enumerate(kernel_operators_used):
+        if i+1 <= len(kernel_operators_used):
+            if operator == "+":
+                if kernel_count == 0:
+                    kernel = kernel_types_ascls[kernel_count] + kernel_types_ascls[kernel_count+1]
+                else:
+                    kernel += kernel_types_ascls[kernel_count+1]
+            elif operator == "*":
+                if kernel_count == 0:
+                    kernel = kernel_types_ascls[kernel_count] * kernel_types_ascls[kernel_count+1]
+                else:
+                    kernel *= kernel_types_ascls[kernel_count+1]
+            else:
+                print('Warning: You have chosen an invalid operator to construct a composite kernel. Please choose'
+                              ' either "+" or "*".')
+            kernel_count += 1
+
+    return kernel

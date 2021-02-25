@@ -203,9 +203,10 @@ class ErrorUtils():
                 sys.exit()
 
         if model.model.__class__.__name__ == 'GaussianProcessRegressor':
-            preds = model.predict(X, return_std=True)[1]  # Get the stdev model error from the predictions of GPR
+            preds = model.model.predict(X, return_std=True)[1]  # Get the stdev model error from the predictions of GPR
             err_up = preds
             err_down = preds
+            model_errors = (np.array(err_up) + np.array(err_down)) / 2
             nan_indices = np.where(np.isnan(err_up))
             nan_indices_sorted = np.array(sorted(nan_indices[0], reverse=True))
             for i, val in enumerate(list(err_up)):
