@@ -13,11 +13,12 @@ from pprint import pprint
 from sklearn.base import BaseEstimator, TransformerMixin
 
 try:
-    import xgboost as xgb
+    import xgboost
 except:
-    print('If you want to use XGBoost models, please manually install xgboost package')
-
-# TODO: add XGBoost functionality back in
+    print('If you want to use XGBoost models, please manually install xgboost package with '
+          'pip install xgboost. If have error with finding libxgboost.dylib library, do'
+          'brew install libomp. If do not have brew on your system, first do'
+          ' ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" from the Terminal')
 
 class SklearnModel(BaseEstimator, TransformerMixin):
     """
@@ -55,7 +56,10 @@ class SklearnModel(BaseEstimator, TransformerMixin):
                 None, but outputs help to screen
     """
     def __init__(self, model, **kwargs):
-        self.model = dict(sklearn.utils.all_estimators())[model](**kwargs)
+        if model == 'XGBoostRegressor':
+            self.model = xgboost.XGBRegressor(**kwargs)
+        else:
+            self.model = dict(sklearn.utils.all_estimators())[model](**kwargs)
 
     def fit(self, X, y):
         return self.model.fit(X, y)
