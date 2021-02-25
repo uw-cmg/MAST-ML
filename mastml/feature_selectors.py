@@ -22,7 +22,50 @@ from mastml.metrics import root_mean_squared_error
 
 class BaseSelector(BaseEstimator, TransformerMixin):
     '''
+    Base class that forms foundation of MAST-ML feature selectors
 
+    Args:
+
+        None. See individual selector types for input arguments
+
+    Methods:
+
+        fit: Does nothing, present for compatibility
+
+            Args:
+
+                X: (dataframe), dataframe of X features
+
+                y: (dataframe), dataframe of y data
+
+
+            Returns:
+
+                None
+
+        transform: Does nothing, present for compatibility
+
+            Args:
+
+                X: (dataframe), dataframe of X features
+
+            Returns:
+
+                X: (dataframe), dataframe of X features
+
+        evaluate: runs the fit and transform functions to select features, saves selector-specific files and saves list of selected features
+
+            Args:
+
+                X: (dataframe), dataframe of X features
+
+                y: (dataframe), dataframe of y data
+
+                savepath: (str), string denoting savepath to save selected features and associated files (if applicable) to.
+
+            Returns:
+
+                X_select (dataframe), dataframe of selected X features
 
     '''
     def __init__(self):
@@ -54,7 +97,38 @@ class BaseSelector(BaseEstimator, TransformerMixin):
 
 class SklearnFeatureSelector(BaseSelector):
     '''
+    Class that wraps scikit-learn feature selection methods with some new MAST-ML functionality
 
+    Args:
+
+        selector (str) : a string denoting the name of a sklearn.feature_selection object
+
+        **kwargs: the key word arguments of the designated sklearn.feature_selection object
+
+    Methods:
+
+        fit: performs feature selection
+
+            Args:
+
+                X: (dataframe), dataframe of X features
+
+                y: (dataframe), dataframe of y data
+
+
+            Returns:
+
+                None
+
+        transform: performs the transform to generate output of only selected features
+
+            Args:
+
+                X: (dataframe), dataframe of X features
+
+            Returns:
+
+                X_select: (dataframe), dataframe of selected X features
 
     '''
     def __init__(self, selector, **kwargs):
