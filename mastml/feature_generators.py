@@ -130,13 +130,14 @@ class ElementalFeatureGenerator(BaseGenerator):
     def __init__(self, composition_df, feature_types=None, remove_constant_columns=False):
         super(BaseGenerator, self).__init__()
         self.composition_df = composition_df
+        if type(self.composition_df) == pd.Series:
+            self.composition_df = pd.DataFrame(self.composition_df)
         self.feature_types = feature_types
         self.remove_constant_columns = remove_constant_columns
         if self.feature_types is None:
             self.feature_types = ['composition_avg', 'arithmetic_avg', 'max', 'min', 'difference']
 
     def fit(self, X, y=None):
-        # TODO: consider changing df to X throughout this to be simpler
         self.df = X
         self.y = y
         self.original_features = self.df.columns
@@ -146,9 +147,6 @@ class ElementalFeatureGenerator(BaseGenerator):
 
         df = self.generate_magpie_features()
 
-        # remove original features. Don't necessarily want to do this?
-        #df = df.drop(self.original_features, axis=1)
-
         # delete missing values, generation makes a lot of garbage.
         df = DataframeUtilities().clean_dataframe(df)
         df = df.select_dtypes(['number']).dropna(axis=1)
@@ -156,7 +154,6 @@ class ElementalFeatureGenerator(BaseGenerator):
         if self.remove_constant_columns is True:
             df = DataframeUtilities().remove_constant_columns(dataframe=df)
 
-        #assert self.composition_df[self.composition_df.columns[0]] not in df.columns
         df = df[sorted(df.columns.tolist())]
         return df, self.y
 
@@ -523,7 +520,7 @@ class ElementalFeatureGenerator(BaseGenerator):
                     if 'Site2Site3' in self.feature_types:
                         magpiedata_dict_list_toinclude.append(magpiedata_dict_list[29])
 
-        df = self.df # Initialize the final df as initial df then add magpie features to it
+        #df = self.df # Initialize the final df as initial df then add magpie features to it
         for magpiedata_dict in magpiedata_dict_list_toinclude:
             df_magpie = pd.DataFrame.from_dict(data=magpiedata_dict, orient='index')
             # Need to reorder compositions in new dataframe to match input dataframe
@@ -532,9 +529,9 @@ class ElementalFeatureGenerator(BaseGenerator):
             df_magpie.index.name = self.composition_df.columns[0]
             df_magpie.reset_index(inplace=True)
             # Merge magpie feature dataframe with originally supplied dataframe
-            df = DataframeUtilities().merge_dataframe_columns(dataframe1=df, dataframe2=df_magpie)
+            #df = DataframeUtilities().merge_dataframe_columns(dataframe1=df, dataframe2=df_magpie)
 
-        return df
+        return df_magpie
 
     def _get_computed_magpie_features(self, composition, data_path, site_dict=None):
         magpiedata_composition_average = {}
