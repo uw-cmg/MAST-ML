@@ -236,7 +236,8 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                      'GradientBoostingRegressor',
                                                      'GaussianProcessRegressor',
                                                      'BaggingRegressor',
-                                                     'ExtraTreesRegressor']:
+                                                     'ExtraTreesRegressor',
+                                                  'AdaBoostRegressor']:
                 has_model_errors = True
             else:
                 has_model_errors = False

@@ -157,7 +157,7 @@ class ErrorUtils():
         indices_TF = list()
         X_aslist = X.values.tolist()
         if model.model.__class__.__name__ in ['RandomForestRegressor', 'GradientBoostingRegressor', 'ExtraTreesRegressor',
-                                              'BaggingRegressor']:
+                                              'BaggingRegressor', 'AdaBoostRegressor']:
 
             if error_method == 'jackknife_after_bootstrap':
                 model_errors_var = random_forest_error(forest=model.model, X_test=X_test, X_train=X_train)
@@ -173,11 +173,14 @@ class ErrorUtils():
                     elif model.model.__class__.__name__ == 'BaggingRegressor':
                         for pred in model.model.estimators_:
                             preds.append(pred.predict(np.array(X_aslist[x]).reshape(1, -1))[0])
+                    elif model.model.__class__.__name__ == 'ExtraTreesRegressor':
+                        for pred in model.model.estimators_:
+                            preds.append(pred.predict(np.array(X_aslist[x]).reshape(1, -1))[0])
                     elif model.model.__class__.__name__ == 'GradientBoostingRegressor':
                         for pred in model.model.estimators_.tolist():
                             preds.append(pred[0].predict(np.array(X_aslist[x]).reshape(1, -1))[0])
-                    elif model.model.__class__.__name__ == 'EnsembleRegressor':
-                        for pred in model.model:
+                    elif model.model.__class__.__name__ == 'AdaBoostRegressor':
+                        for pred in model.model.estimators_:
                             preds.append(pred.predict(np.array(X_aslist[x]).reshape(1, -1))[0])
 
                     e_down = np.std(preds)

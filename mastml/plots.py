@@ -648,14 +648,6 @@ class Error():
     @classmethod
     def plot_rstat(cls, savepath, data_type, residuals, model_errors, show_figure=False, is_calibrated=False):
 
-        #if recalibrate_errors == True:
-        #    if len(recalibrate_dict.keys()) == 0:
-        #        model_errors, a, b = ErrorUtils()._recalibrate_errors(model_errors, residuals)
-        #    else:
-        #        a = recalibrate_dict['a']
-        #        b = recalibrate_dict['b']
-        #        model_errors = a*np.array(model_errors) + b
-
         # Eliminate model errors with value 0, so that the ratios can be calculated
         zero_indices = []
         for i in range(0, len(model_errors)):
@@ -691,22 +683,6 @@ class Error():
     @classmethod
     def plot_rstat_uncal_cal_overlay(cls, savepath, data_type, residuals, model_errors, model_errors_cal,
                                      show_figure=False):
-
-        #model_errors_uncal = model_errors
-        #if len(recalibrate_dict.keys()) == 0:
-        #    model_errors_cal, a, b = ErrorUtils()._recalibrate_errors(model_errors=model_errors, residuals=residuals)
-        #else:
-        #    a = recalibrate_dict['a']
-        #    b = recalibrate_dict['b']
-        #    model_errors_cal = a*np.array(model_errors_uncal) + b
-
-        # Write the recalibration values to file
-        #recal_df = pd.DataFrame({'slope (a)': a, 'intercept (b)': b}, index=[0])
-        #recal_df.to_excel(os.path.join(savepath, 'recalibration_parameters_'+str(data_type)+'.xlsx'), index=False)
-
-        # Write the calibrated model errors to file
-        #df = pd.Series(model_errors_cal, name='model_errors')
-        #df.to_excel(os.path.join(savepath, 'model_errors_'+str(data_type)+'_calibrated') + '.xlsx', index=False)
 
         # Eliminate model errors with value 0, so that the ratios can be calculated
         zero_indices = []
@@ -758,6 +734,8 @@ class Error():
             model_type = 'GPR'
         elif model_name == 'BaggingRegressor':
             model_type = 'BR'
+        elif model_name == 'AdaBoostRegressor':
+            model_type = 'ABR'
 
         if data_type not in ['train', 'test', 'leaveout']:
             print('Error: data_test_type must be one of "train", "test" or "leaveout"')
@@ -877,6 +855,8 @@ class Error():
             model_type = 'GPR'
         elif model_name == 'BaggingRegressor':
             model_type = 'BR'
+        elif model_name == 'AdaBoostRegressor':
+            model_type = 'ABR'
 
         if data_type not in ['train', 'test', 'leaveout']:
             print('Error: data_test_type must be one of "train", "test" or "leaveout"')
