@@ -20,6 +20,8 @@ except:
     print('To import data from figshare, manually install figshare via git clone of '
           'git clone https://github.com/cognoma/figshare.git')
 
+#TODO: add easy support for Matminer datasets
+
 class SklearnDatasets():
     """
     Class wrapping the sklearn.datasets funcionality for easy import of toy datasets from sklearn. Added some changes
@@ -169,6 +171,8 @@ class LocalDatasets():
         return
 
     def load_data(self):
+        data_dict = dict()
+
         # Import data from file
         df = self._import()
 
@@ -176,17 +180,38 @@ class LocalDatasets():
         self._get_features(df=df)
 
         X, y = df[self.feature_names], pd.DataFrame(df[self.target], columns=[self.target]).squeeze()
+
+        data_dict['X'] = X
+        data_dict['y'] = y
+
         if self.group_column:
             groups = df[self.group_column]
+            data_dict['groups'] = groups
+        else:
+            data_dict['groups'] = None
 
         if self.extra_columns:
             X_extra = df[self.extra_columns]
+            data_dict['X_extra'] = X_extra
+        else:
+            data_dict['X_extra'] = None
 
         if self.testdata_columns:
             X_testdata = list()
             for col in self.testdata_columns:
                 X_testdata.append(np.array(df.loc[df[col] == 1].index).ravel())
+            data_dict['X_testdata'] = X_testdata
+        else:
+            data_dict['X_testdata'] = None
 
+        if self.as_frame == True:
+            return data_dict
+        else:
+            for k, v in data_dict.items():
+                data_dict[k] = np.array(v)
+            return data_dict
+
+        '''
         if self.as_frame:
             if self.group_column:
                 if self.extra_columns:
@@ -197,7 +222,16 @@ class LocalDatasets():
                 else:
                     return X, y, groups
             else:
-                return X, y
+                if self.extra_columns:
+                    if self.testdata_columns:
+                        return X, y, X_extra, X_testdata
+                    else:
+                        return X, y, X_extra
+                else:
+                    if self.testdata_columns:
+                        return X, y, X_testdata
+                    else:
+                        return X, y
         else:
             if self.group_column:
                 if self.extra_columns:
@@ -208,7 +242,11 @@ class LocalDatasets():
                 else:
                     return np.array(X), np.array(y).ravel(), np.array(groups).ravel()
             else:
-                return np.array(X), np.array(y).ravel()
+                if self.extra_columns:
+                    return np.array(X), np.array(y).ravel(), np.array(X_extra)
+                else:
+                    return np.array(X), np.array(y).ravel()
+        '''
 
 class FigshareDatasets():
     """

@@ -42,10 +42,11 @@ class TestDatasets(unittest.TestCase):
                           target=target,
                           extra_columns=extra_columns,
                           as_frame=True)
-        X, y = d.load_data()
+        data_dict = d.load_data()
+        X = data_dict['X']
+        y = data_dict['y']
         self.assertEqual(X.shape, (408,287))
         self.assertEqual(y.shape, (408,))
-        shutil.rmtree('figshare_7418492')
         return
 
     def test_foundry(self):
