@@ -6,11 +6,14 @@ from pprint import pprint
 from collections import Counter
 import shutil
 from datetime import datetime
+import pickle
 
 from sklearn.impute import SimpleImputer
 from scipy.linalg import orth
 import sklearn.datasets
 from mdf_forge import Forge
+
+from matminer.datasets.dataset_retrieval import load_dataset, get_available_datasets
 
 from mastml.plots import Histogram
 
@@ -19,8 +22,6 @@ try:
 except:
     print('To import data from figshare, manually install figshare via git clone of '
           'git clone https://github.com/cognoma/figshare.git')
-
-#TODO: add easy support for Matminer datasets
 
 class SklearnDatasets():
     """
@@ -144,14 +145,18 @@ class LocalDatasets():
     def _import(self):
         fname, ext = os.path.splitext(self.file_path)
         if ext == '.csv':
-            df = pd.read_csv(self.file_path)
+            df = pd.read_csv(self.file_path, dtype='object')
         elif ext == '.xlsx':
             try:
-                df = pd.read_excel(self.file_path)
+                df = pd.read_excel(self.file_path, dtype='object')
             except:
-                df = pd.read_excel(self.file_path, engine='openpyxl')
+                df = pd.read_excel(self.file_path, engine='openpyxl', dtype='object')
+        elif ext == '.pickle':
+            with open(self.file_path, "rb") as input_file:
+                data = pickle.load(input_file)
+                df = pd.DataFrame(data)
         else:
-            raise ValueError('file_path must be .csv or .xlsx for data local data import')
+            raise ValueError('file_path must be .csv, .xlsx or .pickle for data local data import')
         return df
 
     def _get_features(self, df):
@@ -210,43 +215,6 @@ class LocalDatasets():
             for k, v in data_dict.items():
                 data_dict[k] = np.array(v)
             return data_dict
-
-        '''
-        if self.as_frame:
-            if self.group_column:
-                if self.extra_columns:
-                    if self.testdata_columns:
-                        return X, y, groups, X_extra, X_testdata
-                    else:
-                        return X, y, groups, X_extra
-                else:
-                    return X, y, groups
-            else:
-                if self.extra_columns:
-                    if self.testdata_columns:
-                        return X, y, X_extra, X_testdata
-                    else:
-                        return X, y, X_extra
-                else:
-                    if self.testdata_columns:
-                        return X, y, X_testdata
-                    else:
-                        return X, y
-        else:
-            if self.group_column:
-                if self.extra_columns:
-                    if self.testdata_columns:
-                        return np.array(X), np.array(y).ravel(), np.array(groups).ravel(), np.array(X_extra), np.array(X_testdata)
-                    else:
-                        return np.array(X), np.array(y).ravel(), np.array(groups).ravel(), np.array(X_extra)
-                else:
-                    return np.array(X), np.array(y).ravel(), np.array(groups).ravel()
-            else:
-                if self.extra_columns:
-                    return np.array(X), np.array(y).ravel(), np.array(X_extra)
-                else:
-                    return np.array(X), np.array(y).ravel()
-        '''
 
 class FigshareDatasets():
     """
@@ -326,6 +294,50 @@ class FoundryDatasets():
             if download == True:
                 print('Downloading dataset from MDF')
                 self.mdf.globus_download(results=result)
+        return
+
+class MatminerDatasets():
+    """
+    Class to download datasets hosted from the Matminer package's Figshare page. A summary of available datasets
+    can be found at: https://hackingmaterials.lbl.gov/matminer/dataset_summary.html
+
+    Args:
+        None
+
+    Methods:
+
+        download_data: downloads specified data from Matminer/Figshare and saves to current directory
+
+            Args:
+
+                name: (str), name of the dataset to download. For compatible names, call get_available_datasets
+
+                save_data: (bool), whether to save the downloaded data to the current working directory
+
+            Returns:
+                df: (dataframe), dataframe of downloaded data
+
+        get_available_datasets: returns information on the available dataset names and details one can downlaod
+
+            Args:
+                None.
+
+            Returns:
+                None.
+    """
+    def __init__(self):
+        pass
+
+    def download_data(self, name, save_data=True):
+        df = load_dataset(name=name)
+        if save_data == True:
+            df.to_excel(name+'.xlsx', index=False)
+            with open('%s.pickle' % name, 'wb') as data_file:
+                pickle.dump(df, data_file)
+        return df
+
+    def get_available_datasets(self):
+        datasets = get_available_datasets()
         return
 
 class DataCleaning():
