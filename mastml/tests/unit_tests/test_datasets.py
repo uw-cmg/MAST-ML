@@ -6,7 +6,7 @@ import sys
 import shutil
 sys.path.insert(0, os.path.abspath('../../../'))
 
-from mastml.datasets import SklearnDatasets, LocalDatasets, FoundryDatasets, DataCleaning
+from mastml.datasets import SklearnDatasets, LocalDatasets, FoundryDatasets, DataCleaning, MatminerDatasets
 
 class TestDatasets(unittest.TestCase):
 
@@ -47,6 +47,16 @@ class TestDatasets(unittest.TestCase):
         y = data_dict['y']
         self.assertEqual(X.shape, (408,287))
         self.assertEqual(y.shape, (408,))
+        return
+
+    def test_matminer(self):
+        matminerdata = MatminerDatasets()
+        df = matminerdata.download_data(name='dielectric_constant', save_data=True)
+        self.assertTrue(os.path.exists('dielectric_constant.xlsx'))
+        self.assertTrue(os.path.exists('dielectric_constant.pickle'))
+        self.assertTrue(df.shape, (1056, 16))
+        os.remove('dielectric_constant.xlsx')
+        os.remove('dielectric_constant.pickle')
         return
 
     def test_foundry(self):
