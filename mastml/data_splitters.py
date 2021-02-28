@@ -552,7 +552,7 @@ class LeaveOutTwinCV(BaseSplitter):
 
     Args:
         threshold: (int), the threshold at which two data points are considered twins
-        cv: A scikit-learn cross validation generator object to be used to create split # TODO idk if this is the same as "splitter" arg in SklearnDataSplitter
+        cv: A scikit-learn cross validation generator object to be used to create split
         allow_twins_in_train: (boolean), true if the twins should be allowed in training data but removed from the test sets, false if twins should just be removed altogether
 
     Methods:
@@ -577,37 +577,20 @@ class LeaveOutTwinCV(BaseSplitter):
                 (numpy array), array of train and test indices
     """
 
-    def __init__(self, threshold, cv=None, allow_twins_in_train=True, **kwargs):
+    def __init__(self, threshold, splitter='KFold', allow_twins_in_train=True, debug=False, ** kwargs):
         self.threshold = int(threshold)
-        if cv is None:
-            self.cv = ms.RepeatedKFold()
-        else:
-            self.cv = getattr(sklearn.model_selection, cv)(**kwargs)
+        self.cv = getattr(sklearn.model_selection, splitter)(**kwargs)
+        self.splitter = splitter  # this is only here for the _setup_savedir so maybe redundant code
         self.allow_twins_in_train = allow_twins_in_train
-
-    def _setup_savedir(self, model, selector, savepath):  # TODO stolen from SklearnDataSplitter
-        now = datetime.now()
-        dirname = model.model.__class__.__name__+'_'+self.cv.__class__.__name__+'_'+selector.__class__.__name__
-        dirname = f"{dirname}_{now.month:02d}_{now.day:02d}" \
-            f"_{now.hour:02d}_{now.minute:02d}_{now.second:02d}"
-        if savepath == None:
-            splitdir = os.getcwd()
-        else:
-            splitdir = os.path.join(savepath, dirname)
-        if not os.path.exists(splitdir):
-            os.mkdir(splitdir)
-        return splitdir
+        self.debug = debug
 
     def get_n_splits(self, X=None, y=None, groups=None):
         return 1
 
-    # TODO This is (mostly) just the old method copy and pasted, with depricated parts removed
-    def split(self, X, y, X_noinput=None, path="/", groups=None):
-        # intialize variables
+    def split(self, X, y, X_noinput=None, groups=None):
         distances = []
         i = 0
         j = 0
-        count = 0
 
         # calculate distances between every combination of items in X
         for a in X.T.iteritems():
@@ -632,7 +615,7 @@ class LeaveOutTwinCV(BaseSplitter):
 
         distances = pd.DataFrame(distances, columns=['dist', 'a', 'b'])
 
-        # create X and y with twins removed
+        # create copy of X and y to be datasets with twins removed
         X_notwin = X.copy()
         y_notwin = y.copy()
 
@@ -649,7 +632,9 @@ class LeaveOutTwinCV(BaseSplitter):
                     if (i[2] in y_notwin.index):
                         y_notwin = y_notwin.drop(i[2], inplace=False)
 
-        # generate splits from chosen cv (cross validator)
+        # TODO: I probably need to change this so that the split isn't done before I remove stuff from the test
+
+        # generate splits from chosen cv (cross validator) (splitter)
         splits_generator = self.cv.split(X_notwin, y_notwin)
 
         # change splits into list form so it can be mutated
@@ -661,7 +646,6 @@ class LeaveOutTwinCV(BaseSplitter):
             # remove from test sets
             if (len(removed) != 0):
                 for split in splits:
-                    # orig_size = len(split[1])
                     for i in removed:
                         if (i[1] in split[1]):
                             split[1] = [x for x in split[1] if x != i[1]]
@@ -674,7 +658,10 @@ class LeaveOutTwinCV(BaseSplitter):
                 for idx, val in enumerate(split[1]):
                     split[1][idx] = old_index[idx]
 
-        return splits
+        if self.debug:
+            len(removed)
+        else:
+            return splits
 
 
 class Bootstrap(BaseSplitter):
