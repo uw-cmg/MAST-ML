@@ -589,15 +589,15 @@ class LeaveOutTwinCV(BaseSplitter):
         return 1
 
     def split(self, X, y, X_noinput=None, groups=None):
-        print("TWIN SPLITTER START")
+        # print("TWIN SPLITTER START")
 
         X = np.array(X)
         y = np.array(y)
-
-        print(f"X {type(X)}: {X.shape}")
-        print(f"y {type(y)}: {y.shape}")
         origIdx = set(np.arange(X.shape[0]))
-        print(f"original indices:\n{origIdx}")
+
+        # print(f"X {type(X)}: {X.shape}")
+        # print(f"y {type(y)}: {y.shape}")
+        # print(f"original indices:\n{origIdx}")
 
         twinIdx = set()
 
@@ -619,10 +619,10 @@ class LeaveOutTwinCV(BaseSplitter):
                 origIdx.remove(t)
         origIdx = list(origIdx)
 
-        print(f"TEST:\n{origIdx}")
-        print(f"TRAIN(twins):\n{twinIdx}")
+        # print(f"TEST:\n{origIdx}")
+        # print(f"TRAIN(twins):\n{twinIdx}")
 
-        print("TWIN SPLITTER END")
+        # print("TWIN SPLITTER END")
 
         return [[origIdx, twinIdx]]
 
