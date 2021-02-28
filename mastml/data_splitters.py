@@ -554,6 +554,8 @@ class LeaveOutTwinCV(BaseSplitter):
         threshold: (int), the threshold at which two data points are considered twins
         cv: A scikit-learn cross validation generator object to be used to create split
         ord: {non-zero int, inf, -inf}, optional Order of the norm (see numpy.linalg.norm). The default is None. Must be able to calculate norm for vector, not matrix.
+        move_twins_to_test: (boolean), true if the twins should be allowed in test set but removed from the training sets, false if twins should just be removed altogether. Default True.
+        auto_threshold: (boolean), true if threshold should be automatically increased until at least one twin is removed. Default True.
 
     Methods:
         get_n_splits: method to calculate the number of splits to perform across all splitters
@@ -577,13 +579,15 @@ class LeaveOutTwinCV(BaseSplitter):
                 (numpy array), array of train and test indices
     """
 
-    def __init__(self, threshold=0, ord=None, debug=False, ** kwargs):
+    def __init__(self, threshold=0, ord=None, debug=False, move_twins_to_test=True, auto_threshold=True):
         self.threshold = threshold
         self.splitter = self.__class__.__name__
         self.debug = debug
         self.ord = ord
+        self.move_twins_to_test = move_twins_to_test
+        self.auto_threshold = auto_threshold
+
         # Storing this old parameter here
-        # allow_twins_in_train: (boolean), true if the twins should be allowed in training data but removed from the test sets, false if twins should just be removed altogether
 
     def get_n_splits(self, X=None, y=None, groups=None):
         return 1
@@ -604,14 +608,21 @@ class LeaveOutTwinCV(BaseSplitter):
         # See this for ord https: // numpy.org/doc/stable/reference/generated/numpy.linalg.norm.html
 
         # compute all twins
-        for i, a in enumerate(X):
-            for j, b in enumerate(X):
-                if (i != j and j > i):
-                    if (np.linalg.norm(a-b, ord=self.ord) <= self.threshold):
-                        if i not in twinIdx:
-                            twinIdx.add(i)
-                        if j not in twinIdx:
-                            twinIdx.add(j)
+        while (len(twinIdx) == 0):
+            for i, a in enumerate(X):
+                for j, b in enumerate(X):
+                    if (i != j and j > i):
+                        if (np.linalg.norm(a-b, ord=self.ord) <= self.threshold):
+                            if i not in twinIdx:
+                                twinIdx.add(i)
+                            if j not in twinIdx:
+                                twinIdx.add(j)
+            if (not self.auto_threshold):
+                break
+            # print(f"len {len(twinIdx)} threshold {self.threshold}")
+            if self.threshold <= 0:
+                self.threshold = 0.1
+            self.threshold *= 1.1
 
         twinIdx = list(twinIdx)
         for t in twinIdx:
@@ -621,10 +632,12 @@ class LeaveOutTwinCV(BaseSplitter):
 
         # print(f"TEST:\n{origIdx}")
         # print(f"TRAIN(twins):\n{twinIdx}")
-
         # print("TWIN SPLITTER END")
 
-        return [[origIdx, twinIdx]]
+        if self.move_twins_to_test:
+            return [[origIdx, twinIdx]]
+        else:
+            return [[origIdx, origIdx]]
 
         def old():
             '''
