@@ -552,7 +552,7 @@ class LeaveOutTwinCV(BaseSplitter):
 
     Args:
         threshold: (int), the threshold at which two data points are considered twins
-        cv: A scikit-learn cross validation generator object to be used to create split # TODO idk if this is the same as "splitter" arg in SklearnDataSplitter
+        cv: A scikit-learn cross validation generator object to be used to create split
         allow_twins_in_train: (boolean), true if the twins should be allowed in training data but removed from the test sets, false if twins should just be removed altogether
 
     Methods:
@@ -577,114 +577,113 @@ class LeaveOutTwinCV(BaseSplitter):
                 (numpy array), array of train and test indices
     """
 
-    def __init__(self, threshold, cv, allow_twins_in_train=True, **kwargs):
-        self.threshold = int(threshold)
-        if cv is None:
-            self.cv = ms.RepeatedKFold()
-        else:
-            # self.cv = cv
-            self.cv = getattr(sklearn.model_selection, cv)(**kwargs)
+    def __init__(self, threshold=0, allow_twins_in_train=True, debug=False, ** kwargs):
+        self.threshold = threshold
         self.allow_twins_in_train = allow_twins_in_train
-
-    def _setup_savedir(self, model, selector, savepath):  # TODO stolen from SklearnDataSplitter
-        now = datetime.now()
-        dirname = model.model.__class__.__name__+'_'+self.cv.__class__.__name__+'_'+selector.__class__.__name__
-        dirname = f"{dirname}_{now.month:02d}_{now.day:02d}" \
-            f"_{now.hour:02d}_{now.minute:02d}_{now.second:02d}"
-        if savepath == None:
-            splitdir = os.getcwd()
-        else:
-            splitdir = os.path.join(savepath, dirname)
-        if not os.path.exists(splitdir):
-            os.mkdir(splitdir)
-        return splitdir
+        self.splitter = self.__class__.__name__
+        self.debug = debug
 
     def get_n_splits(self, X=None, y=None, groups=None):
         return 1
 
-    # TODO This is (mostly) just the old method copy and pasted, with depricated parts commented out
-    def split(self, X, y, X_noinput=None, path="/", groups=None):
-        # intialize variables
-        distances = []
-        i = 0
-        j = 0
-        count = 0
+    def split(self, X, y, X_noinput=None, groups=None):
+        print("TWIN SPLITTER START")
 
-        # calculate distances between every combination of items in X
-        for a in X.T.iteritems():
-            for b in X.T.iteritems():
-                if j > i:
-                    diff = np.linalg.norm(a[1] - b[1])
-                    distances.append([diff, a[0], b[0]])
-                j += 1
-            i += 1
-            j = 0
+        X = np.array(X)
+        y = np.array(y)
 
-        # identifies the datapoints within the threshold
-        distances = sorted(distances, key=lambda x: x[0])
+        print(f"X {type(X)}: {X.shape}")
+        print(f"y {type(y)}: {y.shape}")
+        origIdx = set(np.arange(X.shape[0]))
+        print(f"original indices:\n{origIdx}")
 
-        def find_nearest_index(array, value):
-            for idx, n in enumerate(array):
-                if (n[0] >= value):
-                    return idx
-            return 0
-        x = find_nearest_index(distances, self.threshold)
-        removed = distances[:x]
+        twinIdx = set()
 
-        distances = pd.DataFrame(distances, columns=['dist', 'a', 'b'])
+        # compute all twins
+        for i, a in enumerate(X):
+            for j, b in enumerate(X):
+                if (i != j and j > i):
+                    if (np.linalg.norm(a-b) <= self.threshold):
+                        if i not in twinIdx:
+                            twinIdx.add(i)
+                        if j not in twinIdx:
+                            twinIdx.add(j)
 
-        # create X and y with twins removed
-        X_notwin = X.copy()
-        y_notwin = y.copy()
+        twinIdx = list(twinIdx)
+        for t in twinIdx:
+            if t in origIdx:
+                origIdx.remove(t)
+        origIdx = list(origIdx)
 
-        if not self.allow_twins_in_train:
-            # remove all twins in both X and y
-            if (len(removed) != 0):
-                for i in removed:
-                    if (i[1] in X_notwin.index):
-                        X_notwin = X_notwin.drop(i[1], inplace=False)
-                    if (i[2] in X_notwin.index):
-                        X_notwin = X_notwin.drop(i[2], inplace=False)
-                    if (i[1] in y_notwin.index):
-                        y_notwin = y_notwin.drop(i[1], inplace=False)
-                    if (i[2] in y_notwin.index):
-                        y_notwin = y_notwin.drop(i[2], inplace=False)
+        print(f"TEST:\n{origIdx}")
+        print(f"TRAIN(twins):\n{twinIdx}")
 
-        # print(f"splits_generator = {type(self.cv)}.split({type(X_notwin)}, {type(y_notwin)})")
+        print("TWIN SPLITTER END")
 
-        # generate splits from chosen cv (cross validator)
-        splits_generator = self.cv.split(X_notwin, y_notwin)
+        return [[origIdx, twinIdx]]
 
-        # change splits into list form so it can be mutated
-        splits = list()
-        for split in splits_generator:
-            splits.append(list(split))
+        def old():
+            '''
+            # identifies the datapoints within the threshold
+            distances = sorted(distances, key=lambda x: x[0])
 
-        # print("E")
+            def find_nearest_index(array, value):
+                for idx, n in enumerate(array):
+                    if (n[0] >= value):
+                        return idx
+                return 0
+            x = find_nearest_index(distances, self.threshold)
+            removed = distances[:x]
 
-        if self.allow_twins_in_train:
-            # remove from test sets
-            if (len(removed) != 0):
-                for split in splits:
-                    # orig_size = len(split[1])
+            distances = pd.DataFrame(distances, columns=['dist', 'a', 'b'])
+
+            # create copy of X and y to be datasets with twins removed
+            X_notwin = X.copy()
+            y_notwin = y.copy()
+
+            if not self.allow_twins_in_train:
+                # remove all twins in both X and y
+                if (len(removed) != 0):
                     for i in removed:
-                        if (i[1] in split[1]):
-                            split[1] = [x for x in split[1] if x != i[1]]
-                    # log percentage removed
-                    # red_size = len(split[1])
-                    # log.info(f"{100 - (red_size / orig_size * 100)} percent of test data removed as twins")
-                    # if len(split[1]) == 0:
-                    #     raise utils.MastError(f"Twin removal removed all test data. Threshold was {self.threshold}, consider reducing this value.")
-        else:
-            # change the split's relative indices to old indices, because called split on data with indicies removed
-            old_index = X_notwin.index
-            for split in splits:
-                for idx, val in enumerate(split[0]):
-                    split[0][idx] = old_index[idx]
-                for idx, val in enumerate(split[1]):
-                    split[1][idx] = old_index[idx]
+                        if (i[1] in X_notwin.index):
+                            X_notwin = X_notwin.drop(i[1], inplace=False)
+                        if (i[2] in X_notwin.index):
+                            X_notwin = X_notwin.drop(i[2], inplace=False)
+                        if (i[1] in y_notwin.index):
+                            y_notwin = y_notwin.drop(i[1], inplace=False)
+                        if (i[2] in y_notwin.index):
+                            y_notwin = y_notwin.drop(i[2], inplace=False)
 
-        return splits
+            # generate splits from chosen cv (cross validator) (splitter)
+            splits_generator = self.cv.split(X_notwin, y_notwin)
+
+            # change splits into list form so it can be mutated
+            splits = list()
+            for split in splits_generator:
+                splits.append(list(split))
+
+            if self.allow_twins_in_train:
+                # remove from test sets
+                if (len(removed) != 0):
+                    for split in splits:
+                        for i in removed:
+                            if (i[1] in split[1]):
+                                split[1] = [x for x in split[1] if x != i[1]]
+            else:
+                # change the split's relative indices to old indices, because called split on data with indicies removed
+                old_index = X_notwin.index
+                for split in splits:
+                    for idx, val in enumerate(split[0]):
+                        split[0][idx] = old_index[idx]
+                    for idx, val in enumerate(split[1]):
+                        split[1][idx] = old_index[idx]
+
+            if self.debug:
+                len(removed)
+            else:
+                return splits
+            '''
+            pass
 
 
 class Bootstrap(BaseSplitter):
