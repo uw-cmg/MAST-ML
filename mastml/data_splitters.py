@@ -553,7 +553,7 @@ class LeaveOutTwinCV(BaseSplitter):
     Args:
         threshold: (int), the threshold at which two data points are considered twins
         cv: A scikit-learn cross validation generator object to be used to create split
-        ord: {non-zero int, inf, -inf, ‘fro’, ‘nuc’}, optional Order of the norm (see numpy.linalg.norm). The default is ‘fro’ - Frobenius norm.
+        ord: {non-zero int, inf, -inf}, optional Order of the norm (see numpy.linalg.norm). The default is None. Must be able to calculate norm for vector, not matrix.
 
     Methods:
         get_n_splits: method to calculate the number of splits to perform across all splitters
@@ -577,7 +577,7 @@ class LeaveOutTwinCV(BaseSplitter):
                 (numpy array), array of train and test indices
     """
 
-    def __init__(self, threshold=0, ord='fro', debug=False, ** kwargs):
+    def __init__(self, threshold=0, ord=None, debug=False, ** kwargs):
         self.threshold = threshold
         self.splitter = self.__class__.__name__
         self.debug = debug
@@ -607,7 +607,7 @@ class LeaveOutTwinCV(BaseSplitter):
         for i, a in enumerate(X):
             for j, b in enumerate(X):
                 if (i != j and j > i):
-                    if (np.linalg.norm(a-b, ord=ord) <= self.threshold):
+                    if (np.linalg.norm(a-b, ord=self.ord) <= self.threshold):
                         if i not in twinIdx:
                             twinIdx.add(i)
                         if j not in twinIdx:
