@@ -553,7 +553,7 @@ class LeaveOutTwinCV(BaseSplitter):
     Args:
         threshold: (int), the threshold at which two data points are considered twins
         cv: A scikit-learn cross validation generator object to be used to create split
-        allow_twins_in_train: (boolean), true if the twins should be allowed in training data but removed from the test sets, false if twins should just be removed altogether
+        ord: {non-zero int, inf, -inf, ‘fro’, ‘nuc’}, optional Order of the norm (see numpy.linalg.norm). The default is ‘fro’ - Frobenius norm.
 
     Methods:
         get_n_splits: method to calculate the number of splits to perform across all splitters
@@ -577,11 +577,13 @@ class LeaveOutTwinCV(BaseSplitter):
                 (numpy array), array of train and test indices
     """
 
-    def __init__(self, threshold=0, allow_twins_in_train=True, debug=False, ** kwargs):
+    def __init__(self, threshold=0, ord='fro', debug=False, ** kwargs):
         self.threshold = threshold
-        self.allow_twins_in_train = allow_twins_in_train
         self.splitter = self.__class__.__name__
         self.debug = debug
+        self.ord = ord
+        # Storing this old parameter here
+        # allow_twins_in_train: (boolean), true if the twins should be allowed in training data but removed from the test sets, false if twins should just be removed altogether
 
     def get_n_splits(self, X=None, y=None, groups=None):
         return 1
@@ -599,11 +601,13 @@ class LeaveOutTwinCV(BaseSplitter):
 
         twinIdx = set()
 
+        # See this for ord https: // numpy.org/doc/stable/reference/generated/numpy.linalg.norm.html
+
         # compute all twins
         for i, a in enumerate(X):
             for j, b in enumerate(X):
                 if (i != j and j > i):
-                    if (np.linalg.norm(a-b) <= self.threshold):
+                    if (np.linalg.norm(a-b, ord=ord) <= self.threshold):
                         if i not in twinIdx:
                             twinIdx.add(i)
                         if j not in twinIdx:
