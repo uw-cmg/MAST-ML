@@ -604,15 +604,11 @@ class LeaveOutTwinCV(BaseSplitter):
 
     # TODO This is (mostly) just the old method copy and pasted, with depricated parts commented out
     def split(self, X, y, X_noinput=None, path="/", groups=None):
-        # print(f"X{type(X)} y{type(y)}")
         # intialize variables
         distances = []
         i = 0
         j = 0
         count = 0
-        # log = logging.getLogger('mastml')
-
-        # print("A")
 
         # calculate distances between every combination of items in X
         for a in X.T.iteritems():
@@ -623,8 +619,6 @@ class LeaveOutTwinCV(BaseSplitter):
                 j += 1
             i += 1
             j = 0
-
-        # print("B")
 
         # identifies the datapoints within the threshold
         distances = sorted(distances, key=lambda x: x[0])
@@ -637,34 +631,7 @@ class LeaveOutTwinCV(BaseSplitter):
         x = find_nearest_index(distances, self.threshold)
         removed = distances[:x]
 
-        # print("C")
-
         distances = pd.DataFrame(distances, columns=['dist', 'a', 'b'])
-
-        # Format data to be output as csv with previously removed data and other information
-        # removed_indices = []
-        # if (len(removed) != 0):
-        #     for i in removed:
-        #         if i[1] not in removed_indices:
-        #             removed_indices.append(i[1])
-        #         if i[2] not in removed_indices:
-        #             removed_indices.append(i[2])
-
-        # X_noinput = X_noinput.iloc[removed_indices]
-        # X_other_columns = X.iloc[removed_indices]
-
-        # if (self.allow_twins_in_train):
-        #     removed_x = pd.DataFrame(columns=X.columns)
-        #     empty_X_noinput = pd.DataFrame(columns=X_noinput.columns)
-        #     removed_x = pd.concat([removed_x, empty_X_noinput], axis=1)
-        # else:
-        #     removed_x = X.iloc[removed_indices]
-        #     removed_x = pd.concat([removed_x, X_noinput], axis=1)
-        # removed_y = y.iloc[removed_indices]
-        # removed_y = pd.concat([removed_y, X_noinput], axis=1)
-        # removed_y = pd.concat([removed_y, X_other_columns], axis=1)
-
-        # print("D")
 
         # create X and y with twins removed
         X_notwin = X.copy()
@@ -716,19 +683,6 @@ class LeaveOutTwinCV(BaseSplitter):
                     split[0][idx] = old_index[idx]
                 for idx, val in enumerate(split[1]):
                     split[1][idx] = old_index[idx]
-
-        # print removed data to a csv
-        # def print_removed_to_csv(path):
-        #     os.mkdir(join(path, 'data_twins'))
-        #     # write other files
-        #     removed_x.to_csv(join(path, 'data_twins/removed_twins_X.csv'))
-        #     removed_y.to_csv(join(path, 'data_twins/removed_twins_y.csv'))
-        #     removed_x.describe().to_csv(join(path, 'data_twins/removed_twins_X_info.csv'))
-        #     removed_y.describe().to_csv(join(path, 'data_twins/removed_twins_y_info.csv'))
-        #     # make histogram
-        #     plot_helper.plot_data_twins_histogram(distances['dist'], path)
-
-        # print_removed_to_csv(path)
 
         return splits
 
