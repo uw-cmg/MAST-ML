@@ -193,12 +193,15 @@ class BaseSplitter(ms.BaseCrossValidator):
                  verbosity=1):
 
         if nested_CV == True:
-            # Get set of X_leaveout, y_leaveout for testing. Append them to user-specified X_leaveout tests
-            X_splits, y_splits, train_inds, test_inds = self.split_asframe(X=X, y=y, groups=groups)
-            leaveout_inds_orig = leaveout_inds
-            leaveout_inds = [i for i in test_inds]
-            if len(leaveout_inds_orig) > 0:
-                leaveout_inds.append(i for i in leaveout_inds_orig)
+            if self.__class__.__name__ == 'NoSplit':
+                print('Warning: NoSplit does not support nested cross validation.')
+            else:
+                # Get set of X_leaveout, y_leaveout for testing. Append them to user-specified X_leaveout tests
+                X_splits, y_splits, train_inds, test_inds = self.split_asframe(X=X, y=y, groups=groups)
+                leaveout_inds_orig = leaveout_inds
+                leaveout_inds = [i for i in test_inds]
+                if len(leaveout_inds_orig) > 0:
+                    leaveout_inds.append(i for i in leaveout_inds_orig)
 
         if type(models) == list:
             pass
