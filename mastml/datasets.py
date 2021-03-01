@@ -145,12 +145,12 @@ class LocalDatasets():
     def _import(self):
         fname, ext = os.path.splitext(self.file_path)
         if ext == '.csv':
-            df = pd.read_csv(self.file_path, dtype='object')
+            df = pd.read_csv(self.file_path)
         elif ext == '.xlsx':
             try:
-                df = pd.read_excel(self.file_path, dtype='object')
+                df = pd.read_excel(self.file_path)
             except:
-                df = pd.read_excel(self.file_path, engine='openpyxl', dtype='object')
+                df = pd.read_excel(self.file_path, engine='openpyxl')
         elif ext == '.pickle':
             with open(self.file_path, "rb") as input_file:
                 data = pickle.load(input_file)
