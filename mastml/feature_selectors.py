@@ -135,6 +135,8 @@ class SklearnFeatureSelector(BaseSelector):
         super(SklearnFeatureSelector, self).__init__()
         self.selector = getattr(sklearn.feature_selection, selector)(**kwargs)
 
+        #TODO: map string input of estimator (e.g. for SequentialFeatureSelector) and score_func (e.g. for SelectKBest) to be objects
+
     def fit(self, X, y):
         self.selector.fit(X, y)
         return self
