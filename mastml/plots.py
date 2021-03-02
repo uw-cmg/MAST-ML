@@ -1071,6 +1071,82 @@ class Histogram():
             num_bins = 10
         return num_bins
 
+class Line():
+    '''
+
+    '''
+    @classmethod
+    def plot_learning_curve(cls, train_sizes, train_mean, test_mean, train_stdev, test_stdev, score_name,
+                            learning_curve_type, savepath):
+        """
+        Method used to plot both data and feature learning curves
+
+        Args:
+
+            train_sizes: (numpy array), array of x-axis values, such as fraction of data used or number of features
+
+            train_mean: (numpy array), array of training data mean values, averaged over some type/number of CV splits
+
+            test_mean: (numpy array), array of test data mean values, averaged over some type/number of CV splits
+
+            train_stdev: (numpy array), array of training data standard deviation values, from some type/number of CV splits
+
+            test_stdev: (numpy array), array of test data standard deviation values, from some type/number of CV splits
+
+            score_name: (str), type of score metric for learning curve plotting; used in y-axis label
+
+            learning_curve_type: (str), type of learning curve employed: 'sample_learning_curve' or 'feature_learning_curve'
+
+            savepath: (str), path to save the plotted learning curve to
+
+        Returns:
+
+            None
+
+        """
+        # Set image aspect ratio (do custom for learning curve):
+        w, h = figaspect(0.75)
+        fig = Figure(figsize=(w, h))
+        FigureCanvas(fig)
+        gs = plt.GridSpec(1, 1)
+        ax = fig.add_subplot(gs[0:, 0:])
+
+        max_x = max(train_sizes)
+        min_x = min(train_sizes)
+
+        max_y, min_y = recursive_max_and_min([
+            train_mean,
+            train_mean + train_stdev,
+            train_mean - train_stdev,
+            test_mean,
+            test_mean + test_stdev,
+            test_mean - test_stdev,
+        ])
+
+        max_x = round(float(max_x), rounder(max_x - min_x))
+        min_x = round(float(min_x), rounder(max_x - min_x))
+        max_y = round(float(max_y), rounder(max_y - min_y))
+        min_y = round(float(min_y), rounder(max_y - min_y))
+        _set_tick_labels_different(ax, max_x, min_x, max_y, min_y)
+
+        # plot and collect handles h1 and h2 for making legend
+        h1 = ax.plot(train_sizes, train_mean, '-o', color='blue', markersize=10, alpha=0.7)[0]
+        ax.fill_between(train_sizes, train_mean - train_stdev, train_mean + train_stdev,
+                        alpha=0.1, color='blue')
+        h2 = ax.plot(train_sizes, test_mean, '-o', color='red', markersize=10, alpha=0.7)[0]
+        ax.fill_between(train_sizes, test_mean - test_stdev, test_mean + test_stdev,
+                        alpha=0.1, color='red')
+        ax.legend([h1, h2], ['train score', 'validation score'], loc='center right', fontsize=12)
+        if learning_curve_type == 'data_learning_curve':
+            ax.set_xlabel('Number of training data points', fontsize=16)
+        elif learning_curve_type == 'feature_learning_curve':
+            ax.set_xlabel('Number of features selected', fontsize=16)
+        else:
+            raise ValueError(
+                'The param "learning_curve_type" must be either "data_learning_curve" or "feature_learning_curve"')
+        ax.set_ylabel(score_name, fontsize=16)
+        fig.savefig(os.path.join(savepath,learning_curve_type + '.png'), dpi=DPI, bbox_inches='tight')
+        return
 
 ### Helpers:
 
