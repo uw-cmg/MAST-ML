@@ -131,7 +131,7 @@ def feature_learning_curve(X, y, estimator, cv, scoring, selector_name, savepath
                         "Your learning curve will be generated properly, but will not use the custom model, CV or grouping scheme")
             Xnew = fs.name_to_constructor[selector_name](f_regression, feature).fit(X, y).transform(X)
         elif selector_name == 'MASTMLFeatureSelector':
-            Xnew = fs.name_to_constructor[selector_name](estimator, feature, cv).fit(X, y, pd.DataFrame(Xgroups)).transform(X)
+            Xnew = fs.name_to_constructor[selector_name](estimator, feature, cv).fit(X, y, savepath, pd.DataFrame(Xgroups)).transform(X)
         elif selector_name == 'SequentialFeatureSelector':
             log.warning("Using SequentialFeatureSelector as feature selector does not support a custom CV or grouping scheme. "
                         "Your learning curve will be generated properly, but will not use the custom CV or grouping scheme")

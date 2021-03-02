@@ -2285,8 +2285,8 @@ def plot_learning_curve_convergence(train_sizes, test_mean, score_name, learning
     min_y = min(slopes)
     _set_tick_labels_different(ax, max_x, min_x, max_y, min_y)
 
-    ax.plot(steps, slopes, '-o', color='blue', markersize=10, alpha=0.7)
-    ax.plot(steps_moving_average, slopes_moving_average, '-o', color='green', markersize=10, alpha=0.7)
+    ax.plot(np.array(steps), np.array(slopes), '-o', color='blue', markersize=10, alpha=0.7)
+    ax.plot(np.array(steps_moving_average), np.array(slopes_moving_average), '-o', color='green', markersize=10, alpha=0.7)
     ax.legend(['score slope', 'smoothed score slope'], loc='lower right', fontsize=12)
     ax.set_xlabel('Learning curve step', fontsize=16)
     ax.set_ylabel('Change in '+score_name, fontsize=16)
