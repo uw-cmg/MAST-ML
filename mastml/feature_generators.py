@@ -149,10 +149,10 @@ class ElementalFeatureGenerator(BaseGenerator):
         if self.feature_types is None:
             self.feature_types = ['composition_avg', 'arithmetic_avg', 'max', 'min', 'difference']
 
-    def fit(self, X, y=None):
-        self.df = X
+    def fit(self, X=None, y=None):
+        #self.df = X
         self.y = y
-        self.original_features = self.df.columns
+        #self.original_features = self.df.columns
         return self
 
     def transform(self, X=None):
@@ -171,7 +171,7 @@ class ElementalFeatureGenerator(BaseGenerator):
 
     def generate_magpie_features(self):
         # Replace empty composition fields with empty string instead of NaN
-        self.df = self.df.fillna('')
+        #self.df = self.df.fillna('')
 
         compositions_raw = self.composition_df[self.composition_df.columns[0]].tolist()
         # Check first entry of comps to find [] for delimiting different sublattices
@@ -532,7 +532,8 @@ class ElementalFeatureGenerator(BaseGenerator):
                     if 'Site2Site3' in self.feature_types:
                         magpiedata_dict_list_toinclude.append(magpiedata_dict_list[29])
 
-        df = self.df # Initialize the final df as initial df then add magpie features to it
+        #df = self.df # Initialize the final df as initial df then add magpie features to it
+        count = 0
         for magpiedata_dict in magpiedata_dict_list_toinclude:
             df_magpie = pd.DataFrame.from_dict(data=magpiedata_dict, orient='index')
             # Need to reorder compositions in new dataframe to match input dataframe
@@ -541,7 +542,11 @@ class ElementalFeatureGenerator(BaseGenerator):
             df_magpie.index.name = self.composition_df.columns[0]
             df_magpie.reset_index(inplace=True)
             # Merge magpie feature dataframe with originally supplied dataframe
-            df = DataframeUtilities().merge_dataframe_columns(dataframe1=df, dataframe2=df_magpie)
+            if count == 0:
+                df = df_magpie
+            else:
+                df = DataframeUtilities().merge_dataframe_columns(dataframe1=df, dataframe2=df_magpie)
+            count += 1
 
         return df
 
