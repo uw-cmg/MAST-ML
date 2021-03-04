@@ -8,9 +8,16 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 from copy import copy
+import pickle
 
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import PolynomialFeatures, OneHotEncoder
+
+import matminer
+import matminer.featurizers.structure
+import matminer.featurizers.site
+from matminer.featurizers.composition import ElementProperty, OxidationStates
+from matminer.featurizers.conversions import StrToComposition, CompositionToOxidComposition
 
 try:
     import pymatgen
@@ -75,8 +82,13 @@ class BaseGenerator(BaseEstimator, TransformerMixin):
         splitdir = self._setup_savedir(generator=self, savepath=savepath)
         # Join the originally provided feature set with the new feature set
         X = pd.concat([X_orig, X], axis=1)
-        df = pd.concat([X_orig, X, y], axis=1)
-        df.to_excel(os.path.join(splitdir, 'generated_features.xlsx'), index=False)
+        df = pd.concat([X, y], axis=1)
+        try:
+            df.to_excel(os.path.join(splitdir, 'generated_features.xlsx'), index=False)
+        except ValueError:
+            print('Warning! Excel file too large to save.')
+        with open(os.path.join(splitdir, 'generated_features.pickle'), 'wb') as f:
+            pickle.dump(df, f)
         return X, y
 
     def _setup_savedir(self, generator, savepath):
@@ -520,7 +532,7 @@ class ElementalFeatureGenerator(BaseGenerator):
                     if 'Site2Site3' in self.feature_types:
                         magpiedata_dict_list_toinclude.append(magpiedata_dict_list[29])
 
-        #df = self.df # Initialize the final df as initial df then add magpie features to it
+        df = self.df # Initialize the final df as initial df then add magpie features to it
         for magpiedata_dict in magpiedata_dict_list_toinclude:
             df_magpie = pd.DataFrame.from_dict(data=magpiedata_dict, orient='index')
             # Need to reorder compositions in new dataframe to match input dataframe
@@ -529,9 +541,9 @@ class ElementalFeatureGenerator(BaseGenerator):
             df_magpie.index.name = self.composition_df.columns[0]
             df_magpie.reset_index(inplace=True)
             # Merge magpie feature dataframe with originally supplied dataframe
-            #df = DataframeUtilities().merge_dataframe_columns(dataframe1=df, dataframe2=df_magpie)
+            df = DataframeUtilities().merge_dataframe_columns(dataframe1=df, dataframe2=df_magpie)
 
-        return df_magpie
+        return df
 
     def _get_computed_magpie_features(self, composition, data_path, site_dict=None):
         magpiedata_composition_average = {}
@@ -1208,11 +1220,8 @@ class MaterialsProjectFeatureGenerator(BaseGenerator):
     def transform(self, X):
         # make materials project api call (uses internet)
         df = self.generate_materialsproject_features(X=X)
-
-        #df = df.drop(self.original_features, axis=1)
-        # delete missing values, generation makes a lot of garbage.
+        # Clean dataframe in case some values missing
         df = DataframeUtilities().clean_dataframe(df)
-        #assert self.composition_feature not in df.columns
         return df, self.y
 
     def generate_materialsproject_features(self, X):
@@ -1283,6 +1292,142 @@ class MaterialsProjectFeatureGenerator(BaseGenerator):
                     structure_data_dict_condensed[prop] = ''
 
         return structure_data_dict_condensed
+
+# TODO: finish assessing each method compatiblity
+class MatminerFeatureGenerator(BaseGenerator):
+    '''
+
+    featurizer : 'composition', 'structure'
+    presets (for composition only): 'magpie', 'deml', 'matminer', 'matscholar_el', 'megnet_el'
+
+    Available structure featurizer types for structure_feature_types:
+        matminer.featurizers.structure
+        ['BagofBonds', x
+        'BondFractions', x
+        'ChemicalOrdering', x
+        'CoulombMatrix', x
+        'DensityFeatures', x
+        'Dimensionality', x
+        'ElectronicRadialDistributionFunction', NEEDS TO BE FLATTENED
+        'EwaldEnergy', x, returns all NaN
+        'GlobalInstabilityIndex', x, returns all NaN
+        'GlobalSymmetryFeatures', x
+        'JarvisCFID', x
+        'MaximumPackingEfficiency', x
+        'MinimumRelativeDistances', x
+        'OrbitalFieldMatrix', x
+        'PartialRadialDistributionFunction', x
+        'RadialDistributionFunction', NEEDS TO BE FLATTENED
+        'SineCoulombMatrix', x
+        'SiteStatsFingerprint', x
+        'StructuralComplexity', x
+        'StructuralHeterogeneity', x
+        'XRDPowderPattern'] x
+
+        matminer.featurizers.site
+        ['AGNIFingerprints',
+        'AngularFourierSeries',
+        'AseAtomsAdaptor',
+        'AverageBondAngle',
+        'AverageBondLength',
+        'BondOrientationalParameter',
+        'ChemEnvSiteFingerprint',
+        'ChemicalSRO',
+        'ConvexHull',
+        'CoordinationNumber',
+        'CrystalNN',
+        'CrystalNNFingerprint',
+        'Element',
+        'EwaldSiteEnergy',
+        'EwaldSummation',
+        'Gaussian',
+        'GaussianSymmFunc',
+        'GeneralizedRadialDistributionFunction',
+        'Histogram',
+        'IntersticeDistribution',
+        'LocalGeometryFinder',
+        'LocalPropertyDifference',
+        'LocalStructOrderParams',
+        'MagpieData',
+        'MultiWeightsChemenvStrategy',
+        'OPSiteFingerprint',
+        'SOAP',
+        'SimplestChemenvStrategy',
+        'SiteElementalProperty',
+        'VoronoiFingerprint',
+        'VoronoiNN']
+
+
+    '''
+    def __init__(self, featurize_df, featurizer, composition_feature_types=['magpie', 'deml', 'matminer'],
+                 structure_feature_type = 'CoulombMatrix', remove_constant_columns=False,
+                 **kwargs):
+        super(MatminerFeatureGenerator, self).__init__()
+        self.featurize_df = featurize_df
+        self.featurizer = featurizer
+        self.composition_feature_types = composition_feature_types
+        self.structure_feature_type = structure_feature_type
+        self.remove_constant_columns = remove_constant_columns
+        if self.featurizer == 'structure':
+            try:
+                self.featurizer = getattr(matminer.featurizers.structure, self.structure_feature_type)(**kwargs)
+            except:
+                self.featurizer = getattr(matminer.featurizers.site, self.structure_feature_type)(**kwargs)
+            if self.featurizer.__class__.__name__ == 'SiteStatsFingerprint':
+                site_featurizer = getattr(matminer.featurizers.site, kwargs['site_featurizer'])()
+                self.featurizer = matminer.featurizers.structure.SiteStatsFingerprint(site_featurizer=site_featurizer)
+        return
+
+    def fit(self, X, y=None):
+        self.original_features = X.columns
+        self.y = y
+        return self
+
+    def transform(self, X):
+        df = self.generate_matminer_features(X=X)
+        # Clean dataframe in case some values missing
+        #df = DataframeUtilities().clean_dataframe(df)
+        if self.remove_constant_columns is True:
+            cols = [col for col in df.columns if col != self.featurize_df.columns.tolist()[0]]
+            df = DataframeUtilities().remove_constant_columns(dataframe=df[cols])
+        return df, self.y
+
+    def generate_matminer_features(self, X):
+        # Get the featurizer object type specified by featurizer string
+        if type(self.featurize_df) == pd.Series:
+            self.featurize_df = pd.DataFrame(self.featurize_df)
+        df_col = self.featurize_df.columns.tolist()[0]
+        df = copy(self.featurize_df)
+        if self.featurizer == 'composition':
+            # Change composition strings to pymatgen Composition objects
+            df = StrToComposition().featurize_dataframe(df, df_col)
+            df = CompositionToOxidComposition().featurize_dataframe(df, "composition")
+            featurizers = [ElementProperty.from_preset(preset_name=composition_feature_type) for composition_feature_type in self.composition_feature_types]
+            featurizers.append(OxidationStates())
+            for featurizer in featurizers:
+                if featurizer.__class__.__name__ == 'OxidationStates':
+                    df = featurizer.featurize_dataframe(df, col_id='composition_oxid')
+                else:
+                    df = featurizer.featurize_dataframe(df, col_id='composition')
+        else:
+        #elif self.featurizer == 'structure':
+            #try:
+            #    featurizer = getattr(matminer.featurizers.structure, self.structure_feature_type)(self.kwargs)
+            #except:
+            #    featurizer = getattr(matminer.featurizers.site, self.structure_feature_type)(self.kwargs)
+            #if len(self.structure_feature_params.keys()) == 0:
+            #    # Just use default params
+            #    featurizer_instance = featurizer(self.kwargs)
+            #else:
+            #featurizer_instance = featurizer(self.args)
+            #print('HERE')
+            #print(featurizer)
+            if self.featurizer.__class__.__name__ in ['BagofBonds', 'BondFractions', 'CoulombMatrix', 'SineCoulombMatrix',
+                                        'PartialRadialDistributionFunction']:
+                self.featurizer.fit(X=df[df_col])
+
+            df = self.featurizer.featurize_dataframe(df=df, col_id=df_col, ignore_errors=True, return_errors=False)
+        return df
 
 class DataframeUtilities(object):
     """
