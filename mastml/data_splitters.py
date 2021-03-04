@@ -366,6 +366,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                     y_leaveout_all = self._collect_data(filename='y_leaveout', savepath=splitdir)
                     y_pred_leaveout_all = self._collect_data(filename='y_pred_leaveout', savepath=splitdir)
                     residuals_leaveout_all = self._collect_data(filename='residuals_leaveout', savepath=splitdir)
+                    self._save_split_data(df=residuals_leaveout_all, filename='residuals_leaveout', savepath=splitdir, columns='residuals')
 
                     # Remake the Series so that indices are sequential (needed for math)
                     y_leaveout_all = pd.Series(np.array(y_leaveout_all))
@@ -375,6 +376,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                         model_errors_leaveout_all = self._collect_data(filename='model_errors_leaveout', savepath=splitdir)
                         model_errors_leaveout_all_calibrated = self._collect_data(filename='model_errors_leaveout_calibrated', savepath=splitdir)
                         self._save_split_data(df=model_errors_leaveout_all, filename='model_errors_leaveout', savepath=splitdir, columns='model_errors')
+                        self._save_split_data(df=model_errors_leaveout_all_calibrated, filename='model_errors_leaveout_calibrated', savepath=splitdir, columns='model_errors')
                     else:
                         model_errors_leaveout_all = None
                         model_errors_leaveout_all_calibrated = None
