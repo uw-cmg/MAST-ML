@@ -150,7 +150,6 @@ class BaseSplitter(ms.BaseCrossValidator):
 
         self.splitdirs = list()
         for model in models:
-
             for selector in selectors:
                 splitdir = self._setup_savedir(model=model, selector=selector, savepath=savepath)
                 self.splitdirs.append(splitdir)
@@ -552,10 +551,9 @@ class LeaveOutTwinCV(BaseSplitter):
 
     Args:
         threshold: (int), the threshold at which two data points are considered twins
-        cv: A scikit-learn cross validation generator object to be used to create split
         ord: {non-zero int, inf, -inf}, optional Order of the norm (see numpy.linalg.norm). The default is None. Must be able to calculate norm for vector, not matrix.
-        move_twins_to_test: (boolean), true if the twins should be allowed in test set but removed from the training sets, false if twins should just be removed altogether. Default True.
         auto_threshold: (boolean), true if threshold should be automatically increased until at least one twin is removed. Default True.
+        ceiling: (float), fraction of total data to find as twins
 
     Methods:
         get_n_splits: method to calculate the number of splits to perform across all splitters
@@ -579,26 +577,40 @@ class LeaveOutTwinCV(BaseSplitter):
                 (numpy array), array of train and test indices
     """
 
-    def __init__(self, threshold=0, ord=None, debug=False, move_twins_to_test=True, auto_threshold=True):
+    def __init__(self, threshold=0, ord=None, debug=False, auto_threshold=True, ceiling=0):
+        params = locals()
         self.threshold = threshold
         self.splitter = self.__class__.__name__
         self.debug = debug
         self.ord = ord
-        self.move_twins_to_test = move_twins_to_test
         self.auto_threshold = auto_threshold
+        self.ceiling = ceiling
+        if self.debug:
+            # print(f"threshold\t{threshold}\ndebug\t{debug}\nord\t{ord}\nauto_threshold\t{auto_threshold}\nceiling\t{ceiling}")
+            for k, v in params.items():
+                print(f"{k}\t\t{v}")
 
     def get_n_splits(self, X=None, y=None, groups=None):
-        return 1
+        actual_splits = self.split(X, y, groups)
+        return len(actual_splits)
 
     def split(self, X, y, X_noinput=None, groups=None):
         X = np.array(X)
         y = np.array(y)
         origIdx = set(np.arange(X.shape[0]))
 
+        # if self.debug:
+        #     print(origIdx)
+
         twinIdx = set()
 
+        l = len(X)
+        n = max(int(self.ceiling * l), 2)
+
+        autothreshold_num_twins = []
+
         # compute all twins
-        while (len(twinIdx) == 0):
+        while (len(twinIdx) < n):
             for i, a in enumerate(X):
                 for j, b in enumerate(X):
                     if (i != j and j > i):
@@ -611,9 +623,27 @@ class LeaveOutTwinCV(BaseSplitter):
             # update threshold if needed
             if (not self.auto_threshold):
                 break
+            autothreshold_num_twins.append([self.threshold, len(twinIdx)])
             if self.threshold <= 0:
                 self.threshold = 0.1
             self.threshold *= 1.1
+            # if self.debug:
+            #     print(self.threshold)
+
+        # Want to store information: (distance, number of twins, metric used)
+        # pd.DataFrame(data=ntwins_at_threshold)
+        # self._save_split_data(df=X_train, filename='autothreshold_num_twins', savepath=splitpath, columns=X_train.columns.values)
+        # df.to_excel(os.path.join(savepath, filename)+'.xlsx', index=False)
+        if self.debug:
+            print("Thresholds / Number of Twins")
+            for th, num in autothreshold_num_twins:
+                print(f"{th}\t{num}")
+
+        # if not self.savepath:
+        #     self.savepath = os.getcwd()
+        # autothreshold_num_twins = pd.DataFrame(data=autothreshold_num_twins, columns=["Threshold", "n_twins"])
+        # filename = "autothreshold_num_twins"
+        # autothreshold_num_twins.to_excel(os.path.join(self.savepath, filename)+'.xlsx', index=False)
 
         # remove twins from original indices
         twinIdx = list(twinIdx)
@@ -622,10 +652,15 @@ class LeaveOutTwinCV(BaseSplitter):
                 origIdx.remove(t)
         origIdx = list(origIdx)
 
-        if self.move_twins_to_test:
-            return [[origIdx, twinIdx]]
-        else:
-            return [[origIdx, origIdx]]
+        if self.debug:
+            print("Non-Twins / Twins")
+            print(origIdx)
+            print(twinIdx)
+
+        splits = []
+        splits.append([origIdx, twinIdx])
+        splits.append([twinIdx, origIdx])
+        return splits
 
 
 class Bootstrap(BaseSplitter):
