@@ -51,10 +51,9 @@ class SklearnDatasets():
         load_breast_cancer: Loads the breast cancer data set (classification)
 
     """
-    def __init__(self, return_X_y=True, as_frame=False, n_class=None):
+    def __init__(self, return_X_y=True, as_frame=False):
         self.return_X_y = return_X_y
         self.as_frame = as_frame
-        self.n_class = n_class
 
     def load_boston(self):
         if self.as_frame:
@@ -70,10 +69,8 @@ class SklearnDatasets():
     def load_diabetes(self):
         return sklearn.datasets.load_diabetes(return_X_y=self.return_X_y, as_frame=self.as_frame)
 
-    def load_digits(self):
-        if self.n_class:
-            return sklearn.datasets.load_digits(self.n_class, self.return_X_y, self.as_frame)
-        return sklearn.datasets.load_digits(n_class=10, return_X_y=self.return_X_y, as_frame=self.as_frame)
+    def load_digits(self, n_class):
+        return sklearn.datasets.load_digits(self.return_X_y, self.as_frame)
 
     def load_linnerud(self):
         return sklearn.datasets.load_linnerud(return_X_y=self.return_X_y, as_frame=self.as_frame)
@@ -83,6 +80,13 @@ class SklearnDatasets():
 
     def load_breast_cancer(self):
         return sklearn.datasets.load_breast_cancer(return_X_y=self.return_X_y, as_frame=self.as_frame)
+
+    def load_friedman(self, n_samples=100, n_features=10, noise=0.0):
+        X, y = sklearn.datasets.make_friedman1(n_samples=n_samples, n_features=n_features, noise=noise)
+        if self.as_frame:
+            return pd.DataFrame(X, columns=["x"+str(i) for i in range(n_features)]), pd.DataFrame(y, columns=['target'])
+        else:
+            return X, y
 
 class LocalDatasets():
     """
