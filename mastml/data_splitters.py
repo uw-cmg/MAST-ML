@@ -201,7 +201,8 @@ class BaseSplitter(ms.BaseCrossValidator):
                 leaveout_inds_orig = leaveout_inds
                 leaveout_inds = [i for i in test_inds]
                 if len(leaveout_inds_orig) > 0:
-                    leaveout_inds.append(i for i in leaveout_inds_orig)
+                    for i in leaveout_inds_orig:
+                        leaveout_inds.append(i)
 
         if type(models) == list:
             pass
