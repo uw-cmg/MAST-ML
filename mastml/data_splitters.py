@@ -316,6 +316,26 @@ class BaseSplitter(ms.BaseCrossValidator):
                         df_stats_leaveout = pd.DataFrame().from_records([stats_dict_leaveout])
                         df_stats_leaveout.to_excel(os.path.join(splitouterpath, 'leaveout_stats_summary.xlsx'), index=False)
 
+                        # At level of splitouterpath, do analysis over all splits (e.g. parity plot over all splits)
+                        y_test_all = self._collect_data(filename='y_test', savepath=splitouterpath)
+                        y_train_all = self._collect_data(filename='y_train', savepath=splitouterpath)
+                        y_pred_all = self._collect_data(filename='y_pred', savepath=splitouterpath)
+                        y_pred_train_all = self._collect_data(filename='y_pred_train', savepath=splitouterpath)
+                        residuals_test_all = self._collect_data(filename='residuals_test', savepath=splitouterpath)
+                        residuals_train_all = self._collect_data(filename='residuals_train', savepath=splitouterpath)
+                        X_train_all = self._collect_df_data(filename='X_train', savepath=splitouterpath)
+                        X_test_all = self._collect_df_data(filename='X_test', savepath=splitouterpath)
+
+                        # Save the data gathered over all the splits
+                        self._save_split_data(df=X_train_all, filename='X_train', savepath=splitouterpath, columns=X_train_all.columns.tolist())
+                        self._save_split_data(df=X_test_all, filename='X_test', savepath=splitouterpath, columns=X_test_all.columns.tolist())
+                        self._save_split_data(df=y_test_all, filename='y_test', savepath=splitouterpath, columns='y_test')
+                        self._save_split_data(df=y_train_all, filename='y_train', savepath=splitouterpath, columns='y_train')
+                        self._save_split_data(df=y_pred_all, filename='y_pred', savepath=splitouterpath, columns='y_pred')
+                        self._save_split_data(df=y_pred_train_all, filename='y_pred_train', savepath=splitouterpath, columns='y_pred_train')
+                        self._save_split_data(df=residuals_test_all, filename='residuals_test', savepath=splitouterpath, columns='residuals')
+                        self._save_split_data(df=residuals_train_all, filename='residuals_train', savepath=splitouterpath, columns='residuals')
+
                         if has_model_errors is True:
                             model_errors_leaveout = ErrorUtils()._get_model_errors(model=best_model,
                                                                                     X=X_leaveout_preprocessed,
@@ -363,11 +383,31 @@ class BaseSplitter(ms.BaseCrossValidator):
                                        recalibrate_errors=recalibrate_errors,
                                        model_errors_cal=model_errors_leaveout_cal)
 
-                    # At level of splitdir, do analysis over all splits (e.g. parity plot over all splits)
+                    # At level of splitdir, collect and save all leaveout data
                     y_leaveout_all = self._collect_data(filename='y_leaveout', savepath=splitdir)
                     y_pred_leaveout_all = self._collect_data(filename='y_pred_leaveout', savepath=splitdir)
                     residuals_leaveout_all = self._collect_data(filename='residuals_leaveout', savepath=splitdir)
                     self._save_split_data(df=residuals_leaveout_all, filename='residuals_leaveout', savepath=splitdir, columns='residuals')
+                    self._save_split_data(df=y_leaveout_all, filename='y_leaveout', savepath=splitdir, columns='y_leaveout')
+                    self._save_split_data(df=y_pred_leaveout_all, filename='y_pred_leaveout', savepath=splitdir, columns='y_pred_leaveout')
+
+                    # At level of splitodir, collect and save all train/test data
+                    y_test_all = self._collect_data(filename='y_test', savepath=splitdir)
+                    y_train_all = self._collect_data(filename='y_train', savepath=splitdir)
+                    y_pred_all = self._collect_data(filename='y_pred', savepath=splitdir)
+                    y_pred_train_all = self._collect_data(filename='y_pred_train', savepath=splitdir)
+                    residuals_test_all = self._collect_data(filename='residuals_test', savepath=splitdir)
+                    residuals_train_all = self._collect_data(filename='residuals_train', savepath=splitdir)
+                    X_train_all = self._collect_df_data(filename='X_train', savepath=splitdir)
+                    X_test_all = self._collect_df_data(filename='X_test', savepath=splitdir)
+                    self._save_split_data(df=X_train_all, filename='X_train', savepath=splitdir, columns=X_train_all.columns.tolist())
+                    self._save_split_data(df=X_test_all, filename='X_test', savepath=splitdir, columns=X_test_all.columns.tolist())
+                    self._save_split_data(df=y_test_all, filename='y_test', savepath=splitdir, columns='y_test')
+                    self._save_split_data(df=y_train_all, filename='y_train', savepath=splitdir,  columns='y_train')
+                    self._save_split_data(df=y_pred_all, filename='y_pred', savepath=splitdir, columns='y_pred')
+                    self._save_split_data(df=y_pred_train_all, filename='y_pred_train', savepath=splitdir, columns='y_pred_train')
+                    self._save_split_data(df=residuals_test_all, filename='residuals_test', savepath=splitdir, columns='residuals')
+                    self._save_split_data(df=residuals_train_all, filename='residuals_train', savepath=splitdir, columns='residuals')
 
                     # Remake the Series so that indices are sequential (needed for math)
                     y_leaveout_all = pd.Series(np.array(y_leaveout_all))
@@ -375,12 +415,14 @@ class BaseSplitter(ms.BaseCrossValidator):
 
                     if has_model_errors is True:
                         model_errors_leaveout_all = self._collect_data(filename='model_errors_leaveout', savepath=splitdir)
-                        model_errors_leaveout_all_calibrated = self._collect_data(filename='model_errors_leaveout_calibrated', savepath=splitdir)
                         self._save_split_data(df=model_errors_leaveout_all, filename='model_errors_leaveout', savepath=splitdir, columns='model_errors')
-                        self._save_split_data(df=model_errors_leaveout_all_calibrated, filename='model_errors_leaveout_calibrated', savepath=splitdir, columns='model_errors')
+                        if recalibrate_errors is True:
+                            model_errors_leaveout_all_calibrated = self._collect_data(filename='model_errors_leaveout_calibrated', savepath=splitdir)
+                            self._save_split_data(df=model_errors_leaveout_all_calibrated, filename='model_errors_leaveout_calibrated', savepath=splitdir, columns='model_errors')
+                        else:
+                            model_errors_leaveout_all_calibrated = None
                     else:
                         model_errors_leaveout_all = None
-                        model_errors_leaveout_all_calibrated = None
 
                     # Gather the recalibration dicts from each split set and save average and stdev of recalibrations
                     if has_model_errors is True and recalibrate_errors is True:
@@ -476,9 +518,19 @@ class BaseSplitter(ms.BaseCrossValidator):
         y_train_all = self._collect_data(filename='y_train', savepath=splitdir)
         y_pred_all = self._collect_data(filename='y_pred', savepath=splitdir)
         y_pred_train_all = self._collect_data(filename='y_pred_train', savepath=splitdir)
-
         residuals_test_all = self._collect_data(filename='residuals_test', savepath=splitdir)
         residuals_train_all = self._collect_data(filename='residuals_train', savepath=splitdir)
+        X_train_all = self._collect_df_data(filename='X_train', savepath=splitdir)
+        X_test_all = self._collect_df_data(filename='X_test', savepath=splitdir)
+
+        # Save the data gathered over all the splits
+        self._save_split_data(df=X_train_all, filename='X_train', savepath=splitdir, columns=X_train_all.columns.tolist())
+        self._save_split_data(df=X_test_all, filename='X_test', savepath=splitdir, columns=X_test_all.columns.tolist())
+        self._save_split_data(df=y_test_all, filename='y_test', savepath=splitdir, columns='y_test')
+        self._save_split_data(df=y_train_all, filename='y_train', savepath=splitdir, columns='y_train')
+        self._save_split_data(df=y_pred_all, filename='y_pred', savepath=splitdir, columns='y_pred')
+        self._save_split_data(df=y_pred_train_all, filename='y_pred_train', savepath=splitdir, columns='y_pred_train')
+
         if has_model_errors is True:
             model_errors_test_all = self._collect_data(filename='model_errors_test', savepath=splitdir)
             model_errors_train_all = self._collect_data(filename='model_errors_train', savepath=splitdir)
@@ -490,7 +542,6 @@ class BaseSplitter(ms.BaseCrossValidator):
         else:
             model_errors_test_all = None
             model_errors_train_all = None
-
 
         if recalibrate_errors is True:
             model_errors_test_all_cal, a, b = ErrorUtils()._recalibrate_errors(model_errors=model_errors_test_all, residuals=residuals_test_all)
@@ -698,8 +749,16 @@ class BaseSplitter(ms.BaseCrossValidator):
             col_name = filename
         for d in dirs:
             data.append(np.array(pd.read_excel(os.path.join(savepath, os.path.join(d, filename)+'.xlsx'))[col_name]))
-        data = pd.Series(np.concatenate(data).ravel())
-        return data
+        df = pd.Series(np.concatenate(data).ravel())
+        return df
+
+    def _collect_df_data(self, filename, savepath):
+        dirs = [d for d in os.listdir(savepath) if 'split' in d]
+        data = list()
+        for d in dirs:
+            data.append(pd.read_excel(os.path.join(savepath, os.path.join(d, filename)+'.xlsx')))
+        df = pd.concat(data)
+        return df
 
     def _get_best_split(self, savepath, model, preprocessor, best_run_metric):
         dirs = os.listdir(savepath)
