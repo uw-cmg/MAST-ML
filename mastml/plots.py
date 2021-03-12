@@ -74,7 +74,7 @@ class Scatter():
                 None
     """
     @classmethod
-    def plot_predicted_vs_true(cls, y_true, y_pred, savepath, file_name, data_type, x_label, metrics_list=None, groups=None, show_figure=False):
+    def plot_predicted_vs_true(cls, y_true, y_pred, savepath, data_type, x_label, metrics_list=None, show_figure=False):
         # Make the dataframe/array 1D if it isn't
         y_true = check_dimensions(y_true)
         y_pred = check_dimensions(y_pred)
@@ -92,21 +92,7 @@ class Scatter():
         minn = round(float(minn), rounder(maxx - minn))
         _set_tick_labels(ax, maxx, minn)
 
-        if groups is None:
-            ax.scatter(y_true, y_pred, c='b', edgecolor='darkblue', zorder=2, s=100, alpha=0.7)
-        else:
-            colors = ['blue', 'red', 'green', 'purple', 'orange', 'black']
-            markers = ['o', 'v', '^', 's', 'p', 'h', 'D', '*', 'X', '<', '>', 'P']
-            colorcount = markercount = 0
-            for groupcount, group in enumerate(np.unique(groups)):
-                mask = groups == group
-                ax.scatter(y_true[mask], y_pred[mask], label=group, color=colors[colorcount],
-                           marker=markers[markercount], s=100, alpha=0.7)
-                ax.legend(loc='lower right', fontsize=12)
-                colorcount += 1
-                if colorcount % len(colors) == 0:
-                    markercount += 1
-                    colorcount = 0
+        ax.scatter(y_true, y_pred, c='b', edgecolor='darkblue', zorder=2, s=100, alpha=0.7)
 
         # draw dashed horizontal line
         ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
@@ -121,12 +107,7 @@ class Scatter():
 
         plot_stats(fig, stats_dict, x_align=0.65, y_align=0.90, fontsize=12)
 
-        # Save data to excel file and image
-        df = pd.DataFrame().from_dict(data={"y_true": y_true, "y_pred": y_pred})
-        #df_stats = pd.DataFrame().from_records([stats_dict])
-        #df.to_excel(os.path.join(savepath, file_name + '.xlsx'))
-        #df_stats.to_excel(os.path.join(savepath, data_type + '_stats_summary.xlsx'), index=False)
-        fig.savefig(os.path.join(savepath, file_name + '.png'), dpi=DPI, bbox_inches='tight')
+        fig.savefig(os.path.join(savepath, 'parity_plot_'+str(data_type) + '.png'), dpi=DPI, bbox_inches='tight')
         if show_figure == True:
             plt.show()
         else:
@@ -382,36 +363,31 @@ class Scatter():
         # set tick labels
         _set_tick_labels(ax, max1, min1)
 
-        if groups is None:
-            ax.errorbar(df_avg.index.values.tolist(), df_avg['all_y_pred'], yerr=df_std['all_y_pred'], fmt='o', markerfacecolor='blue', markeredgecolor='black',
-                        markersize=10, alpha=0.7, capsize=3)
-        else:
-            colors = ['blue', 'red', 'green', 'purple', 'orange', 'black']
-            markers = ['o', 'v', '^', 's', 'p', 'h', 'D', '*', 'X', '<', '>', 'P']
-            colorcount = markercount = 0
-            handles = dict()
-            unique_groups = np.unique(groups)
-            for groupcount, group in enumerate(unique_groups):
-                mask = groups == group
-                handles[group] = ax.errorbar(df_avg.index.values.tolist()[mask], df_avg['all_y_pred'][mask], yerr=df_std['all_y_pred'][mask],
-                                             marker=markers[markercount], markerfacecolor=colors[colorcount],
-                                             markeredgecolor=colors[colorcount], ecolor=colors[colorcount],
-                                             markersize=10, alpha=0.7, capsize=3, fmt='o')
-                colorcount += 1
-                if colorcount % len(colors) == 0:
-                    markercount += 1
-                    colorcount = 0
-            ax.legend(handles.values(), handles.keys(), loc='best', fontsize=10)
+        ax.errorbar(df_avg.index.values.tolist(), df_avg['all_y_pred'], yerr=df_std['all_y_pred'], fmt='o',
+                    markerfacecolor='blue', markeredgecolor='black',
+                    markersize=10, alpha=0.7, capsize=3)
 
-        avg_stats = Metrics(metrics_list=metrics_list).evaluate(y_true=df_avg.index.values.tolist(), y_pred=df_avg['all_y_pred'])
+        stats_files_dict = dict()
+        for splitdir in splitdirs:
+            stats_files_dict[splitdir] = pd.read_excel(os.path.join(os.path.join(savepath, splitdir), data_type + '_stats_summary.xlsx')).to_dict('records')[0]
+            metrics_list = list(stats_files_dict[splitdir].keys())
+
+        avg_stats = dict()
+        for metric in metrics_list:
+            stats = list()
+            for splitdir in splitdirs:
+                stats.append(stats_files_dict[splitdir][metric])
+
+            avg_stats[metric] = (np.mean(stats), np.std(stats))
+
         plot_stats(fig, avg_stats, x_align=x_align, y_align=0.90)
 
-        fig.savefig(os.path.join(savepath, 'parity_plot_allsplits_average.png'), dpi=DPI, bbox_inches='tight')
+        fig.savefig(os.path.join(savepath, 'parity_plot_allsplits_average_'+str(data_type)+'.png'), dpi=DPI, bbox_inches='tight')
 
         df = pd.DataFrame({'y true': df_avg.index.values.tolist(),
                            'average predicted values': df_avg['all_y_pred'],
                            'error bar values': df_std['all_y_pred']})
-        df.to_excel(os.path.join(savepath, 'parity_plot_allsplits_average.xlsx'))
+        df.to_excel(os.path.join(savepath, 'parity_plot_allsplits_average_'+str(data_type)+'.xlsx'))
         if show_figure == True:
             plt.show()
         else:
@@ -1150,8 +1126,8 @@ class Line():
 
 ### Helpers:
 
-def make_plots(plots, y_true, y_pred, dataset_stdev, metrics, model, residuals, model_errors, has_model_errors,
-               savepath, data_type, show_figure=False, recalibrate_errors=False, model_errors_cal=None):
+def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, residuals, model_errors, has_model_errors,
+               savepath, data_type, show_figure=False, recalibrate_errors=False, model_errors_cal=None, splits_summary=False):
     if 'Histogram' in plots:
         Histogram.plot_residuals_histogram(y_true=y_true,
                                            y_pred=y_pred,
@@ -1162,11 +1138,31 @@ def make_plots(plots, y_true, y_pred, dataset_stdev, metrics, model, residuals, 
         Scatter.plot_predicted_vs_true(y_true=y_true,
                                        y_pred=y_pred,
                                        savepath=savepath,
-                                       file_name='parity_plot_'+str(data_type),
                                        x_label='values',
                                        data_type=data_type,
                                        metrics_list=metrics,
                                        show_figure=show_figure)
+        if splits_summary is True:
+            Scatter.plot_best_worst_split(savepath=savepath,
+                                      data_type=data_type,
+                                      x_label='values',
+                                      metrics_list=metrics,
+                                      show_figure=show_figure)
+            Scatter.plot_best_worst_per_point(savepath=savepath,
+                                      data_type=data_type,
+                                      x_label='values',
+                                      metrics_list=metrics,
+                                      show_figure=show_figure)
+            Scatter.plot_predicted_vs_true_bars(savepath=savepath,
+                                      data_type=data_type,
+                                      x_label='values',
+                                      metrics_list=metrics,
+                                      groups=groups,
+                                      show_figure=show_figure)
+            if groups is not None:
+                Scatter.plot_metric_vs_group(savepath=savepath,
+                                             data_type=data_type,
+                                             show_figure=show_figure)
     if 'Error' in plots:
         Error.plot_normalized_error(residuals=residuals,
                                     savepath=savepath,

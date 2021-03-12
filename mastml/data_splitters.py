@@ -371,6 +371,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                             make_plots(plots=plots,
                                        y_true=y_leaveout,
                                        y_pred=y_pred_leaveout,
+                                       groups=groups,
                                        data_type='leaveout',
                                        dataset_stdev=dataset_stdev,
                                        has_model_errors=has_model_errors,
@@ -381,7 +382,8 @@ class BaseSplitter(ms.BaseCrossValidator):
                                        savepath=splitouterpath,
                                        show_figure=False,
                                        recalibrate_errors=recalibrate_errors,
-                                       model_errors_cal=model_errors_leaveout_cal)
+                                       model_errors_cal=model_errors_leaveout_cal,
+                                       splits_summary=True)
 
                     # At level of splitdir, collect and save all leaveout data
                     y_leaveout_all = self._collect_data(filename='y_leaveout', savepath=splitdir)
@@ -437,6 +439,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                         make_plots(plots=plots,
                                    y_true=y_leaveout_all,
                                    y_pred=y_pred_leaveout_all,
+                                   groups=groups,
                                    data_type='leaveout',
                                    dataset_stdev=dataset_stdev,
                                    has_model_errors=has_model_errors,
@@ -447,7 +450,8 @@ class BaseSplitter(ms.BaseCrossValidator):
                                    savepath=splitdir,
                                    show_figure=False,
                                    recalibrate_errors=recalibrate_errors,
-                                   model_errors_cal=model_errors_leaveout_all_calibrated)
+                                   model_errors_cal=model_errors_leaveout_all_calibrated,
+                                   splits_summary=True)
 
                 else:
                     X_splits, y_splits, train_inds, test_inds = self.split_asframe(X=X, y=y, groups=groups)
@@ -490,8 +494,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             X_train = Xs[0]
             X_test = Xs[1]
             y_train = pd.Series(np.array(ys[0]).ravel(), name='y_train')
-            y_test = pd.Series(np.array(ys[1]).ravel(),
-                               name='y_test')  # Make it so the y_test and y_pred have same indices so can be subtracted to get residual
+            y_test = pd.Series(np.array(ys[1]).ravel(), name='y_test')  # Make it so the y_test and y_pred have same indices so can be subtracted to get residual
 
             if X_extra is not None:
                 X_extra_train = X_extra.loc[train_ind, :]
@@ -573,6 +576,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             make_plots(plots=plots,
                        y_true=y_test_all,
                        y_pred=y_pred_all,
+                       groups=groups,
                        data_type='test',
                        dataset_stdev=dataset_stdev,
                        has_model_errors=has_model_errors,
@@ -583,7 +587,8 @@ class BaseSplitter(ms.BaseCrossValidator):
                        savepath=splitdir,
                        show_figure=False,
                        recalibrate_errors=recalibrate_errors,
-                       model_errors_cal=model_errors_test_all_cal)
+                       model_errors_cal=model_errors_test_all_cal,
+                       splits_summary=True)
 
         # Make all train data plots
         dataset_stdev = np.std(np.unique(y_train_all))
@@ -591,6 +596,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             make_plots(plots=plots,
                        y_true=y_train_all,
                        y_pred=y_pred_train_all,
+                       groups=groups,
                        data_type='train',
                        dataset_stdev=dataset_stdev,
                        has_model_errors=has_model_errors,
@@ -601,10 +607,11 @@ class BaseSplitter(ms.BaseCrossValidator):
                        savepath=splitdir,
                        show_figure=False,
                        recalibrate_errors=recalibrate_errors,
-                       model_errors_cal=model_errors_train_all_cal)
+                       model_errors_cal=model_errors_train_all_cal,
+                       splits_summary=True)
 
     def _evaluate_split(self, X_train, X_test, y_train, y_test, model, preprocessor, selector, hyperopt,
-                        metrics, plots, group, splitpath, has_model_errors, X_extra_train, X_extra_test,
+                        metrics, plots, groups, splitpath, has_model_errors, X_extra_train, X_extra_test,
                         error_method, verbosity):
 
         X_train_orig = copy.deepcopy(X_train)
@@ -679,6 +686,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             make_plots(plots=plots,
                        y_true=y_test,
                        y_pred=y_pred,
+                       groups=groups,
                        data_type='test',
                        dataset_stdev=dataset_stdev,
                        has_model_errors=has_model_errors,
@@ -688,7 +696,8 @@ class BaseSplitter(ms.BaseCrossValidator):
                        residuals=residuals_test,
                        savepath=splitpath,
                        show_figure=False,
-                       recalibrate_errors=False)
+                       recalibrate_errors=False,
+                       splits_summary=False)
 
         # Make all train data plots
         dataset_stdev = np.std(y_train)
@@ -696,6 +705,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             make_plots(plots=plots,
                        y_true=y_train,
                        y_pred=y_pred_train,
+                       groups=groups,
                        data_type='train',
                        dataset_stdev=dataset_stdev,
                        has_model_errors=has_model_errors,
@@ -705,12 +715,16 @@ class BaseSplitter(ms.BaseCrossValidator):
                        residuals=residuals_train,
                        savepath=splitpath,
                        show_figure=False,
-                       recalibrate_errors=False)
+                       recalibrate_errors=False,
+                       splits_summary=False)
 
-        # Write the test group to a text file
-        if group is not None:
+        # Write the test group to a text file,
+        if groups is not None:
             with open(os.path.join(splitpath,'test_group.txt'), 'w') as f:
-                f.write(str(group))
+                f.write(str(groups))
+        #    with open(os.path.join(splitpath,'train_groups.txt'), 'w') as f:
+        #        for group in train_groups:
+        #            f.write(str(group)+"\n")
 
         # Save the fitted model, will be needed for DLHub upload later on
         joblib.dump(model, os.path.join(splitpath, str(model.model.__class__.__name__) + ".pkl"))
