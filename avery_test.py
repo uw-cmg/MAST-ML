@@ -12,11 +12,19 @@ import sklearn
 # SETUP
 target = 'E_regression.1'
 extra_columns = ['E_regression', 'Material compositions 1', 'Material compositions 2', 'Hop activation barrier']
-d = LocalDatasets(file_path='figshare_7418492/All_Model_Data_missing.xlsx',
+d = LocalDatasets(file_path='MAST-ML/figshare_7418492/All_Model_Data.xlsx',
                   target=target,
                   extra_columns=extra_columns,
+                  group_column='Material compositions 1',
+                  testdata_columns=None,
                   as_frame=True)
-X, y = d.load_data()
+data_dict = d.load_data()
+
+X = data_dict['X']
+y = data_dict['y']
+X_extra = data_dict['X_extra']
+groups = data_dict['groups']
+X_testdata = data_dict['X_testdata']
 
 mastml = Mastml(savepath='results/test_output')
 savepath = mastml.get_savepath

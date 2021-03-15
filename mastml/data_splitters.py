@@ -306,7 +306,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                         # Load in the best model, preprocessor and evaluate the left-out data stats
                         best_model = joblib.load(best_split_dict['model'])
                         preprocessor = joblib.load(best_split_dict['preprocessor'])
-                        X_train_bestmodel = preprocessor.transform(pd.read_excel(best_split_dict['X_train']))  # Need to preprocess the Xtrain data
+                        X_train_bestmodel = preprocessor.transform(pd.read_excel(best_split_dict['X_train'], engine='openpyxl'))  # Need to preprocess the Xtrain data
 
                         with open(os.path.join(splitouterpath, 'selected_features.txt')) as f:
                             selected_features = [line.rstrip() for line in f]
@@ -764,7 +764,7 @@ class BaseSplitter(ms.BaseCrossValidator):
         else:
             col_name = filename
         for d in dirs:
-            data.append(np.array(pd.read_excel(os.path.join(savepath, os.path.join(d, filename)+'.xlsx'))[col_name]))
+            data.append(np.array(pd.read_excel(os.path.join(savepath, os.path.join(d, filename)+'.xlsx'), engine='openpyxl')[col_name]))
         df = pd.Series(np.concatenate(data).ravel())
         return df
 
@@ -772,7 +772,7 @@ class BaseSplitter(ms.BaseCrossValidator):
         dirs = [d for d in os.listdir(savepath) if 'split' in d]
         data = list()
         for d in dirs:
-            data.append(pd.read_excel(os.path.join(savepath, os.path.join(d, filename)+'.xlsx')))
+            data.append(pd.read_excel(os.path.join(savepath, os.path.join(d, filename)+'.xlsx'), engine='openpyxl'))
         df = pd.concat(data)
         return df
 
@@ -782,7 +782,7 @@ class BaseSplitter(ms.BaseCrossValidator):
 
         stats_files_dict = dict()
         for splitdir in splitdirs:
-            stats_files_dict[os.path.join(savepath, splitdir)] = pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'test_stats_summary.xlsx')).to_dict('records')[0]
+            stats_files_dict[os.path.join(savepath, splitdir)] = pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'test_stats_summary.xlsx'), engine='openpyxl').to_dict('records')[0]
 
         # Find best/worst splits based on RMSE value
         rmse_best = 10**20
@@ -815,7 +815,7 @@ class BaseSplitter(ms.BaseCrossValidator):
         recalibrate_b_vals = list()
         for splitdir in splitdirs:
             recalibrate_dict = pd.read_excel(os.path.join(os.path.join(savepath, splitdir),
-                                                          'recalibration_parameters_'+str(data_type)+'.xlsx')).to_dict('records')[0]
+                                                          'recalibration_parameters_'+str(data_type)+'.xlsx'), engine='openpyxl').to_dict('records')[0]
             recalibrate_a_vals.append(recalibrate_dict['slope (a)'])
             recalibrate_b_vals.append(recalibrate_dict['intercept (b)'])
         recalibrate_avg_dict = {'a': np.mean(recalibrate_a_vals), 'b': np.mean(recalibrate_b_vals)}
@@ -823,7 +823,7 @@ class BaseSplitter(ms.BaseCrossValidator):
         return recalibrate_avg_dict, recalibrate_stdev_dict
 
     def _get_recalibration_params(self, savepath, data_type):
-        recalibrate_dict = pd.read_excel(os.path.join(savepath, 'recalibration_parameters_'+str(data_type)+'.xlsx')).to_dict('records')[0]
+        recalibrate_dict = pd.read_excel(os.path.join(savepath, 'recalibration_parameters_'+str(data_type)+'.xlsx'), engine='openpyxl').to_dict('records')[0]
         recalibrate_dict_ = dict()
         recalibrate_dict_['a'] = recalibrate_dict['slope (a)']
         recalibrate_dict_['b'] = recalibrate_dict['intercept (b)']
