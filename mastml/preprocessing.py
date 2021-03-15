@@ -63,25 +63,37 @@ class BasePreprocessor(BaseEstimator, TransformerMixin):
         self.preprocessor = preprocessor
         self.as_frame = as_frame
 
+    def fit(self, X):
+        return self.preprocessor.fit(X)
+
+    def transform(self, X):
+        if self.as_frame:
+            return pd.DataFrame(self.preprocessor.transform(X=X), columns=X.columns, index=X.index)
+        return self.preprocessor.transform(X=X)
+
+    def inverse_transform(self, X):
+        return pd.DataFrame(self.preprocessor.inverse_transform(X), columns=X.columns, index=X.index)
+
     def fit_transform(self, X, y=None, **fit_params):
         if self.as_frame:
             return pd.DataFrame(self.preprocessor.fit_transform(X=X), columns=X.columns, index=X.index)
         return self.preprocessor.fit_transform(X=X)
 
-    def evaluate(self, X, y=None, savepath=None):
+    def evaluate(self, X, y=None, savepath=None, file_name=''):
         if not savepath:
             savepath = os.getcwd()
-        splitdir = self._setup_savedir(savepath=savepath)
-        self.splitdir = splitdir
+        #splitdir = self._setup_savedir(savepath=savepath)
+        #self.splitdir = splitdir
         if self.as_frame:
             Xnew = pd.DataFrame(self.preprocessor.fit_transform(X=X), columns=X.columns, index=X.index)
-            Xnew.to_excel(os.path.join(splitdir, 'data_preprocessed.xlsx'))
+            Xnew.to_excel(os.path.join(savepath, 'data_preprocessed_'+file_name+'.xlsx'))
         else:
             Xnew = self.preprocessor.fit_transform(X=X)
-            np.savetxt(os.path.join(splitdir, 'data_preprocessed.csv'), Xnew)
+            np.savetxt(os.path.join(savepath, 'data_preprocessed_'+file_name+'.csv'), Xnew)
 
         # Save the fitted preprocessor, will be needed for DLHub upload later on
-        joblib.dump(self.preprocessor, os.path.join(splitdir, str(self.preprocessor.__class__.__name__) + ".pkl"))
+        joblib.dump(self, os.path.join(savepath, str(self.preprocessor.__class__.__name__) + ".pkl"))
+        self.savepath = savepath
         return Xnew
 
     def help(self):
@@ -125,6 +137,30 @@ class SklearnPreprocessor(BasePreprocessor):
         super(SklearnPreprocessor, self).__init__(preprocessor=preprocessor)
         self.preprocessor = getattr(sklearn.preprocessing, preprocessor)(**kwargs)
         self.as_frame = as_frame
+
+class NoPreprocessor(BasePreprocessor):
+    '''
+    Class for having a "null" transform where the output is the same as the input. Needed by MAST-ML as a placeholder if
+    certain workflow aspects are not performed.
+
+    See BasePreprocessor for information on args and methods
+    '''
+    def __init__(self, preprocessor=None, as_frame=False):
+        super(NoPreprocessor, self).__init__(preprocessor=self)
+        self.as_frame = as_frame
+
+    def fit(self, X):
+        return X
+
+    def transform(self, X):
+        if self.as_frame:
+            return pd.DataFrame(X, columns=X.columns, index=X.index)
+        return X
+
+    def fit_transform(self, X, y=None, **fit_params):
+        if self.as_frame:
+            return pd.DataFrame(X, columns=X.columns, index=X.index)
+        return X
 
 class MeanStdevScaler(BasePreprocessor):
     """

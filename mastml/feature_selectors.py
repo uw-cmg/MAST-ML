@@ -5,168 +5,177 @@ selectors. More information on scikit-learn feature selectors is available at:
 http://scikit-learn.org/stable/modules/classes.html#module-sklearn.feature_selection
 """
 
-from functools import wraps
 import warnings
 import numpy as np
 import pandas as pd
 import os
 import copy
 
+import sklearn
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.decomposition import PCA
-import sklearn.feature_selection as fs
 from sklearn.model_selection import KFold
-
-from mlxtend.feature_selection import SequentialFeatureSelector
 
 from scipy.stats import pearsonr
 
 from mastml.metrics import root_mean_squared_error
 
-def dataframify_selector(transform):
-    """
-    Method which transforms output of scikit-learn feature selectors from array to dataframe. Enables preservation of column names.
+
+class BaseSelector(BaseEstimator, TransformerMixin):
+    '''
+    Base class that forms foundation of MAST-ML feature selectors
 
     Args:
 
-        transform: (function), a scikit-learn feature selector that has a transform method
-
-    Returns:
-
-        new_transform: (function), an amended version of the transform method that returns a dataframe
-
-    """
-
-    @wraps(transform)
-    def new_transform(self, df):
-        if isinstance(df, pd.DataFrame):
-            return df[df.columns[self.get_support(indices=True)]]
-        else: # just in case you try to use it with an array ;)
-            return df
-    return new_transform
-
-def dataframify_new_column_names(transform, name):
-    """
-    Method which transforms output of scikit-learn feature selectors to dataframe, and adds column names
-
-    Args:
-
-        transform: (function), a scikit-learn feature selector that has a transform method
-
-        name: (str), name of the feature selector
-
-    Returns:
-
-        new_transform: (function), an amended version of the transform method that returns a dataframe
-
-    """
-
-    def new_transform(self, df):
-        arr = transform(self, df.values)
-        labels = [name+str(i) for i in range(arr.shape[1])]
-        return pd.DataFrame(arr, columns=labels)
-    return new_transform
-
-def fitify_just_use_values(fit):
-    """
-    Method which enables a feature selector fit method to operate on dataframes
-
-    Args:
-
-        fit: (function), a scikit-learn feature selector object with a fit method
-
-    Returns:
-
-        new_fit: (function), an amended version of the fit method that uses dataframes as input
-
-    """
-
-    def new_fit(self, X_df, y_df):
-        return fit(self, X_df.values, y_df.values)
-    return new_fit
-
-#TODO: need to clean this up and add ScikitlearnSelector wrapper. Will also include SequentialFeatureSelector in latest sklearn version
-#TODO: update PearsonSelector and MASTMLFeatureSelector to conform to new style with evaluate() method
-
-score_func_selectors = {
-    'GenericUnivariateSelect': fs.GenericUnivariateSelect, # Univariate feature selector with configurable strategy.
-    'SelectFdr': fs.SelectFdr, # Filter: Select the p-values for an estimated false discovery rate
-    'SelectFpr': fs.SelectFpr, # Filter: Select the pvalues below alpha based on a FPR test.
-    'SelectFwe': fs.SelectFwe, # Filter: Select the p-values corresponding to Family-wise error rate
-    'SelectKBest': fs.SelectKBest, # Select features according to the k highest scores.
-    'SelectPercentile': fs.SelectPercentile, # Select features according to a percentile of the highest scores.
-}
-
-model_selectors = { # feature selectors which take a model instance as first parameter
-    'RFE': fs.RFE, # Feature ranking with recursive feature elimination.
-    'RFECV': fs.RFECV, # Feature ranking with recursive feature elimination and cross-validated selection of the best number of features.
-    'SelectFromModel': fs.SelectFromModel, # Meta-transformer for selecting features based on importance weights.
-}
-
-other_selectors = {
-    'VarianceThreshold': fs.VarianceThreshold, # Feature selector that removes all low-variance features.
-}
-
-# Union together the above dicts for the primary export:
-name_to_constructor = dict(**score_func_selectors, **model_selectors, **other_selectors)
-
-# Modify all sklearn transform methods to return dataframes:
-for constructor in name_to_constructor.values():
-    constructor.old_transform = constructor.transform
-    constructor.transform = dataframify_selector(constructor.transform)
-
-class NoSelect(BaseEstimator, TransformerMixin):
-    """
-    Class for having a "null" transform where the output is the same as the input. Needed by MAST-ML as a placeholder if
-    certain workflow aspects are not performed.
-
-    Args:
-
-        None
+        None. See individual selector types for input arguments
 
     Methods:
 
-        fit: does nothing, just returns object instance. Needed to maintain same structure as scikit-learn classes
+        fit: Does nothing, present for compatibility
 
-        Args:
+            Args:
 
-            X: (numpy array), array of X features
+                X: (dataframe), dataframe of X features
 
-        transform: passes the input back out, in this case the array of X features
+                y: (dataframe), dataframe of y data
 
-        Args:
 
-            X: (numpy array), array of X features
+            Returns:
 
-        Returns:
+                None
 
-            X: (numpy array), array of X features
+        transform: Does nothing, present for compatibility
 
-    """
+            Args:
 
+                X: (dataframe), dataframe of X features
+
+            Returns:
+
+                X: (dataframe), dataframe of X features
+
+        evaluate: runs the fit and transform functions to select features, saves selector-specific files and saves list of selected features
+
+            Args:
+
+                X: (dataframe), dataframe of X features
+
+                y: (dataframe), dataframe of y data
+
+                savepath: (str), string denoting savepath to save selected features and associated files (if applicable) to.
+
+            Returns:
+
+                X_select (dataframe), dataframe of selected X features
+
+    '''
     def __init__(self):
         pass
 
-    def fit(self, X, y=None):
+    def fit(self, X, y):
         return self
 
     def transform(self, X):
         return X
 
-    def evaluate(self, X, y=None):
+    def evaluate(self, X, y, savepath):
         self.fit(X=X, y=y)
         X_select = self.transform(X=X)
+        self.selected_features = X_select.columns.tolist()
+        with open(os.path.join(savepath, 'selected_features.txt'), 'w') as f:
+            for feature in self.selected_features:
+                f.write(str(feature)+'\n')
+        if self.__class__.__name__ == 'EnsembleModelFeatureSelector':
+            self.feature_importances_sorted.to_excel(os.path.join(savepath, 'EnsembleModelFeatureSelector_feature_importances.xlsx'))
+        if self.__class__.__name__ == 'PearsonSelector':
+            self.full_correlation_matrix.to_excel(os.path.join(savepath, 'PearsonSelector_fullcorrelationmatrix.xlsx'))
+            self.highly_correlated_features.to_excel(os.path.join(savepath, 'PearsonSelector_highlycorrelatedfeatures.xlsx'))
+            self.highly_correlated_features_flagged.to_excel(os.path.join(savepath, 'PearsonSelector_highlycorrelatedfeaturesflagged.xlsx'))
+            self.features_highly_correlated_with_target.to_excel(os.path.join(savepath, 'PearsonSelector_highlycorrelatedwithtarget.xlsx'))
+        if self.__class__.__name__ == 'MASTMLFeatureSelector':
+            self.mastml_forward_selection_df.to_excel(os.path.join(savepath, 'MASTMLFeatureSelector_featureselection_data.xlsx'))
         return X_select
 
-class EnsembleModelFeatureSelector():
+class SklearnFeatureSelector(BaseSelector):
+    '''
+    Class that wraps scikit-learn feature selection methods with some new MAST-ML functionality
+
+    Args:
+
+        selector (str) : a string denoting the name of a sklearn.feature_selection object
+
+        **kwargs: the key word arguments of the designated sklearn.feature_selection object
+
+    Methods:
+
+        fit: performs feature selection
+
+            Args:
+
+                X: (dataframe), dataframe of X features
+
+                y: (dataframe), dataframe of y data
+
+
+            Returns:
+
+                None
+
+        transform: performs the transform to generate output of only selected features
+
+            Args:
+
+                X: (dataframe), dataframe of X features
+
+            Returns:
+
+                X_select: (dataframe), dataframe of selected X features
+
+    '''
+    def __init__(self, selector, **kwargs):
+        super(SklearnFeatureSelector, self).__init__()
+        self.selector = getattr(sklearn.feature_selection, selector)(**kwargs)
+
+        #TODO: map string input of estimator (e.g. for SequentialFeatureSelector) and score_func (e.g. for SelectKBest) to be objects
+
+    def fit(self, X, y):
+        self.selector.fit(X, y)
+        return self
+
+    def transform(self, X):
+        X_select = pd.DataFrame(self.selector.transform(X))
+        original_cols = X.columns.tolist()
+        new_cols = X_select.columns.tolist()
+        new_cols_renamed = list()
+        for original_col in original_cols:
+            for new_col in new_cols:
+                # Need to compare as array because indicies are different
+                if np.array_equal(X[original_col].values, X_select[new_col].values):
+                    new_cols_renamed.append(original_col)
+
+        X_select.columns = new_cols_renamed
+        return X_select
+
+class NoSelect(BaseSelector):
+    """
+    Class for having a "null" transform where the output is the same as the input. Needed by MAST-ML as a placeholder if
+    certain workflow aspects are not performed.
+
+    See BaseSelector for information on args and methods
+
+    """
+
+    def __init__(self):
+        super(NoSelect, self).__init__()
+
+class EnsembleModelFeatureSelector(BaseSelector):
     """
     Class custom-written for MAST-ML to conduct selection of features with ensemble model feature importances
 
     Args:
 
-        model: (mastml.models object), a MAST-ML compatiable model
+        model: (mastml.models object), a MAST-ML compatable model
 
-        k_features: (int), the number of features to select
+        n_features_to_select: (int), the number of features to select
 
     Methods:
 
@@ -194,9 +203,10 @@ class EnsembleModelFeatureSelector():
                 dataframe: (dataframe), dataframe of selected X features
 
     """
-    def __init__(self, model, k_features):
+    def __init__(self, model, n_features_to_select):
+        super(EnsembleModelFeatureSelector, self).__init__()
         self.model = model
-        self.k_features = k_features
+        self.n_features_to_select = n_features_to_select
         # Check that a correct model was passed in
         self._check_model()
         self.selected_features = list()
@@ -212,26 +222,22 @@ class EnsembleModelFeatureSelector():
                 raise ValueError('Models used in EnsembleModelFeatureSelector must be one of RandomForestRegressor, ExtraTreesRegressor, GradientBoostingRegressor')
         return
 
-    def fit(self, X, y=None):
+    def fit(self, X, y):
         feature_importances = self.model.fit(X, y).feature_importances_
         feature_importance_dict = dict()
         for col, f in zip(X.columns.tolist(), feature_importances):
             feature_importance_dict[col] = f
         feature_importances_sorted = sorted(((f, col) for col, f in feature_importance_dict.items()), reverse=True)
+        self.feature_importances_sorted = pd.DataFrame(feature_importances_sorted)
         sorted_features_list = [f[1] for f in feature_importances_sorted]
-        self.selected_features = sorted_features_list[0:self.k_features]
+        self.selected_features = sorted_features_list[0:self.n_features_to_select]
         return self
 
     def transform(self, X):
         X_select = X[self.selected_features]
         return X_select
 
-    def evaluate(self, X, y=None):
-        self.fit(X=X, y=y)
-        X_select = self.transform(X=X)
-        return X_select
-
-class PearsonSelector():
+class PearsonSelector(BaseSelector):
     """
     Class custom-written for MAST-ML to conduct selection of features based on Pearson correlation coefficent between
     features and target. Can also be used for dimensionality reduction by removing redundant features highly correlated
@@ -247,7 +253,7 @@ class PearsonSelector():
 
         remove_highly_correlated_features: (bool), whether to remove features highly correlated with each other
 
-        k_features: (int), the number of features to select
+        n_features_to_select: (int), the number of features to select
 
     Methods:
 
@@ -275,14 +281,15 @@ class PearsonSelector():
                 dataframe: (dataframe), dataframe of selected X features
 
     """
-    def __init__(self, threshold_between_features, threshold_with_target, flag_highly_correlated_features, k_features):
+    def __init__(self, threshold_between_features, threshold_with_target, flag_highly_correlated_features, n_features_to_select):
+        super(PearsonSelector, self).__init__()
         self.threshold_between_features = threshold_between_features
         self.threshold_with_target = threshold_with_target
         self.flag_highly_correlated_features = flag_highly_correlated_features
-        self.k_features = k_features
+        self.n_features_to_select = n_features_to_select
         self.selected_features = list()
 
-    def fit(self, X, savepath, y=None, Xgroups=None):
+    def fit(self, X, y):
         df = X
         df_features = df.columns.tolist()
         n_col = df.shape[1]
@@ -301,7 +308,8 @@ class PearsonSelector():
 
             array_df = pd.DataFrame(array_data, index=df_features[:n_col], columns=df_features[:n_col])
 
-            array_df.to_excel(os.path.join(savepath, 'Full_correlation_matrix.xlsx'))
+            #array_df.to_excel(os.path.join(savepath, 'Full_correlation_matrix.xlsx'))
+            self.full_correlation_matrix = array_df
 
             #### Print features highly-correlated to each other into excel
             hcorr = dict()
@@ -319,7 +327,8 @@ class PearsonSelector():
                                 highly_correlated_features.append(feature2)
 
             hcorr_df = pd.DataFrame(hcorr, index=["Corr"])
-            hcorr_df.to_excel(os.path.join(savepath, 'Highly_correlated_features.xlsx'))
+            #hcorr_df.to_excel(os.path.join(savepath, 'Highly_correlated_features.xlsx'))
+            self.highly_correlated_features = hcorr_df
 
             highly_correlated_features = list(np.unique(np.array(highly_correlated_features)))
 
@@ -340,8 +349,9 @@ class PearsonSelector():
             for feature in all_features:
                 if feature not in removed_features:
                     removed_features_df = removed_features_df.drop(columns=feature)
-            removed_features_df.to_excel(os.path.join(savepath, "Highly_correlated_features_flagged.xlsx"),
-                                         index=False)
+            #removed_features_df.to_excel(os.path.join(savepath, "Highly_correlated_features_flagged.xlsx"),
+            #                             index=False)
+            self.highly_correlated_features_flagged = removed_features_df
 
             # Define self.selected_features
             remaining_features = list(new_df.columns)
@@ -361,7 +371,7 @@ class PearsonSelector():
                                                 ascending=False).keys())
 
         # Sometimes the specificed threshold is too high. Make it lower until at least 1 feature is selected
-        while len(self.selected_features) < self.k_features:
+        while len(self.selected_features) < self.n_features_to_select:
             print('WARNING: Pearson selector threshold was too high to result in selecting any features, lowering threshold to get specified feature number')
             self.threshold_with_target -= 0.05
             self.selected_features = list(all_corrs[all_corrs > self.threshold_with_target].sort_values(
@@ -370,8 +380,8 @@ class PearsonSelector():
                 print('WARNING: Pearson selector reduce the threshold such that all features were included')
                 break
             print('Pearson selector selected features with an adjusted threshold value')
-        if len(self.selected_features) > self.k_features:
-            self.selected_features = list(all_corrs[all_corrs > self.threshold_with_target].sort_values(ascending=False).keys())[:self.k_features]
+        if len(self.selected_features) > self.n_features_to_select:
+            self.selected_features = list(all_corrs[all_corrs > self.threshold_with_target].sort_values(ascending=False).keys())[:self.n_features_to_select]
 
 
         # Create the dataframe displaying the highly correlated features and the Pearson Correlations
@@ -379,15 +389,16 @@ class PearsonSelector():
                                             index=list(all_corrs[all_corrs > self.threshold_with_target].sort_values(
                                                 ascending=False).keys()),
                                             columns=["Pearson Correlation (absolute value)"])
-        hcorr_with_target_df.to_excel(os.path.join(savepath, 'Features_highly_correlated_with_target.xlsx'))
+        #hcorr_with_target_df.to_excel(os.path.join(savepath, 'Features_highly_correlated_with_target.xlsx'))
+        self.features_highly_correlated_with_target = hcorr_with_target_df
 
         return self
 
     def transform(self, X):
-        dataframe = X[self.selected_features]
-        return dataframe
+        X_select = X[self.selected_features]
+        return X_select
 
-class MASTMLFeatureSelector():
+class MASTMLFeatureSelector(BaseSelector):
     """
     Class custom-written for MAST-ML to conduct forward selection of features with flexible model and cv scheme
 
@@ -430,17 +441,18 @@ class MASTMLFeatureSelector():
 
     """
 
-    def __init__(self, estimator, n_features_to_select, cv, manually_selected_features=list()):
-        self.estimator = estimator
+    def __init__(self, model, n_features_to_select, cv=None, manually_selected_features=list()):
+        super(MASTMLFeatureSelector, self).__init__()
+        self.model = model
         if cv is None:
             self.cv = KFold(shuffle=True, n_splits=5)
         else:
             self.cv = cv
         self.manually_selected_features = manually_selected_features
-        self.selected_feature_names = self.manually_selected_features
+        self.selected_features = self.manually_selected_features
         self.n_features_to_select = n_features_to_select-len(self.manually_selected_features)
 
-    def fit(self, X, y, savepath, Xgroups=None):
+    def fit(self, X, y, Xgroups=None):
         if Xgroups is None:
             xgroups = np.zeros(len(y))
             Xgroups = pd.DataFrame(xgroups)
@@ -460,10 +472,10 @@ class MASTMLFeatureSelector():
                 ranked_features = self._rank_features(X=X, y=y, groups=Xgroups)
                 top_feature_name, top_feature_avg_rmse, top_feature_std_rmse = self._choose_top_feature(ranked_features=ranked_features)
 
-            self.selected_feature_names.append(top_feature_name)
-            if len(self.selected_feature_names) > 0:
-                print('selected features')
-                print(self.selected_feature_names)
+            self.selected_features.append(top_feature_name)
+            #if len(self.selected_feature_names) > 0:
+            #    print('selected features')
+            #    print(self.selected_feature_names)
             selected_feature_avg_rmses.append(top_feature_avg_rmse)
             selected_feature_std_rmses.append(top_feature_std_rmse)
 
@@ -477,10 +489,11 @@ class MASTMLFeatureSelector():
             basic_forward_selection_dict[str(num_features_selected)][
                 'Stdev RMSE using top features'] = top_feature_std_rmse
             # Save for every loop of selecting features
-            pd.DataFrame(basic_forward_selection_dict).to_csv(os.path.join(savepath,'MASTMLFeatureSelector_data_feature_'+str(num_features_selected)+'.csv'))
+            self.mastml_forward_selection_df = pd.DataFrame(basic_forward_selection_dict)
+            #pd.DataFrame(basic_forward_selection_dict).to_csv(os.path.join(savepath,'MASTMLFeatureSelector_data_feature_'+str(num_features_selected)+'.csv'))
             num_features_selected += 1
         basic_forward_selection_dict[str(self.n_features_to_select - 1)][
-            'Full feature set Names'] = self.selected_feature_names
+            'Full feature set Names'] = self.selected_features
         basic_forward_selection_dict[str(self.n_features_to_select - 1)][
             'Full feature set Avg RMSEs'] = selected_feature_avg_rmses
         basic_forward_selection_dict[str(self.n_features_to_select - 1)][
@@ -491,8 +504,8 @@ class MASTMLFeatureSelector():
         return self
 
     def transform(self, X):
-        dataframe = self._get_featureselected_dataframe(X=X, selected_feature_names=self.selected_feature_names)
-        return dataframe
+        X_select = self._get_featureselected_dataframe(X=X, selected_feature_names=self.selected_features)
+        return X_select
 
     def _rank_features(self, X, y, groups):
         y = np.array(y).reshape(-1, 1)
@@ -502,14 +515,14 @@ class MASTMLFeatureSelector():
         if groups is not None:
             groups = groups.iloc[:,0].tolist()
         for col in X.columns:
-            if col not in self.selected_feature_names:
-                X_ = X.loc[:, self.selected_feature_names]
+            if col not in self.selected_features:
+                X_ = X.loc[:, self.selected_features]
                 X__ = X.loc[:, col]
                 X_ = np.array(pd.concat([X_, X__], axis=1))
 
                 for trains, tests in self.cv.split(X_, y, groups):
-                    self.estimator.fit(X_[trains], y[trains])
-                    predict_tests = self.estimator.predict(X_[tests])
+                    self.model.fit(X_[trains], y[trains])
+                    predict_tests = self.model.predict(X_[tests])
                     tests_metrics.append(root_mean_squared_error(y[tests], predict_tests))
                 avg_rmse = np.mean(tests_metrics)
 
@@ -552,21 +565,3 @@ class MASTMLFeatureSelector():
         return X_selected
 
 
-# Include Principal Component Analysis
-PCA.transform = dataframify_new_column_names(PCA.transform, 'pca_')
-
-# Include Sequential Forward Selector
-SequentialFeatureSelector.transform = dataframify_new_column_names(SequentialFeatureSelector.transform, 'sfs_')
-SequentialFeatureSelector.fit = fitify_just_use_values(SequentialFeatureSelector.fit)
-model_selectors['SequentialFeatureSelector'] = SequentialFeatureSelector
-name_to_constructor['SequentialFeatureSelector'] = SequentialFeatureSelector
-
-# Custom selectors don't need to be dataframified
-name_to_constructor.update({
-    #'PassThrough': PassThrough,
-    'PCA': PCA,
-    'SequentialFeatureSelector': SequentialFeatureSelector,
-    'MASTMLFeatureSelector' : MASTMLFeatureSelector,
-    'PearsonSelector': PearsonSelector,
-    'EnsembleModelFeatureSelector': EnsembleModelFeatureSelector
-})

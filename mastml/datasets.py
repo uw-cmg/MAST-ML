@@ -6,11 +6,14 @@ from pprint import pprint
 from collections import Counter
 import shutil
 from datetime import datetime
+import pickle
 
 from sklearn.impute import SimpleImputer
 from scipy.linalg import orth
 import sklearn.datasets
 from mdf_forge import Forge
+
+from matminer.datasets.dataset_retrieval import load_dataset, get_available_datasets
 
 from mastml.plots import Histogram
 
@@ -49,11 +52,14 @@ class SklearnDatasets():
         load_breast_cancer: Loads the breast cancer data set (classification)
 
     """
+<<<<<<< HEAD
 
     def __init__(self, return_X_y=True, as_frame=False, n_class=None):
+=======
+    def __init__(self, return_X_y=True, as_frame=False):
+>>>>>>> origin/dev_Ryan_2020-12-21
         self.return_X_y = return_X_y
         self.as_frame = as_frame
-        self.n_class = n_class
 
     def load_boston(self):
         if self.as_frame:
@@ -69,10 +75,8 @@ class SklearnDatasets():
     def load_diabetes(self):
         return sklearn.datasets.load_diabetes(return_X_y=self.return_X_y, as_frame=self.as_frame)
 
-    def load_digits(self):
-        if self.n_class:
-            return sklearn.datasets.load_digits(self.n_class, self.return_X_y, self.as_frame)
-        return sklearn.datasets.load_digits(n_class=10, return_X_y=self.return_X_y, as_frame=self.as_frame)
+    def load_digits(self, n_class):
+        return sklearn.datasets.load_digits(self.return_X_y, self.as_frame)
 
     def load_linnerud(self):
         return sklearn.datasets.load_linnerud(return_X_y=self.return_X_y, as_frame=self.as_frame)
@@ -83,6 +87,15 @@ class SklearnDatasets():
     def load_breast_cancer(self):
         return sklearn.datasets.load_breast_cancer(return_X_y=self.return_X_y, as_frame=self.as_frame)
 
+<<<<<<< HEAD
+=======
+    def load_friedman(self, n_samples=100, n_features=10, noise=0.0):
+        X, y = sklearn.datasets.make_friedman1(n_samples=n_samples, n_features=n_features, noise=noise)
+        if self.as_frame:
+            return pd.DataFrame(X, columns=["x"+str(i) for i in range(n_features)]), pd.DataFrame(y, columns=['target'])
+        else:
+            return X, y
+>>>>>>> origin/dev_Ryan_2020-12-21
 
 class LocalDatasets():
     """
@@ -93,6 +106,9 @@ class LocalDatasets():
         feature_names: (list), list of strings containing the X feature names
         target: (str), string denoting the y data (target) name
         extra_columns: (list), list of strings containing additional column names that are not features or target
+        group_column: (str), string denoting the name of an input column to be used to group data
+        testdata_columns: (list), list of strings containing column names denoting sets of left-out data. Entries should
+            be marked with a 0 (not left out) or 1 (left out)
         as_frame: (bool), whether to return data as pandas dataframe (otherwise will be numpy array)
 
     Methods:
@@ -121,16 +137,28 @@ class LocalDatasets():
             Returns:
                 X: (pd.DataFrame or numpy array), dataframe or array of X data
                 y: (pd.DataFrame or numpy array), dataframe or array of y data
+                groups: (pd.Series or numpy array), Series or array denoting user-specified groups of data
+                X_extra: (pd.DataFrame or numpy array), dataframe or array of extra data not used in fitting (e.g. references, compositions, other notes)
+                X_testdata: (list), list of arrays denoting indices of left-out data sets
     """
+<<<<<<< HEAD
 
     def __init__(self, file_path, feature_names=None, target=None, extra_columns=None, as_frame=False):
+=======
+    def __init__(self, file_path, feature_names=None, target=None, extra_columns=None, group_column=None,
+                 testdata_columns=None, as_frame=False):
+>>>>>>> origin/dev_Ryan_2020-12-21
         self.file_path = file_path
         self.feature_names = feature_names
         self.target = target
         self.extra_columns = extra_columns
+        self.group_column = group_column
+        self.testdata_columns = testdata_columns
         self.as_frame = as_frame
         if self.extra_columns is None:
             self.extra_columns = list()
+        if self.testdata_columns is None:
+            self.testdata_columns = list()
 
     def _import(self):
         fname, ext = os.path.splitext(self.file_path)
@@ -141,19 +169,23 @@ class LocalDatasets():
                 df = pd.read_excel(self.file_path)
             except:
                 df = pd.read_excel(self.file_path, engine='openpyxl')
+        elif ext == '.pickle':
+            with open(self.file_path, "rb") as input_file:
+                data = pickle.load(input_file)
+                df = pd.DataFrame(data)
         else:
-            raise ValueError('file_path must be .csv or .xlsx for data local data import')
+            raise ValueError('file_path must be .csv, .xlsx or .pickle for data local data import')
         return df
 
     def _get_features(self, df):
         if self.feature_names is None and self.target is None:
             print('WARNING: feature_names and target are not specified. Assuming last column is target value and remaining columns are features')
             self.target = df.columns[-1]
-            self.feature_names = [col for col in df.columns if col not in [self.extra_columns, self.target]]
+            self.feature_names = [col for col in df.columns if col not in [self.extra_columns, self.target, self.testdata_columns]]
         elif self.feature_names is None:  # input is all the features except the target feature
             print('WARNING: feature_names not specified but target was specified. Assuming all columns except target and extra columns are features')
             cols = [col for col in df.columns if col != self.target]
-            self.feature_names = [col for col in cols if col not in self.extra_columns]
+            self.feature_names = [col for col in cols if col not in self.extra_columns and col not in self.testdata_columns]
         elif self.target is None:  # target is the last non-input feature
             for col in df.columns[::-1]:
                 if col not in self.feature_names:
@@ -162,6 +194,8 @@ class LocalDatasets():
         return
 
     def load_data(self):
+        data_dict = dict()
+
         # Import data from file
         df = self._import()
 
@@ -170,9 +204,35 @@ class LocalDatasets():
 
         X, y = df[self.feature_names], pd.DataFrame(df[self.target], columns=[self.target]).squeeze()
 
-        if self.as_frame:
-            return X, y
-        return np.array(X), np.array(y).ravel()
+        data_dict['X'] = X
+        data_dict['y'] = y
+
+        if self.group_column:
+            groups = df[self.group_column]
+            data_dict['groups'] = groups
+        else:
+            data_dict['groups'] = None
+
+        if self.extra_columns:
+            X_extra = df[self.extra_columns]
+            data_dict['X_extra'] = X_extra
+        else:
+            data_dict['X_extra'] = None
+
+        if self.testdata_columns:
+            X_testdata = list()
+            for col in self.testdata_columns:
+                X_testdata.append(np.array(df.loc[df[col] == 1].index).ravel())
+            data_dict['X_testdata'] = X_testdata
+        else:
+            data_dict['X_testdata'] = None
+
+        if self.as_frame == True:
+            return data_dict
+        else:
+            for k, v in data_dict.items():
+                data_dict[k] = np.array(v)
+            return data_dict
 
 
 class FigshareDatasets():
@@ -258,6 +318,52 @@ class FoundryDatasets():
                 self.mdf.globus_download(results=result)
         return
 
+<<<<<<< HEAD
+=======
+class MatminerDatasets():
+    """
+    Class to download datasets hosted from the Matminer package's Figshare page. A summary of available datasets
+    can be found at: https://hackingmaterials.lbl.gov/matminer/dataset_summary.html
+
+    Args:
+        None
+
+    Methods:
+
+        download_data: downloads specified data from Matminer/Figshare and saves to current directory
+
+            Args:
+
+                name: (str), name of the dataset to download. For compatible names, call get_available_datasets
+
+                save_data: (bool), whether to save the downloaded data to the current working directory
+
+            Returns:
+                df: (dataframe), dataframe of downloaded data
+
+        get_available_datasets: returns information on the available dataset names and details one can downlaod
+
+            Args:
+                None.
+
+            Returns:
+                None.
+    """
+    def __init__(self):
+        pass
+
+    def download_data(self, name, save_data=True):
+        df = load_dataset(name=name)
+        if save_data == True:
+            df.to_excel(name+'.xlsx', index=False)
+            with open('%s.pickle' % name, 'wb') as data_file:
+                pickle.dump(df, data_file)
+        return df
+
+    def get_available_datasets(self):
+        datasets = get_available_datasets()
+        return
+>>>>>>> origin/dev_Ryan_2020-12-21
 
 class DataCleaning():
     """

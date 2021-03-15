@@ -7,11 +7,9 @@ import shutil
 sys.path.insert(0, os.path.abspath('../../../'))
 
 from mastml.feature_generators import ElementalFeatureGenerator, PolynomialFeatureGenerator, \
-    OneHotElementEncoder, MaterialsProjectFeatureGenerator
+    OneHotElementEncoder, MaterialsProjectFeatureGenerator, OneHotGroupGenerator
 
 class TestGenerators(unittest.TestCase):
-    '''
-
 
     def test_elemental(self):
         composition_df = pd.DataFrame({'composition': ['NaCl', 'Al2O3', 'Mg', 'SrTiO3', 'C']})
@@ -29,7 +27,18 @@ class TestGenerators(unittest.TestCase):
         y = pd.Series(np.random.uniform(low=0.0, high=100, size=(5,)))
         generator = PolynomialFeatureGenerator(features=None, degree=2, include_bias=False)
         Xgenerated, y = generator.evaluate(X=X, y=y, savepath=os.getcwd())
-        self.assertEqual(Xgenerated.shape, (5, 65))
+        self.assertEqual(Xgenerated.shape, (5, 75))
+        self.assertTrue(os.path.exists(generator.splitdir))
+        shutil.rmtree(generator.splitdir)
+        return
+
+    def test_onehotgroup(self):
+        X = pd.DataFrame(np.random.uniform(low=0.0, high=100, size=(5, 10)))
+        y = pd.Series(np.random.uniform(low=0.0, high=100, size=(5,)))
+        groups = pd.Series(['group1', 'group2' ,'group3', 'group1', 'group2'], name='group')
+        generator = OneHotGroupGenerator(groups=groups)
+        Xgenerated, y = generator.evaluate(X=X, y=y, savepath=os.getcwd())
+        self.assertEqual(Xgenerated.shape, (5, 13))
         self.assertTrue(os.path.exists(generator.splitdir))
         shutil.rmtree(generator.splitdir)
         return
@@ -39,16 +48,16 @@ class TestGenerators(unittest.TestCase):
         X = pd.DataFrame(np.random.uniform(low=0.0, high=100, size=(2,10)))
         y = pd.Series(np.random.uniform(low=0.0, high=100, size=(2,)))
         generator = OneHotElementEncoder(composition_df=composition_df, remove_constant_columns=False)
-        Xgenerated, y = generator.fit_transform(X=X, y=y)
+        Xgenerated, y = generator.evaluate(X=X, y=y)
         self.assertEqual(Xgenerated.shape, (2, 14))
         generator = OneHotElementEncoder(composition_df=composition_df, remove_constant_columns=True)
-        Xgenerated, y = generator.fit_transform(X=X, y=y)
+        Xgenerated, y = generator.evaluate(X=X, y=y)
         self.assertEqual(Xgenerated.shape, (2, 13))
         Xgenerated, y = generator.evaluate(X=X, y=y, savepath=os.getcwd())
         self.assertTrue(os.path.exists(generator.splitdir))
         shutil.rmtree(generator.splitdir)
         return
-    '''
+
     def test_materialsproject(self):
         composition_df = pd.DataFrame({'composition': ['Al2O3', 'SrTiO3']})
         X = pd.DataFrame(np.random.uniform(low=0.0, high=100, size=(2,10)))

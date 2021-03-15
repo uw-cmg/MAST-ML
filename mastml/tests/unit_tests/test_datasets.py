@@ -6,8 +6,7 @@ import sys
 import shutil
 sys.path.insert(0, os.path.abspath('../../../'))
 
-from mastml.datasets import SklearnDatasets, LocalDatasets, FigshareDatasets, FoundryDatasets, DataCleaning
-
+from mastml.datasets import SklearnDatasets, LocalDatasets, FoundryDatasets, DataCleaning, MatminerDatasets
 
 class TestDatasets(unittest.TestCase):
 
@@ -29,10 +28,12 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(linnerudX.shape, (20,3))
         return
 
+    '''
     def test_figshare(self):
         FigshareDatasets().download_data(article_id='7418492', savepath=os.getcwd())
         self.assertTrue(os.path.exists('figshare_7418492'))
         return
+    '''
 
     def test_local(self):
         target = 'E_regression.1'
@@ -41,10 +42,21 @@ class TestDatasets(unittest.TestCase):
                           target=target,
                           extra_columns=extra_columns,
                           as_frame=True)
-        X, y = d.load_data()
+        data_dict = d.load_data()
+        X = data_dict['X']
+        y = data_dict['y']
         self.assertEqual(X.shape, (408,287))
         self.assertEqual(y.shape, (408,))
-        shutil.rmtree('figshare_7418492')
+        return
+
+    def test_matminer(self):
+        matminerdata = MatminerDatasets()
+        df = matminerdata.download_data(name='dielectric_constant', save_data=True)
+        self.assertTrue(os.path.exists('dielectric_constant.xlsx'))
+        self.assertTrue(os.path.exists('dielectric_constant.pickle'))
+        self.assertTrue(df.shape, (1056, 16))
+        os.remove('dielectric_constant.xlsx')
+        os.remove('dielectric_constant.pickle')
         return
 
     def test_foundry(self):
@@ -67,7 +79,6 @@ class TestDataCleaning(unittest.TestCase):
         self.assertTrue(os.path.exists(cleaner.splitdir))
         shutil.rmtree(cleaner.splitdir)
         return
-
 
 if __name__=='__main__':
     unittest.main()

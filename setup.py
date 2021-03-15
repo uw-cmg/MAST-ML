@@ -28,8 +28,8 @@ except EnvironmentError:
 
 setup(
     name="mastml",
-    packages=['mastml', 'mastml.magpie', 'mastml.tests.conf', 'mastml.tests.csv'],
-    package_data={'mastml.magpie': ["*.*"], 'mastml.tests': ["*.*"], 'mastml.tests.conf' : ["example_input.conf", "MASTML_fullinputfile.conf"], 'mastml.tests.csv' : ["example_data.xlsx"]},
+    packages=['mastml', 'mastml.magpie', 'mastml.tests.unit_tests'],
+    package_data={'mastml.magpie': ["*.*"], 'mastml.tests.unit_tests': ["*.*"]},
     include_package_data = True,
     version=verstr,
     install_requires=[
@@ -43,8 +43,9 @@ setup(
         "mdf-toolbox", #>=0.5.5
         "mlxtend",
         "numpy", #>=1.16.2
+        "openpyxl",
         "pandas", #>=0.24.2
-        "pymatgen", #>=2019.1.24
+        "pymatgen == 2020.12.31", # freeze for now, new versions (~3/11/21) seem to cause trouble
         "scikit-learn", #>=0.23.1
         "scikit-optimize", #>=0.5.2
         "scipy", #>=1.2.1,
