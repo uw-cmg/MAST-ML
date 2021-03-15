@@ -52,12 +52,14 @@ class SklearnDatasets():
         load_breast_cancer: Loads the breast cancer data set (classification)
 
     """
-<<<<<<< HEAD
+
+
+<< << << < HEAD
 
     def __init__(self, return_X_y=True, as_frame=False, n_class=None):
-=======
+== == == =
     def __init__(self, return_X_y=True, as_frame=False):
->>>>>>> origin/dev_Ryan_2020-12-21
+>>>>>> > origin/dev_Ryan_2020-12-21
         self.return_X_y = return_X_y
         self.as_frame = as_frame
 
@@ -141,13 +143,8 @@ class LocalDatasets():
                 X_extra: (pd.DataFrame or numpy array), dataframe or array of extra data not used in fitting (e.g. references, compositions, other notes)
                 X_testdata: (list), list of arrays denoting indices of left-out data sets
     """
-<<<<<<< HEAD
-
-    def __init__(self, file_path, feature_names=None, target=None, extra_columns=None, as_frame=False):
-=======
     def __init__(self, file_path, feature_names=None, target=None, extra_columns=None, group_column=None,
                  testdata_columns=None, as_frame=False):
->>>>>>> origin/dev_Ryan_2020-12-21
         self.file_path = file_path
         self.feature_names = feature_names
         self.target = target

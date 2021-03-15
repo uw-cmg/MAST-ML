@@ -47,12 +47,11 @@ selectors = [selector1]
 
 # Define and run the case where leave out twins CV is performed
 
-# splitter = LeaveOutTwinCV(threshold=5)
-
 # test auto threshold
 # splitter = LeaveOutTwinCV(threshold=0, ceiling=.1)
 
-splitter = LeaveOutTwinCV(threshold=0, ceiling=.1, debug=True)
+# splitter = LeaveOutTwinCV(threshold=0, ceiling=.1, debug=True)
+splitter = NoSplit()
 
 splitter.evaluate(X=X,
                   y=y,
