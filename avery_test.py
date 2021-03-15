@@ -43,10 +43,15 @@ X = preprocessor.fit_transform(X)
 
 # Define two models and two feature selector types to perform
 
-model1 = SklearnModel(model='KernelRidge', kernel='rbf')
-# model2 = SklearnModel(model='LinearRegression')
-# models = [model1, model2]
-models = [model1]
+# Here, we define two models. The first is a random forest model, the second is
+# a Gaussian process model. The scikit-learn model name can just be given as
+# a string matching the model name in the "model" field. The remaining arguments
+# are the parameters to pass to the model. If no parameters are given, default
+# values are used.
+model1 = SklearnModel(model='RandomForestRegressor', n_estimators=150, max_depth=30)
+model2 = SklearnModel(model='GaussianProcessRegressor', kernel='ConstantKernel*RBF', n_restarts_optimizer=10)
+# MAST-ML takes a list of the models as input.
+models = [model1, model2]
 
 selector1 = NoSelect()
 # selector2 = EnsembleModelFeatureSelector(model=SklearnModel(model='RandomForestRegressor'), k_features=10)
@@ -58,8 +63,9 @@ selectors = [selector1]
 # test auto threshold
 # splitter = LeaveOutTwinCV(threshold=0, ceiling=.1)
 
-# splitter = LeaveOutTwinCV(threshold=0, ceiling=.1, debug=True)
-splitter = NoSplit()
+splitter = LeaveOutTwinCV(threshold=0, ceiling=.1, debug=False)
+# splitter = LeaveOutTwinCV(threshold=0, ceiling=.1, debug=False)
+# splitter = NoSplit()
 
 splitter.evaluate(X=X,
                   y=y,
