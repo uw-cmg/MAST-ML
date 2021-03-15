@@ -18,6 +18,7 @@ import joblib
 from math import ceil
 import warnings
 import shutil
+from scipy.spatial.distance import minkowski
 
 try:
     from matminer.featurizers.composition import ElementFraction
@@ -743,6 +744,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             splitdir = os.path.join(savepath, dirname)
         if not os.path.exists(splitdir):
             os.mkdir(splitdir)
+        self.splitdir = splitdir
         return splitdir
 
     def _save_split_data(self, df, filename, savepath, columns):
@@ -1097,10 +1099,10 @@ class LeaveOutTwinCV(BaseSplitter):
     Class to remove data twins from the test data.
 
     Args:
-        threshold: (int), the threshold at which two data points are considered twins
-        ord: {non-zero int, inf, -inf}, optional Order of the norm (see numpy.linalg.norm). The default is None. Must be able to calculate norm for vector, not matrix.
+        threshold: (int), the threshold at which two data points are considered twins. Default 0.
+        ord: (int), The order of the norm of the difference (see scipy.spatial.distance.minkowski). Default 2 - Euclidean Distance.
         auto_threshold: (boolean), true if threshold should be automatically increased until at least one twin is removed. Default True.
-        ceiling: (float), fraction of total data to find as twins
+        ceiling: (float), fraction of total data to find as twins. Default 0.
 
     Methods:
         get_n_splits: method to calculate the number of splits to perform across all splitters
@@ -1124,7 +1126,7 @@ class LeaveOutTwinCV(BaseSplitter):
                 (numpy array), array of train and test indices
     """
 
-    def __init__(self, threshold=0, ord=None, debug=False, auto_threshold=True, ceiling=0):
+    def __init__(self, threshold=0, ord=2, debug=False, auto_threshold=True, ceiling=0):
         params = locals()
         self.threshold = threshold
         self.splitter = self.__class__.__name__
@@ -1156,13 +1158,15 @@ class LeaveOutTwinCV(BaseSplitter):
 
         autothreshold_num_twins = []
 
+        threshold = self.threshold
+
         # compute all twins
         while (len(twinIdx) < n):
             for i, a in enumerate(X):
                 for j, b in enumerate(X):
                     if (i != j and j > i):
                         # calculate distance
-                        if (np.linalg.norm(a-b, ord=self.ord) <= self.threshold):
+                        if (minkowski(a, b, self.ord) <= threshold):
                             if i not in twinIdx:
                                 twinIdx.add(i)
                             if j not in twinIdx:
@@ -1170,12 +1174,12 @@ class LeaveOutTwinCV(BaseSplitter):
             # update threshold if needed
             if (not self.auto_threshold):
                 break
-            autothreshold_num_twins.append([self.threshold, len(twinIdx)])
-            if self.threshold <= 0:
-                self.threshold = 0.1
-            self.threshold *= 1.1
-            # if self.debug:
-            #     print(self.threshold)
+            autothreshold_num_twins.append([threshold, len(twinIdx)])
+            if threshold <= 0:
+                threshold = 0.1
+            threshold *= 1.1
+            if self.debug:
+                print(threshold)
 
         # Want to store information: (distance, number of twins, metric used)
         # pd.DataFrame(data=ntwins_at_threshold)
@@ -1186,11 +1190,10 @@ class LeaveOutTwinCV(BaseSplitter):
             for th, num in autothreshold_num_twins:
                 print(f"{th}\t{num}")
 
-        # if not self.savepath:
-        #     self.savepath = os.getcwd()
-        # autothreshold_num_twins = pd.DataFrame(data=autothreshold_num_twins, columns=["Threshold", "n_twins"])
-        # filename = "autothreshold_num_twins"
-        # autothreshold_num_twins.to_excel(os.path.join(self.savepath, filename)+'.xlsx', index=False)
+        if self.splitdir != None:
+            autothreshold_num_twins = pd.DataFrame(data=autothreshold_num_twins, columns=["Threshold", "n_twins"])
+            filename = "autothreshold_num_twins"
+            autothreshold_num_twins.to_excel(os.path.join(self.splitdir, filename)+'.xlsx', index=False)
 
         # remove twins from original indices
         twinIdx = list(twinIdx)
