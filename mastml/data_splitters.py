@@ -1135,7 +1135,6 @@ class LeaveOutTwinCV(BaseSplitter):
         self.auto_threshold = auto_threshold
         self.ceiling = ceiling
         if self.debug:
-            # print(f"threshold\t{threshold}\ndebug\t{debug}\nord\t{ord}\nauto_threshold\t{auto_threshold}\nceiling\t{ceiling}")
             for k, v in params.items():
                 print(f"{k}\t\t{v}")
 
@@ -1147,10 +1146,6 @@ class LeaveOutTwinCV(BaseSplitter):
         X = np.array(X)
         y = np.array(y)
         origIdx = set(np.arange(X.shape[0]))
-
-        # if self.debug:
-        #     print(origIdx)
-
         twinIdx = set()
 
         l = len(X)
@@ -1182,9 +1177,6 @@ class LeaveOutTwinCV(BaseSplitter):
                 print(threshold)
 
         # Want to store information: (distance, number of twins, metric used)
-        # pd.DataFrame(data=ntwins_at_threshold)
-        # self._save_split_data(df=X_train, filename='autothreshold_num_twins', savepath=splitpath, columns=X_train.columns.values)
-        # df.to_excel(os.path.join(savepath, filename)+'.xlsx', index=False)
         if self.debug:
             print("Thresholds / Number of Twins")
             for th, num in autothreshold_num_twins:
