@@ -53,13 +53,7 @@ class SklearnDatasets():
 
     """
 
-
-<< << << < HEAD
-
-    def __init__(self, return_X_y=True, as_frame=False, n_class=None):
-== == == =
     def __init__(self, return_X_y=True, as_frame=False):
->>>>>> > origin/dev_Ryan_2020-12-21
         self.return_X_y = return_X_y
         self.as_frame = as_frame
 
@@ -89,15 +83,13 @@ class SklearnDatasets():
     def load_breast_cancer(self):
         return sklearn.datasets.load_breast_cancer(return_X_y=self.return_X_y, as_frame=self.as_frame)
 
-<<<<<<< HEAD
-=======
     def load_friedman(self, n_samples=100, n_features=10, noise=0.0):
         X, y = sklearn.datasets.make_friedman1(n_samples=n_samples, n_features=n_features, noise=noise)
         if self.as_frame:
             return pd.DataFrame(X, columns=["x"+str(i) for i in range(n_features)]), pd.DataFrame(y, columns=['target'])
         else:
             return X, y
->>>>>>> origin/dev_Ryan_2020-12-21
+
 
 class LocalDatasets():
     """
@@ -143,6 +135,7 @@ class LocalDatasets():
                 X_extra: (pd.DataFrame or numpy array), dataframe or array of extra data not used in fitting (e.g. references, compositions, other notes)
                 X_testdata: (list), list of arrays denoting indices of left-out data sets
     """
+
     def __init__(self, file_path, feature_names=None, target=None, extra_columns=None, group_column=None,
                  testdata_columns=None, as_frame=False):
         self.file_path = file_path
@@ -315,8 +308,7 @@ class FoundryDatasets():
                 self.mdf.globus_download(results=result)
         return
 
-<<<<<<< HEAD
-=======
+
 class MatminerDatasets():
     """
     Class to download datasets hosted from the Matminer package's Figshare page. A summary of available datasets
@@ -346,6 +338,7 @@ class MatminerDatasets():
             Returns:
                 None.
     """
+
     def __init__(self):
         pass
 
@@ -360,7 +353,7 @@ class MatminerDatasets():
     def get_available_datasets(self):
         datasets = get_available_datasets()
         return
->>>>>>> origin/dev_Ryan_2020-12-21
+
 
 class DataCleaning():
     """
