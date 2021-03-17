@@ -1134,12 +1134,24 @@ class LeaveOutTwinCV(BaseSplitter):
         self.ord = ord
         self.auto_threshold = auto_threshold
         self.ceiling = ceiling
+        self.splitdir = None
         if self.debug:
             for k, v in params.items():
                 print(f"{k}\t\t{v}")
 
     def get_n_splits(self, X=None, y=None, groups=None):
+        # self.splitdir (if it exists at this point) must be None else the internal call will create a excel file
+        try:
+            save_dir = self.splitdir
+            self.splitdir = None
+        except AttributeError:
+            pass
+        # internal call
         actual_splits = self.split(X, y, groups)
+        try:
+            self.splitdir = save_dir
+        except AttributeError:
+            pass
         return len(actual_splits)
 
     def split(self, X, y, X_noinput=None, groups=None):
