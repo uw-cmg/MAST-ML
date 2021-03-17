@@ -744,7 +744,11 @@ class BaseSplitter(ms.BaseCrossValidator):
             splitdir = os.path.join(savepath, dirname)
         if not os.path.exists(splitdir):
             os.mkdir(splitdir)
-        self.splitdir = splitdir
+        try:
+            self.splitdir = splitdir
+        except AttributeError:
+            pass
+        # self.splitdir = splitdir
         return splitdir
 
     def _save_split_data(self, df, filename, savepath, columns):
