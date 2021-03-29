@@ -69,7 +69,15 @@ class HyperOptUtils():
     def _search_space_generator(self, params):
         params_ = dict()
         for param_name, param_vals in params.items():
-            dtype = param_vals[4]
+            if 'int' in param_vals:
+                dtype = 'int'
+            elif 'float' in param_vals:
+                dtype = 'float'
+            elif 'str' in param_vals:
+                dtype = 'str'
+            else:
+                log.error('You must specify datatype as int, float or str (last entry in param values for a given parameter)')
+            #dtype = param_vals[4]
             try:
                 if param_vals[3] == "lin":
                     params_[param_name] = np.linspace(float(param_vals[0]), float(param_vals[1]), num=int(param_vals[2]), dtype=dtype)
