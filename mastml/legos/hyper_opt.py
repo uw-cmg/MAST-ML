@@ -75,6 +75,7 @@ class HyperOptUtils():
                 dtype = 'float'
             elif 'str' in param_vals:
                 dtype = 'str'
+                param_vals.remove('str')
             else:
                 log.error('You must specify datatype as int, float or str (last entry in param values for a given parameter)')
             #dtype = param_vals[4]
