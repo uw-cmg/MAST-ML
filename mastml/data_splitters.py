@@ -1104,8 +1104,8 @@ class LeaveOutTwinCV(BaseSplitter):
 
     Args:
         threshold: (int), the threshold at which two data points are considered twins. Default 0.
-        ord: (int), The order of the norm of the difference (see scipy.spatial.distance.minkowski). Default 2 - Euclidean Distance.
-        auto_threshold: (boolean), true if threshold should be automatically increased until at least one twin is removed. Default True.
+        ord: (int), The order of the norm of the difference (see scipy.spatial.distance.minkowski). Default 2 (Euclidean Distance).
+        auto_threshold: (boolean), true if threshold should be automatically increased until at least one twin is removed. Default False.
         ceiling: (float), fraction of total data to find as twins. Default 0.
 
     Methods:
@@ -1130,7 +1130,7 @@ class LeaveOutTwinCV(BaseSplitter):
                 (numpy array), array of train and test indices
     """
 
-    def __init__(self, threshold=0, ord=2, debug=False, auto_threshold=True, ceiling=0):
+    def __init__(self, threshold=0, ord=2, debug=False, auto_threshold=False, ceiling=0):
         params = locals()
         self.threshold = threshold
         self.splitter = self.__class__.__name__
@@ -1192,8 +1192,13 @@ class LeaveOutTwinCV(BaseSplitter):
             if self.debug:
                 print(threshold)
 
-        # Want to store information: (distance, number of twins, metric used)
-        if self.debug:
+        # if self.debug:
+        #     print("Thresholds / Number of Twins")
+        #     for th, num in autothreshold_num_twins:
+        #         print(f"{th}\t{num}")
+
+        if (self.auto_threshold):
+            print("AutoThreshold was enabled.")
             print("Thresholds / Number of Twins")
             for th, num in autothreshold_num_twins:
                 print(f"{th}\t{num}")

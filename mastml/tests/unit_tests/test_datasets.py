@@ -5,6 +5,7 @@ import pandas as pd
 import os
 import sys
 import shutil
+import sklearn.datasets
 sys.path.insert(0, os.path.abspath('../../../'))
 
 

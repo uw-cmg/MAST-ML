@@ -71,8 +71,8 @@ class SklearnDatasets():
     def load_diabetes(self):
         return sklearn.datasets.load_diabetes(return_X_y=self.return_X_y, as_frame=self.as_frame)
 
-    def load_digits(self, n_class):
-        return sklearn.datasets.load_digits(self.return_X_y, self.as_frame)
+    def load_digits(self, n_class=10):
+        return sklearn.datasets.load_digits(return_X_y=self.return_X_y, as_frame=self.as_frame, n_class=n_class)
 
     def load_linnerud(self):
         return sklearn.datasets.load_linnerud(return_X_y=self.return_X_y, as_frame=self.as_frame)
