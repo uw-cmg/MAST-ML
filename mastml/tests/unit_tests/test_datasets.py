@@ -14,7 +14,7 @@ class TestDatasets(unittest.TestCase):
         sklearndata = SklearnDatasets(return_X_y=True, as_frame=True)
         bostonX, bostony = sklearndata.load_boston()
         irisX, irisy = sklearndata.load_iris()
-        digitsX, digitsy = sklearndata.load_digits(n_class=10)
+        digitsX, digitsy = sklearndata.load_digits()
         diabetesX, diabetesy = sklearndata.load_diabetes()
         breast_cancerX, breast_cancery = sklearndata.load_breast_cancer()
         wineX, winey = sklearndata.load_wine()
