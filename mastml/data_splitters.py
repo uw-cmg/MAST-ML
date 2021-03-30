@@ -1192,7 +1192,13 @@ class LeaveOutTwinCV(BaseSplitter):
             if self.debug:
                 print(threshold)
 
-        if self.debug:
+        # if self.debug:
+        #     print("Thresholds / Number of Twins")
+        #     for th, num in autothreshold_num_twins:
+        #         print(f"{th}\t{num}")
+
+        if (self.auto_threshold):
+            print("AutoThreshold was enabled.")
             print("Thresholds / Number of Twins")
             for th, num in autothreshold_num_twins:
                 print(f"{th}\t{num}")
