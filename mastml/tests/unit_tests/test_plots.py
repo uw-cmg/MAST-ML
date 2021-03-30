@@ -16,7 +16,7 @@ class TestPlots(unittest.TestCase):
         Scatter().plot_predicted_vs_true(y_true=X,
                                          y_pred=y,
                                          savepath=os.getcwd(),
-                                         # file_name='TEST_scatter',
+                                         file_name='TEST_scatter',
                                          x_label='TEST_scatter',
                                          data_type='test')
         self.assertTrue(os.path.exists('TEST_scatter.png'))
