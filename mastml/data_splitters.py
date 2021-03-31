@@ -1105,7 +1105,7 @@ class LeaveOutTwinCV(BaseSplitter):
     Args:
         threshold: (int), the threshold at which two data points are considered twins. Default 0.
         ord: (int), The order of the norm of the difference (see scipy.spatial.distance.minkowski). Default 2 (Euclidean Distance).
-        auto_threshold: (boolean), true if threshold should be automatically increased until at least one twin is removed. Default False.
+        auto_threshold: (boolean), true if threshold should be automatically increased until twins corresponding to the ceiling parameter are found. Default False.
         ceiling: (float), fraction of total data to find as twins. Default 0.
 
     Methods:
@@ -1192,16 +1192,16 @@ class LeaveOutTwinCV(BaseSplitter):
             if self.debug:
                 print(threshold)
 
-        # if self.debug:
-        #     print("Thresholds / Number of Twins")
-        #     for th, num in autothreshold_num_twins:
-        #         print(f"{th}\t{num}")
-
-        if (self.auto_threshold):
-            print("AutoThreshold was enabled.")
+        if self.debug:
             print("Thresholds / Number of Twins")
             for th, num in autothreshold_num_twins:
                 print(f"{th}\t{num}")
+
+        if (self.auto_threshold):
+            print("AutoThreshold was enabled for LeaveOutTwinCV.")
+        #     print("Thresholds / Number of Twins")
+        #     for th, num in autothreshold_num_twins:
+        #         print(f"{th}\t{num}")
 
         if self.splitdir != None:
             autothreshold_num_twins = pd.DataFrame(data=autothreshold_num_twins, columns=["Threshold", "n_twins"])
@@ -1219,6 +1219,11 @@ class LeaveOutTwinCV(BaseSplitter):
             print("Non-Twins / Twins")
             print(origIdx)
             print(twinIdx)
+
+        if not origIdx:
+            print("Warning: All data was marked as twins. Consider reducing threshold or enabling autothreshold. If you are using autothreshold make sure ceiling < 1.")
+        if not twinIdx:
+            print("Warning: No data twins were found, returning train/test split as empty. Consider increasing threshold or setting autothreshold to True.")
 
         splits = []
         splits.append([origIdx, twinIdx])
