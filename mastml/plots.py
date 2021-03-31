@@ -61,8 +61,6 @@ class Scatter():
 
                 savepath: (str), string denoting the save path for the figure image
 
-                file_name: (str), string denoting the character of the file name, e.g. train vs. test, optional
-
                 x_label: (str), string denoting the true and predicted property name
 
                 metrics_list: (list), list of strings of metric names to evaluate and include on the figure
@@ -75,7 +73,7 @@ class Scatter():
                 None
     """
     @classmethod
-    def plot_predicted_vs_true(cls, y_true, y_pred, savepath, data_type, x_label, file_name=None, metrics_list=None, show_figure=False):
+    def plot_predicted_vs_true(cls, y_true, y_pred, savepath, data_type, x_label, metrics_list=None, show_figure=False):
         # Make the dataframe/array 1D if it isn't
         y_true = check_dimensions(y_true)
         y_pred = check_dimensions(y_pred)
@@ -107,10 +105,7 @@ class Scatter():
         stats_dict = Metrics(metrics_list=metrics_list).evaluate(y_true=y_true, y_pred=y_pred)
 
         plot_stats(fig, stats_dict, x_align=0.65, y_align=0.90, fontsize=12)
-        if file_name == None:
-            fig.savefig(os.path.join(savepath, 'parity_plot_'+str(data_type) + '.png'), dpi=DPI, bbox_inches='tight')
-        else:
-            fig.savefig(os.path.join(savepath, file_name+str(data_type) + '.png'), dpi=DPI, bbox_inches='tight')
+        fig.savefig(os.path.join(savepath, 'parity_plot_'+str(data_type) + '.png'), dpi=DPI, bbox_inches='tight')
 
         if show_figure == True:
             plt.show()

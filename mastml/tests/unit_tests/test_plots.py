@@ -17,10 +17,9 @@ class TestPlots(unittest.TestCase):
                                          y_pred=y,
                                          savepath=os.getcwd(),
                                          x_label='TEST_scatter',
-                                         data_type='_test',
-                                         file_name='TEST_scatter')
-        self.assertTrue(os.path.exists('TEST_scatter_test.png'))
-        os.remove('TEST_scatter_test.png')
+                                         data_type='test',)
+        self.assertTrue(os.path.exists('parity_plot_test.png'))
+        os.remove('parity_plot_test.png')
         return
 
     def test_histogram(self):
