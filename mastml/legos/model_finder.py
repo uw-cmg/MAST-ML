@@ -16,12 +16,19 @@ import os
 try:
     import xgboost as xgb
 except:
-    pass
+    print('If you want to use XGBoost models, please manually install xgboost package with '
+          'pip install xgboost. If have error with finding libxgboost.dylib library, do'
+          'brew install libomp. If do not have brew on your system, first do'
+          ' ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" from the Terminal')
 
-import keras
-from keras.models import model_from_json
-from keras.models import load_model
-from keras.models import Sequential
+
+try:
+    import keras
+    from keras.models import model_from_json
+    from keras.models import load_model
+    from keras.models import Sequential
+except:
+    print('Keras is an optional dependency. To use, do pip install keras tensorflow')
 
 import random
 
