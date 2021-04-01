@@ -107,7 +107,7 @@ setup(
         "sphinx-automodapi",
         "sympy>=1.2",
         "tabulate>=0.8.2",
-        "tensorflow>=1.13.1",
+        "tensorflow",
         "tqdm>=4.46.0",
         "traitlets>=4.3.2",
         "urllib3<1.25,>=1.24.2",
