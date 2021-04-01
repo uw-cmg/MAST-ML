@@ -37,7 +37,7 @@ setup(
         "dlhub_sdk",
         "globus_nexus_client",
         "globus_sdk",
-        "keras",
+        "keras>=2.4.3",
         "matminer",
         "matplotlib",
         "mdf_forge",
@@ -46,12 +46,12 @@ setup(
         "numpy",
         "openpyxl",
         "pandas",
-        "pymatgen",
+        "pymatgen<=2021.3.9",
         "scikit-learn",
         "scikit-optimize",
         "scipy",
         "sphinx-automodapi",
-        "tensorflow"
+        "tensorflow<=2.4.1"
         ],
     author="MAST Development Team, University of Wisconsin-Madison Computational Materials Group",
     author_email="ddmorgan@wisc.edu",
