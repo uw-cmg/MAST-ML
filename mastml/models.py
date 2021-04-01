@@ -98,7 +98,11 @@ class EnsembleModel(BaseEstimator, TransformerMixin):
     '''
     def __init__(self, model, n_estimators, **kwargs):
         super(EnsembleModel, self).__init__()
-        model = dict(sklearn.utils.all_estimators())[model](**kwargs)
+        try:
+            model = dict(sklearn.utils.all_estimators())[model](**kwargs)
+        except:
+            print('Could not find designated model type in scikit-learn model library. Note the other supported model'
+                  'type is the keras.wrappers.scikit_learn.KerasRegressor model')
         self.n_estimators = n_estimators
         self.model = BaggingRegressor(base_estimator=model, n_estimators=self.n_estimators)
         self.base_estimator_ = model.__class__.__name__
