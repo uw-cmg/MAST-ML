@@ -2,6 +2,7 @@ citrination-client
 dlhub_sdk
 globus_nexus_client
 globus_sdk
+keras
 matminer
 matplotlib
 mdf_forge
@@ -10,6 +11,7 @@ numpy
 openpyxl
 pandas
 pymatgen
+tensorflow
 scikit-learn
 scikit-optimize
 scipy

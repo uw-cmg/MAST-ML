@@ -33,23 +33,25 @@ setup(
     include_package_data = True,
     version=verstr,
     install_requires=[
-        "citrination-client", #>=4.6.0
-        "dlhub_sdk", #>=0.9.3
+        "citrination-client",
+        "dlhub_sdk",
         "globus_nexus_client",
         "globus_sdk",
-        "matminer", #>=0.6.3
-        "matplotlib", #>=3.1.1
-        "mdf_forge", #>=0.6.1J
-        "mdf-toolbox", #>=0.5.5
+        "keras",
+        "matminer",
+        "matplotlib",
+        "mdf_forge",
+        "mdf-toolbox",
         "mlxtend",
-        "numpy", #>=1.16.2
+        "numpy",
         "openpyxl",
-        "pandas", #>=0.24.2
-        "pymatgen == 2020.12.31", # freeze for now, new versions (~3/11/21) seem to cause trouble
-        "scikit-learn", #>=0.23.1
-        "scikit-optimize", #>=0.5.2
-        "scipy", #>=1.2.1,
+        "pandas",
+        "pymatgen",
+        "scikit-learn",
+        "scikit-optimize",
+        "scipy",
         "sphinx-automodapi",
+        "tensorflow"
         ],
     author="MAST Development Team, University of Wisconsin-Madison Computational Materials Group",
     author_email="ddmorgan@wisc.edu",
