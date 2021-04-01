@@ -1,13 +1,12 @@
-from mastml.datasets import SklearnDatasets, LocalDatasets, FoundryDatasets, DataCleaning, MatminerDatasets
 import unittest
 import numpy as np
 import pandas as pd
 import os
 import sys
 import shutil
-import sklearn.datasets
 sys.path.insert(0, os.path.abspath('../../../'))
 
+from mastml.datasets import SklearnDatasets, LocalDatasets, FoundryDatasets, DataCleaning, MatminerDatasets
 
 class TestDatasets(unittest.TestCase):
 
@@ -39,7 +38,7 @@ class TestDatasets(unittest.TestCase):
     def test_local(self):
         target = 'E_regression.1'
         extra_columns = ['E_regression', 'Material compositions 1', 'Material compositions 2', 'Hop activation barrier']
-        d = LocalDatasets(file_path='figshare_7418492/All_Model_Data.xlsx',
+        d = LocalDatasets(file_path='mastml/data/figshare_7418492/All_Model_Data.xlsx',
                           target=target,
                           extra_columns=extra_columns,
                           as_frame=True)

@@ -1,4 +1,3 @@
-from mastml.plots import Scatter, Histogram
 import unittest
 import numpy as np
 import pandas as pd
@@ -6,6 +5,7 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('../../../'))
 
+from mastml.plots import Scatter, Histogram
 
 class TestPlots(unittest.TestCase):
 

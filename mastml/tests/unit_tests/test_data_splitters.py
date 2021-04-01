@@ -1,6 +1,3 @@
-from mastml.models import SklearnModel
-from mastml.data_splitters import NoSplit, SklearnDataSplitter, LeaveCloseCompositionsOut, LeaveOutPercent, \
-    Bootstrap, JustEachGroup, LeaveOutTwinCV
 import unittest
 import pandas as pd
 import numpy as np
@@ -8,10 +5,12 @@ import os
 import shutil
 import sys
 import sklearn.datasets as sk
-import matplotlib.pyplot as plt
 
 sys.path.insert(0, os.path.abspath('../../../'))
 
+from mastml.models import SklearnModel
+from mastml.data_splitters import NoSplit, SklearnDataSplitter, LeaveCloseCompositionsOut, LeaveOutPercent, \
+    Bootstrap, JustEachGroup, LeaveOutTwinCV
 
 class TestSplitters(unittest.TestCase):
 
