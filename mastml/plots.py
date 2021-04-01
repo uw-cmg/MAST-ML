@@ -7,6 +7,7 @@ this module, to enable the user to make their own modifications to the created p
 tweaking plots for a presentation or publication).
 """
 
+import warnings
 import math
 import os
 import pandas as pd
@@ -32,14 +33,14 @@ from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-matplotlib.rc('font', size=18, family='sans-serif') # set all font to bigger
-matplotlib.rc('figure', autolayout=True) # turn on autolayout
+matplotlib.rc('font', size=18, family='sans-serif')  # set all font to bigger
+matplotlib.rc('figure', autolayout=True)  # turn on autolayout
 
-import warnings
 warnings.filterwarnings(action="ignore")
 
 # adding dpi as a constant global so it can be changed later
 DPI = 250
+
 
 class Scatter():
     """
@@ -59,8 +60,6 @@ class Scatter():
                 y_pred: (pd.Series), series of predicted y data
 
                 savepath: (str), string denoting the save path for the figure image
-
-                file_name: (str), string denoting the character of the file name, e.g. train vs. test
 
                 x_label: (str), string denoting the true and predicted property name
 
@@ -97,7 +96,7 @@ class Scatter():
         # draw dashed horizontal line
         ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
 
-        ax.set_xlabel('True '+ x_label, fontsize=14)
+        ax.set_xlabel('True ' + x_label, fontsize=14)
         ax.set_ylabel('Predicted ' + x_label, fontsize=14)
 
         if metrics_list is None:
@@ -106,8 +105,8 @@ class Scatter():
         stats_dict = Metrics(metrics_list=metrics_list).evaluate(y_true=y_true, y_pred=y_pred)
 
         plot_stats(fig, stats_dict, x_align=0.65, y_align=0.90, fontsize=12)
-
         fig.savefig(os.path.join(savepath, 'parity_plot_'+str(data_type) + '.png'), dpi=DPI, bbox_inches='tight')
+
         if show_figure == True:
             plt.show()
         else:
@@ -169,13 +168,13 @@ class Scatter():
         # draw dashed horizontal line
         ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
 
-        ax.set_xlabel('True '+ x_label, fontsize=14)
+        ax.set_xlabel('True ' + x_label, fontsize=14)
         ax.set_ylabel('Predicted ' + x_label, fontsize=14)
 
         stats_dict_best = Metrics(metrics_list=metrics_list).evaluate(y_true=y_true_best, y_pred=y_pred_best)
         stats_dict_worst = Metrics(metrics_list=metrics_list).evaluate(y_true=y_true_worst, y_pred=y_pred_worst)
 
-        plot_stats(fig, stats_dict_best, x_align=0.65, y_align=0.90, font_dict={'fontsize':12, 'color':'blue'})
+        plot_stats(fig, stats_dict_best, x_align=0.65, y_align=0.90, font_dict={'fontsize': 12, 'color': 'blue'})
         plot_stats(fig, stats_dict_worst, x_align=0.65, y_align=0.50, font_dict={'fontsize': 12, 'color': 'red'})
 
         # Save data to excel file and image
@@ -246,10 +245,10 @@ class Scatter():
         bests = list()
         worsts = list()
         for yt in y_true_unique:
-            best = min(abs(all_y_pred_flat[np.where(all_y_true_flat==yt)] - all_y_true_flat[np.where(all_y_true_flat==yt)]))
-            worst = max(abs(all_y_pred_flat[np.where(all_y_true_flat==yt)] - all_y_true_flat[np.where(all_y_true_flat==yt)]))
-            bests.append(all_y_pred_flat[np.where(all_residuals_flat==best)])
-            worsts.append(all_y_pred_flat[np.where(all_residuals_flat==worst)])
+            best = min(abs(all_y_pred_flat[np.where(all_y_true_flat == yt)] - all_y_true_flat[np.where(all_y_true_flat == yt)]))
+            worst = max(abs(all_y_pred_flat[np.where(all_y_true_flat == yt)] - all_y_true_flat[np.where(all_y_true_flat == yt)]))
+            bests.append(all_y_pred_flat[np.where(all_residuals_flat == best)])
+            worsts.append(all_y_pred_flat[np.where(all_residuals_flat == worst)])
 
         stats_dict_best = Metrics(metrics_list=metrics_list).evaluate(y_true=y_true_unique, y_pred=bests)
         stats_dict_worst = Metrics(metrics_list=metrics_list).evaluate(y_true=y_true_unique, y_pred=worsts)
@@ -277,8 +276,8 @@ class Scatter():
         ax.legend(loc='best', fontsize=12)
 
         #plot_stats(fig, avg_stats, x_align=x_align, y_align=0.51, fontsize=10)
-        plot_stats(fig, stats_dict_best, x_align=0.65, y_align=0.90, font_dict={'fontsize':10, 'color':'b'})
-        plot_stats(fig, stats_dict_worst, x_align=0.65, y_align=0.50, font_dict={'fontsize':10, 'color':'r'})
+        plot_stats(fig, stats_dict_best, x_align=0.65, y_align=0.90, font_dict={'fontsize': 10, 'color': 'b'})
+        plot_stats(fig, stats_dict_worst, x_align=0.65, y_align=0.50, font_dict={'fontsize': 10, 'color': 'r'})
 
         # Save data to excel file and image
         fig.savefig(os.path.join(savepath, 'parity_plot_best_worst_eachpoint_'+str(data_type)+'.png'), dpi=DPI, bbox_inches='tight')
@@ -339,7 +338,7 @@ class Scatter():
             all_y_pred.append(y_pred)
 
         df_all = pd.DataFrame({'all_y_true': np.array([item for sublist in all_y_true for item in sublist]),
-                            'all_y_pred': np.array([item for sublist in all_y_pred for item in sublist])})
+                               'all_y_pred': np.array([item for sublist in all_y_pred for item in sublist])})
 
         df_all_grouped = df_all.groupby(df_all['all_y_true'], sort=False)
         df_avg = df_all_grouped.mean()
@@ -427,7 +426,7 @@ class Scatter():
             for group in groups:
                 stats.append(stats_files_dict[group][metric])
 
-            avg_stats = {metric : (np.mean(stats), np.std(stats))}
+            avg_stats = {metric: (np.mean(stats), np.std(stats))}
 
             # make fig and ax, use x_align when placing text so things don't overlap
             x_align = 0.64
@@ -448,6 +447,7 @@ class Scatter():
             else:
                 plt.close()
         return
+
 
 class Error():
     '''
@@ -482,7 +482,7 @@ class Error():
         fig, ax = make_fig_ax(x_align=x_align)
         mu = 0
         sigma = 1
-        residuals[residuals==0.0] = 10**-6
+        residuals[residuals == 0.0] = 10**-6
         normalized_residuals = residuals / np.std(residuals)
         density_residuals = gaussian_kde(normalized_residuals)
         x = np.linspace(mu - 5 * sigma, mu + 5 * sigma, residuals.shape[0])
@@ -500,7 +500,7 @@ class Error():
             ax.plot(x, density_errors(x), linewidth=4, color='purple', label="Model Errors")
             # Save data to csv file
             data_dict = {"Plotted x values": x, "model_errors": model_errors,
-                         #"analytical gaussian (plotted y blue values)": norm.pdf(x, mu, sigma),
+                         # "analytical gaussian (plotted y blue values)": norm.pdf(x, mu, sigma),
                          "residuals": residuals,
                          "model normalized residuals (plotted y green values)": density_residuals(x),
                          "model errors (plotted y purple values)": density_errors(x)}
@@ -508,7 +508,7 @@ class Error():
         else:
             # Save data to csv file
             data_dict = {"x values": x,
-                         #"analytical gaussian": norm.pdf(x, mu, sigma),
+                         # "analytical gaussian": norm.pdf(x, mu, sigma),
                          "model normalized residuals (plotted y green values)": density_residuals(x)}
             pd.DataFrame(data_dict).to_excel(os.path.join(savepath, 'normalized_error_data_'+str(data_type)+'.xlsx'))
             maxy = max(max(density_residuals(x)), max(norm.pdf(x, mu, sigma)))
@@ -574,24 +574,24 @@ class Error():
             X_errors = np.sort(rstat)
             ax.step(X_errors, n_errors, linewidth=3, color='purple', label="Model Errors")
             # Save data to csv file
-            data_dict = { #"Analytical Gaussian values": analytic_gau,
-                         #"Analytical Gaussian (sorted, blue data)": X_analytic,
-                         "residuals": residuals,
-                         "normalized residuals": normalized_residuals,
-                         "Model Residuals (sorted, green data)": X_residuals,
-                         "Model error values (r value: (ytrue-ypred)/(model error avg))": rstat,
-                         "Model errors (sorted, purple values)": X_errors}
+            data_dict = {  # "Analytical Gaussian values": analytic_gau,
+                # "Analytical Gaussian (sorted, blue data)": X_analytic,
+                "residuals": residuals,
+                "normalized residuals": normalized_residuals,
+                "Model Residuals (sorted, green data)": X_residuals,
+                "Model error values (r value: (ytrue-ypred)/(model error avg))": rstat,
+                "Model errors (sorted, purple values)": X_errors}
             # Save this way to avoid issue with different array sizes in data_dict
             df = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in data_dict.items()]))
             df.to_excel(os.path.join(savepath, 'cumulative_normalized_errors_'+str(data_type)+'.xlsx'), index=False)
         else:
             # Save data to csv file
-            data_dict = {#"x analytical": X_analytic,
-                         #"analytical gaussian": n_analytic,
-                          "Model Residuals (sorted, green data)": X_residuals,
-                         "model residuals": n_residuals}
+            data_dict = {  # "x analytical": X_analytic,
+                # "analytical gaussian": n_analytic,
+                "Model Residuals (sorted, green data)": X_residuals,
+                "model residuals": n_residuals}
             # Save this way to avoid issue with different array sizes in data_dict
-            df = pd.DataFrame(dict([ (k, pd.Series(v)) for k,v in data_dict.items() ]))
+            df = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in data_dict.items()]))
             df.to_excel(os.path.join(savepath, 'cumulative_normalized_errors_'+str(data_type)+'.xlsx'), index=False)
 
         ax.legend(loc=0, fontsize=14, frameon=False)
@@ -679,10 +679,10 @@ class Error():
         ax.hist(residuals/model_errors, bins=30, color='gray', edgecolor='black', density=True, alpha=0.4)
         ax.hist(residuals/model_errors_cal, bins=30, color='blue', edgecolor='black', density=True, alpha=0.4)
         ax.plot(gaussian_x, stats.norm.pdf(gaussian_x, 0, 1), label='Gaussian mu: 0 std: 1', color='orange')
-        ax.text(0.05, 0.9, 'mean = %.3f' % (np.mean(residuals / model_errors)), transform=ax.transAxes, fontdict={'fontsize':10, 'color':'gray'})
-        ax.text(0.05, 0.85, 'std = %.3f' % (np.std(residuals / model_errors)), transform=ax.transAxes, fontdict={'fontsize':10, 'color':'gray'})
-        ax.text(0.05, 0.8, 'mean = %.3f' % (np.mean(residuals / model_errors_cal)), transform=ax.transAxes, fontdict={'fontsize':10, 'color':'blue'})
-        ax.text(0.05, 0.75, 'std = %.3f' % (np.std(residuals / model_errors_cal)), transform=ax.transAxes, fontdict={'fontsize':10, 'color':'blue'})
+        ax.text(0.05, 0.9, 'mean = %.3f' % (np.mean(residuals / model_errors)), transform=ax.transAxes, fontdict={'fontsize': 10, 'color': 'gray'})
+        ax.text(0.05, 0.85, 'std = %.3f' % (np.std(residuals / model_errors)), transform=ax.transAxes, fontdict={'fontsize': 10, 'color': 'gray'})
+        ax.text(0.05, 0.8, 'mean = %.3f' % (np.mean(residuals / model_errors_cal)), transform=ax.transAxes, fontdict={'fontsize': 10, 'color': 'blue'})
+        ax.text(0.05, 0.75, 'std = %.3f' % (np.std(residuals / model_errors_cal)), transform=ax.transAxes, fontdict={'fontsize': 10, 'color': 'blue'})
         fig.savefig(os.path.join(savepath, 'rstat_histogram_'+str(data_type)+'_uncal_cal_overlay.png'), dpi=DPI, bbox_inches='tight')
 
         if show_figure is True:
@@ -696,8 +696,8 @@ class Error():
                                      show_figure=False, is_calibrated=False, well_sampled_fraction=0.025):
 
         bin_values, rms_residual_values, num_values_per_bin, number_of_bins = ErrorUtils()._parse_error_data(model_errors=model_errors,
-                                                                                                            residuals=residuals,
-                                                                                                            dataset_stdev=dataset_stdev)
+                                                                                                             residuals=residuals,
+                                                                                                             dataset_stdev=dataset_stdev)
 
         model_name = model.model.__class__.__name__
         if model_name == 'RandomForestRegressor':
@@ -739,11 +739,11 @@ class Error():
         # Only examine the bins that are well-sampled, i.e. have number of data points in them above a given threshold
         well_sampled_number = round(well_sampled_fraction*np.sum(num_values_per_bin_copy))
         rms_residual_values_wellsampled = rms_residual_values_copy[np.where(num_values_per_bin_copy > well_sampled_number)]
-        bin_values_wellsampled = bin_values_copy[np.where(num_values_per_bin_copy>well_sampled_number)]
-        num_values_per_bin_wellsampled = num_values_per_bin_copy[np.where(num_values_per_bin_copy>well_sampled_number)]
+        bin_values_wellsampled = bin_values_copy[np.where(num_values_per_bin_copy > well_sampled_number)]
+        num_values_per_bin_wellsampled = num_values_per_bin_copy[np.where(num_values_per_bin_copy > well_sampled_number)]
         rms_residual_values_poorlysampled = rms_residual_values_copy[np.where(num_values_per_bin_copy <= well_sampled_number)]
-        bin_values_poorlysampled = bin_values_copy[np.where(num_values_per_bin_copy<=well_sampled_number)]
-        num_values_per_bin_poorlysampled = num_values_per_bin_copy[np.where(num_values_per_bin_copy<=well_sampled_number)]
+        bin_values_poorlysampled = bin_values_copy[np.where(num_values_per_bin_copy <= well_sampled_number)]
+        num_values_per_bin_poorlysampled = num_values_per_bin_copy[np.where(num_values_per_bin_copy <= well_sampled_number)]
 
         ax.scatter(bin_values_wellsampled, rms_residual_values_wellsampled, s=80, color='blue', alpha=0.7)
         ax.scatter(bin_values_poorlysampled, rms_residual_values_poorlysampled, s=80, edgecolor='blue', alpha=0.7)
@@ -797,7 +797,7 @@ class Error():
             calibrate = 'calibrated'
 
         fig.savefig(os.path.join(savepath, str(model_type) + '_residuals_vs_modelerror_' + str(data_type) + '_' + calibrate + '.png'),
-            dpi=300, bbox_inches='tight')
+                    dpi=300, bbox_inches='tight')
 
         if show_figure is True:
             plt.show()
@@ -812,13 +812,12 @@ class Error():
                                                        well_sampled_fraction=0.025):
 
         bin_values_uncal, rms_residual_values_uncal, num_values_per_bin_uncal, number_of_bins_uncal = ErrorUtils()._parse_error_data(model_errors=model_errors,
-                                                                                                                   residuals=residuals,
-                                                                                                                   dataset_stdev=dataset_stdev)
+                                                                                                                                     residuals=residuals,
+                                                                                                                                     dataset_stdev=dataset_stdev)
 
         bin_values_cal, rms_residual_values_cal, num_values_per_bin_cal, number_of_bins_cal = ErrorUtils()._parse_error_data(model_errors=model_errors_cal,
-                                                                                                                   residuals=residuals,
-                                                                                                                   dataset_stdev=dataset_stdev)
-
+                                                                                                                             residuals=residuals,
+                                                                                                                             dataset_stdev=dataset_stdev)
 
         model_name = model.model.__class__.__name__
         if model_name == 'RandomForestRegressor':
@@ -847,19 +846,19 @@ class Error():
         # Only examine the bins that are well-sampled, i.e. have number of data points in them above a given threshold
         well_sampled_number_uncal = round(well_sampled_fraction*np.sum(num_values_per_bin_uncal))
         rms_residual_values_wellsampled_uncal = rms_residual_values_uncal[np.where(num_values_per_bin_uncal > well_sampled_number_uncal)[0]]
-        bin_values_wellsampled_uncal = bin_values_uncal[np.where(num_values_per_bin_uncal>well_sampled_number_uncal)[0]]
-        num_values_per_bin_wellsampled_uncal = num_values_per_bin_uncal[np.where(num_values_per_bin_uncal>well_sampled_number_uncal)[0]]
+        bin_values_wellsampled_uncal = bin_values_uncal[np.where(num_values_per_bin_uncal > well_sampled_number_uncal)[0]]
+        num_values_per_bin_wellsampled_uncal = num_values_per_bin_uncal[np.where(num_values_per_bin_uncal > well_sampled_number_uncal)[0]]
         rms_residual_values_poorlysampled_uncal = rms_residual_values_uncal[np.where(num_values_per_bin_uncal <= well_sampled_number_uncal)[0]]
-        bin_values_poorlysampled_uncal = bin_values_uncal[np.where(num_values_per_bin_uncal<=well_sampled_number_uncal)[0]]
-        num_values_per_bin_poorlysampled_uncal = num_values_per_bin_uncal[np.where(num_values_per_bin_uncal<=well_sampled_number_uncal)[0]]
+        bin_values_poorlysampled_uncal = bin_values_uncal[np.where(num_values_per_bin_uncal <= well_sampled_number_uncal)[0]]
+        num_values_per_bin_poorlysampled_uncal = num_values_per_bin_uncal[np.where(num_values_per_bin_uncal <= well_sampled_number_uncal)[0]]
 
         well_sampled_number_cal = round(well_sampled_fraction*np.sum(num_values_per_bin_cal))
         rms_residual_values_wellsampled_cal = rms_residual_values_cal[np.where(num_values_per_bin_cal > well_sampled_number_cal)[0]]
-        bin_values_wellsampled_cal = bin_values_cal[np.where(num_values_per_bin_cal>well_sampled_number_cal)]
-        num_values_per_bin_wellsampled_cal = num_values_per_bin_cal[np.where(num_values_per_bin_cal>well_sampled_number_cal)[0]]
+        bin_values_wellsampled_cal = bin_values_cal[np.where(num_values_per_bin_cal > well_sampled_number_cal)]
+        num_values_per_bin_wellsampled_cal = num_values_per_bin_cal[np.where(num_values_per_bin_cal > well_sampled_number_cal)[0]]
         rms_residual_values_poorlysampled_cal = rms_residual_values_cal[np.where(num_values_per_bin_cal <= well_sampled_number_cal)[0]]
-        bin_values_poorlysampled_cal = bin_values_cal[np.where(num_values_per_bin_cal<=well_sampled_number_cal)[0]]
-        num_values_per_bin_poorlysampled_cal = num_values_per_bin_cal[np.where(num_values_per_bin_cal<=well_sampled_number_cal)[0]]
+        bin_values_poorlysampled_cal = bin_values_cal[np.where(num_values_per_bin_cal <= well_sampled_number_cal)[0]]
+        num_values_per_bin_poorlysampled_cal = num_values_per_bin_cal[np.where(num_values_per_bin_cal <= well_sampled_number_cal)[0]]
 
         ax.scatter(bin_values_wellsampled_uncal, rms_residual_values_wellsampled_uncal, s=80, color='gray', edgecolor='gray', alpha=0.7, label='uncalibrated')
         ax.scatter(bin_values_poorlysampled_uncal, rms_residual_values_poorlysampled_uncal, s=80, color='gray', edgecolor='gray', alpha=0.3)
@@ -873,7 +872,7 @@ class Error():
 
         # Fit the line to all data, including the poorly sampled data, and weight data points by number of samples per bin
         linear_uncal.fit(np.array(bin_values_uncal).reshape(-1, 1), rms_residual_values_uncal,
-                       sample_weight=num_values_per_bin_uncal)
+                         sample_weight=num_values_per_bin_uncal)
         yfit_uncal = linear_uncal.predict(np.array(bin_values_uncal).reshape(-1, 1))
         ax.plot(bin_values_uncal, yfit_uncal, 'gray', linewidth=2)
         r2_uncal = r2_score(rms_residual_values_uncal, yfit_uncal, sample_weight=num_values_per_bin_uncal)
@@ -922,7 +921,7 @@ class Error():
         ax.legend(loc='lower right', fontsize=8)
 
         fig.savefig(os.path.join(savepath, str(model_type) + '_residuals_vs_modelerror_' + str(data_type) + '_uncal_cal_overlay.png'),
-            dpi=300, bbox_inches='tight')
+                    dpi=300, bbox_inches='tight')
 
         if show_figure is True:
             plt.show()
@@ -930,6 +929,7 @@ class Error():
             plt.close()
 
         return
+
 
 class Histogram():
     """
@@ -993,7 +993,7 @@ class Histogram():
         x_align = 0.70
         fig, ax = make_fig_ax(aspect_ratio=0.5, x_align=x_align)
 
-        #Get num_bins using smarter method
+        # Get num_bins using smarter method
         num_bins = cls._get_histogram_bins(df=df)
 
         # do the actual plotting
@@ -1021,10 +1021,10 @@ class Histogram():
         y_pred = check_dimensions(y_pred)
         residuals = y_pred-y_true
         cls.plot_histogram(df=residuals,
-                            savepath=savepath,
-                            file_name=file_name,
-                            x_label='Residuals',
-                            show_figure=show_figure)
+                           savepath=savepath,
+                           file_name=file_name,
+                           x_label='Residuals',
+                           show_figure=show_figure)
         return
 
     @classmethod
@@ -1046,6 +1046,7 @@ class Histogram():
         else:
             num_bins = 10
         return num_bins
+
 
 class Line():
     '''
@@ -1121,10 +1122,11 @@ class Line():
             raise ValueError(
                 'The param "learning_curve_type" must be either "data_learning_curve" or "feature_learning_curve"')
         ax.set_ylabel(score_name, fontsize=16)
-        fig.savefig(os.path.join(savepath,learning_curve_type + '.png'), dpi=DPI, bbox_inches='tight')
+        fig.savefig(os.path.join(savepath, learning_curve_type + '.png'), dpi=DPI, bbox_inches='tight')
         return
 
-### Helpers:
+# Helpers:
+
 
 def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, residuals, model_errors, has_model_errors,
                savepath, data_type, show_figure=False, recalibrate_errors=False, model_errors_cal=None, splits_summary=False):
@@ -1144,21 +1146,21 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                        show_figure=show_figure)
         if splits_summary is True and data_type != 'leaveout':
             Scatter.plot_best_worst_split(savepath=savepath,
-                                      data_type=data_type,
-                                      x_label='values',
-                                      metrics_list=metrics,
-                                      show_figure=show_figure)
+                                          data_type=data_type,
+                                          x_label='values',
+                                          metrics_list=metrics,
+                                          show_figure=show_figure)
             Scatter.plot_best_worst_per_point(savepath=savepath,
-                                      data_type=data_type,
-                                      x_label='values',
-                                      metrics_list=metrics,
-                                      show_figure=show_figure)
+                                              data_type=data_type,
+                                              x_label='values',
+                                              metrics_list=metrics,
+                                              show_figure=show_figure)
             Scatter.plot_predicted_vs_true_bars(savepath=savepath,
-                                      data_type=data_type,
-                                      x_label='values',
-                                      metrics_list=metrics,
-                                      groups=groups,
-                                      show_figure=show_figure)
+                                                data_type=data_type,
+                                                x_label='values',
+                                                metrics_list=metrics,
+                                                groups=groups,
+                                                show_figure=show_figure)
             if groups is not None:
                 Scatter.plot_metric_vs_group(savepath=savepath,
                                              data_type=data_type,
@@ -1197,28 +1199,29 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                  show_figure=show_figure,
                                  is_calibrated=True)
                 Error.plot_rstat_uncal_cal_overlay(savepath=savepath,
-                                                    data_type=data_type,
-                                                    residuals=residuals,
-                                                    model_errors=model_errors,
-                                                   model_errors_cal=model_errors_cal,
-                                                    show_figure=False)
-                Error.plot_real_vs_predicted_error(savepath=savepath,
-                                                    model=model,
-                                                    data_type=data_type,
+                                                   data_type=data_type,
                                                    residuals=residuals,
-                                                    model_errors=model_errors_cal,
-                                                    dataset_stdev=dataset_stdev,
-                                                    show_figure=show_figure,
-                                                    is_calibrated=True)
+                                                   model_errors=model_errors,
+                                                   model_errors_cal=model_errors_cal,
+                                                   show_figure=False)
+                Error.plot_real_vs_predicted_error(savepath=savepath,
+                                                   model=model,
+                                                   data_type=data_type,
+                                                   residuals=residuals,
+                                                   model_errors=model_errors_cal,
+                                                   dataset_stdev=dataset_stdev,
+                                                   show_figure=show_figure,
+                                                   is_calibrated=True)
                 Error.plot_real_vs_predicted_error_uncal_cal_overlay(savepath=savepath,
-                                                                    model=model,
-                                                                    data_type=data_type,
-                                                                    model_errors=model_errors,
+                                                                     model=model,
+                                                                     data_type=data_type,
+                                                                     model_errors=model_errors,
                                                                      model_errors_cal=model_errors_cal,
-                                                                    residuals=residuals,
-                                                                    dataset_stdev=dataset_stdev,
-                                                                    show_figure=False)
+                                                                     residuals=residuals,
+                                                                     dataset_stdev=dataset_stdev,
+                                                                     show_figure=False)
     return
+
 
 def check_dimensions(y):
     """
@@ -1244,8 +1247,10 @@ def check_dimensions(y):
             y = pd.DataFrame(y).squeeze()
     return y
 
+
 def reset_index(y):
     return pd.DataFrame(np.array(y))
+
 
 def trim_array(arr_list):
     """
@@ -1274,6 +1279,7 @@ def trim_array(arr_list):
     arr_list = arr_list_
     return arr_list
 
+
 def rounder(delta):
     """
     Method to obtain number of decimal places to report on plots
@@ -1297,6 +1303,7 @@ def rounder(delta):
         return 0
     else:
         return 0
+
 
 def stat_to_string(name, value, nice_names):
     """
@@ -1328,11 +1335,12 @@ def stat_to_string(name, value, nice_names):
         mean, std = value
         return f'{name}:' + '\n\t' + f'{mean:.3f}' + r'$\pm$' + f'{std:.3f}'
     # has a name and value only
-    if isinstance(value, int) or (isinstance(value, float) and value%1 == 0):
+    if isinstance(value, int) or (isinstance(value, float) and value % 1 == 0):
         return f'{name}: {int(value)}'
     if isinstance(value, float):
         return f'{name}: {value:.3f}'
-    return f'{name}: {value}' # probably a string
+    return f'{name}: {value}'  # probably a string
+
 
 def plot_stats(fig, stats, x_align=0.65, y_align=0.90, font_dict=dict(), fontsize=14):
     """
@@ -1359,10 +1367,11 @@ def plot_stats(fig, stats, x_align=0.65, y_align=0.90, font_dict=dict(), fontsiz
     """
 
     stat_str = '\n'.join(stat_to_string(name, value, nice_names=nice_names())
-                           for name,value in stats.items())
+                         for name, value in stats.items())
 
     fig.text(x_align, y_align, stat_str,
              verticalalignment='top', wrap=True, fontdict=font_dict, fontproperties=FontProperties(size=fontsize))
+
 
 def make_fig_ax(aspect_ratio=0.5, x_align=0.65, left=0.10):
     """
@@ -1385,7 +1394,7 @@ def make_fig_ax(aspect_ratio=0.5, x_align=0.65, left=0.10):
     """
     # Set image aspect ratio:
     w, h = figaspect(aspect_ratio)
-    fig = plt.figure(figsize=(w,h))
+    fig = plt.figure(figsize=(w, h))
     #fig = Figure(figsize=(w, h))
     FigureCanvas(fig)
 
@@ -1393,14 +1402,15 @@ def make_fig_ax(aspect_ratio=0.5, x_align=0.65, left=0.10):
     # https://python4astronomers.github.io/plotting/advanced.html
     #left   = 0.10
     bottom = 0.15
-    right  = 0.01
-    top    = 0.05
+    right = 0.01
+    top = 0.05
     width = x_align - left - right
     height = 1 - bottom - top
     ax = fig.add_axes((left, bottom, width, height), frameon=True)
     fig.set_tight_layout(False)
-    
+
     return fig, ax
+
 
 def make_fig_ax_square(aspect='equal', aspect_ratio=1):
     """
@@ -1423,11 +1433,12 @@ def make_fig_ax_square(aspect='equal', aspect_ratio=1):
     """
     # Set image aspect ratio:
     w, h = figaspect(aspect_ratio)
-    fig = Figure(figsize=(w,h))
+    fig = Figure(figsize=(w, h))
     FigureCanvas(fig)
     ax = fig.add_subplot(111, aspect=aspect)
 
     return fig, ax
+
 
 def make_axis_same(ax, max1, min1):
     """
@@ -1454,6 +1465,7 @@ def make_axis_same(ax, max1, min1):
     ax.set_xticks(ticks)
     ax.set_yticks(ticks)
 
+
 def nice_mean(ls):
     """
     Method to return mean of a list or equivalent array with NaN values
@@ -1472,6 +1484,7 @@ def nice_mean(ls):
         return np.mean(ls)
     return np.nan
 
+
 def nice_std(ls):
     """
     Method to return standard deviation of a list or equivalent array with NaN values
@@ -1489,6 +1502,7 @@ def nice_std(ls):
         return np.std(ls)
     return np.nan
 
+
 def round_down(num, divisor):
     """
     Method to return a rounded down number
@@ -1505,7 +1519,8 @@ def round_down(num, divisor):
 
     """
 
-    return num - (num%divisor)
+    return num - (num % divisor)
+
 
 def round_up(num, divisor):
     """
@@ -1523,6 +1538,7 @@ def round_up(num, divisor):
 
     """
     return float(math.ceil(num / divisor)) * divisor
+
 
 def get_divisor(high, low):
     """
@@ -1560,6 +1576,7 @@ def get_divisor(high, low):
                     divisor = 0.001
     return divisor
 
+
 def recursive_max(arr):
     """
     Method to recursively find the max value of an array of iterables.
@@ -1579,6 +1596,7 @@ def recursive_max(arr):
         recursive_max(e) if isinstance(e, Iterable) else e
         for e in arr
     )
+
 
 def recursive_min(arr):
     """
@@ -1601,6 +1619,7 @@ def recursive_min(arr):
         for e in arr
     )
 
+
 def recursive_max_and_min(arr):
     """
     Method to recursively return max and min of values or iterables in array
@@ -1615,6 +1634,7 @@ def recursive_max_and_min(arr):
 
     """
     return recursive_max(arr), recursive_min(arr)
+
 
 def _set_tick_labels(ax, maxx, minn):
     """
@@ -1633,7 +1653,8 @@ def _set_tick_labels(ax, maxx, minn):
         None
 
     """
-    _set_tick_labels_different(ax, maxx, minn, maxx, minn) # I love it when this happens
+    _set_tick_labels_different(ax, maxx, minn, maxx, minn)  # I love it when this happens
+
 
 def _set_tick_labels_different(ax, max_tick_x, min_tick_x, max_tick_y, min_tick_y):
     """
@@ -1681,6 +1702,7 @@ def _set_tick_labels_different(ax, max_tick_x, min_tick_x, max_tick_y, min_tick_
     ax.set_xticklabels(labels=ticklabels_x, fontsize=14, rotation=rotation)
     ax.set_yticklabels(labels=ticklabels_y, fontsize=14)
 
+
 def _clean_tick_labels(tickvals, delta):
     """
     Method to attempt to clean up axis tick values so they don't overlap from being too dense
@@ -1706,7 +1728,8 @@ def _clean_tick_labels(tickvals, delta):
         tickvals_clean = tickvals
     return tickvals_clean
 
-## Math utilities to aid plot_helper to make ranges
+# Math utilities to aid plot_helper to make ranges
+
 
 def nice_range(lower, upper):
     """
@@ -1724,7 +1747,7 @@ def nice_range(lower, upper):
 
     """
 
-    flipped = 1 # set to -1 for inverted
+    flipped = 1  # set to -1 for inverted
 
     # Case for validation where nan is passed in
     if np.isnan(lower):
@@ -1736,6 +1759,7 @@ def nice_range(lower, upper):
         upper, lower = lower, upper
         flipped = -1
     return [_int_if_int(x) for x in _nice_range_helper(lower, upper)][::flipped]
+
 
 def _nice_range_helper(lower, upper):
     """
@@ -1757,13 +1781,13 @@ def _nice_range_helper(lower, upper):
 
     # special case where lower and upper are the same
     if diff == 0:
-        return [lower,]
+        return [lower, ]
 
     # the exact step needed
     step = diff / steps
 
     # a rough estimate of best step
-    step = _nearest_pow_ten(step) # whole decimal increments
+    step = _nearest_pow_ten(step)  # whole decimal increments
 
     # tune in one the best step size
     factors = [0.1, 0.2, 0.5, 1, 2, 5, 10]
@@ -1772,7 +1796,7 @@ def _nice_range_helper(lower, upper):
     def best_one(steps_factor):
         steps_count, factor = steps_factor
         return abs(steps_count - steps)
-    n_steps, best_factor = min([(diff / (step * f), f) for f in factors], key = best_one)
+    n_steps, best_factor = min([(diff / (step * f), f) for f in factors], key=best_one)
 
     #print('should see n steps', ceil(n_steps + 2))
     # multiply in the optimal factor for getting as close to ten steps as we can
@@ -1785,17 +1809,18 @@ def _nice_range_helper(lower, upper):
     start = _round_up(lower, step)
 
     # prepare for iteration
-    x = start # pointless init
+    x = start  # pointless init
     i = 0
 
     # itereate until we reach upper
     while x < upper - step:
         x = start + i * step
-        yield _three_sigfigs(x) # using sigfigs because of floating point error
+        yield _three_sigfigs(x)  # using sigfigs because of floating point error
         i += 1
 
     # finish off with ending bound
     yield upper
+
 
 def _three_sigfigs(x):
     """
@@ -1811,6 +1836,7 @@ def _three_sigfigs(x):
 
     """
     return _n_sigfigs(x, 3)
+
 
 def _n_sigfigs(x, n):
     """
@@ -1828,7 +1854,7 @@ def _n_sigfigs(x, n):
     sign = 1
     if x == 0:
         return 0
-    if x < 0: # case for negatives
+    if x < 0:  # case for negatives
         x = -x
         sign = -1
     if x < 1:
@@ -1836,6 +1862,7 @@ def _n_sigfigs(x, n):
     else:
         base = (n-1) - round(log(x, 10))
     return sign * round(x, base)
+
 
 def _nearest_pow_ten(x):
     """
@@ -1853,10 +1880,11 @@ def _nearest_pow_ten(x):
     sign = 1
     if x == 0:
         return 0
-    if x < 0: # case for negatives
+    if x < 0:  # case for negatives
         x = -x
         sign = -1
     return sign*10**ceil(log(x, 10))
+
 
 def _int_if_int(x):
     """
@@ -1875,6 +1903,7 @@ def _int_if_int(x):
         return int(x)
     return x
 
+
 def _round_up(x, inc):
     """
     Method to round up the value of x
@@ -1891,44 +1920,45 @@ def _round_up(x, inc):
 
     """
     sign = 1
-    if x < 0: # case for negative
+    if x < 0:  # case for negative
         x = -x
         sign = -1
 
     return sign * inc * ceil(x / inc)
 
+
 def nice_names():
     nice_names = {
-    # classification:
-    'accuracy': 'Accuracy',
-    'f1_binary': '$F_1$',
-    'f1_macro': 'f1_macro',
-    'f1_micro': 'f1_micro',
-    'f1_samples': 'f1_samples',
-    'f1_weighted': 'f1_weighted',
-    'log_loss': 'log_loss',
-    'precision_binary': 'Precision',
-    'precision_macro': 'prec_macro',
-    'precision_micro': 'prec_micro',
-    'precision_samples': 'prec_samples',
-    'precision_weighted': 'prec_weighted',
-    'recall_binary': 'Recall',
-    'recall_macro': 'rcl_macro',
-    'recall_micro': 'rcl_micro',
-    'recall_samples': 'rcl_samples',
-    'recall_weighted': 'rcl_weighted',
-    'roc_auc': 'ROC_AUC',
-    # regression:
-    'explained_variance': 'expl_var',
-    'mean_absolute_error': 'MAE',
-    'mean_squared_error': 'MSE',
-    'mean_squared_log_error': 'MSLE',
-    'median_absolute_error': 'MedAE',
-    'root_mean_squared_error': 'RMSE',
-    'rmse_over_stdev': r'RMSE/$\sigma_y$',
-    'r2_score': '$R^2$',
-    'r2_score_noint': '$R^2_{noint}$',
-    'r2_score_adjusted': '$R^2_{adjusted}$',
-    'r2_score_fitted': '$R^2_{fitted}$'
+        # classification:
+        'accuracy': 'Accuracy',
+        'f1_binary': '$F_1$',
+        'f1_macro': 'f1_macro',
+        'f1_micro': 'f1_micro',
+        'f1_samples': 'f1_samples',
+        'f1_weighted': 'f1_weighted',
+        'log_loss': 'log_loss',
+        'precision_binary': 'Precision',
+        'precision_macro': 'prec_macro',
+        'precision_micro': 'prec_micro',
+        'precision_samples': 'prec_samples',
+        'precision_weighted': 'prec_weighted',
+        'recall_binary': 'Recall',
+        'recall_macro': 'rcl_macro',
+        'recall_micro': 'rcl_micro',
+        'recall_samples': 'rcl_samples',
+        'recall_weighted': 'rcl_weighted',
+        'roc_auc': 'ROC_AUC',
+        # regression:
+        'explained_variance': 'expl_var',
+        'mean_absolute_error': 'MAE',
+        'mean_squared_error': 'MSE',
+        'mean_squared_log_error': 'MSLE',
+        'median_absolute_error': 'MedAE',
+        'root_mean_squared_error': 'RMSE',
+        'rmse_over_stdev': r'RMSE/$\sigma_y$',
+        'r2_score': '$R^2$',
+        'r2_score_noint': '$R^2_{noint}$',
+        'r2_score_adjusted': '$R^2_{adjusted}$',
+        'r2_score_fitted': '$R^2_{fitted}$'
     }
     return nice_names

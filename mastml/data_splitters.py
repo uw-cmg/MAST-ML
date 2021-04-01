@@ -19,6 +19,7 @@ from math import ceil
 import warnings
 import shutil
 import keras
+from scipy.spatial.distance import minkowski
 
 try:
     from matminer.featurizers.composition import ElementFraction
@@ -36,6 +37,7 @@ from mastml.feature_selectors import NoSelect
 from mastml.error_analysis import ErrorUtils
 from mastml.metrics import Metrics
 from mastml.preprocessing import NoPreprocessor
+
 
 class BaseSplitter(ms.BaseCrossValidator):
     """
@@ -171,6 +173,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             Returns:
                 None, but outputs help to screen
     """
+
     def __init__(self):
         super(BaseSplitter, self).__init__()
         self.splitter = self.__class__.__name__
@@ -222,7 +225,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             preprocessor = NoPreprocessor()
 
         if metrics is None:
-            metrics =['mean_absolute_error']
+            metrics = ['mean_absolute_error']
 
         if best_run_metric is None:
             best_run_metric = metrics[0]
@@ -322,7 +325,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                         y_pred_leaveout = best_model.predict(X=X_leaveout_preprocessed)
                         y_pred_leaveout = pd.Series(y_pred_leaveout, name='y_pred_leaveout')
                         stats_dict_leaveout = Metrics(metrics_list=metrics).evaluate(y_true=y_leaveout,
-                                                                                    y_pred=y_pred_leaveout)
+                                                                                     y_pred=y_pred_leaveout)
                         df_stats_leaveout = pd.DataFrame().from_records([stats_dict_leaveout])
                         df_stats_leaveout.to_excel(os.path.join(splitouterpath, 'leaveout_stats_summary.xlsx'), index=False)
 
@@ -373,10 +376,10 @@ class BaseSplitter(ms.BaseCrossValidator):
 
                         if recalibrate_errors is True:
                             recalibrate_dict = self._get_recalibration_params(savepath=splitouterpath,
-                                                                          data_type='test')
+                                                                              data_type='test')
                             model_errors_leaveout_cal = recalibrate_dict['a']*model_errors_leaveout+recalibrate_dict['b']
                             self._save_split_data(df=model_errors_leaveout_cal, filename='model_errors_leaveout_calibrated',
-                                              savepath=splitouterpath, columns='model_errors')
+                                                  savepath=splitouterpath, columns='model_errors')
                         else:
                             model_errors_leaveout_cal = None
 
@@ -578,7 +581,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             self._save_split_data(df=model_errors_test_all_cal, filename='model_errors_test_calibrated', savepath=splitdir, columns='model_errors')
 
             model_errors_train_all_cal, a, b = ErrorUtils()._recalibrate_errors(model_errors=model_errors_train_all,
-                                                                               residuals=residuals_train_all)
+                                                                                residuals=residuals_train_all)
 
             # Write the recalibration values to file
             recal_df = pd.DataFrame({'slope (a)': a, 'intercept (b)': b}, index=[0])
@@ -748,7 +751,7 @@ class BaseSplitter(ms.BaseCrossValidator):
 
         # Write the test group to a text file,
         if groups is not None:
-            with open(os.path.join(splitpath,'test_group.txt'), 'w') as f:
+            with open(os.path.join(splitpath, 'test_group.txt'), 'w') as f:
                 f.write(str(groups))
         #    with open(os.path.join(splitpath,'train_groups.txt'), 'w') as f:
         #        for group in train_groups:
@@ -775,13 +778,18 @@ class BaseSplitter(ms.BaseCrossValidator):
 
         dirname = model_name+'_'+self.__class__.__name__+'_'+preprocessor.__class__.__name__+'_'+selector.__class__.__name__
         dirname = f"{dirname}_{now.month:02d}_{now.day:02d}" \
-                        f"_{now.hour:02d}_{now.minute:02d}_{now.second:02d}"
+            f"_{now.hour:02d}_{now.minute:02d}_{now.second:02d}"
         if savepath == None:
             splitdir = os.getcwd()
         else:
             splitdir = os.path.join(savepath, dirname)
         if not os.path.exists(splitdir):
             os.mkdir(splitdir)
+        try:
+            self.splitdir = splitdir
+        except AttributeError:
+            pass
+        # self.splitdir = splitdir
         return splitdir
 
     def _save_split_data(self, df, filename, savepath, columns):
@@ -842,7 +850,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             print("Error: couldn't find preprocessor .pkl file in best split")
         if not os.path.exists(os.path.join(best_split, model_name)):
             print("Error: couldn't find model .pkl file in best split")
-        best_split_dict['preprocessor']  = os.path.join(best_split, preprocessor_name)
+        best_split_dict['preprocessor'] = os.path.join(best_split, preprocessor_name)
         best_split_dict['model'] = os.path.join(best_split, model_name)
         best_split_dict['features'] = os.path.join(best_split, 'selected_features.txt')
         best_split_dict['X_train'] = os.path.join(best_split, 'X_train.xlsx')
@@ -867,8 +875,8 @@ class BaseSplitter(ms.BaseCrossValidator):
     def _get_recalibration_params(self, savepath, data_type):
         recalibrate_dict = pd.read_excel(os.path.join(savepath, 'recalibration_parameters_'+str(data_type)+'.xlsx'), engine='openpyxl').to_dict('records')[0]
         recalibrate_dict_ = dict()
-        recalibrate_dict_['a']=recalibrate_dict['slope (a)']
-        recalibrate_dict_['b']=recalibrate_dict['intercept (b)']
+        recalibrate_dict_['a'] = recalibrate_dict['slope (a)']
+        recalibrate_dict_['b'] = recalibrate_dict['intercept (b)']
         return recalibrate_dict_
 
     def help(self):
@@ -881,6 +889,7 @@ class BaseSplitter(ms.BaseCrossValidator):
         print('Class attributes for,', self.splitter)
         pprint(self.splitter.__dict__)
         return
+
 
 class SklearnDataSplitter(BaseSplitter):
     """
@@ -917,18 +926,21 @@ class SklearnDataSplitter(BaseSplitter):
             Returns:
                 splitdir: (str), string containing the new subdirectory to save results to
     """
+
     def __init__(self, splitter, **kwargs):
         super(SklearnDataSplitter, self).__init__()
         self.splitter = getattr(sklearn.model_selection, splitter)(**kwargs)
 
     def get_n_splits(self, X=None, y=None, groups=None):
-        return self.splitter.get_n_splits(X, y , groups)
+        return self.splitter.get_n_splits(X, y, groups)
 
     def split(self, X, y=None, groups=None):
         return self.splitter.split(X, y, groups)
 
     def _setup_savedir(self, model, selector, preprocessor, savepath):
         now = datetime.now()
+        if model.model.__class__.__name__ == 'BaggingRegressor':
+            dirname = model.model.__class__.__name__ + '_' + model.base_estimator_ + '_' + self.splitter.__class__.__name__ + '_' + preprocessor.__class__.__name__+'_' + selector.__class__.__name__
         try:
             model_name = model.model.__class__.__name__
         except:
@@ -939,7 +951,7 @@ class SklearnDataSplitter(BaseSplitter):
         else:
             dirname = model_name +'_'+self.splitter.__class__.__name__+'_'+preprocessor.__class__.__name__+'_'+selector.__class__.__name__
         dirname = f"{dirname}_{now.month:02d}_{now.day:02d}" \
-                        f"_{now.hour:02d}_{now.minute:02d}_{now.second:02d}"
+            f"_{now.hour:02d}_{now.minute:02d}_{now.second:02d}"
         if savepath == None:
             splitdir = os.getcwd()
         else:
@@ -947,6 +959,7 @@ class SklearnDataSplitter(BaseSplitter):
         if not os.path.exists(splitdir):
             os.mkdir(splitdir)
         return splitdir
+
 
 class NoSplit(BaseSplitter):
     """
@@ -974,6 +987,7 @@ class NoSplit(BaseSplitter):
                 (numpy array), array of train and test indices (all data used as train and test for NoSplit)
 
     """
+
     def __init__(self):
         super(NoSplit, self).__init__()
 
@@ -983,6 +997,7 @@ class NoSplit(BaseSplitter):
     def split(self, X, y=None, groups=None):
         indices = np.arange(X.shape[0])
         return [[indices, indices]]
+
 
 class JustEachGroup(BaseSplitter):
     """
@@ -1013,6 +1028,7 @@ class JustEachGroup(BaseSplitter):
                 (numpy array), array of train and test indices
 
     """
+
     def __init__(self):
         super(JustEachGroup, self).__init__()
 
@@ -1026,6 +1042,7 @@ class JustEachGroup(BaseSplitter):
         for train_index, test_index in lpgo.split(X, y, groups):
             trains_tests.append((train_index, test_index))
         return trains_tests
+
 
 class LeaveCloseCompositionsOut(BaseSplitter):
     """
@@ -1084,6 +1101,7 @@ class LeaveCloseCompositionsOut(BaseSplitter):
     def get_n_splits(self, X=None, y=None, groups=None):
         return len(X)
 
+
 class LeaveOutPercent(BaseSplitter):
     """
     Class to train the model using a certain percentage of data as training data
@@ -1113,6 +1131,7 @@ class LeaveOutPercent(BaseSplitter):
                 (numpy array), array of train and test indices
 
     """
+
     def __init__(self, percent_leave_out=0.2, n_repeats=5):
         super(LeaveOutPercent, self).__init__()
         self.percent_leave_out = percent_leave_out
@@ -1128,6 +1147,140 @@ class LeaveOutPercent(BaseSplitter):
             trains, tests = ms.train_test_split(indices, test_size=self.percent_leave_out, random_state=np.random.randint(1, 1000), shuffle=True)
             split.append((trains, tests))
         return split
+
+
+class LeaveOutTwinCV(BaseSplitter):
+    """
+    Class to remove data twins from the test data.
+
+    Args:
+        threshold: (int), the threshold at which two data points are considered twins. Default 0.
+        ord: (int), The order of the norm of the difference (see scipy.spatial.distance.minkowski). Default 2 (Euclidean Distance).
+        auto_threshold: (boolean), true if threshold should be automatically increased until twins corresponding to the ceiling parameter are found. Default False.
+        ceiling: (float), fraction of total data to find as twins. Default 0.
+
+    Methods:
+        get_n_splits: method to calculate the number of splits to perform across all splitters
+
+            Args:
+                X: (numpy array), array of X features
+                y: (numpy array), array of y data
+                groups: (numpy array), array of group labels
+
+            Returns:
+                (int), the number 1 always
+
+        split: method to perform split into train indices and test indices
+
+            Args:
+                X: (numpy array), array of X features
+                y: (numpy array), array of y data
+                groups: (numpy array), array of group labels
+
+            Returns:
+                (numpy array), array of train and test indices
+    """
+
+    def __init__(self, threshold=0, ord=2, debug=False, auto_threshold=False, ceiling=0):
+        params = locals()
+        self.threshold = threshold
+        self.splitter = self.__class__.__name__
+        self.debug = debug
+        self.ord = ord
+        self.auto_threshold = auto_threshold
+        self.ceiling = ceiling
+        self.splitdir = None
+        if self.debug:
+            for k, v in params.items():
+                print(f"{k}\t\t{v}")
+
+    def get_n_splits(self, X=None, y=None, groups=None):
+        # self.splitdir (if it exists at this point) must be None else the internal call will create a excel file
+        try:
+            save_dir = self.splitdir
+            self.splitdir = None
+        except AttributeError:
+            pass
+        # internal call
+        actual_splits = self.split(X, y, groups)
+        try:
+            self.splitdir = save_dir
+        except AttributeError:
+            pass
+        return len(actual_splits)
+
+    def split(self, X, y, X_noinput=None, groups=None):
+        X = np.array(X)
+        y = np.array(y)
+        origIdx = set(np.arange(X.shape[0]))
+        twinIdx = set()
+
+        l = len(X)
+        n = max(int(self.ceiling * l), 2)
+
+        autothreshold_num_twins = []
+
+        threshold = self.threshold
+
+        # compute all twins
+        while (len(twinIdx) < n):
+            for i, a in enumerate(X):
+                for j, b in enumerate(X):
+                    if (i != j and j > i):
+                        # calculate distance
+                        if (minkowski(a, b, self.ord) <= threshold):
+                            if i not in twinIdx:
+                                twinIdx.add(i)
+                            if j not in twinIdx:
+                                twinIdx.add(j)
+            # update threshold if needed
+            if (not self.auto_threshold):
+                break
+            autothreshold_num_twins.append([threshold, len(twinIdx)])
+            if threshold <= 0:
+                threshold = 0.1
+            threshold *= 1.1
+            if self.debug:
+                print(threshold)
+
+        if self.debug:
+            print("Thresholds / Number of Twins")
+            for th, num in autothreshold_num_twins:
+                print(f"{th}\t{num}")
+
+        if (self.auto_threshold):
+            print("AutoThreshold was enabled for LeaveOutTwinCV.")
+        #     print("Thresholds / Number of Twins")
+        #     for th, num in autothreshold_num_twins:
+        #         print(f"{th}\t{num}")
+
+        if self.splitdir != None:
+            autothreshold_num_twins = pd.DataFrame(data=autothreshold_num_twins, columns=["Threshold", "n_twins"])
+            filename = "autothreshold_num_twins"
+            autothreshold_num_twins.to_excel(os.path.join(self.splitdir, filename)+'.xlsx', index=False)
+
+        # remove twins from original indices
+        twinIdx = list(twinIdx)
+        for t in twinIdx:
+            if t in origIdx:
+                origIdx.remove(t)
+        origIdx = list(origIdx)
+
+        if self.debug:
+            print("Non-Twins / Twins")
+            print(origIdx)
+            print(twinIdx)
+
+        if not origIdx:
+            print("Warning: All data was marked as twins. Consider reducing threshold or enabling autothreshold. If you are using autothreshold make sure ceiling < 1.")
+        if not twinIdx:
+            print("Warning: No data twins were found, returning train/test split as empty. Consider increasing threshold or setting autothreshold to True.")
+
+        splits = []
+        splits.append([origIdx, twinIdx])
+        splits.append([twinIdx, origIdx])
+        return splits
+
 
 class Bootstrap(BaseSplitter):
     """
@@ -1227,7 +1380,7 @@ class Bootstrap(BaseSplitter):
             train = rng.randint(0, self.train_size,
                                 size=(self.train_size,))
             test = rng.randint(0, self.test_size,
-                                size=(self.test_size,))
+                               size=(self.test_size,))
             yield ind_train[train], ind_test[test]
 
     def __repr__(self):

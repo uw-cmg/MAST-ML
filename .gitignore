@@ -4,3 +4,4 @@ results/
 .ipynb_checkpoints/
 dist/
 mastml.egg-info/
+.DS_Store

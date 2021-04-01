@@ -1,12 +1,13 @@
+from mastml.datasets import SklearnDatasets, LocalDatasets, FoundryDatasets, DataCleaning, MatminerDatasets
 import unittest
 import numpy as np
 import pandas as pd
 import os
 import sys
 import shutil
+import sklearn.datasets
 sys.path.insert(0, os.path.abspath('../../../'))
 
-from mastml.datasets import SklearnDatasets, LocalDatasets, FoundryDatasets, DataCleaning, MatminerDatasets
 
 class TestDatasets(unittest.TestCase):
 
@@ -19,13 +20,13 @@ class TestDatasets(unittest.TestCase):
         breast_cancerX, breast_cancery = sklearndata.load_breast_cancer()
         wineX, winey = sklearndata.load_wine()
         linnerudX, linnerudy = sklearndata.load_linnerud()
-        self.assertEqual(bostonX.shape, (506,13))
-        self.assertEqual(irisX.shape, (150,4))
-        self.assertEqual(digitsX.shape, (1797,64))
-        self.assertEqual(diabetesX.shape, (442,10))
-        self.assertEqual(breast_cancerX.shape, (569,30))
-        self.assertEqual(wineX.shape, (178,13))
-        self.assertEqual(linnerudX.shape, (20,3))
+        self.assertEqual(bostonX.shape, (506, 13))
+        self.assertEqual(irisX.shape, (150, 4))
+        self.assertEqual(digitsX.shape, (1797, 64))
+        self.assertEqual(diabetesX.shape, (442, 10))
+        self.assertEqual(breast_cancerX.shape, (569, 30))
+        self.assertEqual(wineX.shape, (178, 13))
+        self.assertEqual(linnerudX.shape, (20, 3))
         return
 
     '''
@@ -45,7 +46,7 @@ class TestDatasets(unittest.TestCase):
         data_dict = d.load_data()
         X = data_dict['X']
         y = data_dict['y']
-        self.assertEqual(X.shape, (408,287))
+        self.assertEqual(X.shape, (408, 287))
         self.assertEqual(y.shape, (408,))
         return
 
@@ -64,6 +65,7 @@ class TestDatasets(unittest.TestCase):
         foundrydata.download_data(name='pub_57_wu_highthroughput', download=False)
         return
 
+
 class TestDataCleaning(unittest.TestCase):
 
     def test_datacleaning(self):
@@ -80,5 +82,6 @@ class TestDataCleaning(unittest.TestCase):
         shutil.rmtree(cleaner.splitdir)
         return
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     unittest.main()

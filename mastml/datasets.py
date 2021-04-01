@@ -23,6 +23,7 @@ except:
     print('To import data from figshare, manually install figshare via git clone of '
           'git clone https://github.com/cognoma/figshare.git')
 
+
 class SklearnDatasets():
     """
     Class wrapping the sklearn.datasets funcionality for easy import of toy datasets from sklearn. Added some changes
@@ -51,6 +52,7 @@ class SklearnDatasets():
         load_breast_cancer: Loads the breast cancer data set (classification)
 
     """
+
     def __init__(self, return_X_y=True, as_frame=False):
         self.return_X_y = return_X_y
         self.as_frame = as_frame
@@ -69,8 +71,8 @@ class SklearnDatasets():
     def load_diabetes(self):
         return sklearn.datasets.load_diabetes(return_X_y=self.return_X_y, as_frame=self.as_frame)
 
-    def load_digits(self, n_class):
-        return sklearn.datasets.load_digits(self.return_X_y, self.as_frame)
+    def load_digits(self, n_class=10):
+        return sklearn.datasets.load_digits(return_X_y=self.return_X_y, as_frame=self.as_frame, n_class=n_class)
 
     def load_linnerud(self):
         return sklearn.datasets.load_linnerud(return_X_y=self.return_X_y, as_frame=self.as_frame)
@@ -87,6 +89,7 @@ class SklearnDatasets():
             return pd.DataFrame(X, columns=["x"+str(i) for i in range(n_features)]), pd.DataFrame(y, columns=['target'])
         else:
             return X, y
+
 
 class LocalDatasets():
     """
@@ -132,6 +135,7 @@ class LocalDatasets():
                 X_extra: (pd.DataFrame or numpy array), dataframe or array of extra data not used in fitting (e.g. references, compositions, other notes)
                 X_testdata: (list), list of arrays denoting indices of left-out data sets
     """
+
     def __init__(self, file_path, feature_names=None, target=None, extra_columns=None, group_column=None,
                  testdata_columns=None, as_frame=False):
         self.file_path = file_path
@@ -220,6 +224,7 @@ class LocalDatasets():
                 data_dict[k] = np.array(v)
             return data_dict
 
+
 class FigshareDatasets():
     """
     Class to download datasets hosted on Figshare. To install: git clone https://github.com/cognoma/figshare.git
@@ -241,6 +246,7 @@ class FigshareDatasets():
             Returns:
                 None
     """
+
     def __init__(self):
         pass
 
@@ -253,6 +259,7 @@ class FigshareDatasets():
             except shutil.Error:
                 print('Warning: could not move downloaded data to specified savepath, maybe because savepath is the current working directory')
         return
+
 
 class FoundryDatasets():
     """
@@ -275,6 +282,7 @@ class FoundryDatasets():
             Returns:
                 None
     """
+
     def __init__(self, no_local_server, anonymous, test):
         self.no_local_server = no_local_server
         self.anonymous = anonymous
@@ -299,6 +307,7 @@ class FoundryDatasets():
                 print('Downloading dataset from MDF')
                 self.mdf.globus_download(results=result)
         return
+
 
 class MatminerDatasets():
     """
@@ -329,6 +338,7 @@ class MatminerDatasets():
             Returns:
                 None.
     """
+
     def __init__(self):
         pass
 
@@ -343,6 +353,7 @@ class MatminerDatasets():
     def get_available_datasets(self):
         datasets = get_available_datasets()
         return
+
 
 class DataCleaning():
     """
@@ -407,6 +418,7 @@ class DataCleaning():
                 splitdir: (str), string containing the new subdirectory to save results to
 
     """
+
     def __init__(self):
         pass
 
@@ -464,7 +476,7 @@ class DataCleaning():
         now = datetime.now()
         dirname = self.__class__.__name__
         dirname = f"{dirname}_{now.month:02d}_{now.day:02d}" \
-                        f"_{now.hour:02d}_{now.minute:02d}_{now.second:02d}"
+            f"_{now.hour:02d}_{now.minute:02d}_{now.second:02d}"
         if savepath == None:
             splitdir = os.getcwd()
         else:
@@ -472,6 +484,7 @@ class DataCleaning():
         if not os.path.exists(splitdir):
             os.mkdir(splitdir)
         return splitdir
+
 
 class DataUtilities():
     """
@@ -551,6 +564,7 @@ class DataUtilities():
         pd.DataFrame().from_dict(data=d).to_excel(os.path.join(savepath, 'data_columns_with_strings.xlsx'))
         return
 
+
 class PPCA():
     """
     Class to perform probabilistic principal component analysis (PPCA) to fill in missing data.
@@ -560,6 +574,7 @@ class PPCA():
     class below was not developed by and is not owned by the University of Wisconsin-Madison MAST-ML development team.
 
     """
+
     def __init__(self):
 
         self.raw = None
@@ -637,7 +652,7 @@ class PPCA():
             if np.isinf(det):
                 det = abs(np.linalg.slogdet(Sx)[1])
             v1 = N * (D * np.log(ss) + np.trace(Sx) - det) \
-                 + np.trace(XX) - missing * np.log(ss0)
+                + np.trace(XX) - missing * np.log(ss0)
             diff = abs(v1 / v0 - 1)
             if verbose:
                 print(diff)
@@ -690,4 +705,3 @@ class PPCA():
         assert os.path.isfile(fpath)
 
         self.C = np.load(fpath)
-
