@@ -126,7 +126,7 @@ class ErrorUtils():
         return bin_values, rms_residual_values, num_values_per_bin, number_of_bins
 
     @classmethod
-    def _get_model_errors(cls, model, X, X_train, X_test, error_method='stdev_weak_learners'):
+    def _get_model_errors(cls, model, X, X_train, X_test, error_method='stdev_weak_learners', remove_outlier_learners=False):
         """
         Method to calculate prediction intervals when using Random Forest and Gaussian Process regression models.
 
@@ -165,6 +165,7 @@ class ErrorUtils():
                 model_errors = np.sqrt(model_errors_var)
 
             elif error_method == 'stdev_weak_learners':
+                num_removed_learners = list()
                 for x in range(len(X_aslist)):
                     preds = list()
                     if model.model.__class__.__name__ == 'RandomForestRegressor':
@@ -182,6 +183,13 @@ class ErrorUtils():
                     elif model.model.__class__.__name__ == 'AdaBoostRegressor':
                         for pred in model.model.estimators_:
                             preds.append(pred.predict(np.array(X_aslist[x]).reshape(1, -1))[0])
+
+                    # HERE flag outlier predictions, perhaps result of e.g. numerical issues in ensemble of models
+                    if remove_outlier_learners == True:
+                        preds, num_outliers = cls._remove_outlier_preds(preds=preds)
+                        num_removed_learners.append(num_outliers)
+                    else:
+                        num_removed_learners.append(0)
 
                     e_down = np.std(preds)
                     e_up = np.std(preds)
@@ -216,8 +224,28 @@ class ErrorUtils():
                     indices_TF.append(True)
 
         model_errors = pd.Series(model_errors, name='model_errors')
+        num_removed_learners = pd.Series(num_removed_learners, name='num_removed_learners')
 
-        return model_errors
+        return model_errors, num_removed_learners
+
+    @classmethod
+    def _remove_outlier_preds(cls, preds):
+        # set the outlier flag to be number of standard deviations, obtained by dividing 2*number of predictors by 100.
+        n_stdev = 3
+        mean_pred = np.mean(preds)
+        stdev_pred = np.std(preds)
+        preds_cleaned = list()
+        num_outliers = 0
+        for pred in preds:
+            if pred < mean_pred-n_stdev*stdev_pred:
+                num_outliers += 1
+            elif pred > mean_pred+n_stdev*stdev_pred:
+                num_outliers += 1
+            else:
+                preds_cleaned.append(pred)
+        #print('num outliers', num_outliers)
+        #print('Found number of outlier predictions in ensemble error analysis:', num_outliers, 'which reduces number of ensemble predictions used in error analysis from ', len(preds), 'to ', len(preds_cleaned))
+        return np.array(preds_cleaned), num_outliers
 
 class CorrectionFactors():
     '''
