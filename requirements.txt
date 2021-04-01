@@ -2,7 +2,7 @@ citrination-client
 dlhub_sdk
 globus_nexus_client
 globus_sdk
-keras==2.3.1
+keras
 matminer
 matplotlib
 mdf_forge
@@ -11,7 +11,7 @@ numpy
 openpyxl
 pandas
 pymatgen<=2021.3.9
-tensorflow==1.15.0
+tensorflow>=2.2.2
 scikit-learn
 scikit-optimize
 scipy
