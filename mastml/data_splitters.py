@@ -18,6 +18,7 @@ import joblib
 from math import ceil
 import warnings
 import shutil
+import keras
 
 try:
     from matminer.featurizers.composition import ElementFraction
@@ -189,8 +190,8 @@ class BaseSplitter(ms.BaseCrossValidator):
 
     def evaluate(self, X, y, models, preprocessor=None, groups=None, hyperopts=None, selectors=None, metrics=None,
                  plots=['Histogram', 'Scatter', 'Error'], savepath=None, X_extra=None, leaveout_inds=list(list()),
-                 best_run_metric=None, nested_CV=False, error_method='stdev_weak_learners', recalibrate_errors=False,
-                 verbosity=1):
+                 best_run_metric=None, nested_CV=False, error_method='stdev_weak_learners', remove_outlier_learners=False,
+                 recalibrate_errors=False, verbosity=1):
 
         if nested_CV == True:
             if self.__class__.__name__ == 'NoSplit':
@@ -236,7 +237,12 @@ class BaseSplitter(ms.BaseCrossValidator):
         for model, hyperopt in zip(models, hyperopts):
 
             # See if the model used is amenable to uncertainty (error) analysis
-            if model.model.__class__.__name__ in ['RandomForestRegressor',
+            try:
+                model_name = model.model.__class__.__name__
+            except:
+                model_name = model.__class__.__name__
+
+            if model_name in ['RandomForestRegressor',
                                                      'GradientBoostingRegressor',
                                                      'GaussianProcessRegressor',
                                                      'BaggingRegressor',
@@ -280,6 +286,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                   train_inds,
                                                   test_inds,
                                                   model,
+                                                  model_name,
                                                   selector,
                                                   preprocessor,
                                                   X_extra,
@@ -290,12 +297,14 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                   plots,
                                                   has_model_errors,
                                                   error_method,
+                                                  remove_outlier_learners,
                                                   recalibrate_errors,
                                                   verbosity=verbosity)
                         split_outer_count += 1
 
                         best_split_dict = self._get_best_split(savepath=splitouterpath, model=model,
-                                                               preprocessor=preprocessor, best_run_metric=best_run_metric)
+                                                               preprocessor=preprocessor, best_run_metric=best_run_metric,
+                                                               model_name=model_name)
                         # Copy the best model, selected features and preprocessor to this outer directory
                         shutil.copy(best_split_dict['preprocessor'], splitouterpath)
                         shutil.copy(best_split_dict['model'], splitouterpath)
@@ -304,13 +313,14 @@ class BaseSplitter(ms.BaseCrossValidator):
                         # Load in the best model, preprocessor and evaluate the left-out data stats
                         best_model = joblib.load(best_split_dict['model'])
                         preprocessor = joblib.load(best_split_dict['preprocessor'])
-                        X_train_bestmodel = preprocessor.transform(pd.read_excel(best_split_dict['X_train'])) # Need to preprocess the Xtrain data
+                        X_train_bestmodel = preprocessor.transform(pd.read_excel(best_split_dict['X_train'], engine='openpyxl')) # Need to preprocess the Xtrain data
 
                         with open(os.path.join(splitouterpath, 'selected_features.txt')) as f:
                             selected_features = [line.rstrip() for line in f]
                         X_leaveout = X_leaveout[selected_features]
                         X_leaveout_preprocessed = preprocessor.transform(X=X_leaveout)
                         y_pred_leaveout = best_model.predict(X=X_leaveout_preprocessed)
+                        y_pred_leaveout = pd.Series(y_pred_leaveout, name='y_pred_leaveout')
                         stats_dict_leaveout = Metrics(metrics_list=metrics).evaluate(y_true=y_leaveout,
                                                                                     y_pred=y_pred_leaveout)
                         df_stats_leaveout = pd.DataFrame().from_records([stats_dict_leaveout])
@@ -337,13 +347,16 @@ class BaseSplitter(ms.BaseCrossValidator):
                         self._save_split_data(df=residuals_train_all, filename='residuals_train', savepath=splitouterpath, columns='residuals')
 
                         if has_model_errors is True:
-                            model_errors_leaveout = ErrorUtils()._get_model_errors(model=best_model,
+                            model_errors_leaveout, num_removed_learners_leaveout = ErrorUtils()._get_model_errors(model=best_model,
                                                                                     X=X_leaveout_preprocessed,
                                                                                     X_train=X_train_bestmodel,
                                                                                     X_test=X_leaveout_preprocessed,
-                                                                                   error_method=error_method)
+                                                                                   error_method=error_method,
+                                                                                    remove_outlier_learners=remove_outlier_learners)
                             self._save_split_data(df=model_errors_leaveout, filename='model_errors_leaveout',
                                                   savepath=splitouterpath, columns='model_errors')
+                            self._save_split_data(df=num_removed_learners_leaveout, filename='num_removed_learners_leaveout',
+                                                  savepath=splitouterpath, columns='num_removed_learners')
                         else:
                             model_errors_leaveout = None
 
@@ -417,7 +430,9 @@ class BaseSplitter(ms.BaseCrossValidator):
 
                     if has_model_errors is True:
                         model_errors_leaveout_all = self._collect_data(filename='model_errors_leaveout', savepath=splitdir)
+                        num_removed_learners_leaveout_all = self._collect_data(filename='num_removed_learners_leaveout', savepath=splitdir)
                         self._save_split_data(df=model_errors_leaveout_all, filename='model_errors_leaveout', savepath=splitdir, columns='model_errors')
+                        self._save_split_data(df=num_removed_learners_leaveout_all, filename='num_removed_learners_leaveout', savepath=splitdir, columns='num_removed_learners')
                         if recalibrate_errors is True:
                             model_errors_leaveout_all_calibrated = self._collect_data(filename='model_errors_leaveout_calibrated', savepath=splitdir)
                             self._save_split_data(df=model_errors_leaveout_all_calibrated, filename='model_errors_leaveout_calibrated', savepath=splitdir, columns='model_errors')
@@ -461,6 +476,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                                               train_inds,
                                               test_inds,
                                               model,
+                                              model_name,
                                               selector,
                                               preprocessor,
                                               X_extra,
@@ -471,20 +487,22 @@ class BaseSplitter(ms.BaseCrossValidator):
                                               plots,
                                               has_model_errors,
                                               error_method,
+                                              remove_outlier_learners,
                                               recalibrate_errors,
                                               verbosity=verbosity)
 
                     best_split_dict = self._get_best_split(savepath=splitdir, model=model,
-                                                           preprocessor=preprocessor, best_run_metric=best_run_metric)
+                                                           preprocessor=preprocessor, best_run_metric=best_run_metric,
+                                                           model_name=model_name)
                     # Copy the best model, selected features and preprocessor to this outer directory
                     shutil.copy(best_split_dict['preprocessor'], splitdir)
                     shutil.copy(best_split_dict['model'], splitdir)
                     shutil.copy(best_split_dict['features'], splitdir)
         return
 
-    def _evaluate_split_sets(self, X_splits, y_splits, train_inds, test_inds, model, selector, preprocessor,
+    def _evaluate_split_sets(self, X_splits, y_splits, train_inds, test_inds, model, model_name, selector, preprocessor,
                              X_extra, groups, splitdir, hyperopt, metrics, plots, has_model_errors, error_method,
-                             recalibrate_errors, verbosity):
+                             remove_outlier_learners, recalibrate_errors, verbosity):
         split_count = 0
         for Xs, ys, train_ind, test_ind in zip(X_splits, y_splits, train_inds, test_inds):
             model_orig = copy.deepcopy(model)
@@ -511,9 +529,10 @@ class BaseSplitter(ms.BaseCrossValidator):
             splitpath = os.path.join(splitdir, 'split_' + str(split_count))
             os.mkdir(splitpath)
 
-            self._evaluate_split(X_train, X_test, y_train, y_test, model_orig, preprocessor_orig, selector_orig,
+            self._evaluate_split(X_train, X_test, y_train, y_test, model_orig, model_name, preprocessor_orig, selector_orig,
                                  hyperopt, metrics, plots, group,
-                                 splitpath, has_model_errors, X_extra_train, X_extra_test, error_method, verbosity)
+                                 splitpath, has_model_errors, X_extra_train, X_extra_test, error_method, remove_outlier_learners,
+                                 verbosity)
             split_count += 1
 
         # At level of splitdir, do analysis over all splits (e.g. parity plot over all splits)
@@ -537,11 +556,13 @@ class BaseSplitter(ms.BaseCrossValidator):
         if has_model_errors is True:
             model_errors_test_all = self._collect_data(filename='model_errors_test', savepath=splitdir)
             model_errors_train_all = self._collect_data(filename='model_errors_train', savepath=splitdir)
+            num_removed_learners_test_all = self._collect_data(filename='num_removed_learners_test', savepath=splitdir)
+            num_removed_learners_train_all = self._collect_data(filename='num_removed_learners_train', savepath=splitdir)
             # Save all the uncalibrated model errors data
-            self._save_split_data(df=model_errors_test_all, filename='model_errors_test', savepath=splitdir,
-                                  columns='model_errors')
-            self._save_split_data(df=model_errors_train_all, filename='model_errors_train', savepath=splitdir,
-                                  columns='model_errors')
+            self._save_split_data(df=model_errors_test_all, filename='model_errors_test', savepath=splitdir, columns='model_errors')
+            self._save_split_data(df=model_errors_train_all, filename='model_errors_train', savepath=splitdir, columns='model_errors')
+            self._save_split_data(df=num_removed_learners_test_all, filename='num_removed_learners_test', savepath=splitdir, columns='num_removed_learners')
+            self._save_split_data(df=num_removed_learners_train_all, filename='num_removed_learners_train', savepath=splitdir, columns='num_removed_learners')
         else:
             model_errors_test_all = None
             model_errors_train_all = None
@@ -610,9 +631,9 @@ class BaseSplitter(ms.BaseCrossValidator):
                        model_errors_cal=model_errors_train_all_cal,
                        splits_summary=True)
 
-    def _evaluate_split(self, X_train, X_test, y_train, y_test, model, preprocessor, selector, hyperopt,
+    def _evaluate_split(self, X_train, X_test, y_train, y_test, model, model_name, preprocessor, selector, hyperopt,
                         metrics, plots, groups, splitpath, has_model_errors, X_extra_train, X_extra_test,
-                        error_method, verbosity):
+                        error_method, remove_outlier_learners, verbosity):
 
         X_train_orig = copy.deepcopy(X_train)
         X_test_orig = copy.deepcopy(X_test)
@@ -647,6 +668,9 @@ class BaseSplitter(ms.BaseCrossValidator):
         y_pred = model.predict(X_test)
         y_pred_train = model.predict(X_train)
 
+        y_pred = pd.Series(y_pred, name='y_pred')
+        y_pred_train = pd.Series(y_pred_train, name='y_pred_train')
+
         residuals_test = y_pred-y_test
         residuals_train = y_pred_train-y_train
 
@@ -656,18 +680,22 @@ class BaseSplitter(ms.BaseCrossValidator):
         self._save_split_data(df=residuals_train, filename='residuals_train', savepath=splitpath, columns='residuals')
 
         if has_model_errors is True:
-            model_errors_test = ErrorUtils()._get_model_errors(model=model,
+            model_errors_test, num_removed_learners_test = ErrorUtils()._get_model_errors(model=model,
                                                                 X=X_test,
                                                                 X_train=X_train,
                                                                 X_test=X_test,
-                                                               error_method=error_method)
+                                                               error_method=error_method,
+                                                               remove_outlier_learners=remove_outlier_learners)
             self._save_split_data(df=model_errors_test, filename='model_errors_test', savepath=splitpath, columns='model_errors')
-            model_errors_train = ErrorUtils()._get_model_errors(model=model,
+            self._save_split_data(df=num_removed_learners_test, filename='num_removed_learners_test', savepath=splitpath, columns='num_removed_learners')
+            model_errors_train, num_removed_learners_train = ErrorUtils()._get_model_errors(model=model,
                                                                 X=X_train,
                                                                 X_train=X_train,
                                                                 X_test=X_train, #predicting on train data so test/train is same
-                                                                error_method=error_method)
+                                                                error_method=error_method,
+                                                                remove_outlier_learners=remove_outlier_learners)
             self._save_split_data(df=model_errors_train, filename='model_errors_train', savepath=splitpath, columns='model_errors')
+            self._save_split_data(df=num_removed_learners_train, filename='num_removed_learners_train', savepath=splitpath, columns='num_removed_learners')
         else:
             model_errors_test = None
             model_errors_train = None
@@ -727,12 +755,25 @@ class BaseSplitter(ms.BaseCrossValidator):
         #            f.write(str(group)+"\n")
 
         # Save the fitted model, will be needed for DLHub upload later on
-        joblib.dump(model, os.path.join(splitpath, str(model.model.__class__.__name__) + ".pkl"))
+        joblib.dump(model, os.path.join(splitpath, str(model_name) + ".pkl"))
+
+        # If using a Keras model, need to clear the session so training multiple models doesn't slow training down
+        if model_name == 'KerasRegressor':
+            keras.backend.clear_session()
+        elif model_name == 'BaggingRegressor':
+            if model.model.base_estimator.__class__.__name__ == 'KerasRegressor':
+                keras.backend.clear_session()
+
         return
 
     def _setup_savedir(self, model, selector, preprocessor, savepath):
         now = datetime.now()
-        dirname = model.model.__class__.__name__+'_'+self.__class__.__name__+'_'+preprocessor.__class__.__name__+'_'+selector.__class__.__name__
+        try:
+            model_name = model.model.__class__.__name__
+        except:
+            model_name = model.__class__.__name__
+
+        dirname = model_name+'_'+self.__class__.__name__+'_'+preprocessor.__class__.__name__+'_'+selector.__class__.__name__
         dirname = f"{dirname}_{now.month:02d}_{now.day:02d}" \
                         f"_{now.hour:02d}_{now.minute:02d}_{now.second:02d}"
         if savepath == None:
@@ -753,34 +794,36 @@ class BaseSplitter(ms.BaseCrossValidator):
 
     def _collect_data(self, filename, savepath):
         # Note this is only meant for collecting y-data (single column)
-        dirs = [d for d in os.listdir(savepath) if 'split' in d]
+        dirs = [d for d in os.listdir(savepath) if 'split' in d and '.png' not in d and '.xlsx' not in d]
         data = list()
         if 'residuals' in filename:
             col_name = 'residuals'
         elif 'model_errors' in filename:
             col_name = 'model_errors'
+        elif 'num_removed_learners' in filename:
+            col_name = 'num_removed_learners'
         else:
             col_name = filename
         for d in dirs:
-            data.append(np.array(pd.read_excel(os.path.join(savepath, os.path.join(d, filename)+'.xlsx'))[col_name]))
+            data.append(np.array(pd.read_excel(os.path.join(savepath, os.path.join(d, filename)+'.xlsx'), engine='openpyxl')[col_name]))
         df = pd.Series(np.concatenate(data).ravel())
         return df
 
     def _collect_df_data(self, filename, savepath):
-        dirs = [d for d in os.listdir(savepath) if 'split' in d]
+        dirs = [d for d in os.listdir(savepath) if 'split' in d and '.png' not in d and '.xlsx' not in d]
         data = list()
         for d in dirs:
-            data.append(pd.read_excel(os.path.join(savepath, os.path.join(d, filename)+'.xlsx')))
+            data.append(pd.read_excel(os.path.join(savepath, os.path.join(d, filename)+'.xlsx'), engine='openpyxl'))
         df = pd.concat(data)
         return df
 
-    def _get_best_split(self, savepath, model, preprocessor, best_run_metric):
+    def _get_best_split(self, savepath, model, preprocessor, best_run_metric, model_name):
         dirs = os.listdir(savepath)
         splitdirs = [d for d in dirs if 'split_' in d and '.png' not in d]
 
         stats_files_dict = dict()
         for splitdir in splitdirs:
-            stats_files_dict[os.path.join(savepath, splitdir)] = pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'test_stats_summary.xlsx')).to_dict('records')[0]
+            stats_files_dict[os.path.join(savepath, splitdir)] = pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'test_stats_summary.xlsx'), engine='openpyxl').to_dict('records')[0]
 
         # Find best/worst splits based on RMSE value
         rmse_best = 10**20
@@ -792,7 +835,8 @@ class BaseSplitter(ms.BaseCrossValidator):
         # Get the preprocessor, model, and features for the best split
         best_split_dict = dict()
         preprocessor_name = preprocessor.preprocessor.__class__.__name__+'.pkl'
-        model_name = model.model.__class__.__name__+'.pkl'
+
+        model_name = model_name+'.pkl'
 
         if not os.path.exists(os.path.join(best_split, preprocessor_name)):
             print("Error: couldn't find preprocessor .pkl file in best split")
@@ -813,7 +857,7 @@ class BaseSplitter(ms.BaseCrossValidator):
         recalibrate_b_vals = list()
         for splitdir in splitdirs:
             recalibrate_dict = pd.read_excel(os.path.join(os.path.join(savepath, splitdir),
-                                                          'recalibration_parameters_'+str(data_type)+'.xlsx')).to_dict('records')[0]
+                                                          'recalibration_parameters_'+str(data_type)+'.xlsx'), engine='openpyxl').to_dict('records')[0]
             recalibrate_a_vals.append(recalibrate_dict['slope (a)'])
             recalibrate_b_vals.append(recalibrate_dict['intercept (b)'])
         recalibrate_avg_dict = {'a': np.mean(recalibrate_a_vals), 'b': np.mean(recalibrate_b_vals)}
@@ -821,7 +865,7 @@ class BaseSplitter(ms.BaseCrossValidator):
         return recalibrate_avg_dict, recalibrate_stdev_dict
 
     def _get_recalibration_params(self, savepath, data_type):
-        recalibrate_dict = pd.read_excel(os.path.join(savepath, 'recalibration_parameters_'+str(data_type)+'.xlsx')).to_dict('records')[0]
+        recalibrate_dict = pd.read_excel(os.path.join(savepath, 'recalibration_parameters_'+str(data_type)+'.xlsx'), engine='openpyxl').to_dict('records')[0]
         recalibrate_dict_ = dict()
         recalibrate_dict_['a']=recalibrate_dict['slope (a)']
         recalibrate_dict_['b']=recalibrate_dict['intercept (b)']
@@ -885,10 +929,15 @@ class SklearnDataSplitter(BaseSplitter):
 
     def _setup_savedir(self, model, selector, preprocessor, savepath):
         now = datetime.now()
-        if model.model.__class__.__name__ == 'BaggingRegressor':
-            dirname = model.model.__class__.__name__ + '_' + model.base_estimator_ + '_' + self.splitter.__class__.__name__ + '_' +preprocessor.__class__.__name__+'_'+ selector.__class__.__name__
+        try:
+            model_name = model.model.__class__.__name__
+        except:
+            model_name = model.__class__.__name__
+
+        if model_name == 'BaggingRegressor':
+            dirname = model_name + '_' + model.base_estimator_ + '_' + self.splitter.__class__.__name__ + '_' +preprocessor.__class__.__name__+'_'+ selector.__class__.__name__
         else:
-            dirname = model.model.__class__.__name__+'_'+self.splitter.__class__.__name__+'_'+preprocessor.__class__.__name__+'_'+selector.__class__.__name__
+            dirname = model_name +'_'+self.splitter.__class__.__name__+'_'+preprocessor.__class__.__name__+'_'+selector.__class__.__name__
         dirname = f"{dirname}_{now.month:02d}_{now.day:02d}" \
                         f"_{now.hour:02d}_{now.minute:02d}_{now.second:02d}"
         if savepath == None:
