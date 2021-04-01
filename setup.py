@@ -51,7 +51,7 @@ setup(
         "scikit-optimize",
         "scipy>=1.4.1",
         "sphinx-automodapi",
-        "tensorflow>=2.2.2"
+        "tensorflow>=2.4.1"
         ],
     author="MAST Development Team, University of Wisconsin-Madison Computational Materials Group",
     author_email="ddmorgan@wisc.edu",

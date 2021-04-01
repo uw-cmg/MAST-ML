@@ -11,7 +11,7 @@ numpy>=1.20.1
 openpyxl
 pandas
 pymatgen==2021.3.9
-tensorflow>=2.2.2
+tensorflow>=2.4.1
 scikit-learn
 scikit-optimize
 scipy>=1.4.1
