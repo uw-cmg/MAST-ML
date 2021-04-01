@@ -18,8 +18,11 @@ import joblib
 from math import ceil
 import warnings
 import shutil
-import keras
 from scipy.spatial.distance import minkowski
+try:
+    import keras
+except:
+    print('Keras is an optional dependency. To use keras, do pip install keras tensorflow')
 
 try:
     from matminer.featurizers.composition import ElementFraction
