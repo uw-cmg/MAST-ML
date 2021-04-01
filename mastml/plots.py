@@ -121,7 +121,7 @@ class Scatter():
 
         stats_files_dict = dict()
         for splitdir in splitdirs:
-            stats_files_dict[splitdir] = pd.read_excel(os.path.join(os.path.join(savepath, splitdir), data_type + '_stats_summary.xlsx')).to_dict('records')[0]
+            stats_files_dict[splitdir] = pd.read_excel(os.path.join(os.path.join(savepath, splitdir), data_type + '_stats_summary.xlsx'), engine='openpyxl').to_dict('records')[0]
 
         # Find best/worst splits based on RMSE value
         rmse_best = 10**20
@@ -134,15 +134,15 @@ class Scatter():
                 worst_split = split
                 rmse_worst = stats_dict['root_mean_squared_error']
         if data_type == 'test':
-            y_true_best = pd.read_excel(os.path.join(os.path.join(savepath, best_split), 'y_test.xlsx'))
-            y_pred_best = pd.read_excel(os.path.join(os.path.join(savepath, best_split), 'y_pred.xlsx'))
-            y_true_worst = pd.read_excel(os.path.join(os.path.join(savepath, worst_split), 'y_test.xlsx'))
-            y_pred_worst = pd.read_excel(os.path.join(os.path.join(savepath, worst_split), 'y_pred.xlsx'))
+            y_true_best = pd.read_excel(os.path.join(os.path.join(savepath, best_split), 'y_test.xlsx'), engine='openpyxl')
+            y_pred_best = pd.read_excel(os.path.join(os.path.join(savepath, best_split), 'y_pred.xlsx'), engine='openpyxl')
+            y_true_worst = pd.read_excel(os.path.join(os.path.join(savepath, worst_split), 'y_test.xlsx'), engine='openpyxl')
+            y_pred_worst = pd.read_excel(os.path.join(os.path.join(savepath, worst_split), 'y_pred.xlsx'), engine='openpyxl')
         elif data_type == 'train':
-            y_true_best = pd.read_excel(os.path.join(os.path.join(savepath, best_split), 'y_train.xlsx'))
-            y_pred_best = pd.read_excel(os.path.join(os.path.join(savepath, best_split), 'y_pred_train.xlsx'))
-            y_true_worst = pd.read_excel(os.path.join(os.path.join(savepath, worst_split), 'y_train.xlsx'))
-            y_pred_worst = pd.read_excel(os.path.join(os.path.join(savepath, worst_split), 'y_pred_train.xlsx'))
+            y_true_best = pd.read_excel(os.path.join(os.path.join(savepath, best_split), 'y_train.xlsx'), engine='openpyxl')
+            y_pred_best = pd.read_excel(os.path.join(os.path.join(savepath, best_split), 'y_pred_train.xlsx'), engine='openpyxl')
+            y_true_worst = pd.read_excel(os.path.join(os.path.join(savepath, worst_split), 'y_train.xlsx'), engine='openpyxl')
+            y_pred_worst = pd.read_excel(os.path.join(os.path.join(savepath, worst_split), 'y_pred_train.xlsx'), engine='openpyxl')
 
         # Make the dataframe/array 1D if it isn't
         y_true_best = check_dimensions(y_true_best)
@@ -222,11 +222,11 @@ class Scatter():
         y_true_list = list()
         y_pred_list = list()
         for splitdir in splitdirs:
-            y_true_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_'+str(data_type)+'.xlsx')))
+            y_true_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_'+str(data_type)+'.xlsx'), engine='openpyxl'))
             if data_type == 'test':
-                y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred.xlsx')))
+                y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred.xlsx'), engine='openpyxl'))
             elif data_type == 'train':
-                y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred_train.xlsx')))
+                y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred_train.xlsx'), engine='openpyxl'))
 
         all_y_true = list()
         all_y_pred = list()
@@ -322,13 +322,13 @@ class Scatter():
         y_true_list = list()
         y_pred_list = list()
         for splitdir in splitdirs:
-            y_true_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_'+str(data_type)+'.xlsx')))
+            y_true_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_'+str(data_type)+'.xlsx'), engine='openpyxl'))
             if data_type == 'test':
-                y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred.xlsx')))
+                y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred.xlsx'), engine='openpyxl'))
             elif data_type == 'train':
-                y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred_train.xlsx')))
+                y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred_train.xlsx'), engine='openpyxl'))
             elif data_type == 'leaveout':
-                y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred_leaveout.xlsx')))
+                y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred_leaveout.xlsx'), engine='openpyxl'))
 
         all_y_true = list()
         all_y_pred = list()
@@ -369,7 +369,7 @@ class Scatter():
 
         stats_files_dict = dict()
         for splitdir in splitdirs:
-            stats_files_dict[splitdir] = pd.read_excel(os.path.join(os.path.join(savepath, splitdir), data_type + '_stats_summary.xlsx')).to_dict('records')[0]
+            stats_files_dict[splitdir] = pd.read_excel(os.path.join(os.path.join(savepath, splitdir), data_type + '_stats_summary.xlsx'), engine='openpyxl').to_dict('records')[0]
             metrics_list = list(stats_files_dict[splitdir].keys())
 
         avg_stats = dict()
@@ -419,7 +419,7 @@ class Scatter():
             with open(os.path.join(os.path.join(savepath, splitdir), 'test_group.txt'), 'r') as f:
                 group = f.readlines()[0]
                 groups.append(group)
-            stats_files_dict[group] = pd.read_excel(os.path.join(os.path.join(savepath, splitdir), data_type + '_stats_summary.xlsx')).to_dict('records')[0]
+            stats_files_dict[group] = pd.read_excel(os.path.join(os.path.join(savepath, splitdir), data_type + '_stats_summary.xlsx'), engine='openpyxl').to_dict('records')[0]
             metrics_list = list(stats_files_dict[group].keys())
 
         for metric in metrics_list:
@@ -1142,7 +1142,7 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                        data_type=data_type,
                                        metrics_list=metrics,
                                        show_figure=show_figure)
-        if splits_summary is True:
+        if splits_summary is True and data_type != 'leaveout':
             Scatter.plot_best_worst_split(savepath=savepath,
                                       data_type=data_type,
                                       x_label='values',
