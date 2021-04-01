@@ -46,7 +46,7 @@ setup(
         "numpy",
         "openpyxl",
         "pandas",
-        "pymatgen<=2021.3.9",
+        "pymatgen==2021.3.9",
         "scikit-learn",
         "scikit-optimize",
         "scipy",
