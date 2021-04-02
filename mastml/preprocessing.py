@@ -1,7 +1,23 @@
 """
-This module contains a collection of classes and methods for normalizing features. Also included is connection with
-scikit-learn methods. See http://scikit-learn.org/stable/modules/classes.html#module-sklearn.preprocessing for more info.
+This module contains methods to perform data preprocessing, such as various standardization/normalization methods
+
+BasePreprocessor:
+    Base class that adds some MAST-ML type functionality to other preprocessors. Other preprocessor classes all inherit
+    this base class
+
+SklearnPreprocessor:
+    Class that wraps any preprocessor method from scikit-learn (e.g. StandardScaler) to have MAST-ML type functionality
+
+NoPreprocessor:
+    Class that performs no preprocessing. A preprocessor is needed in the MAST-ML evaluation of data splits. If no
+    preprocessing is desired, then this NoPreprocessor class is invoked by default
+
+MeanStdevScaler:
+    Preprocessor class which extends scikit-learn's StandardScaler to scale the dataset to a particular user-specified
+    mean and standard deviation value
+    
 """
+
 import sklearn.preprocessing
 import pandas as pd
 import os
@@ -21,28 +37,27 @@ class BasePreprocessor(BaseEstimator, TransformerMixin):
         preprocessor : a sklearn.preprocessor object, e.g. StandardScaler or mastml.preprocessing object
 
     Methods:
-
         fit_transform: method that fits the data to the preprocessor, then transforms it to the preprocessed data
-
             Args:
                 X: (pd.DataFrame), dataframe of X features
+
                 y: (pd.Series), series of y target data
 
             Returns:
                 Transformed data (pd.DataFrame or numpy array based on self.as_frame)
 
         evaluate: main method to evaluate a preprocessor, build directory and save data output
-
             Args:
                 X: (pd.DataFrame), dataframe of X features
+
                 y: (pd.Series), series of y target data
+
                 savepath: (str), string containing main savepath to construct splits for saving output
 
             Returns:
                 Xnew (pd.DataFrame or numpy array), dataframe or array of the preprocessed X features
 
         help: method to output key information on class use, e.g. methods and parameters
-
             Args:
                 None
 
@@ -50,10 +65,11 @@ class BasePreprocessor(BaseEstimator, TransformerMixin):
                 None, but outputs help to screen
 
         _setup_savedir: method to create a savedir based on the provided model, splitter, selector names and datetime
-
             Args:
                 model: (mastml.models.SklearnModel or other estimator object), an estimator, e.g. KernelRidge
+
                 selector: (mastml.feature_selectors or other selector object), a selector, e.g. EnsembleModelFeatureSelector
+
                 savepath: (str), string designating the savepath
 
             Returns:
@@ -126,7 +142,9 @@ class SklearnPreprocessor(BasePreprocessor):
 
     Args:
         preprocessor (str): name of a sklearn.preprocessor object, e.g. StandardScaler
+
         as_frame (bool): whether to return data as a dataframe
+
         kwargs : key word arguments for the sklearn.preprocessor object
 
     Methods:
@@ -167,41 +185,30 @@ class MeanStdevScaler(BasePreprocessor):
     Class designed to normalize input data to a specified mean and standard deviation
 
     Args:
-
         mean: (int/float), specified normalized mean of the data
 
         stdev: (int/float), specified normalized standard deviation of the data
 
     Methods:
-
         fit: Obtains initial mean and stdev of data
-
             Args:
-
                 df: (dataframe), dataframe of values to be normalized
 
             Returns:
-
                 (self, the object instance)
 
         transform: Normalizes the data to new mean and stdev values
-
             Args:
-
                 df: (dataframe), dataframe of values to be normalized
 
             Returns:
-
                 (dataframe), dataframe containing re-normalized data and any data that wasn't normalized
 
         inverse_transform: Un-normalizes the data to the old mean and stdev values
-
             Args:
-
                 df: (dataframe), dataframe of values to be un-normalized
 
             Returns:
-
                 (dataframe), dataframe containing un-normalized data and any data that wasn't normalized
 
     """
