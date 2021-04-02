@@ -1,3 +1,11 @@
+"""
+This module contains routines to set up and manage the metadata for a MAST-ML run
+
+Mastml:
+    Class to set up directories for saving the output of a MAST-ML run, and for constructing and updating a
+    metadata summary file. 
+
+"""
 
 import os
 from datetime import datetime
@@ -10,13 +18,11 @@ class Mastml():
 
     Args:
         savepath: (str), string specifing the savepath name for the mastml run
+
         mastml_metdata: (dict), dict of mastml metadata. If none, a new dict will be created
 
     Methods:
-
-        _initialize_run: initializes run by making new metadata file or updating existing one, and initializing the output
-            directory.
-
+        _initialize_run: initializes run by making new metadata file or updating existing one, and initializing the output directory.
             Args:
                 None
 
@@ -24,7 +30,6 @@ class Mastml():
                 None
 
         _initialize_output: creates the output folder based on specified savepath and datetime information
-
             Args:
                 None
 
@@ -32,7 +37,6 @@ class Mastml():
                 None
 
         _initialize_metadata: creates a new metadata file and saves the savepath info to it
-
             Args:
                 None
 
@@ -40,7 +44,6 @@ class Mastml():
                 None
 
         _update_metadata: placeholder for updating the metadata file with new run information
-
             Args:
                 None
 
@@ -48,7 +51,6 @@ class Mastml():
                 None
 
         _save_mastml_metadata: saves the metadata dict as a json file
-
             Args:
                 None
 
@@ -56,7 +58,6 @@ class Mastml():
                 None
 
         get_savepath: returns the savepath
-
             Args:
                 None
 
@@ -64,7 +65,6 @@ class Mastml():
                 string specifying the savepath of the mastml run
 
         get_mastml_metadata: returns the metadata file
-
             Args:
                 None
 
