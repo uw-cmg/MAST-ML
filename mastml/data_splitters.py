@@ -83,7 +83,6 @@ class BaseSplitter(ms.BaseCrossValidator):
 
     Methods:
         split_asframe: method to perform split into train indices and test indices, but return as dataframes
-
             Args:
                 X: (pd.DataFrame), dataframe of X features
 
@@ -96,9 +95,7 @@ class BaseSplitter(ms.BaseCrossValidator):
 
                 y_splits: (list), list of dataframes for y splits
 
-        evaluate: main method to evaluate a sequence of models, selectors, and hyperparameter optimizers, build directories
-            and perform analysis and output plots.
-
+        evaluate: main method to evaluate a sequence of models, selectors, and hyperparameter optimizers, build directories and perform analysis and output plots
             Args:
                 X: (pd.DataFrame), dataframe of X features
 
@@ -139,9 +136,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             Returns:
                 None
 
-        _evaluate_split_sets: method to evaluate a set of train/test splits. At the end of the split set, the left-out data
-            (if any) is evaluated using the best model from the train/test splits.
-
+        _evaluate_split_sets: method to evaluate a set of train/test splits. At the end of the split set, the left-out data (if any) is evaluated using the best model from the train/test splits
             Args:
                 X_splits: (list), list of dataframes for X splits
 
@@ -184,9 +179,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             Returns:
                 None
 
-        _evaluate_split: method to evaluate a single data split, i.e. fit model, predict test data, and perform some
-            plots and analysis.
-
+        _evaluate_split: method to evaluate a single data split, i.e. fit model, predict test data, and perform some plots and analysis
             Args:
                 X_train: (pd.DataFrame), dataframe of X training features
 
@@ -230,7 +223,6 @@ class BaseSplitter(ms.BaseCrossValidator):
                 None
 
         _setup_savedir: method to create a save directory based on model/selector/preprocessor names
-
             Args:
                 model: (mastml.models instance), an estimator for fitting data
 
@@ -241,7 +233,6 @@ class BaseSplitter(ms.BaseCrossValidator):
                 savepath: (str), string denoting the save path of the file
 
         _save_split_data: method to save the X and y split data to excel files
-
             Args:
                 df: (pd.DataFrame), dataframe of X or y data to save to file
 
@@ -255,7 +246,6 @@ class BaseSplitter(ms.BaseCrossValidator):
                 None
 
         _collect_data: method to collect all pd.Series (e.g. ytrain/ytest) data into single series over many splits (directories)
-
             Args:
                 filename: (str), string denoting the filename, e.g. 'ytest'
 
@@ -265,7 +255,6 @@ class BaseSplitter(ms.BaseCrossValidator):
                 data: (list), list containing flattened array of all data of a given type over many splits, e.g. all ypred data
 
         _collect_df_data: method to collect all pd.DataFrame (e.g. Xtrain/Xtest) data into single dataframe over many splits (directories)
-
             Args:
                 filename: (str), string denoting the filename, e.g. 'Xtest'
 
@@ -285,12 +274,9 @@ class BaseSplitter(ms.BaseCrossValidator):
                 model_name: (str), class name of model being evaluated
 
             Returns:
-                best_split_dict: (dict), dictionary containing the path locations of the best model and corresponding
-                    preprocessor and selected feature list
+                best_split_dict: (dict), dictionary containing the path locations of the best model and corresponding preprocessor and selected feature list
 
-        _get_average_recalibration_params: method to get the average and standard deviation of the recalibration factors
-            in all train/test CV sets
-
+        _get_average_recalibration_params: method to get the average and standard deviation of the recalibration factors in all train/test CV sets
             Args:
                 savepath: (str), string denoting the save path of the file
 
@@ -302,7 +288,6 @@ class BaseSplitter(ms.BaseCrossValidator):
                 recalibrate_stdev_dict: (dict): dictionary of stdev of recalibration parameters
 
         _get_recalibration_params: method to get the recalibration factors for a single evaluation
-
             Args:
                 savepath: (str), string denoting the save path of the file
 
@@ -312,7 +297,6 @@ class BaseSplitter(ms.BaseCrossValidator):
                 recalibrate_dict: (dict): dictionary of recalibration parameters
 
         help: method to output key information on class use, e.g. methods and parameters
-
             Args:
                 None
 
