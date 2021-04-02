@@ -35,7 +35,6 @@ class DataCleaning():
 
     Methods:
         remove: Method that removes a full column or row of data values if one column or row contains NaN or is blank
-
             Args:
                 X: (pd.DataFrame), dataframe containing X data
 
@@ -49,7 +48,6 @@ class DataCleaning():
                 y: (pd.Series): series of cleaned y data
 
         imputation: Method that imputes values to the missing places based on the median, mean, etc. of the data in the column
-
             Args:
                 X: (pd.DataFrame), dataframe containing X data
 
@@ -63,7 +61,6 @@ class DataCleaning():
                 y: (pd.Series): series of cleaned y data
 
         ppca: Method that imputes data using principal component analysis to interpolate missing values
-
             Args:
                 X: (pd.DataFrame), dataframe containing X data
 
@@ -74,9 +71,7 @@ class DataCleaning():
 
                 y: (pd.Series): series of cleaned y data
 
-        evaluate: main method to evaluate initial data analysis routines (e.g. flag outliers), perform data cleaning and
-            save output to folder.
-
+        evaluate: Main method to evaluate initial data analysis routines (e.g. flag outliers), perform data cleaning and save output to folder
             Args:
                 X: (pd.DataFrame), dataframe containing X data
 
@@ -94,7 +89,6 @@ class DataCleaning():
                 y: (pd.Series): series of cleaned y data
 
         _setup_savedir: method to create a savedir based on the provided model, splitter, selector names and datetime
-
             Args:
                 savepath: (str), string designating the savepath
 
@@ -179,10 +173,7 @@ class DataUtilities():
         None
 
     Methods:
-        flag_outliers: Method that scans values in each X feature matrix column and flags values that are larger than
-            X standard deviations from the average of that column value. The index and column values of potentially
-            problematic points are listed and written to an output file.
-
+        flag_outliers: Method that scans values in each X feature matrix column and flags values that are larger than X standard deviations from the average of that column value. The index and column values of potentially problematic points are listed and written to an output file.
             Args:
                 X: (pd.DataFrame), dataframe containing X data
 
@@ -196,7 +187,6 @@ class DataUtilities():
                 None
 
         flag_columns_with_strings: Method that ascertains which columns in data contain string entries
-
             Args:
                 X: (pd.DataFrame), dataframe containing X data
 

@@ -51,13 +51,13 @@ class SklearnDatasets():
     to make all datasets operate more consistently, e.g. boston housing data
 
     Args:
-
         return_X_y: (bool), whether to return X, y data as (X, y) tuple (should be true for easiest use in MASTML)
+
         as_frame: (bool), whether to return X, y data as pandas dataframe objects
+
         n_class: (int), number of classes (only applies to load_digits method)
 
     Methods:
-
         load_boston: Loads the Boston housing data (regression)
 
         load_iris: Loads the flower iris data (classification)
@@ -120,17 +120,21 @@ class LocalDatasets():
 
     Args:
         file_path: (str), path to the data file to import
+
         feature_names: (list), list of strings containing the X feature names
+
         target: (str), string denoting the y data (target) name
+
         extra_columns: (list), list of strings containing additional column names that are not features or target
+
         group_column: (str), string denoting the name of an input column to be used to group data
-        testdata_columns: (list), list of strings containing column names denoting sets of left-out data. Entries should
-            be marked with a 0 (not left out) or 1 (left out)
+
+        testdata_columns: (list), list of strings containing column names denoting sets of left-out data. Entries should be marked with a 0 (not left out) or 1 (left out)
+
         as_frame: (bool), whether to return data as pandas dataframe (otherwise will be numpy array)
 
     Methods:
         _import: imports the data. Should be either .csv or .xlsx format
-
             Args:
                 None
 
@@ -138,25 +142,19 @@ class LocalDatasets():
                 df: (pd.DataFrame), pandas dataframe of full dataset
 
         _get_features: Method to assess which columns below to target, feature_names
-
             Args:
                 df: (pd.DataFrame), pandas dataframe of full dataset
 
             Returns:
                 None
 
-        load_data: Method to import the data and ascertain which columns are features, target and extra based on provided
-            input.
-
+        load_data: Method to import the data and ascertain which columns are features, target and extra based on provided input.
             Args:
                 None
 
             Returns:
-                X: (pd.DataFrame or numpy array), dataframe or array of X data
-                y: (pd.DataFrame or numpy array), dataframe or array of y data
-                groups: (pd.Series or numpy array), Series or array denoting user-specified groups of data
-                X_extra: (pd.DataFrame or numpy array), dataframe or array of extra data not used in fitting (e.g. references, compositions, other notes)
-                X_testdata: (list), list of arrays denoting indices of left-out data sets
+                data_dict: (dict), dictionary containing dataframes of X, y, groups, X_extra, X_testdata
+
     """
 
     def __init__(self, file_path, feature_names=None, target=None, extra_columns=None, group_column=None,
@@ -256,13 +254,9 @@ class FigshareDatasets():
         None
 
     Methods:
-
         download_data: downloads specified data from Figshare and saves to current directory
-
             Args:
-
-                article_id: (int), the number denoting the Figshare article ID. Can be obtained from the URL to the
-                Figshare dataset
+                article_id: (int), the number denoting the Figshare article ID. Can be obtained from the URL to the Figshare dataset
 
                 savepath: (str), string denoting the savepath of the MAST-ML run
 
@@ -290,16 +284,18 @@ class FoundryDatasets():
 
     Args:
         no_local_server: (bool), whether or not the server is local. Set to True if running on e.g. Google Colab
+
         anonymous: (bool), whether to use your MDF user or be anonymous. Some functionality may be disabled if True
+
         test: (bool), whether to be in test mode. Some functionality may be disabled if True
 
     Methods:
-
         download_data: downloads specified data from MDF and saves to current directory
-
             Args:
                 name: (str), name of the dataset to download
+
                 doi: (str), digital object identifier of the dataset to download
+
                 download: (bool), whether or not to download the full dataset
 
             Returns:
@@ -341,11 +337,8 @@ class MatminerDatasets():
         None
 
     Methods:
-
         download_data: downloads specified data from Matminer/Figshare and saves to current directory
-
             Args:
-
                 name: (str), name of the dataset to download. For compatible names, call get_available_datasets
 
                 save_data: (bool), whether to save the downloaded data to the current working directory
@@ -354,7 +347,6 @@ class MatminerDatasets():
                 df: (dataframe), dataframe of downloaded data
 
         get_available_datasets: returns information on the available dataset names and details one can downlaod
-
             Args:
                 None.
 

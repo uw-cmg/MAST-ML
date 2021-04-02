@@ -1029,13 +1029,12 @@ class SklearnDataSplitter(BaseSplitter):
     Class to wrap any scikit-learn based data splitter, e.g. KFold
 
     Args:
-        splitter (str): string denoting the name of a sklearn.model_selection object, e.g.
-            'KFold' will draw from sklearn.model_selection.KFold()
+        splitter (str): string denoting the name of a sklearn.model_selection object, e.g. 'KFold' will draw from sklearn.model_selection.KFold()
+
         kwargs : key word arguments for the sklearn.model_selection object, e.g. n_splits=5 for KFold()
 
     Methods:
         get_n_splits: method to calculate the number of splits to perform
-
             Args:
                 None
 
@@ -1043,7 +1042,6 @@ class SklearnDataSplitter(BaseSplitter):
                 (int), number of train/test splits
 
         split: method to perform split into train indices and test indices
-
             Args:
                 X: (numpy array), array of X features
 
@@ -1051,10 +1049,11 @@ class SklearnDataSplitter(BaseSplitter):
                 (numpy array), array of train and test indices
 
         _setup_savedir: method to create a savedir based on the provided model, splitter, selector names and datetime
-
             Args:
                 model: (mastml.models.SklearnModel or other estimator object), an estimator, e.g. KernelRidge
+
                 selector: (mastml.feature_selectors or other selector object), a selector, e.g. EnsembleModelFeatureSelector
+
                 savepath: (str), string designating the savepath
 
             Returns:
@@ -1105,7 +1104,6 @@ class NoSplit(BaseSplitter):
 
     Methods:
         get_n_splits: method to calculate the number of splits to perform
-
             Args:
                 None
 
@@ -1113,7 +1111,6 @@ class NoSplit(BaseSplitter):
                 (int), always 1 as only a single split is performed
 
         split: method to perform split into train indices and test indices
-
             Args:
                 X: (numpy array), array of X features
 
@@ -1144,7 +1141,6 @@ class JustEachGroup(BaseSplitter):
 
     Methods:
         get_n_splits: method to calculate the number of splits to perform
-
             Args:
                 groups: (numpy array), array of group labels
 
@@ -1152,10 +1148,11 @@ class JustEachGroup(BaseSplitter):
                 (int), number of unique groups, indicating number of splits to perform
 
         split: method to perform split into train indices and test indices
-
             Args:
                 X: (numpy array), array of X features
+
                 y: (numpy array), array of y data
+
                 groups: (numpy array), array of group labels
 
             Returns:
@@ -1191,10 +1188,11 @@ class LeaveCloseCompositionsOut(BaseSplitter):
 
     Args:
         composition_df (pd.DataFrame): dataframe containing the vector of material compositions to analyze
-        dist_threshold (float): Entries must be farther than this distance to be included in the
-            training set
-        nn_kwargs (dict): Keyword arguments for the scikit-learn NearestNeighbor class used
-            to find nearest points
+
+        dist_threshold (float): Entries must be farther than this distance to be included in the training set
+
+        nn_kwargs (dict): Keyword arguments for the scikit-learn NearestNeighbor class used to find nearest points
+
     """
 
     def __init__(self, composition_df, dist_threshold=0.1, nn_kwargs=None):
@@ -1247,7 +1245,6 @@ class LeaveOutPercent(BaseSplitter):
 
     Methods:
         get_n_splits: method to return the number of splits to perform
-
             Args:
                 groups: (numpy array), array of group labels
 
@@ -1255,10 +1252,11 @@ class LeaveOutPercent(BaseSplitter):
                 (int), number of unique groups, indicating number of splits to perform
 
         split: method to perform split into train indices and test indices
-
             Args:
                 X: (numpy array), array of X features
+
                 y: (numpy array), array of y data
+
                 groups: (numpy array), array of group labels
 
             Returns:
@@ -1289,26 +1287,30 @@ class LeaveOutTwinCV(BaseSplitter):
 
     Args:
         threshold: (int), the threshold at which two data points are considered twins. Default 0.
+
         ord: (int), The order of the norm of the difference (see scipy.spatial.distance.minkowski). Default 2 (Euclidean Distance).
+
         auto_threshold: (boolean), true if threshold should be automatically increased until twins corresponding to the ceiling parameter are found. Default False.
         ceiling: (float), fraction of total data to find as twins. Default 0.
 
     Methods:
         get_n_splits: method to calculate the number of splits to perform across all splitters
-
             Args:
                 X: (numpy array), array of X features
+
                 y: (numpy array), array of y data
+
                 groups: (numpy array), array of group labels
 
             Returns:
                 (int), the number 1 always
 
         split: method to perform split into train indices and test indices
-
             Args:
                 X: (numpy array), array of X features
+
                 y: (numpy array), array of y data
+
                 groups: (numpy array), array of group labels
 
             Returns:
@@ -1434,25 +1436,24 @@ class Bootstrap(BaseSplitter):
     use ShuffleSplit cross validation instead.
 
     Args:
-        n : int
-            Total number of elements in the dataset.
-        n_bootstraps : int (default is 3)
-            Number of bootstrapping iterations
-        train_size : int or float (default is 0.5)
-            If int, number of samples to include in the training split
-            (should be smaller than the total number of samples passed
-            in the dataset).
+        n: (int), total number of elements in the dataset
+
+        n_bootstraps: (int), (default is 3) Number of bootstrapping iterations
+
+        train_size: (int or float), (default is 0.5) If int, number of samples to include in the training split
+            (should be smaller than the total number of samples passed in the dataset).
             If float, should be between 0.0 and 1.0 and represent the
             proportion of the dataset to include in the train split.
-        test_size : int or float or None (default is None)
+
+        test_size: (int or float or None), (default is None)
             If int, number of samples to include in the training set
             (should be smaller than the total number of samples passed
             in the dataset).
             If float, should be between 0.0 and 1.0 and represent the
             proportion of the dataset to include in the test split.
             If None, n_test is set as the complement of n_train.
-        random_state : int or RandomState
-            Pseudo number generator state used for random sampling.
+
+        random_state: (int or RandomState), Pseudo number generator state used for random sampling.
 
     """
 
