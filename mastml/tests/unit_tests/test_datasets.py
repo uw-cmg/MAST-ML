@@ -38,7 +38,8 @@ class TestDatasets(unittest.TestCase):
     def test_local(self):
         target = 'E_regression.1'
         extra_columns = ['E_regression', 'Material compositions 1', 'Material compositions 2', 'Hop activation barrier']
-        d = LocalDatasets(file_path='figshare_7418492/All_Model_Data.xlsx',
+        file_path = os.path.join(os.path.abspath('../../../'), 'mastml/data/figshare_7418492/All_Model_Data.xlsx')
+        d = LocalDatasets(file_path=file_path,
                           target=target,
                           extra_columns=extra_columns,
                           as_frame=True)
