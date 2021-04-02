@@ -1,9 +1,42 @@
 """
-The data_splitters module contains a collection of classes for generating (train_indices, test_indices) pairs from
-a dataframe or a numpy array.
+This module contains a collection of methods to split data into different types of train/test sets. Data splitters
+are the core component to evaluating model performance.
 
-For more information and a list of scikit-learn splitter classes, see:
- http://scikit-learn.org/stable/modules/classes.html#module-sklearn.model_selection
+BaseSplitter:
+    Base class that handles the core MAST-ML data splitting and model evaluation workflow. This class is responsible
+    for looping over provided feature selectors, models, and data splits and training and evaluating the model for each
+    split, then generating the necessary plots and performance statistics. All different splitter types inherit this
+    base class.
+
+SklearnDataSplitter:
+    Wrapper class to enable MAST-ML workflow compatible use of any data splitter contained in scikit-learn, e.g. KFold,
+    RepeatedKFold, LeaveOneGroupOut, etc.
+
+NoSplit:
+    Class that doesn't perform any data split. Equivalent to a "full fit" of the data where all data is used in training.
+
+JustEachGroup:
+    Class that splits data so each individual group is used as training with all other groups used as testing. Essentially
+    the inverse of LeaveOneGroupOut, this class trains only on one group and predicts the rest, as opposed to training
+    on all but one group and testing on the left-out group.
+
+LeaveCloseCompositionsOut:
+    Class to split data based on their compositional similiarity. A useful means to separate compositionally similar
+    compounds into the training or testing set, so that similar materials are not contained in both sets.
+
+LeaveOutPercent:
+    Method to randomly split the data based on fraction of total data points, rather than a designated number of splits.
+    Enables one to do higher than 50% leave out (this is highest leave out possible with KFold where k=2), so can do e.g.
+    leave out 90% data.
+
+LeaveOutTwinCV:
+    Another method to help separate similar data from the training and testing set. This method makes use of a general
+    distance metric on the provided features, and flags twins as those data points within some provided distance threshold
+    in the feature space.
+
+Bootstrap:
+    Method to perform bootstrap resampling, i.e. random leave-out with replacement.
+
 """
 
 import numpy as np
@@ -23,13 +56,12 @@ try:
     import keras
 except:
     print('Keras is an optional dependency. To use keras, do pip install keras tensorflow')
-
 try:
     from matminer.featurizers.composition import ElementFraction
     from pymatgen import Composition
 except:
-    # pass if fails for autodoc build
-    pass
+    print('matminer and pymatgen are optional dependencies. To use data splitter methods invoking these packages,'
+          'do pip install matminer pymatgen')
 
 import sklearn.model_selection as ms
 from sklearn.utils import check_random_state
@@ -77,7 +109,12 @@ class BaseSplitter(ms.BaseCrossValidator):
                 savepath: (str), string containing main savepath to construct splits for saving output
                 X_extra: (pd.DataFrame), dataframe of extra X data not used in model fitting
                 leaveout_inds: (list), list of arrays containing indices of data to be held out and evaluated using best model from set of train/validation splits
+                best_run_metric: (str), metric name to be used to decide which model performed best. Defaults to first listed metric in metrics.
                 nested_CV: (bool), whether to perform nested cross-validation. The nesting is done using the same splitter object as self.splitter
+                error_method: (str), the type of model error evaluation method to perform. Only applies to certain models. Valid names are 'stdev_weak_learners' and 'jackknife_after_bootstrap'
+                remove_outlier_learners: (bool), whether to remove weak learners from ensemble models whose predictions are found to be outliers. Default False.
+                recalibrate_errors: (bool), whether to perform the predicted error bar recalibration method of Palmer et al. Default False.
+                verbosity: (int), the output plotting verbosity. Default is 1. Valid choices are 0, 1, 2, and 3.
 
             Returns:
                 None
@@ -91,6 +128,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                 train_inds: (list), list of arrays of indices denoting the training data
                 test_inds: (list), list of arrays of indices denoting the testing data
                 model: (mastml.models instance), an estimator for fitting data
+                model_name: (str), class name of the model being evaluated
                 selector: (mastml.selector), a feature selector to select features in each split
                 preprocessor: (mastml.preprocessor), mastml.preprocessor object to normalize the training data in each split.
                 X_extra: (pd.DataFrame), dataframe of extra X data not used in model fitting
@@ -100,6 +138,10 @@ class BaseSplitter(ms.BaseCrossValidator):
                 metrics: (list), list of metric names to evaluate true vs. pred data in each split
                 plots: (list), list of names denoting which types of plots to make. Valid names are 'Scatter', 'Error', and 'Histogram'
                 has_model_errors: (bool), whether the model used has error bars (uncertainty quantification)
+                error_method: (str), the type of model error evaluation method to perform. Only applies to certain models. Valid names are 'stdev_weak_learners' and 'jackknife_after_bootstrap'
+                remove_outlier_learners: (bool), whether to remove weak learners from ensemble models whose predictions are found to be outliers. Default False.
+                recalibrate_errors: (bool), whether to perform the predicted error bar recalibration method of Palmer et al. Default False.
+                verbosity: (int), the output plotting verbosity. Default is 1. Valid choices are 0, 1, 2, and 3.
 
             Returns:
                 None
@@ -113,19 +155,31 @@ class BaseSplitter(ms.BaseCrossValidator):
                 y_train: (pd.Series), series of y training features
                 y_test: (pd.Series), series of y test features
                 model: (mastml.models instance), an estimator for fitting data
+                model_name: (str), class name of the model being evaluated
                 preprocessor: (mastml.preprocessor), mastml.preprocessor object to normalize the training data in each split.
                 selector: (mastml.selector), a feature selector to select features in each split
                 hyperopt: (mastml.hyperopt), mastml.hyperopt instance to perform model hyperparameter optimization in each split
                 metrics: (list), list of metric names to evaluate true vs. pred data in each split
                 plots: (list), list of names denoting which types of plots to make. Valid names are 'Scatter', 'Error', and 'Histogram'
-                group: (str), string denoting the test group, if applicable
+                groups: (str), string denoting the test group, if applicable
                 splitpath:(str), string denoting the split path in the save directory
                 has_model_errors: (bool), whether the model used has error bars (uncertainty quantification)
                 X_extra_train: (pd.DataFrame), dataframe of the extra X data of the training split (not used in fit)
                 X_extra_test: (pd.DataFrame), dataframe of the extra X data of the testing split (not used in fit)
+                error_method: (str), the type of model error evaluation method to perform. Only applies to certain models. Valid names are 'stdev_weak_learners' and 'jackknife_after_bootstrap'
+                remove_outlier_learners: (bool), whether to remove weak learners from ensemble models whose predictions are found to be outliers. Default False.
+                verbosity: (int), the output plotting verbosity. Default is 1. Valid choices are 0, 1, 2, and 3.
 
             Returns:
                 None
+
+        _setup_savedir: method to create a save directory based on model/selector/preprocessor names
+
+            Args:
+                model: (mastml.models instance), an estimator for fitting data
+                preprocessor: (mastml.preprocessor), mastml.preprocessor object to normalize the training data in each split.
+                selector: (mastml.selector), a feature selector to select features in each split
+                savepath: (str), string denoting the save path of the file
 
         _save_split_data: method to save the X and y split data to excel files
 
@@ -138,21 +192,30 @@ class BaseSplitter(ms.BaseCrossValidator):
             Returns:
                 None
 
-        _collect_data: method to collect all Xtrain/Xtest/ytrain/ytest data into single series over many splits (directories)
+        _collect_data: method to collect all pd.Series (e.g. ytrain/ytest) data into single series over many splits (directories)
+
+            Args:
+                filename: (str), string denoting the filename, e.g. 'ytest'
+                savepath: (str), string denoting the save path of the file
+
+            Returns:
+                data: (list), list containing flattened array of all data of a given type over many splits, e.g. all ypred data
+
+        _collect_df_data: method to collect all pd.DataFrame (e.g. Xtrain/Xtest) data into single dataframe over many splits (directories)
 
             Args:
                 filename: (str), string denoting the filename, e.g. 'Xtest'
                 savepath: (str), string denoting the save path of the file
 
             Returns:
-                data: (list), list containing flattened array of all data of a given type over many splits, e.g. all ypred data
+                data: (list), list containing flattened array of all data of a given type over many splits, e.g. all Xtest data
 
         _get_best_split: method to find the best performing model in a set of train/test splits
-
             Args:
                 savepath: (str), string denoting the save path of the file
-                model: (mastml.models instance), an estimator for fitting data
                 preprocessor: (mastml.preprocessor), mastml.preprocessor object to normalize the training data in each split.
+                best_run_metric: (str), name of the metric to use to find the best performing model
+                model_name: (str), class name of model being evaluated
 
             Returns:
                 best_split_dict: (dict), dictionary containing the path locations of the best model and corresponding
@@ -163,10 +226,20 @@ class BaseSplitter(ms.BaseCrossValidator):
 
             Args:
                 savepath: (str), string denoting the save path of the file
+                data_type: (str), string denoting the type of data to examine (e.g. test or leftout)
 
             Returns:
                 recalibrate_avg_dict: (dict): dictionary of average recalibration parameters
                 recalibrate_stdev_dict: (dict): dictionary of stdev of recalibration parameters
+
+        _get_recalibration_params: method to get the recalibration factors for a single evaluation
+
+            Args:
+                savepath: (str), string denoting the save path of the file
+                data_type: (str), string denoting the type of data to examine (e.g. test or leftout)
+
+            Returns:
+                recalibrate_dict: (dict): dictionary of recalibration parameters
 
         help: method to output key information on class use, e.g. methods and parameters
 
@@ -308,8 +381,9 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                   verbosity=verbosity)
                         split_outer_count += 1
 
-                        best_split_dict = self._get_best_split(savepath=splitouterpath, model=model,
-                                                               preprocessor=preprocessor, best_run_metric=best_run_metric,
+                        best_split_dict = self._get_best_split(savepath=splitouterpath,
+                                                               preprocessor=preprocessor,
+                                                               best_run_metric=best_run_metric,
                                                                model_name=model_name)
                         # Copy the best model, selected features and preprocessor to this outer directory
                         shutil.copy(best_split_dict['preprocessor'], splitouterpath)
@@ -497,8 +571,9 @@ class BaseSplitter(ms.BaseCrossValidator):
                                               recalibrate_errors,
                                               verbosity=verbosity)
 
-                    best_split_dict = self._get_best_split(savepath=splitdir, model=model,
-                                                           preprocessor=preprocessor, best_run_metric=best_run_metric,
+                    best_split_dict = self._get_best_split(savepath=splitdir,
+                                                           preprocessor=preprocessor,
+                                                           best_run_metric=best_run_metric,
                                                            model_name=model_name)
                     # Copy the best model, selected features and preprocessor to this outer directory
                     shutil.copy(best_split_dict['preprocessor'], splitdir)
@@ -828,7 +903,7 @@ class BaseSplitter(ms.BaseCrossValidator):
         df = pd.concat(data)
         return df
 
-    def _get_best_split(self, savepath, model, preprocessor, best_run_metric, model_name):
+    def _get_best_split(self, savepath, preprocessor, best_run_metric, model_name):
         dirs = os.listdir(savepath)
         splitdirs = [d for d in dirs if 'split_' in d and '.png' not in d]
 
@@ -837,6 +912,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             stats_files_dict[os.path.join(savepath, splitdir)] = pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'test_stats_summary.xlsx'), engine='openpyxl').to_dict('records')[0]
 
         # Find best/worst splits based on RMSE value
+        #TODO: this needs to be more general to work with other metrics
         rmse_best = 10**20
         for split, stats_dict in stats_files_dict.items():
             if stats_dict[best_run_metric] < rmse_best:
@@ -899,7 +975,8 @@ class SklearnDataSplitter(BaseSplitter):
     Class to wrap any scikit-learn based data splitter, e.g. KFold
 
     Args:
-        splitter (sklearn.model_selection object): a sklearn.model_selection object, e.g. sklearn.model_selection.KFold()
+        splitter (str): string denoting the name of a sklearn.model_selection object, e.g.
+            'KFold' will draw from sklearn.model_selection.KFold()
         kwargs : key word arguments for the sklearn.model_selection object, e.g. n_splits=5 for KFold()
 
     Methods:
