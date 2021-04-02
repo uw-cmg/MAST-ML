@@ -15,7 +15,6 @@ NoPreprocessor:
 MeanStdevScaler:
     Preprocessor class which extends scikit-learn's StandardScaler to scale the dataset to a particular user-specified
     mean and standard deviation value
-    
 """
 
 import sklearn.preprocessing

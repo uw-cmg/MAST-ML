@@ -1,6 +1,17 @@
 """
-This module provides a name_to_constructor dict for all models/estimators in scikit-learn, plus a couple test models and
-error handling functions
+Module for constructing models for use in MAST-ML.
+
+SklearnModel:
+    Class that wraps scikit-learn models to have MAST-ML type functionality. Providing the model name as a string
+    and the keyword arguments for the model parameters will construct the model. Note that this class also supports
+    construction of XGBoost models and Keras neural network models via Keras' keras.wrappers.scikit_learn.KerasRegressor
+    model.
+
+EnsembleModel:
+    Class that constructs a model which is an ensemble of many base models (sometimes called weak learners). This
+    class supports construction of ensembles of most scikit-learn regression models as well as ensembles of neural
+    networks that are made via Keras' keras.wrappers.scikit_learn.KerasRegressor class.
+
 """
 
 import pandas as pd
@@ -18,7 +29,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 try:
     import xgboost
 except:
-    print('If you want to use XGBoost models, please manually install xgboost package with '
+    print('XGBoost is an optional dependency. If you want to use XGBoost models, please manually install xgboost package with '
           'pip install xgboost. If have error with finding libxgboost.dylib library, do'
           'brew install libomp. If do not have brew on your system, first do'
           ' ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" from the Terminal')
@@ -28,30 +39,30 @@ class SklearnModel(BaseEstimator, TransformerMixin):
     Class to wrap any sklearn estimator, and provide some new dataframe functionality
 
     Args:
-
         model: (str), string denoting the name of an sklearn estimator object, e.g. KernelRidge
+
         kwargs: keyword pairs of values to include for model, e.g. for KernelRidge can specify kernel, alpha, gamma values
 
     Methods:
-
         fit: method that fits the model parameters to the provided training data
-
             Args:
                 X: (pd.DataFrame), dataframe of X features
+
                 y: (pd.Series), series of y target data
+
             Returns:
                 fitted model
 
         predict: method that evaluates model on new data to give predictions
-
             Args:
                 X: (pd.DataFrame), dataframe of X features
+
                 as_frame: (bool), whether to return data as pandas dataframe (else numpy array)
+
             Returns:
                 series or array of predicted values
 
         help: method to output key information on class use, e.g. methods and parameters
-
             Args:
                 None
 
@@ -93,9 +104,43 @@ class SklearnModel(BaseEstimator, TransformerMixin):
         return
 
 class EnsembleModel(BaseEstimator, TransformerMixin):
-    '''
+    """
+    Class used to construct ensemble models with a particular number and type of weak learner (base model). The
+    ensemble model is compatible with most scikit-learn regressor models and KerasRegressor models
 
-    '''
+    Args:
+        model: (str), string name denoting the name of the model type to use as the base model
+
+        n_estimators: (int), the number of base models to include in the ensemble
+
+        kwargs: keyword arguments for the base model parameter names and values
+
+    Methods:
+        fit: method that fits the model parameters to the provided training data
+            Args:
+                X: (pd.DataFrame), dataframe of X features
+
+                y: (pd.Series), series of y target data
+
+            Returns:
+                fitted model
+
+        predict: method that evaluates model on new data to give predictions
+            Args:
+                X: (pd.DataFrame), dataframe of X features
+
+                as_frame: (bool), whether to return data as pandas dataframe (else numpy array)
+
+            Returns:
+                series or array of predicted values
+
+        get_params: method to output key model parameters
+            Args:
+                deep: (bool), determines the extent of information returned, default True
+
+            Returns:
+                information on model parameters
+    """
     def __init__(self, model, n_estimators, **kwargs):
         super(EnsembleModel, self).__init__()
         try:
@@ -121,6 +166,16 @@ class EnsembleModel(BaseEstimator, TransformerMixin):
 
 
 def _make_gpr_kernel(kernel_string):
+    """
+    Method to transform a supplied string to a kernel object for use in GPR models
+
+    Args:
+        kernel_string: (str), a string containing the desired name of the kernel
+
+    Return:
+        kernel: sklearn.gaussian_process.kernels object
+
+    """
     kernel_list = ['WhiteKernel', 'RBF', 'ConstantKernel', 'Matern', 'RationalQuadratic', 'ExpSineSquared', 'DotProduct']
     kernel_operators = ['+', '*', '-']
     # Parse kernel_string to identify kernel types and any kernel operations to combine kernels
