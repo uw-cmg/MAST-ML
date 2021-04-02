@@ -1,23 +1,28 @@
 """
 This module provides various methods for importing data into MAST-ML.
 
-SklearnDatasets: Enables easy import of model datasets from scikit-learn, such as boston housing data, friedman, etc.
+SklearnDatasets:
+    Enables easy import of model datasets from scikit-learn, such as boston housing data, friedman, etc.
 
-LocalDatasets: Main method for importing datasets that are stored in an accessible path. Main file format is Excel
-                spreadsheet (.xls or .xlsx). This method also makes it easy for separately denoting other data features
-                that are not directly the X or y data, such as features used for grouping, extra features no used in
-                fitting, or features that denote manually held-out test data
+LocalDatasets:
+    Main method for importing datasets that are stored in an accessible path. Main file format is Excel
+    spreadsheet (.xls or .xlsx). This method also makes it easy for separately denoting other data features
+    that are not directly the X or y data, such as features used for grouping, extra features no used in
+    fitting, or features that denote manually held-out test data
 
-FigshareDatasets: Method to download data that is stored on Figshare, an open-source data hosting service. This class
-                can be used to download data, then subsquently the LocalDatasets class can be used to import the data.
+FigshareDatasets:
+    Method to download data that is stored on Figshare, an open-source data hosting service. This class
+    can be used to download data, then subsquently the LocalDatasets class can be used to import the data.
 
-FoundryDatasets: Method to download data this stored on the Materials Data Facility (MDF) Foundry data hosting service.
-                This class can be used to download data, then subsquently the LocalDatasets class can be used to import
-                the data.
+FoundryDatasets:
+    Method to download data this stored on the Materials Data Facility (MDF) Foundry data hosting service.
+    This class can be used to download data, then subsquently the LocalDatasets class can be used to import
+    the data.
 
-MatminerDatasets: Method to download data this stored as part of the matminer machine learning package
-                (https://github.com/hackingmaterials/matminer). This class can be used to download data, then
-                subsquently the LocalDatasets class can be used to import the data.
+MatminerDatasets:
+    Method to download data this stored as part of the matminer machine learning package
+    (https://github.com/hackingmaterials/matminer). This class can be used to download data, then
+    subsquently the LocalDatasets class can be used to import the data.
 
 """
 

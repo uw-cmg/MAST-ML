@@ -1,15 +1,18 @@
 """
 This module provides various methods for cleaning data that has been imported into MAST-ML, prior to model fitting.
 
-DataCleaning: Class that enables easy use of various data cleaning methods, such as removal of missing values, different
-            modes of data imputation, or using principal componenet analysis to fill interpolate missing values.
+DataCleaning:
+    Class that enables easy use of various data cleaning methods, such as removal of missing values, different
+    modes of data imputation, or using principal componenet analysis to fill interpolate missing values.
 
-DataUtilities: Support class used to evaluate some basic statistics of imported data, such as its distribution, mean, etc.
-            Also provides a means of flagging potential outlier datapoints based on their deviation from the overall data
-            distribution.
+DataUtilities:
+    Support class used to evaluate some basic statistics of imported data, such as its distribution, mean, etc.
+    Also provides a means of flagging potential outlier datapoints based on their deviation from the overall data
+    distribution.
 
-PPCA: Class used by the PCA data cleaning routine in the DataCleaning class to perform probabilistic PCA to fill in
-        missing data.
+PPCA:
+    Class used by the PCA data cleaning routine in the DataCleaning class to perform probabilistic PCA to fill in
+    missing data.
 
 """
 
