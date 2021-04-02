@@ -1,12 +1,14 @@
 """
-This module contains constructors for different model score metrics. Most model metrics are obtained from scikit-learn,
-while others are custom variations.
+This module contains a metrics class for construction and evaluation of various regression score metrics between
+true and model predicted data.
 
-The full list of score functions in scikit-learn can be found at: http://scikit-learn.org/stable/modules/model_evaluation.html
+Metrics:
+    Class to construct and evaluate a list of regression metrics of interest. The full list of available metrics
+    can be obtained from Metrics()._metric_zoo()
+
 """
 
 import numpy as np
-import sklearn.feature_selection as fs
 import sklearn.metrics as sm
 from sklearn.linear_model import LinearRegression
 
@@ -16,21 +18,20 @@ class Metrics():
 
     Args:
         metrics_list: (list), list of strings of metric names to use
+
         metrics_type: (str), one of 'regression' or 'classification': whether to use set of common regression/classifier metrics
 
     Methods:
-
         evaluate: main method to evaluate the specified metrics and the provided true and pred data
-
             Args:
                 y_true: (pd.Series), series of true y data
+
                 y_pred: (pd.Series), series of predicted y data
 
             Returns:
                 stats_dict: (dict), dictionary of calculated statistics for each metric
 
         _get_metrics: builds the metrics dict of metric names : metric instances based on the metrics specified in metrics_list
-
             Args:
                 None
 
@@ -38,7 +39,6 @@ class Metrics():
                 None
 
         _metric_zoo: method to retrieve full dict of metric names : metric instance pairs
-
             Args:
                 None
 
@@ -86,6 +86,8 @@ class Metrics():
                             'rmse_over_stdev' : (False, rmse_over_stdev)
                             }
         elif self.metrics_type == 'classification':
+            print('WARNING: new version of MAST-ML has not yet been reconfigured to handle classification tasks')
+            exit()
             all_metrics = {'accuracy':           (True, sm.accuracy_score),
                             'f1_binary':          (True, lambda yt, yp: sm.f1_score(yt, yp, average='binary')),
                             'f1_macro':           (True, lambda yt, yp: sm.f1_score(yt, yp, average='macro')),
@@ -113,6 +115,7 @@ def r2_score_noint(y_true, y_pred):
 
     Args:
         y_true: (numpy array), array of true y data values
+
         y_pred: (numpy array), array of predicted y data values
 
     Returns:
@@ -130,6 +133,7 @@ def r2_score_fitted(y_true, y_pred):
 
     Args:
         y_true: (numpy array), array of true y data values
+
         y_pred: (numpy array), array of predicted y data values
 
     Returns:
@@ -147,6 +151,7 @@ def root_mean_squared_error(y_true, y_pred):
 
     Args:
         y_true: (numpy array), array of true y data values
+
         y_pred: (numpy array), array of predicted y data values
 
     Returns:
@@ -162,7 +167,9 @@ def rmse_over_stdev(y_true, y_pred, train_y=None):
 
     Args:
         y_true: (numpy array), array of true y data values
+
         y_pred: (numpy array), array of predicted y data values
+
         train_y: (numpy array), array of training y data values
 
     Returns:
@@ -182,7 +189,9 @@ def r2_score_adjusted(y_true, y_pred, n_features=None):
 
     Args:
         y_true: (numpy array), array of true y data values
+
         y_pred: (numpy array), array of predicted y data values
+
         n_features: (int), number of features used in the fit
 
     Returns:
@@ -200,14 +209,3 @@ def r2_score_adjusted(y_true, y_pred, n_features=None):
         # No n_features given, just output NaN
         r2_score_adj = 'NaN'
     return r2_score_adj
-
-classification_score_funcs = {
-    'chi2': fs.chi2, # Compute chi-squared stats between each non-negative feature and class.
-    'f_classif': fs.f_classif, # Compute the ANOVA F-value for the provided sample.
-    'mutual_info_classif': fs.mutual_info_classif, # Estimate mutual information for a discrete target variable.
-}
-
-regression_score_funcs = {
-    'f_regression': fs.f_regression, # Univariate linear regression tests.
-    'mutual_info_regression': fs.mutual_info_regression, # Estimate mutual information for a continuous target variable.
-}
